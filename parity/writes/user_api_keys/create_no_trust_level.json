@@ -1,0 +1,82 @@
+{
+  "name": "create_no_trust_level",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key.json",
+      "params": {
+        "nonce": "parity-nonce",
+        "scopes": "read,write",
+        "client_id": "new-app",
+        "application_name": "New App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:47:03.586248",
+  "transaction_started_at": "2026-10-14T08:47:02.471854",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6OAt8qnEcc0HWBE4Toh6CeWsa+E=",
+            "created_at": "2026-10-14T08:47:02.990058",
+            "rotated_at": "2026-10-14T08:47:02.988985",
+            "updated_at": "2026-10-14T08:47:02.990058",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6OAt8qnEcc0HWBE4Toh6CeWsa+E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:03.59397",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6OAt8qnEcc0HWBE4Toh6CeWsa+E=",
+            "created_at": "2026-10-14T08:47:02.990058",
+            "rotated_at": "2026-10-14T08:47:02.988985",
+            "updated_at": "2026-10-14T08:47:02.990058",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6OAt8qnEcc0HWBE4Toh6CeWsa+E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "user_api_key_allowed_groups": "1|2|14"
+  },
+  "recorded_from": {
+    "case": "42a30c3481986f8f1bd3a42c8210094f0c40e0718872cbcd1a31d289c4b1b7aa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

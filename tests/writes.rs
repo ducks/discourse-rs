@@ -536,6 +536,76 @@ fn unordered(doc: &mut Value, case: &Value) {
     }
 }
 
+/// The user API key authorization's encrypted answers (a `payload` and a
+/// `oneTimePassword`, random RSA padding on every run), decrypted with the
+/// cases' fixed private key (parity/writes/files/user_api_key_private.pem):
+/// a `payload` body field becomes its JSON, and a redirect carrying them
+/// (`redirect_url`, a kept Location) becomes `{url, payload,
+/// oneTimePassword}` with the rest of its query left in `url`.
+fn decrypt_user_api_payloads(doc: &mut Value) {
+    use base64::Engine;
+    use rsa::pkcs1::DecodeRsaPrivateKey;
+    static KEY: std::sync::LazyLock<Option<rsa::RsaPrivateKey>> = std::sync::LazyLock::new(|| {
+        let pem = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("parity/writes/files/user_api_key_private.pem"),
+        )
+        .ok()?;
+        rsa::RsaPrivateKey::from_pkcs1_pem(&pem).ok()
+    });
+    let Some(key) = KEY.as_ref() else {
+        return;
+    };
+    let decrypt = |b64: &str| -> Option<String> {
+        let compact: String = b64.chars().filter(|c| !c.is_whitespace()).collect();
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(compact)
+            .ok()?;
+        let plain = key
+            .decrypt(rsa::Pkcs1v15Encrypt, &bytes)
+            .or_else(|_| key.decrypt(rsa::Oaep::new::<sha1::Sha1>(), &bytes))
+            .ok()?;
+        String::from_utf8(plain).ok()
+    };
+    let as_json = |plain: String| serde_json::from_str(&plain).unwrap_or(Value::String(plain));
+    let redirect = |url: &str| -> Option<Value> {
+        let (base, query) = url.split_once('?')?;
+        let mut rest = Vec::new();
+        let mut out = Map::new();
+        for (k, v) in form_urlencoded::parse(query.as_bytes()) {
+            match k.as_ref() {
+                "payload" | "oneTimePassword" => {
+                    let plain = decrypt(&v)?;
+                    out.insert(k.into_owned(), as_json(plain));
+                }
+                _ => rest.push(format!("{k}={v}")),
+            }
+        }
+        if out.is_empty() {
+            return None;
+        }
+        let url = if rest.is_empty() {
+            base.to_string()
+        } else {
+            format!("{base}?{}", rest.join("&"))
+        };
+        out.insert("url".into(), Value::String(url));
+        Some(Value::Object(out))
+    };
+    for response in doc["responses"].as_array_mut().into_iter().flatten() {
+        let body = &mut response["body"];
+        if let Some(plain) = body["payload"].as_str().and_then(decrypt) {
+            body["payload"] = as_json(plain);
+        }
+        if let Some(v) = body["redirect_url"].as_str().and_then(redirect) {
+            body["redirect_url"] = v;
+        }
+        if let Some(v) = response["headers"]["Location"].as_str().and_then(redirect) {
+            response["headers"]["Location"] = v;
+        }
+    }
+}
+
 /// Per-run secrets a document carries in its own jobs and responses (email
 /// tokens, login codes, honeypots), replaced wherever they appear in it.
 fn hide_secrets(doc: &mut Value) {
@@ -1578,6 +1648,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         &changed_columns(
             normalize(
                 &{
+                    decrypt_user_api_payloads(&mut rails);
                     hide_secrets(&mut rails);
                     approximate(&mut rails, case);
                     unordered(&mut rails, case);
@@ -1591,6 +1662,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         &changed_columns(
             normalize(
                 &{
+                    decrypt_user_api_payloads(&mut ours);
                     hide_secrets(&mut ours);
                     approximate(&mut ours, case);
                     unordered(&mut ours, case);

@@ -319,8 +319,12 @@ then by what running a forum needs (milestone 6). Briefs:
     refusals narrowed to `push_clients_for`. Refused: a user key with an
     auth cookie or admin key, keys in request parameters, the bookmarks
     calendar feed, a listed key without a client),
-    84b. `feat/user-api-key-auth-flow` M (RSA, `/user-api-key/new`, `POST
-    /user-api-key`, one-time passwords), 84c. `feat/user-api-key-device` M
+    84b. ~~`feat/user-api-key-auth-flow`~~ (done) M (RSA parsing and
+    PKCS#1/OAEP payloads, `/user-api-key/new` as JSON and as the port's
+    page, `POST /user-api-key` with its redirect or result page, one-time
+    passwords and `/session/otp/:token`; the harness decrypts payloads
+    with the cases' fixed key. Left: calendar subscriptions, which need
+    the bookmarks `.ics` feed), 84c. `feat/user-api-key-device` M
     (the device authorization flow), 84d. `feat/admin-api-keys` S/M
     (`/admin/api/keys`, ApiKeyScope mappings)
 85. `feat/admin-badges` M: creating, editing, deleting badges and

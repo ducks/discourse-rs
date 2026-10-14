@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&public_key=-----BEGIN+PUBLIC+KEY-----%0AMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok%0A3v%2F02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP%0AVBQNGKHkpYLI%2BN24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X%0AB0ToQHK5gr%2F%2B1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV%0AHI%2BphkrECrIa7V%2BqlqAUNb%2FXfGYQiiJYHSxkWsq29ZrSElF6P7%2BHwP5fVFBgnTQA%0A9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS%2F%2FJ9QES%2B%2BBkp3NDfMA%0AewIDAQAB%0A-----END+PUBLIC+KEY-----%0A&auth_redirect=https%3A%2F%2Fevil.example.com%2F"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&public_key=nope&auth_redirect=https%3A%2F%2Fapi.discourse.org%2Fapi%2Fauth_redirect"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&auth_redirect=https%3A%2F%2Fapi.discourse.org%2Fapi%2Fauth_redirect"
+    }
+  ]
+}

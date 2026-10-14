@@ -25,11 +25,12 @@
       try { body = JSON.parse(event.detail.xhr.responseText); } catch (_) {}
       if (event.detail.successful && !body.error) {
         // destination_url is the full URL the login gate sent the reader
-        // away from; static#enter takes a path.
+        // away from, or a path (the user API key pages keep their
+        // fullpath); static#enter takes a path.
         var match = document.cookie.match(/(?:^|; )destination_url=([^;]*)/);
         if (match) {
           try {
-            var url = new URL(decodeURIComponent(match[1]));
+            var url = new URL(decodeURIComponent(match[1].replace(/\+/g, " ")), location.origin);
             document.querySelector("#login-enter [name=redirect]").value = url.pathname + url.search;
           } catch (_) {}
           document.cookie = "destination_url=; path=/; max-age=0";

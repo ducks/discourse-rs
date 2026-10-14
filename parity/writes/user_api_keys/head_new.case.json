@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "keep_headers": [
+    "Auth-Api-Version",
+    "Auth-Api-Device-Code",
+    "Pragma",
+    "Expires",
+    "Referrer-Policy"
+  ],
+  "requests": [
+    {
+      "method": "HEAD",
+      "path": "/user-api-key/new"
+    }
+  ]
+}

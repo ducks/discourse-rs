@@ -1,0 +1,179 @@
+{
+  "name": "create_replaces_old_key",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key.json",
+      "params": {
+        "nonce": "parity-nonce",
+        "scopes": "read,write",
+        "client_id": "new-app",
+        "application_name": "New App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:47:17.994963",
+  "transaction_started_at": "2026-10-14T08:47:15.139676",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "payload": "k2EMK+eW+Q8u3ki3dvgC8vdHyNjDIXtxfC9P93wiRRgvs7Ds4Btd7WCZZp8v\naca2f4kxoSzZ9NKWjIQFKow8G3Y0YQcEzjdFYv7Hfpln/AMl9PU1rnpxU2Np\nZy/RckLu95+JJ7L0lrdYaZBqZQxVa4q0igJ4VQdwP5ZLITgp9LHGh+FQM49H\n9dxL8UoeWI1LuxwXQrXVSIJByvJ2FjurAo6/2S6nMEGxxOdrP0sNlB147AiU\nZ2efnD0iYqqbhOJxYT5Wm6s/rE447EPbm22lE+8EOXgStbdhSxDoGIlSefCN\n+En//t7pHZ8X72ipyzVFfH50hdZn9BAH1lBWQYseNg==\n",
+        "instructions": "We just generated a new user API key for you to use with \"New App\", please paste the following key into your application:"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_clients": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9101,
+            "client_id": "new-app",
+            "created_at": "2026-10-11T08:47:15.139676",
+            "public_key": null,
+            "updated_at": "2026-10-11T08:47:15.139676",
+            "auth_redirect": null,
+            "application_name": "Old Name"
+          },
+          "after": {
+            "id": 9101,
+            "client_id": "new-app",
+            "created_at": "2026-10-11T08:47:15.139676",
+            "public_key": null,
+            "updated_at": "2026-10-14T08:47:18.019524",
+            "auth_redirect": null,
+            "application_name": "New App"
+          }
+        }
+      ]
+    },
+    "user_api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T08:47:18.033603",
+          "updated_at": "2026-10-14T08:47:18.033603",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T08:47:18.035098",
+          "updated_at": "2026-10-14T08:47:18.035098",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9101,
+          "name": "read",
+          "created_at": "2026-10-12T08:47:15.139676",
+          "updated_at": "2026-10-12T08:47:15.139676",
+          "user_api_key_id": 9101,
+          "allowed_parameters": null
+        }
+      ],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "key_hash": "6d7996981916cfec724d4d08c5abbd4d636485a5090c90e8d8a13e5b317f07bd",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-14T08:47:18.031832",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-14T08:47:18.031832",
+          "last_used_at": "2026-10-14T08:47:15.139676",
+          "application_name": null,
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9101,
+          "user_id": 3,
+          "key_hash": "5e249ac43c6345bc022cfd360fb5ef6cd79caf7e75ed34482a8bf929a3d72511",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-12T08:47:15.139676",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-12T08:47:15.139676",
+          "last_used_at": "2026-10-13T08:47:15.139676",
+          "application_name": null,
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mFx0nd73BBLV9d3Lw+zSShqNZKU=",
+            "created_at": "2026-10-14T08:47:16.239402",
+            "rotated_at": "2026-10-14T08:47:16.237294",
+            "updated_at": "2026-10-14T08:47:16.239402",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mFx0nd73BBLV9d3Lw+zSShqNZKU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:18.005573",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mFx0nd73BBLV9d3Lw+zSShqNZKU=",
+            "created_at": "2026-10-14T08:47:16.239402",
+            "rotated_at": "2026-10-14T08:47:16.237294",
+            "updated_at": "2026-10-14T08:47:16.239402",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mFx0nd73BBLV9d3Lw+zSShqNZKU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_scopes": 1,
+    "user_api_keys": 1
+  },
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'new-app', 'Old Name', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, created_at, updated_at, last_used_at, user_api_key_client_id) VALUES (9101, 3, encode(sha256(convert_to('old-key-9101', 'UTF8')), 'hex'), now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, created_at, updated_at, last_used_at, user_api_key_client_id) VALUES (9102, 4, encode(sha256(convert_to('other-key-9102', 'UTF8')), 'hex'), now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9102, 9102, 'read', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "recorded_from": {
+    "case": "29200261649a464043e4cedbce2dfd3bbd31cb0dab90d93706dc811d5014fc8f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

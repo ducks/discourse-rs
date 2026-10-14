@@ -1,0 +1,142 @@
+{
+  "name": "create_push",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key.json",
+      "params": {
+        "nonce": "parity-nonce",
+        "scopes": "push,notifications",
+        "client_id": "new-app",
+        "application_name": "New App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "push_url": "https://push.example.com/x"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:47:12.04862",
+  "transaction_started_at": "2026-10-14T08:47:10.566335",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "payload": "mfthIkHU2qizo5dsSw3/2y6F9JZB1hWnE2y9zJlb9qi8N8jxIQjtWt4Qgv7u\nX3jC3xg43oXckooRCYw1GosYlc5ySH3xlbYd+3oKYhoTfDx8srOEoDcV8+uL\nMusdh1u4BOiuecMJd4I/Q8ovj/1LSxmXY+imAfA472ILG2jY3dI71AXET8jc\nAPPQKIAqhD8XZ6VHKKt5cbO5equOcjKGUSxjo8pKho+XFdGanwFvWDdYncOv\nHB4NYmuyr8v/ENl360kXvGP9qWR+zVDfG7tSYwGG7/YpcqcXoDIurJw9Yd8M\nr08jxGyeHooUZHYvbOjHQe2eAgeLNjFl3UswZjU+dA==\n",
+        "instructions": "We just generated a new user API key for you to use with \"New App\", please paste the following key into your application:"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_clients": {
+      "inserted": [
+        {
+          "id": 1,
+          "client_id": "new-app",
+          "created_at": "2026-10-14T08:47:12.079261",
+          "public_key": null,
+          "updated_at": "2026-10-14T08:47:12.079261",
+          "auth_redirect": null,
+          "application_name": "New App"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "push",
+          "created_at": "2026-10-14T08:47:12.091079",
+          "updated_at": "2026-10-14T08:47:12.091079",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        },
+        {
+          "id": 2,
+          "name": "notifications",
+          "created_at": "2026-10-14T08:47:12.092694",
+          "updated_at": "2026-10-14T08:47:12.092694",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "key_hash": "4b9d4038e7adc927eab0b4f6b154112fe422844dccded2e10362190d07a863d8",
+          "push_url": "https://push.example.com/x",
+          "client_id": null,
+          "created_at": "2026-10-14T08:47:12.088757",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-14T08:47:12.088757",
+          "last_used_at": "2026-10-14T08:47:10.566335",
+          "application_name": null,
+          "user_api_key_client_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "c1JAQIhQyodXC7vRbNeWUovYMek=",
+            "created_at": "2026-10-14T08:47:11.055584",
+            "rotated_at": "2026-10-14T08:47:11.054545",
+            "updated_at": "2026-10-14T08:47:11.055584",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "c1JAQIhQyodXC7vRbNeWUovYMek=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:12.060391",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "c1JAQIhQyodXC7vRbNeWUovYMek=",
+            "created_at": "2026-10-14T08:47:11.055584",
+            "rotated_at": "2026-10-14T08:47:11.054545",
+            "updated_at": "2026-10-14T08:47:11.055584",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "c1JAQIhQyodXC7vRbNeWUovYMek=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_clients": 1,
+    "user_api_key_scopes": 1,
+    "user_api_keys": 1
+  },
+  "settings": {
+    "allowed_user_api_push_urls": "https://push.example.com/x"
+  },
+  "recorded_from": {
+    "case": "20a7cb20b28589186c679637ef9616bd5abaec3b5f0c526b5efeae69586340d5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

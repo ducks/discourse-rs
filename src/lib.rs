@@ -144,6 +144,7 @@ pub mod user_updater;
 pub mod username_changer;
 pub mod users;
 pub mod watched_words;
+pub mod wildcard_url;
 pub mod word_watcher;
 
 use std::sync::Arc;

@@ -1,0 +1,75 @@
+{
+  "name": "otp_create",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/otp.json",
+      "params": {
+        "application_name": "OTP App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://api.discourse.org/api/auth_redirect",
+        "padding": "pkcs1"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:47:55.550194",
+  "transaction_started_at": "2026-10-14T08:47:54.542698",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "redirect_url": "https://api.discourse.org/api/auth_redirect?oneTimePassword=RbjDS%2FsnJuvo0e99MtBbWx%2By8gay%2BKWaejDxUbXvz7PR7hXN57sTNkP8K22%2B%0A%2Bh26Nly5%2FkGeCcMJfp%2BHQzPW7zWMYFy7FNHYWwWnzja7JLPWxG0sem1TqOXe%0AkhMLVYRvxvyOpptCybvalDXZYRtbO9k3qL6bPPJiIlxtoWYCXOjY8gsyb1ka%0ASmO0PCR%2BnOLVyk0qY%2Ff6PcVzZHLsmwBj7SsYeTRUI27bbX8XGH1mUt81iIXt%0AZNdR5FP%2BVmuSHV%2F6QbWwO1Inx0NrM8q0OVVGSbXH%2Fca5EtS9lfmPsKj8rF7G%0A1XiL06rPcCJVXGbW4lNVVQftqzBg7B8HDquQvl2%2BwA%3D%3D%0A"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BqepuopR/p0lTYJ9MYUIqEG5SVY=",
+            "created_at": "2026-10-14T08:47:55.000596",
+            "rotated_at": "2026-10-14T08:47:54.999668",
+            "updated_at": "2026-10-14T08:47:55.000596",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BqepuopR/p0lTYJ9MYUIqEG5SVY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:55.558079",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BqepuopR/p0lTYJ9MYUIqEG5SVY=",
+            "created_at": "2026-10-14T08:47:55.000596",
+            "rotated_at": "2026-10-14T08:47:54.999668",
+            "updated_at": "2026-10-14T08:47:55.000596",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BqepuopR/p0lTYJ9MYUIqEG5SVY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "0612abd4e1e8d792fdd5c563c4ef53dddf80fa3cf56a8e6764eaff252efb23d0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

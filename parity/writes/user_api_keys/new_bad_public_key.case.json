@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/new.json?nonce=parity-nonce&scopes=read%2Cwrite&client_id=new-app&application_name=New+App&public_key=not+a+key"
+    }
+  ]
+}

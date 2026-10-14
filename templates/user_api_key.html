@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block title %}{{ heading }} - {{ site_title }}{% endblock %}
+{% block content %}
+{#- user-api-key-new, -result and -otp: the authorization a member gives
+    an application, the key it was given, and the one-time password
+    request. The buttons are plain forms posting to the same actions the
+    Ember controllers call, which answer with a redirect or the result. -#}
+<div class="authorize-api-key">
+  {%- if kind == "result" %}
+  <p>{{ instructions }}</p>
+  <div class="user-api-key-display">
+    <code id="user-api-key-payload">{{ payload }}</code>
+  </div>
+  {%- else %}
+  <h1>{{ heading }}</h1>
+  {%- if kind == "no_trust_level" %}
+  <p class="error-message">{{ error }}</p>
+  {%- else if kind == "generic_error" %}
+  <p class="error-message">{{ error }}</p>
+  {%- else if kind == "otp" %}
+  <form method="post" action="{{ base_path }}/user-api-key/otp">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+    {%- for (name, value) in fields %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {%- endfor %}
+    <button class="btn btn-primary" type="submit">{{ authorize_label }}</button>
+  </form>
+  {%- else %}
+  <div class="authorize-api-key__user">
+    <span class="authorize-api-key__user-label">{{ logged_in_as }}</span>
+    <img alt="" class="avatar" height="24" src="{{ avatar_url }}" width="24">
+    <span class="authorize-api-key__username">{{ username }}</span>
+  </div>
+  <div class="authorize-api-key__summary">
+    <div class="authorize-api-key__permissions">
+      <p class="authorize-api-key__permissions-header">{{ permissions_header }}</p>
+      <ul class="authorize-api-key__scopes">
+        {%- for scope in localized_scopes %}
+        <li>{{ scope }}</li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- if !write_warning.is_empty() %}
+    <div class="authorize-api-key__write-warning authorize-api-key__summary-notice">
+      <p>{{ write_warning }}</p>
+    </div>
+    {%- endif %}
+    {%- if !expiry_notice.is_empty() %}
+    <div class="authorize-api-key__expiry authorize-api-key__summary-detail">
+      <p>{{ expiry_notice }}</p>
+    </div>
+    {%- endif %}
+  </div>
+  {%- if !redirect_uri.is_empty() %}
+  <div class="authorize-api-key__redirect">
+    <p class="authorize-api-key__redirect-url">{{ redirect_warning }} <strong>{{ redirect_uri }}</strong></p>
+  </div>
+  {%- endif %}
+  <form method="post" action="{{ base_path }}/user-api-key">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+    {%- for (name, value) in fields %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {%- endfor %}
+    <div class="authorize-api-key__buttons">
+      <button class="btn btn-primary" type="submit">{{ authorize_label }}</button>
+      <a class="btn btn-default" href="{{ base_path }}/">{{ deny_label }}</a>
+    </div>
+  </form>
+  {%- endif %}
+  {%- endif %}
+</div>
+{% endblock %}

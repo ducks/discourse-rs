@@ -1,0 +1,94 @@
+{
+  "name": "new_ready_registered_client",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/new.json?nonce=parity-nonce&scopes=read%2Cnotifications&client_id=registered-app&auth_redirect=discourse%3A%2F%2Fauth_redirect"
+    }
+  ],
+  "started_at": "2026-10-14T08:47:51.962766",
+  "transaction_started_at": "2026-10-14T08:47:49.065846",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "state": "ready",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "nonce": "parity-nonce",
+        "client_id": "registered-app",
+        "auth_redirect": "discourse://auth_redirect",
+        "redirect_uri": null,
+        "push_url": null,
+        "localized_scopes": [
+          "Read all",
+          "Read and clear notifications"
+        ],
+        "scopes": "read,notifications",
+        "write_scope": false,
+        "padding": null,
+        "expires_in_seconds": null,
+        "expires_at": null,
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dooyAvXIkMP2Xna8Riw0z+VJClk=",
+            "created_at": "2026-10-14T08:47:49.490689",
+            "rotated_at": "2026-10-14T08:47:49.488966",
+            "updated_at": "2026-10-14T08:47:49.490689",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "dooyAvXIkMP2Xna8Riw0z+VJClk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:51.971239",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dooyAvXIkMP2Xna8Riw0z+VJClk=",
+            "created_at": "2026-10-14T08:47:49.490689",
+            "rotated_at": "2026-10-14T08:47:49.488966",
+            "updated_at": "2026-10-14T08:47:49.490689",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "dooyAvXIkMP2Xna8Riw0z+VJClk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'registered-app', 'Registered App', '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n', 'discourse://auth_redirect', now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_key_client_scopes (id, user_api_key_client_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now(), now())",
+    "INSERT INTO user_api_key_client_scopes (id, user_api_key_client_id, name, created_at, updated_at) VALUES (9102, 9101, 'notifications', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "cb2c060befea1aba326989270d67adaa71bfe1addb5e2895a52925e70d53e2e4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
