@@ -78,6 +78,7 @@ ICONS=(
   discourse-compress
   discourse-bookmark-clock
   discourse-bell-exclamation
+  discourse-chevron-expand
   discourse-bell-slash
   discourse-bell-one
   far-bell

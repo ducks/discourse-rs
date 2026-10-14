@@ -297,6 +297,250 @@ fn row(
     Ok(out)
 }
 
+/// The mobile view's categories (`mobile_category_page_style`):
+/// CategoriesWithFeaturedTopics (`show_topics`) or CategoriesOnly, each a
+/// list of ParentCategoryRow's mobile cards, then the muted ones behind
+/// their toggle.
+pub fn render_mobile(
+    cx: &ListContext,
+    category_list: &Value,
+    muted: &[i64],
+    show_topics: bool,
+) -> Result<String, Unsupported> {
+    let categories: Vec<&Value> = category_list["category_list"]["categories"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .collect();
+    let inner = mobile_categories_only(cx, &categories, muted, show_topics)?;
+    Ok(if show_topics {
+        format!("<div>{inner}</div>")
+    } else {
+        inner
+    })
+}
+
+fn mobile_categories_only(
+    cx: &ListContext,
+    categories: &[&Value],
+    muted: &[i64],
+    show_topics: bool,
+) -> Result<String, Unsupported> {
+    if categories.is_empty() {
+        return Ok(String::new());
+    }
+    let muting = Muting { cx, muted };
+    let period = stat_period(categories);
+    let with_topics = if show_topics { " with-topics" } else { "" };
+    let filtered: Vec<&&Value> = categories.iter().filter(|c| !muting.is_hidden(c)).collect();
+    let mut out = String::new();
+    if !filtered.is_empty() {
+        out.push_str(&format!("<div class=\"category-list{with_topics}\">"));
+        for c in &filtered {
+            out.push_str(&mobile_card(
+                cx,
+                &muting,
+                c,
+                period,
+                ListType::Normal,
+                show_topics,
+            )?);
+        }
+        out.push_str("</div>");
+    }
+    let muted_categories: Vec<&&Value> = if categories[0]["parent_category_id"].is_null() {
+        categories.iter().filter(|c| muting.has_muted(c)).collect()
+    } else {
+        Vec::new()
+    };
+    if !muted_categories.is_empty() {
+        let show = filtered.is_empty();
+        let toggle = if filtered.is_empty() {
+            String::new()
+        } else {
+            crate::topic_list_view::icon("plus", None)
+        };
+        out.push_str(&format!(
+            "<div class=\"muted-categories\"><a class=\"muted-categories-link\" href><h3 class=\"muted-categories-heading\">{}</h3>{toggle}</a><div class=\"category-list{with_topics}{}\">",
+            escape(&t(cx, "categories.muted")),
+            if show { "" } else { " hidden" },
+        ));
+        for c in muted_categories {
+            out.push_str(&mobile_card(
+                cx,
+                &muting,
+                c,
+                period,
+                ListType::Muted,
+                show_topics,
+            )?);
+        }
+        out.push_str("</div></div>");
+    }
+    Ok(out)
+}
+
+/// ParentCategoryRow in the mobile view: the category's card.
+fn mobile_card(
+    cx: &ListContext,
+    muting: &Muting,
+    c: &Value,
+    period: &str,
+    list: ListType,
+    show_topics: bool,
+) -> Result<String, Unsupported> {
+    let Some(category) = c["id"].as_i64().and_then(|id| cx.categories.get(&id)) else {
+        return Ok(String::new());
+    };
+    if c["uploaded_logo"].is_object() {
+        return Err(Unsupported("category logos on the categories page"));
+    }
+    let is_muted = muting.styled_muted(category.id, list);
+    let mut out = format!(
+        "<div class=\"category-list-item category {}\" data-category-id=\"{}\" data-notification-level=\"{}\" style=\"border-color: #{} \"><table class=\"topic-list\"><tbody>",
+        if is_muted { "muted" } else { "" },
+        category.id,
+        notification_level(c["notification_level"].as_i64().unwrap_or(1)),
+        category.color
+    );
+    // CategoryTitleLink
+    let url = format!("{}/c/{}/{}", cx.base_path, category.slug, category.id);
+    out.push_str(&format!(
+        "<tr><th class=\"main-link\"><h3><a class=\"category-title-link\" href=\"{url}\"><div class=\"category-text-title\"><span class=\"category-name\"><span>{}</span></span></div></a></h3></th></tr>",
+        category_badge_html(cx, category, false, false)
+    ));
+    if let Some(e) = c["description_excerpt"].as_str().filter(|e| !e.is_empty()) {
+        out.push_str(&format!(
+            "<tr class=\"category-description\"><td colspan=\"3\"><div><span>{e}</span></div></td></tr>"
+        ));
+    }
+    // Category#featuredTopics
+    if show_topics && !is_muted {
+        let featured = c["num_featured_topics"]
+            .as_u64()
+            .filter(|n| *n > 0)
+            .unwrap_or(2) as usize;
+        for topic in c["topics"].as_array().into_iter().flatten().take(featured) {
+            out.push_str(&mobile_category_topic(cx, topic));
+        }
+    }
+    // SubCategoryItem: not the ones muted for this list.
+    let subs: Vec<String> = muting
+        .subs(c)
+        .into_iter()
+        .filter(|id| !muting.styled_muted(*id, list))
+        .filter_map(|id| cx.categories.get(&id))
+        .map(|sub| category_badge(cx, sub))
+        .collect();
+    if !subs.is_empty() {
+        out.push_str(&format!(
+            "<tr class=\"subcategories-list\"><td><div class=\"subcategories\">{}</div></td></tr>",
+            subs.join("")
+        ));
+    }
+    out.push_str("</tbody></table>");
+    // statTotal, then the period's stat unless it fell back to all time.
+    let all = c["topics_all_time"].as_i64().unwrap_or(0);
+    let total = t_count(
+        cx,
+        "categories.topic_stat_all_time",
+        all,
+        &[(
+            "number",
+            &format!("<span class=\"value\">{}</span>", number(all)),
+        )],
+    );
+    out.push_str(&format!(
+        "<footer class=\"clearfix category-topics-count\"><div class=\"category-stat\"><a href=\"{url}\">{total}</a></div>"
+    ));
+    let stat = c[format!("topics_{period}")].as_i64().unwrap_or(0);
+    if period != "all" && stat > 0 {
+        let unit = t(cx, &format!("categories.topic_stat_unit.{period}"));
+        let stat_html = t_count(
+            cx,
+            "categories.topic_stat",
+            stat,
+            &[
+                (
+                    "number",
+                    &format!("<span class=\"value\">{}</span>", number(stat)),
+                ),
+                (
+                    "unit",
+                    &format!("<span class=\"unit\">{}</span>", escape(&unit)),
+                ),
+            ],
+        );
+        out.push_str(&format!(
+            "<div class=\"category-stat\"><a href=\"{url}\">{stat_html}</a></div>"
+        ));
+    }
+    out.push_str("</footer></div>");
+    Ok(out)
+}
+
+/// MobileCategoryTopic: a featured topic's row in a category card.
+fn mobile_category_topic(cx: &ListContext, topic: &Value) -> String {
+    let id = topic["id"].as_i64().unwrap_or(0);
+    let mut classes = String::from("category-topic-link");
+    if topic["archived"] == true {
+        classes.push_str(" archived");
+    }
+    // Topic#visited
+    let highest = topic["highest_post_number"].as_i64().unwrap_or(0);
+    if topic["last_read_post_number"]
+        .as_i64()
+        .is_some_and(|read| read >= highest)
+    {
+        classes.push_str(" visited");
+    }
+    let url = crate::topic_list_view::last_unread_url(cx, topic);
+    // topicLinkHTML
+    let title = crate::topic_list_view::emoji_unescape(
+        s(&topic["fancy_title"]),
+        &cx.settings,
+        cx.base_path,
+    );
+    let unseen = if topic["unseen"] == true {
+        " <span class=\"badge-notification new-topic\"></span>"
+    } else {
+        ""
+    };
+    // coldAgeClass and ageWithTooltip of last_posted_at
+    let age = match date(&topic["last_posted_at"]) {
+        Some(at) => {
+            let days = (cx.now - at).num_milliseconds() as f64 / 86_400_000.0;
+            let [low, medium, high] = cx.settings.cold_age_days;
+            let cold = if days > high {
+                " coldmap-high"
+            } else if days > medium {
+                " coldmap-med"
+            } else if days > low {
+                " coldmap-low"
+            } else {
+                ""
+            };
+            format!(
+                "<span class=\"age{cold}\"><span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span></span>",
+                escape(&long_date(cx, at)),
+                at.timestamp_millis(),
+                escape(&relative_age_tiny(cx, at))
+            )
+        }
+        None => "<span class=\"age\"></span>".to_string(),
+    };
+    // PostCountOrBadges, badges enabled
+    let count = if topic["unread_posts"].as_i64().unwrap_or(0) > 0 {
+        crate::topic_list_view::topic_post_badges(cx, topic, &url)
+    } else {
+        crate::topic_list_view::replies_div(cx, topic)
+    };
+    format!(
+        "<tr class=\"{classes}\"><td class=\"main-link\"><div class=\"topic-inset\"><span class=\"topic-statuses\">{}</span> <a href=\"{url}\" class=\"title\" data-topic-id=\"{id}\">{title}</a>{unseen} {age}</div></td><td class=\"num posts\">{count}</td></tr>",
+        topic_statuses(cx, topic)
+    )
+}
+
 /// CategoriesTopicList for `latest`.
 fn latest_topics(cx: &ListContext, doc: &Value) -> String {
     let topics: Vec<&Value> = doc["topic_list"]["topics"]

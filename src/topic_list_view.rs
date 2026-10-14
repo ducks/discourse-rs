@@ -117,6 +117,7 @@ pub struct ListContext<'a> {
 /// The site settings the rows read.
 pub struct ListSettings {
     pub show_pinned_excerpt_desktop: bool,
+    pub show_pinned_excerpt_mobile: bool,
     pub suppress_uncategorized_badge: bool,
     pub uncategorized_category_id: i64,
     pub tag_style: String,
@@ -126,6 +127,8 @@ pub struct ListSettings {
     pub cold_age_days: [f64; 3],
     pub relative_date_duration: i64,
     pub avatar_size_24: i64,
+    /// getRawAvatarSize(48), the mobile rows' "large" avatar.
+    pub avatar_size_48: i64,
     pub prioritize_name: bool,
     pub inline_emoji: bool,
     pub emoji_set: String,
@@ -148,14 +151,19 @@ impl ListSettings {
             .filter_map(|s| s.trim().parse().ok())
             .collect();
         sizes.sort_unstable();
-        let avatar_size_24 = sizes
-            .iter()
-            .copied()
-            .find(|s| *s >= 24)
-            .or(sizes.last().copied())
-            .unwrap_or(24);
+        let raw_size = |size: i64| {
+            sizes
+                .iter()
+                .copied()
+                .find(|s| *s >= size)
+                .or(sizes.last().copied())
+                .unwrap_or(size)
+        };
+        let avatar_size_24 = raw_size(24);
+        let avatar_size_48 = raw_size(48);
         Ok(ListSettings {
             show_pinned_excerpt_desktop: flag("show_pinned_excerpt_desktop")?,
+            show_pinned_excerpt_mobile: flag("show_pinned_excerpt_mobile")?,
             suppress_uncategorized_badge: flag("suppress_uncategorized_badge")?,
             uncategorized_category_id: int("uncategorized_category_id")?,
             tag_style: settings.get("tag_style")?.to_s().to_string(),
@@ -177,6 +185,7 @@ impl ListSettings {
             ],
             relative_date_duration: int("relative_date_duration")?,
             avatar_size_24,
+            avatar_size_48,
             prioritize_name: flag("enable_names")? && !flag("prioritize_username_in_ux")?,
             inline_emoji: flag("enable_inline_emoji_translation")?,
             emoji_set: settings.get("emoji_set")?.to_s().to_string(),
@@ -547,18 +556,138 @@ fn s(v: &Value) -> &str {
     v.as_str().unwrap_or_default()
 }
 
+/// The topic's url (Topic#url), and with a post number past 0 (urlForPostNumber).
+fn topic_url(cx: &ListContext, topic: &Value, post_number: Option<i64>) -> String {
+    let id = topic["id"].as_i64().unwrap_or(0);
+    let slug = match s(&topic["slug"]).trim() {
+        "" => "topic".to_string(),
+        slug => slug.to_string(),
+    };
+    match post_number {
+        Some(n) if n > 0 => format!("{}/t/{slug}/{id}/{n}", cx.base_path),
+        _ => format!("{}/t/{slug}/{id}", cx.base_path),
+    }
+}
+
+/// Topic#lastUnreadUrl, where TopicLink goes: the first unread post.
+pub(crate) fn last_unread_url(cx: &ListContext, topic: &Value) -> String {
+    let highest = topic["highest_post_number"].as_i64().unwrap_or(0);
+    let category = topic["category_id"]
+        .as_i64()
+        .and_then(|id| cx.categories.get(&id));
+    // Without a last read post, Ember's `undefined + 1` is NaN, which no
+    // post number follows.
+    match topic["last_read_post_number"].as_i64() {
+        Some(last_read)
+            if last_read >= highest
+                && category.is_some_and(|c| c.navigate_to_first_post_after_read) =>
+        {
+            topic_url(cx, topic, Some(1))
+        }
+        Some(last_read) => topic_url(cx, topic, Some((last_read + 1).min(highest))),
+        // A null last read post (the message lists send one) is 0 to
+        // Ember's `null + 1`.
+        None if topic["last_read_post_number"].is_null()
+            && topic.get("last_read_post_number").is_some() =>
+        {
+            topic_url(cx, topic, Some(1.min(highest)))
+        }
+        None => topic_url(cx, topic, None),
+    }
+}
+
+/// TopicPostBadges: the unread count and the new dot, each to the first
+/// unread post; empty without either.
+pub(crate) fn topic_post_badges(cx: &ListContext, topic: &Value, url: &str) -> String {
+    let unread_posts = topic["unread_posts"].as_i64().unwrap_or(0);
+    let unseen = topic["unseen"] == true;
+    let mut badges = String::from("<span class=\"topic-post-badges\">");
+    if unread_posts > 0 {
+        let text = t_count(cx, "topic.unread_posts", unread_posts, &[]);
+        // The template's comment leaves a space before the badge.
+        badges.push_str(&format!(
+            " &nbsp;<a aria-description=\"{text}\" class=\"badge badge-notification unread-posts\" href=\"{url}\" title=\"{text}\">{unread_posts}</a>"
+        ));
+    }
+    if unseen {
+        let dot = if cx.member_trust_level.unwrap_or(0) > 0 {
+            " ".to_string()
+        } else {
+            t(cx, "filters.new.lower_title")
+        };
+        badges.push_str(&format!(
+            "&nbsp;<a aria-label=\"{0}\" class=\"badge badge-notification new-topic\" href=\"{url}\" title=\"{0}\">{dot}</a>",
+            t(cx, "topic.new")
+        ));
+    }
+    badges.push_str("</span>");
+    badges
+}
+
+/// ItemRepliesCell as a div (PostCountOrBadges without badges).
+pub(crate) fn replies_div(cx: &ListContext, topic: &Value) -> String {
+    let reply_count = topic["posts_count"].as_i64().unwrap_or(0) - 1;
+    format!(
+        "<div class=\"num posts-map posts{} topic-list-data\"><a aria-label=\"{}\" class=\"badge-posts\" href=\"{}\"><span class='number'>{}</span></a></div>",
+        likes_heat(cx, topic),
+        t_count(cx, "topic.reply_count_link", reply_count, &[]),
+        topic_url(cx, topic, Some(1)),
+        number(cx, reply_count)
+    )
+}
+
 /// One topic's row.
 pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
-    row_for(cx, topic, users, false)
+    row_for(cx, topic, users, false, false)
+}
+
+/// TopicList#lastVisitedTopic: scanning back from the end, past the pinned
+/// topics at the top, the last topic bumped since the member's previous
+/// visit, when an older one follows it.
+pub fn last_visited_topic(topics: &[Value], previous_visit_at: DateTime<Utc>) -> Option<usize> {
+    if topics.len() == 1 {
+        return None;
+    }
+    let start = topics.iter().position(|t| t["pinned"] != true).unwrap_or(0);
+    let bumped = |t: &Value| date(&t["bumped_at"]);
+    let mut older = None;
+    for i in (start..topics.len()).rev() {
+        if bumped(&topics[i]).is_some_and(|at| at > previous_visit_at) {
+            let older: &Value = older?;
+            // The end of the scanned list is newer too: nothing to mark.
+            if bumped(older).is_some_and(|at| at > previous_visit_at) {
+                return None;
+            }
+            return Some(i);
+        }
+        older = Some(&topics[i]);
+    }
+    None
+}
+
+/// The last visited topic's row (class last-visit), then the separator
+/// that says so.
+pub fn last_visited_row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
+    format!(
+        "{}<tr class=\"topic-list-item-separator\"><td class=\"topic-list-data\" colspan=\"6\"><span>{}</span></td></tr>",
+        row_for(cx, topic, users, false, true),
+        escape(&t(cx, "topics.new_messages_marker"))
+    )
 }
 
 /// A suggested topic's row (more-topics): no posters column, and no
 /// pinned excerpt.
 pub fn suggested_row(cx: &ListContext, topic: &Value) -> String {
-    row_for(cx, topic, &[], true)
+    row_for(cx, topic, &[], true, false)
 }
 
-fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) -> String {
+fn row_for(
+    cx: &ListContext,
+    topic: &Value,
+    users: &[Value],
+    suggested: bool,
+    last_visit: bool,
+) -> String {
     let base = cx.base_path;
     let id = topic["id"].as_i64().unwrap_or(0);
     let slug = match s(&topic["slug"]).trim() {
@@ -580,15 +709,25 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         .as_i64()
         .and_then(|id| cx.categories.get(&id));
     let excerpt = topic["excerpt"].as_str().filter(|e| !e.is_empty());
+    // TopicListItem#useMobileLayout
+    let mobile = crate::mobile::mobile_view();
+    let show_pinned_excerpt = if mobile {
+        cx.settings.show_pinned_excerpt_mobile
+    } else {
+        cx.settings.show_pinned_excerpt_desktop
+    };
     let expand_pinned = !suggested
         && flag("pinned")
-        && cx.settings.show_pinned_excerpt_desktop
+        && show_pinned_excerpt
         && ((!cx.expand_all_pinned && flag("pinned_globally")) || cx.expand_all_pinned);
 
     // The row's classes.
     let mut classes = vec!["topic-list-item".to_string()];
     if let Some(c) = category {
         classes.push(format!("category-{}", slug_for(cx, c, 3).replace('/', "-")));
+    }
+    if last_visit {
+        classes.push("last-visit".to_string());
     }
     let unread_posts = topic["unread_posts"].as_i64().unwrap_or(0);
     // Topic#visited: >= for deleted posts at the end of the topic.
@@ -624,26 +763,7 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
 
     let statuses = topic_statuses(cx, topic);
 
-    // TopicLink: to the first unread post.
-    // Without a last read post, Ember's `undefined + 1` is NaN, which no
-    // post number follows.
-    let last_unread_url = match topic["last_read_post_number"].as_i64() {
-        Some(last_read)
-            if last_read >= highest
-                && category.is_some_and(|c| c.navigate_to_first_post_after_read) =>
-        {
-            url_for(1)
-        }
-        Some(last_read) => url_for((last_read + 1).min(highest)),
-        // A null last read post (the message lists send one) is 0 to
-        // Ember's `null + 1`.
-        None if topic["last_read_post_number"].is_null()
-            && topic.get("last_read_post_number").is_some() =>
-        {
-            url_for(1.min(highest))
-        }
-        None => url.clone(),
-    };
+    let last_unread_url = last_unread_url(cx, topic);
     let title_html = emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
     let title_html = if cx.settings.support_mixed_text_direction {
         format!("<span dir=\"auto\">{title_html}</span>")
@@ -796,6 +916,28 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         posters.clear();
     }
 
+    if mobile {
+        let category_link = category.map(|c| category_badge(cx, c)).unwrap_or_default();
+        return mobile_row(
+            cx,
+            topic,
+            users,
+            MobileRow {
+                classes: &classes.join(" "),
+                id,
+                statuses: &statuses,
+                title: &format!(
+                    "<a class=\"title raw-link raw-topic-link\" data-topic-id=\"{id}\" href=\"{last_unread_url}\">{title_html}{read_suffix}</a>"
+                ),
+                excerpt: &excerpt_html,
+                last_unread_url: &last_unread_url,
+                last_post_url: &url_for(highest),
+                category_link: &category_link,
+                tags: &tags,
+            },
+        );
+    }
+
     // RepliesCell: posts_count - 1, heat by likes per post.
     let reply_count = posts_count - 1;
     let ratio = if posts_count < 10 {
@@ -878,6 +1020,128 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
     format!(
         "<tr class=\"{}\" data-topic-id=\"{id}\">{topic_cell}{posters}{replies}{views}{activity}</tr>",
         classes.join(" ")
+    )
+}
+
+/// What a mobile row takes from the desktop one's parts.
+struct MobileRow<'a> {
+    classes: &'a str,
+    id: i64,
+    statuses: &'a str,
+    /// TopicLink
+    title: &'a str,
+    /// TopicExcerpt when the pinned excerpt is expanded, else empty.
+    excerpt: &'a str,
+    last_unread_url: &'a str,
+    last_post_url: &'a str,
+    /// categoryLink, empty without a category.
+    category_link: &'a str,
+    /// discourseTags in the list mode.
+    tags: &'a str,
+}
+
+/// RepliesCell's heat: likes per post past the topic_post_like_heat
+/// settings, from ten posts on.
+fn likes_heat(cx: &ListContext, topic: &Value) -> &'static str {
+    let posts_count = topic["posts_count"].as_i64().unwrap_or(0);
+    let ratio = if posts_count < 10 {
+        0.0
+    } else {
+        topic["like_count"].as_f64().unwrap_or(0.0) / posts_count as f64
+    };
+    let [low, medium, high] = cx.settings.topic_post_like_heat;
+    if ratio > high {
+        " heatmap-high"
+    } else if ratio > medium {
+        " heatmap-med"
+    } else if ratio > low {
+        " heatmap-low"
+    } else {
+        ""
+    }
+}
+
+/// TopicListItem's mobile layout (useMobileLayout): one cell with the
+/// latest poster's avatar, the title, the reply count (or the unread
+/// badge) and a line with the category, the tags and the activity.
+fn mobile_row(cx: &ListContext, topic: &Value, users: &[Value], row: MobileRow) -> String {
+    let base = cx.base_path;
+    let flag = |name: &str| topic[name] == true;
+    // Topic#lastPoster: the poster marked latest, else the first.
+    let posters = topic["posters"].as_array().cloned().unwrap_or_default();
+    let last_poster = posters
+        .iter()
+        .find(|p| s(&p["extras"]).split(' ').any(|e| e == "latest"))
+        .or(posters.first());
+    let avatar = last_poster
+        .and_then(|p| users.iter().find(|u| u["id"] == p["user_id"]))
+        .map(|user| {
+            let username = s(&user["username"]);
+            let name = s(&user["name"]);
+            let display = if cx.settings.prioritize_name && !name.is_empty() {
+                name
+            } else {
+                username
+            };
+            let size = cx.settings.avatar_size_48;
+            let src = s(&user["avatar_template"]).replace("{size}", &size.to_string());
+            let src = if src.starts_with('/') && !src.starts_with("//") && !src.starts_with(base) {
+                format!("{base}{src}")
+            } else {
+                src
+            };
+            format!(
+                "<a aria-label=\"{}\" data-user-card=\"{username}\" href=\"{base}/u/{username}\" tabindex=\"0\"><img alt='' width='48' height='48' src='{src}' class='avatar' title='{}'></a>",
+                escape(&t_with(cx, "latest_poster_link", &[("username", username)])),
+                escape(display)
+            )
+        })
+        .unwrap_or_default();
+    // The new topic dot; TopicPostBadges' unread count goes on the right.
+    let unseen = if flag("unseen") {
+        "<span class=\"topic-post-badges\">&nbsp;<span class=\"badge-notification new-topic\"></span></span>"
+    } else {
+        ""
+    };
+    // PostCountOrBadges
+    let unread_posts = topic["unread_posts"].as_i64().unwrap_or(0);
+    let count = if cx.member_trust_level.is_some() && unread_posts > 0 {
+        topic_post_badges(cx, topic, row.last_unread_url)
+    } else {
+        replies_div(cx, topic)
+    };
+    let created = date(&topic["created_at"]);
+    let bumped = date(&topic["bumped_at"]).or(created);
+    let activity = match (created, bumped) {
+        (Some(created), Some(bumped)) => {
+            let seconds = |d: DateTime<Utc>| d.format("%Y-%m-%dT%H:%M:%S").to_string();
+            // Topic#bumpedAtTitle
+            let title = if seconds(bumped) != seconds(created) {
+                format!(
+                    "{}\n{}",
+                    t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))]),
+                    t_with(cx, "topic.bumped_at", &[("date", &long_date(cx, bumped))])
+                )
+            } else {
+                t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))])
+            };
+            format!(
+                "<span class=\"age activity\" title=\"{title}\"><a href=\"{}\">{}</a></span>",
+                row.last_post_url,
+                relative_date(cx, bumped)
+            )
+        }
+        _ => String::new(),
+    };
+    format!(
+        "<tr class=\"{classes}\" data-topic-id=\"{id}\"><td class=\"topic-list-data\"><div class=\"pull-left\">{avatar}</div><div class=\"topic-item-metadata right\"><div class=\"main-link\">{statuses}{title}{unseen}{excerpt}</div><div class=\"pull-right\">{count}</div><div class=\"topic-item-stats clearfix\"><span class=\"topic-item-stats__category-tags\">{category}{tags}</span><div class=\"num activity last\">{activity}</div></div></div></td></tr>",
+        classes = row.classes,
+        id = row.id,
+        statuses = format_args!("<span class=\"topic-statuses\">{}</span>", row.statuses),
+        title = row.title,
+        excerpt = row.excerpt,
+        category = row.category_link,
+        tags = row.tags,
     )
 }
 
@@ -1079,6 +1343,7 @@ mod tests {
     fn settings(inline_emoji: bool) -> ListSettings {
         ListSettings {
             show_pinned_excerpt_desktop: true,
+            show_pinned_excerpt_mobile: true,
             suppress_uncategorized_badge: true,
             uncategorized_category_id: 1,
             tag_style: "simple".into(),
@@ -1088,11 +1353,75 @@ mod tests {
             cold_age_days: [14.0, 30.0, 60.0],
             relative_date_duration: 30,
             avatar_size_24: 24,
+            avatar_size_48: 48,
             prioritize_name: false,
             inline_emoji,
             emoji_set: "twitter".into(),
             support_mixed_text_direction: false,
         }
+    }
+
+    #[test]
+    fn marks_the_last_topic_bumped_since_the_previous_visit() {
+        use serde_json::json;
+        let at = |s: &str| DateTime::parse_from_rfc3339(s).unwrap().with_timezone(&Utc);
+        let topic = |bumped: &str, pinned: bool| json!({"bumped_at": bumped, "pinned": pinned});
+        let visit = at("2026-10-10T00:00:00Z");
+        let topics = vec![
+            topic("2026-01-01T00:00:00Z", true),
+            topic("2026-10-12T00:00:00Z", false),
+            topic("2026-10-11T00:00:00Z", false),
+            topic("2026-10-01T00:00:00Z", false),
+        ];
+        assert_eq!(last_visited_topic(&topics, visit), Some(2));
+        // Everything newer, or everything older: no marker.
+        assert_eq!(last_visited_topic(&topics[..3], visit), None);
+        assert_eq!(
+            last_visited_topic(&topics, at("2026-10-13T00:00:00Z")),
+            None
+        );
+        assert_eq!(last_visited_topic(&topics[1..2], visit), None);
+    }
+
+    #[tokio::test]
+    async fn the_mobile_view_lays_rows_out_as_ember_does() {
+        use serde_json::json;
+        let i18n = crate::i18n::I18n::vendored().unwrap();
+        let categories = HashMap::new();
+        let cx = ListContext {
+            i18n: &i18n,
+            base_path: "",
+            now: Utc::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            member_trust_level: None,
+            settings: settings(false),
+        };
+        let topic = json!({
+            "id": 7, "slug": "hello", "fancy_title": "Hello", "title": "Hello",
+            "posts_count": 3, "highest_post_number": 3,
+            "created_at": "2026-10-01T00:00:00.000Z", "bumped_at": "2026-10-02T00:00:00.000Z",
+            "posters": [
+                {"user_id": 1, "extras": null},
+                {"user_id": 2, "extras": "latest"},
+            ],
+        });
+        let users = vec![
+            json!({"id": 1, "username": "alice", "avatar_template": "/a/{size}.png"}),
+            json!({"id": 2, "username": "bob", "avatar_template": "/b/{size}.png"}),
+        ];
+        let desktop = row(&cx, &topic, &users);
+        assert!(desktop.contains("<td class=\"posters topic-list-data\">"));
+        let mobile = crate::mobile::scope(true, async { row(&cx, &topic, &users) }).await;
+        assert!(mobile.starts_with(
+            "<tr class=\"topic-list-item\" data-topic-id=\"7\"><td class=\"topic-list-data\"><div class=\"pull-left\"><a aria-label=\"bob&#x27;s profile, latest poster\" data-user-card=\"bob\" href=\"/u/bob\" tabindex=\"0\"><img alt='' width='48' height='48' src='/b/48.png' class='avatar' title='bob'></a></div>"
+        ));
+        assert!(mobile.contains("<div class=\"pull-right\"><div class=\"num posts-map posts topic-list-data\"><a aria-label=\"2 replies, jump to first post\" class=\"badge-posts\" href=\"/t/hello/7/1\"><span class='number'>2</span></a></div></div>"));
+        assert!(
+            mobile
+                .contains("<div class=\"num activity last\"><span class=\"age activity\" title=\"")
+        );
+        assert!(!mobile.contains("posters"));
     }
 
     fn emoji_codes(text: &str, inline_emoji: bool) -> Vec<String> {

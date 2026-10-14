@@ -1,11 +1,72 @@
 <!DOCTYPE html>
 {% import "macros.html" as m %}
-{#- The classes the Ember client sets on <html> for a desktop browser
-    without touch; there is no client here to tell otherwise. -#}
-<html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch desktop-view not-mobile-device{{ chrome.html_classes }}">
+{#- The classes the Ember client sets on <html>: DStyles' mobile-view or
+    desktop-view for the layout the page is rendered in (crate::mobile), and
+    sniff-capabilities' touch classes, which the head script below corrects
+    for the browser. -#}
+{%- let mobile = crate::mobile::mobile_view() %}
+{#- The mobile header's buttons (Header::Icons): search, which opens the
+    full search page until the search menu is ported, and the hamburger
+    that opens the sidebar's sections. -#}
+{%- macro search_button() %}
+{%- if chrome.can_search %}
+<li class="header-dropdown-toggle search-dropdown"><button aria-label="Search" class="btn no-text btn-icon icon btn-flat" id="search-button" title="Search" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+{%- endif %}
+{%- endmacro %}
+{%- macro hamburger_button() %}
+<li class="header-dropdown-toggle hamburger-dropdown"><button aria-label="Navigation menu" class="btn no-text btn-icon icon btn-flat" id="toggle-hamburger-menu" title="Navigation menu" aria-haspopup="true" type="button"><svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+{%- endmacro %}
+<html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch{% if mobile %} mobile-view mobile-device{% else %} desktop-view not-mobile-device{% endif %}{{ chrome.html_classes }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      // sniff-capabilities: touch when any pointer is coarse, and the iOS
+      // classes. Then Site#mobileView: below 40rem the page is the mobile
+      // layout. The server renders the one the mobile_view cookie names
+      // (its guess from the user agent without one, crate::mobile), so the
+      // cookie follows the viewport and a page in the wrong layout, or a
+      // window crossing the breakpoint, loads again in the right one.
+      (function () {
+        var html = document.documentElement;
+        var ua = navigator.userAgent;
+        var touch = window.matchMedia("(any-pointer: coarse)").matches;
+        if (touch) {
+          html.classList.remove("no-touch", "discourse-no-touch");
+          html.classList.add("touch", "discourse-touch");
+        }
+        var ipados = ua.indexOf("Mac OS") !== -1 && !/iPhone|iPod/.test(ua) && touch;
+        if (ipados) {
+          html.classList.add("ipados-device");
+        }
+        if (/iPhone|iPod/.test(ua) || ipados) {
+          html.classList.add("ios-device");
+        }
+        var sm = window.matchMedia("(min-width: 40rem)");
+        function sync() {
+          var value = "mobile_view=" + (sm.matches ? "0" : "1");
+          document.cookie = value + "; path={{ base_path }}/; max-age=31536000; samesite=lax";
+          var rendered = html.classList.contains("mobile-view") ? "1" : "0";
+          var wanted = sm.matches ? "0" : "1";
+          // Only when the cookie took, so a browser without cookies keeps
+          // the server's guess instead of reloading forever, and not again
+          // for a page that came back in the wrong layout just now.
+          if (rendered !== wanted && document.cookie.split("; ").indexOf(value) !== -1) {
+            var last = null;
+            try { last = JSON.parse(sessionStorage.getItem("mobile-view-reload")); } catch (_) {}
+            if (last && last.url === location.href && last.wanted === wanted && Date.now() - last.at < 5000) {
+              return;
+            }
+            try {
+              sessionStorage.setItem("mobile-view-reload", JSON.stringify({ url: location.href, wanted: wanted, at: Date.now() }));
+            } catch (_) {}
+            window.location.reload();
+          }
+        }
+        sync();
+        sm.addEventListener("change", sync);
+      })();
+    </script>
     {%- if !chrome.favicon_url.is_empty() %}
     <link rel="icon" type="{{ chrome.favicon_type }}" href="{{ chrome.favicon_url }}">
     {%- endif %}
@@ -47,6 +108,9 @@
     <script src="{{ crate::assets::url(base_path, "floating-ui.core.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.dom.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "float.js") }}"></script>
+    {%- if mobile %}
+    <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "lightbox.js") }}" defer data-lightbox="{{ crate::assets::url(base_path, "photoswipe-lightbox.esm.min.js") }}" data-photoswipe="{{ crate::assets::url(base_path, "photoswipe.esm.min.js") }}"{{ chrome.lightbox_attrs|safe }}></script>
     {%- if !chrome.highlight_js_path.is_empty() %}
     <meta name="discourse-highlight-js" content="{{ chrome.highlight_js_path }}" data-core="{{ crate::assets::url(base_path, "highlightjs-core.min.js") }}"{% if chrome.autohighlight_all_code %} data-all-code{% endif %}>
@@ -108,7 +172,9 @@
                 <div class="home-logo-wrapper-outlet">
                   <div class="title">
                     <a href="{{ base_path }}/">
-                      {%- if chrome.logo_url.is_empty() -%}
+                      {%- if !chrome.mobile_logo_url.is_empty() -%}
+                      <img id="site-logo" class="logo-mobile" src="{{ chrome.mobile_logo_url }}" alt="{{ site_title }}">
+                      {%- else if chrome.logo_url.is_empty() -%}
                       <h1 id="site-text-logo" class="text-logo">{{ site_title }}</h1>
                       {%- else -%}
                       <img id="site-logo" class="logo-big" src="{{ chrome.logo_url }}" alt="{{ site_title }}">
@@ -120,7 +186,9 @@
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
+                    {%- if mobile %}{% call search_button() %}{% endif %}
                     {{- chrome.chat_header_icon|safe }}
+                    {%- if !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
                     {#- The avatar opens the user menu, its notifications
                         fetched as HTML, or closes it when it is open. The
                         badge is the unread count, kept current live. -#}
@@ -146,8 +214,16 @@
                       <a class="btn btn-icon-text btn-primary btn-small login-button" href="{{ base_path }}/login"><svg class="fa d-icon d-icon-user svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true"><use href="#user"></use></svg><span class="d-button-label">Log In</span></a>
                     </span>
                   </span>
-                  <ul class="icons d-header-icons"></ul>
+                  <ul class="icons d-header-icons">
+                    {%- if mobile %}{% call search_button() %}{% endif %}
+                    {%- if !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
+                  </ul>
                   {% endif %}
+                  {%- if !chrome.hamburger.is_empty() %}
+                  {#- The open menu, put in the panel by sidebar.js. -#}
+                  <template id="hamburger-dropdown">{{ chrome.hamburger|safe }}</template>
+                  <script src="{{ crate::assets::url(base_path, "sidebar.js") }}"></script>
+                  {%- endif %}
                 </div>
               </div>
             </div>

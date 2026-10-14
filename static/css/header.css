@@ -223,8 +223,10 @@
   height: 3.25em;
 }
 
-:where(.uc-modernize-foundation-theme) .d-header .title {
-  --d-logo-height: 2.3em;
+@media (width >= 40rem) {
+  :where(.uc-modernize-foundation-theme) .d-header .title {
+    --d-logo-height: 2.3em;
+  }
 }
 
 :where(.uc-modernize-foundation-theme) .d-header-icons .icon {

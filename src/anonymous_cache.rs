@@ -13,8 +13,8 @@
 //! it was sent, compressed when the request accepted it, with the encoding
 //! in the key as Rails keys on brotli; a hit compresses nothing. The key
 //! leaves out
-//! the segments for what the port doesn't vary its pages on (mobile and
-//! crawler layouts, old browsers, the anonymous locale, translation);
+//! the segments for what the port doesn't vary its pages on (the crawler
+//! layout, old browsers, the anonymous locale, translation);
 //! the theme and color scheme cookies stay in it.
 
 use std::collections::HashMap;
@@ -171,6 +171,9 @@ fn key(request: &Request) -> String {
         h(header::ACCEPT),
         h(header::HOST)
     );
+    // key_is_mobile?: the layout the page is rendered in, which the port
+    // decides from the viewport cookie before the user agent (crate::mobile).
+    key.push_str(&format!("|m={}", crate::mobile::decide(headers)));
     // key_has_brotli?, and gzip, which the port negotiates too: the stored
     // body is the one sent, compressed for that encoding.
     let encodings = h(header::ACCEPT_ENCODING);

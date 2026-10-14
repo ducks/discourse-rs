@@ -1,0 +1,17 @@
+# Pages scripts/parity-screenshots --mobile captures (a 390px phone, where
+# Discourse switches to its mobile layout). Same format as
+# parity/screens/pages.
+
+# Anonymous
+/latest
+/categories
+/c/general/4
+/t/parity-fixture-replies-and-posters/35 wait=4000
+/t/cooked-content-basics-for-the-stylesheets/91 wait=4000
+
+# Logged in
+/latest as=admin
+/latest as=user1
+/categories as=user1
+/c/general/4 as=user1
+/t/parity-fixture-replies-and-posters/35 as=user1 wait=4000

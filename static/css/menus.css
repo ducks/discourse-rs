@@ -331,3 +331,77 @@
 .notifications-tracking-content[hidden] {
   display: none;
 }
+
+/* float-kit/d-menu-modal.scss: a menu shown as a bottom sheet in the
+   mobile view (DMenu's modalForMobile), the json-schema-editor variants
+   left out */
+
+/* d-menu-modal.scss:2 */
+.fk-d-menu-modal {
+  z-index: 1300;
+}
+
+/* d-menu-modal.scss:5 */
+.fk-d-menu-modal__grip {
+  position: absolute;
+  top: 2.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-medium);
+  height: 5px;
+  width: 15vw;
+  max-width: 100px;
+  border-radius: 10px;
+}
+
+/* d-menu-modal.scss:17 */
+.fk-d-menu-modal .d-modal__body {
+  padding: 1em 0;
+}
+
+/* d-menu-modal.scss:21 */
+.fk-d-menu-modal h3 {
+  padding-top: .25em;
+}
+
+/* d-menu-modal.scss:26 */
+.fk-d-menu-modal .dropdown-menu li a:focus-visible {
+  outline: 0;
+}
+
+/* d-menu-modal.scss:31 */
+.fk-d-menu-modal .dropdown-menu__item .btn {
+  border-radius: 0;
+}
+
+/* d-menu-modal.scss:36 */
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:focus-visible,
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:active {
+  background: rgba(0,0,0,0);
+  color: var(--primary);
+}
+
+/* d-menu-modal.scss:40 */
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:focus-visible .d-icon,
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:active .d-icon {
+  color: inherit;
+}
+
+/* d-menu-modal.scss:44 */
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:focus-visible.btn-danger,
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:active.btn-danger {
+  background: rgba(0,0,0,0);
+  color: var(--danger);
+}
+
+/* d-menu-modal.scss:48 */
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:focus-visible.btn-danger .d-icon,
+.discourse-touch .fk-d-menu-modal .dropdown-menu__item .btn:active.btn-danger .d-icon {
+  color: var(--danger-hover);
+}
+
+/* d-menu-modal.scss:57 */
+.fk-d-menu-modal .dropdown-menu li > .btn,
+.fk-d-menu-modal .dropdown-menu li > a {
+  padding: .75em 1rem;
+}

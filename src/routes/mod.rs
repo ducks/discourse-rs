@@ -858,6 +858,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(asset),
         )
         .route("/assets/sidebar.js", get(asset))
+        .route("/assets/navigation-bar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))

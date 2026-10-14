@@ -44,9 +44,15 @@
 # parity/screens/setup.sql, is used when it exists. Reset both afterwards
 # (make reset-reference, scripts/db-load --force).
 #
+# --mobile: a phone instead of a desktop browser: a 390x844 viewport, an
+# Android Chrome user agent, touch and the mobile meta viewport. Discourse
+# switches to its mobile layout below 40rem (Site#mobileView reads the
+# viewport, not the user agent). The default page list becomes
+# parity/screens/pages-mobile.
+#
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
 #          [--settings FILE] [--setup FILE] [--agent NAME] [--db NAME]
-#          [--width PX] [--fail-above PCT] [--summary FILE]
+#          [--width PX] [--mobile] [--fail-above PCT] [--summary FILE]
 #          <our-url> [<out-dir>]
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
 # --settings parity/screens/settings, --width 1280. The page list format is
@@ -61,6 +67,7 @@ setup="$root/parity/screens/setup.sql"
 agent="rs-parity"
 db="discourse_rs_screens"
 width=1280
+mobile=""
 fail_above=""
 summary=""
 while [ $# -gt 0 ]; do
@@ -72,6 +79,13 @@ while [ $# -gt 0 ]; do
     --agent) agent="$2"; shift 2 ;;
     --db) db="$2"; shift 2 ;;
     --width) width="$2"; shift 2 ;;
+    --mobile)
+      mobile=1
+      width=390
+      if [ "$pages" = "$root/parity/screens/pages" ]; then
+        pages="$root/parity/screens/pages-mobile"
+      fi
+      shift ;;
     --fail-above) fail_above="$2"; shift 2 ;;
     --summary) summary="$(realpath -m "$2")"; shift 2 ;;
     -*) echo "unknown option $1" >&2; exit 64 ;;
@@ -79,7 +93,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> [<out-dir>]" >&2
+  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--mobile] [--fail-above PCT] [--summary FILE] <our-url> [<out-dir>]" >&2
   exit 64
 fi
 ours="$1"
@@ -110,7 +124,7 @@ fi
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
-  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary" "$settings")
+  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary" "$settings" "$mobile")
 " <<'PYTHON'
 import html
 import json
@@ -122,12 +136,17 @@ import numpy as np
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-reference, ours, pages_file, out, width, fail_above, summary, settings_file = sys.argv[1:]
+reference, ours, pages_file, out, width, fail_above, summary, settings_file, mobile = sys.argv[1:]
 out = Path(out)
 width = int(width)
 fail_above = float(fail_above) if fail_above else None
+mobile = bool(mobile)
 
-HEIGHT = 900
+HEIGHT = 844 if mobile else 900
+MOBILE_UA = (
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
+)
 CRAWLER_UA = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 # The reference's development extras, and anything that moves.
 BASE_CSS = """
@@ -199,7 +218,9 @@ def capture(browser, base, page, path):
     session = SESSIONS.get((base, page["as"])) if page["as"] else None
     context = browser.new_context(
         viewport={"width": width, "height": HEIGHT},
-        user_agent=page["ua"],
+        user_agent=page["ua"] or (MOBILE_UA if mobile else None),
+        is_mobile=mobile,
+        has_touch=mobile,
         reduced_motion="reduce",
         storage_state=session,
     )

@@ -21,6 +21,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/buttons.css"),
     include_str!("../static/css/d-icon.css"),
     include_str!("../static/css/header.css"),
+    include_str!("../static/css/menu-panel.css"),
     include_str!("../static/css/navs.css"),
     include_str!("../static/css/welcome-banner.css"),
     include_str!("../static/css/topic-list.css"),
@@ -53,6 +54,8 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/spoiler-alert.css"),
+    // The mobile view's rules, last as each follows its base rule.
+    include_str!("../static/css/mobile.css"),
 );
 
 const CSS: &str = "text/css; charset=utf-8";
@@ -164,6 +167,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/quote-controls.js"),
     ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
+    (
+        "navigation-bar.js",
+        JS,
+        include_str!("../static/js/navigation-bar.js"),
+    ),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (
         "discourse-reactions.js",

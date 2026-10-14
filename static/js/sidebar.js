@@ -1,9 +1,11 @@
 // The sidebar's client state, as Ember keeps it: the header button hides
 // the sidebar (discourse_sidebar-hidden), a section header collapses its
 // section (discourse_sidebar-section-<name>-collapsed), and More opens the
-// secondary community links. Runs right after the sidebar is parsed, and
-// again on each page swapped in (page.js), so the stored state applies
-// before the page paints.
+// secondary community links. In the mobile view the header's hamburger
+// opens the same sections in a slide-in panel (HamburgerDropdownWrapper),
+// from the #hamburger-dropdown template. Runs right after the sidebar is
+// parsed, and again on each page swapped in (page.js), so the stored state
+// applies before the page paints.
 (function () {
   "use strict";
 
@@ -101,13 +103,9 @@
   // For scripts that redraw sections (chat's, after a membership change).
   Discourse.setSidebarSectionExpanded = setSectionExpanded;
 
-  // Stored state. A section holding the current page stays open
-  // (expandWhenActive).
-  Discourse.onPage(function () {
-    if (getItem("sidebar-hidden") === "true") {
-      setSidebarShown(false);
-    }
-    document
+  // A section holding the current page stays open (expandWhenActive).
+  function applyCollapsed(root) {
+    root
       .querySelectorAll(".sidebar-section[data-section-name]")
       .forEach(function (section) {
         var name = section.getAttribute("data-section-name");
@@ -119,9 +117,69 @@
           setSectionExpanded(section, false);
         }
       });
+  }
+
+  // Stored state.
+  Discourse.onPage(function () {
+    if (getItem("sidebar-hidden") === "true") {
+      setSidebarShown(false);
+    }
+    applyCollapsed(document);
   });
 
+  // HamburgerDropdownWrapper's CLOSE_ON_CLICK_SELECTORS: following a link
+  // closes the menu.
+  var CLOSE_ON_CLICK =
+    "a[href], .sidebar-section-header-button, .sidebar-section-link:not(.--link-button)";
+
+  function hamburgerOpen() {
+    return !!document.querySelector(".d-header .hamburger-dropdown-wrapper");
+  }
+
+  function setHamburgerOpen(open) {
+    var toggle = document.querySelector(".hamburger-dropdown");
+    var button = document.getElementById("toggle-hamburger-menu");
+    var template = document.getElementById("hamburger-dropdown");
+    if (!toggle || !button || !template) {
+      return;
+    }
+    if (open && !hamburgerOpen()) {
+      var icons = document.querySelector(".d-header .d-header-icons");
+      icons.after(template.content.cloneNode(true));
+      applyCollapsed(document.querySelector(".hamburger-dropdown-wrapper"));
+      toggle.className = "active " + toggle.className;
+      button.setAttribute("aria-expanded", "");
+    } else if (!open) {
+      document
+        .querySelectorAll(
+          ".d-header .hamburger-dropdown-wrapper, .d-header .header-cloak"
+        )
+        .forEach(function (element) {
+          element.remove();
+        });
+      toggle.classList.remove("active");
+      button.removeAttribute("aria-expanded");
+    }
+  }
+
   document.addEventListener("click", function (event) {
+    if (event.target.closest("#toggle-hamburger-menu")) {
+      setHamburgerOpen(!hamburgerOpen());
+      return;
+    }
+    if (hamburgerOpen()) {
+      if (event.target.closest(".header-cloak")) {
+        setHamburgerOpen(false);
+        return;
+      }
+      if (
+        event.target.closest(".hamburger-panel") &&
+        event.target.closest(CLOSE_ON_CLICK)
+      ) {
+        setHamburgerOpen(false);
+      }
+    }
+
     var toggle = event.target.closest(".btn-sidebar-toggle");
     if (toggle) {
       var nav = document.getElementById("d-sidebar");
@@ -149,6 +207,25 @@
     }
 
     var trigger = event.target.closest(".sidebar-more-section-trigger");
+    // In the mobile view More is a bottom sheet (its DMenu's
+    // modalForMobile), with the links the hidden menu beside it holds.
+    if (trigger && document.documentElement.classList.contains("mobile-view")) {
+      var links = trigger.parentElement.querySelector(".sidebar-more-section-content .dropdown-menu");
+      if (links && Discourse.float) {
+        var content = links.cloneNode(true);
+        var sheet = Discourse.float.menu(trigger, {
+          identifier: "sidebar-more-section",
+          modalForMobile: true,
+          content: content,
+        });
+        content.addEventListener("click", function (e) {
+          if (e.target.closest("a[href]")) {
+            sheet.close();
+          }
+        });
+      }
+      return;
+    }
     if (trigger) {
       var open = trigger.getAttribute("aria-expanded") !== "true";
       closeMenus(trigger);
@@ -164,6 +241,7 @@
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
       closeMenus(null);
+      setHamburgerOpen(false);
     }
   });
 })();
