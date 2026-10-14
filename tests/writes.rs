@@ -559,6 +559,23 @@ fn hide_secrets(doc: &mut Value) {
     walk(doc, &secrets);
 }
 
+/// DateTime#to_s times inside a longer text (a staff log's details), in
+/// whole seconds, taken during the case: `<now>`.
+fn embedded_now(s: &str, started: NaiveDateTime) -> String {
+    static ISO: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00").unwrap()
+    });
+    if !ISO.is_match(s) || timestamp(s).is_some() {
+        return s.to_string();
+    }
+    let floor = started.with_nanosecond(0).unwrap_or(started);
+    ISO.replace_all(s, |c: &regex::Captures| match timestamp(&c[0]) {
+        Some(t) if t >= floor => "<now>".to_string(),
+        _ => c[0].to_string(),
+    })
+    .into_owned()
+}
+
 /// Timestamps at or after the case's start become `<now>`, plugin keys
 /// go.
 fn normalize(value: &Value, started: NaiveDateTime) -> Value {
@@ -576,7 +593,7 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
                 let minutes = ((started - t).num_seconds() as f64 / 60.0).round();
                 Value::String(format!("<now-{minutes}m>"))
             }
-            _ => Value::String(today(&unrandom(s), started.date())),
+            _ => Value::String(today(&embedded_now(&unrandom(s), started), started.date())),
         },
         Value::Array(items) => Value::Array(items.iter().map(|v| normalize(v, started)).collect()),
         Value::Object(map) => Value::Object(

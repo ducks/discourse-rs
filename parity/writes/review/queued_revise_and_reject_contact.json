@@ -1,0 +1,627 @@
+{
+  "name": "queued_revise_and_reject_contact",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9311/perform/revise_and_reject_post",
+      "params": {
+        "version": 0,
+        "revise_reason": "Needs more detail",
+        "revise_feedback": "Please add the steps you tried."
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:32:43.945425",
+  "transaction_started_at": "2026-10-14T02:32:40.68979",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reviewable_perform_result": {
+          "success": true,
+          "remove_reviewable_ids": [
+            9311
+          ],
+          "version": 1,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hi user1, We've reviewed your post in Parity fixture: replies and posters and have some feedback for you. Reason: Needs more detail Feedback: Please add the steps you tried. You can edit your original post below and re-submit to make the suggested changes, or reply to this message if you have any questions. This reply waits for approval in the queue. Thanks, Discourse Moderators",
+          "search_data": "'add':36 'approv':71 'chang':56 'detail':33 'discours':76 'edit':43 'feedback':1A,27,34 'fixtur':7A,20 'hi':11 'make':53 'messag':61 'moder':77 'need':31 'origin':45 'pariti':6A,19 'pleas':35 'post':4A,17,46 'poster':10A,23 'question':66 'queue':74 're':50 're-submit':49 'reason':30 'repli':8A,21,58,68 'review':15 'step':38 'submit':51 'suggest':55 'thank':75 'tri':40 'user1':12 've':14 'wait':69",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T02:32:44.286668",
+          "updated_at": "2026-10-14T02:32:44.286668",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hi user1,\n\nWe've reviewed your post in [Parity fixture: replies and posters](http://localhost:3042/t/parity-fixture-replies-and-posters/35) and have some feedback for you.\n\nReason: Needs more detail\n\nFeedback: Please add the steps you tried.\n\nYou can edit your original post below and re-submit to make the suggested changes, or reply to this message if you have any questions.\n\n--------\n\nThis reply waits for approval in the queue.\n\n--------\n\nThanks,\nDiscourse Moderators",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hi user1,</p>\n<p>We’ve reviewed your post in <a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35\">Parity fixture: replies and posters</a> and have some feedback for you.</p>\n<p>Reason: Needs more detail</p>\n<p>Feedback: Please add the steps you tried.</p>\n<p>You can edit your original post below and re-submit to make the suggested changes, or reply to this message if you have any questions.</p>\n<hr>\n<p>This reply waits for approval in the queue.</p>\n<hr>\n<p>Thanks,<br>\nDiscourse Moderators</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-14T02:32:44.21888",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T02:32:44.218958",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T02:32:44.218958",
+          "word_count": 76,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T02:32:44.28069",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 2,
+          "created_at": "2026-10-14T02:32:44.470534",
+          "updated_at": "2026-10-14T02:32:44.470534",
+          "created_by_id": 1,
+          "reviewable_id": 9311,
+          "reviewable_history_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_scores": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9311,
+            "score": 6,
+            "reason": "fast_typer",
+            "status": 0,
+            "context": null,
+            "user_id": -1,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "reviewed_at": null,
+            "meta_topic_id": null,
+            "reviewable_id": 9311,
+            "reviewed_by_id": null,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 9
+          },
+          "after": {
+            "id": 9311,
+            "score": 6,
+            "reason": "fast_typer",
+            "status": 2,
+            "context": null,
+            "user_id": -1,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "reviewed_at": "2026-10-14T02:32:44.483403",
+            "meta_topic_id": null,
+            "reviewable_id": 9311,
+            "reviewed_by_id": 1,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 9
+          }
+        }
+      ]
+    },
+    "reviewables": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9311,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 0,
+            "payload": {
+              "raw": "This reply waits for approval in the queue.",
+              "tags": null,
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 0,
+            "topic_id": 35,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 3,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          },
+          "after": {
+            "id": 9311,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 2,
+            "payload": {
+              "raw": "This reply waits for approval in the queue.",
+              "tags": null,
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 1,
+            "topic_id": 35,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-14T02:32:44.465794",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 3,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          }
+        }
+      ]
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 3,
+          "topic_id": 45,
+          "created_at": "2026-10-14T02:32:44.065068",
+          "updated_at": "2026-10-14T02:32:44.065068"
+        },
+        {
+          "id": 10,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T02:32:44.076344",
+          "updated_at": "2026-10-14T02:32:44.076344"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": 1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T02:32:44.313334",
+          "reflection": false,
+          "updated_at": "2026-10-14T02:32:44.313334",
+          "link_post_id": 35,
+          "link_topic_id": 35
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Feedback on your post in Parity fixture: replies and posters Hi user1, We've reviewed your post in Parity fixture: replies and posters and have some feedback for you. Reason: Needs more detail Feedback: Please add the steps you tried. You can edit your original",
+          "topic_id": 45,
+          "search_data": "'add':36B 'detail':33B 'edit':43B 'feedback':1A,27B,34B 'fixtur':7A,20B 'hi':11B 'need':31B 'origin':45B 'pariti':6A,19B 'pleas':35B 'post':4A,17B 'poster':10A,23B 'reason':30B 'repli':8A,21B 'review':15B 'step':38B 'tri':40B 'user1':12B 've':14B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 3,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-14T02:32:44.111801",
+          "first_visited_at": "2026-10-14T02:32:44.111801",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T02:32:44.108703"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T02:32:44.329731",
+          "last_visited_at": "2026-10-14T02:32:44.091793",
+          "first_visited_at": "2026-10-14T02:32:44.091793",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T02:32:44.088387"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "feedback-on-your-post-in-parity-fixture-replies-and-posters",
+          "score": null,
+          "title": "Feedback on your post in Parity fixture: replies and posters",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hi user1, \nWe’ve reviewed your post in Parity fixture: replies and posters and have some feedback for you. \nReason: Needs more detail \nFeedback: Please add the steps you tried. \nYou can edit your original post below and &hellip;",
+          "subtype": "system_message",
+          "user_id": 1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-14T02:32:44.218958",
+          "pinned_at": null,
+          "created_at": "2026-10-14T02:32:44.053602",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T02:32:44.345225",
+          "word_count": 76,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Feedback on your post in Parity fixture: replies and posters",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T02:32:44.218958",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 1,
+          "created_at": "2026-10-14T02:32:44.053602",
+          "updated_at": "2026-10-14T02:32:44.17123",
+          "action_type": 12,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 3,
+          "created_at": "2026-10-14T02:32:44.053602",
+          "updated_at": "2026-10-14T02:32:44.195942",
+          "action_type": 13,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T02:32:44.444393",
+          "updated_at": "2026-10-14T02:32:44.444393"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FiMYILt/ksWwXW5ZXwJgOG6nyXY=",
+            "created_at": "2026-10-14T02:32:42.046278",
+            "rotated_at": "2026-10-14T02:32:42.044609",
+            "updated_at": "2026-10-14T02:32:42.046278",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "FiMYILt/ksWwXW5ZXwJgOG6nyXY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:32:43.961001",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FiMYILt/ksWwXW5ZXwJgOG6nyXY=",
+            "created_at": "2026-10-14T02:32:42.046278",
+            "rotated_at": "2026-10-14T02:32:42.044609",
+            "updated_at": "2026-10-14T02:32:42.046278",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "FiMYILt/ksWwXW5ZXwJgOG6nyXY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 64,
+          "context": null,
+          "details": "created_at: 2026-10-02 10:00:00 UTC\nrejected_at: 2026-10-14T02:32:44+00:00\nuser: user1 (User1)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
+          "post_id": null,
+          "subject": null,
+          "topic_id": 35,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T02:32:44.451883",
+          "ip_address": null,
+          "updated_at": "2026-10-14T02:32:44.451883",
+          "category_id": 4,
+          "custom_type": null,
+          "reviewable_id": 9311,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 9311,
+        "performing_username": "admin",
+        "updated_reviewable_ids": [
+          9311
+        ]
+      }
+    ]
+  ],
+  "next_ids": {
+    "post_stats": 52,
+    "posts": 53,
+    "reviewable_histories": 1,
+    "topic_allowed_users": 9,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65,
+    "user_archived_messages": 2,
+    "user_histories": 74
+  },
+  "settings": {
+    "site_contact_username": "admin"
+  },
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9311, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"This reply waits for approval in the queue.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9311, 9311, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9311, 9311, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "c73b61427022cb1929669bcd73be53a1c1811c971d5dac364d69def89fa3a704",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

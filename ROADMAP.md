@@ -198,9 +198,17 @@ Bugs or silent gaps in what is merged, small and independent.
     their cache, the about_stats job, live_post_counts. Left: the about
     page's HTML; category moderators, banner image, localized settings
     and visitor stats are refused), 74. `feat/directory` M
-75. `feat/review-reject-queued-post` M,
+75. ~~`feat/review-reject-queued-post`~~ (done) M (queued posts:
+    approve, reject and its aliases, revise and reject, delete, delete
+    user (as a spammer, account_deleted email); reviewed posts: approve,
+    restore, unhide, reject, keep deleted, delete; AutoQueueHandler's
+    rejections. Left: approving into a closed topic or with tags, an
+    email or plugin fields, unsilencing the author, unhiding a first post,
+    moderators on post reviews; the review list still shows flagged posts
+    only),
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
-    with queued and reviewed posts waits on 75; block_urls on onebox engines)
+    with queued and reviewed posts landed with 75; block_urls on onebox
+    engines)
 77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,
     79. `feat/user-merger` L
 

@@ -1,0 +1,80 @@
+{
+  "name": "queued_delete_not_author",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9311/perform/delete",
+      "params": {
+        "version": 0
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:31:57.368184",
+  "transaction_started_at": "2026-10-14T02:31:56.131127",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kRMW00mC7W1lbItcGf25oVErw0w=",
+            "created_at": "2026-10-14T02:31:56.708678",
+            "rotated_at": "2026-10-14T02:31:56.707482",
+            "updated_at": "2026-10-14T02:31:56.708678",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kRMW00mC7W1lbItcGf25oVErw0w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:31:57.378308",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kRMW00mC7W1lbItcGf25oVErw0w=",
+            "created_at": "2026-10-14T02:31:56.708678",
+            "rotated_at": "2026-10-14T02:31:56.707482",
+            "updated_at": "2026-10-14T02:31:56.708678",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kRMW00mC7W1lbItcGf25oVErw0w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9311, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply waits for approval in the queue.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9311, 9311, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9311, 9311, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "387e15d648f8f54578416e689394fc8770f519ebe67c30977615b46c3c8b7d2b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

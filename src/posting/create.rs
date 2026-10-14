@@ -62,6 +62,10 @@ pub struct NewPost {
     /// Sent by PostsController, which passes the writing device; email and
     /// system messages have none.
     pub from_composer: bool,
+    /// A queued post staff approved (`reviewed_queued_post`, with
+    /// `skip_guardian`): the review queue isn't asked again, and the
+    /// author may post where the reviewer's guardian lets them.
+    pub reviewed_queued_post: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -256,7 +260,7 @@ pub async fn create(
     } else {
         None
     };
-    if new_topic && !new_pm {
+    if new_topic && !new_pm && !args.reviewed_queued_post {
         let allowed = match category_id {
             None => guardian.can_create_topic(&mut conn, s).await?,
             Some(id) => {
@@ -289,16 +293,23 @@ pub async fn create(
         || reply_topic
             .as_ref()
             .is_some_and(|t| t.archetype == "private_message");
-    validate::refuse_unported(
-        &mut conn,
-        ctx,
-        guardian,
-        new_topic,
-        category_id.or(reply_topic.as_ref().and_then(|t| t.category_id)),
-        args.typing_duration_msecs.unwrap_or(0),
-        args.first_post_checks,
-    )
-    .await?;
+    if args.reviewed_queued_post {
+        validate::refuse_watched_words(&mut conn).await?;
+        if user.staged {
+            return Err(Unsupported("approving a staged user's queued post").into());
+        }
+    } else {
+        validate::refuse_unported(
+            &mut conn,
+            ctx,
+            guardian,
+            new_topic,
+            category_id.or(reply_topic.as_ref().and_then(|t| t.category_id)),
+            args.typing_duration_msecs.unwrap_or(0),
+            args.first_post_checks,
+        )
+        .await?;
+    }
 
     // PostCreator#valid?
     if user.suspended() && !args.skip_validations {
@@ -398,7 +409,9 @@ pub async fn create(
         let Some(topic) = &reply_topic else {
             return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
         };
-        if topic.slow_mode_seconds > 0 && !guardian.is_staff() {
+        // A reviewed queued post: the reviewer's guardian, which slow mode
+        // doesn't hold back, and no can_create?(Post, topic).
+        if topic.slow_mode_seconds > 0 && !guardian.is_staff() && !args.reviewed_queued_post {
             return Err(Unsupported("slow mode").into());
         }
         let topic_ctx = TopicCtx::load(&mut conn, s, guardian, topic.id).await?;
@@ -415,7 +428,7 @@ pub async fn create(
             }
             None => false,
         };
-        if !can {
+        if !can && !args.reviewed_queued_post {
             return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
         }
         if topic.closed {
@@ -640,18 +653,27 @@ pub async fn create(
             false,
         ),
         (None, Some(plan)) => {
-            let id =
-                match create_topic(&mut tx, ctx, guardian, &poster, plan, &mut performed).await? {
-                    Ok(id) => id,
-                    Err(refused) => {
-                        tx.rollback().await?;
-                        performed.undo().await?;
-                        return Ok(match refused {
-                            TopicRefused::RateLimited(refused) => Outcome::RateLimited(refused),
-                            TopicRefused::Invalid(errors) => Outcome::Invalid(errors),
-                        });
-                    }
-                };
+            let id = match create_topic(
+                &mut tx,
+                ctx,
+                guardian,
+                &poster,
+                plan,
+                args.advance_draft,
+                &mut performed,
+            )
+            .await?
+            {
+                Ok(id) => id,
+                Err(refused) => {
+                    tx.rollback().await?;
+                    performed.undo().await?;
+                    return Ok(match refused {
+                        TopicRefused::RateLimited(refused) => Outcome::RateLimited(refused),
+                        TopicRefused::Invalid(errors) => Outcome::Invalid(errors),
+                    });
+                }
+            };
             (
                 id,
                 plan.title.clone(),
@@ -1254,6 +1276,7 @@ async fn create_topic(
     guardian: &Guardian,
     poster: &Poster,
     plan: &TopicPlan,
+    advance_draft: bool,
     performed: &mut Performed,
 ) -> Result<Result<i32, TopicRefused>, AppError> {
     let s = ctx.settings;
@@ -1337,7 +1360,8 @@ async fn create_topic(
                 .await?;
         }
     }
-    // after_create: changed_to_category, then the draft sequence.
+    // after_create: changed_to_category, then the draft sequence when
+    // asked (advance_draft).
     if let Some(category_id) = plan.category_id {
         let is_definition: bool =
             sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
@@ -1352,7 +1376,9 @@ async fn create_topic(
             feature_topics_for(conn, s, category_id, None).await?;
         }
     }
-    next_draft_sequence(conn, user_id, &format!("topic_{topic_id}")).await?;
+    if advance_draft {
+        next_draft_sequence(conn, user_id, &format!("topic_{topic_id}")).await?;
+    }
     // set_author_notification_level: watch it.
     change_topic_user(
         conn,

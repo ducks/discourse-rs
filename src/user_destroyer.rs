@@ -8,10 +8,10 @@
 //!
 //! With `delete_posts` the user's posts go through PostDestroyer on the
 //! same transaction (its after-commit jobs held for the commit), with
-//! `delete_as_spammer` their pending flags agreed first.
+//! `delete_as_spammer` their pending flags agreed first, their reviewed
+//! posts rejected and deleted and their queued posts rejected.
 //!
-//! Refused until ported: `delete_as_spammer` on pending ReviewablePost or
-//! ReviewableQueuedPost reviews, `block_urls` on a user with external
+//! Refused until ported: `block_urls` on a user with external
 //! links (Oneboxer's engine check), a category definition post of the
 //! user's, posts PostDestroyer refuses (a pending flag, embeds), associated
 //! groups that put the user in groups, MCP authorizations, active
@@ -164,6 +164,13 @@ pub async fn destroy(
         crate::plugins::user_content_deleting(conn, user_id).await?;
         if opts.delete_as_spammer {
             agree_with_flags(conn, ctx, &actor_user, user_id).await?;
+            let deferred = crate::post_destroyer::Deferred::default();
+            crate::review_posts::reject_for_spammer(conn, ctx, actor, user_id, &deferred).await?;
+            after_commit.extend(
+                deferred
+                    .into_inner()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner),
+            );
         }
         // block_external_urls: refused in refuse_unported when it would act.
         delete_posts(conn, ctx, actor, user_id, opts, &mut after_commit).await?;
@@ -431,21 +438,12 @@ async fn refuse_unported(
     opts: &Options,
 ) -> Result<(), AppError> {
     if opts.delete_posts {
-        // Pending reviewables are the ones offering the actions
-        // agree_with_flags performs.
-        let (flagged, links): (bool, bool) = sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM reviewables WHERE target_created_by_id = $1 AND status = 0 \
-                            AND type IN ('ReviewablePost', 'ReviewableQueuedPost')), \
-                    EXISTS (SELECT 1 FROM topic_links WHERE user_id = $1 AND NOT internal)",
+        let links: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_links WHERE user_id = $1 AND NOT internal)",
         )
         .bind(user_id)
         .fetch_one(&mut *conn)
         .await?;
-        if opts.delete_as_spammer && flagged {
-            return Err(
-                Unsupported("rejecting a deleted spammer's queued or reviewed posts").into(),
-            );
-        }
         if opts.block_urls && links {
             return Err(Unsupported("blocking a deleted user's links (block_urls)").into());
         }
