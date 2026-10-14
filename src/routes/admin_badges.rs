@@ -106,10 +106,8 @@ pub async fn index(
         settings: &settings,
     };
     let base_path = state.config.globals.relative_url_root();
-    // badges.name in the collation Discourse's databases are created
-    // with (en_US.UTF-8), whatever this database's default is.
     let rows: Vec<BadgeRow> = sqlx::query_as(&format!(
-        "{BADGE_ROW_SELECT} ORDER BY b.enabled DESC, bg.position, b.badge_type_id, b.name COLLATE \"en_US\""
+        "{BADGE_ROW_SELECT} ORDER BY b.enabled DESC, bg.position, b.badge_type_id, b.name"
     ))
     .fetch_all(&mut *conn)
     .await?;
