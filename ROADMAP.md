@@ -187,7 +187,7 @@ Bugs or silent gaps in what is merged, small and independent.
     64. `feat/jobs-user-cleanup` S, 65. `feat/review-delete-user` S/M
 66. ~~`refactor/notification-insert`~~ (done) S: one path for the ten
     places that insert notifications, which shelving hooks into
-67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
+67. ~~`feat/dnd-shelving`~~ (done) M, 68. `feat/dnd-schedules` M
 69. `feat/email-unsubscribe` M, 70. `feat/digest-email` L,
     71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
 73. `feat/about-stats` S/M, 74. `feat/directory` M

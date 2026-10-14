@@ -1,0 +1,71 @@
+{
+  "name": "shelved_process_pm",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T02:22:29.253926",
+  "transaction_started_at": "2026-10-14T02:22:28.413501",
+  "responses": [],
+  "changes": {
+    "do_not_disturb_timings": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "ends_at": "2026-10-14T02:12:28.413501",
+          "user_id": 4,
+          "scheduled": false,
+          "starts_at": "2026-10-14T00:22:28.413501"
+        }
+      ],
+      "updated": []
+    },
+    "shelved_notifications": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "notification_id": 9303
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (4, now() - interval '2 hours', now() - interval '10 minutes', false)",
+    "INSERT INTO notifications (id, notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (9303, 6, 4, 35, 2, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\"}', false, true, now() - interval '25 minutes', now() - interval '25 minutes')",
+    "INSERT INTO shelved_notifications (notification_id) VALUES (9303)"
+  ],
+  "enqueue": [
+    [
+      "process_shelved_notifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email in 0s",
+      {
+        "type": "user_private_message",
+        "user_id": 4,
+        "notification_id": 9303,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "original_post_id": 36,
+          "original_post_type": 1,
+          "original_username": "user1",
+          "revision_number": null,
+          "display_username": "user1"
+        },
+        "notification_type": "private_message",
+        "post_id": 36
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "e0ba2faa20f6c7ef37db07cdda97d3b8ec8cfd90c548e2ad64f884d589607676",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

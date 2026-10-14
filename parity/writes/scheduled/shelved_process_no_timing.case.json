@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO notifications (id, notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (9301, 2, 3, 35, 3, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":37,\"original_post_type\":1,\"original_username\":\"user2\",\"revision_number\":null,\"display_username\":\"user2\"}', false, false, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO shelved_notifications (notification_id) VALUES (9301)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (4, now() - interval '2 hours', now() - interval '10 minutes', false)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "process_shelved_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "process_shelved_notifications"
+  ]
+}

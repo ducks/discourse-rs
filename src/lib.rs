@@ -22,6 +22,7 @@ pub mod composer_view;
 pub mod config;
 pub mod current_user;
 pub mod discourse_diff;
+pub mod do_not_disturb;
 pub mod drafts;
 pub mod email;
 pub mod email_logs;

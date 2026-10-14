@@ -41,23 +41,35 @@ const LOCK_SECONDS: i64 = 300;
 
 /// `Jobs.enqueue(name, args)`
 pub async fn enqueue(conn: &mut PgConnection, name: &str, args: Value) -> Result<(), sqlx::Error> {
-    enqueue_in(conn, 0, name, args).await
+    insert(conn, 0, false, name, args).await
 }
 
-/// `Jobs.enqueue_in(seconds, name, args)`
+/// `Jobs.enqueue_in(seconds, name, args)`, due after the delay (marked
+/// delayed even for none, as Rails' scheduled set has it).
 pub async fn enqueue_in(
     conn: &mut PgConnection,
     seconds: i64,
     name: &str,
     args: Value,
 ) -> Result<(), sqlx::Error> {
+    insert(conn, seconds, true, name, args).await
+}
+
+async fn insert(
+    conn: &mut PgConnection,
+    seconds: i64,
+    delayed: bool,
+    name: &str,
+    args: Value,
+) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "INSERT INTO discourse_rs.jobs (name, args, run_at, created_at) \
-         SELECT $1, $2, now + make_interval(secs => $3), now FROM clock_timestamp() AS now",
+        "INSERT INTO discourse_rs.jobs (name, args, run_at, created_at, delayed) \
+         SELECT $1, $2, now + make_interval(secs => $3), now, $4 FROM clock_timestamp() AS now",
     )
     .bind(name)
     .bind(args)
     .bind(seconds as f64)
+    .bind(delayed)
     .execute(conn)
     .await?;
     Ok(())
@@ -198,6 +210,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
     // Jobs::PresenceChannelAutoLeave, every DEFAULT_TIMEOUT.
     ("presence_channel_auto_leave", Duration::from_secs(60)),
     (bookmark_reminders::JOB, Duration::from_secs(300)),
+    (
+        crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS,
+        Duration::from_secs(300),
+    ),
     (housekeeping::UNSILENCE_USERS, Duration::from_secs(15 * 60)),
     (
         housekeeping::PURGE_EXPIRED_IGNORED_USERS,
@@ -373,6 +389,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
         bookmark_reminders::JOB => bookmark_reminders::run(state).await,
+        crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS => {
+            crate::do_not_disturb::process_shelved_notifications(state).await
+        }
         housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
         housekeeping::PURGE_EXPIRED_IGNORED_USERS => {
             housekeeping::purge_expired_ignored_users(state).await

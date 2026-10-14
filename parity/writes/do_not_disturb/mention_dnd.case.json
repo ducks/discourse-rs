@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ],
+  "setup": [
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (2, now() - interval '1 hour', now() + interval '1 hour', false)"
+  ]
+}

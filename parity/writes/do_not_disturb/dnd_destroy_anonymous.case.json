@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/do-not-disturb.json",
+      "params": {}
+    }
+  ]
+}

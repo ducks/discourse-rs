@@ -8,6 +8,7 @@ mod bookmark_writes;
 mod bookmarks;
 mod bus;
 pub(crate) mod composer;
+mod do_not_disturb;
 mod drafts;
 mod emojis;
 mod hashtags;
@@ -149,6 +150,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/bookmarks/{id}/toggle_pin.json",
             put(bookmark_writes::toggle_pin),
+        )
+        .route(
+            "/do-not-disturb",
+            post(do_not_disturb::create).delete(do_not_disturb::destroy),
+        )
+        .route(
+            "/do-not-disturb.json",
+            post(do_not_disturb::create).delete(do_not_disturb::destroy),
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))

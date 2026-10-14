@@ -971,10 +971,13 @@ impl Alerter<'_> {
     }
 }
 
-/// `PostAlerter.push_notification(user, payload)`: push delivery is not
-/// ported, so a user with a push subscription or a push client is
-/// refused.
+/// `PostAlerter.push_notification(user, payload)`: nothing for a user in
+/// do not disturb; push delivery is not ported, so otherwise a user with
+/// a push subscription or a push client is refused.
 pub async fn push_notification(conn: &mut PgConnection, user_id: i32) -> Result<(), AppError> {
+    if crate::notification_create::do_not_disturb(conn, user_id).await? {
+        return Ok(());
+    }
     let push: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
          OR EXISTS (SELECT 1 FROM user_api_keys k \
