@@ -11,6 +11,7 @@ pub mod limits;
 pub mod links;
 pub mod rebake;
 pub mod revise;
+pub mod revise_topic;
 pub mod revisions;
 pub mod search_index;
 pub mod small_action;

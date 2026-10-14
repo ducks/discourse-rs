@@ -1,0 +1,18 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "setup": [
+    "UPDATE topics SET slow_mode_seconds = 600 WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: renamed in slow mode"
+      }
+    }
+  ]
+}

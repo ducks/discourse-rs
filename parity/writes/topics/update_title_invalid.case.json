@@ -1,0 +1,29 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "short"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "THIS TITLE IS SHOUTING ALL THE WAY"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: liked and archived"
+      }
+    }
+  ]
+}

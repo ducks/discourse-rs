@@ -645,11 +645,22 @@ pub async fn base_errors(
     Ok(errors)
 }
 
-/// The topic attributes the Topic model validates on create.
+/// The topic attributes the Topic model validates.
 pub struct TopicInput<'a> {
     pub title: &'a str,
     pub category_id: Option<i32>,
     pub private_message: bool,
+}
+
+/// What differs when validating a saved topic rather than a new one.
+pub struct Persisted {
+    pub topic_id: i32,
+    /// `record.user.try(:admin?)`: the topic's author, not the editor.
+    pub author_admin: bool,
+    /// `title_changed? || category_id_changed?`
+    pub check_title: bool,
+    /// `category_id_changed?`
+    pub check_category: bool,
 }
 
 /// Topic's `validates :title` and `validates :category_id`, after the
@@ -660,14 +671,30 @@ pub async fn validate_topic(
     acting: &Guardian,
     topic: &TopicInput<'_>,
 ) -> Result<Vec<String>, AppError> {
+    validate_topic_with(conn, ctx, acting, topic, None).await
+}
+
+/// [`validate_topic`] for a new topic (`persisted` None) or a saved one,
+/// whose title is validated only when it or the category changed and
+/// whose duplicates leave the topic itself out.
+pub async fn validate_topic_with(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    topic: &TopicInput<'_>,
+    persisted: Option<&Persisted>,
+) -> Result<Vec<String>, AppError> {
     let s = ctx.settings;
     let mut errors = Vec::new();
     let title_attr = "activerecord.attributes.topic.title";
     let title = topic.title;
-    if title.trim().is_empty() {
+    let author_admin = persisted.map_or(acting.is_admin(), |p| p.author_admin);
+    if persisted.is_some_and(|p| !p.check_title) {
+        // An unchanged title in an unchanged category isn't validated.
+    } else if title.trim().is_empty() {
         errors.push(ctx.full_message(title_attr, &ctx.t("errors.messages.blank")));
     } else {
-        let (min, max) = if acting.is_admin() {
+        let (min, max) = if author_admin {
             (1, s.get("max_topic_title_length")?.to_i())
         } else if topic.private_message {
             (
@@ -743,19 +770,36 @@ pub async fn validate_topic(
         // unique_among
         let rule = s.get("duplicate_topic_titles")?.to_s();
         if rule != "allowed" && !topic.private_message {
+            let own_id = persisted.map_or(0, |p| p.topic_id);
             let exists: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM topics WHERE lower(title) = $1 AND deleted_at IS NULL)",
+                "SELECT EXISTS (SELECT 1 FROM topics WHERE lower(title) = $1 AND deleted_at IS NULL \
+                   AND id <> $2)",
             )
             .bind(title.to_lowercase())
+            .bind(own_id)
             .fetch_one(&mut *conn)
             .await?;
             if exists {
-                return Err(Unsupported("duplicate topic titles").into());
+                if persisted.is_none() {
+                    return Err(Unsupported("duplicate topic titles").into());
+                }
+                if let Some(url) =
+                    duplicate_title_url(conn, ctx, acting, topic, own_id, &rule).await?
+                {
+                    errors.push(
+                        ctx.i18n
+                            .t_with("errors.messages.topic_title_already_used", &[("url", &url)])
+                            .unwrap_or_default(),
+                    );
+                }
             }
         }
     }
     // category_id: present, and not uncategorized, unless allowed.
-    if !s.get("allow_uncategorized_topics")?.truthy() && !topic.private_message {
+    if persisted.is_none_or(|p| p.check_category)
+        && !s.get("allow_uncategorized_topics")?.truthy()
+        && !topic.private_message
+    {
         let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
         match topic.category_id {
             None => errors.push(ctx.full_message(
@@ -770,4 +814,48 @@ pub async fn validate_topic(
         }
     }
     Ok(errors)
+}
+
+/// UniqueAmongValidator's first duplicate (by id) among
+/// `duplicate_title_candidates`: listable topics in the same category, and
+/// with `disallowed` those the acting user can see too (secured, listed
+/// unless they may see unlisted ones). Its `url`; None when no duplicate
+/// is a candidate.
+async fn duplicate_title_url(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    topic: &TopicInput<'_>,
+    own_id: i32,
+    rule: &str,
+) -> Result<Option<String>, AppError> {
+    let secure = acting.secure_category_ids(&mut *conn, ctx.settings).await?;
+    let found: Option<(i32, Option<String>)> = sqlx::query_as(
+        "SELECT id, slug FROM topics \
+         WHERE deleted_at IS NULL AND lower(title) = $1 AND id <> $2 \
+           AND archetype <> 'private_message' \
+           AND (category_id IS NOT DISTINCT FROM $3 \
+                OR ($4 AND (category_id IS NULL OR category_id IN \
+                      (SELECT id FROM categories WHERE NOT read_restricted OR id = ANY($5))) \
+                    AND ($6 OR visible))) \
+         ORDER BY id LIMIT 1",
+    )
+    .bind(topic.title.to_lowercase())
+    .bind(own_id)
+    .bind(topic.category_id)
+    .bind(rule == "disallowed")
+    .bind(&secure)
+    .bind(acting.can_see_unlisted_topics())
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((id, slug)) = found else {
+        return Ok(None);
+    };
+    let slug = slug.ok_or(Unsupported("a duplicate topic without its slug"))?;
+    let base = crate::url::Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    }
+    .base_url()?;
+    Ok(Some(format!("{base}/t/{slug}/{id}")))
 }

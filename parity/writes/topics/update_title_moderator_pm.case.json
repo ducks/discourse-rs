@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/42.json",
+      "params": {
+        "title": "Parity fixture: a message renamed by staff"
+      }
+    }
+  ]
+}

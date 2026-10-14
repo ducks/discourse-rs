@@ -85,6 +85,7 @@ mod topic_excerpts;
 mod topic_notifications;
 mod topic_status;
 mod topic_timer;
+mod topic_update;
 mod topic_voting;
 mod topics;
 mod user_api_key_auth;
@@ -429,9 +430,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/t/{id}",
-            cached!(get(topics::show_by_id)).delete(post_destroy::destroy_topic),
+            cached!(get(topics::show_by_id))
+                .delete(post_destroy::destroy_topic)
+                .put(topic_update::update_by_id),
         )
-        .route("/t/{slug}/{id}", cached!(get(topics::show_with_slug)))
+        .route(
+            "/t/{slug}/{id}",
+            cached!(get(topics::show_with_slug)).put(topic_update::update_with_slug),
+        )
         .route(
             "/t/{slug}/{id}/{post_number}",
             cached!(get(topics::show_post)),

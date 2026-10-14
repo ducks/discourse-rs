@@ -1,0 +1,16 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0,
+    "topic_featured_link_enabled": false
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "featured_link": "https://example.com/featured"
+      }
+    }
+  ]
+}

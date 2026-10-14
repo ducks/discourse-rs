@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/4.json",
+      "params": {
+        "title": "Community guidelines, renamed"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/4/revisions/latest.json"
+    }
+  ]
+}

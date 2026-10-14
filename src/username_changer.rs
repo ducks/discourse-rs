@@ -799,7 +799,7 @@ async fn sync_category_description(
 }
 
 /// `Category.first_paragraph_description(cooked)`
-fn first_paragraph_description(cooked: &str) -> Option<String> {
+pub(crate) fn first_paragraph_description(cooked: &str) -> Option<String> {
     let dom = parse(cooked);
     for img in all_elements(&dom)
         .into_iter()

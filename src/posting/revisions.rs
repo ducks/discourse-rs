@@ -457,5 +457,14 @@ async fn serialize(
     if diff_error {
         out.insert("diff_error".into(), json!(true));
     }
+    // The compared fields PostRevisor's track_topic_field adds.
+    for k in ["archetype", "featured_link"] {
+        if field(previous, k) != field(current, k) {
+            out.insert(
+                format!("{k}_changes"),
+                json!({"previous": field(previous, k), "current": field(current, k)}),
+            );
+        }
+    }
     Ok(RevisionResult::Found(Value::Object(out)))
 }
