@@ -148,10 +148,10 @@ Bugs or silent gaps in what is merged, small and independent.
     aren't uploads (letter avatars) are treated as unreachable for
     FastImage, as the reference's container finds them; production Rails
     would size them
-44. `feat/cooked-decorators-js` M: run once per post, swapped-in posts
+44. ~~`feat/cooked-decorators-js`~~ (done) M: run once per post, swapped-in posts
     included
-45. `feat/float-positioner` S, 46. `feat/user-card` M
-47. `feat/lightbox` M (PhotoSwipe), 48. ~~`feat/highlight-js`~~ (done) M (posts, the
+45. ~~`feat/float-positioner`~~ (done) S, 46. ~~`feat/user-card`~~ (done) M
+47. ~~`feat/lightbox`~~ (done) M (PhotoSwipe), 48. ~~`feat/highlight-js`~~ (done) M (posts, the
     composer's preview and chat messages; the rich editor's code blocks
     wait on the rich editor),
     49. ~~`feat/local-dates`~~ (done) M (moment and moment-timezone
@@ -159,7 +159,7 @@ Bugs or silent gaps in what is merged, small and independent.
     messages, the tooltip, "Add to calendar" with its modal and .ics; the
     `local_dates` custom field; emails show data-email-preview. Left: the
     composer's insert-date modal and Shift+. shortcut, moment locales
-    other than English), 50. `feat/inline-footnotes` S
+    other than English), 50. ~~`feat/inline-footnotes`~~ (done) S
 51. ~~`feat/onebox-endpoints`~~ (done) S, 52. ~~`feat/onebox-fetch`~~ (done) L
     (FinalDestination: SSRF guard with DNS pinning, redirects, the https
     domain cache; RetrieveTitle; other sites' inline titles. Pages in
