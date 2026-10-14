@@ -875,7 +875,13 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
 /// layouts/email_template with EmailStyle's default template around the
 /// body.
 pub(crate) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> String {
-    let content = format!("\n    \n    {html_body}\n");
+    // `capture { yield }`: a block that wrote only whitespace gives its
+    // value instead, the "\n" its last line appended.
+    let content = if html_body.trim().is_empty() {
+        "\n".to_string()
+    } else {
+        format!("\n    \n    {html_body}\n")
+    };
     DEFAULT_TEMPLATE
         .replacen("%{email_content}", &content, 1)
         .replace("%{email_preview}", preview_html)

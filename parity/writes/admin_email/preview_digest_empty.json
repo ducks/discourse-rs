@@ -1,0 +1,85 @@
+{
+  "name": "preview_digest_empty",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?last_seen_at=2026-10-13&username=user0"
+    }
+  ],
+  "started_at": "2026-10-14T03:10:53.89688",
+  "transaction_started_at": "2026-10-14T03:10:52.498818",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "html_content": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>",
+        "text_content": ""
+      }
+    }
+  ],
+  "changes": {
+    "unsubscribe_keys": {
+      "inserted": [
+        {
+          "key": "9c40318a76c3c6a4a5380a5771324c0cff7e0a59a00b2bc6da2c956c21f15014",
+          "post_id": null,
+          "user_id": 2,
+          "topic_id": null,
+          "created_at": "2026-10-14T03:10:53.909143",
+          "updated_at": "2026-10-14T03:10:53.909143",
+          "unsubscribe_key_type": "digest"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tc9fru7q03suI+REsXgeCBHYMBE=",
+            "created_at": "2026-10-14T03:10:53.397739",
+            "rotated_at": "2026-10-14T03:10:53.396864",
+            "updated_at": "2026-10-14T03:10:53.397739",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tc9fru7q03suI+REsXgeCBHYMBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T03:10:53.901824",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tc9fru7q03suI+REsXgeCBHYMBE=",
+            "created_at": "2026-10-14T03:10:53.397739",
+            "rotated_at": "2026-10-14T03:10:53.396864",
+            "updated_at": "2026-10-14T03:10:53.397739",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tc9fru7q03suI+REsXgeCBHYMBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7ad5b6c3b3640a9c154a0e1da6bb2258aa19b154276b799dc5f3063e5fac9aa5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

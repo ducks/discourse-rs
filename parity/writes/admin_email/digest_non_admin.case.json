@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?last_seen_at=2026-10-01&username=user0"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/email/send-digest.json",
+      "params": {
+        "last_seen_at": "2026-10-01",
+        "username": "user0",
+        "email": "elsewhere@example.com"
+      }
+    }
+  ]
+}
