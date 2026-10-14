@@ -17,6 +17,10 @@
 // It also brings over what a swap doesn't (the body's classes and
 // attributes), swaps in error pages as a full load shows them, and leaves
 // anything that isn't a page (an upload, a feed) to the browser.
+//
+// And it keeps the layout in step with the viewport, as Ember re-renders
+// when the window crosses 40rem: the page is asked for again in the other
+// layout and swapped in where it stands.
 (function () {
   "use strict";
 
@@ -24,6 +28,26 @@
   var loaded = {};
   var pages = [];
   var swapping = false;
+
+  // sniff-capabilities: touch when any pointer is coarse, and the iOS
+  // classes, on each page's <html> (the server renders no-touch).
+  function capabilities() {
+    var html = document.documentElement;
+    var ua = navigator.userAgent;
+    var touch = window.matchMedia("(any-pointer: coarse)").matches;
+    if (touch) {
+      html.classList.remove("no-touch", "discourse-no-touch");
+      html.classList.add("touch", "discourse-touch");
+    }
+    var ipados = ua.indexOf("Mac OS") !== -1 && !/iPhone|iPod/.test(ua) && touch;
+    if (ipados) {
+      html.classList.add("ipados-device");
+    }
+    if (/iPhone|iPod/.test(ua) || ipados) {
+      html.classList.add("ios-device");
+    }
+  }
+  capabilities();
 
   Discourse.once = function (name) {
     if (loaded[name]) {
@@ -48,6 +72,10 @@
     }
   };
 
+  function parse(html) {
+    return new DOMParser().parseFromString(html, "text/html");
+  }
+
   function boosted(event) {
     return event.detail.boosted || (event.detail.requestConfig && event.detail.requestConfig.boosted);
   }
@@ -55,7 +83,7 @@
   // Before a page is swapped in: the one going away cleans up, and what
   // the body swap leaves behind (the html and body attributes) is brought
   // over from the new page.
-  function leaving(html) {
+  function leaving(doc) {
     swapping = true;
     pages.forEach(function (entry) {
       if (entry.cleanup) {
@@ -63,8 +91,8 @@
         entry.cleanup = null;
       }
     });
-    var doc = new DOMParser().parseFromString(html, "text/html");
     document.documentElement.className = doc.documentElement.className;
+    capabilities();
     var body = document.body;
     Array.prototype.slice.call(body.attributes).forEach(function (attr) {
       if (!doc.body.hasAttribute(attr.name)) {
@@ -98,6 +126,7 @@
       return;
     }
     swapping = false;
+    anchor = null;
     pages.forEach(run);
   }
 
@@ -128,24 +157,29 @@
       event.detail.isError = false;
     }
     if (event.detail.shouldSwap) {
-      leaving(event.detail.serverResponse);
+      leaving(parse(event.detail.serverResponse));
     }
   });
 
   // Right after the new body is in, before it paints, so stored state
-  // (a collapsed sidebar section) doesn't flicker.
+  // (a collapsed sidebar section) doesn't flicker. A page asked for
+  // before the window crossed 40rem is redrawn in the layout it wants.
   document.addEventListener("htmx:afterSwap", function (event) {
     if (boosted(event)) {
       arrived();
+      checkView();
     }
   });
 
   // Back and forward: the page is asked for again (historyCacheSize 0)
   // and swapped in the same way; one that fails to load loads in full.
   document.addEventListener("htmx:historyCacheMissLoad", function (event) {
-    leaving(event.detail.response);
+    leaving(parse(event.detail.response));
   });
-  document.addEventListener("htmx:historyRestore", arrived);
+  document.addEventListener("htmx:historyRestore", function () {
+    arrived();
+    checkView();
+  });
   document.addEventListener("htmx:historyCacheMissLoadError", function () {
     location.reload();
   });
@@ -154,4 +188,221 @@
   document.addEventListener("htmx:sendError", function () {
     swapping = false;
   });
+
+  // Site#mobileView: below 40rem the page is the mobile layout. The server
+  // renders the one the mobile_view cookie names (crate::mobile, its guess
+  // from the user agent without one), so the cookie follows the viewport,
+  // and a page in the other layout (a wrong guess on a first visit, a
+  // window crossing the breakpoint) is asked for again and redrawn.
+  var viewport = window.matchMedia("(min-width: 40rem)");
+  var generation = 0;
+  var hidden = null;
+
+  function wantedView() {
+    return viewport.matches ? "0" : "1";
+  }
+
+  function renderedView(doc) {
+    return doc.documentElement.classList.contains("mobile-view") ? "1" : "0";
+  }
+
+  function syncView() {
+    var meta = document.querySelector('meta[name="discourse-base-uri"]');
+    document.cookie =
+      "mobile_view=" + wantedView() + "; path=" + (meta ? meta.content : "") + "/; max-age=31536000; samesite=lax";
+    checkView();
+  }
+
+  // Only when the cookie took: a browser without cookies keeps the
+  // server's guess instead of asking for the page forever. A redraw still
+  // on its way is dropped when the window crosses back.
+  function checkView() {
+    generation += 1;
+    var took = document.cookie.split("; ").indexOf("mobile_view=" + wantedView()) !== -1;
+    if (renderedView(document) !== wantedView() && took) {
+      redraw(generation);
+    } else {
+      reveal();
+    }
+  }
+
+  // A first visit in the wrong layout stays blank until the right one is
+  // in, as it did while the page reloaded, rather than showing the other.
+  function conceal() {
+    hidden = document.createElement("style");
+    hidden.textContent = "body { visibility: hidden; }";
+    document.head.appendChild(hidden);
+    setTimeout(reveal, 5000);
+  }
+
+  function reveal() {
+    if (hidden) {
+      hidden.remove();
+      hidden = null;
+    }
+  }
+
+  // When the page can't be asked for again: a reload, but not again for
+  // a page that came back in the wrong layout just now.
+  function reload() {
+    var last = null;
+    try {
+      last = JSON.parse(sessionStorage.getItem("mobile-view-reload"));
+    } catch (_) {}
+    if (last && last.url === location.href && last.wanted === wantedView() && Date.now() - last.at < 5000) {
+      reveal();
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        "mobile-view-reload",
+        JSON.stringify({ url: location.href, wanted: wantedView(), at: Date.now() })
+      );
+    } catch (_) {}
+    location.reload();
+  }
+
+  // The page parsed and its deferred scripts (htmx) run.
+  function parsed() {
+    return new Promise(function (resolve) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  // Where the reader is: the first post or topic row below the header,
+  // and how far down the window it is.
+  function scrollAnchor() {
+    if (window.scrollY === 0) {
+      return null;
+    }
+    var header = document.querySelector(".d-header-wrap");
+    var top = header ? header.getBoundingClientRect().bottom : 0;
+    var rows = document.querySelectorAll("#posts article[data-post-id], tr[data-topic-id]");
+    for (var i = 0; i < rows.length; i++) {
+      var rect = rows[i].getBoundingClientRect();
+      if (rect.bottom > top) {
+        var name = rows[i].hasAttribute("data-post-id") ? "data-post-id" : "data-topic-id";
+        return {
+          selector: rows[i].tagName.toLowerCase() + "[" + name + '="' + rows[i].getAttribute(name) + '"]',
+          top: rect.top,
+        };
+      }
+    }
+    return null;
+  }
+
+  // Kept as the reader scrolls, since by the time the window crossed the
+  // breakpoint the old layout has already reflowed to the new width. The
+  // first scroll at a new width is that reflow, not the reader's.
+  var anchor = null;
+  var anchorWidth = window.innerWidth;
+  var anchorFrame = null;
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (anchorFrame) {
+        return;
+      }
+      anchorFrame = requestAnimationFrame(function () {
+        anchorFrame = null;
+        if (window.innerWidth === anchorWidth) {
+          anchor = scrollAnchor();
+        }
+        anchorWidth = window.innerWidth;
+      });
+    },
+    { passive: true }
+  );
+
+  function redraw(gen) {
+    var url = location.href;
+    if (document.readyState === "loading") {
+      conceal();
+    }
+    fetch(url, {
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "HX-Request": "true", "HX-Boosted": "true", "HX-Current-URL": url },
+    })
+      .then(function (response) {
+        var type = response.headers.get("Content-Type") || "";
+        if (!response.ok || type.indexOf("text/html") !== 0) {
+          throw new Error("redraw " + response.status);
+        }
+        return response.text();
+      })
+      .then(function (html) {
+        return parsed().then(function () {
+          return html;
+        });
+      })
+      .then(function (html) {
+        // Superseded: the window crossed back, or the reader went on to
+        // another page, which came in the layout the cookie names.
+        if (gen !== generation || location.href !== url) {
+          return;
+        }
+        var doc = parse(html);
+        if (renderedView(doc) !== wantedView()) {
+          reveal();
+          return;
+        }
+        swapIn(html, doc);
+        reveal();
+      })
+      .catch(function () {
+        if (gen === generation) {
+          reload();
+        }
+      });
+  }
+
+  // Swapped in as a boosted navigation swaps a page, where the reader
+  // is: the focused field keeps its caret and the post being read stays
+  // put. What stays (the composer) hears discourse:redraw with its markup
+  // in the new layout once the page is in.
+  function swapIn(html, doc) {
+    var reading = anchor;
+    var focused = document.activeElement;
+    var selection = null;
+    try {
+      selection = [focused.selectionStart, focused.selectionEnd];
+    } catch (_) {}
+    var kept = [];
+    doc.querySelectorAll("[hx-preserve][id]").forEach(function (incoming) {
+      var element = document.getElementById(incoming.id);
+      if (element) {
+        kept.push([element, document.importNode(incoming, true)]);
+      }
+    });
+    leaving(doc);
+    htmx.swap(document.body, html, { swapStyle: "innerHTML", swapDelay: 0, settleDelay: 0 });
+    arrived();
+    kept.forEach(function (pair) {
+      pair[0].dispatchEvent(new CustomEvent("discourse:redraw", { detail: pair[1] }));
+    });
+    if (focused && focused !== document.body && focused.isConnected) {
+      focused.focus({ preventScroll: true });
+      if (selection && typeof selection[0] === "number") {
+        focused.setSelectionRange(selection[0], selection[1]);
+      }
+    }
+    var target = reading && document.querySelector(reading.selector);
+    if (target) {
+      window.scrollBy(0, target.getBoundingClientRect().top - reading.top);
+    }
+    // Still the post the reader was on, so crossing back returns to it; the
+    // scroll just made isn't theirs.
+    anchor = target ? reading : scrollAnchor();
+    anchorWidth = -1;
+  }
+
+  syncView();
+  viewport.addEventListener("change", syncView);
 })();

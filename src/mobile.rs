@@ -10,11 +10,13 @@
 //! content of a modern phone.
 //!
 //! The port renders the client's markup on the server, so it needs the
-//! viewport before it renders. The browser tells it: the layout's head
-//! script (templates/layout.html) writes the `mobile_view` cookie (`1` below
-//! 40rem, `0` above) and reloads the page when the server guessed wrong or
-//! the window crosses the breakpoint. Without the cookie (a first visit, no
-//! script) the server guesses from the user agent as Rails does.
+//! viewport before it renders. The browser tells it: static/js/page.js, in
+//! the head, writes the `mobile_view` cookie (`1` below 40rem, `0` above)
+//! and, when the server guessed wrong or the window crosses the breakpoint,
+//! asks for the page again and swaps it in where it stands, as Ember
+//! re-renders. Both layouts load the same head, so the swap is the body and
+//! the `<html>` classes. Without the cookie (a first visit, no script) the
+//! server guesses from the user agent as Rails does.
 //!
 //! [`layer`] decides once per request and scopes the answer to the
 //! request's task, where [`mobile_view`] reads it.
@@ -24,7 +26,7 @@ use axum::http::{HeaderMap, header};
 use axum::middleware::Next;
 use axum::response::Response;
 
-/// The cookie the layout's head script keeps in step with the viewport.
+/// The cookie page.js keeps in step with the viewport.
 pub const COOKIE: &str = "mobile_view";
 
 tokio::task_local! {

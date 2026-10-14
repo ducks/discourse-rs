@@ -2305,6 +2305,91 @@ async fn the_mobile_composer_has_its_own_controls() {
     ));
 }
 
+fn between<'a>(html: &'a str, start: &str, end: &str) -> &'a str {
+    let from = html
+        .find(start)
+        .unwrap_or_else(|| panic!("{start} in {html}"));
+    let to = from
+        + html[from..]
+            .find(end)
+            .unwrap_or_else(|| panic!("{end} in {html}"));
+    &html[from..to]
+}
+
+/// Crossing 40rem redraws the page in place (page.js): the body and the
+/// `<html>` classes come from the page asked for again, the head stays as
+/// it is, so both layouts must load the same one.
+#[tokio::test]
+async fn both_layouts_load_the_same_head() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let mut anon = Client::new(client.state.clone());
+    client.login("user1", "password").await;
+    for path in [
+        "/latest",
+        "/categories",
+        "/c/general/4",
+        "/t/parity-fixture-replies-and-posters/35",
+    ] {
+        for c in [&mut client, &mut anon] {
+            c.cookies.retain(|(n, _)| n != "mobile_view");
+            c.cookies.push(("mobile_view".into(), "0".into()));
+            let desktop = c.get(path).await.body;
+            c.cookies.retain(|(n, _)| n != "mobile_view");
+            c.cookies.push(("mobile_view".into(), "1".into()));
+            let mobile = c.get(path).await.body;
+            assert!(
+                desktop.contains(r#" desktop-view not-mobile-device"#),
+                "{desktop}"
+            );
+            assert!(mobile.contains(r#" mobile-view mobile-device"#), "{mobile}");
+            // The CSRF token is masked afresh for each page.
+            let head = |html: &str| {
+                let head = between(html, "<head>", "</head>");
+                match head.find(r#"<meta name="csrf-token""#) {
+                    Some(at) => head.replace(between(&head[at..], "<meta", "/>"), ""),
+                    None => head.to_string(),
+                }
+            };
+            assert_eq!(head(&desktop), head(&mobile), "{path}");
+        }
+    }
+}
+
+/// What a redraw changes in the composer it keeps (composer.js'
+/// discourse:redraw): ComposerToggles and the submit panel's buttons
+/// before the upload line. The rest is the same in both layouts.
+#[tokio::test]
+async fn the_composer_differs_by_layout_only_in_its_controls() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    client.login("user1", "password").await;
+    let desktop = client.get("/latest").await.body;
+    client.cookies.push(("mobile_view".into(), "1".into()));
+    let mobile = client.get("/latest").await.body;
+    let rest = |html: &str| {
+        let composer = between(html, r#"<div id="reply-control""#, "<script");
+        let controls = between(
+            composer,
+            r#"<div class="composer-controls">"#,
+            r#"<div class="toolbar-visible wmd-controls">"#,
+        );
+        let lead = between(
+            composer,
+            r#"<div class="submit-panel">"#,
+            r#"<div id="file-uploading""#,
+        );
+        composer.replace(controls, "").replace(lead, "")
+    };
+    assert!(
+        between(&desktop, r#"<div id="reply-control""#, "<script").contains("toggle-fullscreen")
+    );
+    assert!(
+        between(&mobile, r#"<div id="reply-control""#, "<script").contains("mobile-file-upload")
+    );
+    assert_eq!(rest(&desktop), rest(&mobile));
+}
+
 /// The mobile view's topic footer (TopicFooterButtons' mobile branch):
 /// Flag and Mark unread behind the "..." DMenu, the notifications button
 /// in the actions without its reason; and the progress bar's fullscreen
