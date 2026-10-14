@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/site_settings/enable_welcome_banner.json", "params": {"enable_welcome_banner": "false"}},
+    {"method": "PUT", "path": "/admin/site_settings/search_experience.json", "params": {"search_experience": "search_field"}}
+  ]
+}

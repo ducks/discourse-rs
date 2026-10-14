@@ -476,14 +476,21 @@ fn unrandom(s: &str) -> String {
 /// clock against the stored timestamp.
 /// `unordered_responses`: JSON pointers to arrays in the recording that
 /// Rails returns in heap order (a query without ORDER BY), compared
-/// sorted by `id` since neither database's heap order can be lined up.
+/// sorted by `id` since neither database's heap order can be lined up
+/// (items without one, such as theme fields, by `target` and `name`).
 fn unordered_responses(doc: &mut Value, case: &Value) {
     for pointer in case["unordered_responses"].as_array().into_iter().flatten() {
         let Some(pointer) = pointer.as_str() else {
             continue;
         };
         if let Some(Value::Array(items)) = doc.pointer_mut(pointer) {
-            items.sort_by_key(|item| item["id"].as_i64());
+            items.sort_by_key(|item| {
+                (
+                    item["id"].as_i64(),
+                    item["target"].as_str().map(str::to_string),
+                    item["name"].as_str().map(str::to_string),
+                )
+            });
         }
     }
 }

@@ -1,0 +1,813 @@
+{
+  "name": "site_settings",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-1/site-setting.json",
+      "params": {
+        "name": "enable_welcome_banner",
+        "value": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-1/site-setting.json",
+      "params": {
+        "name": "search_experience",
+        "value": "search_field"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/site-setting.json",
+      "params": {
+        "name": "search_experience",
+        "value": "search_icon"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/site-setting.json",
+      "params": {
+        "name": "enable_welcome_banner"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/site-setting.json",
+      "params": {
+        "name": "title",
+        "value": "x"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/999/site-setting.json",
+      "params": {
+        "name": "search_experience",
+        "value": "search_icon"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/theme-site-settings.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner/themes-with-setting.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-1.json"
+    }
+  ],
+  "started_at": "2026-10-14T16:10:18.354031",
+  "transaction_started_at": "2026-10-14T16:10:15.32471",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "name": "enable_welcome_banner",
+        "value": "f",
+        "theme_id": -1
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "name": "search_experience",
+        "value": "search_field",
+        "theme_id": -1
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "name": "search_experience",
+        "value": "search_icon",
+        "theme_id": -2
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "name": "enable_welcome_banner",
+        "value": "t",
+        "theme_id": -2
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "The setting 'title' is not themeable."
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "themeable_site_settings": [
+          "enable_welcome_banner",
+          "search_experience"
+        ],
+        "themes_with_site_setting_overrides": {
+          "enable_welcome_banner": {
+            "setting": "enable_welcome_banner",
+            "default": true,
+            "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+            "humanized_name": "Enable welcome banner",
+            "type": "bool",
+            "themes": [
+              {
+                "theme_id": -1,
+                "theme_name": "Foundation",
+                "value": false
+              }
+            ]
+          },
+          "search_experience": {
+            "setting": "search_experience",
+            "default": "search_icon",
+            "description": "The default position and appearance of search on desktop devices",
+            "humanized_name": "Search experience",
+            "type": "enum",
+            "valid_values": [
+              {
+                "name": "search.experience.search_field",
+                "value": "search_field"
+              },
+              {
+                "name": "search.experience.search_icon",
+                "value": "search_icon"
+              }
+            ],
+            "translate_names": true,
+            "themes": [
+              {
+                "theme_id": -1,
+                "theme_name": "Foundation",
+                "value": "search_field"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "themes": [
+          {
+            "id": -1,
+            "name": "Foundation",
+            "enable_welcome_banner": false
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": -1,
+          "name": "Foundation",
+          "description": "The classic Discourse theme that is well-suited to customization for your community’s specific needs.",
+          "created_at": "2026-07-25T05:58:16.654Z",
+          "updated_at": "2026-07-25T05:58:21.435Z",
+          "default": true,
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": 13,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "false"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_field"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "screenshot_light",
+              "target": "common",
+              "value": "",
+              "type_id": 7,
+              "upload_id": 1,
+              "url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+              "filename": "light.png",
+              "file_path": null
+            },
+            {
+              "name": "screenshot_dark",
+              "target": "common",
+              "value": "",
+              "type_id": 7,
+              "upload_id": 2,
+              "url": "/uploads/default/original/1X/46d43cd68924bf0f8dca7c468f5a3722ff0a750f.png",
+              "filename": "dark.png",
+              "file_path": null
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Foundation\",\n  \"authors\": \"Discourse\",\n  \"theme_version\": \"1.0.0\",\n  \"minimum_discourse_version\": null,\n  \"maximum_discourse_version\": null,\n  \"assets\": {},\n  \"modifiers\": {},\n  \"color_schemes\": {},\n  \"screenshots\": [\n    \"screenshots/light.png\",\n    \"screenshots/dark.png\"\n  ]\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            },
+            {
+              "name": "es",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nes:\n  theme_metadata:\n    description: \"El tema clásico de Discourse que se adapta bien a la personalización según las necesidades de tu comunidad.\"\n",
+              "type_id": 5,
+              "file_path": "locales/es.yml"
+            },
+            {
+              "name": "et",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\net:\n",
+              "type_id": 5,
+              "file_path": "locales/et.yml"
+            },
+            {
+              "name": "fa_IR",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfa_IR:\n",
+              "type_id": 5,
+              "file_path": "locales/fa_IR.yml"
+            },
+            {
+              "name": "fi",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfi:\n  theme_metadata:\n    description: \"Klassinen Discourse-teema, joka sopii hyvin mukauttamiseen yhteisösi erityisiin tarpeisiin.\"\n",
+              "type_id": 5,
+              "file_path": "locales/fi.yml"
+            },
+            {
+              "name": "fr",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfr:\n  theme_metadata:\n    description: \"Le thème classique de Discourse, parfaitement adapté à la personnalisation en fonction des besoins spécifiques de votre communauté.\"\n",
+              "type_id": 5,
+              "file_path": "locales/fr.yml"
+            },
+            {
+              "name": "gl",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ngl:\n",
+              "type_id": 5,
+              "file_path": "locales/gl.yml"
+            },
+            {
+              "name": "he",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhe:\n  theme_metadata:\n    description: \"ערכת הנושא הקלאסית של Discourse שמותאמת לצרכים המסוימים של הקהילה שלכם.\"\n",
+              "type_id": 5,
+              "file_path": "locales/he.yml"
+            },
+            {
+              "name": "hr",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhr:\n",
+              "type_id": 5,
+              "file_path": "locales/hr.yml"
+            },
+            {
+              "name": "hu",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhu:\n  theme_metadata:\n    description: \"A klasszikus diskurzus téma, amely jól illeszkedik a közösség sajátos igényeihez való testreszabáshoz.\"\n",
+              "type_id": 5,
+              "file_path": "locales/hu.yml"
+            },
+            {
+              "name": "hy",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhy:\n",
+              "type_id": 5,
+              "file_path": "locales/hy.yml"
+            },
+            {
+              "name": "id",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nid:\n",
+              "type_id": 5,
+              "file_path": "locales/id.yml"
+            },
+            {
+              "name": "it",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nit:\n  theme_metadata:\n    description: \"Il tema classico di Discourse, ideale per la personalizzazione in base alle esigenze specifiche della tua community.\"\n",
+              "type_id": 5,
+              "file_path": "locales/it.yml"
+            },
+            {
+              "name": "ja",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nja:\n  theme_metadata:\n    description: \"コミュニティーの特定のニーズに合わせてカスタマイズするのに適した Discourse のクラシックテーマ\"\n",
+              "type_id": 5,
+              "file_path": "locales/ja.yml"
+            },
+            {
+              "name": "ko",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nko:\n",
+              "type_id": 5,
+              "file_path": "locales/ko.yml"
+            },
+            {
+              "name": "lt",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlt:\n",
+              "type_id": 5,
+              "file_path": "locales/lt.yml"
+            },
+            {
+              "name": "lv",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlv:\n",
+              "type_id": 5,
+              "file_path": "locales/lv.yml"
+            },
+            {
+              "name": "nb_NO",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnb_NO:\n",
+              "type_id": 5,
+              "file_path": "locales/nb_NO.yml"
+            },
+            {
+              "name": "nl",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnl:\n  theme_metadata:\n    description: \"Het klassieke Discourse-thema dat zich uitstekend leent voor aanpassing aan de specifieke behoeften van je community.\"\n",
+              "type_id": 5,
+              "file_path": "locales/nl.yml"
+            },
+            {
+              "name": "pl_PL",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npl_PL:\n  theme_metadata:\n    description: \"Klasyczny motyw Discourse, który doskonale nadaje się do dostosowania do konkretnych potrzeb Twojej społeczności.\"\n",
+              "type_id": 5,
+              "file_path": "locales/pl_PL.yml"
+            },
+            {
+              "name": "pt",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt:\n",
+              "type_id": 5,
+              "file_path": "locales/pt.yml"
+            },
+            {
+              "name": "pt_BR",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt_BR:\n  theme_metadata:\n    description: \"O tema clássico do Discourse é adequado para a personalização de acordo com as necessidades específicas de sua comunidade.\"\n",
+              "type_id": 5,
+              "file_path": "locales/pt_BR.yml"
+            },
+            {
+              "name": "ro",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nro:\n  theme_metadata:\n    description: \"Tema clasică Discourse care este potrivită pentru personalizare în funcție de nevoile specifice ale comunității tale.\"\n",
+              "type_id": 5,
+              "file_path": "locales/ro.yml"
+            },
+            {
+              "name": "ru",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nru:\n  theme_metadata:\n    description: \"Классическая тема Discourse, которую легко адаптировать под нужды вашего сообщества.\"\n",
+              "type_id": 5,
+              "file_path": "locales/ru.yml"
+            },
+            {
+              "name": "sk",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsk:\n  theme_metadata:\n    description: \"Klasická téma Discourse, ktorá je vhodná na prispôsobenie špecifickým potrebám vašej komunity.\"\n",
+              "type_id": 5,
+              "file_path": "locales/sk.yml"
+            },
+            {
+              "name": "sl",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsl:\n",
+              "type_id": 5,
+              "file_path": "locales/sl.yml"
+            },
+            {
+              "name": "sq",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsq:\n",
+              "type_id": 5,
+              "file_path": "locales/sq.yml"
+            },
+            {
+              "name": "sr",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsr:\n",
+              "type_id": 5,
+              "file_path": "locales/sr.yml"
+            },
+            {
+              "name": "sv",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsv:\n",
+              "type_id": 5,
+              "file_path": "locales/sv.yml"
+            },
+            {
+              "name": "sw",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsw:\n",
+              "type_id": 5,
+              "file_path": "locales/sw.yml"
+            },
+            {
+              "name": "te",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nte:\n",
+              "type_id": 5,
+              "file_path": "locales/te.yml"
+            },
+            {
+              "name": "th",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nth:\n",
+              "type_id": 5,
+              "file_path": "locales/th.yml"
+            },
+            {
+              "name": "ug",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nug:\n  theme_metadata:\n    description: \"ئەنئەنىۋى Discourse ئۆرنىكى جامائەتنىڭ مۇئەييەن ئېھتىياجىغا ئاساسەن خاسلاشتۇرۇشقا ئىنتايىن ماس كېلىدۇ.\"\n",
+              "type_id": 5,
+              "file_path": "locales/ug.yml"
+            },
+            {
+              "name": "uk",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nuk:\n  theme_metadata:\n    description: \"Класична тема Discourse, яка добре підходить для налаштування під конкретні потреби вашої спільноти.\"\n",
+              "type_id": 5,
+              "file_path": "locales/uk.yml"
+            },
+            {
+              "name": "ur",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nur:\n  theme_metadata:\n    description: \"بنیادی Discourse تھیم جو آپ کی کمیونٹی کی مخصوص ضروریات کے لیے حسب ضرورت موزوں ہے۔\"\n",
+              "type_id": 5,
+              "file_path": "locales/ur.yml"
+            },
+            {
+              "name": "vi",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nvi:\n  theme_metadata:\n    description: \"Giao diện Discourse cổ điển, phù hợp để tùy chỉnh cho các nhu cầu cụ thể của cộng đồng bạn.\"\n",
+              "type_id": 5,
+              "file_path": "locales/vi.yml"
+            },
+            {
+              "name": "zh_CN",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_CN:\n  theme_metadata:\n    description: \"经典的 Discourse 主题，非常适合根据社区的特定需求进行定制。\"\n",
+              "type_id": 5,
+              "file_path": "locales/zh_CN.yml"
+            },
+            {
+              "name": "zh_TW",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_TW:\n  theme_metadata:\n    description: \"經典的 Discourse 佈景主題，非常適合依照社群的特定需求進行自訂。\"\n",
+              "type_id": 5,
+              "file_path": "locales/zh_TW.yml"
+            },
+            {
+              "name": "ar",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nar:\n  theme_metadata:\n    description: \"السمة التقليدية لمنصة Discourse، الملائمة بشكل جيد للتخصيص بما يتوافق مع متطلبات مجتمعك المحدَّدة.\"\n",
+              "type_id": 5,
+              "file_path": "locales/ar.yml"
+            },
+            {
+              "name": "be",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbe:\n",
+              "type_id": 5,
+              "file_path": "locales/be.yml"
+            },
+            {
+              "name": "bg",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbg:\n",
+              "type_id": 5,
+              "file_path": "locales/bg.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    description: \"The classic Discourse theme that is well-suited to customization for your community’s specific needs.\"\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "tr_TR",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ntr_TR:\n  theme_metadata:\n    description: \"Topluluğunuzun özel ihtiyaçlarına göre özelleştirilmeye uygun klasik Discourse teması.\"\n",
+              "type_id": 5,
+              "file_path": "locales/tr_TR.yml"
+            },
+            {
+              "name": "bs_BA",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbs_BA:\n",
+              "type_id": 5,
+              "file_path": "locales/bs_BA.yml"
+            },
+            {
+              "name": "ca",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nca:\n",
+              "type_id": 5,
+              "file_path": "locales/ca.yml"
+            },
+            {
+              "name": "cs",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ncs:\n  theme_metadata:\n    description: \"Klasický motiv Discourse, který se dobře hodí k přizpůsobení specifickým potřebám vaší komunity.\"\n",
+              "type_id": 5,
+              "file_path": "locales/cs.yml"
+            },
+            {
+              "name": "da",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nda:\n",
+              "type_id": 5,
+              "file_path": "locales/da.yml"
+            },
+            {
+              "name": "de",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nde:\n  theme_metadata:\n    description: \"Das klassische Discourse-Theme, das sich gut für die Anpassung an die spezifischen Bedürfnisse deiner Community eignet.\"\n",
+              "type_id": 5,
+              "file_path": "locales/de.yml"
+            },
+            {
+              "name": "el",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nel:\n",
+              "type_id": 5,
+              "file_path": "locales/el.yml"
+            },
+            {
+              "name": "en_GB",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nen_GB:\n",
+              "type_id": 5,
+              "file_path": "locales/en_GB.yml"
+            }
+          ],
+          "screenshot_dark_url": "/uploads/default/original/1X/46d43cd68924bf0f8dca7c468f5a3722ff0a750f.png",
+          "screenshot_light_url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+          "system": true,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "theme_site_settings": {
+      "inserted": [
+        {
+          "id": 3,
+          "name": "enable_welcome_banner",
+          "value": "f",
+          "theme_id": -1,
+          "data_type": 5,
+          "created_at": "2026-10-14T16:10:18.411545",
+          "updated_at": "2026-10-14T16:10:18.411545"
+        },
+        {
+          "id": 4,
+          "name": "search_experience",
+          "value": "search_field",
+          "theme_id": -1,
+          "data_type": 7,
+          "created_at": "2026-10-14T16:10:18.54553",
+          "updated_at": "2026-10-14T16:10:18.54553"
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "search_experience",
+            "value": "search_field",
+            "theme_id": -2,
+            "data_type": 7,
+            "created_at": "2026-07-25T05:58:20.814568",
+            "updated_at": "2026-07-25T05:58:20.814568"
+          },
+          "after": {
+            "id": 2,
+            "name": "search_experience",
+            "value": "search_icon",
+            "theme_id": -2,
+            "data_type": 7,
+            "created_at": "2026-07-25T05:58:20.814568",
+            "updated_at": "2026-10-14T16:10:18.585217"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "created_at": "2026-10-14T16:10:15.879009",
+            "rotated_at": "2026-10-14T16:10:15.877845",
+            "updated_at": "2026-10-14T16:10:15.879009",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T16:10:18.36118",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "created_at": "2026-10-14T16:10:15.879009",
+            "rotated_at": "2026-10-14T16:10:15.877845",
+            "updated_at": "2026-10-14T16:10:15.879009",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 120,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Foundation: enable_welcome_banner",
+          "topic_id": null,
+          "new_value": "f",
+          "admin_only": true,
+          "created_at": "2026-10-14T16:10:18.42466",
+          "ip_address": null,
+          "updated_at": "2026-10-14T16:10:18.42466",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 120,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Foundation: search_experience",
+          "topic_id": null,
+          "new_value": "search_field",
+          "admin_only": true,
+          "created_at": "2026-10-14T16:10:18.54824",
+          "ip_address": null,
+          "updated_at": "2026-10-14T16:10:18.54824",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 120,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Horizon: search_experience",
+          "topic_id": null,
+          "new_value": "search_icon",
+          "admin_only": true,
+          "created_at": "2026-10-14T16:10:18.587675",
+          "ip_address": null,
+          "updated_at": "2026-10-14T16:10:18.587675",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "search_field",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 120,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Horizon: enable_welcome_banner",
+          "topic_id": null,
+          "new_value": "t",
+          "admin_only": true,
+          "created_at": "2026-10-14T16:10:18.676625",
+          "ip_address": null,
+          "updated_at": "2026-10-14T16:10:18.676625",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "t",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "theme_site_settings": 3,
+    "user_histories": 74
+  },
+  "unordered_responses": [
+    "/responses/8/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "a2e25e0fde396f0c58a6a7f2039b8eb4075111ed98cf57dc2cf94c88e8af4d7f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

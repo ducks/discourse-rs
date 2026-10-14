@@ -64,6 +64,7 @@ mod solved;
 mod srv;
 mod stylesheets;
 mod tags;
+mod themes;
 mod topic_notifications;
 mod topic_status;
 mod topic_timer;
@@ -879,6 +880,64 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
+        )
+        .route(
+            "/admin/themes",
+            get(themes::index).post(themes::write_refused),
+        )
+        .route(
+            "/admin/themes.json",
+            get(themes::index).post(themes::write_refused),
+        )
+        .route(
+            "/admin/themes/{id}",
+            get(themes::show)
+                .put(themes::write_refused)
+                .delete(themes::write_refused),
+        )
+        .route("/admin/themes/{id}/setting", put(themes::update_setting))
+        .route(
+            "/admin/themes/{id}/setting.json",
+            put(themes::update_setting),
+        )
+        .route(
+            "/admin/themes/{id}/site-setting",
+            put(themes::update_site_setting),
+        )
+        .route(
+            "/admin/themes/{id}/site-setting.json",
+            put(themes::update_site_setting),
+        )
+        .route("/admin/config/customize/themes", get(themes::config_themes))
+        .route(
+            "/admin/config/customize/themes.json",
+            get(themes::config_themes),
+        )
+        .route(
+            "/admin/config/customize/components",
+            get(themes::config_components),
+        )
+        .route(
+            "/admin/config/customize/components.json",
+            get(themes::config_components),
+        )
+        .route(
+            "/admin/config/customize/theme-site-settings",
+            get(themes::config_theme_site_settings),
+        )
+        .route(
+            "/admin/config/customize/theme-site-settings.json",
+            get(themes::config_theme_site_settings),
+        )
+        .route("/admin/config/colors", get(themes::config_colors))
+        .route("/admin/config/colors.json", get(themes::config_colors))
+        .route(
+            "/admin/config/welcome-banner/themes-with-setting",
+            get(themes::welcome_banner_themes),
+        )
+        .route(
+            "/admin/config/welcome-banner/themes-with-setting.json",
+            get(themes::welcome_banner_themes),
         )
         .route(
             "/sidebar_sections",

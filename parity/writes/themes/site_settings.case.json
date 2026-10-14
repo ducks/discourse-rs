@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/themes/-1/site-setting.json", "params": {"name": "enable_welcome_banner", "value": "false"}},
+    {"method": "PUT", "path": "/admin/themes/-1/site-setting.json", "params": {"name": "search_experience", "value": "search_field"}},
+    {"method": "PUT", "path": "/admin/themes/-2/site-setting.json", "params": {"name": "search_experience", "value": "search_icon"}},
+    {"method": "PUT", "path": "/admin/themes/-2/site-setting.json", "params": {"name": "enable_welcome_banner"}},
+    {"method": "PUT", "path": "/admin/themes/-2/site-setting.json", "params": {"name": "title", "value": "x"}},
+    {"method": "PUT", "path": "/admin/themes/999/site-setting.json", "params": {"name": "search_experience", "value": "search_icon"}},
+    {"method": "GET", "path": "/admin/config/customize/theme-site-settings.json"},
+    {"method": "GET", "path": "/admin/config/welcome-banner/themes-with-setting.json"},
+    {"method": "GET", "path": "/admin/themes/-1.json"}
+  ],
+  "unordered_responses": [
+    "/responses/8/body/theme/theme_fields"
+  ]
+}

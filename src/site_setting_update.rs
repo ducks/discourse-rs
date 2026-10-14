@@ -162,8 +162,16 @@ pub async fn update(
     if def.plugin.is_some() {
         return Err(Unsupported("plugin settings").into());
     }
-    if def.themeable || def.is_upcoming_change() {
-        return Err(Unsupported("themeable and upcoming change settings").into());
+    // SiteSettingExtension::InvalidSettingAccess, which the controller's
+    // on_exceptions answers.
+    if def.themeable {
+        return Ok(Outcome::Invalid(format!(
+            "{name} cannot be changed like this because it is a themeable setting. Instead, use the \
+             ThemeSiteSettingManager service to manage themeable site settings."
+        )));
+    }
+    if def.is_upcoming_change() {
+        return Err(Unsupported("upcoming change settings").into());
     }
     if CHANGE_HANDLERS_WRITE.contains(&name) {
         return Err(Unsupported("settings whose change handlers write").into());

@@ -610,6 +610,16 @@ pub async fn theme_translations(
     conn: &mut PgConnection,
     theme_id: i32,
 ) -> Result<Vec<ThemeEntry>, AppError> {
+    theme_translations_of(conn, theme_id, false).await
+}
+
+/// `Theme#translations(internal:)`: with `internal`, only
+/// `theme_metadata` (the description, the settings' texts).
+pub async fn theme_translations_of(
+    conn: &mut PgConnection,
+    theme_id: i32,
+    internal: bool,
+) -> Result<Vec<ThemeEntry>, AppError> {
     let field: Option<String> = sqlx::query_scalar(
         "SELECT value FROM theme_fields WHERE theme_id = $1 AND target_id = 4 AND name = 'en' \
          ORDER BY id LIMIT 1",
@@ -648,7 +658,7 @@ pub async fn theme_translations(
     }
     Ok(flat
         .into_iter()
-        .filter(|(k, _)| k != "theme_metadata" && !k.starts_with("theme_metadata."))
+        .filter(|(k, _)| (k == "theme_metadata" || k.starts_with("theme_metadata.")) == internal)
         .map(|(key, default)| ThemeEntry {
             theme_id,
             overridden: overrides
