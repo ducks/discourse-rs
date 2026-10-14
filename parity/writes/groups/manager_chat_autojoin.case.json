@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET last_seen_at = now() - interval '1 day' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/4/groups.json",
+      "params": {
+        "group_id": 9001
+      }
+    }
+  ]
+}

@@ -435,16 +435,34 @@ pub async fn user_trust_level_change(
     Ok(())
 }
 
-/// `TrustLevel.calculate(user)`
+/// `TrustLevel.calculate(user, use_previous_trust_level:)`
 async fn calculate(
     conn: &mut PgConnection,
     s: &SiteSettings,
     user_id: i32,
     lock: Option<i32>,
+    use_previous: bool,
 ) -> Result<i32, AppError> {
     if let Some(lock) = lock {
         return Ok(lock);
     }
+    // find_previous_trust_level: the last trust level change's new value.
+    let previous = if use_previous {
+        let value: Option<Option<String>> = sqlx::query_scalar(
+            "SELECT new_value FROM user_histories WHERE action = $1 AND target_user_id = $2 \
+             ORDER BY created_at DESC LIMIT 1",
+        )
+        .bind(CHANGE_TRUST_LEVEL)
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        value
+            .flatten()
+            .map(|v| crate::ruby::to_i(&v) as i32)
+            .unwrap_or(0)
+    } else {
+        0
+    };
     let granted: Option<i32> = sqlx::query_scalar(
         "SELECT MAX(g.grant_trust_level) FROM group_users gu JOIN groups g ON g.id = gu.group_id \
          WHERE gu.user_id = $1",
@@ -464,7 +482,7 @@ async fn calculate(
         0
     };
     let default = s.get("default_trust_level")?.to_i() as i32;
-    Ok(granted.unwrap_or(0).max(invitee).max(default))
+    Ok(granted.unwrap_or(0).max(previous).max(invitee).max(default))
 }
 
 /// `Promotion.recalculate(user, performed_by)`
@@ -474,9 +492,21 @@ pub async fn recalculate(
     user_id: i32,
     performed_by: Option<i32>,
 ) -> Result<(), AppError> {
+    recalculate_with(conn, cx, user_id, performed_by, false).await
+}
+
+/// `Promotion.recalculate(user, performed_by, use_previous_trust_level:)`
+pub async fn recalculate_with(
+    conn: &mut PgConnection,
+    cx: &Ctx<'_>,
+    user_id: i32,
+    performed_by: Option<i32>,
+    use_previous: bool,
+) -> Result<(), AppError> {
     let s = cx.settings;
     let u = load(conn, user_id).await?;
-    let mut granted = calculate(conn, s, user_id, u.manual_locked_trust_level).await?;
+    let mut granted =
+        calculate(conn, s, user_id, u.manual_locked_trust_level, use_previous).await?;
     // can_downgrade_trust_level?
     if granted < u.trust_level && tl_met(conn, s, user_id, u.trust_level).await? == Some(true) {
         granted = u.trust_level;

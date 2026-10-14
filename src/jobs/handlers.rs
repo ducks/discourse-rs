@@ -21,6 +21,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         // Publishes each staff member's reviewable counts, likewise.
         "refresh_users_reviewable_counts" => Ok(()),
         "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
+        "bulk_grant_trust_level" => bulk_grant_trust_level(state, &job.args).await,
         crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
             chat_delete_user_messages(state, &job.args).await
         }
@@ -130,6 +131,53 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::BulkGrantTrustLevel: each user (by id) recalculated from their
+/// previous trust level, or granted the level (TrustLevelGranter).
+async fn bulk_grant_trust_level(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let user_ids: Vec<i32> = args["user_ids"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|v| v.as_i64().map(|n| n as i32))
+        .collect();
+    if user_ids.is_empty() {
+        return Err(
+            Unsupported("bulk_grant_trust_level without user_ids (InvalidParameters)").into(),
+        );
+    }
+    let recalculate = bool_arg(args, "recalculate");
+    let level = int_arg(args, "trust_level")?;
+    if level.is_none() && !recalculate {
+        return Err(Unsupported(
+            "bulk_grant_trust_level without a trust_level (InvalidParameters)",
+        )
+        .into());
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let cx = crate::promotion::Ctx {
+        settings: &settings,
+        i18n: &state.i18n,
+        host: &host,
+    };
+    let existing: Vec<i32> =
+        sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) ORDER BY id")
+            .bind(&user_ids)
+            .fetch_all(&mut *tx)
+            .await?;
+    for user_id in existing {
+        if recalculate {
+            crate::promotion::recalculate_with(&mut tx, &cx, user_id, None, true).await?;
+        } else if let Some(level) = level {
+            crate::group_manager::grant_trust_level(&mut tx, &cx, user_id, level).await?;
+        }
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 /// Jobs::CleanupAclsForDeleted: a deleted group or user taken out of the
