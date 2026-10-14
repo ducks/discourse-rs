@@ -1,0 +1,47 @@
+{
+  "name": "anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/sidebar_sections.json"
+    },
+    {
+      "method": "POST",
+      "path": "/sidebar_sections.json",
+      "params": {
+        "title": "x"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:27:51.026826",
+  "transaction_started_at": "2026-10-14T15:27:49.5161",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "cc390afe92acd05f8dad4f44690b4cfad595fe1a3b839a97c22ef272cd77fb1d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

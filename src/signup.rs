@@ -726,9 +726,24 @@ async fn default_sidebar_links(
         }
     }
     if s.get("tagging_enabled")?.truthy()
-        && s.get("default_navigation_menu_tags")?.presence().is_some()
+        && let Some(tags) = s.get("default_navigation_menu_tags")?.presence()
     {
-        return Err(Unsupported("default sidebar tags at signup").into());
+        // Tag.where(name:).pluck(:id), in the table's order.
+        let names: Vec<String> = tags.split('|').map(str::to_string).collect();
+        let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM tags WHERE name = ANY($1)")
+            .bind(&names)
+            .fetch_all(&mut *conn)
+            .await?;
+        for id in ids {
+            sqlx::query(
+                "INSERT INTO sidebar_section_links (user_id, linkable_id, linkable_type, created_at, updated_at) \
+                 VALUES ($1, $2, 'Tag', now(), now()) ON CONFLICT DO NOTHING",
+            )
+            .bind(user_id)
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+        }
     }
     Ok(())
 }

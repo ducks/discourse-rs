@@ -116,6 +116,7 @@ pub mod second_factor_auth;
 pub mod session;
 pub mod setting_enums;
 pub mod sidebar;
+pub mod sidebar_backfill;
 pub mod signup;
 pub mod site;
 pub mod site_icons;

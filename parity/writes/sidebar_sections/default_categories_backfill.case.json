@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_categories/user_count.json", "params": {"default_navigation_menu_categories": "2|4|5"}},
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_categories.json", "params": {"default_navigation_menu_categories": "2|4|5", "update_existing_user": "true"}},
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_categories/user_count.json", "params": {"default_navigation_menu_categories": "2|4|5"}}
+  ],
+  "run_jobs": ["backfill_sidebar_site_settings"]
+}

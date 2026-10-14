@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/sidebar_sections.json"},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "x"}}
+  ]
+}

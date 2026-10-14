@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/sidebar_sections.json"},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "My stuff", "links": [{"icon": "link", "name": "Latest", "value": "/latest"}, {"icon": "star", "name": "Elsewhere", "value": "https://example.com/x?a=1"}, {"icon": "house", "name": "Full", "value": "http://localhost/t/1", "segment": "secondary"}]}},
+    {"method": "GET", "path": "/sidebar_sections.json"},
+    {"method": "GET", "path": "/sidebar_sections/2.json"},
+    {"method": "PUT", "path": "/sidebar_sections/2.json", "params": {"title": "Renamed", "links": [{"id": "14", "icon": "star", "name": "Elsewhere 2", "value": "https://example.com/y"}, {"id": "13", "icon": "link", "name": "Latest", "value": "/latest"}, {"id": "15", "_destroy": "1", "icon": "house", "name": "Full", "value": "/t/1"}, {"icon": "user", "name": "Me", "value": "/my/summary"}]}},
+    {"method": "PUT", "path": "/sidebar_sections/2/reorder.json", "params": {"links_order": ["16", "13", "14"]}},
+    {"method": "PUT", "path": "/sidebar_sections/2/reorder.json", "params": {"links_order": ["16", "13"]}},
+    {"method": "PUT", "path": "/sidebar_sections/2/reorder.json", "params": {}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Second", "links": [{"icon": "link", "name": "Top", "value": "/top"}]}},
+    {"method": "PUT", "path": "/sidebar_sections/2/move_link.json", "params": {"link_id": "13", "target_section_id": "3", "position": "0"}},
+    {"method": "PUT", "path": "/sidebar_sections/2/move_link.json", "params": {"link_id": "13", "target_section_id": "3"}},
+    {"method": "PUT", "path": "/sidebar_sections/3/move_link.json", "params": {"link_id": "13", "target_section_id": "1"}},
+    {"method": "DELETE", "path": "/sidebar_sections/2.json"},
+    {"method": "GET", "path": "/sidebar_sections.json"}
+  ]
+}

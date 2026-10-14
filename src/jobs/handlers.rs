@@ -50,6 +50,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::admin_badges::BULK_USER_TITLE_UPDATE => {
             crate::admin_badges::bulk_user_title_update(state, &job.args).await
         }
+        crate::sidebar_backfill::JOB => crate::sidebar_backfill::run(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
         "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
         "group_pm_alert" => group_pm_alert(state, &job.args).await,

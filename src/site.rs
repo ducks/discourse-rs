@@ -243,7 +243,7 @@ fn str_list(items: &[&str]) -> Value {
 }
 
 /// `String#parameterize` for ASCII titles.
-fn parameterize(s: &str) -> String {
+pub(crate) fn parameterize(s: &str) -> String {
     let mut out = String::new();
     for c in s.chars() {
         if c.is_ascii_alphanumeric() || c == '_' {
@@ -1082,7 +1082,57 @@ impl Site<'_> {
         {
             return Ok(None);
         }
-        Err(Unsupported("anonymous_default_navigation_menu_tags (SidebarTagSerializer)").into())
+        // DiscourseTagging.filter_visible for anonymous viewers (hidden
+        // tags out), by name, through SidebarTagSerializer.
+        let names: Vec<String> = self
+            .setting("default_navigation_menu_tags")?
+            .to_s()
+            .split('|')
+            .map(str::to_string)
+            .collect();
+        #[derive(sqlx::FromRow)]
+        struct Tag {
+            id: i32,
+            name: String,
+            slug: Option<String>,
+            description: Option<String>,
+            public_topic_count: i32,
+            pm_topic_count: i32,
+        }
+        let tags: Vec<Tag> = sqlx::query_as(
+            "SELECT id, name, slug, description, public_topic_count, pm_topic_count FROM tags \
+             WHERE name = ANY($1) AND id NOT IN ( \
+               SELECT tgm.tag_id FROM tag_group_memberships tgm \
+               JOIN tag_group_permissions tgp ON tgp.tag_group_id = tgm.tag_group_id \
+               WHERE tgm.tag_id NOT IN ( \
+                 SELECT tgm2.tag_id FROM tag_group_memberships tgm2 \
+                 JOIN tag_group_permissions tgp2 ON tgp2.tag_group_id = tgm2.tag_group_id \
+                 WHERE tgp2.group_id = 0)) \
+             ORDER BY name",
+        )
+        .bind(&names)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        if tags.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(Value::Array(
+            tags.into_iter()
+                .map(|t| {
+                    let slug = t
+                        .slug
+                        .filter(|s| !s.is_empty())
+                        .unwrap_or_else(|| format!("{}-tag", t.id));
+                    json!({
+                        "id": t.id,
+                        "name": t.name,
+                        "slug": slug,
+                        "description": t.description,
+                        "pm_only": t.public_topic_count == 0 && t.pm_topic_count > 0,
+                    })
+                })
+                .collect(),
+        )))
     }
 
     /// Public sidebar sections with their links (SidebarSectionSerializer).

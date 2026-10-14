@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "", "links": [{"icon": "link", "name": "Latest", "value": "/latest"}]}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "A title much longer than thirty characters", "links": []}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "No icon", "links": [{"icon": "", "name": "Latest", "value": "/latest"}]}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Bad url", "links": [{"icon": "link", "name": "Bad", "value": "https://exa mple.com"}]}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Public", "public": "true", "links": [{"icon": "link", "name": "Latest", "value": "/latest"}]}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Fine", "links": [{"icon": "link", "name": "Latest", "value": "/latest"}]}},
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Fine", "links": [{"icon": "link", "name": "Latest", "value": "/latest"}]}},
+    {"method": "PUT", "path": "/sidebar_sections/1.json", "params": {"title": "Mine now"}},
+    {"method": "DELETE", "path": "/sidebar_sections/1.json"},
+    {"method": "GET", "path": "/sidebar_sections/1.json"},
+    {"method": "PUT", "path": "/sidebar_sections/reset/1.json"},
+    {"method": "GET", "path": "/sidebar_sections/999.json"}
+  ]
+}
