@@ -189,7 +189,7 @@ Bugs or silent gaps in what is merged, small and independent.
     insert notifications, which shelving hooks into
 67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
 69. ~~`feat/email-unsubscribe`~~ (done) M, 70. ~~`feat/digest-email`~~ (done) L,
-    71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
+    71. ~~`feat/jobs-digest`~~ (done) S, 72. `feat/admin-email-digest` S
 73. `feat/about-stats` S/M, 74. `feat/directory` M
 75. `feat/review-reject-queued-post` M,
     76. `feat/user-destroyer-delete-posts` M

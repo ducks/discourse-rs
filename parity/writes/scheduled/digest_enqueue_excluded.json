@@ -1,0 +1,33 @@
+{
+  "name": "digest_enqueue_excluded",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T03:03:20.004998",
+  "transaction_started_at": "2026-10-14T03:03:17.050224",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '8 days' WHERE id IN (1, 2, 3)",
+    "UPDATE users SET last_seen_at = now() - interval '1 day' WHERE id = 4",
+    "UPDATE user_stats SET digest_attempted_at = NULL WHERE user_id = 2",
+    "UPDATE user_stats SET digest_attempted_at = now() - interval '9 days' WHERE user_id = 1",
+    "UPDATE user_stats SET digest_attempted_at = now() - interval '10 days' WHERE user_id = 3",
+    "UPDATE user_stats SET bounce_score = 4 WHERE user_id = 3",
+    "UPDATE user_options SET digest_after_minutes = 0 WHERE user_id = 1",
+    "UPDATE users SET last_seen_at = now() - interval '200 days' WHERE id = 2"
+  ],
+  "enqueue": [
+    [
+      "enqueue_digest_emails",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "9f0e4f0769b41b50569160a6fc301b4f8e6f3b89a380ca538a4779f8d302825e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
