@@ -1,0 +1,990 @@
+{
+  "name": "topic_tags_watchers_hidden",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with a staff tag its watchers may not see",
+        "category": 4,
+        "raw": "The first post of a topic tagged with a tag only staff see, watched by members who can't see it.",
+        "tags": [
+          "guide",
+          "howto"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:10:57.167685",
+  "transaction_started_at": "2026-10-14T23:10:54.481321",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 53,
+        "name": "Admin",
+        "username": "admin",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+        "created_at": "2026-10-14T23:10:57.429Z",
+        "cooked": "<p>The first post of a topic tagged with a tag only staff see, watched by members who can’t see it.</p>",
+        "post_number": 1,
+        "post_type": 1,
+        "posts_count": 1,
+        "updated_at": "2026-10-14T23:10:57.429Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 0,
+        "readers_count": 0,
+        "score": 0,
+        "yours": true,
+        "topic_id": 45,
+        "topic_slug": "a-topic-with-a-staff-tag-its-watchers-may-not-see",
+        "display_username": "Admin",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": true,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": true,
+        "can_wiki": true,
+        "user_title": null,
+        "bookmarked": false,
+        "raw": "The first post of a topic tagged with a tag only staff see, watched by members who can't see it.",
+        "actions_summary": [
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": true,
+        "admin": true,
+        "staff": true,
+        "user_id": 1,
+        "draft_sequence": 1,
+        "hidden": false,
+        "trust_level": 4,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "reviewable_id": null,
+        "reviewable_score_count": 0,
+        "reviewable_score_pending_count": 0,
+        "post_url": "/t/a-topic-with-a-staff-tag-its-watchers-may-not-see/45/1",
+        "reactions": [],
+        "current_user_reaction": null,
+        "reaction_users_count": 0,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null,
+        "can_vote": false
+      }
+    }
+  ],
+  "changes": {
+    "categories": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-01T07:04:33.522762",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 3,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 2,
+            "latest_post_id": 52,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 41,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          },
+          "after": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-01T07:04:33.522762",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 4,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 2,
+            "latest_post_id": 53,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 45,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          }
+        }
+      ]
+    },
+    "category_featured_topics": {
+      "inserted": [
+        {
+          "id": 59,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-14T23:10:57.38372",
+          "updated_at": "2026-10-14T23:10:57.38372",
+          "category_id": 4
+        },
+        {
+          "id": 60,
+          "rank": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T23:10:57.386054",
+          "updated_at": "2026-10-14T23:10:57.386054",
+          "category_id": 4
+        },
+        {
+          "id": 61,
+          "rank": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-14T23:10:57.388041",
+          "updated_at": "2026-10-14T23:10:57.388041",
+          "category_id": 4
+        },
+        {
+          "id": 62,
+          "rank": 3,
+          "topic_id": 41,
+          "created_at": "2026-10-14T23:10:57.392376",
+          "updated_at": "2026-10-14T23:10:57.392376",
+          "category_id": 4
+        },
+        {
+          "id": 63,
+          "rank": 4,
+          "topic_id": 38,
+          "created_at": "2026-10-14T23:10:57.394688",
+          "updated_at": "2026-10-14T23:10:57.394688",
+          "category_id": 4
+        }
+      ],
+      "deleted": [
+        {
+          "id": 55,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-01T15:44:18.466364",
+          "updated_at": "2026-10-01T15:44:18.466364",
+          "category_id": 4
+        },
+        {
+          "id": 56,
+          "rank": 1,
+          "topic_id": 35,
+          "created_at": "2026-10-01T15:44:18.467717",
+          "updated_at": "2026-10-01T15:44:18.467717",
+          "category_id": 4
+        },
+        {
+          "id": 57,
+          "rank": 2,
+          "topic_id": 41,
+          "created_at": "2026-10-01T15:44:18.468742",
+          "updated_at": "2026-10-01T15:44:18.468742",
+          "category_id": 4
+        },
+        {
+          "id": 58,
+          "rank": 3,
+          "topic_id": 38,
+          "created_at": "2026-10-01T15:44:18.46946",
+          "updated_at": "2026-10-01T15:44:18.46946",
+          "category_id": 4
+        }
+      ],
+      "updated": []
+    },
+    "category_tag_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "tag_id": 1,
+            "category_id": 4,
+            "topic_count": 1
+          },
+          "after": {
+            "id": 3,
+            "tag_id": 1,
+            "category_id": 4,
+            "topic_count": 2
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "tag_id": 2,
+            "category_id": 4,
+            "topic_count": 2
+          },
+          "after": {
+            "id": 2,
+            "tag_id": 2,
+            "category_id": 4,
+            "topic_count": 3
+          }
+        }
+      ]
+    },
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "topic_45"
+        },
+        {
+          "id": 2,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "new_topic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"topic_title\":\"A topic with a staff tag its watchers may not see\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"admin\",\"display_name\":\"Admin\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": 45,
+          "created_at": "2026-10-14T23:10:57.67423",
+          "updated_at": "2026-10-14T23:10:57.67423",
+          "post_number": 1,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 17
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "The first post of a topic tagged with a tag only staff see, watched by members who can't see it.",
+          "search_data": "'first':16 'general':12B 'guid':14C 'howto':13C 'may':9A 'member':30 'post':17 'see':11A,27,34 'staff':5A,26 'tag':6A,21,24 'topic':2A,20 'watch':28 'watcher':8A",
+          "private_message": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T23:10:57.449335",
+          "updated_at": "2026-10-14T23:10:57.449335",
+          "drafts_saved": 0,
+          "writing_device": "unknown",
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "The first post of a topic tagged with a tag only staff see, watched by members who can't see it.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>The first post of a topic tagged with a tag only staff see, watched by members who can’t see it.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-14T23:10:57.429083",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T23:10:57.429149",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T23:10:57.429149",
+          "word_count": 21,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T23:10:57.446789",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 3,
+            "description_cooked": null,
+            "public_topic_count": 3,
+            "description_cooked_version": 1
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 3,
+            "description_cooked": null,
+            "public_topic_count": 3,
+            "description_cooked_version": 1
+          }
+        }
+      ]
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A topic with a staff tag its watchers may not see The first post of a topic tagged with a tag only staff see, watched by members who can't see it.",
+          "topic_id": 45,
+          "search_data": "'first':13B 'may':9A 'member':27B 'post':14B 'see':11A,24B,31B 'staff':5A,23B 'tag':6A,18B,21B 'topic':2A,17B 'watch':25B 'watcher':8A"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_tags": {
+      "inserted": [
+        {
+          "id": 5,
+          "tag_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T23:10:57.349948",
+          "updated_at": "2026-10-14T23:10:57.349948"
+        },
+        {
+          "id": 6,
+          "tag_id": 2,
+          "topic_id": 45,
+          "created_at": "2026-10-14T23:10:57.358147",
+          "updated_at": "2026-10-14T23:10:57.358147"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T23:10:57.452904",
+          "last_visited_at": "2026-10-14T23:10:57.410504",
+          "first_visited_at": "2026-10-14T23:10:57.410504",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T23:10:57.408971"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "a-topic-with-a-staff-tag-its-watchers-may-not-see",
+          "score": null,
+          "title": "A topic with a staff tag its watchers may not see",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "The first post of a topic tagged with a tag only staff see, watched by members who can’t see it.",
+          "subtype": null,
+          "user_id": 1,
+          "visible": true,
+          "archived": false,
+          "archetype": "regular",
+          "bumped_at": "2026-10-14T23:10:57.429149",
+          "pinned_at": null,
+          "created_at": "2026-10-14T23:10:57.347158",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T23:10:57.459187",
+          "word_count": 21,
+          "category_id": 4,
+          "external_id": null,
+          "fancy_title": "A topic with a staff tag its watchers may not see",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T23:10:57.429149",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 1,
+          "created_at": "2026-10-14T23:10:57.347158",
+          "updated_at": "2026-10-14T23:10:57.417775",
+          "action_type": 4,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qX+FP9htEHJuJhfiaDrEsnkeOt0=",
+            "created_at": "2026-10-14T23:10:56.138405",
+            "rotated_at": "2026-10-14T23:10:56.134941",
+            "updated_at": "2026-10-14T23:10:56.138405",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qX+FP9htEHJuJhfiaDrEsnkeOt0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T23:10:57.176871",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qX+FP9htEHJuJhfiaDrEsnkeOt0=",
+            "created_at": "2026-10-14T23:10:56.138405",
+            "rotated_at": "2026-10-14T23:10:56.134941",
+            "updated_at": "2026-10-14T23:10:56.138405",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qX+FP9htEHJuJhfiaDrEsnkeOt0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 7,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-14T23:10:57.469443",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-14T23:10:57.429149",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "notify_mailing_list_subscribers in 600s",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "category_featured_topics": 59,
+    "draft_sequences": 1,
+    "notifications": 53,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_tags": 5,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Staff tags', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (2, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 3, 1, now(), now())",
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (2, 2, 4, now(), now()), (2, 4, 4, now(), now()), (1, 4, 4, now(), now())"
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email in 600s",
+      {
+        "type": "user_watching_first_post",
+        "user_id": 4,
+        "notification_id": 53,
+        "notification_data_hash": {
+          "topic_title": "A topic with a staff tag its watchers may not see",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "admin",
+          "revision_number": null,
+          "display_username": "admin",
+          "display_name": "Admin"
+        },
+        "notification_type": "watching_first_post",
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "3eca7cec522e5cb441e49ca282a2f519251464a614ceee00d16dc389f826f31d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

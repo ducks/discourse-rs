@@ -1,0 +1,27 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE categories SET minimum_required_tags = 2 WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with fewer tags than its category asks for",
+        "category": 4,
+        "raw": "The first post of a topic with one tag in a category that asks every topic for two of them.",
+        "tags": ["howto"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with no tags where its category asks for some",
+        "category": 4,
+        "raw": "The first post of a topic with no tag at all in a category that asks every topic for two of them."
+      }
+    }
+  ]
+}

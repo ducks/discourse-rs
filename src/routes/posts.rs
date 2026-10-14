@@ -22,9 +22,8 @@ use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
 /// `create_params` that this slice does not write: refused, not ignored.
-const UNPORTED_CREATE_PARAMS: [&str; 19] = [
+const UNPORTED_CREATE_PARAMS: [&str; 18] = [
     "target_usernames",
-    "tags",
     "whisper",
     "no_bump",
     "shared_draft",
@@ -70,10 +69,19 @@ pub async fn create(
     if guardian.is_anonymous() {
         return Ok(super::login_required::not_logged_in(&state));
     }
+    // reject_too_many_tags!(:tags)
+    {
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        if let Some(error) = crate::tagging::too_many_tags(&settings, &state.i18n, p.get("tags"))? {
+            return Ok(json_error(StatusCode::UNPROCESSABLE_ENTITY, vec![error]));
+        }
+    }
     if let Some(key) = UNPORTED_CREATE_PARAMS.iter().find(|k| p.contains_key(**k)) {
         tracing::warn!(param = key, "posts#create param not ported");
         return Err(
-            Unsupported("posts#create params beyond raw, topic, title and category").into(),
+            Unsupported("posts#create params beyond raw, topic, title, category and tags").into(),
         );
     }
     let mut conn = state.pool.acquire().await?;
@@ -123,6 +131,13 @@ pub async fn create(
         // is_api?: an admin API key (the session middleware checked it).
         advance_draft: !api,
         draft_key: params::string(&p, "draft_key"),
+        tags_payload: p.get("tags").cloned(),
+        // TopicCreator reads them; a reply ignores them.
+        tags: if integer("topic_id").is_some() {
+            None
+        } else {
+            crate::tagging::parse_param(p.get("tags"))?
+        },
         first_post_checks: !api,
         from_composer: true,
         ..Default::default()

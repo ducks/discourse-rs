@@ -351,7 +351,7 @@ async fn tag_search(
     }
     let max = settings.get("max_tag_search_results")?.to_i();
     let limit = limit.min(max);
-    let term = crate::web_hooks::admin::clean_tag(settings, q)?;
+    let term = crate::tagging::clean_tag(settings, q)?;
     let count = if guardian.is_staff()
         || settings
             .get("include_secure_categories_in_tag_counts")?

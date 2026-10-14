@@ -68,6 +68,14 @@ pub struct NewPost {
     /// `skip_guardian`): the review queue isn't asked again, and the
     /// author may post where the reviewer's guardian lets them.
     pub reviewed_queued_post: bool,
+    /// `tags`: a new topic's tags (TopicCreator), as names or tag objects.
+    pub tags: Option<crate::tagging::TagsParam>,
+    /// The `tags` param as sent, which a queued post keeps in its payload.
+    pub tags_payload: Option<serde_json::Value>,
+    /// PostCreator's guardian when it isn't the author's: a staff reviewer
+    /// approving a queued post (`opts[:guardian]`), whom TopicCreator tags
+    /// the topic as.
+    pub creator_guardian: Option<Guardian>,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -143,6 +151,12 @@ struct TopicPlan {
     subtype: Option<String>,
     /// The topic's custom fields (`topic_opts[:custom_fields]`).
     custom_fields: Vec<(String, String)>,
+    /// TopicCreator#setup_tags: the tags asked for, the category the topic
+    /// was given (none for uncategorized, filled in at save), and the text
+    /// tag watched words are matched in (`"#{title} #{raw}"`).
+    tags: Option<crate::tagging::TagsParam>,
+    tag_category_id: Option<i32>,
+    tag_text: String,
 }
 
 /// `BrowserDetection.device(user_agent)`
@@ -202,6 +216,9 @@ async fn regular_topic_plan(
         all_topics_wiki,
         subtype: None,
         custom_fields: Vec::new(),
+        tags: None,
+        tag_category_id: None,
+        tag_text: String::new(),
     })
 }
 
@@ -305,13 +322,6 @@ pub async fn create(
         || reply_topic
             .as_ref()
             .is_some_and(|t| t.archetype == "private_message");
-    // TopicCreator tags a new topic by its tag words.
-    if args.topic_id.is_none() {
-        let text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
-        if crate::word_watcher::tag_word_matches(&mut conn, s, &text).await? {
-            return Err(Unsupported("watched words that tag topics").into());
-        }
-    }
     if args.reviewed_queued_post {
         if user.staged {
             return Err(Unsupported("approving a staged user's queued post").into());
@@ -442,7 +452,7 @@ pub async fn create(
             remove_extraneous_space: s.get("title_remove_extraneous_space")?.truthy(),
         };
         let title = clean_title(args.title.as_deref().unwrap_or(""), &title_options);
-        let errors = validate::validate_topic(
+        let mut errors = validate::validate_topic(
             &mut conn,
             ctx,
             guardian,
@@ -453,6 +463,23 @@ pub async fn create(
             },
         )
         .await?;
+        if !args.skip_validations {
+            let names = match &args.tags {
+                Some(param) => crate::tagging::names_for_validation(&mut conn, param).await?,
+                None => Vec::new(),
+            };
+            errors.extend(
+                validate_topic_tags(
+                    &mut conn,
+                    ctx,
+                    guardian,
+                    category_id,
+                    private_message,
+                    &names,
+                )
+                .await?,
+            );
+        }
         if !errors.is_empty() && !args.skip_validations {
             return Ok(Outcome::Invalid(errors));
         }
@@ -466,11 +493,19 @@ pub async fn create(
                 all_topics_wiki: false,
                 subtype: args.subtype.clone(),
                 custom_fields: args.topic_custom_fields.clone(),
+                tags: None,
+                tag_category_id: None,
+                tag_text: String::new(),
             });
         } else {
             let mut regular = regular_topic_plan(&mut conn, s, title, category_id).await?;
             regular.custom_fields = args.topic_custom_fields.clone();
             plan = Some(regular);
+        }
+        if let Some(plan) = plan.as_mut() {
+            plan.tags = args.tags.clone().filter(|t| !t.is_empty());
+            plan.tag_category_id = category_id;
+            plan.tag_text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
         }
     }
     if !new_topic {
@@ -715,6 +750,7 @@ pub async fn create(
     .unwrap_or(0);
 
     // create_topic
+    let mut tag_hooks: Vec<crate::tagging::CreatedTag> = Vec::new();
     let (topic_id, topic_title, topic_word_count, category_id, wiki) = match (&reply_topic, &plan) {
         (Some(t), _) => (
             t.id,
@@ -728,10 +764,13 @@ pub async fn create(
                 &mut tx,
                 ctx,
                 guardian,
+                args.creator_guardian.as_ref().unwrap_or(guardian),
                 &poster,
                 plan,
                 args.advance_draft,
                 &mut performed,
+                args.skip_validations,
+                &mut tag_hooks,
             )
             .await?
             {
@@ -1161,6 +1200,8 @@ pub async fn create(
         .execute(&mut *tx)
         .await?;
     }
+    // The new tags' after_commit: their tag_created web hooks.
+    crate::tagging::enqueue_tag_created(&mut tx, &tag_hooks).await?;
     // PostCreator#publish: replies only (the first post's topic is news to
     // the topic list instead).
     if post_number != 1 {
@@ -1262,13 +1303,10 @@ pub async fn create(
     if auto_close > 0 && auto_close <= i64::from(posts_count) {
         return Err(Unsupported("auto_close_topics_post_count").into());
     }
-    let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(
-        "SELECT (SELECT name FROM categories WHERE id = $2), \
-           (SELECT string_agg(name, ' ') FROM (SELECT t.name FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
-              WHERE tt.topic_id = $1 \
-            UNION ALL SELECT s.name FROM tags s WHERE s.target_tag_id IN \
-              (SELECT tag_id FROM topic_tags WHERE topic_id = $1)) n)",
-    )
+    let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(&format!(
+        "SELECT (SELECT name FROM categories WHERE id = $2), {}",
+        search_index::topic_tag_names_sql("$1")
+    ))
     .bind(topic_id)
     .bind(category_id)
     .fetch_one(&mut *conn)
@@ -1385,6 +1423,113 @@ pub(super) async fn post_notice(
     Ok(None)
 }
 
+/// TopicCreator#valid?'s tags: with a category the topic was given and a
+/// guardian that may tag it, `DiscourseTagging.validate_category_tags`.
+pub(super) async fn validate_topic_tags(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    category_id: Option<i32>,
+    private_message: bool,
+    names: &[String],
+) -> Result<Vec<String>, AppError> {
+    let s = ctx.settings;
+    let Some(category_id) = category_id else {
+        return Ok(Vec::new());
+    };
+    if !crate::tagging::can_tag(guardian, s, private_message)? {
+        return Ok(Vec::new());
+    }
+    let Some(category) = crate::tagging::TagCategory::load(conn, category_id).await? else {
+        return Ok(Vec::new());
+    };
+    crate::tagging::validate_category_tags(conn, s, ctx.i18n, guardian, &category, names).await
+}
+
+/// `TopicCreator#setup_tags`: the tags asked for (`DiscourseTagging.tag_topic`,
+/// the topic rolled back with its errors and unable_to_tag when they fail,
+/// or with skip_validations `add_or_create_tags_by_name`), then those its
+/// tag watched words add, tagged as the system user (whose failure leaves
+/// the tags as they were). None when nothing tags the topic.
+async fn setup_tags(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    plan: &TopicPlan,
+    pm: bool,
+    skip_validations: bool,
+) -> Result<Result<Option<crate::tagging::Tagging>, Vec<String>>, AppError> {
+    use crate::tagging::{self, TaggedTopic};
+    let s = ctx.settings;
+    let topic = TaggedTopic {
+        id: None,
+        private_message: pm,
+        category_id: plan.tag_category_id,
+    };
+    let mut tagging: Option<tagging::Tagging> = None;
+    if let Some(param) = &plan.tags {
+        match tagging::tag_topic(conn, s, ctx.i18n, guardian, &topic, param).await? {
+            Ok(t) => tagging = Some(t),
+            Err(rejected) => {
+                let mut errors = rejected.errors;
+                if skip_validations {
+                    let names = tagging::names_for_tagging(conn, param).await?;
+                    let mut added = tagging::add_or_create_tags_by_name(conn, s, &names).await?;
+                    let mut created = rejected.created;
+                    created.append(&mut added.created);
+                    added.created = created;
+                    tagging = Some(added);
+                } else {
+                    errors.push(
+                        ctx.t("activerecord.errors.models.topic.attributes.base.unable_to_tag"),
+                    );
+                    return Ok(Err(errors));
+                }
+            }
+        }
+    }
+    let current: Vec<String> = tagging
+        .as_ref()
+        .map(|t| t.tags.iter().map(|t| t.name.clone()).collect())
+        .unwrap_or_default();
+    if let Some(names) = tagging::watched_word_tags(conn, s, &plan.tag_text, &current).await? {
+        let system = crate::web_hooks::system_guardian(conn).await?;
+        match tagging::tag_topic_by_names(conn, s, ctx.i18n, &system, &topic, &names, false).await?
+        {
+            Ok(mut by_words) => {
+                // `topic.tags = tags` on the unsaved topic keeps the tags it
+                // already holds, in their order, and appends the others.
+                let before = tagging.unwrap_or_default();
+                let mut ordered: Vec<tagging::HeldTag> = before
+                    .tags
+                    .iter()
+                    .filter(|t| by_words.tags.contains(t))
+                    .cloned()
+                    .collect();
+                for t in by_words.tags {
+                    if !ordered.contains(&t) {
+                        ordered.push(t);
+                    }
+                }
+                by_words.tags = ordered;
+                let mut created = before.created;
+                created.extend(by_words.created.iter().cloned());
+                tagging = Some(tagging::Tagging {
+                    created,
+                    ..by_words
+                });
+            }
+            // The topic keeps the tags it had; tags created on the way stay.
+            Err(rejected) => {
+                let mut kept = tagging.unwrap_or_default();
+                kept.created.extend(rejected.created);
+                tagging = Some(kept);
+            }
+        }
+    }
+    Ok(Ok(tagging))
+}
+
 /// `TopicCreator#create` for a regular topic: the row, the category's
 /// count and featured topics, the creator watching it, the NEW_TOPIC
 /// action and the topic's draft sequence.
@@ -1392,10 +1537,13 @@ async fn create_topic(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
+    tag_guardian: &Guardian,
     poster: &Poster,
     plan: &TopicPlan,
     advance_draft: bool,
     performed: &mut Performed,
+    skip_validations: bool,
+    tag_hooks: &mut Vec<crate::tagging::CreatedTag>,
 ) -> Result<Result<i32, TopicRefused>, AppError> {
     let s = ctx.settings;
     let user_id = poster.id;
@@ -1403,6 +1551,25 @@ async fn create_topic(
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
     let pm = plan.pm_recipients.is_some();
+    // setup_tags, before the topic is saved.
+    let tagging = match setup_tags(conn, ctx, tag_guardian, plan, pm, skip_validations).await? {
+        Ok(tagging) => tagging,
+        Err(errors) => return Ok(Err(TopicRefused::Invalid(errors))),
+    };
+    if let Some(t) = &tagging {
+        tag_hooks.extend(t.created.iter().cloned());
+        // The unsaved tag fails the topic's autosaved association.
+        if t.has_invalid_tag() && skip_validations {
+            return Err(
+                Unsupported("saving a tag Tag's validations refuse, without validations").into(),
+            );
+        }
+        if t.has_invalid_tag() {
+            return Ok(Err(TopicRefused::Invalid(vec![
+                crate::tagging::invalid_tags_message(ctx.i18n),
+            ])));
+        }
+    }
     let slug = slug_for(&plan.title, &s.get("default_locale")?.to_s())?;
     let fancy_title = crate::posting::text::fancy_title(
         &plan.title,
@@ -1436,6 +1603,16 @@ async fn create_topic(
         .bind(value)
         .execute(&mut *conn)
         .await?;
+    }
+    // The topic tags, autosaved with the topic, and its after_save.
+    if let Some(t) = &tagging {
+        let saved = crate::tagging::SavedTopic {
+            id: topic_id,
+            private_message: pm,
+            category_id: plan.category_id,
+        };
+        crate::tagging::apply(conn, &saved, t).await?;
+        crate::tagging::after_tags_saved(conn, topic_id).await?;
     }
     // before_save on create: the category's auto close, saved with the
     // topic (topic_timers <<).

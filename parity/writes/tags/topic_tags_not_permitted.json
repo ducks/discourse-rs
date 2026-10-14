@@ -1,0 +1,84 @@
+{
+  "name": "topic_tags_not_permitted",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic from a member who may not tag topics",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags though only staff may tag topics on this site.",
+        "tags": [
+          "howto"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:38:13.586742",
+  "transaction_started_at": "2026-10-14T22:38:11.44708",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "You're not allowed to tag topics",
+          "There was an error tagging the topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/zTZ3TkE/8JNtym+4/umcPMchQw=",
+            "created_at": "2026-10-14T22:38:12.634736",
+            "rotated_at": "2026-10-14T22:38:12.632639",
+            "updated_at": "2026-10-14T22:38:12.634736",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/zTZ3TkE/8JNtym+4/umcPMchQw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T22:38:13.595977",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/zTZ3TkE/8JNtym+4/umcPMchQw=",
+            "created_at": "2026-10-14T22:38:12.634736",
+            "rotated_at": "2026-10-14T22:38:12.632639",
+            "updated_at": "2026-10-14T22:38:12.634736",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/zTZ3TkE/8JNtym+4/umcPMchQw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tag_topic_allowed_groups": "1|2"
+  },
+  "recorded_from": {
+    "case": "16fc7d85435f6402c2224538c0e2efd4e14b717e25ec24130851f5e5e4266663",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

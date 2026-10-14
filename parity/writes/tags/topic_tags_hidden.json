@@ -1,0 +1,87 @@
+{
+  "name": "topic_tags_hidden",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic tagged with a tag user1 cannot see",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags with a tag only staff can see, along with one anyone may use.",
+        "tags": [
+          "guide",
+          "howto"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:38:09.504715",
+  "transaction_started_at": "2026-10-14T22:38:08.498265",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "You cannot apply the tag \"guide\".",
+          "There was an error tagging the topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9CaCfoKRX9yND6+O/TtJfs1Bcr8=",
+            "created_at": "2026-10-14T22:38:08.881395",
+            "rotated_at": "2026-10-14T22:38:08.880278",
+            "updated_at": "2026-10-14T22:38:08.881395",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9CaCfoKRX9yND6+O/TtJfs1Bcr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T22:38:09.511885",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9CaCfoKRX9yND6+O/TtJfs1Bcr8=",
+            "created_at": "2026-10-14T22:38:08.881395",
+            "rotated_at": "2026-10-14T22:38:08.880278",
+            "updated_at": "2026-10-14T22:38:08.881395",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9CaCfoKRX9yND6+O/TtJfs1Bcr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Hidden', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (2, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 3, 1, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "a3de2506e650f8cbbd7a22beeaaeebdede56663d496044128948ee2bf3a5a3f1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

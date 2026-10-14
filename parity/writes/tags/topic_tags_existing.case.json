@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic from user1 for the tagging slice",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags with an existing tag, named in another case.",
+        "tags": ["HowTo"]
+      }
+    }
+  ]
+}

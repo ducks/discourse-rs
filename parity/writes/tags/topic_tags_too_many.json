@@ -1,0 +1,84 @@
+{
+  "name": "topic_tags_too_many",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with more tags than a topic may have",
+        "category": 4,
+        "raw": "The first post of a topic tagged with six tags when five is the most a topic takes.",
+        "tags": [
+          "howto",
+          "guide",
+          "one",
+          "two",
+          "three",
+          "four"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:38:55.702226",
+  "transaction_started_at": "2026-10-14T22:38:54.806702",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You can apply up to 5 tags to a topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KQhvGEfSDndQNERJ440v/TB6v08=",
+            "created_at": "2026-10-14T22:38:55.127634",
+            "rotated_at": "2026-10-14T22:38:55.126157",
+            "updated_at": "2026-10-14T22:38:55.127634",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KQhvGEfSDndQNERJ440v/TB6v08=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T22:38:55.709456",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KQhvGEfSDndQNERJ440v/TB6v08=",
+            "created_at": "2026-10-14T22:38:55.127634",
+            "rotated_at": "2026-10-14T22:38:55.126157",
+            "updated_at": "2026-10-14T22:38:55.127634",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KQhvGEfSDndQNERJ440v/TB6v08=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "430012daa9dfa96175c9dac0b633cb780d7cd5d9591921e43a017bf50887f719",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

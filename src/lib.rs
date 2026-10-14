@@ -153,6 +153,7 @@ pub mod staff_action_logs;
 pub mod stylesheet;
 pub mod svg_sprite;
 pub mod system_message;
+pub mod tagging;
 pub mod tags;
 pub mod theme_import;
 pub mod theme_writes;

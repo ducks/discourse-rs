@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with more tags than a topic may have",
+        "category": 4,
+        "raw": "The first post of a topic tagged with six tags when five is the most a topic takes.",
+        "tags": ["howto", "guide", "one", "two", "three", "four"]
+      }
+    }
+  ]
+}

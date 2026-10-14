@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (9601, 'kitten', 6, 'howto,felines', FALSE, FALSE, now(), now()), (9602, 'puppy', 6, 'canines', FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic about a kitten, tagged by its words",
+        "category": 4,
+        "raw": "The first post of a topic whose words tag it: a kitten is in it, but no dog.",
+        "tags": ["guide"]
+      }
+    }
+  ]
+}

@@ -181,7 +181,7 @@ pub(super) async fn enqueue(
                 remove_extraneous_space: s.get("title_remove_extraneous_space")?.truthy(),
             },
         );
-        validate::validate_topic(
+        let mut errors = validate::validate_topic(
             &mut conn,
             ctx,
             guardian,
@@ -191,7 +191,19 @@ pub(super) async fn enqueue(
                 private_message: false,
             },
         )
-        .await?
+        .await?;
+        errors.extend(
+            super::create::validate_topic_tags(
+                &mut conn,
+                ctx,
+                guardian,
+                category_id,
+                false,
+                &crate::tagging::queued_names(args.tags.as_ref())?,
+            )
+            .await?,
+        );
+        errors
     };
     if !errors.is_empty() {
         let count = pending_count(&mut conn, user.id).await?;
@@ -207,7 +219,10 @@ pub(super) async fn enqueue(
     // is_poll (its handler passed), the title of a new topic.
     let mut payload = Map::new();
     payload.insert("raw".into(), json!(args.raw));
-    payload.insert("tags".into(), Value::Null);
+    payload.insert(
+        "tags".into(),
+        args.tags_payload.clone().unwrap_or(Value::Null),
+    );
     if let Some(n) = args.typing_duration_msecs {
         payload.insert("typing_duration_msecs".into(), json!(n));
     }

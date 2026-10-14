@@ -1,0 +1,38 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (2, 1, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with a tag restricted to another category",
+        "category": 4,
+        "raw": "The first post of a topic tagged with a tag only the site feedback category may use.",
+        "tags": ["howto"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic in a category that allows only its own tags",
+        "category": 2,
+        "raw": "The first post of a topic in site feedback, tagged with its tag and one it does not allow.",
+        "tags": ["howto", "guide"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic in a category tagged with its own tag",
+        "category": 2,
+        "raw": "The first post of a topic in site feedback, tagged with the one tag the category allows.",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

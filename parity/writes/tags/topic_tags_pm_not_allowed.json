@@ -1,0 +1,82 @@
+{
+  "name": "topic_tags_pm_not_allowed",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged message user1 may not tag",
+        "raw": "Hello user2, this message carries a tag, which no member may add to messages on this site.",
+        "archetype": "private_message",
+        "target_recipients": "user2",
+        "tags": [
+          "howto"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:38:25.457998",
+  "transaction_started_at": "2026-10-14T22:38:24.427702",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "You're not allowed to tag topics",
+          "There was an error tagging the topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fd4FnhnlV6PHyTc/VfSSXFhlOk8=",
+            "created_at": "2026-10-14T22:38:24.780509",
+            "rotated_at": "2026-10-14T22:38:24.779038",
+            "updated_at": "2026-10-14T22:38:24.780509",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "fd4FnhnlV6PHyTc/VfSSXFhlOk8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T22:38:25.470584",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fd4FnhnlV6PHyTc/VfSSXFhlOk8=",
+            "created_at": "2026-10-14T22:38:24.780509",
+            "rotated_at": "2026-10-14T22:38:24.779038",
+            "updated_at": "2026-10-14T22:38:24.780509",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "fd4FnhnlV6PHyTc/VfSSXFhlOk8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "624778277aeb9aea451597c0f912b76fd8eb58638288211262fbb28397494aa4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

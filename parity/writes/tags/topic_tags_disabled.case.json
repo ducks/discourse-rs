@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "tagging_enabled": false
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic on a site with tagging turned off",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags though tagging is turned off on this site.",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

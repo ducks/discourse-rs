@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (1, 4, 4, now(), now()), (2, 2, 3, now(), now()), (2, 5, 2, now(), now()), (1, 1, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic its tags' watchers hear about",
+        "category": 4,
+        "raw": "The first post of a tagged topic, which members watching its tags hear about at once.",
+        "tags": ["howto", "guide"]
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "notify_tag_change"
+  ]
+}

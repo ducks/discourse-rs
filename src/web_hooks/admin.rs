@@ -733,47 +733,6 @@ async fn tag_ids_assigned(conn: &mut PgConnection, ids: &[i32]) -> Result<Vec<i3
         .await
 }
 
-/// `DiscourseTagging.clean_tag`
-pub(crate) fn clean_tag(settings: &SiteSettings, tag: &str) -> Result<String, AppError> {
-    let mut tag = tag.to_string();
-    if settings.get("force_lowercase_tags")?.truthy() {
-        tag = tag.to_lowercase();
-    }
-    let tag = tag.trim();
-    // [[:space:]]+ to a dash
-    let mut dashed = String::new();
-    let mut in_space = false;
-    for c in tag.chars() {
-        if c.is_whitespace() {
-            if !in_space {
-                dashed.push('-');
-            }
-            in_space = true;
-        } else {
-            dashed.push(c);
-            in_space = false;
-        }
-    }
-    // [^[:word:][:punct:]]+ dropped, then TAGS_FILTER_REGEXP's characters.
-    const FILTERED: &str = "/?#[]@!$&'()*+,;=%\\`^|{}\"<>";
-    let kept: String = dashed
-        .chars()
-        .filter(|c| c.is_alphanumeric() || *c == '_' || c.is_ascii_punctuation())
-        .filter(|c| !FILTERED.contains(*c) && !c.is_whitespace())
-        .collect();
-    // squeeze("-")
-    let mut squeezed = String::new();
-    for c in kept.chars() {
-        if c == '-' && squeezed.ends_with('-') {
-            continue;
-        }
-        squeezed.push(c);
-    }
-    let max = settings.get("max_tag_length")?.to_i().max(0) as usize;
-    let truncated: String = squeezed.chars().take(max).collect();
-    Ok(truncated.trim_matches('.').to_string())
-}
-
 /// `tag_names=`: DiscourseTagging.add_or_create_tags_by_name with the
 /// system user, unlimited: the tags named, their synonyms, and new tags for
 /// names no tag has (created at once, whatever becomes of the hook). None
@@ -797,7 +756,7 @@ async fn tag_names_assigned(
             .await?;
     let existing = tag_names.clone();
     for name in names.iter().filter(|n| !existing.contains(n)) {
-        tag_names.push(clean_tag(settings, name)?);
+        tag_names.push(crate::tagging::clean_tag(settings, name)?);
     }
     tag_names.retain(|t| !t.trim().is_empty());
     let mut unique: Vec<String> = Vec::new();
@@ -848,50 +807,19 @@ async fn tag_names_assigned(
     Ok(Some(ids))
 }
 
-/// `Tag.create(name:)`: its slug, the row, its search data and its
-/// tag_created web hooks.
+/// `Tag.create(name:)` and, at once, its tag_created web hooks.
 async fn create_tag(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,
 ) -> Result<i32, AppError> {
-    if ["none", "constructor"].contains(&name.trim().to_lowercase().as_str()) {
-        return Err(Unsupported("a reserved tag name through a web hook's tag_names").into());
-    }
-    // ensure_slug: Slug.for(name, ""), none when another tag has it.
-    let slug = crate::posting::text::slug_with_default(name, "en", "")?;
-    let taken: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM tags WHERE lower(slug) = lower($1))")
-            .bind(&slug)
-            .fetch_one(&mut *conn)
-            .await?;
-    let slug = if slug.is_empty() || taken {
-        String::new()
-    } else {
-        slug
-    };
-    let id: i32 = sqlx::query_scalar(
-        "INSERT INTO tags (name, slug, created_at, updated_at) \
-         VALUES ($1, $2, clock_timestamp(), clock_timestamp()) RETURNING id",
-    )
-    .bind(name)
-    .bind(&slug)
-    .fetch_one(&mut *conn)
-    .await?;
-    crate::posting::search_index::index_tag(conn, settings, id, &name.to_lowercase()).await?;
-    // after_commit: tag_created.
-    if super::active(conn, "tag_created").await? {
-        let tag = crate::tags::Tag::find(conn, id)
-            .await?
-            .ok_or(Unsupported("a tag that vanished"))?;
-        let guardian = super::system_guardian(conn).await?;
-        let payload = tag.serialize(conn, &guardian, settings).await?;
-        let mut opts = Map::new();
-        opts.insert("id".into(), json!(id));
-        opts.insert("payload".into(), json!(super::to_json(&payload)));
-        super::enqueue_hooks(conn, "tag", "tag_created", opts).await?;
-    }
-    Ok(id)
+    let tag = crate::tagging::create_tag(conn, settings, name)
+        .await?
+        .ok_or(Unsupported(
+            "a tag name Tag's validations refuse, through a web hook's tag_names",
+        ))?;
+    crate::tagging::enqueue_tag_created(conn, std::slice::from_ref(&tag)).await?;
+    Ok(tag.id)
 }
 
 /// `URI.regexp(%w[http https])`, unanchored: an http or https scheme

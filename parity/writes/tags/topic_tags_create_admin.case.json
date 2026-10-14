@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_created', 'tag_updated')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "An admin's topic with tags that do not exist yet",
+        "category": 4,
+        "raw": "The first post of a topic the admin tags with new tags, cleaned before they are created.",
+        "tags": [" Brand  New Tag ", "howto", "node.js", "Café/Bar"]
+      }
+    }
+  ]
+}
