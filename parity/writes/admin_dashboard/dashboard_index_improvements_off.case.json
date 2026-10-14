@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {"dashboard_improvements": false},
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard.json"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json"}
+  ],
+  "ignore": [
+    "/responses/0/body/updated_at"
+  ]
+}

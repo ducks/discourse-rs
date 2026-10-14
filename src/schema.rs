@@ -21,6 +21,20 @@ pub fn discourse_commit() -> &'static str {
         .unwrap_or("unknown")
 }
 
+/// When the vendored commit was made (`committed_at`).
+pub fn discourse_committed_at() -> Option<&'static str> {
+    DISCOURSE_REF
+        .lines()
+        .find_map(|l| l.strip_prefix("committed_at="))
+}
+
+/// The vendored commit's `git describe` (`Discourse.full_version`).
+pub fn discourse_describe() -> Option<&'static str> {
+    DISCOURSE_REF
+        .lines()
+        .find_map(|l| l.strip_prefix("describe="))
+}
+
 /// `Discourse::VERSION::STRING` of the vendored commit.
 pub fn discourse_version() -> &'static str {
     DISCOURSE_REF

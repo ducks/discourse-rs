@@ -138,10 +138,14 @@ echo "vendored $sprites plugin icon sprites"
 # Discourse::VERSION::STRING, for the user agent it fetches with.
 version="$(git -C "$src" show "$commit:lib/version.rb" | sed -n 's/^ *STRING = "\(.*\)"$/\1/p')"
 
+# Discourse.full_version (`git describe`), which the admin dashboard shows.
+describe="$(git -C "$src" describe --match "v[0-9]*" "$commit" 2>/dev/null || echo unknown)"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at
 version=$version
+describe=$describe
 EOF
 
 versions="$(grep -cE "^\('[0-9]+'\)[,;]$" "$dest/db/structure.sql")"

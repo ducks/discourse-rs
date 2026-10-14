@@ -1,0 +1,847 @@
+{
+  "name": "dashboard_index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-14"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:59:51.386977",
+  "transaction_started_at": "2026-10-14T15:59:50.212892",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "sections": [
+          {
+            "id": "highlights",
+            "data": {
+              "kpis": [
+                {
+                  "type": "new_signups",
+                  "value": 1,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "signups",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                },
+                {
+                  "type": "dau_mau",
+                  "value": 61.1,
+                  "previous_value": 14.29,
+                  "percent_change": 327.57,
+                  "report_type": "dau_by_mau",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                },
+                {
+                  "type": "new_contributors",
+                  "value": 4,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "new_contributors",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "reports",
+            "data": {
+              "items": [
+                {
+                  "source": "core_report",
+                  "identifier": "daily_engaged_users",
+                  "title": "Daily Engaged Users",
+                  "description": "Number of users that have liked or posted in the last day.",
+                  "label": null,
+                  "url": "/admin/reports/daily_engaged_users",
+                  "key": "core_report:daily_engaged_users",
+                  "rows": 1,
+                  "cols": 1
+                },
+                {
+                  "source": "core_report",
+                  "identifier": "time_to_first_response",
+                  "title": "Time to first response",
+                  "description": "Average time (in hours) of the first response to new topics.",
+                  "label": null,
+                  "url": "/admin/reports/time_to_first_response",
+                  "key": "core_report:time_to_first_response",
+                  "rows": 1,
+                  "cols": 1
+                }
+              ]
+            }
+          },
+          {
+            "id": "traffic",
+            "data": {
+              "kpis": {
+                "browser_pageviews": {
+                  "value": 72
+                },
+                "logged_in_share": {
+                  "value": 68
+                },
+                "direct_traffic": {
+                  "value": 75
+                },
+                "bounce_rate": {
+                  "value": 47
+                },
+                "average_session_duration_seconds": {
+                  "value": 43
+                }
+              },
+              "pageview_series": [
+                {
+                  "req": "page_view_logged_in_browser",
+                  "label": "Logged in",
+                  "color": "#4B3CE0",
+                  "data": [
+                    {
+                      "x": "2026-09-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 10
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 30
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 9
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    }
+                  ]
+                },
+                {
+                  "req": "page_view_anon_browser",
+                  "label": "Anonymous",
+                  "color": "#9C8DEC",
+                  "data": [
+                    {
+                      "x": "2026-09-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 3
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 20
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    }
+                  ]
+                },
+                {
+                  "req": "page_view_crawler",
+                  "label": "Crawlers",
+                  "color": "#D5CDF7",
+                  "data": [
+                    {
+                      "x": "2026-09-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 70
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 5
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    }
+                  ]
+                }
+              ],
+              "top_countries": {
+                "rows": [
+                  {
+                    "country_code": "US",
+                    "count": "30.0",
+                    "percent": 75
+                  },
+                  {
+                    "country_code": "DE",
+                    "count": "10.0",
+                    "percent": 25
+                  }
+                ],
+                "error": null
+              },
+              "top_referrers": {
+                "rows": [
+                  {
+                    "normalized_referrer": "google.com",
+                    "count": "10.0",
+                    "percent": 100
+                  }
+                ],
+                "error": null
+              },
+              "top_entry_urls": {
+                "rows": [],
+                "error": null
+              }
+            }
+          },
+          {
+            "id": "engagement",
+            "data": {
+              "kpis": [
+                {
+                  "type": "dau_mau",
+                  "value": 61.1,
+                  "previous_value": 14.29,
+                  "percent_change": 327.57,
+                  "report_type": "dau_by_mau",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                },
+                {
+                  "type": "daily_engaged_users",
+                  "value": 4.5,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "daily_engaged_users",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                },
+                {
+                  "type": "new_signups",
+                  "value": 1,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "signups",
+                  "report_query": {
+                    "start_date": "2026-09-20",
+                    "end_date": "2026-10-14"
+                  }
+                }
+              ],
+              "trust_level_pipeline": {
+                "rows": [
+                  {
+                    "trust_level": 4,
+                    "name": "Leader",
+                    "count": 2,
+                    "share": 40.0,
+                    "share_formatted": "40.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 3,
+                    "name": "Regular",
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 2,
+                    "name": "Member",
+                    "count": 2,
+                    "share": 40.0,
+                    "share_formatted": "40.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 1,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 1,
+                    "name": "Basic",
+                    "count": 1,
+                    "share": 20.0,
+                    "share_formatted": "20.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 0,
+                    "name": "New",
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 1
+                  }
+                ],
+                "trend": {
+                  "direction": "dropping",
+                  "net": 1
+                },
+                "total_members": 5
+              },
+              "posters": {
+                "rows": [
+                  {
+                    "type": "new_members",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "New members",
+                    "count": 1,
+                    "share": 10.0,
+                    "share_formatted": "10.0%"
+                  },
+                  {
+                    "type": "returning",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "Returning",
+                    "count": 5,
+                    "share": 50.0,
+                    "share_formatted": "50.0%"
+                  },
+                  {
+                    "type": "staff",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "Staff",
+                    "count": 4,
+                    "share": 40.0,
+                    "share_formatted": "40.0%"
+                  }
+                ],
+                "total": 10,
+                "category_ids": null,
+                "groups": [
+                  "new_members",
+                  "returning",
+                  "staff"
+                ]
+              },
+              "activity_by_category": {
+                "rows": [
+                  {
+                    "category_id": 4,
+                    "name": "General",
+                    "color": "25AAE2",
+                    "slug": "general",
+                    "topics": 5,
+                    "posts": 12,
+                    "page_views": 30,
+                    "share": 72.31,
+                    "share_change": 72.31,
+                    "share_formatted": "72.31%",
+                    "share_change_formatted": "+72.31%"
+                  },
+                  {
+                    "category_id": 2,
+                    "name": "Site Feedback",
+                    "color": "808281",
+                    "slug": "site-feedback",
+                    "topics": 1,
+                    "posts": 3,
+                    "page_views": 10,
+                    "share": 21.54,
+                    "share_change": 21.54,
+                    "share_formatted": "21.54%",
+                    "share_change_formatted": "+21.54%"
+                  },
+                  {
+                    "category_id": 34,
+                    "name": "Sub General",
+                    "color": "AB9364",
+                    "slug": "sub-general",
+                    "topics": 2,
+                    "posts": 2,
+                    "page_views": 0,
+                    "share": 6.15,
+                    "share_change": 6.15,
+                    "share_formatted": "6.15%",
+                    "share_change_formatted": "+6.15%"
+                  }
+                ],
+                "total": 65,
+                "category_ids": null
+              }
+            }
+          },
+          {
+            "id": "search",
+            "data": {
+              "logging_enabled": true,
+              "kpis": {
+                "total_searches": {
+                  "value": 4,
+                  "previous_value": 0
+                },
+                "no_result_rate": {
+                  "value": 50,
+                  "previous_value": null,
+                  "exceeds_threshold": true
+                }
+              },
+              "trending": [
+                {
+                  "term": "ruby",
+                  "searches": 2
+                },
+                {
+                  "term": "old",
+                  "searches": 1
+                },
+                {
+                  "term": "rails",
+                  "searches": 1
+                }
+              ],
+              "trending_period": "monthly",
+              "content_gaps": [
+                {
+                  "term": "old",
+                  "searches": 1,
+                  "status": "no_match"
+                },
+                {
+                  "term": "rails",
+                  "searches": 1,
+                  "status": "no_match"
+                }
+              ],
+              "search_type": "non_staff_only"
+            }
+          },
+          {
+            "id": "system",
+            "data": {
+              "version": {
+                "installed_version": "2026.10.0-latest",
+                "installed_sha": "bf55a44c2872738f7ae2664d6fec3d6d8779190f",
+                "installed_describe": "v2026.10.0-latest +114",
+                "git_branch": "unknown",
+                "updated_at": null,
+                "version_check_pending": true,
+                "stale_data": true
+              },
+              "storage": {
+                "backups": {
+                  "used_bytes": 0,
+                  "free_bytes": 97749848064,
+                  "count": 0,
+                  "last_backup_taken_at": null,
+                  "remote": false
+                },
+                "uploads": {
+                  "used_bytes": 1368569,
+                  "free_bytes": 97749848064,
+                  "remote": false
+                }
+              },
+              "discourse_updated_at": "2026-09-25T20:35:25.000+00:00",
+              "dashboard_updated_at": "2026-10-14T15:59:51.485Z"
+            }
+          }
+        ],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          },
+          {
+            "id": 34,
+            "priority": "low",
+            "message": "There are 6 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
+            "identifier": "failing_emails"
+          }
+        ],
+        "configuration": {
+          "sections": [
+            {
+              "id": "highlights",
+              "visible": true
+            },
+            {
+              "id": "reports",
+              "visible": true
+            },
+            {
+              "id": "traffic",
+              "visible": true
+            },
+            {
+              "id": "engagement",
+              "visible": true
+            },
+            {
+              "id": "search",
+              "visible": true
+            },
+            {
+              "id": "system",
+              "visible": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qp3DTIwFS2hMOVah9fbfZph/HBM=",
+            "created_at": "2026-10-14T15:59:50.633286",
+            "rotated_at": "2026-10-14T15:59:50.629462",
+            "updated_at": "2026-10-14T15:59:50.633286",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qp3DTIwFS2hMOVah9fbfZph/HBM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:59:51.394429",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qp3DTIwFS2hMOVah9fbfZph/HBM=",
+            "created_at": "2026-10-14T15:59:50.633286",
+            "rotated_at": "2026-10-14T15:59:50.629462",
+            "updated_at": "2026-10-14T15:59:50.633286",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qp3DTIwFS2hMOVah9fbfZph/HBM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "call_discourse_hub",
+      {
+        "all_sites": true
+      }
+    ]
+  ],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM search_logs",
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (2, (now() - interval '2 days')::date, 3, false, 60), (3, (now() - interval '2 days')::date, 1, true, 30)",
+    "INSERT INTO user_visit_daily_rollups (date, dau, mau) VALUES ((now() - interval '3 days')::date, 1, 3), ((now() - interval '2 days')::date, 2, 4), ((now() - interval '40 days')::date, 1, 7)",
+    "INSERT INTO search_logs (term, user_id, ip_address, search_result_id, search_type, created_at) VALUES ('Ruby', 2, '10.0.0.1', 37, 1, now() - interval '2 days'), ('ruby', 3, '10.0.0.2', NULL, 1, now() - interval '2 days'), ('rails', 3, '10.0.0.2', NULL, 2, now() - interval '3 days'), ('ruby', NULL, '10.0.0.3', NULL, 1, now() - interval '1 day'), ('old', 2, '10.0.0.1', NULL, 1, now() - interval '20 days'), ('admin search', 1, '10.0.0.1', NULL, 1, now() - interval '2 days')",
+    "INSERT INTO application_requests (date, req_type, count) VALUES ((now() - interval '2 days')::date, 7, 40), ((now() - interval '2 days')::date, 8, 25), ((now() - interval '2 days')::date, 6, 70), ((now() - interval '2 days')::date, 13, 20), ((now() - interval '2 days')::date, 15, 30), ((now() - interval '1 day')::date, 6, 5), ((now() - interval '1 day')::date, 15, 8), ((now() - interval '1 day')::date, 19, 9), ((now() - interval '20 days')::date, 15, 10), ((now() - interval '20 days')::date, 13, 3)",
+    "INSERT INTO browser_pageview_country_daily_rollups (date, country_code, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'DE', 10, 3, 1, 0), ((now() - interval '2 days')::date, 'US', 30, 10, 0, 0)",
+    "INSERT INTO browser_pageview_referrer_daily_rollups (date, normalized_referrer, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'google.com', 10, 3, 1, 0), ((now() - interval '2 days')::date, NULL, 30, 10, 0, 0)",
+    "INSERT INTO browser_pageview_session_engagement_daily_rollups (date, logged_in, sessions, bounced, engaged_seconds_total, likely_crawler_sessions, likely_crawler_bounced, likely_crawler_engaged_seconds_total) VALUES ((now() - interval '2 days')::date, true, 10, 3, 600, 0, 0, 0), ((now() - interval '2 days')::date, false, 5, 4, 50, 0, 0, 0)",
+    "INSERT INTO category_activity_daily_rollups (date, category_id, topics, posts, page_views, likely_crawler_page_views) VALUES ((now() - interval '2 days')::date, 4, 2, 5, 30, 4), ((now() - interval '3 days')::date, 2, 0, 2, 10, 0)"
+  ],
+  "recorded_from": {
+    "case": "5c045f87b5dd454cf51f65f4385f52f43dfaea19879c71cfe7e3d55158dc1744",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

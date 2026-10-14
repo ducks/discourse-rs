@@ -43,6 +43,22 @@ BackupRestore.define_singleton_method(:spawn_process!) do |type, user_id, opts|
   ENQUEUED << ["spawn_backup_restore", { type: type.to_s, user_id: user_id, opts: opts }]
   nil
 end
+# The admin dashboard builds its sections and bulk reports on thread pools,
+# each thread with a connection of its own that would not see the case's
+# transaction (nor share it): build them on the case's connection, in order,
+# as the port does.
+AdminDashboardSectionLoader.prepend(Module.new { def build(parallel: true) = super(parallel: false) })
+AdminDashboard::Reports::BulkFetch.singleton_class.prepend(
+  Module.new do
+    def fetch_in_parallel(items, guardian:, filters:)
+      items.map do |item|
+        fetch_item(item, guardian:, filters:)
+      rescue StandardError
+        AdminDashboard::Reports::BulkFetch::FETCH_FAILED
+      end
+    end
+  end,
+)
 ActionController::Base.allow_forgery_protection = false
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
@@ -155,7 +171,9 @@ def clear_redis_state
   # admin toggle), which would refuse every later case's writes.
   # email-backup-token:*, backup_restore_operation_*, start_logs_message_id:
   # the backups' download tokens and running state (a case's `redis`).
-  %w[readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
+  # _CACHE:reports:*, *-dashboard-data-*: cached reports and dashboard
+  # stats (Report.cache, StatsCacheable), kept up to an hour.
+  %w[readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

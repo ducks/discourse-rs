@@ -1,0 +1,101 @@
+{
+  "name": "dashboard_index_improvements_off",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:59:54.207912",
+  "transaction_started_at": "2026-10-14T15:59:51.717498",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "updated_at": "2026-10-14T15:59:54.237Z",
+        "version_check": {
+          "installed_version": "2026.10.0-latest",
+          "installed_sha": "bf55a44c2872738f7ae2664d6fec3d6d8779190f",
+          "installed_describe": "v2026.10.0-latest +114",
+          "git_branch": "unknown",
+          "updated_at": null,
+          "version_check_pending": true,
+          "stale_data": true
+        }
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "APnuT7YGO/7hIUuJod06tfhDYxc=",
+            "created_at": "2026-10-14T15:59:52.082983",
+            "rotated_at": "2026-10-14T15:59:52.081969",
+            "updated_at": "2026-10-14T15:59:52.082983",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "APnuT7YGO/7hIUuJod06tfhDYxc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:59:54.217622",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "APnuT7YGO/7hIUuJod06tfhDYxc=",
+            "created_at": "2026-10-14T15:59:52.082983",
+            "rotated_at": "2026-10-14T15:59:52.081969",
+            "updated_at": "2026-10-14T15:59:52.082983",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "APnuT7YGO/7hIUuJod06tfhDYxc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "call_discourse_hub",
+      {
+        "all_sites": true
+      }
+    ]
+  ],
+  "next_ids": {},
+  "settings": {
+    "dashboard_improvements": false
+  },
+  "recorded_from": {
+    "case": "e60cb69f55bfc9f20a54c375de666d5a08d9e163e5eb5e1db4c191935e60c265",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

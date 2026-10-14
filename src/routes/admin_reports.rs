@@ -139,14 +139,7 @@ async fn context<'a>(
     settings: &'a SiteSettings,
     urls: &'a crate::url::Urls<'a>,
 ) -> Result<Cx<'a>, AppError> {
-    let tertiary = crate::color_scheme::hex_for_name(conn, settings, "tertiary").await?;
-    Ok(Cx {
-        settings,
-        defs: &state.site_setting_defs,
-        i18n: &state.i18n,
-        urls,
-        tertiary,
-    })
+    reports::context(conn, settings, &state.site_setting_defs, &state.i18n, urls).await
 }
 
 async fn cached(
@@ -156,33 +149,15 @@ async fn cached(
     kind: &str,
     opts: &Opts,
 ) -> Result<Option<Value>, AppError> {
-    let report = reports::get(cx, viewer, kind, opts)?;
-    if report.include_related_items {
-        return Ok(None);
-    }
-    let key = report.report_key().to_string();
-    let hit = crate::owned_schema::cached_get(conn, &key).await?;
-    Ok(hit.and_then(|s| serde_json::from_str(&s).ok()))
+    reports::find_cached(conn, cx, viewer, kind, opts).await
 }
 
-/// `Report.cache(report)`: an hour, a minute after an exception.
 async fn cache(
     conn: &mut sqlx::PgConnection,
     cx: &Cx<'_>,
     report: &reports::Report,
 ) -> Result<(), AppError> {
-    if report.include_related_items {
-        return Ok(());
-    }
-    let seconds = if report.error == Some("exception") {
-        60
-    } else {
-        3600
-    };
-    let json = report.as_json(cx);
-    let key = report.report_key().to_string();
-    crate::owned_schema::cached_setex(conn, &key, seconds, &json.to_string()).await?;
-    Ok(())
+    reports::cache(conn, cx, report).await
 }
 
 fn truthy_param(p: &Map<String, Value>, key: &str) -> bool {

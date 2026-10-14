@@ -453,7 +453,15 @@ then by what running a forum needs (milestone 6). Briefs:
     show and bulk, the 56 core reports and solved's and reactions'; refused:
     unported plugins' reports, associated accounts with an external
     login, MaxMind locations, remote storage stats),
-    89c. `feat/admin-dashboard-sections` M/L, 89d. `feat/pageview-tracking` L
+    89c. ~~`feat/admin-dashboard-sections`~~ (done) M/L (the sections payload
+    and the legacy one, general, configuration with its staff log, section
+    settings, the mounted reports' listing, layout and bulk fetch, the
+    highlights, reports, traffic, engagement, search and system sections,
+    the vendored version (call_discourse_hub enqueued, never run),
+    warm_dashboard_reports. Refused: discourse-solved's support section,
+    data explorer's report source, what's new and toggle-feature (the
+    upcoming changes list), the traffic explorer until 89d),
+    89d. `feat/pageview-tracking` L
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,
     91. `feat/backups` L (creating, listing, downloading, restoring

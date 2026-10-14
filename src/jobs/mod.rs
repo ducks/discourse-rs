@@ -13,6 +13,7 @@ pub mod badges;
 pub mod bookmark_reminders;
 pub mod cleanup;
 pub mod consistency;
+pub mod dashboard;
 pub mod group_messages;
 mod handlers;
 pub mod heat;
@@ -469,6 +470,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(10 * 60),
     ),
     (
+        dashboard::WARM_DASHBOARD_REPORTS,
+        Duration::from_secs(30 * 60),
+    ),
+    (
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS,
         Duration::from_secs(30 * 60),
     ),
@@ -628,6 +633,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             crate::web_hooks::jobs::redeliver_web_hook_events(state).await
         }
         problem_checks::RUN_PROBLEM_CHECKS => problem_checks::run_problem_checks(state).await,
+        dashboard::WARM_DASHBOARD_REPORTS => dashboard::warm_dashboard_reports(state).await,
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS => {
             problem_checks::notify_admins_of_problems(state).await
         }

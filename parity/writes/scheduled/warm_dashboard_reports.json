@@ -1,0 +1,27 @@
+{
+  "name": "warm_dashboard_reports",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:18:18.000391",
+  "transaction_started_at": "2026-10-14T16:18:12.933149",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 day' WHERE id = 1",
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4"
+  ],
+  "enqueue": [
+    [
+      "warm_dashboard_reports",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "6ab9b2a26d25d7c4509a52b505544e4114e6ee6226b8142f171fd87e511d6ae2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
