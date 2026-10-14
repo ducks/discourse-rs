@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET slow_mode_seconds = 600 WHERE id = 35",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() + interval '1 day', 9, 3, now() - interval '1 hour', now() - interval '1 hour', FALSE, 'TopicTimer', 35, FALSE, NULL, NULL)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/slow_mode",
+      "params": {
+        "seconds": "900",
+        "enabled_until": "2027-02-01T10:00:00.000Z"
+      }
+    }
+  ]
+}

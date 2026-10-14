@@ -1,0 +1,52 @@
+{
+  "name": "job_open_user_lost_rights",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:07:26.526237",
+  "transaction_started_at": "2026-10-14T00:07:25.661177",
+  "responses": [],
+  "changes": {
+    "topic_timers": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "type": "TopicTimer",
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-13T23:07:25.661177",
+          "deleted_at": null,
+          "execute_at": "2026-10-14T00:06:25.661177",
+          "updated_at": "2026-10-13T23:07:25.661177",
+          "category_id": null,
+          "public_type": true,
+          "status_type": 2,
+          "timerable_id": 37,
+          "deleted_by_id": null,
+          "duration_minutes": null,
+          "based_on_last_post": false
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() - interval '1 minute', 2, 3, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 37, FALSE, NULL, NULL)"
+  ],
+  "enqueue": [
+    [
+      "open_topic",
+      {
+        "topic_timer_id": 9601
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5997d95982d2463964d99b25170c5af2f42c3d39796f3ad579011155c6a48fc3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

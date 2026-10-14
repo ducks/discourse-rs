@@ -15,7 +15,7 @@ use crate::pretty_text::Host;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_timer::{self, SetOptions, SetOutcome, When};
-use crate::{AppError, AppState};
+use crate::{AppError, AppState, Unsupported};
 
 fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
@@ -198,4 +198,132 @@ pub async fn timer(
         "category_id": timer.as_ref().and_then(|t| t.category_id),
     }))
     .into_response())
+}
+
+/// `UserHistory.actions`
+const TOPIC_SLOW_MODE_SET: i32 = 110;
+const TOPIC_SLOW_MODE_REMOVED: i32 = 111;
+
+/// PUT /t/:topic_id/slow_mode: TopicsController#set_slow_mode, the
+/// topic's slow mode and the timer that clears it.
+pub async fn slow_mode(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    if topic_id.is_empty() || !topic_id.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let param = |key: &str| p.get(key).and_then(params::scalar);
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let s = &settings;
+    let topic_id = crate::ruby::to_i(&topic_id) as i32;
+    // Topic.find
+    let Some(topic) =
+        crate::topic_guardian::TopicCtx::load(&mut tx, s, &guardian, topic_id).await?
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if topic.trashed() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let secure = guardian.secure_category_ids(&mut tx, s).await?;
+    let can_see = guardian.can_see_topic(s, &topic, true, &secure)?;
+    if !guardian.can_moderate(can_see) {
+        // hide_inaccessible_topic_when_detailed_404_disabled
+        if s.get("detailed_404")?.truthy() {
+            return Ok(super::search::invalid_access(&state));
+        }
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(seconds_param) = param("seconds") else {
+        return Err(Unsupported("slow mode without seconds").into());
+    };
+    let seconds = crate::ruby::to_i(&seconds_param);
+    crate::jobs::topic_timers::set_slow_mode_seconds(&mut tx, s, topic_id, seconds as i32).await?;
+    let enabled = seconds > 0;
+    let time = param("enabled_until").filter(|t| enabled && !t.trim().is_empty());
+    let existing_user: Option<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' \
+           AND status_type = $2 AND deleted_at IS NULL ORDER BY id LIMIT 1",
+    )
+    .bind(topic_id)
+    .bind(topic_timer::types::CLEAR_SLOW_MODE)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let when = match &time {
+        Some(t) => When::Text(t),
+        None => When::Blank,
+    };
+    let outcome = topic_timer::set_or_create_timer(
+        &mut tx,
+        &ctx,
+        topic_id,
+        topic_timer::types::CLEAR_SLOW_MODE,
+        when,
+        &SetOptions {
+            by_user: existing_user,
+            ..Default::default()
+        },
+    )
+    .await?;
+    match outcome {
+        SetOutcome::InvalidParameters => {
+            return Ok(super::search::invalid_parameters(
+                &state,
+                "Discourse::InvalidParameters",
+            ));
+        }
+        SetOutcome::Invalid(message) => {
+            return Err(
+                std::io::Error::other(format!("ActiveRecord::RecordInvalid: {message}")).into(),
+            );
+        }
+        SetOutcome::Nothing | SetOutcome::Saved { .. } => {}
+    }
+    // StaffActionLogger#log_topic_slow_mode
+    let details = if enabled {
+        format!(
+            "interval: {seconds_param}\nuntil: {}",
+            time.as_deref().unwrap_or("")
+        )
+    } else {
+        String::new()
+    };
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, topic_id, details, admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(if enabled {
+        TOPIC_SLOW_MODE_SET
+    } else {
+        TOPIC_SLOW_MODE_REMOVED
+    })
+    .bind(guardian.user_id())
+    .bind(topic_id)
+    .bind(&details)
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(StatusCode::OK.into_response())
 }

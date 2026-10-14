@@ -545,6 +545,7 @@ pub async fn set_or_create_timer(
                 crate::topic_status::Status::Closed,
                 enabled,
                 None,
+                false,
             ))
             .await?;
         }
@@ -654,6 +655,44 @@ pub async fn update_topic_auto_close(
         }
     }
     Ok(())
+}
+
+/// `Topic#auto_close_threshold_reached?`: enough pending flag scores, from
+/// enough flaggers, on a topic not owned by staff.
+pub async fn auto_close_threshold_reached(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    topic_id: i32,
+) -> Result<bool, AppError> {
+    let owner_staff: bool = sqlx::query_scalar(
+        "SELECT COALESCE(u.admin OR u.moderator, FALSE) FROM topics t \
+         LEFT JOIN users u ON u.id = t.user_id WHERE t.id = $1",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if owner_staff {
+        return Ok(false);
+    }
+    let min = crate::reviewables::min_score_for_priority(&mut *conn, settings).await?;
+    let (flaggers, total): (i64, f64) = sqlx::query_as(
+        "SELECT COUNT(DISTINCT rs.user_id), COALESCE(SUM(rs.score), 0.0) \
+         FROM reviewable_scores rs JOIN reviewables r ON r.id = rs.reviewable_id \
+         WHERE rs.status = $1 AND rs.score >= $2 AND r.topic_id = $3",
+    )
+    .bind(crate::reviewables::PENDING)
+    .bind(min)
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let to_close = crate::reviewables::sensitivity_score(
+        &mut *conn,
+        settings,
+        "auto_close_topic_sensitivity",
+        2.5,
+    )
+    .await?;
+    Ok(flaggers >= settings.get("num_flaggers_to_close_topic")?.to_i() && total >= to_close)
 }
 
 #[cfg(test)]

@@ -1,0 +1,71 @@
+{
+  "name": "job_bump_user_cannot",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:04:37.516056",
+  "transaction_started_at": "2026-10-14T00:04:36.493752",
+  "responses": [],
+  "changes": {
+    "topic_timers": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9601,
+            "type": "TopicTimer",
+            "user_id": 3,
+            "topic_id": null,
+            "created_at": "2026-10-13T23:04:36.493752",
+            "deleted_at": null,
+            "execute_at": "2026-10-14T00:03:36.493752",
+            "updated_at": "2026-10-13T23:04:36.493752",
+            "category_id": null,
+            "public_type": true,
+            "status_type": 6,
+            "timerable_id": 37,
+            "deleted_by_id": null,
+            "duration_minutes": null,
+            "based_on_last_post": false
+          },
+          "after": {
+            "id": 9601,
+            "type": "TopicTimer",
+            "user_id": 3,
+            "topic_id": null,
+            "created_at": "2026-10-13T23:04:36.493752",
+            "deleted_at": "2026-10-14T00:04:37.533025",
+            "execute_at": "2026-10-14T00:03:36.493752",
+            "updated_at": "2026-10-13T23:04:36.493752",
+            "category_id": null,
+            "public_type": true,
+            "status_type": 6,
+            "timerable_id": 37,
+            "deleted_by_id": -1,
+            "duration_minutes": null,
+            "based_on_last_post": false
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() - interval '1 minute', 6, 3, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 37, FALSE, NULL, NULL)"
+  ],
+  "enqueue": [
+    [
+      "bump_topic",
+      {
+        "topic_timer_id": 9601
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "8e5f16f78747aa10f1db0cccb2cf938a6146ceedded376657634015549fa2ba2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

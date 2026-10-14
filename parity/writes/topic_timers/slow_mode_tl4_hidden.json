@@ -1,0 +1,75 @@
+{
+  "name": "slow_mode_tl4_hidden",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/2/slow_mode",
+      "params": {
+        "seconds": "600"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:07:45.128443",
+  "transaction_started_at": "2026-10-14T00:07:42.813733",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "koy2ZDa1MEIhLVMC5JPH0A2o290=",
+            "created_at": "2026-10-14T00:07:43.455978",
+            "rotated_at": "2026-10-14T00:07:43.453666",
+            "updated_at": "2026-10-14T00:07:43.455978",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "koy2ZDa1MEIhLVMC5JPH0A2o290=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T00:07:45.145052",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "koy2ZDa1MEIhLVMC5JPH0A2o290=",
+            "created_at": "2026-10-14T00:07:43.455978",
+            "rotated_at": "2026-10-14T00:07:43.453666",
+            "updated_at": "2026-10-14T00:07:43.455978",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "koy2ZDa1MEIhLVMC5JPH0A2o290=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "714ae4a8fbcf0a2f832c07bacfdc21a3e14b0ce07907d9d4cab28467ac9bc0af",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

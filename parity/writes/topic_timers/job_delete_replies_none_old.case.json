@@ -1,0 +1,17 @@
+{
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() - interval '1 minute', 7, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 35, FALSE, 5256000, NULL)"
+  ],
+  "enqueue": [
+    [
+      "delete_replies",
+      {
+        "topic_timer_id": 9601
+      }
+    ]
+  ],
+  "run_jobs": [
+    "delete_replies"
+  ],
+  "requests": []
+}

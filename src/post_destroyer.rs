@@ -225,19 +225,37 @@ pub async fn destroy_as_system(
     post_id: i32,
     context: &str,
 ) -> Result<(), AppError> {
+    destroy_as(pool, ctx, -1, post_id, context).await
+}
+
+/// `PostDestroyer.new(user, post, context:).destroy` for a user the job
+/// names (a topic timer's), whose guardian is loaded here.
+pub async fn destroy_as(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    post_id: i32,
+    context: &str,
+) -> Result<(), AppError> {
     let mut conn = pool.acquire().await?;
-    let system = crate::session::current::SessionUser::load(&mut conn, -1)
+    let user = crate::session::current::SessionUser::load(&mut conn, user_id)
         .await?
-        .ok_or(Unsupported("a site without its system user"))?;
-    let guardian = Guardian::for_user(&mut conn, &system).await?;
-    drop(conn);
+        .ok_or(Unsupported("deleting a post as a user who is gone"))?;
+    let guardian = Guardian::for_user(&mut conn, &user).await?;
+    let topic_id: i32 = sqlx::query_scalar("SELECT topic_id FROM posts WHERE id = $1")
+        .bind(post_id)
+        .fetch_one(&mut *conn)
+        .await?;
     // The system user is an admin: it sees every topic.
+    let can_see_topic = user_id == -1
+        || crate::onebox::can_see_topic(&mut conn, ctx.settings, &guardian, topic_id).await?;
+    drop(conn);
     destroy(
         pool,
         ctx,
         &guardian,
         post_id,
-        true,
+        can_see_topic,
         &Request {
             context: Some(context),
         },

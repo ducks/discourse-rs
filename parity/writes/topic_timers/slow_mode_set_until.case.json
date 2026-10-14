@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/slow_mode",
+      "params": {
+        "seconds": "600",
+        "enabled_until": "2027-01-01T10:00:00.000Z"
+      }
+    }
+  ]
+}
