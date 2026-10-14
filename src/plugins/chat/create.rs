@@ -246,7 +246,13 @@ impl Context<'_> {
             .map(|c| c.naive_utc())
             .filter(|c| (now - *c).num_seconds().abs() <= 60)
             .unwrap_or(now);
-        let mut model_errors: Vec<String> = blocked.into_iter().collect();
+        // `validates :cooked, length:` comes before validate_message's
+        // checks, so its error is the first.
+        let mut model_errors: Vec<String> = Vec::new();
+        if cooked.chars().count() > 20_000 {
+            model_errors.push("Cooked is too long (maximum is 20000 characters)".into());
+        }
+        model_errors.extend(blocked);
         // Chat::DuplicateMessageValidator
         let duplicate: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \
@@ -274,9 +280,6 @@ impl Context<'_> {
                 )
                 .replace("%{count}", &min.to_string()),
             );
-        }
-        if cooked.chars().count() > 20_000 {
-            model_errors.push("Cooked is too long (maximum is 20000 characters)".into());
         }
         if !model_errors.is_empty() {
             return Ok(Outcome::Unprocessable(model_errors.join(", ")));
