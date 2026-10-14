@@ -69,6 +69,12 @@ pub struct RenderSettings {
     /// `emojiSet`, and where its images are served from.
     pub emoji_set: String,
     pub emoji_base_path: String,
+    /// `customEmoji`: a custom emoji's (lowercase) name to its image url.
+    #[serde(default)]
+    pub custom_emoji: std::collections::BTreeMap<String, String>,
+    /// `emojiDenyList` (`Emoji.denied`): names whose codes are dropped.
+    #[serde(default)]
+    pub emoji_deny_list: Vec<String>,
     /// `default_code_lang`: the language of a fence that names none.
     pub default_code_lang: String,
     /// `i18n("post.heading_anchor")`

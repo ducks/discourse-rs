@@ -1,0 +1,153 @@
+{
+  "name": "admin_emoji_destroy",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/config/emoji/party_parrot.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/emoji.json"
+    }
+  ],
+  "started_at": "2026-10-14T05:51:57.288854",
+  "transaction_started_at": "2026-10-14T05:51:56.341968",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "name": "blob",
+          "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "group": "default",
+          "created_by": "user0"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "custom_emojis": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 900,
+          "name": "party_parrot",
+          "group": "party",
+          "user_id": 1,
+          "upload_id": 34,
+          "created_at": "2026-10-14T05:51:56.341968",
+          "updated_at": "2026-10-14T05:51:56.341968"
+        }
+      ],
+      "updated": []
+    },
+    "upload_references": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 36,
+          "target_id": 900,
+          "upload_id": 34,
+          "created_at": "2026-10-14T05:51:56.341968",
+          "updated_at": "2026-10-14T05:51:56.341968",
+          "target_type": "CustomEmoji"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q/5XEO2/KvLZF3XNLq3H7LyQ7FY=",
+            "created_at": "2026-10-14T05:51:56.695832",
+            "rotated_at": "2026-10-14T05:51:56.694949",
+            "updated_at": "2026-10-14T05:51:56.695832",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "q/5XEO2/KvLZF3XNLq3H7LyQ7FY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T05:51:57.303159",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q/5XEO2/KvLZF3XNLq3H7LyQ7FY=",
+            "created_at": "2026-10-14T05:51:56.695832",
+            "rotated_at": "2026-10-14T05:51:56.694949",
+            "updated_at": "2026-10-14T05:51:56.695832",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "q/5XEO2/KvLZF3XNLq3H7LyQ7FY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 113,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T05:51:57.311779",
+          "ip_address": null,
+          "updated_at": "2026-10-14T05:51:57.311779",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "party_parrot",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "rebake_custom_emoji_posts",
+      {
+        "name": "party_parrot"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO custom_emojis (id, name, upload_id, created_at, updated_at, \"group\", user_id) VALUES (900, 'party_parrot', 34, now(), now(), 'party', 1), (901, 'blob', 35, now(), now(), NULL, 2)",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (34, 'CustomEmoji', 900, now(), now()), (35, 'CustomEmoji', 901, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "58a99d31370fd9b7f292dfbd3c118bba06d78a9121c95d6b92eb133ca0248480",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

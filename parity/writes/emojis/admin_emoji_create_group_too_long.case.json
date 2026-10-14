@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/emoji.json",
+      "params": {
+        "name": "longgroup",
+        "group": "a group name longer than twenty",
+        "file": {
+          "fixture": "animated.gif"
+        }
+      }
+    }
+  ]
+}

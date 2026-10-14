@@ -611,7 +611,9 @@ impl Context<'_> {
         list: Option<&crate::topic_list_view::ListSettings>,
     ) -> Link {
         let text = match list {
-            Some(l) => crate::topic_list_view::emoji_unescape(&escape(&c.title), l, self.base_path),
+            Some(l) => {
+                crate::topic_list_view::emoji_unescape(&escape(&c.title), &l.emojis, self.base_path)
+            }
             None => escape(&c.title),
         };
         Link {

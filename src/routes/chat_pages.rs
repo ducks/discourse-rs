@@ -384,7 +384,7 @@ pub async fn channel(
     let title = match (dm_title, channel_title) {
         (Some(dm), _) => format!(
             "{} - {} - ",
-            crate::emoji::gsub_emoji_to_unicode(&dm),
+            settings.emojis().gsub_to_unicode(&dm),
             chat_title(&state)
         ),
         (None, Some(name)) => format!("#{name} - {} - ", chat_title(&state)),

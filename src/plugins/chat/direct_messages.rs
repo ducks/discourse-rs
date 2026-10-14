@@ -395,7 +395,7 @@ impl Context<'_> {
         out.insert("title".into(), title);
         out.insert(
             "unicode_title".into(),
-            json!(crate::emoji::gsub_emoji_to_unicode(&title_str)),
+            json!(self.settings.emojis().gsub_to_unicode(&title_str)),
         );
         out.insert("slug".into(), json!(channel.slug));
         out.insert(

@@ -465,6 +465,7 @@ async fn show_list(
         .unwrap_or_else(|| title.clone());
     let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
     let mut crawler = crate::html::Crawler::for_request(&urls, &uri, Some(canonical))?.with_meta(
+        urls.settings.emojis(),
         &title,
         &description,
         image,
@@ -647,7 +648,7 @@ async fn index_response(
     let title = state.i18n.t("tags.title").unwrap_or("Tags").to_string();
     let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
     let mut crawler = crate::html::Crawler::for_request(&urls, &uri.unwrap_or_default(), None)?
-        .with_meta(&title, &title, image);
+        .with_meta(urls.settings.emojis(), &title, &title, image);
     crawler.description = title;
     page.crawler = crawler;
     let body = page.render().map_err(crate::html::HtmlError::from)?;

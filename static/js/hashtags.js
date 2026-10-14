@@ -56,12 +56,17 @@
     );
   }
 
-  // dReplaceEmoji(":name:")
+  // dReplaceEmoji(":name:"): nothing for a denied emoji, a custom one's
+  // upload (registerEmoji's map, keyed lowercase).
   function emojiHtml(name) {
-    var path = name.replace(/:t([1-6])$/, "/$1");
+    if (JSON.parse(config("deniedEmoji") || "[]").indexOf(name) !== -1) {
+      return "";
+    }
+    var custom = JSON.parse(config("customEmoji") || "{}")[name.toLowerCase()];
+    var src = custom || config("emojiBase") + "/" + name.replace(/:t([1-6])$/, "/$1") + ".png?v=" + config("emojiVersion");
     return (
-      '<img width="20" height="20" src="' + escapeHtml(config("emojiBase") + "/" + path + ".png?v=" + config("emojiVersion")) +
-      '" title="' + escapeHtml(name) + '" alt="' + escapeHtml(name) + '" class="emoji">'
+      '<img width="20" height="20" src="' + escapeHtml(src) +
+      '" title="' + escapeHtml(name) + '" alt="' + escapeHtml(name) + '" class="' + (custom ? "emoji emoji-custom" : "emoji") + '">'
     );
   }
 

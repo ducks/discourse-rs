@@ -49,7 +49,7 @@ struct View<'a> {
     viewer_id: i64,
     /// Who is in /chat/online, drawn online (chat.js follows it after).
     online: Vec<i64>,
-    emoji_set: String,
+    emojis: std::sync::Arc<crate::emojis::Emojis>,
     /// `userCanInteractWithChat`: not silenced.
     can_interact: bool,
     t: &'a (dyn Fn(&str) -> String + Sync),
@@ -132,7 +132,7 @@ impl Context<'_> {
             channel: &channel_json,
             viewer_id,
             online: self.online_ids().await?,
-            emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
+            emojis: self.settings.emojis().clone(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
         };
@@ -236,7 +236,7 @@ impl Context<'_> {
                 let toolbar = super::actions_view::Toolbar {
                     t: &t,
                     base_path: self.base_path,
-                    emoji_set: &view.emoji_set,
+                    emojis: &view.emojis,
                     viewer_id,
                     staff: self.guardian.is_staff(),
                     quick_custom: custom.as_deref(),
@@ -443,7 +443,7 @@ impl Context<'_> {
             channel: &channel_json,
             viewer_id: i64::from(viewer.unwrap_or(0)),
             online: self.online_ids().await?,
-            emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
+            emojis: self.settings.emojis().clone(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
         };
@@ -523,7 +523,7 @@ impl Context<'_> {
             "<a class=\"c-navbar__channel-title\" href=\"{}/chat/c/{}/{id}/info/settings\">{}</a>",
             self.base_path,
             escape(slug),
-            channel_title(c, &self.emoji_set()?, self.base_path, online)
+            channel_title(c, self.settings.emojis(), self.base_path, online)
         ));
         if following {
             let starred = c["current_user_membership"]["starred"] == true;
@@ -568,10 +568,6 @@ impl Context<'_> {
         Ok(out)
     }
 
-    fn emoji_set(&self) -> Result<String, AppError> {
-        Ok(self.settings.get("emoji_set")?.to_s().to_string())
-    }
-
     /// ChatChannelEmptyState for a member: the channel's icon, the title,
     /// the tip and the other members' faces.
     async fn empty_state(
@@ -613,7 +609,7 @@ impl Context<'_> {
         let total = c["memberships_count"].as_i64().unwrap_or(0);
         let count = (if following { total - 1 } else { total }).max(0);
         let icon = match c["emoji"].as_str() {
-            Some(emoji) => emoji_img(&self.emoji_set()?, self.base_path, emoji),
+            Some(emoji) => emoji_img(self.settings.emojis(), self.base_path, emoji),
             None => d_icon("d-chat", None),
         };
         let icon = match c["chatable"]["color"].as_str() {
@@ -759,7 +755,7 @@ impl Context<'_> {
             "mentions": self.settings.get("enable_mentions")?.truthy(),
             "emoji": self.settings.get("enable_emoji")?.truthy(),
             "emojiMinChars": self.settings.get("emoji_autocomplete_min_chars")?.to_i(),
-            "deniedEmojis": crate::emojis::denied(self.settings)?,
+            "deniedEmojis": self.settings.emojis().denied,
             "hashtagOrder": hashtag_order,
             "moreEmoji": t("composer.more_emoji"),
         });
@@ -892,23 +888,14 @@ impl Context<'_> {
             channel: &Value::Null,
             viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
             online: self.online_ids().await?,
-            emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
+            emojis: self.settings.emojis().clone(),
             can_interact: true,
             t: &t,
         };
-        let inline_emoji = self
-            .settings
-            .get("enable_inline_emoji_translation")?
-            .truthy();
         let text = format!(
             "<span class=\"chat-reply__username\">{}</span><span class=\"chat-reply__excerpt\">{}</span>",
             escape(s(&user["username"])),
-            crate::topic_list_view::emoji_unescape_with(
-                &excerpt,
-                inline_emoji,
-                &view.emoji_set,
-                self.base_path
-            )
+            crate::topic_list_view::emoji_unescape(&excerpt, &view.emojis, self.base_path)
         );
         let data = format!(
             " data-excerpt=\"{}\" data-user=\"{}\"",
@@ -966,7 +953,12 @@ fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
 }
 
 /// ChatChannelTitle: the channel's icon (ChannelIcon) and its name.
-fn channel_title(c: &Value, emoji_set: &str, base_path: &str, online: &[i64]) -> String {
+fn channel_title(
+    c: &Value,
+    emojis: &crate::emojis::Emojis,
+    base_path: &str,
+    online: &[i64],
+) -> String {
     if c["chatable_type"] == "DirectMessage" {
         let users = c["chatable"]["users"]
             .as_array()
@@ -984,7 +976,7 @@ fn channel_title(c: &Value, emoji_set: &str, base_path: &str, online: &[i64]) ->
             if let Some(emoji) = c["emoji"].as_str() {
                 format!(
                     "<div class=\"chat-channel-icon --emoji\">{}</div>",
-                    emoji_img(emoji_set, base_path, emoji)
+                    emoji_img(emojis, base_path, emoji)
                 )
             } else if users.len() == 1 {
                 face(first)
@@ -1003,7 +995,7 @@ fn channel_title(c: &Value, emoji_set: &str, base_path: &str, online: &[i64]) ->
         );
     }
     let icon = match c["emoji"].as_str() {
-        Some(emoji) => emoji_img(emoji_set, base_path, emoji),
+        Some(emoji) => emoji_img(emojis, base_path, emoji),
         None => d_icon("d-chat", None),
     };
     let lock = if c["chatable"]["read_restricted"] == true {
@@ -1018,12 +1010,24 @@ fn channel_title(c: &Value, emoji_set: &str, base_path: &str, online: &[i64]) ->
     )
 }
 
-/// dReplaceEmoji(`:emoji:`) for a standard emoji.
-fn emoji_img(set: &str, base_path: &str, name: &str) -> String {
+/// dReplaceEmoji(`:emoji:`): the emoji's image (a custom one's upload),
+/// nothing for a denied one, the code as written for an unknown one.
+fn emoji_img(emojis: &crate::emojis::Emojis, base_path: &str, name: &str) -> String {
+    if emojis.enabled && emojis.is_denied(name) {
+        return String::new();
+    }
+    let url = emojis.url(name, base_path).filter(|_| emojis.enabled);
+    let Some(url) = url else {
+        return escape(&format!(":{name}:"));
+    };
+    let class = if emojis.is_custom(name) {
+        "emoji emoji-custom"
+    } else {
+        "emoji"
+    };
     format!(
-        "<img width=\"20\" height=\"20\" src=\"{base_path}/images/emoji/{set}/{}.png?v={}\" title=\"{n}\" alt=\"{n}\" class=\"emoji\">",
-        escape(name),
-        crate::emoji::image_version(),
+        "<img width=\"20\" height=\"20\" src=\"{}\" title=\"{n}\" alt=\"{n}\" class=\"{class}\">",
+        escape(&url),
         n = escape(name)
     )
 }
@@ -1390,24 +1394,14 @@ fn message_info(m: &Value, date: &str, v: &View) -> String {
 fn reaction_html(v: &View, message_id: i64, index: usize, r: &Value) -> Result<String, AppError> {
     let t = v.t;
     let emoji = s(&r["emoji"]);
-    // A skin tone (`:tN`) is the standard emoji's.
-    let base = emoji.trim_matches(':');
-    let base = match base.rsplit_once(":t") {
-        Some((name, tone)) if tone.len() == 1 && ("1"..="6").contains(&tone) => name,
-        _ => base,
-    };
-    if !crate::emoji::DATA.exists(base) {
-        return Err(Unsupported("custom emoji chat reactions").into());
-    }
     let count = r["count"].as_i64().unwrap_or(0);
     let reacted = r["reacted"] == true;
-    let url = format!(
-        "{}/images/emoji/{}/{}.png?v={}",
-        v.base_path,
-        v.emoji_set,
-        emoji.replace(":t", "/"),
-        crate::emoji::image_version()
-    );
+    // emojiUrlFor: a custom emoji's upload, else the standard image.
+    let url = v
+        .emojis
+        .url(emoji, v.base_path)
+        .filter(|_| v.emojis.enabled)
+        .ok_or(Unsupported("chat reactions without an emoji image"))?;
     let description_id = format!("chat-message-reaction-description-{message_id}-{index}");
     let label = if count > 0 {
         let key = if count == 1 {
@@ -1521,17 +1515,7 @@ fn reaction_text(v: &View, r: &Value) -> Option<String> {
     };
     // emojiUnescape of the `:emoji:` the text ends with.
     let code = format!(":{emoji}:");
-    Some(text.replace(
-        &code,
-        &format!(
-            "<img width=\"20\" height=\"20\" src=\"{}/images/emoji/{}/{}.png?v={}\" title=\"{e}\" alt=\"{e}\" class=\"emoji\">",
-            v.base_path,
-            v.emoji_set,
-            emoji.replace(":t", "/"),
-            crate::emoji::image_version(),
-            e = escape(emoji)
-        ),
-    ))
+    Some(text.replace(&code, &emoji_img(&v.emojis, v.base_path, emoji)))
 }
 
 /// The browse tabs, as `TABS` (archived only with archiving allowed).
@@ -1650,9 +1634,9 @@ impl Context<'_> {
                 escape(&t("chat.empty_state.direct_message_cta"))
             ));
         }
-        let emoji_set = self.emoji_set()?;
+        let emojis = self.settings.emojis().clone();
         for c in &channels {
-            out.push_str(&channel_card(c, &emoji_set, self.base_path, &t));
+            out.push_str(&channel_card(c, &emojis, self.base_path, &t));
         }
         if offset == 0 {
             out.push_str("</div><div><br></div>");
@@ -1672,7 +1656,12 @@ impl Context<'_> {
 }
 
 /// ChatChannelCard
-fn channel_card(c: &Value, emoji_set: &str, base_path: &str, t: &dyn Fn(&str) -> String) -> String {
+fn channel_card(
+    c: &Value,
+    emojis: &crate::emojis::Emojis,
+    base_path: &str,
+    t: &dyn Fn(&str) -> String,
+) -> String {
     let id = c["id"].as_i64().unwrap_or(0);
     let slug = escape(s(&c["slug"]));
     let status = s(&c["status"]);
@@ -1688,7 +1677,7 @@ fn channel_card(c: &Value, emoji_set: &str, base_path: &str, t: &dyn Fn(&str) ->
         escape(s(&c["chatable"]["color"]))
     );
     if let Some(emoji) = c["emoji"].as_str() {
-        out.push_str(&emoji_img(emoji_set, base_path, emoji));
+        out.push_str(&emoji_img(emojis, base_path, emoji));
     }
     out.push_str(&escape(s(&c["title"])));
     out.push_str("</span>");

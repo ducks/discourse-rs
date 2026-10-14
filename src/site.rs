@@ -1160,10 +1160,10 @@ impl Site<'_> {
 
     /// `Emoji.denied`: nil unless emoji_deny_list has entries.
     fn denied_emojis(&self) -> Result<Option<Value>, SiteError> {
-        match self.setting("emoji_deny_list")?.presence() {
-            None => Ok(None),
-            Some(_) => Err(Unsupported("denied_emojis (Emoji aliases)").into()),
-        }
+        Ok(self
+            .setting("emoji_deny_list")?
+            .presence()
+            .map(|_| json!(self.settings.emojis().denied)))
     }
 
     /// `Discourse.tos_url`: the tos_url setting, else /tos when the ToS topic exists.

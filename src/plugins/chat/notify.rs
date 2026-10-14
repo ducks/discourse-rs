@@ -124,9 +124,9 @@ pub async fn notify_mentioned(
             .or(channel.category_name.clone())
             .unwrap_or_default(),
         slug: channel.slug.clone(),
-        excerpt: crate::emoji::gsub_emoji_to_unicode(
-            message.message.as_deref().unwrap_or_default(),
-        ),
+        excerpt: settings
+            .emojis()
+            .gsub_to_unicode(message.message.as_deref().unwrap_or_default()),
     };
     for (mention_type, ids) in map {
         let ids: Vec<i64> = ids
@@ -627,7 +627,9 @@ pub async fn notify_watching(
             "translated_title": translated_title,
             "tag": format!("{}-chat-message-{}", urls.current_hostname()?, channel.id),
             "excerpt": truncate(
-                &crate::emoji::gsub_emoji_to_unicode(message.message.as_deref().unwrap_or_default()),
+                &settings
+                    .emojis()
+                    .gsub_to_unicode(message.message.as_deref().unwrap_or_default()),
                 400
             ),
             "channel_id": channel.id,

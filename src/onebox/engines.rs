@@ -38,7 +38,8 @@ pub struct EngineSettings {
     pub facebook_token: String,
     /// TwitterApi has its consumer key and secret.
     pub twitter_credentials: bool,
-    pub emoji_set: String,
+    /// The emoji settings and custom emoji (`Emoji.codes_to_img`).
+    pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     /// `Discourse.base_path`
     pub base_path: String,
     /// discourse-lazy-videos for YouTube, Vimeo and TikTok.
@@ -63,7 +64,7 @@ impl EngineSettings {
             facebook_token: s("facebook_app_access_token")?,
             twitter_credentials: !crate::ruby::is_blank(&s("twitter_consumer_key")?)
                 && !crate::ruby::is_blank(&s("twitter_consumer_secret")?),
-            emoji_set: s("emoji_set")?,
+            emojis: settings.emojis().clone(),
             base_path: base_path.to_string(),
             lazy_youtube: on("lazy_videos_enabled") && on("lazy_youtube_enabled"),
             lazy_vimeo: on("lazy_videos_enabled") && on("lazy_vimeo_enabled"),

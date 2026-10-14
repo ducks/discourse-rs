@@ -5,7 +5,8 @@
 //! UploadCreator's steps (conversion to JPEG, re-encoding, orientation,
 //! optimization, downsizing) with the in-process tools of src/images.rs,
 //! which make Rails' decisions but not always its bytes. Refused: SVG
-//! cleaning, HEIF conversion, cropped upload types.
+//! cleaning, HEIF conversion, cropped upload types (an animated custom emoji
+//! passes: it skips the crop).
 
 use std::path::Path;
 
@@ -323,7 +324,7 @@ pub async fn create(
                 )]));
             }
         }
-        if TYPES_TO_CROP.contains(&up.upload_type) {
+        if TYPES_TO_CROP.contains(&up.upload_type) && up.upload_type != "custom_emoji" {
             return Err(Unsupported("cropped upload types").into());
         }
         if !s.get("strip_image_metadata")?.truthy() {
@@ -376,6 +377,11 @@ pub async fn create(
                 return Ok(Outcome::Invalid(vec![message]));
             }
         };
+        // should_crop?: a custom emoji is cropped (downsized to fit 100x100)
+        // unless animated.
+        if up.upload_type == "custom_emoji" && !info.animated {
+            return Err(Unsupported("cropping custom emoji images (not animated)").into());
+        }
         bytes = processed;
         image = Some((info.width, info.height, info.animated));
         image_type = Some(info.format.name());

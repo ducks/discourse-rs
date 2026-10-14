@@ -17,8 +17,14 @@ const BAKED_VERSION: i32 = 2;
 const COOK_REGULAR: i32 = 1;
 const COOK_RAW_HTML: i32 = 2;
 
-/// `Post#rebake!(priority: :ultra_low)` as Post.rebake_old runs it.
-pub async fn rebake(pool: &PgPool, ctx: &Ctx<'_>, post_id: i32) -> Result<(), AppError> {
+/// `Post#rebake!(priority:)`: Post.rebake_old passes `ultra_low`, the
+/// default (None) leaves the post processor on its usual queue.
+pub async fn rebake(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    post_id: i32,
+    priority: Option<&str>,
+) -> Result<(), AppError> {
     let s = ctx.settings;
     #[derive(sqlx::FromRow)]
     struct Row {
@@ -146,20 +152,18 @@ pub async fn rebake(pool: &PgPool, ctx: &Ctx<'_>, post_id: i32) -> Result<(), Ap
         &cooked,
     )
     .await?;
-    // trigger_post_process(bypass_bump: true, priority: :ultra_low)
-    crate::jobs::enqueue(
-        &mut tx,
-        "process_post",
-        serde_json::json!({
-            "bypass_bump": true,
-            "cooking_options": null,
-            "new_post": false,
-            "post_id": post_id,
-            "skip_pull_hotlinked_images": false,
-            "queue": "ultra_low",
-        }),
-    )
-    .await?;
+    // trigger_post_process(bypass_bump: true, priority:)
+    let mut args = serde_json::json!({
+        "bypass_bump": true,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": post_id,
+        "skip_pull_hotlinked_images": false,
+    });
+    if let Some(queue) = priority {
+        args["queue"] = serde_json::json!(queue);
+    }
+    crate::jobs::enqueue(&mut tx, "process_post", args).await?;
     // publish_change_to_clients!(:rebaked)
     crate::bus::publish_post_change(ctx, &mut tx, post_id, "rebaked", Default::default(), false)
         .await?;

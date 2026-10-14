@@ -377,6 +377,7 @@ pub async fn unsubscribed(
     }
     let html = unsubscribe::render_unsubscribed(
         &state.i18n,
+        &settings,
         state.config.globals.relative_url_root(),
         email.as_deref().unwrap_or(""),
         topic.as_ref(),

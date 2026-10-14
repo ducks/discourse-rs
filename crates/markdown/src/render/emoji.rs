@@ -21,15 +21,17 @@ const VARIATION_SELECTOR: char = '\u{FE0F}';
 pub struct Emoji {
     url: String,
     title: String,
+    custom: bool,
     only_emoji: bool,
 }
 
 impl NodeValue for Emoji {
     fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
-        let class = if self.only_emoji {
-            "emoji only-emoji"
-        } else {
-            "emoji"
+        let class = match (self.custom, self.only_emoji) {
+            (true, true) => "emoji emoji-custom only-emoji",
+            (true, false) => "emoji emoji-custom",
+            (false, true) => "emoji only-emoji",
+            (false, false) => "emoji",
         };
         fmt.self_close(
             "img",
@@ -151,10 +153,18 @@ fn emoji_name(content: &[u16], pos: usize, inline_emoji: bool) -> Option<String>
     Some(slice(content, pos, pos + length))
 }
 
-/// `imageFor` / `buildEmojiUrl`: the image of a known emoji or alias; a
-/// tone becomes a path segment.
+/// `imageFor` / `buildEmojiUrl`: the image of a custom emoji (its upload),
+/// else of a known emoji or alias, a tone as a path segment.
 fn emoji_node(code: &str, settings: &RenderSettings) -> Option<Emoji> {
     let code = code.to_lowercase();
+    if let Some(url) = settings.custom_emoji.get(&code) {
+        return Some(Emoji {
+            url: format!("{url}?v={}", crate::emoji::image_version()),
+            title: format!(":{code}:"),
+            custom: true,
+            only_emoji: false,
+        });
+    }
     let without_tone = code.split(':').next().filter(|s| !s.is_empty())?;
     if settings.emoji_set.is_empty() || !DATA.exists(without_tone) {
         return None;
@@ -168,6 +178,7 @@ fn emoji_node(code: &str, settings: &RenderSettings) -> Option<Emoji> {
             crate::emoji::image_version()
         ),
         title: format!(":{code}:"),
+        custom: false,
         only_emoji: false,
     })
 }
@@ -218,7 +229,13 @@ enum Piece {
 /// has none.
 fn apply(content: &str, settings: &RenderSettings) -> Option<Vec<Piece>> {
     let replaced = replace_unicode(content);
-    let units: Vec<u16> = replaced.encode_utf16().collect();
+    // Denied emoji and their aliases are dropped before the scan; the text
+    // keeps them when nothing else in it is an emoji.
+    let mut allowed = replaced.clone();
+    for name in &settings.emoji_deny_list {
+        allowed = allowed.replace(&format!(":{name}:"), "");
+    }
+    let units: Vec<u16> = allowed.encode_utf16().collect();
     let mut result: Option<Vec<Piece>> = None;
     let mut start = 0;
     let mut end = units.len();

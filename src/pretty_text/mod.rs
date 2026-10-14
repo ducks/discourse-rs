@@ -183,15 +183,6 @@ pub async fn options(
     };
     // Upload urls in cooking are the store's; only the local one is ported.
     crate::file_store::FileStore::for_site(&host.config, settings)?;
-    let custom_emoji: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM custom_emojis)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if custom_emoji {
-        return Err(Unsupported("custom emoji in cooking").into());
-    }
-    if !settings.get("emoji_deny_list")?.is_blank() {
-        return Err(Unsupported("emoji_deny_list in cooking").into());
-    }
     // WatchedWord.actions: censor 2, replace 5, link 8.
     let watched_words: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action IN (2, 5, 8))")
@@ -226,9 +217,27 @@ pub async fn options(
             "CDN": urls.asset_host(),
         }),
     );
-    out.insert("customEmoji".into(), json!({}));
+    let emojis = settings.emojis();
+    out.insert(
+        "customEmoji".into(),
+        Value::Object(
+            emojis
+                .custom
+                .iter()
+                .map(|e| (e.name.clone(), json!(e.cdn_url)))
+                .collect(),
+        ),
+    );
     out.insert("customEmojiTranslation".into(), json!({}));
-    out.insert("emojiDenyList".into(), Value::Null);
+    // Emoji.denied: nil while the deny list is blank.
+    out.insert(
+        "emojiDenyList".into(),
+        if emojis.denied.is_empty() {
+            Value::Null
+        } else {
+            json!(emojis.denied)
+        },
+    );
     out.insert("censoredRegexp".into(), json!([]));
     out.insert("watchedWordsReplace".into(), Value::Null);
     out.insert("watchedWordsLink".into(), Value::Null);
@@ -268,7 +277,7 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     let mut conn = host.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
-    // What `options` refuses (watched words, custom emoji...) the renderer
+    // What `options` refuses (watched words...) the renderer
     // does not handle either.
     let options = options(host, &mut conn, &settings).await?;
     let mut hashtag_types = options["hashtagTypesInPriorityOrder"].clone();
@@ -428,6 +437,8 @@ pub fn render_settings(
         inline_emoji: settings.get("enable_inline_emoji_translation")?.truthy(),
         emoji_set: settings.get("emoji_set")?.to_s(),
         emoji_base_path,
+        custom_emoji: settings.emojis().custom_map().into_iter().collect(),
+        emoji_deny_list: settings.emojis().denied.clone(),
         default_code_lang: settings.get("default_code_lang")?.to_s(),
         heading_anchor_label: i18n
             .t("js.post.heading_anchor")

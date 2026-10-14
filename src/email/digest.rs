@@ -474,6 +474,7 @@ pub async fn build(
     opts: &Options,
 ) -> Result<Option<Built>, AppError> {
     let s = ctx.settings;
+    let emojis = s.emojis().clone();
     let i18n = ctx.i18n;
     let locale = s.get("default_locale")?.to_s();
     if locale != "en" {
@@ -910,11 +911,8 @@ pub async fn build(
         }
     };
     let email_image_url = |name: &str| format!("{base_url}/images/emails/{name}");
-    let digest_title = |t: &DigestTopic| {
-        html_escape(&crate::emoji::gsub_emoji_to_unicode(&truncate(
-            &t.title, 100,
-        )))
-    };
+    let digest_title =
+        |t: &DigestTopic| html_escape(&emojis.gsub_to_unicode(&truncate(&t.title, 100)));
     let join = html_escape(&t("join_the_discussion", &[])?);
 
     // digest.html.erb
@@ -1077,7 +1075,7 @@ pub async fn build(
                 "          <p style=\"color:inherit;font-size:14px;font-weight:400;line-height:1.3;margin:0 0 8px 0;padding:0;word-wrap:normal;\">{}</p>\n      </td>\n      <td style=\"color:#0a0a0a;line-height:1.3;padding:0 8px 8px 8px;text-align:right;\">\n        <p style=\"color:#8f8f8f;line-height:1.3;margin:0 0 10px 0;padding:0;\">\n          <a href=\"{}\" style=\"font-weight:400;line-height:1.3;margin:0;padding:0;text-decoration:none\">{}</a>\n        </p>\n        <a href=\"{}\" class=\"digest-button with-accent-colors\" style=\"width:100%;text-decoration:none;padding:8px 16px;white-space: nowrap;\">\n          {join}\n        </a>\n      </td>\n    </tr>\n  </tbody>\n</table>\n\n<div style=\"background-color:#f3f3f3\">\n  <table class=\"spacer with-dir\" style=\"padding:0;vertical-align:top;width:100%;background-color:#f3f3f3\">\n    <tbody><tr><td height=\"40\" style=\"-moz-hyphens:auto;-webkit-hyphens:auto;border-collapse:collapse!important;color:#0a0a0a;font-size:40px;font-weight:400;hyphens:auto;line-height:40px;margin:0;mso-line-height-rule:exactly;padding:0;vertical-align:top;word-wrap:normal\">&#xA0;</td></tr></tbody>\n  </table>\n<div>",
                 html_escape(&poster.username),
                 html_escape(&full_url),
-                html_escape(&crate::emoji::gsub_emoji_to_unicode(&truncate(&topic.0, 100))),
+                html_escape(&emojis.gsub_to_unicode(&truncate(&topic.0, 100))),
                 html_escape(&full_url),
             ));
             h.push_str(&format!("          {p}\n"));

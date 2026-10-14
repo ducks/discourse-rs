@@ -148,20 +148,15 @@ fn strategy_key(hostname: &str) -> String {
 /// What the error previews need of the site: its messages and emoji.
 pub struct Errors<'a> {
     pub i18n: &'a crate::i18n::I18n,
-    pub enable_emoji: bool,
-    pub inline_emoji: bool,
-    pub emoji_set: String,
+    pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     pub base_path: &'a str,
 }
 
 impl<'a> Errors<'a> {
     pub fn of(site: &Site<'a>) -> Result<Errors<'a>, AppError> {
-        let s = site.settings;
         Ok(Errors {
             i18n: site.i18n,
-            enable_emoji: s.get("enable_emoji")?.truthy(),
-            inline_emoji: s.get("enable_inline_emoji_translation")?.truthy(),
-            emoji_set: s.get("emoji_set")?.to_s().to_string(),
+            emojis: site.settings.emojis().clone(),
             base_path: site.base_path,
         })
     }
@@ -174,15 +169,8 @@ impl<'a> Errors<'a> {
         {
             args.insert("title".into(), link);
         }
-        if let Some(Value::String(m)) = args.get("error_message")
-            && self.enable_emoji
-        {
-            let m = crate::topic_list_view::emoji_unescape_with(
-                m,
-                self.inline_emoji,
-                &self.emoji_set,
-                self.base_path,
-            );
+        if let Some(Value::String(m)) = args.get("error_message") {
+            let m = crate::topic_list_view::unescape_emoji(m, &self.emojis, self.base_path);
             args.insert("error_message".into(), json!(m));
         }
         crate::mustache::render(

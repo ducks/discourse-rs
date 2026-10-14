@@ -27,7 +27,7 @@ pub struct ReactionsUi {
     pub enabled: Vec<String>,
     pub desaturated: bool,
     pub enable_emoji: bool,
-    pub emoji_set: String,
+    pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     pub prioritize_username: bool,
 }
 
@@ -53,7 +53,7 @@ impl ReactionsUi {
                 .get("discourse_reactions_desaturated_reaction_panel")?
                 .truthy(),
             enable_emoji: settings.get("enable_emoji")?.truthy(),
-            emoji_set: settings.get("emoji_set")?.to_s(),
+            emojis: settings.emojis().clone(),
             prioritize_username: settings.get("prioritize_username_in_ux")?.truthy(),
         }))
     }
@@ -74,17 +74,11 @@ impl ReactionsUi {
         }
     }
 
-    /// `emojiUrlFor`: a standard emoji's image, a `:tN` tone in its path.
+    /// `emojiUrlFor`: a custom emoji's upload, else the standard image (a
+    /// `:tN` tone in its path). A reaction is a known emoji (the write
+    /// path checks), so there is always one.
     pub fn emoji_url(&self, base_path: &str, name: &str) -> String {
-        let path = match name.split_once(":t") {
-            Some((base, tone)) => format!("{base}/{tone}"),
-            None => name.to_string(),
-        };
-        format!(
-            "{base_path}/images/emoji/{}/{path}.png?v={}",
-            self.emoji_set,
-            crate::emoji::image_version()
-        )
+        self.emojis.url(name, base_path).unwrap_or_default()
     }
 }
 
@@ -310,7 +304,8 @@ impl PostReactions<'_> {
             "avatarSize": self.avatar_size,
             "prioritizeUsername": self.ui.prioritize_username,
             "emoji": {
-                "set": self.ui.emoji_set,
+                "set": self.ui.emojis.set,
+                "custom": self.ui.emojis.custom_urls(),
                 "version": crate::emoji::image_version(),
                 "desaturated": false,
             },

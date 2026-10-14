@@ -13,11 +13,10 @@ use crate::pretty_text::cleanup::{
 pub struct Icons {
     /// `site.hashtag_icons.tag`, none without tagging.
     pub tag: Option<String>,
-    /// `Emoji.url_for`'s `<base>/images/emoji/<set>` (or the external
-    /// emoji URL with the set), without the trailing slash.
-    pub emoji_base: String,
-    /// The emoji images' `?v=`.
-    pub emoji_version: String,
+    /// The emoji settings, custom emoji and deny list.
+    pub emojis: std::sync::Arc<crate::emojis::Emojis>,
+    /// The site's base path, for standard emoji images.
+    pub base_path: String,
 }
 
 fn escape(s: &str) -> String {
@@ -25,21 +24,27 @@ fn escape(s: &str) -> String {
 }
 
 /// `dReplaceEmoji(":<name>:")` as the post decorations leave it (lazy
-/// loading with its aspect ratio).
+/// loading with its aspect ratio): nothing for a denied emoji, the code
+/// for an unknown one.
 fn emoji(icons: &Icons, name: &str) -> String {
-    let path = match name.rsplit_once(":t") {
-        Some((base, tone))
-            if tone.len() == 1 && ('1'..='6').contains(&tone.chars().next().unwrap_or('0')) =>
-        {
-            format!("{base}/{tone}")
-        }
-        _ => name.to_string(),
+    let emojis = &icons.emojis;
+    if emojis.enabled && emojis.is_denied(name) {
+        return String::new();
+    }
+    let Some(url) = emojis
+        .url(name, &icons.base_path)
+        .filter(|_| emojis.enabled)
+    else {
+        return escape(&format!(":{name}:"));
+    };
+    let class = if emojis.is_custom(name) {
+        "emoji emoji-custom"
+    } else {
+        "emoji"
     };
     format!(
-        "<img width=\"20\" height=\"20\" src=\"{}/{}.png?v={}\" title=\"{n}\" alt=\"{n}\" class=\"emoji\" loading=\"lazy\" style=\"aspect-ratio: 20 / 20;\">",
-        icons.emoji_base,
-        escape(&path),
-        icons.emoji_version,
+        "<img width=\"20\" height=\"20\" src=\"{}\" title=\"{n}\" alt=\"{n}\" class=\"{class}\" loading=\"lazy\" style=\"aspect-ratio: 20 / 20;\">",
+        escape(&url),
         n = escape(name),
     )
 }
@@ -142,8 +147,12 @@ mod tests {
     fn icons() -> Icons {
         Icons {
             tag: Some("tag".into()),
-            emoji_base: "/images/emoji/twitter".into(),
-            emoji_version: "15".into(),
+            emojis: std::sync::Arc::new(crate::emojis::Emojis {
+                enabled: true,
+                set: "twitter".into(),
+                ..Default::default()
+            }),
+            base_path: String::new(),
         }
     }
 

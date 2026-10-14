@@ -37,7 +37,10 @@ fn engine_settings(s: &Value) -> discourse_rs::onebox::engines::EngineSettings {
         github_pr_status: s["github_pr_status_enabled"] == true,
         facebook_token: text("facebook_app_access_token"),
         twitter_credentials: s["twitter_credentials"] == true,
-        emoji_set: text("emoji_set"),
+        emojis: std::sync::Arc::new(discourse_rs::emojis::Emojis {
+            set: text("emoji_set"),
+            ..Default::default()
+        }),
         base_path: text("base_path"),
         lazy_youtube: s["lazy_youtube"] == true,
         lazy_vimeo: s["lazy_vimeo"] == true,
@@ -210,9 +213,13 @@ async fn fetches_like_rails() {
     };
     let errors = Errors {
         i18n: &i18n,
-        enable_emoji: s["enable_emoji"] == true,
-        inline_emoji: s["enable_inline_emoji_translation"] == true,
-        emoji_set: s["emoji_set"].as_str().unwrap_or("").to_string(),
+        emojis: std::sync::Arc::new(discourse_rs::emojis::Emojis {
+            enabled: s["enable_emoji"] == true,
+            shortcuts: s["enable_emoji_shortcuts"] == true,
+            inline: s["enable_inline_emoji_translation"] == true,
+            set: s["emoji_set"].as_str().unwrap_or("").to_string(),
+            ..Default::default()
+        }),
         base_path: "",
     };
     let mut fetch = fixtures();

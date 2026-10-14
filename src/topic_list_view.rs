@@ -14,6 +14,7 @@ use fancy_regex::Regex;
 use serde_json::Value;
 use sqlx::PgConnection;
 
+use crate::emojis::Emojis;
 use crate::i18n::I18n;
 use crate::pretty_text::render::local_dates::format_utc;
 use crate::site_settings::{SettingError, SiteSettings};
@@ -127,8 +128,8 @@ pub struct ListSettings {
     pub relative_date_duration: i64,
     pub avatar_size_24: i64,
     pub prioritize_name: bool,
-    pub inline_emoji: bool,
-    pub emoji_set: String,
+    /// The emoji settings, custom emoji and deny list `emojiUnescape` reads.
+    pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     pub support_mixed_text_direction: bool,
 }
 
@@ -178,8 +179,7 @@ impl ListSettings {
             relative_date_duration: int("relative_date_duration")?,
             avatar_size_24,
             prioritize_name: flag("enable_names")? && !flag("prioritize_username_in_ux")?,
-            inline_emoji: flag("enable_inline_emoji_translation")?,
-            emoji_set: settings.get("emoji_set")?.to_s().to_string(),
+            emojis: settings.emojis().clone(),
             support_mixed_text_direction: flag("support_mixed_text_direction")?,
         })
     }
@@ -224,22 +224,30 @@ static TEXT_EMOJI: LazyLock<Regex> = LazyLock::new(|| {
 static TEXT_EMOJI_INLINE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r":[^\s:]+(?::t\d)?:?").unwrap());
 
-/// `emojiUnescape` for the `:code:` form: a known emoji written with its
-/// closing colon, after space or punctuation (or anywhere with inline
-/// emoji), becomes its image. An emoji right after a unicode one is not
-/// told apart (emojiReplacementRegex), and emoticons are left as text.
-pub fn emoji_unescape(text: &str, settings: &ListSettings, base_path: &str) -> String {
-    emoji_unescape_with(text, settings.inline_emoji, &settings.emoji_set, base_path)
+/// `emojiUnescape` (lib/text.js) for the `:code:` form and emoticons: a
+/// known or custom emoji written with its closing colon, after space or
+/// punctuation (or anywhere with inline emoji), becomes its image, and a
+/// denied one disappears. The text is returned as is while emoji are off.
+/// Unicode emoji (emojiReplacementRegex) are left as they are.
+pub fn emoji_unescape(text: &str, emojis: &Emojis, base_path: &str) -> String {
+    if !emojis.enabled {
+        return text.to_string();
+    }
+    perform_emoji_unescape(text, emojis, base_path, true)
 }
 
-/// `emojiUnescape` with the two site settings it reads.
-pub fn emoji_unescape_with(
-    text: &str,
-    inline_emoji: bool,
-    emoji_set: &str,
-    base_path: &str,
-) -> String {
-    let regex: &Regex = if inline_emoji {
+/// `PrettyText.unescape_emoji`: the server's emojiUnescape, which passes
+/// the custom emoji but not the deny list.
+pub fn unescape_emoji(text: &str, emojis: &Emojis, base_path: &str) -> String {
+    if !emojis.enabled {
+        return text.to_string();
+    }
+    perform_emoji_unescape(text, emojis, base_path, false)
+}
+
+/// `performEmojiUnescape` over the text regex.
+fn perform_emoji_unescape(text: &str, emojis: &Emojis, base_path: &str, deny: bool) -> String {
+    let regex: &Regex = if emojis.inline {
         &TEXT_EMOJI_INLINE
     } else {
         &TEXT_EMOJI
@@ -250,30 +258,46 @@ pub fn emoji_unescape_with(
     while let Ok(Some(m)) = regex.find_from_pos(text, pos) {
         pos = m.end().max(m.start() + 1);
         let found = m.as_str();
-        if !found.ends_with(':') || found.len() < 3 {
+        let emoticon = if emojis.shortcuts {
+            crate::emoji::DATA.translations.get(found)
+        } else {
+            None
+        };
+        // emojiVal: the emoticon's emoji, else the text between the colons
+        // (the last character dropped, a colon or not).
+        let value = match emoticon {
+            Some(name) => name.as_str(),
+            None => {
+                let end = found.char_indices().last().map_or(0, |(i, _)| i);
+                &found[1.min(end)..end]
+            }
+        };
+        if deny && emojis.is_denied(value) {
+            out.push_str(&text[last..m.start()]);
+            last = m.end();
+            continue;
+        }
+        if emoticon.is_none() && !found.ends_with(':') {
             continue;
         }
         let before = &text[..m.start()];
-        let replaceable = inline_emoji
+        let replaceable = emojis.inline
             || before.is_empty()
             || before
                 .chars()
                 .next_back()
                 .is_some_and(|c| c.is_whitespace() || ">.,/#!$%^&*;:{}=-_`~()".contains(c));
-        let code = found[1..found.len() - 1].to_lowercase();
-        let name = code.split(':').next().unwrap_or("");
-        if !replaceable || !crate::emoji::DATA.exists(name) {
+        let Some(url) = emojis.url(value, base_path).filter(|_| replaceable) else {
             continue;
-        }
-        let url = format!(
-            "{base_path}/images/emoji/{}/{}.png?v={}",
-            emoji_set,
-            code.replacen(":t", "/", 1),
-            crate::emoji::image_version()
-        );
+        };
+        let class = if emojis.is_custom(value) {
+            "emoji emoji-custom"
+        } else {
+            "emoji"
+        };
         out.push_str(&text[last..m.start()]);
         out.push_str(&format!(
-            "<img width=\"20\" height=\"20\" src='{url}' title='{code}' alt='{code}' class='emoji'>"
+            "<img width=\"20\" height=\"20\" src='{url}' title='{value}' alt='{value}' class='{class}'>"
         ));
         last = m.end();
     }
@@ -347,7 +371,7 @@ pub fn category_badge_html(
         ("icon", Some(name), _) => inner.push_str(&icon(name, None)),
         ("emoji", _, Some(emoji)) => inner.push_str(&emoji_unescape(
             &format!(":{emoji}:"),
-            &cx.settings,
+            &cx.settings.emojis,
             cx.base_path,
         )),
         _ => {}
@@ -644,7 +668,7 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         }
         None => url.clone(),
     };
-    let title_html = emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
+    let title_html = emoji_unescape(s(&topic["fancy_title"]), &cx.settings.emojis, base);
     let title_html = if cx.settings.support_mixed_text_direction {
         format!("<span dir=\"auto\">{title_html}</span>")
     } else {
@@ -705,7 +729,7 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
             };
             format!(
                 "<a class=\"topic-excerpt\" href=\"{url}\"><span>{}</span>{more}</a>",
-                emoji_unescape(e, &cx.settings, base)
+                emoji_unescape(e, &cx.settings.emojis, base)
             )
         }
         _ => String::new(),
@@ -1076,27 +1100,18 @@ mod tests {
         );
     }
 
-    fn settings(inline_emoji: bool) -> ListSettings {
-        ListSettings {
-            show_pinned_excerpt_desktop: true,
-            suppress_uncategorized_badge: true,
-            uncategorized_category_id: 1,
-            tag_style: "simple".into(),
-            suppress_overlapping_tags_in_list: false,
-            topic_views_heat: [1000, 2000, 5000],
-            topic_post_like_heat: [0.5, 1.0, 2.0],
-            cold_age_days: [14.0, 30.0, 60.0],
-            relative_date_duration: 30,
-            avatar_size_24: 24,
-            prioritize_name: false,
-            inline_emoji,
-            emoji_set: "twitter".into(),
-            support_mixed_text_direction: false,
+    fn emojis(inline: bool) -> Emojis {
+        Emojis {
+            enabled: true,
+            shortcuts: true,
+            inline,
+            set: "twitter".into(),
+            ..Default::default()
         }
     }
 
     fn emoji_codes(text: &str, inline_emoji: bool) -> Vec<String> {
-        let html = emoji_unescape(text, &settings(inline_emoji), "");
+        let html = emoji_unescape(text, &emojis(inline_emoji), "");
         html.match_indices("title='")
             .map(|(i, _)| {
                 let rest = &html[i + 7..];
@@ -1116,5 +1131,39 @@ mod tests {
         assert!(emoji_codes("é:smile:", false).is_empty());
         assert_eq!(emoji_codes("a:smile:", true), ["smile"]);
         assert!(emoji_codes(":notanemoji:", false).is_empty());
+        // Emoticons, and the title as written.
+        assert_eq!(emoji_codes("hi :) there", false), ["slight_smile"]);
+        assert_eq!(emoji_codes(":Smile:", false), ["Smile"]);
+    }
+
+    #[test]
+    fn unescapes_custom_and_drops_denied_emoji() {
+        let mut e = emojis(false);
+        e.custom.push(crate::emojis::Custom {
+            name: "party_parrot".into(),
+            url: Some("/uploads/default/original/1X/abc.gif".into()),
+            cdn_url: Some("/uploads/default/original/1X/abc.gif".into()),
+            group: "default".into(),
+            created_by: None,
+        });
+        e.denied = vec!["heart".into(), "red_heart".into()];
+        assert_eq!(
+            emoji_unescape("a :party_parrot: b :heart: c", &e, "/forum"),
+            format!(
+                "a <img width=\"20\" height=\"20\" src='/uploads/default/original/1X/abc.gif?v={}' title='party_parrot' alt='party_parrot' class='emoji emoji-custom'> b  c",
+                crate::emoji::image_version()
+            )
+        );
+        // The server's unescape_emoji keeps denied emoji: a topic onebox's
+        // title on the reference with heart denied.
+        assert_eq!(
+            unescape_emoji("Liked :party_parrot: and :heart: archived", &e, ""),
+            format!(
+                "Liked <img width=\"20\" height=\"20\" src='/uploads/default/original/1X/abc.gif?v={v}' title='party_parrot' alt='party_parrot' class='emoji emoji-custom'> and <img width=\"20\" height=\"20\" src='/images/emoji/twitter/heart.png?v={v}' title='heart' alt='heart' class='emoji'> archived",
+                v = crate::emoji::image_version()
+            )
+        );
+        e.enabled = false;
+        assert_eq!(emoji_unescape(":heart: :smile:", &e, ""), ":heart: :smile:");
     }
 }

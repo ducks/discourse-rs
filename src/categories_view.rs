@@ -406,7 +406,7 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
 
     // dTopicLink
     let title_html =
-        crate::topic_list_view::emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
+        crate::topic_list_view::emoji_unescape(s(&topic["fancy_title"]), &cx.settings.emojis, base);
     let tags = tags_html(
         cx,
         topic,

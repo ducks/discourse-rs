@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('animated', 34, now(), now(), NULL, 1)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/emoji.json",
+      "params": {
+        "group": "a group name longer than twenty",
+        "file": {
+          "fixture": "animated.gif"
+        }
+      }
+    }
+  ]
+}
