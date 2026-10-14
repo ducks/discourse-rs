@@ -425,7 +425,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/u/{username}",
             get(users::show)
                 .put(user_update::update)
-                .post(user_badges::post_user),
+                .post(user_badges::post_user)
+                .delete(user_update::destroy),
         )
         .route("/u/{username}/bookmarks", get(bookmarks::index))
         .route("/u/{username}/bookmarks.json", get(bookmarks::index))
@@ -517,7 +518,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/users/list", get(admin_users::index))
         .route("/admin/users/list.json", get(admin_users::index))
         .route("/admin/users/list/{query}", get(admin_users::index))
-        .route("/admin/users/{user_id}", get(admin_users::show))
+        .route(
+            "/admin/users/{user_id}",
+            get(admin_users::show).delete(admin_users::destroy),
+        )
         .route(
             "/admin/users/{user_id}/grant_moderation",
             put(admin_users::grant_moderation),

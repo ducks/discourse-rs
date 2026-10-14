@@ -12,6 +12,31 @@ use crate::{AppError, Unsupported};
 /// `Notification.types[:chat_mention]`
 const CHAT_MENTION: i32 = 29;
 
+/// The rows Chat::UserExtension's associations take with a destroyed user
+/// (`dependent: :destroy`, no callbacks of their own): channel and thread
+/// memberships and reactions. The user's messages stay unless their posts
+/// go too (`DELETE_USER_MESSAGES_JOB`).
+pub async fn user_destroying(
+    conn: &mut sqlx::PgConnection,
+    user_id: i32,
+) -> Result<(), sqlx::Error> {
+    for table in [
+        "user_chat_channel_memberships",
+        "user_chat_thread_memberships",
+        "chat_message_reactions",
+    ] {
+        sqlx::query(&format!("DELETE FROM {table} WHERE user_id = $1"))
+            .bind(user_id)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::Chat::DeleteUserMessages`, which chat's
+/// user_destroyer_on_content_deletion_callback enqueues.
+pub const DELETE_USER_MESSAGES_JOB: &str = "Jobs::Chat::DeleteUserMessages";
+
 pub enum Outcome {
     Done(Value),
     NotFound,

@@ -1,0 +1,14 @@
+{
+  "user": "user3",
+  "settings": {
+    "discourse_connect_url": "https://sso.example.com/login",
+    "discourse_connect_secret": "0123456789abcdef",
+    "enable_discourse_connect": true
+  },
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json"
+    }
+  ]
+}

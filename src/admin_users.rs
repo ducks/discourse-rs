@@ -37,8 +37,6 @@ pub struct ListParams {
 const CHECK_EMAIL: i32 = 16;
 const SUSPEND_USER: i32 = 10;
 const SILENCE_USER: i32 = 30;
-/// User::MAX_STAFF_DELETE_POST_COUNT
-const MAX_STAFF_DELETE_POST_COUNT: i64 = 5;
 /// AdminUserIndexQuery::MAX_FILTER_TERMS
 const MAX_FILTER_TERMS: usize = 100;
 /// TrustLevel.levels
@@ -622,50 +620,15 @@ async fn can_delete_user(
     guardian: &Guardian,
     r: &Row,
 ) -> Result<bool, AppError> {
-    if r.admin {
-        return Ok(false);
-    }
-    if guardian.user_id() == Some(r.id) {
-        if settings.get("enable_discourse_connect")?.truthy() {
-            return Ok(false);
-        }
-        let max = settings.get("delete_user_self_max_post_count")?.to_i();
-        return Ok(!has_more_posts_than(conn, r, max).await?);
-    }
-    if !guardian.is_staff() || (r.moderator && !guardian.is_admin()) {
-        return Ok(false);
-    }
-    let Some(first_post) = r.first_post_created_at else {
-        return Ok(true);
+    let user = crate::guardian::DeletableUser {
+        id: r.id,
+        admin: r.admin,
+        moderator: r.moderator,
+        topic_count: r.topic_count,
+        post_count: r.post_count,
+        first_post_created_at: r.first_post_created_at,
     };
-    if !has_more_posts_than(conn, r, MAX_STAFF_DELETE_POST_COUNT).await? {
-        return Ok(true);
-    }
-    let days = settings.get("delete_user_max_post_age")?.to_i();
-    Ok(first_post > crate::clock::now_naive() - chrono::Duration::days(days))
-}
-
-/// `User#has_more_posts_than?`
-async fn has_more_posts_than(conn: &mut PgConnection, r: &Row, max: i64) -> Result<bool, AppError> {
-    if i64::from(r.topic_count.unwrap_or(0) + r.post_count.unwrap_or(0)) > max {
-        return Ok(true);
-    }
-    if max < 0 {
-        return Ok(true);
-    }
-    let n: i64 = sqlx::query_scalar(
-        "SELECT COUNT(1) FROM (SELECT 1 FROM posts p JOIN topics t ON (p.topic_id = t.id) \
-           WHERE p.user_id = $1 AND p.deleted_at IS NULL AND t.deleted_at IS NULL AND \
-             (t.archetype <> 'private_message' OR \
-              EXISTS (SELECT 1 FROM topic_allowed_users a WHERE a.topic_id = t.id AND a.user_id > 0 AND a.user_id <> $1) OR \
-              EXISTS (SELECT 1 FROM topic_allowed_groups g WHERE g.topic_id = p.topic_id)) \
-           LIMIT $2) x",
-    )
-    .bind(r.id)
-    .bind(max + 1)
-    .fetch_one(&mut *conn)
-    .await?;
-    Ok(n > max)
+    Ok(guardian.can_delete_user(conn, settings, &user).await?)
 }
 
 /// `IPAddr.new(filter)` succeeds: an address, or one with a prefix length.

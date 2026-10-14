@@ -186,7 +186,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 7: users, digests, do not disturb
 
-63. `feat/user-destroyer` L (about 60 tables; self delete needs
+63. ~~`feat/user-destroyer`~~ (done) L (about 60 tables; self delete needs
     pm-destroy and deleting posts with links and likes),
     64. `feat/jobs-user-cleanup` S, 65. `feat/review-delete-user` S/M
 66. `refactor/notification-insert` S: one path for the ten places that

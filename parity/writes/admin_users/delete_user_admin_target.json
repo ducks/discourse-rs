@@ -1,0 +1,75 @@
+{
+  "name": "delete_user_admin_target",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json"
+    }
+  ],
+  "started_at": "2026-10-13T23:11:05.776091",
+  "transaction_started_at": "2026-10-13T23:11:02.11101",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iLN0Vi8pVqqFZJRJG315DZKmwQE=",
+            "created_at": "2026-10-13T23:11:03.937624",
+            "rotated_at": "2026-10-13T23:11:03.93185",
+            "updated_at": "2026-10-13T23:11:03.937624",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iLN0Vi8pVqqFZJRJG315DZKmwQE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:11:05.790554",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iLN0Vi8pVqqFZJRJG315DZKmwQE=",
+            "created_at": "2026-10-13T23:11:03.937624",
+            "rotated_at": "2026-10-13T23:11:03.93185",
+            "updated_at": "2026-10-13T23:11:03.937624",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iLN0Vi8pVqqFZJRJG315DZKmwQE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET admin = TRUE WHERE id = 5"
+  ],
+  "recorded_from": {
+    "case": "9e2b2a82374c446e70c9de2b5f5e35877fdd8f998f5f68f3af24482c8339a938",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

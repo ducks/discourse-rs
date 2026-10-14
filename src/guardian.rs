@@ -523,6 +523,42 @@ impl Guardian {
         )
     }
 
+    /// UserGuardian#can_delete_user?: never an admin; oneself unless
+    /// DiscourseConnect is on and within delete_user_self_max_post_count;
+    /// staff any other (a moderator only by an admin) with few posts or
+    /// a first post newer than delete_user_max_post_age days.
+    pub async fn can_delete_user(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        user: &DeletableUser,
+    ) -> Result<bool, GuardianError> {
+        if user.admin {
+            return Ok(false);
+        }
+        if self.is_me(user.id) {
+            if settings.get("enable_discourse_connect")?.truthy() {
+                return Ok(false);
+            }
+            let max = settings.get("delete_user_self_max_post_count")?.to_i();
+            return Ok(!user.has_more_posts_than(conn, max).await?);
+        }
+        if !self.is_staff() || (user.moderator && !self.is_admin()) {
+            return Ok(false);
+        }
+        let Some(first_post) = user.first_post_created_at else {
+            return Ok(true);
+        };
+        if !user
+            .has_more_posts_than(conn, MAX_STAFF_DELETE_POST_COUNT)
+            .await?
+        {
+            return Ok(true);
+        }
+        let days = settings.get("delete_user_max_post_age")?.to_i();
+        Ok(first_post > crate::clock::now_naive() - chrono::Duration::days(days))
+    }
+
     /// `can_mute_users?`: staff or TL1+.
     pub fn can_mute_users(&self) -> bool {
         self.user()
@@ -628,6 +664,65 @@ impl From<sqlx::Error> for GuardianError {
 impl From<SettingError> for GuardianError {
     fn from(e: SettingError) -> Self {
         GuardianError::Setting(e)
+    }
+}
+
+/// `User::MAX_STAFF_DELETE_POST_COUNT`
+pub const MAX_STAFF_DELETE_POST_COUNT: i64 = 5;
+
+/// What `can_delete_user?` reads of the user to delete.
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct DeletableUser {
+    pub id: i32,
+    pub admin: bool,
+    pub moderator: bool,
+    /// user_stats' counts; None without a user_stats row.
+    pub topic_count: Option<i32>,
+    pub post_count: Option<i32>,
+    pub first_post_created_at: Option<NaiveDateTime>,
+}
+
+impl DeletableUser {
+    pub async fn load(conn: &mut PgConnection, id: i32) -> Result<Option<Self>, sqlx::Error> {
+        sqlx::query_as(
+            "SELECT u.id, u.admin, u.moderator, s.topic_count, s.post_count, s.first_post_created_at \
+             FROM users u LEFT JOIN user_stats s ON s.user_id = u.id WHERE u.id = $1",
+        )
+        .bind(id)
+        .fetch_optional(conn)
+        .await
+    }
+
+    /// `User#has_more_posts_than?(max)`: the stats' counts, then the live
+    /// posts in live topics, a message's only when someone else (or a
+    /// group) is in it.
+    pub async fn has_more_posts_than(
+        &self,
+        conn: &mut PgConnection,
+        max: i64,
+    ) -> Result<bool, sqlx::Error> {
+        if let (Some(t), Some(p)) = (self.topic_count, self.post_count)
+            && i64::from(t + p) > max
+        {
+            return Ok(true);
+        }
+        if max < 0 {
+            return Ok(true);
+        }
+        let n: i64 = sqlx::query_scalar(
+            "SELECT COUNT(1) FROM (SELECT 1 FROM posts p JOIN topics t ON (p.topic_id = t.id) \
+               WHERE p.user_id = $1 AND p.deleted_at IS NULL AND t.deleted_at IS NULL AND \
+                 (t.archetype <> 'private_message' OR \
+                  EXISTS (SELECT 1 FROM topic_allowed_users a \
+                          WHERE a.topic_id = t.id AND a.user_id > 0 AND a.user_id <> $1) OR \
+                  EXISTS (SELECT 1 FROM topic_allowed_groups g WHERE g.topic_id = p.topic_id)) \
+               LIMIT $2) x",
+        )
+        .bind(self.id)
+        .bind(max + 1)
+        .fetch_one(conn)
+        .await?;
+        Ok(n > max)
     }
 }
 

@@ -319,6 +319,95 @@ pub async fn show(
     )
 }
 
+/// DELETE /admin/users/:id(.json): Admin::UsersController#destroy, for
+/// staff. `{deleted: true}`, or a 403 with the posts' count when the user
+/// still has posts and they were not to be deleted.
+pub async fn destroy(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // User.find_by(id: params[:id].to_i)
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id));
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let target = match i32::try_from(id) {
+        Ok(id) => crate::guardian::DeletableUser::load(&mut tx, id).await?,
+        Err(_) => None,
+    };
+    // guardian.ensure_can_delete_user!(user)
+    let Some(target) = target else {
+        return Ok(super::search::invalid_access(&state));
+    };
+    if !guardian
+        .can_delete_user(&mut tx, &settings, &target)
+        .await?
+    {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let flag = |key: &str| crate::ruby::cast_boolean(scalar(key).as_deref()).unwrap_or(false);
+    let opts = crate::user_destroyer::Options {
+        delete_posts: flag("delete_posts"),
+        // params.slice(:delete_as_spammer): the raw value, any string truthy.
+        delete_as_spammer: p.get("delete_as_spammer").is_some_and(|v| !v.is_null()),
+        block_email: flag("block_email"),
+        block_urls: flag("block_urls"),
+        block_ip: flag("block_ip"),
+        prepare_for_destroy: true,
+        quiet: false,
+        context: scalar("context"),
+        reviewable_id: None,
+    };
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    match crate::user_destroyer::destroy(&mut tx, &ctx, &guardian, target.id, &opts).await? {
+        crate::user_destroyer::Outcome::Destroyed => {
+            tx.commit().await?;
+            Ok(Json(json!({ "deleted": true })).into_response())
+        }
+        crate::user_destroyer::Outcome::PostsExist => {
+            let count = crate::user_destroyer::live_post_count(&mut tx, target.id).await?;
+            let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                .bind(target.id)
+                .fetch_one(&mut *tx)
+                .await?;
+            let form = if count == 1 { "one" } else { "other" };
+            let n = count.to_string();
+            let message = state
+                .i18n
+                .t_with(
+                    &format!("user.cannot_delete_has_posts.{form}"),
+                    &[("username", &username), ("count", &n)],
+                )
+                .unwrap_or_default();
+            Ok((
+                StatusCode::FORBIDDEN,
+                Json(json!({ "deleted": false, "message": message })),
+            )
+                .into_response())
+        }
+        crate::user_destroyer::Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
+    }
+}
+
 /// Which role a route grants or revokes.
 #[derive(Clone, Copy)]
 enum RoleChange {

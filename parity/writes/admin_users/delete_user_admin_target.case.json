@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET admin = TRUE WHERE id = 5"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json"
+    }
+  ]
+}

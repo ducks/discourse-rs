@@ -413,29 +413,24 @@ pub async fn serialize(
         out.insert("no_password".into(), json!(true));
     }
     // can_delete_account: can_delete_user?(self)
-    if !user.admin && !settings.get("enable_discourse_connect")?.truthy() {
-        let max = settings.get("delete_user_self_max_post_count")?.to_i();
-        // has_more_posts_than?(max)
-        let more = if i64::from(row.topic_count + row.post_count) > max || max < 0 {
-            true
-        } else {
-            let count: i64 = sqlx::query_scalar(
-                "SELECT COUNT(1) FROM (SELECT 1 FROM posts p JOIN topics t ON p.topic_id = t.id \
-                 WHERE p.user_id = $1 AND p.deleted_at IS NULL AND t.deleted_at IS NULL \
-                 AND (t.archetype <> 'private_message' \
-                      OR EXISTS (SELECT 1 FROM topic_allowed_users a WHERE a.topic_id = t.id AND a.user_id > 0 AND a.user_id <> $1) \
-                      OR EXISTS (SELECT 1 FROM topic_allowed_groups g WHERE g.topic_id = p.topic_id)) \
-                 LIMIT $2) x",
+    let me = crate::guardian::DeletableUser {
+        id: uid,
+        admin: user.admin,
+        moderator: user.moderator,
+        topic_count: Some(row.topic_count),
+        post_count: Some(row.post_count),
+        first_post_created_at: None,
+    };
+    if !me.admin
+        && !settings.get("enable_discourse_connect")?.truthy()
+        && !me
+            .has_more_posts_than(
+                &mut *conn,
+                settings.get("delete_user_self_max_post_count")?.to_i(),
             )
-            .bind(uid)
-            .bind(max + 1)
-            .fetch_one(&mut *conn)
-            .await?;
-            count > max
-        };
-        if !more {
-            out.insert("can_delete_account".into(), json!(true));
-        }
+            .await?
+    {
+        out.insert("can_delete_account".into(), json!(true));
     }
     out.insert("can_post_anonymously".into(), json!(false));
     out.insert(

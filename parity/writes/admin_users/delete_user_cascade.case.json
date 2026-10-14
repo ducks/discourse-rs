@@ -1,0 +1,63 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "INSERT INTO user_custom_fields (id, user_id, name, value, created_at, updated_at) VALUES (9301, 5, 'favorite_color', 'green', now(), now())",
+    "INSERT INTO muted_users (id, user_id, muted_user_id, created_at, updated_at) VALUES (9301, 5, 3, now(), now()), (9302, 3, 5, now(), now())",
+    "INSERT INTO ignored_users (id, user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (9301, 5, 4, now(), now(), now() + interval '1 month'), (9302, 4, 5, now(), now(), now() + interval '1 month')",
+    "INSERT INTO user_visits (id, user_id, visited_at, posts_read, mobile, time_read) VALUES (9301, 5, current_date - 1, 3, FALSE, 60)",
+    "INSERT INTO drafts (id, user_id, draft_key, data, created_at, updated_at, sequence, revisions) VALUES (9301, 5, 'new_topic', '{\"reply\":\"hello\"}', now(), now(), 1, 1)",
+    "INSERT INTO draft_sequences (id, user_id, draft_key, sequence) VALUES (9301, 5, 'new_topic', 1)",
+    "INSERT INTO user_api_keys (id, user_id, client_id, application_name, created_at, updated_at, key_hash) VALUES (9301, 5, 'client-9301', 'An app', now(), now(), 'hash9301')",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9301, 9301, 'read', now(), now())",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, key_hash, truncated_key, description) VALUES (9301, 5, 1, now(), now(), 'apihash9301', 'abcd', 'For user3')",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, created_at, updated_at) VALUES (9301, 9301, 'topics', 'read', now(), now())",
+    "INSERT INTO category_users (id, category_id, user_id, notification_level) VALUES (9301, 4, 5, 3)",
+    "INSERT INTO tag_users (id, tag_id, user_id, notification_level, created_at, updated_at) VALUES (9301, 1, 5, 3, now(), now())",
+    "INSERT INTO topic_allowed_users (id, user_id, topic_id, created_at, updated_at) VALUES (9301, 5, 43, now(), now())",
+    "INSERT INTO user_archived_messages (id, user_id, topic_id, created_at, updated_at) VALUES (9301, 5, 43, now(), now())",
+    "INSERT INTO email_change_requests (id, user_id, old_email, new_email, change_state, created_at, updated_at) VALUES (9301, 5, 'user3@example.com', 'user3-new@example.com', 1, now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, created_at, updated_at, name) VALUES (9301, 5, 1, 'totpdata', TRUE, now(), now(), 'Phone')",
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9301, 5, 'cred9301', 'pk9301', 0, TRUE, 'Key', now(), now())",
+    "INSERT INTO push_subscriptions (id, user_id, data, created_at, updated_at) VALUES (9301, 5, '{\"endpoint\":\"https://push.example.com/y\"}', now(), now())",
+    "INSERT INTO user_warnings (id, topic_id, user_id, created_by_id, created_at, updated_at) VALUES (9301, 43, 5, 1, now(), now())",
+    "INSERT INTO group_histories (id, group_id, acting_user_id, target_user_id, action, created_at, updated_at) VALUES (9301, 13, 5, 3, 2, now(), now()), (9302, 13, 1, 5, 2, now(), now()), (9303, 13, 1, 3, 2, now(), now())",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at) VALUES (5, 'tada', 'Celebrating', now())",
+    "INSERT INTO do_not_disturb_timings (id, user_id, starts_at, ends_at, scheduled) VALUES (9301, 5, now() - interval '1 hour', now() + interval '1 hour', FALSE)",
+    "INSERT INTO incoming_emails (id, user_id, from_address, subject, created_at, updated_at) VALUES (9301, 5, 'user3@example.com', 'Hi', now(), now())",
+    "INSERT INTO user_auth_token_logs (id, action, user_id, client_ip, created_at) VALUES (9301, 'generate', 5, '203.0.113.9', now())",
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at) VALUES (9301, 5, 'ext-5', 'payload', now(), now())",
+    "INSERT INTO user_profile_views (id, user_profile_id, viewed_at, ip_address, user_id) VALUES (9301, 5, current_date - 1, NULL, 3), (9302, 3, current_date - 1, NULL, 5)",
+    "INSERT INTO sidebar_sections (id, user_id, title, created_at, updated_at, public, section_type) VALUES (9301, 5, 'Mine', now(), now(), FALSE, NULL)",
+    "INSERT INTO sidebar_section_links (id, user_id, linkable_id, linkable_type, created_at, updated_at, sidebar_section_id, position) VALUES (9301, 5, 1, 'SidebarUrl', now(), now(), 9301, 0)",
+    "INSERT INTO bookmarks (id, user_id, bookmarkable_id, bookmarkable_type, created_at, updated_at) VALUES (9301, 5, 52, 'Post', now(), now())",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 5, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, now() - interval '1 day', FALSE, FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 5, 3, 0, 3, 0, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 5, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_notes (id, reviewable_id, user_id, content, created_at, updated_at) VALUES (9301, 9301, 1, 'Looking', now(), now())",
+    "INSERT INTO reviewable_claimed_topics (id, user_id, topic_id, created_at, updated_at, automatic) VALUES (9301, 5, 37, now(), now(), FALSE)",
+    "INSERT INTO email_logs (id, to_address, email_type, user_id, created_at, updated_at) VALUES (9301, 'user3@example.com', 'digest', 5, now(), now())",
+    "INSERT INTO unsubscribe_keys (key, user_id, created_at, updated_at, unsubscribe_key_type) VALUES ('unsub9301', 5, now(), now(), 'digest')",
+    "INSERT INTO user_uploads (id, upload_id, user_id, created_at) VALUES (9301, 1, 5, now())",
+    "INSERT INTO upload_references (id, upload_id, target_type, target_id, created_at, updated_at) VALUES (9301, 1, 'User', 5, now(), now())",
+    "INSERT INTO oauth2_user_infos (id, user_id, uid, provider, created_at, updated_at) VALUES (9301, 5, 'uid9301', 'google', now(), now())",
+    "INSERT INTO anonymous_users (id, user_id, master_user_id, active, created_at, updated_at) VALUES (9301, 4, 5, TRUE, now(), now())",
+    "INSERT INTO developers (id, user_id) VALUES (9301, 5)",
+    "INSERT INTO group_requests (id, group_id, user_id, reason, created_at, updated_at) VALUES (9301, 13, 5, 'Please', now(), now())",
+    "INSERT INTO dismissed_topic_users (id, user_id, topic_id, created_at) VALUES (9301, 5, 35, now())",
+    "INSERT INTO post_reply_keys (id, user_id, post_id, reply_key, created_at, updated_at) VALUES (9301, 5, 52, 'a0a0a0a0-0000-4000-8000-000000009301', now(), now())",
+    "INSERT INTO user_histories (id, action, acting_user_id, target_user_id, subject, details, previous_value, new_value, admin_only, created_at, updated_at) VALUES (9301, 3, 5, NULL, 'title', NULL, 'Old', 'New', FALSE, now() - interval '1 day', now() - interval '1 day'), (9302, 15, 5, 3, NULL, 'something', NULL, NULL, FALSE, now() - interval '1 day', now() - interval '1 day'), (9303, 2, 1, 5, NULL, 'tl', NULL, NULL, FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, target_user_id, acting_user_id, created_at, updated_at) VALUES (9301, 7, 3, 35, 52, 3, 5, now(), now())",
+    "INSERT INTO post_timings (topic_id, post_number, user_id, msecs) VALUES (35, 5, 5, 3000)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, first_visited_at, last_visited_at, last_read_post_number) VALUES (5, 35, 1, now() - interval '1 day', now() - interval '1 day', 5)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3"
+      }
+    }
+  ]
+}

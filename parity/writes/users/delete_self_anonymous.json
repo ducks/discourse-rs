@@ -1,0 +1,31 @@
+{
+  "name": "delete_self_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json"
+    }
+  ],
+  "started_at": "2026-10-13T23:50:41.001858",
+  "transaction_started_at": "2026-10-13T23:50:38.024239",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "2447f81e1460bcf33b4a6a9a7e44d217085171327f4064260a0bf68e874926b3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

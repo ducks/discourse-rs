@@ -16,6 +16,8 @@ use crate::{AppError, Unsupported};
 const SYSTEM_USER_ID: i32 = -1;
 /// `Reviewable.statuses[:approved]`
 const APPROVED: i32 = 1;
+/// `Reviewable.statuses[:rejected]`
+const REJECTED: i32 = 2;
 /// `ReviewableHistory.types`
 const HISTORY_CREATED: i32 = 0;
 const HISTORY_TRANSITIONED: i32 = 1;
@@ -166,6 +168,76 @@ async fn log_history(
     .bind(status)
     .bind(created_by_id)
     .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `reviewable.perform(performer, :delete_user)` once the user is gone
+/// (UserDestroyer closing the account's pending reviewable): with no
+/// target left perform_delete_user deletes nothing, and the reviewable is
+/// rejected (`transition_to(:rejected)`: its history, the scores
+/// disagreed), the staff told by notify_reviewable.
+pub async fn reject_for_deleted_user(
+    conn: &mut PgConnection,
+    reviewable_id: i64,
+    performer: &Performer<'_>,
+) -> Result<(), AppError> {
+    let topic_id: Option<i32> =
+        sqlx::query_scalar("SELECT topic_id FROM reviewables WHERE id = $1")
+            .bind(reviewable_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if topic_id.is_some() {
+        return Err(Unsupported("user reviewables with a topic (claims)").into());
+    }
+    // increment_version!
+    sqlx::query("UPDATE reviewables SET version = version + 1 WHERE id = $1")
+        .bind(reviewable_id)
+        .execute(&mut *conn)
+        .await?;
+    reject(conn, reviewable_id, performer).await
+}
+
+/// `transition_to(:rejected, performer)` and the notify_reviewable job
+/// Reviewable#perform enqueues for it.
+pub(crate) async fn reject(
+    conn: &mut PgConnection,
+    reviewable_id: i64,
+    performer: &Performer<'_>,
+) -> Result<(), AppError> {
+    sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
+        .bind(reviewable_id)
+        .bind(REJECTED)
+        .execute(&mut *conn)
+        .await?;
+    log_history(
+        conn,
+        reviewable_id,
+        HISTORY_TRANSITIONED,
+        REJECTED,
+        performer.id,
+    )
+    .await?;
+    sqlx::query(
+        "UPDATE reviewable_scores SET status = $2, reviewed_by_id = $3, reviewed_at = clock_timestamp() \
+         WHERE reviewable_id = $1 AND status IN ($4, $5)",
+    )
+    .bind(reviewable_id)
+    .bind(SCORE_DISAGREED)
+    .bind(performer.id)
+    .bind(PENDING)
+    .bind(SCORE_DISAGREED)
+    .execute(&mut *conn)
+    .await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "notify_reviewable",
+        json!({
+            "reviewable_id": reviewable_id,
+            "performing_username": performer.username,
+            "updated_reviewable_ids": [reviewable_id],
+        }),
+    )
     .await?;
     Ok(())
 }

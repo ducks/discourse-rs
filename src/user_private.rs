@@ -181,14 +181,13 @@ impl Private<'_> {
         user: &User,
         out: &mut Map<String, Value>,
     ) -> Result<(), UsersError> {
-        let (post_count, topic_count, first_post_created_at): (i32, i32, Option<NaiveDateTime>) =
-            sqlx::query_as(
-                "SELECT post_count, topic_count, first_post_created_at FROM user_stats WHERE user_id = $1",
-            )
-            .bind(user.id)
-            .fetch_optional(&mut *self.conn)
-            .await?
-            .unwrap_or((0, 0, None));
+        let stats: Option<(i32, i32, Option<NaiveDateTime>)> = sqlx::query_as(
+            "SELECT post_count, topic_count, first_post_created_at FROM user_stats WHERE user_id = $1",
+        )
+        .bind(user.id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let (post_count, topic_count, first_post_created_at) = stats.unwrap_or((0, 0, None));
         out.insert("post_count".into(), json!(post_count));
         out.insert("topic_count".into(), json!(topic_count));
         let g = self.guardian;
@@ -197,33 +196,15 @@ impl Private<'_> {
         let max_age = s.get("delete_user_max_post_age")?.to_i();
         let age_ok =
             |t: Option<NaiveDateTime>| t.is_none_or(|t| t >= now - chrono::Duration::days(max_age));
-        // can_delete_user?
-        let can_be_deleted = if user.admin {
-            false
-        } else if g.is_me(user.id) {
-            if s.get("enable_discourse_connect")?.truthy() {
-                false
-            } else {
-                !self
-                    .has_more_posts_than(
-                        user.id,
-                        post_count,
-                        topic_count,
-                        s.get("delete_user_self_max_post_count")?.to_i(),
-                    )
-                    .await?
-            }
-        } else if !g.is_staff() || (user.moderator && !g.is_admin()) {
-            false
-        } else if first_post_created_at.is_none()
-            || !self
-                .has_more_posts_than(user.id, post_count, topic_count, 5)
-                .await?
-        {
-            true
-        } else {
-            age_ok(first_post_created_at)
+        let deletable = crate::guardian::DeletableUser {
+            id: user.id,
+            admin: user.admin,
+            moderator: user.moderator,
+            topic_count: stats.map(|s| s.1),
+            post_count: stats.map(|s| s.0),
+            first_post_created_at,
         };
+        let can_be_deleted = g.can_delete_user(&mut *self.conn, s, &deletable).await?;
         out.insert("can_be_deleted".into(), json!(can_be_deleted));
         // can_delete_all_posts?
         let can_delete_all = g.is_staff()
@@ -234,28 +215,6 @@ impl Private<'_> {
                     && i64::from(post_count) <= s.get("delete_all_posts_max")?.to_i()));
         out.insert("can_delete_all_posts".into(), json!(can_delete_all));
         Ok(())
-    }
-
-    /// `User#has_more_posts_than?(max)`
-    async fn has_more_posts_than(
-        &mut self,
-        user_id: i32,
-        post_count: i32,
-        topic_count: i32,
-        max: i64,
-    ) -> Result<bool, UsersError> {
-        if max < 0 || i64::from(topic_count + post_count) > max {
-            return Ok(true);
-        }
-        let count: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM (SELECT 1 FROM posts p JOIN topics t ON t.id = p.topic_id \
-             WHERE p.user_id = $1 AND p.deleted_at IS NULL AND t.deleted_at IS NULL LIMIT $2) x",
-        )
-        .bind(user_id)
-        .bind(max + 1)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        Ok(count > max)
     }
 
     /// The private attribute block, `locale` through
