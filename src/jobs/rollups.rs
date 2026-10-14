@@ -464,3 +464,30 @@ async fn backfill_browsers(conn: &mut PgConnection, batch: i64) -> Result<(), Ap
     .await?;
     Ok(())
 }
+
+/// `Jobs::FlushBrowserPageviewEvents`, every 5 minutes.
+pub const FLUSH_BROWSER_PAGEVIEW_EVENTS: &str = "flush_browser_pageview_events";
+
+/// `Jobs::FlushBrowserPageviewEvents::MAX_FLUSH_SECONDS`
+const MAX_FLUSH_SECONDS: u64 = 50;
+
+/// `Jobs::FlushBrowserPageviewEvents`: the beacon events queued while
+/// Postgres was read only, a batch at a time for up to 50 seconds.
+pub async fn flush_browser_pageview_events(state: &AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    if crate::readonly::mode(&mut conn).await?.postgres {
+        return Ok(());
+    }
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(MAX_FLUSH_SECONDS);
+    loop {
+        if crate::request_tracking::queued_count() == 0 {
+            return Ok(());
+        }
+        let processed = crate::request_tracking::flush_queued(&mut conn).await?;
+        if processed < crate::request_tracking::FLUSH_BATCH_SIZE
+            || std::time::Instant::now() >= deadline
+        {
+            return Ok(());
+        }
+    }
+}

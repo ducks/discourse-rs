@@ -128,6 +128,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
     .await?;
     // The tracker's lists, kept for the next start.
     rate_limits.save(&pool_for_limits).await?;
+    // The tracker's deferred work and counts, which Redis would keep.
+    discourse_rs::request_tracking::drain().await;
+    if let Err(e) = discourse_rs::request_tracking::flush(&pool_for_limits).await {
+        tracing::warn!("Unexpected error while processing cached counts: {e:?}");
+    }
     if let Some(worker) = worker {
         worker.await?;
     }

@@ -380,7 +380,11 @@ pub async fn bulk_reports(
 pub async fn traffic(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
 ) -> Result<Response, AppError> {
+    use crate::admin_traffic_explorer as explorer;
     if !guardian.is_admin() {
         return Ok(not_found(&state));
     }
@@ -393,7 +397,33 @@ pub async fn traffic(
     {
         return Ok(not_found(&state));
     }
-    Err(Unsupported("the site traffic explorer").into())
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let params = match explorer::parse(&p)? {
+        Ok(params) => params,
+        Err(explorer::Invalid(key)) => {
+            return Ok(invalid(
+                &state,
+                key.unwrap_or("Discourse::InvalidParameters"),
+            ));
+        }
+    };
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let cx = explorer::Cx {
+        settings: &settings,
+        i18n: &state.i18n,
+        hostname: urls.current_hostname()?,
+    };
+    Ok(match explorer::load(&mut conn, &cx, &params).await? {
+        explorer::Outcome::Traffic(traffic) => Json(traffic).into_response(),
+        explorer::Outcome::Timeout => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"error_type": "traffic_query_timeout"})),
+        )
+            .into_response(),
+    })
 }
 
 /// GET /admin/dashboard/whats-new and /admin/whats-new(.json), POST

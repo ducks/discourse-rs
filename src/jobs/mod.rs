@@ -484,6 +484,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(10 * 60),
     ),
     (
+        rollups::FLUSH_BROWSER_PAGEVIEW_EVENTS,
+        Duration::from_secs(5 * 60),
+    ),
+    (
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS,
         Duration::from_secs(30 * 60),
     ),
@@ -636,6 +640,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         }
         rollups::CLEAN_UP_CRAWLER_STATS => rollups::clean_up_crawler_stats(state).await,
         rollups::DETECT_CRAWLER_PAGEVIEWS => rollups::detect_crawler_pageviews(state).await,
+        rollups::FLUSH_BROWSER_PAGEVIEW_EVENTS => {
+            rollups::flush_browser_pageview_events(state).await
+        }
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS => {
             problem_checks::notify_admins_of_problems(state).await
         }

@@ -193,6 +193,7 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         tmp_dir: "tmp".into(),
         letter_avatar_cdn: discourse_rs::config::LETTER_AVATAR_CDN.into(),
         rate_limits: false,
+        track_requests: false,
         globals: GlobalSettings::from_vars(globals.iter().copied()),
     }
 }

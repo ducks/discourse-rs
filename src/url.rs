@@ -187,6 +187,7 @@ mod tests {
             tmp_dir: "tmp".into(),
             letter_avatar_cdn: crate::config::LETTER_AVATAR_CDN.into(),
             rate_limits: false,
+            track_requests: false,
             globals: GlobalSettings::from_vars(globals.iter().copied()),
         }
     }

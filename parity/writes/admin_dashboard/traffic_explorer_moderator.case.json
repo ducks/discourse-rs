@@ -1,0 +1,7 @@
+{
+  "user": "user2",
+  "setup": [],
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14"}
+  ]
+}

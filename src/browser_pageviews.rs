@@ -200,6 +200,56 @@ pub fn browser_id(user_agent: &str) -> i16 {
     }
 }
 
+/// `I18n::Locale::Tag::Rfc4646::Parser::PATTERN`. The grandfathered
+/// alternative sits in a `/* */` Ruby's extended mode reads as pattern,
+/// not comment: slashes around an optional repeated group.
+static RFC4646: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+    regex::Regex::new(concat!(
+        r"(?i)\A(?:",
+        r"([a-z]{2,3}(?:(?:-[a-z]{3}){0,3})?|[a-z]{4}|[a-z]{5,8})",
+        r"(?:-([a-z]{4}))?",
+        r"(?:-([a-z]{2}|[0-9]{3}))?",
+        r"(?:-([0-9a-z]{5,8}|[0-9][0-9a-z]{3}))*",
+        r"(?:-([0-9a-wyz](?:-[0-9a-z]{2,8})+))*",
+        r"(?:-(x(?:-[0-9a-z]{1,8})+))?|",
+        r"(x(?:-[0-9a-z]{1,8})+)|",
+        r"/*([a-z]{1,3}(?:-[0-9a-z]{2,8}){1,2})*/",
+        r")\z"
+    ))
+    .expect("rfc4646 pattern")
+});
+
+/// `BrowserPageviewEventLanguageNormalizer.normalize`: the primary
+/// language and the script of an RFC 4646 tag ("en-Latn"), "" when the
+/// tag has no language.
+pub fn normalize_language(language: Option<&str>) -> Option<String> {
+    let language = language?;
+    let tag = language.replace('_', "-");
+    let Some(caps) = RFC4646.captures(&tag) else {
+        return Some(String::new());
+    };
+    let Some(lang) = caps.get(1) else {
+        return Some(String::new());
+    };
+    let lang = lang.as_str().to_lowercase();
+    let primary = lang.split('-').next().unwrap_or_default().to_string();
+    // `:capitalize`: the first character up, the rest down.
+    let script = caps.get(2).map(|s| {
+        let mut chars = s.as_str().chars();
+        match chars.next() {
+            Some(first) => first
+                .to_uppercase()
+                .chain(chars.flat_map(char::to_lowercase))
+                .collect(),
+            None => String::new(),
+        }
+    });
+    Some(match script {
+        Some(script) => format!("{primary}-{script}"),
+        None => primary,
+    })
+}
+
 /// `BrowserPageviewEvent.retention_cutoff`: three months ago, at midnight.
 pub fn retention_cutoff() -> NaiveDateTime {
     let now = crate::clock::now_naive();
@@ -334,7 +384,7 @@ pub async fn aggregate_crawlers(
 /// `BrowserPageviewSessionEngagement::BEACON_SETTLE_PERIOD`, in minutes.
 pub const BEACON_SETTLE_MINUTES: i64 = 30;
 /// `BOUNCE_ENGAGED_SECONDS_THRESHOLD`
-const BOUNCE_ENGAGED_SECONDS: i32 = 10;
+pub const BOUNCE_ENGAGED_SECONDS: i32 = 10;
 
 /// `BrowserPageviewSessionEngagementDailyRollup.aggregate`
 pub async fn aggregate_engagement(
@@ -683,6 +733,38 @@ pub async fn rebuild_category_activity(conn: &mut PgConnection) -> Result<(), Ap
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// As BrowserPageviewEventLanguageNormalizer.normalize answers on the
+    /// reference.
+    #[test]
+    fn normalizes_languages_as_rails() {
+        for (raw, want) in [
+            ("en", "en"),
+            ("en_US", "en"),
+            ("EN-latn-us", "en-Latn"),
+            ("zh-yue-HK", "zh"),
+            ("x-klingon", ""),
+            ("", ""),
+            ("de-CH-1901", "de"),
+            ("sgn-BE-FR", ""),
+            ("/", ""),
+            ("//en/", ""),
+            ("i-klingon", ""),
+            ("toolonglang1", ""),
+            ("en-a-bbb-x-a-ccc", "en"),
+            ("pt-BR", "pt"),
+            ("zh-hant-tw", "zh-Hant"),
+            ("en-us-", ""),
+            ("123", ""),
+        ] {
+            assert_eq!(
+                normalize_language(Some(raw)).as_deref(),
+                Some(want),
+                "{raw}"
+            );
+        }
+        assert_eq!(normalize_language(None), None);
+    }
 
     /// As the reference normalized them (scheduled/browser_pageview_rollups).
     #[test]

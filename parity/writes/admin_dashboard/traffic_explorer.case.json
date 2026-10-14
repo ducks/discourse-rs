@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO browser_pageview_events (url, normalized_url, ip_address, user_agent, session_id, user_id, normalized_referrer, country_code, asn, browser, normalized_language, score, created_at) VALUES ('http://localhost:3000/t/topic/35', '/t/topic/35', '1.2.3.4', 'Mozilla', 's1', 3, 'google.com/search', 'US', 15169, 1, 'en', NULL, now() - interval '1 day'), ('http://localhost:3000/latest', '/latest', '1.2.3.4', 'Mozilla', 's1', 3, 'localhost/t/topic/35', 'US', 15169, 1, 'en', NULL, now() - interval '1 day' + interval '1 minute'), ('http://localhost:3000/t/other/36', '/t/other/36', '5.6.7.8', 'Mozilla', 's2', NULL, NULL, 'DE', 3320, 4, 'de', 80, now() - interval '2 days'), ('http://localhost:3000/', '/', '9.9.9.9', 'Mozilla', 's3', NULL, 'news.ycombinator.com', NULL, NULL, NULL, NULL, NULL, now() - interval '2 days' + interval '5 minutes'), ('http://localhost:3000/c/general/4', '/c/general/4', '10.0.0.1', 'Mozilla', 's4', 4, 'localhost:3000/latest', NULL, NULL, 3, 'fr-CA', NULL, now() - interval '3 days'), ('http://localhost:3000/t/topic/35', '/t/topic/35', '1.2.3.5', 'Mozilla', 's5', NULL, 'google.com/search', 'US', 15169, 3, 'en', NULL, now() - interval '1 day' + interval '2 minutes'), ('http://localhost:3000/old', '/old', '1.2.3.4', 'Mozilla', 's7', NULL, NULL, NULL, NULL, 1, 'en', NULL, now() - interval '100 days'), ('http://localhost:3000/about', '/about', '2001:db8::1', 'Mozilla', 's6', NULL, '', 'CA', NULL, 0, '', NULL, now() - interval '1 hour')",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, created_at, updated_at) VALUES ('s1', 50, now(), now()), ('s2', 5, now(), now()), ('s4', 12, now(), now()), ('s5', 3, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D=anonymous&traffic_type%5B%5D=logged_in%2Clikely_crawler&referrer%5B%5D=google.com%2Fsearch&country%5B%5D=us&network%5B%5D=AS15169&browser%5B%5D=chrome&language%5B%5D=en_US&top_url%5B%5D=https%3A%2F%2Flocalhost%2Ft%2Ftopic%2F35%3Fx%3D1&ip%5B%5D=1.2.3.4"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=&language%5B%5D=&entry_url%5B%5D=%2Fabout"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=de&network%5B%5D=AS3320&traffic_type%5B%5D=anonymous"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-01-01&end_date=2026-10-14&browser%5B%5D=unknown&ip%5B%5D=2001:0db8::1"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-14&end_date=2026-10-07"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D=bogus"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&browser=chrome"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&network%5B%5D=15169"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&ip%5B%5D=nope"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=usa"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&top_url%5B%5D=ftp%3A%2F%2Fx%2Fy"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=%20"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=nope&end_date=2026-10-14"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=007&top_url%5B%5D=010&language%5B%5D=0x10&ip%5B%5D=1.2.3.4%2F24&ip%5B%5D=1.2.3.0"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D="},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=%C3%9F"}
+  ]
+}
