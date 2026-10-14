@@ -160,7 +160,7 @@ fn file_path(f: &Field, upload_filename: Option<&str>) -> Option<String> {
 }
 
 /// `I18n.available_locales` (LocaleSiteSetting.supported_locales).
-fn locale_available(name: &str) -> bool {
+pub fn locale_available(name: &str) -> bool {
     crate::setting_enums::recorded("default_locale")
         .and_then(|r| r.get("valid_values"))
         .and_then(Value::as_array)
@@ -332,6 +332,9 @@ pub struct Setting {
     pub choices: Vec<Yaml>,
     pub textarea: bool,
     pub refresh: bool,
+    /// `min` and `max` when numeric (integer, float and string settings).
+    pub min: Option<Yaml>,
+    pub max: Option<Yaml>,
 }
 
 /// `Theme#settings`: the settings field parsed, when it has no error.
@@ -420,6 +423,8 @@ pub async fn settings_of(conn: &mut PgConnection, theme_id: i32) -> Result<Vec<S
             choices,
             textarea: matches!(opt("textarea"), Some(Yaml::Bool(true))),
             refresh: matches!(opt("refresh"), Some(Yaml::Bool(true))),
+            min: opt("min").filter(|v| v.is_number()).cloned(),
+            max: opt("max").filter(|v| v.is_number()).cloned(),
         });
     }
     Ok(out)

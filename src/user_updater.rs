@@ -797,7 +797,28 @@ async fn update_options(
             k => k,
         };
         let new = match kind {
-            Kind::Array => return Err(Unsupported("updating themes and array options").into()),
+            Kind::Array if *key == "theme_ids" => {
+                let ids: Vec<i64> = match value {
+                    Value::Array(items) => items
+                        .iter()
+                        .filter_map(params::scalar)
+                        .filter(|s| !crate::ruby::is_blank(s))
+                        .map(|s| crate::ruby::to_i(&s))
+                        .collect(),
+                    _ => return Err(Unsupported("theme_ids that are not a list").into()),
+                };
+                // Guardian#allow_themes?; refused themes leave the option.
+                if !allow_themes(&mut *conn, &ids).await? {
+                    continue;
+                }
+                let new = json!(ids);
+                if before["theme_ids"] != new {
+                    let seq = before["theme_key_seq"].as_i64().unwrap_or(0);
+                    after.insert("theme_key_seq".into(), json!(seq + 1));
+                }
+                new
+            }
+            Kind::Array => return Err(Unsupported("updating array options").into()),
             Kind::Bool => match &before[column] {
                 Value::Bool(_) => json!(params::scalar(value).as_deref() == Some("true")),
                 _ => return Err(Unsupported("a boolean option that is unset").into()),
@@ -863,6 +884,33 @@ async fn update_options(
             .then_some(auto_track)
             .flatten(),
     ))
+}
+
+/// `Guardian#allow_themes?`: the first id a user selectable theme (or the
+/// default one), the rest its components. No allowed theme repos are
+/// configured, so the remote allowlist never applies.
+async fn allow_themes(conn: &mut PgConnection, ids: &[i64]) -> Result<bool, sqlx::Error> {
+    let Some((parent, components)) = ids.split_first() else {
+        return Ok(true);
+    };
+    // Theme.user_theme_ids: user selectable, or the default (a hidden
+    // setting, -1 unless overridden).
+    let selectable: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1 AND (user_selectable OR id = \
+         COALESCE((SELECT value::int FROM site_settings WHERE name = 'default_theme_id'), -1)))",
+    )
+    .bind(*parent as i32)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !selectable {
+        return Ok(false);
+    }
+    let children: Vec<i32> =
+        sqlx::query_scalar("SELECT child_theme_id FROM child_themes WHERE parent_theme_id = $1")
+            .bind(*parent as i32)
+            .fetch_all(&mut *conn)
+            .await?;
+    Ok(components.iter().all(|c| children.contains(&(*c as i32))))
 }
 
 /// UserOption's validations.

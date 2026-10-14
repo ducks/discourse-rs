@@ -1211,20 +1211,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
         )
-        .route(
-            "/admin/themes",
-            get(themes::index).post(themes::write_refused),
-        )
+        .route("/admin/themes", get(themes::index).post(themes::create))
         .route(
             "/admin/themes.json",
-            get(themes::index).post(themes::write_refused),
+            get(themes::index).post(themes::create),
+        )
+        .route(
+            "/admin/themes/bulk_destroy",
+            axum::routing::delete(themes::bulk_destroy),
+        )
+        .route(
+            "/admin/themes/bulk_destroy.json",
+            axum::routing::delete(themes::bulk_destroy),
         )
         .route(
             "/admin/themes/{id}",
             get(themes::show)
-                .put(themes::write_refused)
-                .delete(themes::write_refused),
+                .put(themes::update)
+                .delete(themes::destroy),
         )
+        .route(
+            "/admin/themes/{id}/translations/{locale}",
+            get(themes::translations),
+        )
+        .route("/admin/themes/{id}/preview", get(themes::preview))
         .route("/admin/themes/{id}/setting", put(themes::update_setting))
         .route(
             "/admin/themes/{id}/setting.json",

@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Parent"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Child", "component": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"child_theme_ids": ["{{responses.1.body.theme.id}}"]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"enabled": "false"}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.1.body.theme.id}}.json"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"enabled": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"color_scheme_id": "13"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"component": "false"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"component": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/-1.json", "params": {"theme": {"component": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/-1.json", "params": {"theme": {"name": "Mine"}}},
+    {"method": "PUT", "path": "/admin/themes/-2.json", "params": {"theme": {"user_selectable": "true"}}}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields",
+    "/responses/7/body/theme/theme_fields",
+    "/responses/8/body/theme/theme_fields",
+    "/responses/11/body/theme/theme_fields"
+  ]
+}

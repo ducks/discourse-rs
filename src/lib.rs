@@ -142,6 +142,7 @@ pub mod stylesheet;
 pub mod svg_sprite;
 pub mod system_message;
 pub mod tags;
+pub mod theme_writes;
 pub mod themes;
 pub mod topic_guardian;
 pub mod topic_list;

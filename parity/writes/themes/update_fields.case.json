@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Layered", "theme_fields": [
+      {"name": "head_tag", "target": "common", "value": "<script src=\"https://example.com/widget.js\" defer></script><link rel=\"stylesheet\" href=\"/x.css\">"},
+      {"name": "body_tag", "target": "mobile", "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>"},
+      {"name": "en", "target": "translations", "value": "en:\n  title: Layered\n  nested:\n    deep: Deep text\n"},
+      {"name": "yaml", "target": "settings", "value": "accent: blue\nmissing:\n  type: integer\nratio: 1.5\n"},
+      {"name": "first", "target": "tests_js", "value": "acceptance('x', function() {});", "type_id": "6"},
+      {"name": "about", "target": "about", "value": "{}", "type_id": "8"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"name": "Layered too"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [
+      {"name": "en", "target": "translations", "value": "en:\n  title: Layered again\n"},
+      {"name": "yaml", "target": "settings", "value": "accent: blue\nratio: 1.5\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "ratio", "value": "2"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "accent", "value": "red"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [
+      {"name": "en", "target": "translations", "value": ""},
+      {"name": "head_tag", "target": "common", "value": ""}
+    ]}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ]
+}

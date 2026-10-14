@@ -1,11 +1,47 @@
 {
-  "not_yet": "a theme setting change rebakes the theme's scss fields (a stylesheet compile)",
   "user": "admin",
   "requests": [
-    {"method": "PUT", "path": "/admin/themes/-2/setting.json", "params": {"name": "topic_card_high_context", "value": "false"}},
-    {"method": "PUT", "path": "/admin/themes/-2/setting.json", "params": {"name": "topic_card_high_context", "value": "true"}},
-    {"method": "PUT", "path": "/admin/themes/-2/setting.json", "params": {"name": "nope", "value": "true"}},
-    {"method": "PUT", "path": "/admin/themes/-2/setting.json", "params": {"value": "true"}},
-    {"method": "PUT", "path": "/admin/themes/999/setting.json", "params": {"name": "x", "value": "true"}}
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/setting.json",
+      "params": {
+        "name": "topic_card_high_context",
+        "value": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/setting.json",
+      "params": {
+        "name": "topic_card_high_context",
+        "value": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/setting.json",
+      "params": {
+        "name": "nope",
+        "value": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-2/setting.json",
+      "params": {
+        "value": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/999/setting.json",
+      "params": {
+        "name": "x",
+        "value": "true"
+      }
+    }
+  ],
+  "digests": [
+    "theme_fields.value_baked"
   ]
 }

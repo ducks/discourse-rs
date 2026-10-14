@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Main",
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Comp default",
+          "component": "true",
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/themes.json"
+    }
+  ]
+}

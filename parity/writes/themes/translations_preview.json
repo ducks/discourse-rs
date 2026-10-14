@@ -1,0 +1,181 @@
+{
+  "name": "translations_preview",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/themes/-2/translations/en.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-1/translations/en.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-2/translations/xx.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/999/translations/en.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-2/preview"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/999/preview"
+    }
+  ],
+  "started_at": "2026-10-14T19:25:02.340183",
+  "transaction_started_at": "2026-10-14T19:24:57.509522",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "translations": [
+          {
+            "key": "solved",
+            "value": "Solved",
+            "default": "Solved"
+          },
+          {
+            "key": "unsolved",
+            "value": "Unsolved",
+            "default": "Unsolved"
+          },
+          {
+            "key": "posted",
+            "value": "posted",
+            "default": "posted"
+          },
+          {
+            "key": "by_username",
+            "value": "by @%{username}",
+            "default": "by @%{username}"
+          },
+          {
+            "key": "replied",
+            "value": "replied",
+            "default": "replied"
+          },
+          {
+            "key": "vote_count.one",
+            "value": "%{count} vote",
+            "default": "%{count} vote"
+          },
+          {
+            "key": "vote_count.other",
+            "value": "%{count} votes",
+            "default": "%{count} votes"
+          },
+          {
+            "key": "like_count.one",
+            "value": "%{count} like",
+            "default": "%{count} like"
+          },
+          {
+            "key": "like_count.other",
+            "value": "%{count} likes",
+            "default": "%{count} likes"
+          },
+          {
+            "key": "reply_count.one",
+            "value": "%{count} reply",
+            "default": "%{count} reply"
+          },
+          {
+            "key": "reply_count.other",
+            "value": "%{count} replies",
+            "default": "%{count} replies"
+          }
+        ]
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "xx is not a valid locale"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 302,
+      "body": ""
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 128,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wpPzUk1rNb/EfjFPsqqpdtmDX8M=",
+            "created_at": "2026-10-14T19:24:59.362733",
+            "rotated_at": "2026-10-14T19:24:59.353996",
+            "updated_at": "2026-10-14T19:24:59.362733",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wpPzUk1rNb/EfjFPsqqpdtmDX8M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 128,
+            "seen_at": "2026-10-14T19:25:02.350928",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wpPzUk1rNb/EfjFPsqqpdtmDX8M=",
+            "created_at": "2026-10-14T19:24:59.362733",
+            "rotated_at": "2026-10-14T19:24:59.353996",
+            "updated_at": "2026-10-14T19:24:59.362733",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wpPzUk1rNb/EfjFPsqqpdtmDX8M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "ab5b3a111a9952695d30ab672542bad06de7ce4bf5cdd8d000d53303d59fbde5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

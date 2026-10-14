@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Host", "theme_fields": [
+      {"name": "yaml", "target": "settings", "value": "flag: true\n"},
+      {"name": "en", "target": "translations", "value": "en:\n  hello: Hello\n"}
+    ]}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Addon", "component": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"parent_theme_ids": ["{{responses.0.body.theme.id}}", "-2"]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "flag", "value": "false"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"translations": {"hello": "Hi"}, "default": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/-2/site-setting.json", "params": {"name": "search_experience", "value": "search_field"}},
+    {"method": "GET", "path": "/admin/themes/-2.json"},
+    {"method": "DELETE", "path": "/admin/themes/bulk_destroy.json", "params": {"theme_ids": ["{{responses.0.body.theme.id}}", "{{responses.1.body.theme.id}}"]}},
+    {"method": "GET", "path": "/admin/config/customize/themes.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ]
+}

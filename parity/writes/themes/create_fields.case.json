@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Fielded", "theme_fields": [
+      {"name": "header", "target": "common", "value": "<div class=\"banner\">Hello <b>there</b><br></div>"},
+      {"name": "footer", "target": "desktop", "value": "<p>Desktop footer</p>", "type_id": "0"},
+      {"name": "yaml", "target": "settings", "value": "show_banner: true\nbanner_text:\n  default: Welcome\n  description: The banner's text\nsize:\n  type: enum\n  default: small\n  choices:\n    - small\n    - large\n"},
+      {"name": "en", "target": "translations", "value": "en:\n  greeting: Hello\n  theme_metadata:\n    description: A fielded theme\n"},
+      {"name": "about", "target": "about", "value": "{\"name\": \"Fielded\"}", "type_id": "8"}
+    ]}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ]
+}

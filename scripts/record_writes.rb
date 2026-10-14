@@ -224,6 +224,9 @@ def reset_plugin_caches
   # which TranslationOverride's own writes reload but setup SQL and the
   # rollback do not.
   I18n.instance_variable_set(:@overrides_by_site, {})
+  # Theme's in-process cache (user selectable themes, components, cached
+  # settings), which setup SQL and the rollback leave stale.
+  Theme.clear_cache!
 end
 
 # Every file and directory under public/backups.
@@ -457,6 +460,7 @@ cases.each do |c|
     record[:enqueue] = c["enqueue"] if c["enqueue"]
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]
+    record[:digests] = c["digests"] if c["digests"]
     record[:unordered] = c["unordered"] if c["unordered"]
     record[:unordered_responses] = c["unordered_responses"] if c["unordered_responses"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
