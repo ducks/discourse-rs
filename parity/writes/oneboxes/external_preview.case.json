@@ -1,0 +1,89 @@
+{
+  "user": "user1",
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>No engine on this port</title>"
+    },
+    "/gone": {
+      "status": 404,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "gone"
+    },
+    "/challenge": {
+      "status": 403,
+      "headers": {
+        "cf-mitigated": "challenge"
+      },
+      "body": ""
+    },
+    "/broken": {
+      "status": 500,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "oops"
+    }
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/gone"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/challenge"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/broken"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/titled"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/titled"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://10.1.2.3/page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/gone",
+        "refresh": "true"
+      }
+    }
+  ]
+}

@@ -117,11 +117,14 @@ def clear_redis_state
   # unique-pm-post: the duplicate check's key for posts in messages.
   # grpmsg, last_notified_reviewable_id: what GroupMessage and the
   # reviewables reminder remember having sent.
-  # _CACHE:inline_onebox: crawled titles (InlineOneboxer), kept a day.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:*].each do |pattern|
+  # _CACHE:inline_onebox, _CACHE:onebox__, _CACHE:onebox_failed__: crawled
+  # titles and oneboxes (InlineOneboxer, Oneboxer), kept up to a day.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
-  # FinalDestination's https domains, outside the namespace.
+  # Oneboxer's preferred strategies, outside the namespace.
+  Discourse.redis.without_namespace.keys("ONEBOXER_STRATEGY_*").each { |k| Discourse.redis.without_namespace.del(k) }
+  # FinalDestination's https domains, outside the namespace too.
   Discourse.redis.without_namespace.keys("HTTPS_DOMAIN_*").each { |k| Discourse.redis.without_namespace.del(k) }
   # Presence lives in Redis too, members and cached configs alike.
   PresenceChannel.clear_all!

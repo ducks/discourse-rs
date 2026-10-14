@@ -1,0 +1,171 @@
+{
+  "name": "external_preview",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/gone"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/challenge"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/broken"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/titled"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/titled"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://10.1.2.3/page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/gone",
+        "refresh": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:27:16.578306",
+  "transaction_started_at": "2026-10-14T01:27:14.93315",
+  "responses": [
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox preview-error\">\n  <a href=\"http://fixtures.localhost:8099/gone\" target='_blank' rel='noopener noreferrer'>http://fixtures.localhost:8099/gone</a>\n  <article class=\"onebox-warning-message\">\n    Sorry, we were unable to generate a preview for this web page, because the web server returned an error code of 404. Instead of a preview, only a link will appear in your post. <img width=\"20\" height=\"20\" src='/images/emoji/twitter/cry.png?v=15' title='cry' alt='cry' class='emoji'>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox preview-error\">\n  <a href=\"http://fixtures.localhost:8099/challenge\" target='_blank' rel='noopener noreferrer'>http://fixtures.localhost:8099/challenge</a>\n  <article class=\"onebox-warning-message\">\n    Sorry, we were unable to generate a preview for this web page, because the web server requires visitors to pass a verification step in a web browser. Instead of a preview, only a link will appear in your post. <img width=\"20\" height=\"20\" src='/images/emoji/twitter/cry.png?v=15' title='cry' alt='cry' class='emoji'>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox preview-error\">\n  <a href=\"http://fixtures.localhost:8099/broken\" target='_blank' rel='noopener noreferrer'>http://fixtures.localhost:8099/broken</a>\n  <article class=\"onebox-warning-message\">\n    Sorry, we were unable to generate a preview for this web page, because the web server returned an error code of 500. Instead of a preview, only a link will appear in your post. <img width=\"20\" height=\"20\" src='/images/emoji/twitter/cry.png?v=15' title='cry' alt='cry' class='emoji'>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 404,
+      "body": ""
+    },
+    {
+      "status": 404,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox preview-error\">\n  <a href=\"http://10.1.2.3/page\" target='_blank' rel='noopener noreferrer'>http://10.1.2.3/page</a>\n  <article class=\"onebox-warning-message\">\n    Sorry, we were unable to generate a preview for this web page, because the server '10.1.2.3' could not be found. Instead of a preview, only a link will appear in your post. <img width=\"20\" height=\"20\" src='/images/emoji/twitter/cry.png?v=15' title='cry' alt='cry' class='emoji'>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox preview-error\">\n  <a href=\"http://fixtures.localhost:8099/gone\" target='_blank' rel='noopener noreferrer'>http://fixtures.localhost:8099/gone</a>\n  <article class=\"onebox-warning-message\">\n    Sorry, we were unable to generate a preview for this web page, because the web server returned an error code of 404. Instead of a preview, only a link will appear in your post. <img width=\"20\" height=\"20\" src='/images/emoji/twitter/cry.png?v=15' title='cry' alt='cry' class='emoji'>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EaYDwM9RX/5SijFS9PvYCyCVrYw=",
+            "created_at": "2026-10-14T01:27:15.335962",
+            "rotated_at": "2026-10-14T01:27:15.334839",
+            "updated_at": "2026-10-14T01:27:15.335962",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EaYDwM9RX/5SijFS9PvYCyCVrYw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T01:27:16.586219",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EaYDwM9RX/5SijFS9PvYCyCVrYw=",
+            "created_at": "2026-10-14T01:27:15.335962",
+            "rotated_at": "2026-10-14T01:27:15.334839",
+            "updated_at": "2026-10-14T01:27:15.335962",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EaYDwM9RX/5SijFS9PvYCyCVrYw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>No engine on this port</title>"
+    },
+    "/gone": {
+      "status": 404,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "gone"
+    },
+    "/challenge": {
+      "status": 403,
+      "headers": {
+        "cf-mitigated": "challenge"
+      },
+      "body": ""
+    },
+    "/broken": {
+      "status": 500,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "oops"
+    }
+  },
+  "recorded_from": {
+    "case": "308240ed96dd30152ead6d082fd03065007d3130a63b0f0979b98968f7d51834",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

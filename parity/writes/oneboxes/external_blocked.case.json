@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099",
+    "blocked_onebox_domains": "fixtures.localhost"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Blocked</title>"
+    }
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://fixtures.localhost:8099/titled"
+      }
+    }
+  ]
+}
