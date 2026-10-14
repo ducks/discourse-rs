@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/advanced-test.json",
+      "params": {
+        "email": "From: a@example.com\nTo: b@example.com\nSubject: hi\n\nHello there\n\nThis is the body.\n"
+      }
+    }
+  ]
+}

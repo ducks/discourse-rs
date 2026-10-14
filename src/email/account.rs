@@ -148,6 +148,7 @@ pub async fn build_template(
         _ => String::new(),
     };
     let html_part = layout(
+        &super::notification::email_template(s)?,
         &cooked,
         &default_locale.replacen('_', "-", 1),
         &preview_html,

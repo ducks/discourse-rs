@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<html><body>nothing</body></html>",
+          "css": "a { color: red"
+        }
+      }
+    }
+  ]
+}

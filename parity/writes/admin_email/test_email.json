@@ -1,0 +1,152 @@
+{
+  "name": "test_email",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/test.json",
+      "params": {
+        "email_address": "someone@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:57:35.489974",
+  "transaction_started_at": "2026-10-14T13:57:33.051002",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "sent_test_email_message": "sent!"
+      }
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-14T13:57:35.625011",
+          "email_type": "test_message",
+          "message_id": "111c1f44-9644-420a-8129-382f1813e410@localhost",
+          "to_address": "someone@example.com",
+          "updated_at": "2026-10-14T13:57:35.625011",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "j9rE2C26AX/N/gkSw+aFkqc5VMI=",
+            "created_at": "2026-10-14T13:57:34.890314",
+            "rotated_at": "2026-10-14T13:57:34.889087",
+            "updated_at": "2026-10-14T13:57:34.890314",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "j9rE2C26AX/N/gkSw+aFkqc5VMI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:35.496739",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "j9rE2C26AX/N/gkSw+aFkqc5VMI=",
+            "created_at": "2026-10-14T13:57:34.890314",
+            "rotated_at": "2026-10-14T13:57:34.889087",
+            "updated_at": "2026-10-14T13:57:34.890314",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "j9rE2C26AX/N/gkSw+aFkqc5VMI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "email_logs": 1
+  },
+  "request_emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "someone@example.com"
+        ],
+        [
+          "Message-ID",
+          "<111c1f44-9644-420a-8129-382f1813e410@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Email Deliverability Test"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6acf8a4f973a1_43eff2854967"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "This is a test email from\n\n[**http://localhost:3051**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: http://localhost:3051\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>This is a test email from</p>\n<p><a href=\"http://localhost:3051\" style=\"text-decoration:none;font-weight:bold;color:#006699\"><strong>http://localhost:3051</strong></a></p>\n<p>We hope you received this email deliverability test OK!</p>\n<p>Here is a <a href=\"https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\" rel=\"noopener nofollow ugc\" style=\"text-decoration:none;font-weight:bold;color:#006699\">handy checklist for verifying email delivery configuration</a>.</p>\n<p>Good luck,</p>\n<p>Your friends at <a href=\"https://www.discourse.org\" rel=\"noopener nofollow ugc\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "9cc371165886a3dc35003e15bed6c0ed8359e2992a64042cc8f4fe3901e91400",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

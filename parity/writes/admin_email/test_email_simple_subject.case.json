@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "settings": {
+    "simple_email_subject": true,
+    "email_prefix": "Pre"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/test.json",
+      "params": {
+        "email_address": "someone@example.com"
+      }
+    }
+  ]
+}

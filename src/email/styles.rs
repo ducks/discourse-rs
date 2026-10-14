@@ -203,14 +203,16 @@ impl Styles {
 
     /// `format_html`
     pub fn format_html(&self, settings: &SiteSettings) -> Result<(), AppError> {
-        if settings.get("email_custom_css")?.presence().is_some()
-            || settings
-                .get("email_custom_css_compiled")?
-                .presence()
-                .is_some()
-        {
-            return Err(Unsupported("email_custom_css").into());
-        }
+        // custom_styles: EmailStyle#compiled_css, read before anything is
+        // styled so a refusal comes first.
+        let compiled_css = match settings.get("email_custom_css_compiled")?.presence() {
+            Some(css) => Some(css),
+            None => settings.get("email_custom_css")?.presence(),
+        };
+        let custom_styles = match compiled_css {
+            Some(css) => super::custom_css::custom_styles(&css)?,
+            None => Vec::new(),
+        };
         let link_color = settings.get("email_link_color")?.to_s();
         let accent_bg = settings.get("email_accent_bg_color")?.to_s();
         let accent_fg = settings.get("email_accent_fg_color")?.to_s();
@@ -428,6 +430,10 @@ impl Styles {
             Some("max-height: 20px; vertical-align: middle;"),
             &[],
         );
+        // format_custom
+        for (selector, value) in &custom_styles {
+            self.style(selector, Some(value), &[]);
+        }
         Ok(())
     }
 

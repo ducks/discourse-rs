@@ -1,0 +1,112 @@
+{
+  "name": "email_style_update_html",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<html><body><div class=\"custom\">%{email_content}</div></body></html>"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/email_style.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:57:10.065196",
+  "transaction_started_at": "2026-10-14T13:57:08.439721",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email_style": {
+          "id": "email-style",
+          "html": "<html><body><div class=\"custom\">%{email_content}</div></body></html>",
+          "css": "",
+          "default_html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n",
+          "default_css": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "email_style": {
+          "id": "email-style",
+          "html": "<html><body><div class=\"custom\">%{email_content}</div></body></html>",
+          "css": "",
+          "default_html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n",
+          "default_css": ""
+        }
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "email_custom_template",
+          "value": "<html><body><div class=\"custom\">%{email_content}</div></body></html>",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:57:10.098894",
+          "updated_at": "2026-10-14T13:57:10.098894"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "E1ZSZ62pLm9YH7IGRqg0J3CQz+g=",
+            "created_at": "2026-10-14T13:57:08.817288",
+            "rotated_at": "2026-10-14T13:57:08.816441",
+            "updated_at": "2026-10-14T13:57:08.817288",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "E1ZSZ62pLm9YH7IGRqg0J3CQz+g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:10.072953",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "E1ZSZ62pLm9YH7IGRqg0J3CQz+g=",
+            "created_at": "2026-10-14T13:57:08.817288",
+            "rotated_at": "2026-10-14T13:57:08.816441",
+            "updated_at": "2026-10-14T13:57:08.817288",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "E1ZSZ62pLm9YH7IGRqg0J3CQz+g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37
+  },
+  "recorded_from": {
+    "case": "d6d97f0a93c61930c2a3b870e169d622e99c9b97fb4d9beae4438aee8d3884a0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -4,6 +4,8 @@ mod admin_api_keys;
 mod admin_badges;
 mod admin_email;
 mod admin_embedding;
+mod admin_email_style;
+mod admin_email_templates;
 mod admin_emoji;
 mod admin_flags;
 mod admin_form_templates;
@@ -1114,6 +1116,57 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/email/handle_mail.json",
             post(admin_email::handle_mail),
+        )
+        .route("/admin/email", get(admin_email::index))
+        .route("/admin/email.json", get(admin_email::index))
+        .route(
+            "/admin/email/server-settings",
+            get(admin_email::server_settings),
+        )
+        .route(
+            "/admin/email/server-settings.json",
+            get(admin_email::server_settings),
+        )
+        .route(
+            "/admin/email/smtp_should_reject",
+            get(admin_email::smtp_should_reject),
+        )
+        .route(
+            "/admin/email/smtp_should_reject.json",
+            get(admin_email::smtp_should_reject),
+        )
+        .route("/admin/email/test", post(admin_email::test))
+        .route("/admin/email/test.json", post(admin_email::test))
+        .route(
+            "/admin/email/advanced-test",
+            get(admin_email::advanced_test_get).post(admin_email::advanced_test),
+        )
+        .route(
+            "/admin/email/advanced-test.json",
+            get(admin_email::advanced_test_get).post(admin_email::advanced_test),
+        )
+        .route("/admin/email/templates", get(admin_email_templates::index))
+        .route(
+            "/admin/email/templates.json",
+            get(admin_email_templates::index),
+        )
+        .route(
+            "/admin/email/templates/{id}",
+            get(admin_email_templates::show)
+                .put(admin_email_templates::update)
+                .delete(admin_email_templates::revert),
+        )
+        .route(
+            "/admin/customize/email_style",
+            get(admin_email_style::show).put(admin_email_style::update),
+        )
+        .route(
+            "/admin/customize/email_style.json",
+            get(admin_email_style::show).put(admin_email_style::update),
+        )
+        .route(
+            "/admin/customize/email_style/{field}",
+            get(admin_email_style::show_field),
         )
         .route("/session/hp", get(accounts::honeypot))
         .route("/session/hp.json", get(accounts::honeypot))

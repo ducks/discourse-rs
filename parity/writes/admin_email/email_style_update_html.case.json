@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<html><body><div class=\"custom\">%{email_content}</div></body></html>"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/email_style.json"
+    }
+  ]
+}

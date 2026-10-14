@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/email_style.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/email_style/css.json"
+    }
+  ]
+}

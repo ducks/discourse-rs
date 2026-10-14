@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/advanced-test.json",
+      "params": {
+        "email": "From: a@example.com\nTo: b@example.com\nSubject: Re: hi\n\nMy reply here.\n\nOn Mon, Oct 12, 2026 at 10:00 AM Someone <s@example.com> wrote:\n> the original\n> message\n"
+      }
+    }
+  ]
+}

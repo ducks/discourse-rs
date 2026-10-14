@@ -516,6 +516,7 @@ pub async fn build(
         )
     ));
     let html_part = layout_view(
+        &crate::email::notification::email_template(s)?,
         &html,
         &s.get("default_locale")?.to_s().replacen('_', "-", 1),
         "",

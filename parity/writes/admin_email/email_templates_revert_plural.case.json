@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/system_messages.pending_users_reminder"
+    }
+  ]
+}

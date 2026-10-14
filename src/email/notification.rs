@@ -651,6 +651,7 @@ pub async fn build(
     };
     html = html.replace("%{respond_instructions}", &respond_html);
     let html_part = layout(
+        &email_template(s)?,
         &html,
         &s.get("default_locale")?.to_s().replacen('_', "-", 1),
         "",
@@ -869,9 +870,31 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
     Ok(out)
 }
 
-/// layouts/email_template with EmailStyle's default template around the
-/// body.
-pub(crate) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> String {
+/// `EmailStyle.new.html`: the admin's template (email_custom_template),
+/// or the one Discourse ships.
+pub fn email_template(s: &crate::site_settings::SiteSettings) -> Result<String, AppError> {
+    Ok(s.get("email_custom_template")?
+        .presence()
+        .unwrap_or_else(|| DEFAULT_TEMPLATE.to_string()))
+}
+
+/// `email_html_template`: the template with the content in place.
+fn fill_template(template: &str, content: &str, html_lang: &str, preview_html: &str) -> String {
+    template
+        .replacen("%{email_content}", content, 1)
+        .replace("%{email_preview}", preview_html)
+        .replace("%{html_lang}", html_lang)
+        .replace("%{dark_mode_meta_tags}", DARK_MODE_META_TAGS)
+        .replace("%{dark_mode_styles}", DARK_MODE_STYLES)
+}
+
+/// layouts/email_template with EmailStyle's template around the body.
+pub(crate) fn layout(
+    template: &str,
+    html_body: &str,
+    html_lang: &str,
+    preview_html: &str,
+) -> String {
     // `capture { yield }`: a block that wrote only whitespace gives its
     // value instead, the "\n" its last line appended.
     let content = if html_body.trim().is_empty() {
@@ -879,29 +902,28 @@ pub(crate) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> St
     } else {
         format!("\n    \n    {html_body}\n")
     };
-    DEFAULT_TEMPLATE
-        .replacen("%{email_content}", &content, 1)
-        .replace("%{email_preview}", preview_html)
-        .replace("%{html_lang}", html_lang)
-        .replace("%{dark_mode_meta_tags}", DARK_MODE_META_TAGS)
-        .replace("%{dark_mode_styles}", DARK_MODE_STYLES)
+    fill_template(template, &content, html_lang, preview_html)
 }
 
 /// layouts/email_template around a mailer's own view (ActionMailer's
 /// layout, as chat's summary renders): the view as `yield` leaves it in
 /// email_html_template's block.
-pub(crate) fn layout_view(view: &str, html_lang: &str, preview_html: &str) -> String {
-    let content = format!("\n    {view}\n    \n");
-    DEFAULT_TEMPLATE
-        .replacen("%{email_content}", &content, 1)
-        .replace("%{email_preview}", preview_html)
-        .replace("%{html_lang}", html_lang)
-        .replace("%{dark_mode_meta_tags}", DARK_MODE_META_TAGS)
-        .replace("%{dark_mode_styles}", DARK_MODE_STYLES)
+pub(crate) fn layout_view(
+    template: &str,
+    view: &str,
+    html_lang: &str,
+    preview_html: &str,
+) -> String {
+    fill_template(
+        template,
+        &format!("\n    {view}\n    \n"),
+        html_lang,
+        preview_html,
+    )
 }
 
 /// app/views/email/default_template.html, as Discourse ships it.
-const DEFAULT_TEMPLATE: &str = include_str!("default_template.html");
+pub const DEFAULT_TEMPLATE: &str = include_str!("default_template.html");
 
 const DARK_MODE_META_TAGS: &str = "\n    <meta name='color-scheme' content='light dark' />\n    <meta name='supported-color-schemes' content='light dark' />\n    ";
 

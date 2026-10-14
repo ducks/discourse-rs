@@ -400,8 +400,21 @@ then by what running a forum needs (milestone 6). Briefs:
     list. Refused: a valid form template preview and the public show
     (Psych's YAML.dump), YAML 1.1-only scalars, allowed paths only Ruby's
     regexp syntax accepts)
-88. `feat/admin-email` M: the settings test, previews, templates, email
-    style, 89. `feat/admin-dashboard` L (reports, problem checks,
+88. ~~`feat/admin-email`~~ (done) M (the email settings page's JSON:
+    index, server-settings, smtp_should_reject; the test email through
+    TestMailer with Email::Sender's BYPASS_DISABLE_TYPES; advanced-test
+    over Email::Receiver#select_body; the email templates list with its
+    titles, plural texts and interpolation keys, show, and revert with
+    its change_site_text logs; email style show and update with Dart
+    Sass's compressed output (grass) and its error lines, the custom
+    template in every mail layout and the custom CSS read as CssParser
+    reads it into style attributes. Refused: updating a template and
+    anything showing or reverting an existing translation override
+    (#90's I18n override layer), templates in other locales, at-rules,
+    nesting left after compiling, and selectors past tags, classes, ids
+    and the descendant and child combinators in the email CSS, the
+    admin's Ember pages; the incoming email details stay with #87; the
+    preview and send digest landed with #72), 89. `feat/admin-dashboard` L (reports, problem checks,
     admin notices, the pageview jobs)
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,

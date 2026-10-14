@@ -1156,7 +1156,12 @@ pub async fn build(
         // email_template's bare branch.
         format!("  {view}\n  \n")
     } else {
-        layout_view(&view, &locale.replacen('_', "-", 1), "")
+        layout_view(
+            &super::notification::email_template(ctx.settings)?,
+            &view,
+            &locale.replacen('_', "-", 1),
+            "",
+        )
     };
 
     // digest.text.erb

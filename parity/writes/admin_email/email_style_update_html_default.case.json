@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "settings": {
+    "email_custom_template": "<html><body>%{email_content}</body></html>"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n"
+        }
+      }
+    }
+  ]
+}

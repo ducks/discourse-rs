@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/test.json",
+      "params": {
+        "email_address": "someone@example.com"
+      }
+    }
+  ]
+}

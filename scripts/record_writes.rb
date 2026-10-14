@@ -38,6 +38,15 @@ RateLimiter.disable
 
 def db = ActiveRecord::Base.connection
 
+# A delivered message as recordings keep it (its Date varies).
+def email_record(m)
+  {
+    headers: m.header.fields.reject { |f| %w[Date].include?(f.name) }.map { |f| [f.name, f.value.to_s] },
+    text: m.text_part&.decoded || (m.multipart? ? nil : m.decoded),
+    html: m.html_part&.decoded,
+  }
+end
+
 # `{"fixture": "name"}` in a case's params: that file from
 # parity/writes/files, sent as a multipart upload.
 def fixtures(value, files_dir)
@@ -310,6 +319,7 @@ cases.each do |c|
     started_at = db.select_value("SELECT to_jsonb(clock_timestamp()::timestamp)::text")
     transaction_started_at = db.select_value("SELECT to_jsonb(transaction_timestamp()::timestamp)::text")
     responses = []
+    ActionMailer::Base.deliveries.clear
     c["requests"].each do |r|
         state = { "responses" => responses.map { |x| JSON.parse(x.to_json) }, "jobs" => ENQUEUED.to_h { |n, a| [n.split(" ").first, JSON.parse(a.to_json)] } }
         # A GET with `as: :json` goes out as a POST with X-Http-Method-Override,
@@ -336,6 +346,9 @@ cases.each do |c|
     # enqueue is recorded apart, and mail is captured, not sent.
     from_requests = ENQUEUED.dup
     ENQUEUED.clear
+    # Mail the requests send themselves (the admin's test email), apart
+    # from the jobs'.
+    request_emails = ActionMailer::Base.deliveries.map { |m| email_record(m) }
     ActionMailer::Base.deliveries.clear
     names = c["run_jobs"] || []
     pending = from_requests.dup
@@ -352,14 +365,7 @@ cases.each do |c|
       klass.constantize.new.execute(args.with_indifferent_access)
       pending.concat(ENQUEUED[seen..])
     end
-    emails =
-      ActionMailer::Base.deliveries.map do |m|
-        {
-          headers: m.header.fields.reject { |f| %w[Date].include?(f.name) }.map { |f| [f.name, f.value.to_s] },
-          text: m.text_part&.decoded || (m.multipart? ? nil : m.decoded),
-          html: m.html_part&.decoded,
-        }
-      end
+    emails = ActionMailer::Base.deliveries.map { |m| email_record(m) }
     record = {
       name: c["name"],
       user: c["user"],
@@ -387,6 +393,7 @@ cases.each do |c|
     record[:fragment] = c["fragment"] if c["fragment"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
+    record[:request_emails] = request_emails if request_emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
     puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{from_requests.size} jobs"
   ensure

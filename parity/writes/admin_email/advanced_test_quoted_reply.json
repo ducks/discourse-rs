@@ -1,0 +1,75 @@
+{
+  "name": "advanced_test_quoted_reply",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/advanced-test.json",
+      "params": {
+        "email": "From: a@example.com\nTo: b@example.com\nSubject: Re: hi\n\nMy reply here.\n\nOn Mon, Oct 12, 2026 at 10:00 AM Someone <s@example.com> wrote:\n> the original\n> message\n"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:56:49.712845",
+  "transaction_started_at": "2026-10-14T13:56:48.073034",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "text": "My reply here.",
+        "elided": "On Mon, Oct 12, 2026 at 10:00 AM Someone <s@example.com> wrote:\n> the original\n> message",
+        "format": 1
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ABPdQBXTB8+gnyUvf+MSDJBe4RI=",
+            "created_at": "2026-10-14T13:56:49.008535",
+            "rotated_at": "2026-10-14T13:56:49.005355",
+            "updated_at": "2026-10-14T13:56:49.008535",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ABPdQBXTB8+gnyUvf+MSDJBe4RI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:56:49.718329",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ABPdQBXTB8+gnyUvf+MSDJBe4RI=",
+            "created_at": "2026-10-14T13:56:49.008535",
+            "rotated_at": "2026-10-14T13:56:49.005355",
+            "updated_at": "2026-10-14T13:56:49.008535",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ABPdQBXTB8+gnyUvf+MSDJBe4RI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "1ea65f66a5553fdb79f9cdc58493661c1d56a999b8e3de4d77d8c2eeabedb9d3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

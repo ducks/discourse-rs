@@ -1,0 +1,129 @@
+{
+  "name": "email_templates_revert_plural",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/system_messages.pending_users_reminder"
+    }
+  ],
+  "started_at": "2026-10-14T13:57:22.994033",
+  "transaction_started_at": "2026-10-14T13:57:20.56752",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email_template": {
+          "id": "system_messages.pending_users_reminder",
+          "title": "Pending Users Reminder",
+          "subject": null,
+          "body": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "can_revert": false,
+          "interpolation_keys": [
+            "base_url"
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CbnFO/FztFumR2XV9cx0u3suKsg=",
+            "created_at": "2026-10-14T13:57:21.013494",
+            "rotated_at": "2026-10-14T13:57:21.011994",
+            "updated_at": "2026-10-14T13:57:21.013494",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CbnFO/FztFumR2XV9cx0u3suKsg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:23.004024",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CbnFO/FztFumR2XV9cx0u3suKsg=",
+            "created_at": "2026-10-14T13:57:21.013494",
+            "rotated_at": "2026-10-14T13:57:21.011994",
+            "updated_at": "2026-10-14T13:57:21.013494",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CbnFO/FztFumR2XV9cx0u3suKsg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.subject_template",
+          "topic_id": null,
+          "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:57:23.188078",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:57:23.188078",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.text_body_template",
+          "topic_id": null,
+          "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:57:23.195234",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:57:23.195234",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "b8d57455d1b71624f88cd4eba294cb90cbb5be6ba8d84fbddb44748365b9711c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

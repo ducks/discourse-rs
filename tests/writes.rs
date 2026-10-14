@@ -1402,6 +1402,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         before_rows.insert(table.clone(), table_rows(&db.pool, table).await);
     }
     let mut responses = Vec::new();
+    let mail_before_requests = client.state.mailer.sent().len();
     for request in case["requests"].as_array().unwrap() {
         let method = Method::from_bytes(request["method"].as_str().unwrap().as_bytes()).unwrap();
         // {{...}} references, as the recorder resolves them: earlier
@@ -1424,6 +1425,8 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         }
         responses.push(response);
     }
+    // The mail the requests sent themselves, apart from the jobs'.
+    let mail_after_requests = client.state.mailer.sent().len();
     // The jobs the requests enqueued, as the recorder writes them; then
     // the case's run_jobs run, and what they enqueue is listed apart.
     let from_requests = queued_jobs(&db.pool, 0).await;
@@ -1514,14 +1517,10 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             .collect::<Vec<_>>(),
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
-    if !run_jobs.is_empty() {
-        ours["jobs_from_jobs"] = Value::Array(from_jobs);
-        ours["emails"] = Value::Array(
-            client
-                .state
-                .mailer
-                .sent()
-                .into_iter()
+    let mail_json = |messages: &[discourse_rs::email::Message]| -> Value {
+        Value::Array(
+            messages
+                .iter()
                 .map(|m| {
                     serde_json::json!({
                         "headers": m.headers.iter().map(|(k, v)| serde_json::json!([k, v])).collect::<Vec<_>>(),
@@ -1530,7 +1529,16 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     })
                 })
                 .collect(),
-        );
+        )
+    };
+    let sent = client.state.mailer.sent();
+    if !run_jobs.is_empty() {
+        ours["jobs_from_jobs"] = Value::Array(from_jobs);
+        ours["emails"] = mail_json(&sent[mail_after_requests..]);
+    }
+    // Recordings made since the recorder keeps the requests' own mail.
+    if case.get("request_emails").is_some() {
+        ours["request_emails"] = mail_json(&sent[mail_before_requests..mail_after_requests]);
     }
 
     // CURRENT_TIMESTAMP on the reference is its rolled-back transaction's
@@ -1563,6 +1571,9 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             .get("emails")
             .cloned()
             .unwrap_or(Value::Array(Vec::new()));
+    }
+    if let Some(mail) = case.get("request_emails") {
+        rails["request_emails"] = mail.clone();
     }
     // The reference runs in development, where a route that does not match
     // (an admin route for a non-admin) renders the Routing Error page, and

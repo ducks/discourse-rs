@@ -1,0 +1,78 @@
+{
+  "name": "email_style_update_html_missing_placeholder",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<html><body>nothing</body></html>",
+          "css": "a { color: red"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:57:14.838354",
+  "transaction_started_at": "2026-10-14T13:57:12.081596",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The html template must include %{email_content}",
+          "expected \"}\"."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OUyi86lTDX+0gXvL8u8JtaH/H/4=",
+            "created_at": "2026-10-14T13:57:13.956565",
+            "rotated_at": "2026-10-14T13:57:13.954037",
+            "updated_at": "2026-10-14T13:57:13.956565",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OUyi86lTDX+0gXvL8u8JtaH/H/4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:14.847434",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OUyi86lTDX+0gXvL8u8JtaH/H/4=",
+            "created_at": "2026-10-14T13:57:13.956565",
+            "rotated_at": "2026-10-14T13:57:13.954037",
+            "updated_at": "2026-10-14T13:57:13.956565",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OUyi86lTDX+0gXvL8u8JtaH/H/4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "0058950feb439e36be758c09dc232cbf723f562830e1e663b0b4e14d683bfc77",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

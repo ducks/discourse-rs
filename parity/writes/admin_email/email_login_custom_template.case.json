@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "email_custom_template": "<html lang=\"%{html_lang}\"><head></head><body><div class=\"custom-wrap\">%{email_preview}%{email_content}</div><p>footer</p></body></html>"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "user1"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

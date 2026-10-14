@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "email_custom_css": "a { color: red; }",
+    "email_custom_css_compiled": "a{color:red}\n"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "css": ""
+        }
+      }
+    }
+  ]
+}
