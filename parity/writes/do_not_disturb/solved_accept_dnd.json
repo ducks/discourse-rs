@@ -1,0 +1,195 @@
+{
+  "name": "solved_accept_dnd",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:22:20.984082",
+  "transaction_started_at": "2026-10-14T02:22:19.979854",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 36,
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
+          "post_number": 2,
+          "topic_id": 35,
+          "url": "/t/parity-fixture-replies-and-posters/35/2"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "discourse_solved_solved_topics": {
+      "inserted": [
+        {
+          "id": 1,
+          "topic_id": 35,
+          "created_at": "2026-10-14T02:22:21.02585",
+          "updated_at": "2026-10-14T02:22:21.02585",
+          "answer_post_id": null,
+          "topic_timer_id": null,
+          "accepter_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "discourse_solved_topic_answers": {
+      "inserted": [
+        {
+          "id": 1,
+          "created_at": "2026-10-14T02:22:21.036612",
+          "updated_at": "2026-10-14T02:22:21.036612",
+          "answer_post_id": 36,
+          "solved_topic_id": 1,
+          "accepter_user_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-14T02:22:21.045304",
+          "updated_at": "2026-10-14T02:22:21.045304",
+          "post_number": 2,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 14
+        },
+        {
+          "id": 54,
+          "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-14T02:22:21.053367",
+          "updated_at": "2026-10-14T02:22:21.053367",
+          "post_number": 2,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 14
+        },
+        {
+          "id": 55,
+          "data": "{\"message\":\"solved.topic_solved_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.topic_solved_title\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": 35,
+          "created_at": "2026-10-14T02:22:21.064626",
+          "updated_at": "2026-10-14T02:22:21.064626",
+          "post_number": 2,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 14
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "shelved_notifications": {
+      "inserted": [
+        {
+          "id": 1,
+          "notification_id": 54
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 3,
+          "created_at": "2026-10-14T02:22:21.013557",
+          "updated_at": "2026-10-14T02:22:21.013557",
+          "action_type": 15,
+          "acting_user_id": 1,
+          "target_post_id": 36,
+          "target_user_id": null,
+          "target_topic_id": 35
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bpkIzEAg6z2m6VKzCv3I3fKK644=",
+            "created_at": "2026-10-14T02:22:20.468237",
+            "rotated_at": "2026-10-14T02:22:20.467297",
+            "updated_at": "2026-10-14T02:22:20.468237",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bpkIzEAg6z2m6VKzCv3I3fKK644=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T02:22:20.99571",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bpkIzEAg6z2m6VKzCv3I3fKK644=",
+            "created_at": "2026-10-14T02:22:20.468237",
+            "rotated_at": "2026-10-14T02:22:20.467297",
+            "updated_at": "2026-10-14T02:22:20.468237",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bpkIzEAg6z2m6VKzCv3I3fKK644=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "discourse_solved_solved_topics": 1,
+    "discourse_solved_topic_answers": 1,
+    "notifications": 53,
+    "shelved_notifications": 1,
+    "user_actions": 65
+  },
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'notify_on_staff_accept_solved', 'true', now(), now())",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (2, now() - interval '1 hour', now() + interval '1 hour', false)"
+  ],
+  "recorded_from": {
+    "case": "16379d50bdf6da49d40c155b67e64599ce4d96c72da3e43c179f9927553e44a4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

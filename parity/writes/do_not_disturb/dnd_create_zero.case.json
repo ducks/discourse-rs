@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/do-not-disturb.json",
+      "params": {
+        "duration": "0"
+      }
+    }
+  ]
+}

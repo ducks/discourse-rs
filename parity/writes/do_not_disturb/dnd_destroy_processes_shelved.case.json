@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, now() - interval '1 hour', now() + interval '1 hour', false)",
+    "INSERT INTO notifications (id, notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (9301, 2, 3, 35, 3, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":37,\"original_post_type\":1,\"original_username\":\"user2\",\"revision_number\":null,\"display_username\":\"user2\"}', false, false, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO shelved_notifications (notification_id) VALUES (9301)",
+    "INSERT INTO notifications (id, notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (9302, 24, 3, 35, 2, '{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":null,\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}', false, true, now() - interval '20 minutes', now() - interval '20 minutes')",
+    "INSERT INTO shelved_notifications (notification_id) VALUES (9302)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (4, now() - interval '1 hour', now() + interval '1 hour', false)",
+    "INSERT INTO notifications (id, notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (9303, 6, 4, 35, 2, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\"}', false, true, now() - interval '25 minutes', now() - interval '25 minutes')",
+    "INSERT INTO shelved_notifications (notification_id) VALUES (9303)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/do-not-disturb.json",
+      "params": {}
+    }
+  ]
+}
