@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/color_schemes/13.json", "params": {"color_scheme": {"name": "Darker", "user_selectable": "true", "colors": [{"name": "primary", "hex": "eeeeee"}, {"name": "love", "hex": "ff00ff"}]}}},
+    {"method": "PUT", "path": "/admin/color_schemes/14.json", "params": {"color_scheme": {"colors": [{"name": "primary", "hex": "nothex"}]}}},
+    {"method": "PUT", "path": "/admin/color_schemes/15.json", "params": {"color_scheme": {"name": "WCAG Dark"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/17.json", "params": {"color_scheme": {"colors": [{"name": "brand_new", "hex": "xyz"}, {"name": "primary", "hex": "qq"}, {"name": "secondary", "hex": "abcdef"}]}}},
+    {"method": "PUT", "path": "/admin/color_schemes/999.json", "params": {"color_scheme": {"name": "x"}}},
+    {"method": "GET", "path": "/admin/config/colors/13.json"}
+  ]
+}

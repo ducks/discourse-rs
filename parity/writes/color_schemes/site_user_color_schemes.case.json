@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE color_schemes SET user_selectable = TRUE WHERE id IN (13, 16)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/site.json"}
+  ],
+  "ignore": [
+    "/responses/0/body/markdown_additional_options",
+    "/responses/0/body/hashtag_configurations",
+    "/responses/0/body/hashtag_icons",
+    "/responses/0/body/access_control",
+    "/responses/0/body/categories/*/custom_fields",
+    "/responses/0/body/valid_flag_applies_to_types",
+    "/responses/0/body/admin_config_login_routes",
+    "/responses/0/body/permanent_upcoming_change_names",
+    "/responses/0/body/topic_admin_button_workflows",
+    "/responses/0/body/post_button_workflows",
+    "/responses/0/body/users_on_holiday"
+  ]
+}

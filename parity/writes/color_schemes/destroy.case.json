@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "DELETE", "path": "/admin/color_schemes/18.json"},
+    {"method": "DELETE", "path": "/admin/color_schemes/1.json"},
+    {"method": "DELETE", "path": "/admin/color_schemes/999.json"}
+  ]
+}

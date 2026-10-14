@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/color_schemes.json"},
+    {"method": "GET", "path": "/admin/config/colors/13.json"},
+    {"method": "GET", "path": "/admin/config/colors/1.json"},
+    {"method": "GET", "path": "/admin/config/colors/999.json"}
+  ]
+}

@@ -988,20 +988,25 @@ impl Site<'_> {
         ))
     }
 
-    /// `user_color_schemes`: user-selectable schemes. Serializing one needs
-    /// ColorScheme#resolved_colors, not ported yet.
+    /// `user_color_schemes`: user-selectable schemes and those of themes
+    /// that only allow their own, by name, through
+    /// ColorSchemeSelectableSerializer.
     async fn user_color_schemes(&mut self) -> Result<Value, SiteError> {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM color_schemes cs \
+        let ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT cs.id FROM color_schemes cs \
              WHERE NOT cs.remote_copy AND (cs.user_selectable OR cs.theme_id IN \
-               (SELECT theme_id FROM theme_modifier_sets WHERE only_theme_color_schemes))",
+               (SELECT theme_id FROM theme_modifier_sets WHERE only_theme_color_schemes)) \
+             ORDER BY cs.name",
         )
-        .fetch_one(&mut *self.conn)
+        .fetch_all(&mut *self.conn)
         .await?;
-        if count > 0 {
-            return Err(Unsupported("user_color_schemes (ColorSchemeSelectableSerializer)").into());
+        let mut out = Vec::with_capacity(ids.len());
+        for id in ids {
+            if let Some(scheme) = ColorScheme::find(self.conn, id).await? {
+                out.push(scheme.serialize_selectable()?);
+            }
         }
-        Ok(json!([]))
+        Ok(Value::Array(out))
     }
 
     /// `default_light_color_scheme` / `default_dark_color_scheme`:

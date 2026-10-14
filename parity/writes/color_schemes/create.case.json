@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/color_schemes.json", "params": {"color_scheme": {"name": "Ocean", "base_scheme_id": "-2", "user_selectable": "true", "colors": [{"name": "primary", "hex": "ff0000"}, {"name": "tertiary", "hex": "0a0"}]}}},
+    {"method": "POST", "path": "/admin/color_schemes.json", "params": {"color_scheme": {"name": "Plain", "colors": [{"name": "secondary", "hex": "fafafa"}]}}},
+    {"method": "POST", "path": "/admin/color_schemes.json", "params": {"color_scheme": {"name": "Broken", "colors": [{"name": "primary", "hex": "zzzzzz"}]}}},
+    {"method": "GET", "path": "/admin/color_schemes.json"}
+  ]
+}

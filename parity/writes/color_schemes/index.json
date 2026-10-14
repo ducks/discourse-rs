@@ -1,0 +1,4137 @@
+{
+  "name": "index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/color_schemes.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/colors/13.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/colors/1.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/colors/999.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:09:38.083048",
+  "transaction_started_at": "2026-10-14T15:09:36.807652",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": -1,
+          "name": "Light",
+          "is_base": true,
+          "base_scheme_id": -1,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": true,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "222",
+              "default_hex": "222",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "fff",
+              "default_hex": "fff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "08c",
+              "default_hex": "08c",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "fff",
+              "default_hex": "fff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "333",
+              "default_hex": "333",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "d1f0ff",
+              "default_hex": "d1f0ff",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "f2f2f2",
+              "default_hex": "f2f2f2",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -2,
+          "name": "Dark",
+          "is_base": true,
+          "base_scheme_id": -2,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "dddddd",
+              "default_hex": "dddddd",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "222222",
+              "default_hex": "222222",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "099dd7",
+              "default_hex": "099dd7",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "c14924",
+              "default_hex": "c14924",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "111111",
+              "default_hex": "111111",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "dddddd",
+              "default_hex": "dddddd",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "052e3d",
+              "default_hex": "052e3d",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "313131",
+              "default_hex": "313131",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "a87137",
+              "default_hex": "a87137",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "1ca551",
+              "default_hex": "1ca551",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -3,
+          "name": "Neutral",
+          "is_base": true,
+          "base_scheme_id": -3,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "51839b",
+              "default_hex": "51839b",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "b85e48",
+              "default_hex": "b85e48",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "333333",
+              "default_hex": "333333",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "f3f3f3",
+              "default_hex": "f3f3f3",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "e6e6e6",
+              "default_hex": "e6e6e6",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "f0f0f0",
+              "default_hex": "f0f0f0",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ecec70",
+              "default_hex": "ecec70",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "b85e48",
+              "default_hex": "b85e48",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "518751",
+              "default_hex": "518751",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -4,
+          "name": "Grey Amber",
+          "is_base": true,
+          "base_scheme_id": -4,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "d9d9d9",
+              "default_hex": "d9d9d9",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "3d4147",
+              "default_hex": "3d4147",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "36393e",
+              "default_hex": "36393e",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "d9d9d9",
+              "default_hex": "d9d9d9",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "272727",
+              "default_hex": "272727",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "2F2F30",
+              "default_hex": "2F2F30",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -5,
+          "name": "Shades of Blue",
+          "is_base": true,
+          "base_scheme_id": -5,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "203243",
+              "default_hex": "203243",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "eef4f7",
+              "default_hex": "eef4f7",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "416376",
+              "default_hex": "416376",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "5e99b9",
+              "default_hex": "5e99b9",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "86bddb",
+              "default_hex": "86bddb",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "203243",
+              "default_hex": "203243",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "bee0f2",
+              "default_hex": "bee0f2",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "d2efff",
+              "default_hex": "d2efff",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "86bddb",
+              "default_hex": "86bddb",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "bf3c3c",
+              "default_hex": "bf3c3c",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "70db82",
+              "default_hex": "70db82",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fc94cb",
+              "default_hex": "fc94cb",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -6,
+          "name": "Latte",
+          "is_base": true,
+          "base_scheme_id": -6,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "f2e5d7",
+              "default_hex": "f2e5d7",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "262322",
+              "default_hex": "262322",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "f7f2ed",
+              "default_hex": "f7f2ed",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "d7c9aa",
+              "default_hex": "d7c9aa",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "d7c9aa",
+              "default_hex": "d7c9aa",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "262322",
+              "default_hex": "262322",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "3e2a14",
+              "default_hex": "3e2a14",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "4c3319",
+              "default_hex": "4c3319",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "d7c9aa",
+              "default_hex": "d7c9aa",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "db9584",
+              "default_hex": "db9584",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "78be78",
+              "default_hex": "78be78",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "8f6201",
+              "default_hex": "8f6201",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -7,
+          "name": "Summer",
+          "is_base": true,
+          "base_scheme_id": -7,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "874342",
+              "default_hex": "874342",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "fffff4",
+              "default_hex": "fffff4",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "fe9896",
+              "default_hex": "fe9896",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "fcc9d0",
+              "default_hex": "fcc9d0",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "96ccbf",
+              "default_hex": "96ccbf",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "fff1e7",
+              "default_hex": "fff1e7",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "f5eaea",
+              "default_hex": "f5eaea",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "f9f3f3",
+              "default_hex": "f9f3f3",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "f3c07f",
+              "default_hex": "f3c07f",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "cfebdc",
+              "default_hex": "cfebdc",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "fcb4b5",
+              "default_hex": "fcb4b5",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "f3c07f",
+              "default_hex": "f3c07f",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -8,
+          "name": "Dark Rose",
+          "is_base": true,
+          "base_scheme_id": -8,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ca9cb2",
+              "default_hex": "ca9cb2",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "3a2a37",
+              "default_hex": "3a2a37",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "fdd459",
+              "default_hex": "fdd459",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "7e566a",
+              "default_hex": "7e566a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "a97189",
+              "default_hex": "a97189",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "d9b2bb",
+              "default_hex": "d9b2bb",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "2a1620",
+              "default_hex": "2a1620",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "331b27",
+              "default_hex": "331b27",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "bd36a3",
+              "default_hex": "bd36a3",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "6c3e63",
+              "default_hex": "6c3e63",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "d9b2bb",
+              "default_hex": "d9b2bb",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "d9b2bb",
+              "default_hex": "d9b2bb",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": -9,
+          "name": "WCAG Light",
+          "is_base": true,
+          "base_scheme_id": -9,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "0033CC",
+              "default_hex": "0033CC",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "3369FF",
+              "default_hex": "3369FF",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "E2E9FE",
+              "default_hex": "E2E9FE",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "F0F4FE",
+              "default_hex": "F0F4FE",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff00",
+              "default_hex": "ffff00",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "BB1122",
+              "default_hex": "BB1122",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "3d854d",
+              "default_hex": "3d854d",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "9D256B",
+              "default_hex": "9D256B",
+              "is_advanced": false
+            },
+            {
+              "name": "primary-medium",
+              "hex": "696969",
+              "default_hex": "696969",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-low-mid",
+              "hex": "909090",
+              "default_hex": "909090",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-high",
+              "hex": "0036E6",
+              "default_hex": "0036E6",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-medium",
+              "hex": "e0e9ff",
+              "default_hex": "e0e9ff",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-low",
+              "hex": "e0e9ff",
+              "default_hex": "e0e9ff",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": -10,
+          "name": "WCAG Dark",
+          "is_base": true,
+          "base_scheme_id": -10,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "0c0c0c",
+              "default_hex": "0c0c0c",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "759AFF",
+              "default_hex": "759AFF",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "759AFF",
+              "default_hex": "759AFF",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "0d2569",
+              "default_hex": "0d2569",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "002382",
+              "default_hex": "002382",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "3369FF",
+              "default_hex": "3369FF",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "FF697A",
+              "default_hex": "FF697A",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "70B880",
+              "default_hex": "70B880",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "9D256B",
+              "default_hex": "9D256B",
+              "is_advanced": false
+            },
+            {
+              "name": "primary-medium",
+              "hex": "999999",
+              "default_hex": "999999",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-low-mid",
+              "hex": "888888",
+              "default_hex": "888888",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": -11,
+          "name": "Dracula",
+          "is_base": true,
+          "base_scheme_id": -11,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "f2f2f2",
+              "default_hex": "f2f2f2",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "2d303e",
+              "default_hex": "2d303e",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "bd93f9",
+              "default_hex": "bd93f9",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "8be9fd",
+              "default_hex": "8be9fd",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "373A47",
+              "default_hex": "373A47",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "f2f2f2",
+              "default_hex": "f2f2f2",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "4A4463",
+              "default_hex": "4A4463",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "61597f",
+              "default_hex": "61597f",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": null,
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "ff5555",
+              "default_hex": "ff5555",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "50fa7b",
+              "default_hex": "50fa7b",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "ff79c6",
+              "default_hex": "ff79c6",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "373A47",
+              "default_hex": "373A47",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "414350",
+              "default_hex": "414350",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "8C8D94",
+              "default_hex": "8C8D94",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "A3A4AA",
+              "default_hex": "A3A4AA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "CCCCCF",
+              "default_hex": "CCCCCF",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "3F414E",
+              "default_hex": "3F414E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "535460",
+              "default_hex": "535460",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "666972",
+              "default_hex": "666972",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "7A7C84",
+              "default_hex": "7A7C84",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "8D8F96",
+              "default_hex": "8D8F96",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "A2A3A9",
+              "default_hex": "A2A3A9",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "B6B7BC",
+              "default_hex": "B6B7BC",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "C7C7C7",
+              "default_hex": "C7C7C7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "DEDFE0",
+              "default_hex": "DEDFE0",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "F5F5F5",
+              "default_hex": "F5F5F5",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "CCCCCF",
+              "default_hex": "CCCCCF",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "91939A",
+              "default_hex": "91939A",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "6A6C76",
+              "default_hex": "6A6C76",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "3D404C",
+              "default_hex": "3D404C",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "4A4463",
+              "default_hex": "4A4463",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "6E5D92",
+              "default_hex": "6E5D92",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "9275C1",
+              "default_hex": "9275C1",
+              "is_advanced": true
+            },
+            {
+              "name": "quaternary_low",
+              "hex": "6AA8BA",
+              "default_hex": "6AA8BA",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "686D55",
+              "default_hex": "686D55",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "52592B",
+              "default_hex": "52592B",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "C0C879",
+              "default_hex": "C0C879",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "957279",
+              "default_hex": "957279",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "386D50",
+              "default_hex": "386D50",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "44B366",
+              "default_hex": "44B366",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "6C4667",
+              "default_hex": "6C4667",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": -12,
+          "name": "Solarized Light",
+          "is_base": true,
+          "base_scheme_id": -12,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "0088cc",
+              "default_hex": "0088cc",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "E8E6D3",
+              "default_hex": "E8E6D3",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "F2F481",
+              "default_hex": "F2F481",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "009900",
+              "default_hex": "009900",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "F0ECD7",
+              "default_hex": "F0ECD7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "D6D8C7",
+              "default_hex": "D6D8C7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "A4AFA5",
+              "default_hex": "A4AFA5",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "7E918C",
+              "default_hex": "7E918C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "4C6869",
+              "default_hex": "4C6869",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "DAD8CA",
+              "default_hex": "DAD8CA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "B2B9B3",
+              "default_hex": "B2B9B3",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "839496",
+              "default_hex": "839496",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "76898C",
+              "default_hex": "76898C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "697F83",
+              "default_hex": "697F83",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "627A7E",
+              "default_hex": "627A7E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "556F74",
+              "default_hex": "556F74",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "415F66",
+              "default_hex": "415F66",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "325458",
+              "default_hex": "325458",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "6C8280",
+              "default_hex": "6C8280",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "97A59D",
+              "default_hex": "97A59D",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "E8E6D3",
+              "default_hex": "E8E6D3",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "D6E6DE",
+              "default_hex": "D6E6DE",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "7EBFD7",
+              "default_hex": "7EBFD7",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "329ED0",
+              "default_hex": "329ED0",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "FDF9AD",
+              "default_hex": "FDF9AD",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "E3D0A3",
+              "default_hex": "E3D0A3",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "BCAA7F",
+              "default_hex": "BCAA7F",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "F8D9C2",
+              "default_hex": "F8D9C2",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "CFE5B9",
+              "default_hex": "CFE5B9",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "4CB544",
+              "default_hex": "4CB544",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "FCDDD2",
+              "default_hex": "FCDDD2",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": -13,
+          "name": "Solarized Dark",
+          "is_base": true,
+          "base_scheme_id": -13,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": false,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "1a97d5",
+              "default_hex": "1a97d5",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "143B44",
+              "default_hex": "143B44",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "F2F481",
+              "default_hex": "F2F481",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "009900",
+              "default_hex": "009900",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "0D353F",
+              "default_hex": "0D353F",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "193F47",
+              "default_hex": "193F47",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "798C88",
+              "default_hex": "798C88",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "97A59D",
+              "default_hex": "97A59D",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "B5BDB1",
+              "default_hex": "B5BDB1",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "415F66",
+              "default_hex": "415F66",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "556F74",
+              "default_hex": "556F74",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "627A7E",
+              "default_hex": "627A7E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "697F83",
+              "default_hex": "697F83",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "76898C",
+              "default_hex": "76898C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "839496",
+              "default_hex": "839496",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "B2B9B3",
+              "default_hex": "B2B9B3",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "DAD8CA",
+              "default_hex": "DAD8CA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "B5BDB1",
+              "default_hex": "B5BDB1",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "81938D",
+              "default_hex": "81938D",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "4E6A6B",
+              "default_hex": "4E6A6B",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "143B44",
+              "default_hex": "143B44",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "003E54",
+              "default_hex": "003E54",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "00557A",
+              "default_hex": "00557A",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "006C9F",
+              "default_hex": "006C9F",
+              "is_advanced": true
+            },
+            {
+              "name": "quaternary_low",
+              "hex": "944835",
+              "default_hex": "944835",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "4D6B3D",
+              "default_hex": "4D6B3D",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "464C33",
+              "default_hex": "464C33",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "BFCA47",
+              "default_hex": "BFCA47",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "443836",
+              "default_hex": "443836",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_medium",
+              "hex": "944835",
+              "default_hex": "944835",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "004C26",
+              "default_hex": "004C26",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "007313",
+              "default_hex": "007313",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "4B3F50",
+              "default_hex": "4B3F50",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 1,
+          "name": "Horizon",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "595bca",
+              "default_hex": "595bca",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "d7dfff",
+              "default_hex": "d7dfff",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "e1e8ff",
+              "default_hex": "e1e8ff",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "595bca",
+              "default_hex": "595bca",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Horizon Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "6568e6",
+              "default_hex": "6568e6",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "3b3e56",
+              "default_hex": "3b3e56",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "333548",
+              "default_hex": "333548",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "6568e6",
+              "default_hex": "6568e6",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Royal",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "1f7bc1",
+              "default_hex": "1f7bc1",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "c7e3ff",
+              "default_hex": "c7e3ff",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "d6ebff",
+              "default_hex": "d6ebff",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "1f7bc1",
+              "default_hex": "1f7bc1",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Royal Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "1f7bc1",
+              "default_hex": "1f7bc1",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "3a455f",
+              "default_hex": "3a455f",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "323b4e",
+              "default_hex": "323b4e",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "1f7bc1",
+              "default_hex": "1f7bc1",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Clover",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "39845b",
+              "default_hex": "39845b",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "c6f1d5",
+              "default_hex": "c6f1d5",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "d5f5e0",
+              "default_hex": "d5f5e0",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "39845b",
+              "default_hex": "39845b",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Clover Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "39845b",
+              "default_hex": "39845b",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "47594e",
+              "default_hex": "47594e",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "3c4a40",
+              "default_hex": "3c4a40",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "39845b",
+              "default_hex": "39845b",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "Lily",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "cc338c",
+              "default_hex": "cc338c",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "ffc8ee",
+              "default_hex": "ffc8ee",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "ffd7f3",
+              "default_hex": "ffd7f3",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "cc338c",
+              "default_hex": "cc338c",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "Lily Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "cc338c",
+              "default_hex": "cc338c",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "5f3e4e",
+              "default_hex": "5f3e4e",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "4e3640",
+              "default_hex": "4e3640",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "cc338c",
+              "default_hex": "cc338c",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "Violet",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "9b15de",
+              "default_hex": "9b15de",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "feccff",
+              "default_hex": "feccff",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "ffd9ff",
+              "default_hex": "ffd9ff",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "9b15de",
+              "default_hex": "9b15de",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "name": "Violet Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "9b15de",
+              "default_hex": "9b15de",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "4c385c",
+              "default_hex": "4c385c",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "40314c",
+              "default_hex": "40314c",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "9b15de",
+              "default_hex": "9b15de",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "Marigold",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "d3881f",
+              "default_hex": "d3881f",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "ffdcb2",
+              "default_hex": "ffdcb2",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "ffe6c6",
+              "default_hex": "ffe6c6",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "d3881f",
+              "default_hex": "d3881f",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "Marigold Dark",
+          "is_base": null,
+          "base_scheme_id": null,
+          "theme_id": -2,
+          "theme_name": "Horizon",
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "d3881f",
+              "default_hex": "d3881f",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "1a1a1a",
+              "default_hex": "1a1a1a",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "6c5b49",
+              "default_hex": "6c5b49",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "584b3e",
+              "default_hex": "584b3e",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": "ffff4d",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "c80001",
+              "default_hex": "c80001",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "090",
+              "default_hex": "090",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary-med-or-tertiary",
+              "hex": "d3881f",
+              "default_hex": "d3881f",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "name": "Dark",
+          "is_base": null,
+          "base_scheme_id": -2,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "dddddd",
+              "default_hex": "dddddd",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "222222",
+              "default_hex": "222222",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "099dd7",
+              "default_hex": "099dd7",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "c14924",
+              "default_hex": "c14924",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "111111",
+              "default_hex": "111111",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "dddddd",
+              "default_hex": "dddddd",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "052e3d",
+              "default_hex": "052e3d",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "313131",
+              "default_hex": "313131",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "a87137",
+              "default_hex": "a87137",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "1ca551",
+              "default_hex": "1ca551",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "WCAG Light",
+          "is_base": null,
+          "base_scheme_id": -9,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "0033CC",
+              "default_hex": "0033CC",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "3369FF",
+              "default_hex": "3369FF",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "E2E9FE",
+              "default_hex": "E2E9FE",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "F0F4FE",
+              "default_hex": "F0F4FE",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff00",
+              "default_hex": "ffff00",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "BB1122",
+              "default_hex": "BB1122",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "3d854d",
+              "default_hex": "3d854d",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "9D256B",
+              "default_hex": "9D256B",
+              "is_advanced": false
+            },
+            {
+              "name": "primary-medium",
+              "hex": "696969",
+              "default_hex": "696969",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-low-mid",
+              "hex": "909090",
+              "default_hex": "909090",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-high",
+              "hex": "0036E6",
+              "default_hex": "0036E6",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-medium",
+              "hex": "e0e9ff",
+              "default_hex": "e0e9ff",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight-low",
+              "hex": "e0e9ff",
+              "default_hex": "e0e9ff",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "name": "WCAG Dark",
+          "is_base": null,
+          "base_scheme_id": -10,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "0c0c0c",
+              "default_hex": "0c0c0c",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "759AFF",
+              "default_hex": "759AFF",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "759AFF",
+              "default_hex": "759AFF",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "000000",
+              "default_hex": "000000",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "ffffff",
+              "default_hex": "ffffff",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "0d2569",
+              "default_hex": "0d2569",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "002382",
+              "default_hex": "002382",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "3369FF",
+              "default_hex": "3369FF",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "FF697A",
+              "default_hex": "FF697A",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "70B880",
+              "default_hex": "70B880",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "9D256B",
+              "default_hex": "9D256B",
+              "is_advanced": false
+            },
+            {
+              "name": "primary-medium",
+              "hex": "999999",
+              "default_hex": "999999",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-low-mid",
+              "hex": "888888",
+              "default_hex": "888888",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "Dracula",
+          "is_base": null,
+          "base_scheme_id": -11,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "f2f2f2",
+              "default_hex": "f2f2f2",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "2d303e",
+              "default_hex": "2d303e",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "bd93f9",
+              "default_hex": "bd93f9",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "8be9fd",
+              "default_hex": "8be9fd",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "373A47",
+              "default_hex": "373A47",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "f2f2f2",
+              "default_hex": "f2f2f2",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "4A4463",
+              "default_hex": "4A4463",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "61597f",
+              "default_hex": "61597f",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "ffff4d",
+              "default_hex": null,
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "ff5555",
+              "default_hex": "ff5555",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "50fa7b",
+              "default_hex": "50fa7b",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "ff79c6",
+              "default_hex": "ff79c6",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "373A47",
+              "default_hex": "373A47",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "414350",
+              "default_hex": "414350",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "8C8D94",
+              "default_hex": "8C8D94",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "A3A4AA",
+              "default_hex": "A3A4AA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "CCCCCF",
+              "default_hex": "CCCCCF",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "3F414E",
+              "default_hex": "3F414E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "535460",
+              "default_hex": "535460",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "666972",
+              "default_hex": "666972",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "7A7C84",
+              "default_hex": "7A7C84",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "8D8F96",
+              "default_hex": "8D8F96",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "A2A3A9",
+              "default_hex": "A2A3A9",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "B6B7BC",
+              "default_hex": "B6B7BC",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "C7C7C7",
+              "default_hex": "C7C7C7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "DEDFE0",
+              "default_hex": "DEDFE0",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "F5F5F5",
+              "default_hex": "F5F5F5",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "CCCCCF",
+              "default_hex": "CCCCCF",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "91939A",
+              "default_hex": "91939A",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "6A6C76",
+              "default_hex": "6A6C76",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "3D404C",
+              "default_hex": "3D404C",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "4A4463",
+              "default_hex": "4A4463",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "6E5D92",
+              "default_hex": "6E5D92",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "9275C1",
+              "default_hex": "9275C1",
+              "is_advanced": true
+            },
+            {
+              "name": "quaternary_low",
+              "hex": "6AA8BA",
+              "default_hex": "6AA8BA",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "686D55",
+              "default_hex": "686D55",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "52592B",
+              "default_hex": "52592B",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "C0C879",
+              "default_hex": "C0C879",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "957279",
+              "default_hex": "957279",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "386D50",
+              "default_hex": "386D50",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "44B366",
+              "default_hex": "44B366",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "6C4667",
+              "default_hex": "6C4667",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "Solarized Light",
+          "is_base": null,
+          "base_scheme_id": -12,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": false,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "0088cc",
+              "default_hex": "0088cc",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "E8E6D3",
+              "default_hex": "E8E6D3",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "F2F481",
+              "default_hex": "F2F481",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "009900",
+              "default_hex": "009900",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "F0ECD7",
+              "default_hex": "F0ECD7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "D6D8C7",
+              "default_hex": "D6D8C7",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "A4AFA5",
+              "default_hex": "A4AFA5",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "7E918C",
+              "default_hex": "7E918C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "4C6869",
+              "default_hex": "4C6869",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "DAD8CA",
+              "default_hex": "DAD8CA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "B2B9B3",
+              "default_hex": "B2B9B3",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "839496",
+              "default_hex": "839496",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "76898C",
+              "default_hex": "76898C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "697F83",
+              "default_hex": "697F83",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "627A7E",
+              "default_hex": "627A7E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "556F74",
+              "default_hex": "556F74",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "415F66",
+              "default_hex": "415F66",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "325458",
+              "default_hex": "325458",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "6C8280",
+              "default_hex": "6C8280",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "97A59D",
+              "default_hex": "97A59D",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "E8E6D3",
+              "default_hex": "E8E6D3",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "D6E6DE",
+              "default_hex": "D6E6DE",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "7EBFD7",
+              "default_hex": "7EBFD7",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "329ED0",
+              "default_hex": "329ED0",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "FDF9AD",
+              "default_hex": "FDF9AD",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "E3D0A3",
+              "default_hex": "E3D0A3",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "BCAA7F",
+              "default_hex": "BCAA7F",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "F8D9C2",
+              "default_hex": "F8D9C2",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "CFE5B9",
+              "default_hex": "CFE5B9",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "4CB544",
+              "default_hex": "4CB544",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "FCDDD2",
+              "default_hex": "FCDDD2",
+              "is_advanced": true
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "Solarized Dark",
+          "is_base": null,
+          "base_scheme_id": -13,
+          "theme_id": null,
+          "theme_name": null,
+          "user_selectable": false,
+          "is_builtin_default": null,
+          "is_dark": true,
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "secondary",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "tertiary",
+              "hex": "1a97d5",
+              "default_hex": "1a97d5",
+              "is_advanced": false
+            },
+            {
+              "name": "quaternary",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "header_background",
+              "hex": "002B36",
+              "default_hex": "002B36",
+              "is_advanced": false
+            },
+            {
+              "name": "header_primary",
+              "hex": "FCF6E1",
+              "default_hex": "FCF6E1",
+              "is_advanced": false
+            },
+            {
+              "name": "selected",
+              "hex": "143B44",
+              "default_hex": "143B44",
+              "is_advanced": false
+            },
+            {
+              "name": "hover",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": false
+            },
+            {
+              "name": "highlight",
+              "hex": "F2F481",
+              "default_hex": "F2F481",
+              "is_advanced": false
+            },
+            {
+              "name": "danger",
+              "hex": "e45735",
+              "default_hex": "e45735",
+              "is_advanced": false
+            },
+            {
+              "name": "success",
+              "hex": "009900",
+              "default_hex": "009900",
+              "is_advanced": false
+            },
+            {
+              "name": "love",
+              "hex": "fa6c8d",
+              "default_hex": "fa6c8d",
+              "is_advanced": false
+            },
+            {
+              "name": "primary_very_low",
+              "hex": "0D353F",
+              "default_hex": "0D353F",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low",
+              "hex": "193F47",
+              "default_hex": "193F47",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_low_mid",
+              "hex": "798C88",
+              "default_hex": "798C88",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_medium",
+              "hex": "97A59D",
+              "default_hex": "97A59D",
+              "is_advanced": true
+            },
+            {
+              "name": "primary_high",
+              "hex": "B5BDB1",
+              "default_hex": "B5BDB1",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-50",
+              "hex": "21454E",
+              "default_hex": "21454E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-100",
+              "hex": "415F66",
+              "default_hex": "415F66",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-200",
+              "hex": "556F74",
+              "default_hex": "556F74",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-300",
+              "hex": "627A7E",
+              "default_hex": "627A7E",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-400",
+              "hex": "697F83",
+              "default_hex": "697F83",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-500",
+              "hex": "76898C",
+              "default_hex": "76898C",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-600",
+              "hex": "839496",
+              "default_hex": "839496",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-700",
+              "hex": "B2B9B3",
+              "default_hex": "B2B9B3",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-800",
+              "hex": "DAD8CA",
+              "default_hex": "DAD8CA",
+              "is_advanced": true
+            },
+            {
+              "name": "primary-900",
+              "hex": "F0EBDA",
+              "default_hex": "F0EBDA",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_low",
+              "hex": "B5BDB1",
+              "default_hex": "B5BDB1",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_medium",
+              "hex": "81938D",
+              "default_hex": "81938D",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_high",
+              "hex": "4E6A6B",
+              "default_hex": "4E6A6B",
+              "is_advanced": true
+            },
+            {
+              "name": "secondary_very_high",
+              "hex": "143B44",
+              "default_hex": "143B44",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_low",
+              "hex": "003E54",
+              "default_hex": "003E54",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_medium",
+              "hex": "00557A",
+              "default_hex": "00557A",
+              "is_advanced": true
+            },
+            {
+              "name": "tertiary_high",
+              "hex": "006C9F",
+              "default_hex": "006C9F",
+              "is_advanced": true
+            },
+            {
+              "name": "quaternary_low",
+              "hex": "944835",
+              "default_hex": "944835",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_low",
+              "hex": "4D6B3D",
+              "default_hex": "4D6B3D",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_medium",
+              "hex": "464C33",
+              "default_hex": "464C33",
+              "is_advanced": true
+            },
+            {
+              "name": "highlight_high",
+              "hex": "BFCA47",
+              "default_hex": "BFCA47",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_low",
+              "hex": "443836",
+              "default_hex": "443836",
+              "is_advanced": true
+            },
+            {
+              "name": "danger_medium",
+              "hex": "944835",
+              "default_hex": "944835",
+              "is_advanced": true
+            },
+            {
+              "name": "success_low",
+              "hex": "004C26",
+              "default_hex": "004C26",
+              "is_advanced": true
+            },
+            {
+              "name": "success_medium",
+              "hex": "007313",
+              "default_hex": "007313",
+              "is_advanced": true
+            },
+            {
+              "name": "love_low",
+              "hex": "4B3F50",
+              "default_hex": "4B3F50",
+              "is_advanced": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 13,
+        "name": "Dark",
+        "is_base": null,
+        "base_scheme_id": -2,
+        "theme_id": null,
+        "theme_name": null,
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": true,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "dddddd",
+            "default_hex": "dddddd",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "222222",
+            "default_hex": "222222",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "099dd7",
+            "default_hex": "099dd7",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "c14924",
+            "default_hex": "c14924",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "111111",
+            "default_hex": "111111",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "dddddd",
+            "default_hex": "dddddd",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "052e3d",
+            "default_hex": "052e3d",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "313131",
+            "default_hex": "313131",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "a87137",
+            "default_hex": "a87137",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "1ca551",
+            "default_hex": "1ca551",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "name": "Horizon",
+        "is_base": null,
+        "base_scheme_id": null,
+        "theme_id": -2,
+        "theme_name": "Horizon",
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": false,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "595bca",
+            "default_hex": "595bca",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "d7dfff",
+            "default_hex": "d7dfff",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "e1e8ff",
+            "default_hex": "e1e8ff",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "ffff4d",
+            "default_hex": "ffff4d",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "c80001",
+            "default_hex": "c80001",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "090",
+            "default_hex": "090",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary-med-or-tertiary",
+            "hex": "595bca",
+            "default_hex": "595bca",
+            "is_advanced": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": "ActiveRecord::RecordNotFound in Admin::Config::ColorPalettesController#show\n\nCouldn't find ColorScheme with 'id'=\"999\" [WHERE \"color_schemes\".\"remote_copy\" = $1]\nExtracted source (around line #429):\n\n#427         id = Array.wrap(ids)[0]\n#428         error = \"Couldn't find #{name} with '#{key}'=#{id.inspect}#{conditions}\"\n*429 [\"        \", \"raise\", \" RecordNotFound.new(error, name, key, ids)\\n\"]#430       else\n#431         error = +\"Couldn't find all #{name.pluralize} with '#{key}': \"\n#432         error << \"(#{ids.map(&:inspect).join(\", \")})#{conditions} (found #{result_size} results, but was looking for #{expected_size}).\"\n\nExtracted source (around line #538):\n\n#536         record = relation.take\n#537 \n*538 [\"        \", \"raise_record_not_found_exception!\", \"(id, 0, 1) unless record\\n\"]#539 \n#540         record\n#541       end\n\nExtracted source (around line #515):\n\n#513           raise RecordNotFound.new(error_message, model_name, primary_key)\n#514         when 1\n*515 [\"          result = \", \"find_one\", \"(ids.first)\\n\"]#516           expects_array ? [ result ] : result\n#517         else\n#518           find_some(ids)\n\n\nRails.root: /var/www/discourse\n\nApplication Trace\n/var/www/discourse/app/controllers/admin/config/color_palettes_controller.rb:58:in 'Admin::Config::ColorPalettesController#show'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n\nFramework Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:429:in 'ActiveRecord::FinderMethods#raise_record_not_found_exception!'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:538:in 'ActiveRecord::FinderMethods#find_one'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:515:in 'ActiveRecord::FinderMethods#find_with_ids'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:100:in 'ActiveRecord::FinderMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/querying.rb:24:in 'ActiveRecord::Querying#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:272:in 'ActiveRecord::Core::ClassMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:27:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:19:in 'ActionDispatch::Integration::RequestHelpers#get'\n/tmp/record_writes.rb:323:in 'Kernel#public_send'\n/tmp/record_writes.rb:323:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:313:in 'Array#each'\n/tmp/record_writes.rb:313:in 'block in <compiled>'\n/tmp/record_writes.rb:269:in 'Array#each'\n/tmp/record_writes.rb:269:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\nFull Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:429:in 'ActiveRecord::FinderMethods#raise_record_not_found_exception!'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:538:in 'ActiveRecord::FinderMethods#find_one'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:515:in 'ActiveRecord::FinderMethods#find_with_ids'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/relation/finder_methods.rb:100:in 'ActiveRecord::FinderMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/querying.rb:24:in 'ActiveRecord::Querying#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:272:in 'ActiveRecord::Core::ClassMethods#find'\n/var/www/discourse/app/controllers/admin/config/color_palettes_controller.rb:58:in 'Admin::Config::ColorPalettesController#show'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:27:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:19:in 'ActionDispatch::Integration::RequestHelpers#get'\n/tmp/record_writes.rb:323:in 'Kernel#public_send'\n/tmp/record_writes.rb:323:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:313:in 'Array#each'\n/tmp/record_writes.rb:313:in 'block in <compiled>'\n/tmp/record_writes.rb:269:in 'Array#each'\n/tmp/record_writes.rb:269:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\n\n\nRequest parameters\n{\"id\" => \"999\",\n \"format\" => \"json\"}\n\nSession dump\nserver_session_id: \"fd29d131fea2ade75bc5b36f198be1bb\"\nsession_id: \"badd4e06e13fd83d693d2085dac9e978\"\n\nEnv dump\nHTTP_ACCEPT: \"application/json\"\nHTTP_VERSION: \"HTTP/1.0\"\nORIGINAL_SCRIPT_NAME: \"\"\nREMOTE_ADDR: \"127.0.0.1\"\nSERVER_NAME: \"localhost\"\nSERVER_PROTOCOL: \"HTTP/1.0\"\n\nResponse headers\nNone\n\n"
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "w+k7XCPjDY2RwtY8GlNelVJhXrA=",
+            "created_at": "2026-10-14T15:09:37.238691",
+            "rotated_at": "2026-10-14T15:09:37.237753",
+            "updated_at": "2026-10-14T15:09:37.238691",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "w+k7XCPjDY2RwtY8GlNelVJhXrA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T15:09:38.089308",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "w+k7XCPjDY2RwtY8GlNelVJhXrA=",
+            "created_at": "2026-10-14T15:09:37.238691",
+            "rotated_at": "2026-10-14T15:09:37.237753",
+            "updated_at": "2026-10-14T15:09:37.238691",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "w+k7XCPjDY2RwtY8GlNelVJhXrA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "fe1e029261192045c3da1295d9782f3b47f3462b9af9b03b4eb5b1a6723caf02",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
