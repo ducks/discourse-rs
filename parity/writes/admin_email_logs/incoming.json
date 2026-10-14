@@ -1,0 +1,263 @@
+{
+  "name": "incoming",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/1.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/3.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/4.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/5.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/6.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/7.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/8.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/9.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming/999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming_from_bounced/101.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming_from_bounced/102.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming_from_bounced/103.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming_from_bounced/104.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/incoming_from_bounced/999.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:24:00.635496",
+  "transaction_started_at": "2026-10-14T13:23:56.269572",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::BadDestinationAddress",
+        "error_description": "Happens when none of the email addresses in To/Cc fields matched a configured incoming email address.",
+        "rejection_message": "Sorry, no",
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 11:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <CAgmail-reply-1@mail.gmail.com>\r\nIn-Reply-To: <discourse/post/38@localhost>\r\nReferences: <discourse/topic/35@localhost>\r\n <discourse/post/38@localhost>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=000000000000abcdef;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "A Gmail reply with *bold* text and a link, long enough to post: https://example.com/page\n\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\n\n> The quoted post.\n>"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Unrecognized Error",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::SomethingNewError",
+        "error_description": "Translation missing: en.emails.incoming.errors.something_new_error",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "RuntimeError: boom",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::TopicClosedError",
+        "error_description": "Happens when a reply came in but the related topic has been closed.",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50\n\n   word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100..."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "<p>Only <b>HTML</b> here.</p>"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::EmptyEmailError",
+        "error_description": "Happens when the raw mail we received was blank.",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "(no subject)",
+        "body": "(no body)"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::BouncedEmailError",
+        "error_description": "Email is a bounced email report.",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: noreply+verp-11111111222233334444555555555555@unconfigured.discourse.org\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 404,
+      "body": "ActiveRecord::RecordNotFound in Admin::EmailLogsController#incoming\n\nCouldn't find IncomingEmail with 'id'=999\nExtracted source (around line #279):\n\n#277 \n#278         cached_find_by([primary_key], [id]) ||\n*279 [\"          \", \"raise\", \"(RecordNotFound.new(\\\"Couldn't find \\#{name} with '\\#{primary_key}'=\\#{id.inspect}\\\", name, primary_key, id))\\n\"]#280       end\n#281 \n#282       def find_by(*args) # :nodoc:\n\nExtracted source (around line #63):\n\n#61   def incoming\n#62     params.require(:id)\n*63 [\"    incoming_email = IncomingEmail\", \".find\", \"(params[:id].to_i)\\n\"]#64     serializer = IncomingEmailDetailsSerializer.new(incoming_email, root: false)\n#65     render_json_dump(serializer)\n#66   end\n\nExtracted source (around line #8):\n\n#6   module BasicImplicitRender # :nodoc:\n#7     def send_action(method, *args)\n*8       ret = super\n#9       default_render unless performed?\n#10       ret\n#11     end\n\n\nRails.root: /var/www/discourse\n\nApplication Trace\n/var/www/discourse/app/controllers/admin/email_logs_controller.rb:63:in 'Admin::EmailLogsController#incoming'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n\nFramework Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:27:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:19:in 'ActionDispatch::Integration::RequestHelpers#get'\n/tmp/record_writes.rb:323:in 'Kernel#public_send'\n/tmp/record_writes.rb:323:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:313:in 'Array#each'\n/tmp/record_writes.rb:313:in 'block in <compiled>'\n/tmp/record_writes.rb:269:in 'Array#each'\n/tmp/record_writes.rb:269:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\nFull Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/var/www/discourse/app/controllers/admin/email_logs_controller.rb:63:in 'Admin::EmailLogsController#incoming'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:27:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:19:in 'ActionDispatch::Integration::RequestHelpers#get'\n/tmp/record_writes.rb:323:in 'Kernel#public_send'\n/tmp/record_writes.rb:323:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:313:in 'Array#each'\n/tmp/record_writes.rb:313:in 'block in <compiled>'\n/tmp/record_writes.rb:269:in 'Array#each'\n/tmp/record_writes.rb:269:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\n\n\nRequest parameters\n{\"id\" => \"999\",\n \"format\" => \"json\"}\n\nSession dump\nserver_session_id: \"f36e099fa79d2dc88ad3341e811702d0\"\nsession_id: \"9dfabe876e86ee0516b6d8907c74474d\"\n\nEnv dump\nHTTP_ACCEPT: \"application/json\"\nHTTP_VERSION: \"HTTP/1.0\"\nORIGINAL_SCRIPT_NAME: \"\"\nREMOTE_ADDR: \"127.0.0.1\"\nSERVER_NAME: \"localhost\"\nSERVER_PROTOCOL: \"HTTP/1.0\"\n\nResponse headers\nNone\n\n"
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Email::Receiver::BouncedEmailError",
+        "error_description": "Email is a bounced email report.",
+        "rejection_message": null,
+        "headers": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: noreply+verp-11111111222233334444555555555555@unconfigured.discourse.org\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n",
+        "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+        "body": "This is my reply by email, long enough to be a post on its own."
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "Discourse::InvalidParameters"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "Discourse::NotFound"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "Discourse::InvalidParameters"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "Discourse::InvalidParameters"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mpV2yDOjsBtdzmrFsZSkMMTx7N0=",
+            "created_at": "2026-10-14T13:23:58.171458",
+            "rotated_at": "2026-10-14T13:23:58.163498",
+            "updated_at": "2026-10-14T13:23:58.171458",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mpV2yDOjsBtdzmrFsZSkMMTx7N0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T13:24:00.646161",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mpV2yDOjsBtdzmrFsZSkMMTx7N0=",
+            "created_at": "2026-10-14T13:23:58.171458",
+            "rotated_at": "2026-10-14T13:23:58.163498",
+            "updated_at": "2026-10-14T13:23:58.171458",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mpV2yDOjsBtdzmrFsZSkMMTx7N0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO incoming_emails (id, raw, error, rejection_message, to_addresses, subject, created_at, updated_at) VALUES (1, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\n', 'Email::Receiver::BadDestinationAddress', 'Sorry, no', 'x@example.com', 's', now(), now()), (2, 'Date: Thu, 01 Oct 2026 11:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <CAgmail-reply-1@mail.gmail.com>\r\nIn-Reply-To: <discourse/post/38@localhost>\r\nReferences: <discourse/topic/35@localhost>\r\n <discourse/post/38@localhost>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=000000000000abcdef;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--000000000000abcdef\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA Gmail reply with *bold* text and a link, long enough to post: https://example.com/page\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n\r\n> The quoted post.\r\n>\r\n\r\n--000000000000abcdef\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div dir=\"ltr\">A Gmail reply with <b>bold</b> text and a <a href=\"https://example.com/page\">link</a>, long enough to post.</div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, Sep 30, 2026 at 9:00 AM Admin &lt;<a href=\"mailto:noreply@unconfigured.discourse.org\">noreply@unconfigured.discourse.org</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\">The quoted post.</blockquote></div>\r\n\r\n--000000000000abcdef--\r\n\n', NULL, NULL, 'x@example.com', 's', now(), now()), (3, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\n', '', NULL, 'x@example.com', 's', now(), now()), (4, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\n', 'Email::Receiver::SomethingNewError', NULL, 'x@example.com', 's', now(), now()), (5, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\n', 'RuntimeError: boom', NULL, 'x@example.com', 's', now(), now()), (6, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nword1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50\r\n\r\n   word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105 word106 word107 word108 word109 word110 word111 word112 word113 word114 word115 word116 word117 word118 word119 word120\r\n', 'Email::Receiver::TopicClosedError', NULL, 'x@example.com', 's', now(), now()), (7, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>Only <b>HTML</b> here.</p>\r\n', NULL, NULL, 'x@example.com', 's', now(), now()), (8, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n   \r\n', 'Email::Receiver::EmptyEmailError', NULL, 'x@example.com', 's', now(), now()), (9, 'Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: noreply+verp-11111111222233334444555555555555@unconfigured.discourse.org\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\n', 'Email::Receiver::BouncedEmailError', NULL, 'noreply+verp-11111111222233334444555555555555@unconfigured.discourse.org', 's', now(), now())",
+    "INSERT INTO email_logs (id, to_address, email_type, created_at, updated_at, bounce_key, bounced) VALUES (101, 'user1@example.com', 'digest', now(), now(), '11111111-2222-3333-4444-555555555555', true), (102, 'user1@example.com', 'digest', now(), now(), '66666666-2222-3333-4444-555555555555', false), (103, 'user1@example.com', 'digest', now(), now(), '77777777-2222-3333-4444-555555555555', true), (104, 'user1@example.com', 'digest', now(), now(), NULL, true)"
+  ],
+  "recorded_from": {
+    "case": "8d3e721628038c5107ad6db0096c224febb4b4ea29eb4c57ba50d154b22cd49e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

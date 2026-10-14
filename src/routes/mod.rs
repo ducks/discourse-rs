@@ -701,6 +701,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             delete(admin_logs::destroy_screened_email),
         )
         .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
+        .route(
+            "/admin/email-logs/incoming/{id}",
+            get(admin_logs::incoming_email),
+        )
+        .route(
+            "/admin/email-logs/incoming_from_bounced/{id}",
+            get(admin_logs::incoming_from_bounced),
+        )
         .route("/admin/logs/search_logs", get(admin_logs::search_logs))
         .route("/admin/logs/search_logs.json", get(admin_logs::search_logs))
         .route(

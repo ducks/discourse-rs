@@ -3,14 +3,15 @@
 //! newest first, with the controller's ILIKE filters, through
 //! EmailLogSerializer, SkippedEmailLogSerializer and IncomingEmailSerializer.
 //!
-//! Not ported: the incoming email details (`incoming/:id`,
-//! `incoming_from_bounced/:id`), which parse the raw message.
+//! And the incoming email details (`incoming/:id`,
+//! `incoming_from_bounced/:id`): IncomingEmailDetailsSerializer over the
+//! raw message, read as the cleaner wrote it.
 
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::AppError;
+use crate::{AppError, Unsupported};
 use crate::i18n::I18n;
 
 pub struct Context<'a> {
@@ -447,5 +448,207 @@ impl Where {
         self.binds.push(value);
         self.clauses
             .push(clause.replace("$n", &format!("${}", self.binds.len())));
+    }
+}
+
+/// ActiveSupport's `underscore` for a class name: `BadDestinationAddress`
+/// to `bad_destination_address`, `::` to `/`.
+fn underscore(name: &str) -> String {
+    let chars: Vec<char> = name.replace("::", "/").chars().collect();
+    let mut out = String::new();
+    for (i, &c) in chars.iter().enumerate() {
+        if c.is_ascii_uppercase() {
+            let prev = i.checked_sub(1).map(|j| chars[j]);
+            let next = chars.get(i + 1).copied();
+            let boundary = match prev {
+                Some(p) if p.is_ascii_lowercase() || p.is_ascii_digit() => true,
+                Some(p) if p.is_ascii_uppercase() => next.is_some_and(|n| n.is_ascii_lowercase()),
+                _ => false,
+            };
+            if boundary {
+                out.push('_');
+            }
+            out.push(c.to_ascii_lowercase());
+        } else {
+            out.push(if c == '-' { '_' } else { c });
+        }
+    }
+    out
+}
+
+/// ActiveSupport's `truncate_words(100, escape: false)`: the text up to
+/// the 100th word (Ruby's `\s` runs between words) and `...`.
+fn truncate_words(text: &str, count: usize) -> String {
+    let ws = |c: char| matches!(c, ' ' | '\t' | '\r' | '\n' | '\u{c}' | '\u{b}');
+    let mut words = 0;
+    let mut in_word = false;
+    for (i, c) in text.char_indices() {
+        if ws(c) {
+            // A separator after the last word kept (`#{sep}.*`).
+            if in_word && words == count {
+                return format!("{}...", &text[..i]);
+            }
+            in_word = false;
+        } else if !in_word {
+            in_word = true;
+            words += 1;
+        }
+    }
+    text.to_string()
+}
+
+/// IncomingEmailDetailsSerializer
+pub fn incoming_details(
+    i18n: &I18n,
+    error: Option<String>,
+    rejection_message: Option<String>,
+    raw: &str,
+) -> Result<Value, AppError> {
+    const PREFIX: &str = "Email::Receiver::";
+    let mail = crate::email::incoming::parse(raw)?;
+    let mut out = Map::new();
+    if let Some(error) = &error {
+        out.insert(
+            "error".into(),
+            json!(if crate::ruby::is_blank(error) {
+                i18n.t("emails.incoming.unrecognized_error")
+                    .unwrap_or("Unrecognized Error")
+                    .to_string()
+            } else {
+                error.clone()
+            }),
+        );
+        if error.contains(PREFIX) {
+            let name = underscore(&error.replacen(PREFIX, "", 1));
+            let key = format!("emails.incoming.errors.{name}");
+            out.insert(
+                "error_description".into(),
+                json!(
+                    i18n.t(&key)
+                        .map(str::to_string)
+                        .unwrap_or_else(|| format!("Translation missing: en.{key}"))
+                ),
+            );
+        }
+    }
+    out.insert("rejection_message".into(), json!(rejection_message));
+    out.insert("headers".into(), json!(mail.header_to_s()?));
+    let subject = mail
+        .subject
+        .clone()
+        .filter(|s| !crate::ruby::is_blank(s))
+        .unwrap_or_else(|| {
+            i18n.t("emails.incoming.no_subject")
+                .unwrap_or("(no subject)")
+                .to_string()
+        });
+    out.insert("subject".into(), json!(subject));
+    let body = mail.details_body()?;
+    let body = if crate::ruby::is_blank(&body) {
+        i18n.t("emails.incoming.no_body")
+            .unwrap_or("(no body)")
+            .to_string()
+    } else {
+        truncate_words(crate::ruby::strip(&body), 100)
+    };
+    out.insert("body".into(), json!(body));
+    Ok(Value::Object(out))
+}
+
+/// `IncomingEmail.find(id)`: the details, None when there is no such row.
+pub async fn incoming(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    id: i64,
+) -> Result<Option<Value>, AppError> {
+    let row: Option<(Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT error, rejection_message, raw FROM incoming_emails WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((error, rejection_message, raw)) = row else {
+        return Ok(None);
+    };
+    let raw = raw.ok_or(Unsupported("an incoming email without its raw message"))?;
+    Ok(Some(incoming_details(i18n, error, rejection_message, &raw)?))
+}
+
+/// Why incoming_from_bounced found nothing: the exception's message.
+pub enum NotBounced {
+    InvalidParameters,
+    NotFound,
+}
+
+/// `incoming_from_bounced`: the bounced log's key (as Rails writes the
+/// uuid, without dashes) in the bounce addresses it tries in turn.
+pub async fn incoming_from_bounced(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    i18n: &I18n,
+    id: i64,
+) -> Result<Result<Value, NotBounced>, AppError> {
+    let key: Option<Option<String>> = sqlx::query_scalar(
+        "SELECT replace(bounce_key::text, '-', '') FROM email_logs WHERE id = $1 AND bounced",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(key) = key.flatten().filter(|k| !k.is_empty()) else {
+        return Ok(Err(NotBounced::InvalidParameters));
+    };
+    let reply = settings.get("reply_by_email_address")?.to_s();
+    let mut candidates = Vec::new();
+    // bounceable_reply_address?
+    if !reply.is_empty() && reply.contains('+') {
+        candidates.push(reply.replacen("%{reply_key}", &format!("verp-{key}"), 1));
+    }
+    let notification = settings.get("notification_email")?.to_s();
+    let mut parts = notification.split('@');
+    let (local, domain) = (parts.next().unwrap_or(""), parts.next());
+    candidates.push(match domain {
+        Some(d) => format!("{local}+verp-{key}@{d}"),
+        None => format!("{local}+verp-{key}@"),
+    });
+    // The legacy `subdomain+verp-key@root.ext` form.
+    let mut parts = reply.split('@');
+    let _ = parts.next();
+    let domain_parts: Vec<&str> = parts.next().map(|d| d.split('.').collect()).unwrap_or_default();
+    let get = |i: usize| domain_parts.get(i).copied().unwrap_or("");
+    candidates.push(format!("{}+verp-{key}@{}.{}", get(0), get(1), get(2)));
+    for address in candidates {
+        let row: Option<(Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+            "SELECT error, rejection_message, raw FROM incoming_emails WHERE to_addresses = $1 \
+             ORDER BY id LIMIT 1",
+        )
+        .bind(&address)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if let Some((error, rejection_message, raw)) = row {
+            let raw = raw.ok_or(Unsupported("an incoming email without its raw message"))?;
+            return Ok(Ok(incoming_details(i18n, error, rejection_message, &raw)?));
+        }
+    }
+    Ok(Err(NotBounced::NotFound))
+}
+
+#[cfg(test)]
+mod details_tests {
+    use super::*;
+
+    #[test]
+    fn underscores_class_names() {
+        assert_eq!(underscore("BadDestinationAddress"), "bad_destination_address");
+        assert_eq!(underscore("EmptyEmailError"), "empty_email_error");
+        assert_eq!(underscore("HTMLError"), "html_error");
+    }
+
+    #[test]
+    fn truncates_after_the_hundredth_word() {
+        let words: Vec<String> = (1..=101).map(|i| format!("w{i}")).collect();
+        let text = words.join(" ");
+        assert!(truncate_words(&text, 100).ends_with("w100..."));
+        let exact = words[..100].join("  ");
+        assert_eq!(truncate_words(&exact, 100), exact);
     }
 }

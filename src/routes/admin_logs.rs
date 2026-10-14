@@ -463,3 +463,54 @@ pub async fn email_logs(
     };
     Ok(Json(crate::email_logs::list(&mut conn, &cx, which, &filters).await?).into_response())
 }
+
+/// GET /admin/email-logs/incoming/:id(.json): admins.
+pub async fn incoming_email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // IncomingEmail.find(params[:id].to_i)
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id));
+    let mut conn = state.pool.acquire().await?;
+    Ok(
+        match crate::email_logs::incoming(&mut conn, &state.i18n, id).await? {
+            Some(details) => Json(details).into_response(),
+            None => super::topics::not_found_response(&state),
+        },
+    )
+}
+
+/// GET /admin/email-logs/incoming_from_bounced/:id(.json): admins; any
+/// failure is a 404 with the exception's message.
+pub async fn incoming_from_bounced(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id));
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    use crate::email_logs::NotBounced;
+    Ok(
+        match crate::email_logs::incoming_from_bounced(&mut conn, &settings, &state.i18n, id)
+            .await?
+        {
+            Ok(details) => Json(details).into_response(),
+            Err(e) => {
+                let message = match e {
+                    NotBounced::InvalidParameters => "Discourse::InvalidParameters",
+                    NotBounced::NotFound => "Discourse::NotFound",
+                };
+                (StatusCode::NOT_FOUND, Json(json!({ "errors": [message] }))).into_response()
+            }
+        },
+    )
+}

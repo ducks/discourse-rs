@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET moderator = true WHERE id = 3"],
+  "requests": [
+    {"method": "GET", "path": "/admin/email-logs/incoming/1.json"},
+    {"method": "GET", "path": "/admin/email-logs/incoming_from_bounced/1.json"}
+  ]
+}
