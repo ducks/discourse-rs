@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request=abcdEFGH"
+    }
+  ]
+}

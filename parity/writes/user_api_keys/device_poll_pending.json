@@ -1,0 +1,92 @@
+{
+  "name": "device_poll_pending",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "{{responses.0.body.device_code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "short"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T09:03:46.954263",
+  "transaction_started_at": "2026-10-14T09:03:45.596462",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "1907f064580c1c456c07edd1a5cd7836daba8d0a7e51fe6acf0065d6b2779cca",
+        "user_code": "X7AH-UEAX",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=KvI1uPbv",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "authorization_pending"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "expired_token"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "expired_token"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: device_code"
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "f82527074a0bc31c5d677faa0c8882253d91e5e4602b18f5831e7edf59b40ac4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

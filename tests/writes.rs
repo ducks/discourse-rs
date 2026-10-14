@@ -627,6 +627,17 @@ fn hide_secrets(doc: &mut Value) {
         if let Some(v) = body["challenge"].as_str() {
             secrets.push((v.to_string(), "<challenge>"));
         }
+        // The user API key device flow's random codes.
+        if let Some(v) = body["user_code"].as_str() {
+            secrets.push((v.to_string(), "<user_code>"));
+        }
+        if let Some(token) = body["verification_uri_with_request"]
+            .as_str()
+            .and_then(|u| u.rsplit_once("request="))
+            .map(|(_, t)| t.to_string())
+        {
+            secrets.push((token, "<request_token>"));
+        }
         if let Some(token) = body["redirect_url"]
             .as_str()
             .and_then(|u| u.rsplit('/').next())
@@ -1057,10 +1068,11 @@ async fn align_sequences(pool: &PgPool, case: &Value, setup_counts: Option<HashM
     }
 }
 
-/// `{{path.to.value}}` with an optional `|reverse` or `|last_segment`.
+/// `{{path.to.value}}` with an optional `|reverse`, `|last_segment` or
+/// `|request_param` (a url's `request` query value).
 fn resolve(value: &Value, state: &Value) -> Value {
     static REF: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-        regex::Regex::new(r"\{\{([^}|]+)(\|reverse|\|last_segment)?\}\}").unwrap()
+        regex::Regex::new(r"\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param)?\}\}").unwrap()
     });
     match value {
         Value::Object(m) => Value::Object(
@@ -1086,6 +1098,14 @@ fn resolve(value: &Value, state: &Value) -> Value {
                 match c.get(2).map(|m| m.as_str()) {
                     Some("|reverse") => text.chars().rev().collect(),
                     Some("|last_segment") => text.rsplit('/').next().unwrap_or("").to_string(),
+                    Some("|request_param") => text
+                        .split_once('?')
+                        .and_then(|(_, q)| {
+                            form_urlencoded::parse(q.as_bytes())
+                                .find(|(k, _)| k == "request")
+                                .map(|(_, v)| v.into_owned())
+                        })
+                        .unwrap_or_default(),
                     _ => text,
                 }
             })

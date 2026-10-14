@@ -36,11 +36,20 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/uploads/")
         // EmailController
         || path.starts_with("/email/unsubscribe")
-        // UserApiKeysController#new and #otp (whose POST, create_otp,
-        // needs a login of its own).
+        // UserApiKeysController#new, #otp, #activate and the device
+        // request and poll (create_otp needs a login of its own).
         || matches!(
             path,
-            "/user-api-key/new" | "/user-api-key/new.json" | "/user-api-key/otp" | "/user-api-key/otp.json"
+            "/user-api-key/new"
+                | "/user-api-key/new.json"
+                | "/user-api-key/otp"
+                | "/user-api-key/otp.json"
+                | "/user-api-key/activate"
+                | "/user-api-key/activate.json"
+                | "/user-api-key/device"
+                | "/user-api-key/device.json"
+                | "/user-api-key/device/poll"
+                | "/user-api-key/device/poll.json"
         )
 }
 

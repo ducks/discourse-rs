@@ -1,0 +1,214 @@
+{
+  "name": "device_authorize_manual_code",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/activate.json",
+      "params": {
+        "code": "{{responses.0.body.user_code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/authorize.json",
+      "params": {
+        "approval_token": "{{responses.1.body.approval_token}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "{{responses.0.body.device_code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "{{responses.0.body.device_code}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:03:37.680154",
+  "transaction_started_at": "2026-10-14T09:03:36.141252",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "33c4f2e3f5eab27f455b76f69348423428366d06fe91fb5f132a305b0ea9f7ee",
+        "user_code": "WVCE-FY8C",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=_r8g1f05",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "authorize",
+        "request_token": null,
+        "approval_token": "d68a810b8751dace209ef8450bea800e9e008d62409d96a2da8099d226e2b7da",
+        "no_trust_level": false,
+        "invalid_code": false,
+        "device_auth": {
+          "application_name": "Device App",
+          "localized_scopes": [
+            "Read all",
+            "Write all"
+          ],
+          "write_scope": true,
+          "unregistered_client": true,
+          "expires_at": null
+        },
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "complete",
+        "denied": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "authorized",
+        "payload": "Bf15t433w7FI5lntNpj4WEoMPM8RBAZKlqe5BosaFLoFxS5t+Px7W5QhI0gj\nBhHu6GgLyqTj2hsWisVkWl4gAKWychbBSJPaSPQ6WuuHqUYFA5otw1XisBQ5\nC8PwdeILTs9AX+o5qlu+Pzl5HavRU91JU8G3uXKDphwnla2qaHiwv/LDkAYt\nELdS5p0NnJiJK9vw+tbN/TWinhcrrJPY3Qk7DAHqZwjzF3DJlfjBs8Vkz9sO\nFR+egovksmueDEHPue5RJoBA9WbGENslj3IH+od6/PMMYdwO+dlx/z0/eOP0\nf4pQIvw0F0m0ejNJDQ0Y+Wpx3FZVoKNHr0CuXpCN6w==\n"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "expired_token"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_clients": {
+      "inserted": [
+        {
+          "id": 1,
+          "client_id": "device-app",
+          "created_at": "2026-10-14T09:03:37.832377",
+          "public_key": null,
+          "updated_at": "2026-10-14T09:03:37.832377",
+          "auth_redirect": null,
+          "application_name": "Device App"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T09:03:37.846662",
+          "updated_at": "2026-10-14T09:03:37.846662",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T09:03:37.850113",
+          "updated_at": "2026-10-14T09:03:37.850113",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "key_hash": "7eca2ea784b94dedc0913eec101692ff5e2c28f7a408ab7c6cfaf5514ac42967",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-14T09:03:37.842675",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-14T09:03:37.842675",
+          "last_used_at": "2026-10-14T09:03:36.141252",
+          "application_name": null,
+          "user_api_key_client_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "npDwkuVmQHQRUu9jGpV78z+LCJI=",
+            "created_at": "2026-10-14T09:03:36.682991",
+            "rotated_at": "2026-10-14T09:03:36.680372",
+            "updated_at": "2026-10-14T09:03:36.682991",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "npDwkuVmQHQRUu9jGpV78z+LCJI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:03:37.698838",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "npDwkuVmQHQRUu9jGpV78z+LCJI=",
+            "created_at": "2026-10-14T09:03:36.682991",
+            "rotated_at": "2026-10-14T09:03:36.680372",
+            "updated_at": "2026-10-14T09:03:36.682991",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "npDwkuVmQHQRUu9jGpV78z+LCJI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_clients": 1,
+    "user_api_key_scopes": 1,
+    "user_api_keys": 1
+  },
+  "recorded_from": {
+    "case": "8dc98683d191388ddc4b5195d6bd6900635a8fabfe48374e2d4b84e5e381f5d7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

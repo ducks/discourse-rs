@@ -1,0 +1,34 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "expires_in_seconds": "3600",
+        "padding": "oaep",
+        "push_url": "https://push.example.com/d"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/authorize.json",
+      "params": {
+        "request": "{{responses.0.body.verification_uri_with_request|request_param}}",
+        "code": "{{responses.0.body.user_code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "{{responses.0.body.device_code}}"
+      }
+    }
+  ]
+}

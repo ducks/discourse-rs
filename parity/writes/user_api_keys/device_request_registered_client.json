@@ -1,0 +1,110 @@
+{
+  "name": "device_request_registered_client",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request={{responses.0.body.verification_uri_with_request|request_param}}"
+    }
+  ],
+  "started_at": "2026-10-14T09:04:57.760424",
+  "transaction_started_at": "2026-10-14T09:04:51.863505",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "1836b97e86b60ab77f18fe256c6db47febf500c7b15f5841a5ef93207774d14e",
+        "user_code": "GPKW-L24B",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=sM_ztXgC",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "authorize",
+        "request_token": "sM_ztXgC",
+        "approval_token": null,
+        "no_trust_level": false,
+        "invalid_code": false,
+        "device_auth": {
+          "application_name": "Registered Device App",
+          "localized_scopes": [
+            "Read all",
+            "Write all"
+          ],
+          "write_scope": true,
+          "unregistered_client": false,
+          "expires_at": null
+        },
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VJorKO47dSH+FI4BUwpbqGqqs2w=",
+            "created_at": "2026-10-14T09:04:54.802241",
+            "rotated_at": "2026-10-14T09:04:54.79319",
+            "updated_at": "2026-10-14T09:04:54.802241",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "VJorKO47dSH+FI4BUwpbqGqqs2w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:04:57.782693",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VJorKO47dSH+FI4BUwpbqGqqs2w=",
+            "created_at": "2026-10-14T09:04:54.802241",
+            "rotated_at": "2026-10-14T09:04:54.79319",
+            "updated_at": "2026-10-14T09:04:54.802241",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "VJorKO47dSH+FI4BUwpbqGqqs2w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'device-app', 'Registered Device App', '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n', NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "b04677320ae7d28c426ce90c0d8ac783c6362da3e151dd9960ed5b7c7cdc3c00",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

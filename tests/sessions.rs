@@ -2591,3 +2591,93 @@ async fn user_api_key_authorization_and_one_time_password() {
     let reply = again.get(&format!("/session/otp/{otp}")).await;
     assert!(reply.body.contains("alert-error"), "{}", reply.body);
 }
+
+/// The device flow through the activation page's HTML: the request link
+/// shows the grant, its form authorizes with the user code, and the
+/// application's poll gets the key once.
+#[tokio::test]
+async fn user_api_key_device_flow_through_the_page() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let pem = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/writes/files/user_api_key_public.pem"),
+    )
+    .unwrap();
+    let json = [
+        ("accept", "application/json"),
+        ("content-type", "application/json"),
+    ];
+    let mut app = Client::new(app_state.clone());
+    let body = json!({
+        "nonce": "n2", "scopes": "read", "client_id": "cli", "application_name": "CLI",
+        "public_key": pem,
+    });
+    let reply = app
+        .send(
+            Method::POST,
+            "/user-api-key/device.json",
+            &json,
+            &body.to_string(),
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let device = reply.json();
+    let device_code = device["device_code"].as_str().unwrap().to_string();
+    let user_code = device["user_code"].as_str().unwrap().to_string();
+    let link = device["verification_uri_with_request"].as_str().unwrap();
+    let request = link.rsplit_once("request=").unwrap().1.to_string();
+
+    let mut member = Client::new(app_state.clone());
+    assert_eq!(
+        member.login("user1", "password").await.status,
+        StatusCode::OK
+    );
+    let reply = member.get("/user-api-key/activate").await;
+    assert!(
+        reply.body.contains(r#"action="/user-api-key/activate""#),
+        "{}",
+        reply.body
+    );
+    let reply = member
+        .get(&format!("/user-api-key/activate?request={request}"))
+        .await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(reply.body.contains("CLI"), "{}", reply.body);
+    assert!(
+        reply
+            .body
+            .contains(r#"action="/user-api-key/device/authorize""#)
+    );
+
+    let poll = json!({"device_code": device_code}).to_string();
+    let reply = app
+        .send(Method::POST, "/user-api-key/device/poll.json", &json, &poll)
+        .await;
+    assert_eq!(reply.json()["status"], "authorization_pending");
+
+    let form = format!("request={request}&code={user_code}");
+    let reply = member
+        .send(Method::POST, "/user-api-key/device/authorize", &[], &form)
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert!(
+        reply.body.contains("Authorization complete"),
+        "{}",
+        reply.body
+    );
+
+    let reply = app
+        .send(Method::POST, "/user-api-key/device/poll.json", &json, &poll)
+        .await;
+    assert_eq!(reply.json()["status"], "authorized", "{}", reply.body);
+    let payload: Value = serde_json::from_str(&decrypt_with_case_key(
+        reply.json()["payload"].as_str().unwrap(),
+    ))
+    .unwrap();
+    assert_eq!(payload["nonce"], "n2");
+    let reply = app
+        .send(Method::POST, "/user-api-key/device/poll.json", &json, &poll)
+        .await;
+    assert_eq!(reply.json()["status"], "expired_token");
+}
