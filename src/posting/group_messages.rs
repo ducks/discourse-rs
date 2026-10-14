@@ -8,8 +8,8 @@ use serde_json::json;
 use sqlx::PgConnection;
 
 use super::{Ctx, TopicUserAttr, change_topic_user, notification_levels, notification_reasons};
+use crate::AppError;
 use crate::guardian::Guardian;
-use crate::{AppError, Unsupported};
 
 /// `Group.alias_levels(user)`
 fn alias_levels(guardian: &Guardian) -> Vec<i32> {
@@ -407,44 +407,21 @@ pub async fn notify_group_summary(
         .bind(user_id)
         .fetch_one(&mut *conn)
         .await?;
-    // Consolidation's DeletePreviousNotifications on group_id, then the save.
-    sqlx::query(
-        "DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2 \
-         AND data::json ->> 'group_id' = $3",
-    )
-    .bind(user_id)
-    .bind(GROUP_MESSAGE_SUMMARY)
-    .bind(stat.group_id.to_string())
-    .execute(&mut *conn)
-    .await?;
+    // consolidate_or_create!: the group_message_summary plan
+    // (DeletePreviousNotifications on group_id), then the save.
     let data = json!({
         "group_id": stat.group_id,
         "group_name": stat.group_name,
         "inbox_count": stat.inbox_count,
         "username": username,
     });
-    sqlx::query(
-        "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp())",
+    crate::notification_create::consolidate_or_create(
+        conn,
+        ctx.bus,
+        ctx.settings,
+        &crate::notification_create::NewNotification::new(GROUP_MESSAGE_SUMMARY, user_id, data)
+            .read(acting_user_id == Some(user_id)),
     )
-    .bind(GROUP_MESSAGE_SUMMARY)
-    .bind(user_id)
-    .bind(data.to_string())
-    .bind(acting_user_id == Some(user_id))
-    .execute(&mut *conn)
     .await?;
-    // after_commit refresh_notification_count, then send_email: no email
-    // for this type, but a user in do not disturb gets it shelved.
-    crate::bus::publish_notifications_state(ctx.bus, &mut *conn, ctx.settings, user_id).await?;
-    let dnd: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \
-         AND starts_at <= now() AND ends_at > now())",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if dnd {
-        return Err(Unsupported("do not disturb (shelved notifications)").into());
-    }
     Ok(true)
 }

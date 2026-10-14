@@ -369,6 +369,7 @@ async fn publish_like_change(
 /// notification for the author naming the likers of the last day, newest
 /// first, when there are any. False when nothing was created.
 async fn refresh_like_notification(
+    ctx: &Ctx<'_>,
     conn: &mut PgConnection,
     post_id: i32,
     read: bool,
@@ -404,17 +405,18 @@ async fn refresh_like_notification(
         "username2": likers.get(1),
         "count": likers.len(),
     });
-    sqlx::query(
-        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                    high_priority, created_at, updated_at) \
-         VALUES (5, $1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+    crate::notification_create::create(
+        conn,
+        ctx.bus,
+        ctx.settings,
+        &crate::notification_create::NewNotification::new(
+            crate::notification_create::types::LIKED,
+            author,
+            data,
+        )
+        .topic(topic_id, Some(post_number))
+        .read(read),
     )
-    .bind(author)
-    .bind(topic_id)
-    .bind(post_number)
-    .bind(data.to_string())
-    .bind(read)
-    .execute(&mut *conn)
     .await?;
     Ok(true)
 }
@@ -568,10 +570,10 @@ pub(crate) async fn destroy(
         .fetch_all(&mut *tx)
         .await?;
         let read = reads.iter().all(|r| *r);
-        let refreshed = refresh_like_notification(&mut *tx, post_id, read).await?;
-        // after_commit refresh_notification_count, for the destroyed and
-        // the created.
-        if refreshed || !reads.is_empty() {
+        let refreshed = refresh_like_notification(ctx, &mut *tx, post_id, read).await?;
+        // after_commit refresh_notification_count for the destroyed (the
+        // created one ran its own).
+        if !refreshed && !reads.is_empty() {
             crate::bus::publish_notifications_state(ctx.bus, &mut *tx, ctx.settings, author)
                 .await?;
         }

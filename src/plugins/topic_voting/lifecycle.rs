@@ -89,20 +89,20 @@ pub async fn vote_release(
     .bind(topic_id)
     .fetch_all(&mut *conn)
     .await?;
-    let data = json!({ "message": "votes_released", "title": "votes_released" }).to_string();
+    let data = json!({ "message": "votes_released", "title": "votes_released" });
     for user_id in voters {
-        sqlx::query(
-            "INSERT INTO notifications (notification_type, user_id, topic_id, data, read, \
-                                        high_priority, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, FALSE, FALSE, clock_timestamp(), clock_timestamp())",
+        crate::notification_create::create(
+            conn,
+            bus,
+            settings,
+            &crate::notification_create::NewNotification::new(
+                VOTES_RELEASED,
+                user_id,
+                data.clone(),
+            )
+            .topic(topic_id, None),
         )
-        .bind(VOTES_RELEASED)
-        .bind(user_id)
-        .bind(topic_id)
-        .bind(&data)
-        .execute(&mut *conn)
         .await?;
-        crate::bus::publish_notifications_state(bus, &mut *conn, settings, user_id).await?;
     }
     Ok(())
 }

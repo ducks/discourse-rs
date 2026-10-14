@@ -315,18 +315,13 @@ async fn send_notification(
         "badge_title": badge.allow_title,
         "username": username,
     });
-    let notification_id: i64 = sqlx::query_scalar(
-        "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, \
-                                    created_at, updated_at) \
-         VALUES ($1, $2, $3, FALSE, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
+    crate::notification_create::create(
+        conn,
+        bus,
+        settings,
+        &crate::notification_create::NewNotification::new(GRANTED_BADGE, user_id, data),
     )
-    .bind(GRANTED_BADGE)
-    .bind(user_id)
-    .bind(data.to_string())
-    .fetch_one(&mut *conn)
-    .await?;
-    crate::bus::publish_notifications_state(bus, &mut *conn, settings, user_id).await?;
-    Ok(notification_id)
+    .await
 }
 
 /// `BadgeGranter.grant(badge, user, post_id:)` by the system user: the

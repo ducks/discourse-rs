@@ -225,19 +225,14 @@ async fn notify(
     post_number: i32,
     data: serde_json::Value,
 ) -> Result<(), AppError> {
-    sqlx::query(
-        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                    high_priority, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, FALSE, FALSE, clock_timestamp(), clock_timestamp())",
+    crate::notification_create::create(
+        conn,
+        bus,
+        settings,
+        &crate::notification_create::NewNotification::new(CUSTOM, user_id, data)
+            .topic(topic_id, Some(post_number)),
     )
-    .bind(CUSTOM)
-    .bind(user_id)
-    .bind(topic_id)
-    .bind(post_number)
-    .bind(data.to_string())
-    .execute(&mut *conn)
     .await?;
-    crate::bus::publish_notifications_state(bus, &mut *conn, settings, user_id).await?;
     Ok(())
 }
 

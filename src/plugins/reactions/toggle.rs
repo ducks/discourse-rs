@@ -495,24 +495,25 @@ impl Manager<'_> {
                 {
                     data.insert("reaction_icon".into(), json!(HEART));
                 }
-                sqlx::query(
-                    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                                high_priority, created_at, updated_at) \
-                     VALUES ($1, $2, $3, $4, $5, $6, FALSE, clock_timestamp(), clock_timestamp())",
+                crate::notification_create::create(
+                    conn,
+                    self.ctx.bus,
+                    self.ctx.settings,
+                    &crate::notification_create::NewNotification::new(
+                        REACTION_NOTIFICATION,
+                        author,
+                        Value::Object(data),
+                    )
+                    .topic(topic_id, Some(post_number))
+                    .read(read),
                 )
-                .bind(REACTION_NOTIFICATION)
-                .bind(author)
-                .bind(topic_id)
-                .bind(post_number)
-                .bind(Value::Object(data).to_string())
-                .bind(read)
-                .execute(&mut *conn)
                 .await?;
                 created = true;
             }
         }
-        // after_commit refresh_notification_count
-        if created || !reads.is_empty() {
+        // after_commit refresh_notification_count for the destroyed (the
+        // created one ran its own).
+        if !created && !reads.is_empty() {
             crate::bus::publish_notifications_state(
                 self.ctx.bus,
                 &mut *conn,
