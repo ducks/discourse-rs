@@ -218,9 +218,36 @@ Bugs or silent gaps in what is merged, small and independent.
 
 [users-digests-dnd]
 
-Later, not briefed yet: admin badges, web hooks, user API keys,
-themes, backups through the app, the pageview and dashboard reports
-(parity/SCHEDULED_JOBS.md has the jobs each one unblocks).
+### Phase 8: what the port still refuses, then admin
+
+Ordered by how many refusals each lifts (cooking and posting first),
+then by what running a forum needs (milestone 6). Briefs:
+`spec-<brief>-2026-10-14.md`.
+
+80. `feat/watched-words` L: the four cooking actions (censor, replace,
+    link, tag) and the posting ones (block, require approval, silence,
+    flag), the admin CRUD and its regex/case rules,
+    81. `feat/custom-emoji` M (admin upload and list, cooking and
+    emojiUnescape with custom emoji, emoji_deny_list)
+82. `feat/admin-groups` L: creating, editing, deleting groups, members
+    and owners in bulk, automatic membership by email domain
+83. `feat/web-hooks` L: web hooks, their events from core, deliveries
+    and the scheduled jobs, 84. `feat/user-api-keys` M (and their jobs)
+85. `feat/admin-badges` M: creating, editing, deleting badges and
+    groupings, badge SQL with its preview, the badges pages' HTML
+86. `feat/admin-users-rest` M: granting admin (second factor or email
+    confirmation), impersonation, penalties on several users
+87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
+    form templates, custom flags, search term and incoming email details
+88. `feat/admin-email` M: the settings test, previews, templates, email
+    style, 89. `feat/admin-dashboard` L (reports, problem checks,
+    admin notices, the pageview jobs)
+90. `feat/themes` L: themes and components, color schemes, site texts
+    (translation overrides), sidebar defaults, the /admin/config pages,
+    91. `feat/backups` L (creating, listing, downloading, restoring
+    through the app, read-only mode)
+
+[phase-8]
 
 ## Milestone 1: a hostable read-only mirror
 
