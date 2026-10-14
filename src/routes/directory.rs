@@ -1,9 +1,9 @@
 //! GET /directory_items (directory_items#index): a period's user
-//! directory, a page at a time.
+//! directory, a page at a time; and GET /u, the users page drawn from it.
 
 use axum::Json;
-use axum::extract::State;
 use axum::body::Bytes;
+use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Map, Value, json};
@@ -13,7 +13,7 @@ use crate::params;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
-use crate::{AppError, AppState};
+use crate::{AppError, AppState, Unsupported};
 
 /// `fetch_int_from_params(key, default:, max:)`, min 0: the value, or the
 /// InvalidParameters it raises.
@@ -114,4 +114,208 @@ pub async fn index(
         },
     }))
     .into_response())
+}
+
+/// The HTML of /u (layout plus the users route's content).
+#[derive(askama::Template)]
+#[template(path = "users.html")]
+pub struct UsersHtml {
+    pub site_title: String,
+    pub lang: String,
+    pub base_path: String,
+    pub crawler: crate::html::Crawler,
+    pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
+    pub chrome: crate::html::Chrome,
+    /// The route's titleToken.
+    pub page_title: String,
+    pub main: String,
+}
+
+/// `Group.findAll({ ignore_automatic: true })` (groups#search: the
+/// visible groups by name) filtered by `can_see_members`: the groups a
+/// member's directory filters by, as their names and labels
+/// (`full_name || name`). None for a visitor.
+async fn group_options(
+    conn: &mut sqlx::PgConnection,
+    guardian: &crate::guardian::Guardian,
+) -> Result<Vec<(String, String)>, AppError> {
+    if !guardian.is_authenticated() {
+        return Ok(Vec::new());
+    }
+    let rows: Vec<(String, Option<String>)> = sqlx::query_as(&format!(
+        "SELECT g.name, g.full_name FROM groups g WHERE NOT g.automatic AND {} AND {} ORDER BY g.name",
+        crate::groups::visible_groups_where(guardian, "g"),
+        crate::groups::members_visible_groups_where(guardian, "g"),
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|(name, full_name)| {
+            let label = full_name
+                .filter(|f| !f.is_empty())
+                .unwrap_or_else(|| name.clone());
+            (name, label)
+        })
+        .collect())
+}
+
+/// GET /u (users#index): Ember's users directory for the query params
+/// the route takes (period, order, asc, name, group, exclude_groups,
+/// exclude_usernames), its first page loaded as the route loads it from
+/// directory_items#index.
+pub async fn page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    use askama::Template;
+
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    let p = params::parse(uri.query(), &headers, &Bytes::new());
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let base_path = state.config.globals.relative_url_root();
+    // The route's beforeModel: anonymous visitors go to the front page.
+    if settings.get("hide_user_profiles_from_public")?.truthy() && guardian.is_anonymous() {
+        return Ok(axum::response::Redirect::to(&format!("{base_path}/")).into_response());
+    }
+    // /directory-columns.json: the enabled columns by position.
+    let rows: Vec<(String, i32, Option<String>)> = sqlx::query_as(
+        "SELECT name, type, icon FROM directory_columns WHERE enabled ORDER BY position",
+    )
+    .fetch_all(&mut *conn)
+    .await?;
+    if rows.iter().any(|(_, kind, _)| *kind != 0) {
+        return Err(Unsupported("user field and plugin columns in the user directory").into());
+    }
+    let columns: Vec<crate::directory_view::Column> = rows
+        .into_iter()
+        .map(|(name, _, icon)| crate::directory_view::Column { name, icon })
+        .collect();
+    let groups = group_options(&mut conn, &guardian).await?;
+    let s = |k: &str| params::string(&p, k).filter(|v| !v.is_empty());
+    // The controller's defaults; the route's first column orders.
+    let period = s("period").unwrap_or_else(|| "weekly".into());
+    let order = s("order")
+        .or_else(|| columns.first().map(|c| c.name.clone()))
+        .unwrap_or_else(|| "likes_received".into());
+    let asc = s("asc");
+    let name = s("name").unwrap_or_default();
+
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::Users,
+    )
+    .await?;
+    site.bus_position = bus_position;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
+
+    // directory_items#index for the route's params, as the store asks
+    // (blank ones left out). A refused list (a period it doesn't know, the directory turned off,
+    // a group not to be seen) leaves the route without a model: the page
+    // with nothing loaded and its empty state.
+    let loaded = if !settings.get("enable_user_directory")?.truthy()
+        || !crate::directory::PERIODS.iter().any(|(n, _)| *n == period)
+    {
+        None
+    } else {
+        let query = Query {
+            period: period.clone(),
+            group: s("group"),
+            exclude_groups: s("exclude_groups"),
+            exclude_usernames: s("exclude_usernames"),
+            order: Some(order.clone()),
+            ascending: asc.is_some(),
+            name: Some(name.clone()).filter(|n| !n.is_empty()),
+            username: None,
+            page: 0,
+            limit: PAGE_SIZE,
+        };
+        crate::directory::index(&mut conn, &settings, &urls, &guardian, &query)
+            .await?
+            .ok()
+    };
+    let (items, total, last_updated_at) = loaded.unwrap_or((Vec::new(), 0, Value::Null));
+    // meta.load_more_directory_items, as index answers it.
+    let mut more: Vec<(String, String)> = vec![
+        ("period".into(), period.clone()),
+        ("order".into(), order.clone()),
+        ("page".into(), "1".into()),
+    ];
+    for key in ["asc", "group", "name"] {
+        if let Some(v) = s(key) {
+            more.push((key.into(), v));
+        }
+    }
+    let load_more = format!("{base_path}/directory_items.json?{}", to_query(&mut more));
+    let last_updated_at = last_updated_at
+        .as_str()
+        .and_then(|at| chrono::DateTime::parse_from_rfc3339(at).ok())
+        .map(|at| at.with_timezone(&chrono::Utc));
+    // hideApplicationFooter while there is more to load.
+    if (items.len() as i64) < total {
+        site.chrome.powered_by = false;
+    }
+    let main = crate::directory_view::render(
+        &cx,
+        &crate::directory_view::Directory {
+            columns: &columns,
+            items: &items,
+            total,
+            last_updated_at,
+            load_more_url: &load_more,
+            period: &period,
+            order: &order,
+            asc: asc.is_some(),
+            name: &name,
+            viewer_id: guardian.user_id().map(i64::from),
+            viewer_staff: guardian.is_staff(),
+            groups: &groups,
+            group: s("group").as_deref(),
+        },
+    );
+    site.chrome.body_classes.push_str(" users-page");
+    let page_title = crate::topic_list_view::t(&cx, "directory.title");
+    let page = UsersHtml {
+        site_title: site.site_title,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        page_title,
+        main,
+    };
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+        &vs,
+    )?)
 }

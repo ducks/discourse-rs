@@ -200,8 +200,9 @@ Bugs or silent gaps in what is merged, small and independent.
     and visitor stats are refused), 74. ~~`feat/directory`~~ (done) M (/directory_items with
     its filters, orders and pages, DirectoryItem.refresh_period! with the
     solved and gamification column queries, the directory_refresh job.
-    Left: the users page's HTML; searching by name (UserSearch) and user
-    fields are refused)
+    The users page's HTML: ~~`feat/users-page`~~ (done). Left: searching
+    by name (UserSearch), user field and plugin columns are refused; the
+    Edit Directory Columns modal)
 75. ~~`feat/review-reject-queued-post`~~ (done) M (queued posts:
     approve, reject and its aliases, revise and reject, delete, delete
     user (as a spammer, account_deleted email); reviewed posts: approve,
