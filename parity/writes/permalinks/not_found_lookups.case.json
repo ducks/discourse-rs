@@ -1,0 +1,23 @@
+{
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9801, 't/missing/999999', 35, now(), now())",
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9802, 'c/old-cat/99999', 4, now(), now())",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9803, 'tag/oldtag', 'https://example.com/tags', now(), now())",
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9804, 'c/old-category', 4, now(), now())",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9805, 't/888888', '/latest', now(), now())"
+  ],
+  "keep_headers": ["Location", "Discourse-Xhr-Redirect"],
+  "requests": [
+    {"method": "GET", "path": "/t/missing/999999.json"},
+    {"method": "GET", "path": "/t/missing/999999", "headers": {"Accept": "text/html", "X-Requested-With": ""}},
+    {"method": "GET", "path": "/t/missing/999999/3.json"},
+    {"method": "GET", "path": "/t/888888.json"},
+    {"method": "GET", "path": "/t/other/999999.json"},
+    {"method": "GET", "path": "/c/old-cat/99999.json"},
+    {"method": "GET", "path": "/c/old-cat/99999", "headers": {"Accept": "text/html", "X-Requested-With": ""}},
+    {"method": "GET", "path": "/tag/oldtag.json"},
+    {"method": "GET", "path": "/tags/c/old-category/howto.json"},
+    {"method": "GET", "path": "/tags/c/old-category/howto"}
+  ]
+}

@@ -261,6 +261,14 @@ then by what running a forum needs (milestone 6). Briefs:
     scheduled job while read only, no last seen in failover; SQLSTATE
     25006 answered as read only. Left: the client's login, signup and
     logout dialogs and the notice following `/site/read-only` live
+79d. ~~`feat/permalinks`~~ (done) M: the `*url` route under
+    PermalinkConstraint, the not-found lookups (topics#show missing or
+    deleted, list and tags set_category, tag not found,
+    `/category/*path`), `/permalink-check` and the admin CRUD under
+    /admin/permalinks and /admin/config/permalinks; topics#show's
+    InvalidAccess rescue now runs Notification.remove_for. Refused:
+    `permalink_normalizations` (Ruby regexes) and urls
+    Addressable::URI.encode would change
 80. `feat/watched-words` L: the four cooking actions (censor, replace,
     link, tag) and the posting ones (block, require approval, silence,
     flag), the admin CRUD and its regex/case rules,

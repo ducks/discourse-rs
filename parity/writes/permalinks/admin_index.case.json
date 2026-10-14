@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9801, 'old-thread', 35, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO permalinks (id, url, post_id, created_at, updated_at) VALUES (9802, 'old-post', 37, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9803, 'forum/sub', 34, '2026-10-03 10:00:00', '2026-10-03 10:00:00')",
+    "INSERT INTO permalinks (id, url, tag_id, created_at, updated_at) VALUES (9804, 'old-tag', 1, '2026-10-04 10:00:00', '2026-10-04 10:00:00')",
+    "INSERT INTO permalinks (id, url, user_id, created_at, updated_at) VALUES (9805, 'members/user1', 3, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9806, 'elsewhere', 'https://example.com/THREAD', '2026-10-06 10:00:00', '2026-10-06 10:00:00')",
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9807, 'old-gone', 99999, '2026-10-07 10:00:00', '2026-10-07 10:00:00')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/permalinks.json"},
+    {"method": "GET", "path": "/admin/permalinks.json?filter=thread"},
+    {"method": "GET", "path": "/admin/permalinks.json?filter=OLD"},
+    {"method": "GET", "path": "/admin/config/permalinks.json"},
+    {"method": "GET", "path": "/admin/permalinks/9802.json"},
+    {"method": "GET", "path": "/admin/permalinks/123456.json"}
+  ]
+}

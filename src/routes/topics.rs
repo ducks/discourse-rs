@@ -31,12 +31,14 @@ pub async fn show_by_id(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
     show(
         Incoming {
             headers: &headers,
             uri: &uri,
+            requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
         },
         &state,
@@ -57,12 +59,14 @@ pub async fn show_with_slug(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
     show(
         Incoming {
             headers: &headers,
             uri: &uri,
+            requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
         },
         &state,
@@ -83,12 +87,14 @@ pub async fn show_post(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let (post_number, json) = split_format(&post_number);
     show(
         Incoming {
             headers: &headers,
             uri: &uri,
+            requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
         },
         &state,
@@ -171,6 +177,110 @@ async fn topic_not_found(
         .into_response())
 }
 
+/// topics#show's NotFound and InvalidAccess rescues with `check_permalinks`:
+/// a missing topic looks up the path asked for (`/t/<slug>/<id>` when both
+/// were given, else the request path), a deleted one the viewer could
+/// otherwise see its own URL; then the 404.
+async fn topic_missing(
+    state: &AppState,
+    incoming: &Incoming<'_>,
+    slug: Option<&str>,
+    id: &str,
+    topic_id_param: Option<&str>,
+    page_slug: &str,
+) -> Result<Response, AppError> {
+    if let Some(path) = permalink_path(state, incoming, slug, id, topic_id_param).await?
+        && let Some(redirect) =
+            crate::permalinks::check(state, incoming.guardian, incoming.headers, &path).await?
+    {
+        return Ok(redirect);
+    }
+    topic_not_found(state, incoming.guardian, page_slug).await
+}
+
+/// The path topics#show checks for a permalink, None when it checks none.
+async fn permalink_path(
+    state: &AppState,
+    incoming: &Incoming<'_>,
+    slug: Option<&str>,
+    id: &str,
+    topic_id_param: Option<&str>,
+) -> Result<Option<String>, AppError> {
+    let requested = match slug.filter(|s| !s.is_empty()) {
+        Some(s) => format!("/t/{s}/{id}"),
+        // request.path, as requested.
+        None => incoming
+            .requested
+            .map(|r| &r.0)
+            .unwrap_or(incoming.uri)
+            .path()
+            .to_string(),
+    };
+    let Ok(topic_id) = id.parse::<i32>() else {
+        return Ok(Some(requested));
+    };
+    let guardian = incoming.guardian;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(topic) =
+        crate::topic_guardian::TopicCtx::load(&mut conn, &settings, guardian, topic_id).await?
+    else {
+        return Ok(Some(requested));
+    };
+    // A private message for a visitor is NotLoggedIn, rescued as a plain
+    // NotFound.
+    if topic.private_message() && guardian.is_anonymous() {
+        return Ok(None);
+    }
+    let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+    if guardian.can_see_topic(&settings, &topic, true, &secure)? {
+        return Ok(Some(requested));
+    }
+    // InvalidAccess: Notification.remove_for(current_user.id,
+    // params[:topic_id]). Without a topic_id param (`/t/:id`) that is
+    // `topic_id IS NULL`: every notification not about a topic.
+    if let Some(user_id) = guardian.user_id() {
+        sqlx::query(
+            "DELETE FROM notifications WHERE user_id = $1 AND topic_id IS NOT DISTINCT FROM $2",
+        )
+        .bind(user_id)
+        .bind(topic_id_param.map(|t| crate::ruby::to_i(t) as i32))
+        .execute(&mut *conn)
+        .await?;
+    }
+    // `deleted` decides, the topic's own URL is looked up.
+    let deleted = guardian.can_see_topic(&settings, &topic, false, &secure)?
+        || (topic.deleted_at.is_some() && access_topic_via_group(&mut conn, &topic).await?);
+    if !deleted {
+        return Ok(None);
+    }
+    let stored: Option<String> = sqlx::query_scalar("SELECT slug FROM topics WHERE id = $1")
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let base_path = state.config.globals.relative_url_root();
+    Ok(Some(match stored.filter(|s| !s.is_empty()) {
+        Some(s) => format!("{base_path}/t/{s}/{topic_id}"),
+        None => format!("{base_path}/t/{topic_id}"),
+    }))
+}
+
+/// `Topic#access_topic_via_group`: a group of the topic's category that
+/// takes members by admission or request.
+async fn access_topic_via_group(
+    conn: &mut sqlx::PgConnection,
+    topic: &crate::topic_guardian::TopicCtx,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM groups g JOIN category_groups cg ON cg.group_id = g.id \
+         WHERE cg.category_id = $1 AND (g.public_admission OR g.allow_membership_requests))",
+    )
+    .bind(topic.category_id)
+    .fetch_one(conn)
+    .await
+}
+
 /// Rails `redirect_to` a path: absolute with the request's host and scheme.
 fn redirect(headers: &HeaderMap, location: String) -> Response {
     let host = headers
@@ -189,6 +299,8 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
 struct Incoming<'a> {
     headers: &'a HeaderMap,
     uri: &'a axum::http::Uri,
+    /// The URI before request_format's `.json` rewrite, when it made one.
+    requested: Option<&'a super::RequestedUri>,
     guardian: &'a Guardian,
 }
 
@@ -207,11 +319,9 @@ async fn show(
     } else {
         crate::bus::page_position(&state.bus).await?
     };
-    let Incoming {
-        headers,
-        uri,
-        guardian,
-    } = incoming;
+    let (headers, uri, guardian) = (incoming.headers, incoming.uri, incoming.guardian);
+    // params[:topic_id]: every route but `/t/:id` has one.
+    let topic_id_param = slug.is_some().then_some(id);
     let slug = slug.or(params.slug.as_deref());
     // build_not_found_page searches for params[:slug] || params[:id].
     let page_slug = slug.filter(|s| !s.is_empty()).unwrap_or(id).to_string();
@@ -246,7 +356,9 @@ async fn show(
                     headers,
                     canonical(&base_path, &slug, id, None, page, format),
                 ),
-                None => topic_not_found(state, guardian, &page_slug).await?,
+                None => {
+                    topic_missing(state, &incoming, slug, id, topic_id_param, &page_slug).await?
+                }
             });
         }
     };
@@ -276,7 +388,7 @@ async fn show(
         Err(TopicViewError::NotFound) => {
             drop(view);
             drop(conn);
-            return topic_not_found(state, guardian, &page_slug).await;
+            return topic_missing(state, &incoming, slug, id, topic_id_param, &page_slug).await;
         }
         Err(e) => return Err(e.into()),
     };

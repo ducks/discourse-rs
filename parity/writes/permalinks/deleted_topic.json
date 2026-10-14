@@ -1,0 +1,157 @@
+{
+  "name": "deleted_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-deleted-topic/40.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/40.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/some-other-slug/40.json"
+    }
+  ],
+  "started_at": "2026-10-14T06:08:28.590768",
+  "transaction_started_at": "2026-10-14T06:08:23.903452",
+  "responses": [
+    {
+      "status": 200,
+      "body": "https://example.com/moved",
+      "headers": {
+        "Discourse-Xhr-Redirect": "true"
+      }
+    },
+    {
+      "status": 200,
+      "body": "https://example.com/moved",
+      "headers": {
+        "Discourse-Xhr-Redirect": "true"
+      }
+    },
+    {
+      "status": 200,
+      "body": "https://example.com/moved",
+      "headers": {
+        "Discourse-Xhr-Redirect": "true"
+      }
+    }
+  ],
+  "changes": {
+    "notifications": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 2,
+          "data": "{\"badge_id\":1,\"badge_name\":\"Basic\",\"badge_slug\":\"basic\",\"badge_title\":false,\"username\":\"user1\"}",
+          "read": true,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-09-30T06:20:02.086618",
+          "updated_at": "2026-09-30T06:20:02.086618",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        },
+        {
+          "id": 7,
+          "data": "{\"badge_id\":2,\"badge_name\":\"Member\",\"badge_slug\":\"member\",\"badge_title\":false,\"username\":\"user1\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-09-30T06:20:36.833119",
+          "updated_at": "2026-09-30T06:20:36.833119",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        },
+        {
+          "id": 41,
+          "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user1\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-09-30T07:28:30.313407",
+          "updated_at": "2026-09-30T07:28:30.313407",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        },
+        {
+          "id": 47,
+          "data": "{\"badge_id\":5,\"badge_name\":\"Welcome\",\"badge_slug\":\"welcome\",\"badge_title\":false,\"username\":\"user1\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-01T15:39:52.050551",
+          "updated_at": "2026-10-01T15:39:52.050551",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A6xWfj6Hr91ooh1qQSA7SymEy40=",
+            "created_at": "2026-10-14T06:08:26.097763",
+            "rotated_at": "2026-10-14T06:08:26.091731",
+            "updated_at": "2026-10-14T06:08:26.097763",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "A6xWfj6Hr91ooh1qQSA7SymEy40=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T06:08:28.616255",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A6xWfj6Hr91ooh1qQSA7SymEy40=",
+            "created_at": "2026-10-14T06:08:26.097763",
+            "rotated_at": "2026-10-14T06:08:26.091731",
+            "updated_at": "2026-10-14T06:08:26.097763",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "A6xWfj6Hr91ooh1qQSA7SymEy40=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9801, 't/parity-fixture-deleted-topic/40', 'https://example.com/moved', now(), now())"
+  ],
+  "keep_headers": [
+    "Location",
+    "Discourse-Xhr-Redirect"
+  ],
+  "recorded_from": {
+    "case": "c23b0d6d38e94f1ae612d03575bd5c5410971e748829d08ea43903fffe5f595f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

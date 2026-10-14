@@ -1,0 +1,18 @@
+{
+  "setup": [
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9801, 'old-staff', 3, now(), now())",
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9802, 'old-deleted', 40, now(), now())",
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9803, 'old-pm', 43, now(), now())",
+    "INSERT INTO permalinks (id, url, tag_id, created_at, updated_at) VALUES (9804, 'old-tag', 1, now(), now())",
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9805, 'old-gone', 99999, now(), now())"
+  ],
+  "keep_headers": ["Location", "Discourse-Xhr-Redirect"],
+  "requests": [
+    {"method": "GET", "path": "/old-staff"},
+    {"method": "GET", "path": "/old-deleted"},
+    {"method": "GET", "path": "/old-pm"},
+    {"method": "GET", "path": "/old-tag"},
+    {"method": "GET", "path": "/old-gone"},
+    {"method": "GET", "path": "/never-a-permalink"}
+  ]
+}

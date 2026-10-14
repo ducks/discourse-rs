@@ -1,0 +1,14 @@
+{
+  "setup": [
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9801, 'old-thread', 35, now(), now())",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9802, 'elsewhere', 'https://example.com/landing', now(), now())",
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9803, 'old-staff', 3, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/permalink-check.json?path=/old-thread"},
+    {"method": "GET", "path": "/permalink-check.json?path=elsewhere"},
+    {"method": "GET", "path": "/permalink-check.json?path=/old-staff"},
+    {"method": "GET", "path": "/permalink-check.json?path=/nothing-here"},
+    {"method": "GET", "path": "/permalink-check.json"}
+  ]
+}

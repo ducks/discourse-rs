@@ -1,0 +1,26 @@
+{
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9801, 'old-thread', 35, now(), now())",
+    "INSERT INTO permalinks (id, url, post_id, created_at, updated_at) VALUES (9802, 'old-post', 37, now(), now())",
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9803, 'forum/general', 4, now(), now())",
+    "INSERT INTO permalinks (id, url, tag_id, created_at, updated_at) VALUES (9804, 'old-tag', 1, now(), now())",
+    "INSERT INTO permalinks (id, url, user_id, created_at, updated_at) VALUES (9805, 'members/user1', 3, now(), now())",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9806, 'elsewhere', 'https://example.com/landing?a=1', now(), now())",
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9807, 'old-about', '/about', now(), now())",
+    "INSERT INTO permalinks (id, url, topic_id, created_at, updated_at) VALUES (9808, 'showthread.php?t=12', 35, now(), now())"
+  ],
+  "keep_headers": ["Location", "Discourse-Xhr-Redirect"],
+  "requests": [
+    {"method": "GET", "path": "/old-thread"},
+    {"method": "GET", "path": "/old-post"},
+    {"method": "GET", "path": "/forum/general"},
+    {"method": "GET", "path": "/old-tag"},
+    {"method": "GET", "path": "/members/user1"},
+    {"method": "GET", "path": "/elsewhere"},
+    {"method": "GET", "path": "/old-about"},
+    {"method": "GET", "path": "/showthread.php?t=12"},
+    {"method": "GET", "path": "/old-thread?x=1"},
+    {"method": "GET", "path": "/old-thread", "headers": {"Accept": "text/html", "X-Requested-With": ""}}
+  ]
+}
