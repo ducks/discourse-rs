@@ -165,7 +165,14 @@ Bugs or silent gaps in what is merged, small and independent.
     domain cache; RetrieveTitle; other sites' inline titles. Pages in
     charsets other than UTF-8 are refused; block oneboxes of other sites
     wait on the engines), 53. `feat/onebox-engines-nofetch` M,
-    54. `feat/onebox-generic` L, 55. `feat/onebox-engines-api` L
+    54. ~~`feat/onebox-generic`~~ (done) L (AllowlistedGenericOnebox over
+    StandardEmbed: OpenGraph, Twitter, oEmbed, JSON-LD movies, canonical
+    links, favicons, the fragment's section, Date._parse and Time.parse
+    for published times, the missing-data error previews; measured with
+    fixture pages through the stubbed fetch boundary. Refused: pages that
+    aren't UTF-8, dates Time.parse would read against today or roll over
+    with a zone, canonical links Addressable would normalize past ASCII),
+    55. `feat/onebox-engines-api` L
 
 [client-infra]
 

@@ -4,7 +4,7 @@
 //! scripts/record-onebox-engines), under the reference's iframe settings.
 
 use discourse_rs::onebox::matcher::{all_iframe_origins, oneboxed, origins_to_regexes};
-use serde_json::Value;
+use serde_json::{Value, json};
 
 fn recording() -> Value {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -61,12 +61,14 @@ fn renders_engines_like_rails() {
     let rec = recording();
     let s = &rec["settings"];
     let i18n = discourse_rs::i18n::I18n::vendored().unwrap();
+    let regexes = iframe_regexes(s);
     let ctx = discourse_rs::onebox::engines::Ctx {
+        iframes: &regexes,
+        cookie: None,
         hostname: s["current_hostname"].as_str().unwrap(),
         disable_media_download_controls: s["disable_onebox_media_download_controls"] == true,
         i18n: &i18n,
     };
-    let regexes = iframe_regexes(s);
     let mut failures = Vec::new();
     let previews = rec["previews"].as_array().unwrap();
     for case in previews {
@@ -139,5 +141,227 @@ fn previews_like_rails() {
             }
         }
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+fn fixtures() -> discourse_rs::onebox::fetch::Fixtures {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/onebox_engines");
+    let manifest: Value =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("fixtures.json")).unwrap()).unwrap();
+    discourse_rs::onebox::fetch::Fixtures {
+        pages: serde_json::from_value(manifest["pages"].clone()).unwrap(),
+        dir: dir.join("fixtures"),
+    }
+}
+
+/// Every engine on the fixture pages (their fetches answered from
+/// parity/onebox_engines/fixtures/ as the recorder's are): the engine's
+/// HTML and placeholder, as processed and sanitized, the errors and data
+/// it found, and what Oneboxer.compute_external_onebox makes of them.
+#[tokio::test]
+async fn fetches_like_rails() {
+    use discourse_rs::onebox::engines::{Ctx, Fail, PORTED, preview};
+    use discourse_rs::onebox::external::{Errors, engine_onebox};
+    let rec = recording();
+    let s = &rec["settings"];
+    let i18n = discourse_rs::i18n::I18n::vendored().unwrap();
+    let regexes = iframe_regexes(s);
+    let ctx = Ctx {
+        iframes: &regexes,
+        cookie: None,
+        hostname: s["current_hostname"].as_str().unwrap(),
+        disable_media_download_controls: s["disable_onebox_media_download_controls"] == true,
+        i18n: &i18n,
+    };
+    let errors = Errors {
+        i18n: &i18n,
+        enable_emoji: s["enable_emoji"] == true,
+        inline_emoji: s["enable_inline_emoji_translation"] == true,
+        emoji_set: s["emoji_set"].as_str().unwrap_or("").to_string(),
+        base_path: "",
+    };
+    let mut fetch = fixtures();
+    let mut failures = Vec::new();
+    let mut skipped = Vec::new();
+    let cases = rec["fetched"].as_array().unwrap();
+    for case in cases {
+        let url = case["url"].as_str().unwrap();
+        let rails_engine = case["engine"].as_str();
+        let content_type = fetch
+            .pages
+            .get(url.split('#').next().unwrap())
+            .and_then(|p| p.content_type.clone());
+        let engine = oneboxed(url, content_type.as_deref(), &regexes);
+        if engine.map(|e| e.name) != rails_engine {
+            failures.push(format!(
+                "{url}: engine ours {:?} rails {rails_engine:?}",
+                engine.map(|e| e.name)
+            ));
+            continue;
+        }
+        let Some(engine) = engine else { continue };
+        if !PORTED.contains(&engine.name) {
+            skipped.push(format!("{url} ({})", engine.name));
+            continue;
+        }
+        let rendered = match preview(engine, url, &ctx, &mut fetch).await {
+            Ok(r) => r,
+            Err(e) => {
+                failures.push(format!("{url}: {e:?}"));
+                continue;
+            }
+        };
+        let mut differ = |key: &str, ours: Value| {
+            if ours != case[key] {
+                failures.push(format!(
+                    "{url} [{key}]\n  ours  {ours}\n  rails {}",
+                    case[key]
+                ));
+            }
+        };
+        let rails_raised = |k: &str| json!(case[k].as_str().map(|_| "raised"));
+        let raised = |r: &Option<String>| json!(r.as_ref().map(|_| "raised"));
+        if raised(&rendered.html_raised) != rails_raised("raw_error") {
+            differ("raw_error", json!(rendered.html_raised));
+        }
+        if raised(&rendered.placeholder_raised) != rails_raised("placeholder_error") {
+            differ("placeholder_error", json!(rendered.placeholder_raised));
+        }
+        let finish = |h: &Option<String>| {
+            discourse_rs::onebox::preview::finish(h.as_deref().unwrap_or(""), &regexes)
+                .unwrap_or_else(|e| format!("refused: {}", e.0))
+        };
+        let process = |h: &Option<String>| {
+            h.as_deref()
+                .map(|h| json!(discourse_rs::onebox::preview::process_html(h)))
+                .unwrap_or(Value::Null)
+        };
+        differ("raw", json!(rendered.html));
+        differ("processed", process(&rendered.html));
+        if rendered.html_raised.is_none() {
+            differ("html", json!(finish(&rendered.html)));
+        }
+        differ("raw_placeholder", json!(rendered.placeholder));
+        differ("processed_placeholder", process(&rendered.placeholder));
+        if rendered.placeholder_raised.is_none() {
+            differ("placeholder", json!(finish(&rendered.placeholder)));
+        }
+        let mut ours_errors = rendered.errors.clone();
+        ours_errors.sort();
+        let mut rails_errors: Vec<String> = case["errors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| e.as_str().unwrap().to_string())
+            .collect();
+        rails_errors.sort();
+        if ours_errors != rails_errors {
+            differ("errors", json!(ours_errors));
+        }
+        if !case["verified_data"].is_null() {
+            differ(
+                "verified_data",
+                rendered.verified_data.clone().unwrap_or(Value::Null),
+            );
+        }
+        drop(differ);
+        let external = match engine_onebox(engine, url, &ctx, &mut fetch, &errors).await {
+            Ok(o) => json!({"onebox": o.onebox, "preview": o.preview}),
+            Err(Fail::Raised(_)) => json!("raised"),
+            Err(e) => json!(format!("{e:?}")),
+        };
+        let rails_external = if case["external"].is_string() {
+            json!("raised")
+        } else {
+            case["external"].clone()
+        };
+        if external != rails_external {
+            failures.push(format!(
+                "{url} [external]\n  ours  {external}\n  rails {rails_external}"
+            ));
+        }
+    }
+    eprintln!(
+        "{} fetched cases, {} with engines not ported:\n  {}",
+        cases.len(),
+        skipped.len(),
+        skipped.join("\n  ")
+    );
+    assert!(
+        failures.is_empty(),
+        "{} differ:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
+}
+
+/// Date._parse and Time.parse on the date strings of fixtures.json: the
+/// fields read, and the times printed (or refused where they'd depend on
+/// today's date or on Ruby's rolling over).
+#[test]
+fn parses_times_like_rails() {
+    use discourse_rs::onebox::ruby_time::{Parsed, duration, parse};
+    let rec = recording();
+    let mut failures = Vec::new();
+    let mut refused = Vec::new();
+    for case in rec["times"].as_array().unwrap() {
+        let input = case["input"].as_str().unwrap();
+        let h = discourse_rs::ruby_date::parse(input);
+        let mut ours = serde_json::Map::new();
+        for (k, v) in [
+            ("year", h.year),
+            ("mon", h.mon),
+            ("mday", h.mday),
+            ("yday", h.yday),
+            ("hour", h.hour),
+            ("min", h.min),
+            ("sec", h.sec),
+        ] {
+            if let Some(v) = v {
+                ours.insert(k.into(), json!(v));
+            }
+        }
+        if let Some(z) = &h.zone {
+            ours.insert("zone".into(), json!(z));
+        }
+        if Value::Object(ours.clone()) != case["hash"] {
+            failures.push(format!(
+                "{input:?} hash\n  ours  {}\n  rails {}",
+                Value::Object(ours),
+                case["hash"]
+            ));
+        }
+        let rails = &case["time"];
+        match parse(input) {
+            Ok(Parsed::Time(f)) => {
+                if json!([f.short(), f.long()]) != json!([rails[0], rails[1]]) {
+                    failures.push(format!("{input:?} time\n  ours  {f:?}\n  rails {rails}"));
+                }
+            }
+            Ok(Parsed::Raised) => {
+                if rails != "raised" {
+                    failures.push(format!("{input:?} time: ours raised, rails {rails}"));
+                }
+            }
+            Err(e) => refused.push(format!("{input:?} ({})", e.0)),
+        }
+        match duration(input) {
+            Ok(Parsed::Time(f)) => {
+                if json!(f.hours_minutes()) != rails[2] {
+                    failures.push(format!(
+                        "{input:?} duration\n  ours  {}\n  rails {rails}",
+                        f.hours_minutes()
+                    ));
+                }
+            }
+            Ok(Parsed::Raised) => {
+                if rails != "raised" {
+                    failures.push(format!("{input:?} duration: ours raised, rails {rails}"));
+                }
+            }
+            Err(_) => {}
+        }
+    }
+    eprintln!("refused:\n  {}", refused.join("\n  "));
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

@@ -1,0 +1,1 @@
+{"type":"video","version":"1.0","title":"Interesting content","provider_name":"ContentHost","provider_url":"https://attacker.example","width":560,"height":315,"html":"<iframe src='https://www.youtube.com.attacker.example/payload' width='560' height='315'></iframe>"}

@@ -11,6 +11,7 @@
 pub mod cleanup;
 pub mod cooked_post_processor;
 pub mod helpers;
+pub mod select;
 pub use discourse_markdown::{render, sanitizer};
 
 use std::sync::Arc;

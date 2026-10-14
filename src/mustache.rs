@@ -3,9 +3,10 @@
 //! `{{{name}}}` and `{{&name}}` as they are, dotted names, sections over
 //! a value, a list or an object, inverted sections and comments; a line
 //! holding only a section, inverted, closing or comment tag is dropped
-//! with its line break (the spec's standalone tags). Partials, lambdas
-//! and delimiter changes aren't used by those templates and aren't
-//! supported.
+//! with its line break (the spec's standalone tags), and partials
+//! (`{{> name}}`, a standalone one indented by its line's whitespace).
+//! Lambdas and delimiter changes aren't used by those templates and
+//! aren't supported.
 //!
 //! The context is JSON: `null` is Ruby's nil. As the gem has it, a
 //! section is skipped only for nil and false (an empty string renders
@@ -20,6 +21,8 @@ enum Node {
     Raw(String),
     Section(String, Vec<Node>),
     Inverted(String, Vec<Node>),
+    /// A partial and the indentation its lines get.
+    Partial(String, String),
 }
 
 /// A tag found in the template, with where its line's standalone
@@ -42,7 +45,7 @@ fn tags(template: &str) -> Vec<Tag<'_>> {
         } else {
             let k = template[start + 2..].chars().next().unwrap_or(' ');
             match k {
-                '#' | '^' | '/' | '!' | '&' => (k, start + 3, "}}"),
+                '#' | '^' | '/' | '!' | '&' | '>' => (k, start + 3, "}}"),
                 _ => (' ', start + 2, "}}"),
             }
         };
@@ -64,7 +67,7 @@ fn tags(template: &str) -> Vec<Tag<'_>> {
 /// Whether a tag stands alone on its line, and if so the span to drop:
 /// the line's leading whitespace through its line break.
 fn standalone(template: &str, tag: &Tag) -> Option<(usize, usize)> {
-    if !matches!(tag.kind, '#' | '^' | '/' | '!') {
+    if !matches!(tag.kind, '#' | '^' | '/' | '!' | '>') {
         return None;
     }
     let line_start = template[..tag.start].rfind('\n').map_or(0, |i| i + 1);
@@ -93,9 +96,23 @@ fn parse(template: &str) -> Vec<Node> {
     let mut stack: Vec<(char, String, Vec<Node>)> = vec![(' ', String::new(), Vec::new())];
     let mut at = 0;
     for tag in &all {
-        let (text_end, next) = match standalone(template, tag) {
+        let alone = standalone(template, tag);
+        let (text_end, next) = match alone {
             Some((s, e)) => (s, e),
             None => (tag.start, tag.end),
+        };
+        // A partial at the start of its line is indented by the line's
+        // leading whitespace (kept as text too when not standalone).
+        let indentation = if tag.kind == '>' {
+            let line_start = template[..tag.start].rfind('\n').map_or(0, |i| i + 1);
+            let padding = &template[line_start..tag.start];
+            if padding.chars().all(|c| c == ' ' || c == '\t') {
+                padding.to_string()
+            } else {
+                String::new()
+            }
+        } else {
+            String::new()
         };
         if text_end > at {
             stack
@@ -120,6 +137,11 @@ fn parse(template: &str) -> Vec<Node> {
                 }
             }
             '!' => {}
+            '>' => stack
+                .last_mut()
+                .unwrap()
+                .2
+                .push(Node::Partial(name, indentation)),
             '{' | '&' => stack.last_mut().unwrap().2.push(Node::Raw(name)),
             _ => stack.last_mut().unwrap().2.push(Node::Escaped(name)),
         }
@@ -162,7 +184,9 @@ fn to_s(value: Option<&Value>) -> String {
     }
 }
 
-fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String) {
+type Partials<'a> = &'a dyn Fn(&str) -> Option<&'static str>;
+
+fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String, partials: Partials) {
     for node in nodes {
         match node {
             Node::Text(t) => out.push_str(t),
@@ -172,17 +196,17 @@ fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String) {
             Node::Raw(name) => out.push_str(&to_s(lookup(stack, name))),
             Node::Section(name, children) => match lookup(stack, name) {
                 None | Some(Value::Null) | Some(Value::Bool(false)) => {}
-                Some(Value::Bool(true)) => render_nodes(children, stack, out),
+                Some(Value::Bool(true)) => render_nodes(children, stack, out, partials),
                 Some(Value::Array(items)) => {
                     for item in items {
                         stack.push(item);
-                        render_nodes(children, stack, out);
+                        render_nodes(children, stack, out, partials);
                         stack.pop();
                     }
                 }
                 Some(value) => {
                     stack.push(value);
-                    render_nodes(children, stack, out);
+                    render_nodes(children, stack, out, partials);
                     stack.pop();
                 }
             },
@@ -194,8 +218,20 @@ fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String) {
                     Some(_) => false,
                 };
                 if empty {
-                    render_nodes(children, stack, out);
+                    render_nodes(children, stack, out, partials);
                 }
+            }
+            Node::Partial(name, indentation) => {
+                let Some(text) = partials(name) else {
+                    continue;
+                };
+                // gsub(/^/, indentation): each line, not past a final break.
+                let mut indented = String::new();
+                for line in text.split_inclusive('\n') {
+                    indented.push_str(indentation);
+                    indented.push_str(line);
+                }
+                render_nodes(&parse(&indented), stack, out, partials);
             }
         }
     }
@@ -203,9 +239,14 @@ fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String) {
 
 /// `Mustache.render(template, context)`
 pub fn render(template: &str, context: &Value) -> String {
+    render_with_partials(template, context, &|_| None)
+}
+
+/// `render` with the partials the template path holds.
+pub fn render_with_partials(template: &str, context: &Value, partials: Partials) -> String {
     let nodes = parse(template);
     let mut out = String::new();
-    render_nodes(&nodes, &mut vec![context], &mut out);
+    render_nodes(&nodes, &mut vec![context], &mut out, partials);
     out
 }
 
@@ -258,6 +299,15 @@ mod tests {
         assert_eq!(
             render("a {{#s}}b{{/s}} c\n", &json!({"s": true})),
             "a b c\n"
+        );
+    }
+
+    #[test]
+    fn indents_standalone_partials() {
+        let partials = |name: &str| (name == "p").then_some("{{#r}}\n  <i>{{r}}</i>\n{{/r}}\n");
+        assert_eq!(
+            render_with_partials("<p>\n  {{> p}}\n</p>\n", &json!({"r": 4.5}), &partials),
+            "<p>\n    <i>4.5</i>\n</p>\n"
         );
     }
 }
