@@ -1,0 +1,26 @@
+{
+  "name": "notification_schedules_disabled",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T03:31:53.344502",
+  "transaction_started_at": "2026-10-14T03:31:51.776895",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_notification_schedules (user_id, enabled, day_0_start_time, day_0_end_time, day_1_start_time, day_1_end_time, day_2_start_time, day_2_end_time, day_3_start_time, day_3_end_time, day_4_start_time, day_4_end_time, day_5_start_time, day_5_end_time, day_6_start_time, day_6_end_time) VALUES (3, false, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020)"
+  ],
+  "enqueue": [
+    [
+      "process_user_notification_schedules",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "6338e3904b706bb49eabdd023f0be174738a4aba1d449dff30a25f943a15b9ec",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

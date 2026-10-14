@@ -1,14 +1,15 @@
 //! `UserUpdater#update` as UsersController#update calls it: the user's
 //! options, profile (bio, location, website), name and locale, category
-//! tracking, muted users and allowed PM senders, with the model callbacks
-//! that follow (the bio cooked, the search index, the name change logged
-//! and the display name job).
+//! tracking, muted users and allowed PM senders, the notification
+//! schedule, with the model callbacks that follow (the bio cooked, the
+//! search index, the name change logged, the display name job and the
+//! schedule's do not disturb timings).
 //!
 //! Refused: what failing validations would answer (the errors JSON), user
 //! fields and custom fields, external ids, profile and card backgrounds,
-//! the notification schedule, titles, primary and flair groups, date of
-//! birth, tag tracking, sidebar links, user status, themes and the array
-//! options, uploads in the bio, watched words, and gravatar downloads.
+//! titles, primary and flair groups, date of birth, tag tracking, sidebar
+//! links, user status, themes and the array options, uploads in the bio,
+//! watched words, and gravatar downloads.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -218,10 +219,6 @@ const REFUSED: &[(&str, &str)] = &[
         "updating the profile background",
     ),
     ("card_background_upload_url", "updating the card background"),
-    (
-        "user_notification_schedule",
-        "updating the notification schedule",
-    ),
     ("date_of_birth", "updating the date of birth"),
     ("sidebar_category_ids", "updating sidebar category links"),
     ("sidebar_tag_names", "updating sidebar tag links"),
@@ -274,14 +271,14 @@ fn valid_url(website: &str) -> bool {
     http_host(website).is_some_and(|h| h.contains('.'))
 }
 
-/// `UserUpdater#update(attributes)`
+/// `UserUpdater#update(attributes)`: whether it saved.
 pub async fn update(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     actor: &Guardian,
     user: &Target,
     attrs: &Map<String, Value>,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     let s = ctx.settings;
     for (key, what) in REFUSED {
         if attrs.contains_key(*key) {
@@ -363,6 +360,26 @@ pub async fn update(
     if let Some(Some(threshold)) = options {
         tracked_topics_updater(&mut *conn, user.id, threshold).await?;
     }
+
+    // user_notification_schedule.save: the user's row or a new one,
+    // assigned the permitted params. Invalid, it fails the update there:
+    // what was written before stays (no rollback), the profile and user
+    // aren't saved.
+    let schedule = match attrs.get("user_notification_schedule") {
+        Some(Value::Object(params)) => {
+            let before = crate::notification_schedule::Schedule::find(&mut *conn, user.id).await?;
+            let mut schedule = before
+                .clone()
+                .unwrap_or_else(crate::notification_schedule::Schedule::new_record);
+            schedule.assign(params)?;
+            if !schedule.valid() {
+                return Ok(false);
+            }
+            schedule.save(&mut *conn, user.id, before.as_ref()).await?;
+            Some(schedule)
+        }
+        _ => None,
+    };
     update_profile(&mut *conn, ctx, user, &attrs).await?;
 
     // user.save
@@ -415,7 +432,20 @@ pub async fn update(
         .execute(&mut *conn)
         .await?;
     }
-    Ok(())
+
+    // Once saved: an enabled schedule's timings rebuilt, a disabled one's
+    // scheduled timings gone.
+    if let Some(schedule) = schedule {
+        if schedule.enabled == Some(true) {
+            crate::notification_schedule::create_do_not_disturb_timings(
+                &mut *conn, ctx.bus, user.id, &schedule, true,
+            )
+            .await?;
+        } else {
+            crate::notification_schedule::destroy_scheduled_timings(&mut *conn, user.id).await?;
+        }
+    }
+    Ok(true)
 }
 
 /// The name's validations: no longer than 255, present when the site

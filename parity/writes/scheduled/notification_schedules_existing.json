@@ -1,0 +1,57 @@
+{
+  "name": "notification_schedules_existing",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T03:31:56.054952",
+  "transaction_started_at": "2026-10-14T03:31:53.79456",
+  "responses": [],
+  "changes": {
+    "do_not_disturb_timings": {
+      "inserted": [
+        {
+          "id": 2,
+          "ends_at": "2026-10-14T07:59:00",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-14T00:00:00"
+        },
+        {
+          "id": 3,
+          "ends_at": "2026-10-16T07:59:00",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-15T17:00:00"
+        },
+        {
+          "id": 4,
+          "ends_at": "2026-10-16T23:59:59.999999",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-16T17:00:00"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "do_not_disturb_timings": 2
+  },
+  "setup": [
+    "INSERT INTO user_notification_schedules (user_id, enabled, day_0_start_time, day_0_end_time, day_1_start_time, day_1_end_time, day_2_start_time, day_2_end_time, day_3_start_time, day_3_end_time, day_4_start_time, day_4_end_time, day_5_start_time, day_5_end_time, day_6_start_time, day_6_end_time) VALUES (3, true, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, date_trunc('day', now()::timestamp) + interval '17 hours', date_trunc('day', now()::timestamp) + interval '1 day 7 hours 59 minutes', true)"
+  ],
+  "enqueue": [
+    [
+      "process_user_notification_schedules",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "7d5daf93fdb8a1bed3d50af3216193164866084278a067ce9bac5886e1c979c7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

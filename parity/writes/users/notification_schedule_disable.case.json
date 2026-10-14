@@ -1,0 +1,34 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_notification_schedules (user_id, enabled, day_0_start_time, day_0_end_time, day_1_start_time, day_1_end_time, day_2_start_time, day_2_end_time, day_3_start_time, day_3_end_time, day_4_start_time, day_4_end_time, day_5_start_time, day_5_end_time, day_6_start_time, day_6_end_time) VALUES (3, true, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020, 480, 1020)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, now() - interval '1 hour', now() + interval '1 hour', true)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, now() + interval '5 hours', now() + interval '8 hours', true)",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, now() - interval '1 hour', now() + interval '2 hours', false)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "user_notification_schedule": {
+          "enabled": false,
+          "day_0_start_time": 480,
+          "day_0_end_time": 1020,
+          "day_1_start_time": 480,
+          "day_1_end_time": 1020,
+          "day_2_start_time": 480,
+          "day_2_end_time": 1020,
+          "day_3_start_time": 480,
+          "day_3_end_time": 1020,
+          "day_4_start_time": 480,
+          "day_4_end_time": 1020,
+          "day_5_start_time": 480,
+          "day_5_end_time": 1020,
+          "day_6_start_time": 480,
+          "day_6_end_time": 1020
+        }
+      }
+    }
+  ]
+}

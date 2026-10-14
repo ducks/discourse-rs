@@ -122,7 +122,21 @@ pub async fn update(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    user_updater::update(&mut tx, &ctx, &guardian, &target, &attrs).await?;
+    if !user_updater::update(&mut tx, &ctx, &guardian, &target, &attrs).await? {
+        // json_result's render_json_error(user): no errors on the user,
+        // its profile or options, so the generic one. What the updater
+        // wrote before failing stays.
+        tx.commit().await?;
+        let message = state
+            .i18n
+            .t("js.generic_error")
+            .unwrap_or("Sorry, an error has occurred.");
+        return Ok((
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            axum::Json(serde_json::json!({ "errors": [message] })),
+        )
+            .into_response());
+    }
 
     // json_result(user, serializer: UserSerializer)
     let Some(user) = User::find_by_id(&mut tx, target.id).await? else {
