@@ -352,6 +352,15 @@
     state = opts;
     var s = state;
     setMode(opts.mode);
+    // The mobile view's icon discard: cancelIcon.
+    var discardIcon = control.querySelector(".discard-button.no-text use");
+    if (discardIcon) {
+      discardIcon.setAttribute("href", opts.mode === "edit" ? "#xmark" : "#trash-can");
+      discardIcon.parentNode.setAttribute(
+        "class",
+        "fa d-icon d-icon-" + (opts.mode === "edit" ? "xmark" : "trash-can") + " svg-icon fa-width-auto svg-string"
+      );
+    }
     if (opts.mode === "reply" && opts.replyToUsername) {
       actionButton.querySelector(".d-button-label").textContent =
         opts.replyToUsername;
@@ -843,6 +852,19 @@
       togglePreview();
     } else if (event.target.closest(".toggle-fullscreen")) {
       toggleFullscreen();
+    } else if (event.target.closest(".toggle-toolbar")) {
+      // ComposerEditor#toggleToolbar: the mobile view's toolbar.
+      var wmd = control.querySelector(".wmd-controls");
+      var visible = !wmd.classList.contains("toolbar-visible");
+      wmd.classList.toggle("toolbar-visible", visible);
+      event.target.closest(".toggle-toolbar").title = visible
+        ? data.labelHideToolbar
+        : data.labelShowToolbar;
+    } else if (event.target.closest("#mobile-file-upload")) {
+      var picker = control.querySelector("#file-uploader");
+      if (picker) {
+        picker.click();
+      }
     } else if (event.target.closest(".toggle-minimize")) {
       minimize();
     } else if (event.target.closest(".toggle-save-and-close")) {
@@ -1413,6 +1435,58 @@
       closeDraftsMenu();
     }
   });
+
+  // DVirtualHeight, on a phone or an iPad: --composer-vh follows the
+  // visual viewport, and html.keyboard-visible says the on-screen keyboard
+  // took more than 150px of it.
+  if (window.visualViewport && (root.classList.contains("mobile-view") || root.classList.contains("ipados-device"))) {
+    var previousHeight = null;
+    var viewportTimer = null;
+    var onViewportResize = function () {
+      // isZoomed
+      if (window.visualViewport.scale > 1) {
+        return;
+      }
+      var height = Math.round(window.visualViewport.height);
+      if (previousHeight && Math.abs(previousHeight - height) <= 1) {
+        return;
+      }
+      previousHeight = height;
+      root.style.setProperty("--composer-vh", height / 100 + "px");
+      root.classList.toggle("keyboard-visible", window.innerHeight - window.visualViewport.height > 150);
+    };
+    onViewportResize();
+    window.visualViewport.addEventListener("resize", function () {
+      clearTimeout(viewportTimer);
+      viewportTimer = setTimeout(onViewportResize, 50);
+    });
+  }
+
+  // setupComposerPosition on a phone or an iPad: the page scrolled so the
+  // composer's top went above the window comes back (correctScrollPosition),
+  // and a drag in an editor with nothing to scroll doesn't scroll the page.
+  if (root.classList.contains("mobile-device") || root.classList.contains("ipados-device")) {
+    window.addEventListener("scroll", function () {
+      if (!control.classList.contains("open")) {
+        return;
+      }
+      setTimeout(function () {
+        var rect = control.getBoundingClientRect();
+        if (rect.top < -1) {
+          window.scrollTo({ top: window.scrollY + rect.top, behavior: "instant" });
+        }
+      }, 150);
+    });
+    textarea.addEventListener("touchmove", function (event) {
+      if (event.touches.length > 1) {
+        return;
+      }
+      if (textarea.scrollHeight <= textarea.clientHeight && window.getSelection().toString() === "") {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, { passive: false });
+  }
 
   window.composer = { open: open };
 })();

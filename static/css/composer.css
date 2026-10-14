@@ -718,6 +718,11 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
   gap: 8px;
   padding-right: 8px;
 }
+/* compose.scss:161 */
+#reply-control.draft .composer-controls .toggle-toolbar,
+#reply-control.saving .composer-controls .toggle-toolbar {
+  display: none;
+}
 /* compose.scss:165 */
 #reply-control.draft .composer-controls .d-icon,
 #reply-control.saving .composer-controls .d-icon {

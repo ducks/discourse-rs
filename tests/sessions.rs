@@ -2262,6 +2262,32 @@ async fn the_composer_uploads_and_resolves_short_urls() {
     assert!(!page.contains("toolbar__button upload"));
 }
 
+/// The mobile view's composer (ComposerToggles, composer-container): the
+/// toolbar toggle instead of the preview and fullscreen ones, the icon
+/// discard and the upload button.
+#[tokio::test]
+async fn the_mobile_composer_has_its_own_controls() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    client.login("user1", "password").await;
+    let desktop = client.get("/latest").await.body;
+    assert!(desktop.contains("toggle-fullscreen"));
+    assert!(!desktop.contains("toggle-toolbar"));
+    client.cookies.push(("mobile_view".into(), "1".into()));
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(
+        r#"<button class="btn no-text btn-icon btn-transparent toggle-toolbar btn-small" title="Hide composer toolbar" type="button">"#
+    ), "{page}");
+    assert!(!page.contains("toggle-fullscreen"));
+    assert!(!page.contains("toggle-preview"));
+    assert!(page.contains(
+        r#"<button class="btn no-text btn-icon discard-button btn-transparent" title="Discard" type="button"><svg class="fa d-icon d-icon-trash-can"#
+    ));
+    assert!(page.contains(
+        r#"<a aria-label="Upload" class="btn btn-default no-text mobile-file-upload" id="mobile-file-upload">"#
+    ));
+}
+
 #[tokio::test]
 async fn the_composer_stays_across_pages() {
     let db = TestDb::new().await;

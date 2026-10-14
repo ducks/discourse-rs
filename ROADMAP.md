@@ -427,8 +427,14 @@ with the viewport, guessing from the user agent without it
     (refused), the bookmarks tab with a chat message bookmark (refused by
     the bookmarks list), the do not disturb and user status modals,
     show_user_menu_avatars (refused)
-96. `feat/mobile-composer` L: the mobile composer (fullscreen, its
-    toolbar and preview toggle, the keyboard-visible states)
+96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
+    (the toolbar toggle in place of the preview and fullscreen ones), its
+    icon discard (trash can, an xmark for an edit) and upload button,
+    DVirtualHeight's --composer-vh and keyboard-visible, the composer
+    position fixes on phones. Left, on both views: the tags chooser
+    (mini-tag-chooser and tags/filter/search), the composer actions
+    menu, the rich editor (ProseMirror, the reference's default) and its
+    toggle, the toolbar's heading, list and options menus and emoji
 97. `feat/mobile-user-pages` M: profile, activity, messages and their
     nav as a menu, the users directory
 98. `feat/mobile-menus` M: the remaining menus as bottom sheets
