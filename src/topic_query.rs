@@ -1045,6 +1045,10 @@ pub async fn fancy_title(
         title,
         crate::posting::text::EmojiEscape::from_settings(settings)?,
     )?;
+    // `if !new_record? && !Discourse.readonly_mode?`
+    if crate::readonly::mode(&mut *conn).await?.site_readonly() {
+        return Ok(fancy);
+    }
     sqlx::query("UPDATE topics SET fancy_title = $2 WHERE id = $1")
         .bind(topic_id)
         .bind(&fancy)

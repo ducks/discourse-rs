@@ -75,6 +75,8 @@ pub struct AccountUser {
     pub username: String,
     pub staged: bool,
     pub active: bool,
+    /// `staff?`: admin or moderator.
+    pub staff: bool,
     pub email: Option<String>,
 }
 
@@ -84,7 +86,7 @@ pub async fn find_by_username_or_email(
     conn: &mut PgConnection,
     login: &str,
 ) -> Result<Option<AccountUser>, AppError> {
-    let select = "SELECT u.id, u.username, u.staged, u.active, \
+    let select = "SELECT u.id, u.username, u.staged, u.active, (u.admin OR u.moderator) AS staff, \
                   (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email \
                   FROM users u";
     let real = "u.id > 0 AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = u.id)";

@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/backups/readonly.json", "params": {"enable": "false"}},
+    {"method": "PUT", "path": "/admin/backups/readonly", "params": {"enable": "anything"}}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "readonly": ["readonly_mode:user"],
+  "requests": [
+    {"method": "PUT", "path": "/admin/backups/readonly.json", "params": {"enable": "false"}}
+  ]
+}

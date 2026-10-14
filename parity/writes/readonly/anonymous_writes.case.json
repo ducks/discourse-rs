@@ -1,0 +1,10 @@
+{
+  "readonly": ["readonly_mode:user"],
+  "keep_headers": ["Discourse-Readonly"],
+  "requests": [
+    {"method": "POST", "path": "/posts.json", "params": {"raw": "An anonymous reply", "topic_id": 35}},
+    {"method": "POST", "path": "/session.json", "params": {"login": "user1", "password": "password"}},
+    {"method": "POST", "path": "/session/forgot_password.json", "params": {"login": "user1@example.com"}},
+    {"method": "POST", "path": "/u.json", "params": {"name": "New Person", "email": "new.person@example.com", "username": "newperson", "password": "a long password 1234"}}
+  ]
+}

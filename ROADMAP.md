@@ -249,6 +249,18 @@ Ordered by how many refusals each lifts (cooking and posting first),
 then by what running a forum needs (milestone 6). Briefs:
 `spec-<brief>-2026-10-14.md`.
 
+79c. ~~`feat/readonly-mode`~~ (done) M: the read-only keys (user,
+    staff-writes-only, restore, Postgres failover and forced) and
+    `pg_force_readonly_mode`; every write route refused with the 503
+    (JSON or the no_ember page) after the CSRF check and before the login
+    checks, by the admin routes' constraints first, staff passing in
+    staff-writes-only mode and the logins refusing others themselves;
+    `Discourse-Readonly` on the rest; `PUT /admin/backups/readonly` with
+    its staff log and `/site/read-only`; the pages' notice; no session
+    refresh, cleared notifications, fancy title write, search log or
+    scheduled job while read only, no last seen in failover; SQLSTATE
+    25006 answered as read only. Left: the client's login, signup and
+    logout dialogs and the notice following `/site/read-only` live
 80. `feat/watched-words` L: the four cooking actions (censor, replace,
     link, tag) and the posting ones (block, require approval, silence,
     flag), the admin CRUD and its regex/case rules,

@@ -1,0 +1,10 @@
+{
+  "user": "user2",
+  "setup": ["UPDATE users SET moderator = TRUE WHERE id = 4"],
+  "readonly": ["readonly_mode:user"],
+  "requests": [
+    {"method": "PUT", "path": "/admin/backups/readonly.json", "params": {"enable": "false"}},
+    {"method": "PUT", "path": "/admin/site_settings/title.json", "params": {"title": "Changed"}},
+    {"method": "PUT", "path": "/admin/users/3/silence.json", "params": {"reason": "spam"}}
+  ]
+}

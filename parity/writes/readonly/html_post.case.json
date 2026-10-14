@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "readonly": ["readonly_mode:user"],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks",
+      "params": {"bookmarkable_id": 37, "bookmarkable_type": "Post"},
+      "headers": {"Accept": "text/html", "X-Requested-With": ""}
+    }
+  ],
+  "fragment": ["<p>The site is in read only mode", "</p>"]
+}

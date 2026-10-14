@@ -171,6 +171,9 @@ pub struct Chrome {
     pub body_classes: String,
     /// `canSignUp`: the header shows a Sign Up button.
     pub can_signup: bool,
+    /// GlobalNotice above the page's content: the read-only notice while
+    /// the site is read only, empty otherwise.
+    pub global_notice: String,
     /// The sidebar's markup, empty when the page has none
     /// (ApplicationController#sidebarEnabled).
     pub sidebar: String,
@@ -431,8 +434,7 @@ pub async fn sidebar_inputs(
 impl Site {
     /// Fills the page chrome for the request's `guardian`. Every enabled
     /// upcoming change counts as enabled for the viewer; changes enabled
-    /// for some groups only are not told apart yet, and read-only mode is
-    /// not ported.
+    /// for some groups only are not told apart yet.
     pub async fn load_chrome(
         &mut self,
         conn: &mut PgConnection,
@@ -445,6 +447,10 @@ impl Site {
             config: &state.config,
             settings,
         };
+        // GlobalNotice's read-only notice (isReadOnly, isStaffWritesOnly).
+        let mode = crate::readonly::mode(&mut *conn).await?;
+        self.chrome.global_notice =
+            crate::readonly::notice(&state.i18n, mode, guardian.user().is_some());
         self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
         self.chrome.favicon_url = crate::site_icons::site_url(&mut *conn, &urls, "favicon").await?;
         self.chrome.favicon_type = crate::site_icons::mime_type(&self.chrome.favicon_url);

@@ -6,6 +6,7 @@ mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
 mod archive_message;
+mod backups;
 mod badges;
 mod bookmark_writes;
 mod bookmarks;
@@ -35,6 +36,7 @@ mod robots;
 mod search;
 mod uploads;
 pub(crate) use search::{invalid_access, invalid_access_at};
+pub(crate) use session::{csrf_ok, viewer_state};
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod category_notifications;
@@ -689,6 +691,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
         )
+        .route("/admin/backups/readonly", put(backups::readonly))
+        .route("/admin/backups/readonly.json", put(backups::readonly))
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
             "/admin/email/preview-digest",
@@ -916,6 +920,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             login_required::gate,
+        ))
+        // block_if_readonly_mode runs before the login checks.
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::readonly::gate,
         ))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),

@@ -81,6 +81,7 @@ pub mod pretty_text;
 pub mod promotion;
 pub mod rate_limiter;
 pub mod read_tracking;
+pub mod readonly;
 pub mod remote_ip;
 pub mod request_tracker;
 pub mod retrieve_title;
@@ -255,8 +256,28 @@ impl AppError {
     }
 }
 
+impl AppError {
+    /// Discourse::ReadOnly raised, or Postgres refusing a write in a read
+    /// only transaction (the `PG::ReadOnlySqlTransaction` rescue).
+    fn read_only(&self) -> bool {
+        self.0.downcast_ref::<readonly::ReadOnly>().is_some()
+            || self
+                .0
+                .downcast_ref::<sqlx::Error>()
+                .and_then(|e| e.as_database_error())
+                .and_then(|e| e.code())
+                .is_some_and(|code| code == "25006")
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        // The read-only gate renders the 503 for the request's format.
+        if self.read_only() {
+            let mut response = StatusCode::SERVICE_UNAVAILABLE.into_response();
+            response.extensions_mut().insert(readonly::Raised);
+            return response;
+        }
         tracing::error!(error = %self.0, "request failed");
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }

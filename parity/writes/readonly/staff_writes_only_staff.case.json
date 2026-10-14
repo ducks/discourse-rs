@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "readonly": ["readonly_mode:staff_writes_only"],
+  "keep_headers": ["Discourse-Readonly"],
+  "requests": [
+    {"method": "POST", "path": "/bookmarks.json", "params": {"bookmarkable_id": 37, "bookmarkable_type": "Post"}},
+    {"method": "GET", "path": "/drafts.json"}
+  ]
+}

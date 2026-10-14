@@ -193,6 +193,7 @@ pub async fn page(
         .to_string();
     let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
     let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(
+        urls.settings.emojis(),
         &title,
         &description,
         image,

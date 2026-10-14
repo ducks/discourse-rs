@@ -1,0 +1,9 @@
+{
+  "readonly": ["readonly_mode:staff_writes_only"],
+  "requests": [
+    {"method": "POST", "path": "/session.json", "params": {"login": "user1", "password": "password"}},
+    {"method": "POST", "path": "/session/forgot_password.json", "params": {"login": "user1@example.com"}},
+    {"method": "POST", "path": "/session.json", "params": {"login": "admin", "password": "password"}}
+  ],
+  "run_jobs": ["suspicious_login"]
+}
