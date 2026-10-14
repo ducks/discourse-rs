@@ -287,3 +287,862 @@
 .discourse-no-touch .sidebar-hamburger-dropdown .sidebar-section-wrapper .sidebar-section-header-wrapper:focus-within {
   background: rgba(0,0,0,0);
 }
+
+/*
+ * The rest of menu-panel.scss: the user menu's tabs, lists and profile tab,
+ * the search menu's results, the quick access panels. Extracted from the
+ * reference's compiled common.css by source map (the rules that don't only
+ * hold below 40rem, which mobile.css carries), each tagged with its SCSS
+ * file and line.
+ */
+
+/* menu-panel.scss:3 */
+:root {
+  --d-unread-notification-background: light-dark(var(--tertiary-25), var(--tertiary-200));
+  --active-shadow: 0 0 0 0.5rem var(--d-sidebar-active-background);
+  --hover-shadow: 0 0 0 0.5rem var(--d-sidebar-highlight-background);
+}
+
+/* menu-panel.scss:72 */
+.menu-panel .widget-link,
+.menu-panel .categories-link {
+  padding: .25em .5em;
+  display: block;
+  color: var(--primary);
+}
+
+/* menu-panel.scss:78 */
+.menu-panel .widget-link:hover,
+.menu-panel .widget-link:focus,
+.menu-panel .categories-link:hover,
+.menu-panel .categories-link:focus {
+  background-color: var(--d-hover);
+  outline: none;
+}
+
+/* menu-panel.scss:84 */
+.menu-panel .widget-link .d-icon,
+.menu-panel .categories-link .d-icon {
+  color: var(--primary-medium);
+}
+
+/* menu-panel.scss:88 */
+.menu-panel .widget-link .new,
+.menu-panel .categories-link .new {
+  font-size: var(--font-down-1);
+  margin-left: .5em;
+  color: var(--primary-med-or-secondary-med);
+}
+
+/* menu-panel.scss:94 */
+.menu-panel .widget-link.show-help,
+.menu-panel .widget-link.filter,
+.menu-panel .categories-link.show-help,
+.menu-panel .categories-link.filter {
+  color: var(--tertiary);
+}
+
+/* menu-panel.scss:100 */
+.menu-panel .search-link,
+.menu-panel .categories-link {
+  padding: .25em .5em;
+  display: block;
+  color: var(--primary);
+}
+
+/* menu-panel.scss:106 */
+.menu-panel .search-link:hover,
+.menu-panel .search-link:focus,
+.menu-panel .categories-link:hover,
+.menu-panel .categories-link:focus {
+  background-color: var(--d-hover);
+  outline: none;
+}
+
+/* menu-panel.scss:112 */
+.menu-panel .search-link .d-icon,
+.menu-panel .categories-link .d-icon {
+  color: var(--primary-medium);
+}
+
+/* menu-panel.scss:116 */
+.menu-panel .search-link .new,
+.menu-panel .categories-link .new {
+  font-size: var(--font-down-1);
+  margin-left: .5em;
+  color: var(--primary-med-or-secondary-med);
+}
+
+/* menu-panel.scss:122 */
+.menu-panel .search-link.show-help,
+.menu-panel .search-link.filter,
+.menu-panel .categories-link.show-help,
+.menu-panel .categories-link.filter {
+  color: var(--tertiary);
+}
+
+/* menu-panel.scss:128 */
+.menu-panel li.category-link {
+  float: left;
+  background-color: rgba(0,0,0,0);
+  display: inline-flex;
+  align-items: center;
+  padding: .25em .5em;
+  width: 50%;
+  box-sizing: border-box;
+}
+
+/* menu-panel.scss:137 */
+.menu-panel li.category-link a {
+  display: inline-flex;
+}
+
+/* menu-panel.scss:140 */
+.menu-panel li.category-link a:hover,
+.menu-panel li.category-link a:focus {
+  background: rgba(0,0,0,0);
+}
+
+/* menu-panel.scss:144 */
+.menu-panel li.category-link a:hover .category-name,
+.menu-panel li.category-link a:focus .category-name {
+  color: var(--primary);
+}
+
+/* menu-panel.scss:150 */
+.menu-panel li.category-link .badge-notification {
+  color: var(--primary-med-or-secondary-med);
+  background-color: rgba(0,0,0,0);
+  display: inline;
+  padding: 0;
+  font-size: var(--font-down-1);
+  line-height: var(--line-height-large);
+}
+
+/* menu-panel.scss:161 */
+.menu-panel b.topics-count {
+  color: var(--primary-med-or-secondary-med);
+  font-weight: normal;
+  font-size: var(--font-down-1);
+}
+
+/* menu-panel.scss:167 */
+.menu-panel .discourse-tags {
+  font-size: var(--font-down-1);
+}
+
+/* menu-panel.scss:171 */
+.menu-panel .sidebar-panel-header__row {
+  width: 100%;
+}
+
+/* menu-panel.scss:176 */
+.menu-panel .sidebar-sections__back-to-forum {
+  color: var(--d-sidebar-link-color);
+  display: flex;
+  align-items: center;
+}
+
+/* menu-panel.scss:181 */
+.menu-panel .sidebar-sections__back-to-forum svg {
+  margin-right: var(--d-sidebar-section-link-prefix-margin-right);
+  height: .75em;
+  width: .75em;
+  color: var(--d-sidebar-link-icon-color);
+}
+
+/* menu-panel.scss:195 */
+.menu-panel .panel-header {
+  position: absolute;
+  right: 20px;
+}
+
+/* menu-panel.scss:245 */
+.menu-panel .sidebar-filter {
+  width: 100%;
+}
+
+/* menu-panel.scss:249 */
+.menu-panel .sidebar-search {
+  width: 100%;
+}
+
+/* menu-panel.scss:253 */
+.menu-panel .empty-state {
+  padding: .5em 1em;
+}
+
+/* menu-panel.scss:258 */
+.search-menu .menu-panel {
+  width: 500px;
+}
+
+/* menu-panel.scss:262 */
+.user-menu.revamped {
+  --user-menu-border-width: 1px;
+  right: 0;
+  padding: 0;
+  width: unset;
+}
+
+/* menu-panel.scss:272 */
+.user-menu.revamped .panel-body-bottom {
+  flex: 0;
+}
+
+/* menu-panel.scss:276 */
+.user-menu.revamped .menu-tabs-container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* menu-panel.scss:283 */
+.user-menu.revamped .tabs-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* menu-panel.scss:287 */
+.user-menu.revamped .tabs-list .btn,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button {
+  display: flex;
+  position: relative;
+  border-radius: 0;
+  padding: .375em;
+}
+
+/* menu-panel.scss:287 */
+@media screen and (height <= 400px) {
+  .user-menu.revamped .tabs-list .btn,
+  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add,
+  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button,
+  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button {
+    font-size: var(--font-down-1);
+    padding: .125em .375em;
+  }
+}
+
+/* menu-panel.scss:303 */
+.user-menu.revamped .tabs-list .btn .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button .d-icon {
+  border-radius: var(--d-border-radius);
+  color: var(--primary-medium);
+  padding: .5em;
+}
+
+/* menu-panel.scss:309 */
+.user-menu.revamped .tabs-list .btn .badge-notification,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add .badge-notification,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add .badge-notification,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button .badge-notification,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button .badge-notification {
+  background-color: var(--tertiary-med-or-tertiary);
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  font-size: var(--font-down-3);
+}
+
+/* menu-panel.scss:309 */
+@media screen and (height <= 400px) {
+  .user-menu.revamped .tabs-list .btn .badge-notification,
+  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add .badge-notification,
+  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add .badge-notification,
+  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button .badge-notification,
+  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button .badge-notification {
+    right: 3px;
+    top: 0;
+  }
+}
+
+/* menu-panel.scss:324 */
+.user-menu.revamped .tabs-list .btn.active .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .active.json-editor-btn-add .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .active.json-editor-btn-add .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button.active .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button.active .d-icon {
+  color: var(--d-sidebar-active-color);
+  background-color: var(--d-sidebar-active-background);
+}
+
+/* menu-panel.scss:330 */
+.user-menu.revamped .tabs-list .btn:not(.active):hover,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:not(.active):hover,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add:not(.active):hover,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button:not(.active):hover,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button:not(.active):hover,
+.user-menu.revamped .tabs-list .btn:not(.active):focus-visible,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:not(.active):focus-visible,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add:not(.active):focus-visible,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button:not(.active):focus-visible,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button:not(.active):focus-visible {
+  background: none;
+}
+
+/* menu-panel.scss:334 */
+.user-menu.revamped .tabs-list .btn:not(.active):hover .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:not(.active):hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add:not(.active):hover .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button:not(.active):hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button:not(.active):hover .d-icon,
+.user-menu.revamped .tabs-list .btn:not(.active):focus-visible .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:not(.active):focus-visible .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add:not(.active):focus-visible .d-icon,
+.user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button:not(.active):focus-visible .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button:not(.active):focus-visible .d-icon {
+  background-color: var(--d-hover);
+}
+
+/* menu-panel.scss:341 */
+.user-menu.revamped .bottom-tabs {
+  border-top: var(--user-menu-border-width) solid var(--content-border-color);
+}
+
+/* menu-panel.scss:345 */
+.user-menu.revamped .panel-body-contents {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+/* menu-panel.scss:356 */
+.user-menu.revamped .quick-access-panel {
+  width: 320px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-right: var(--user-menu-border-width) solid var(--content-border-color);
+  min-width: 0;
+}
+
+/* menu-panel.scss:365 */
+.user-menu.revamped #quick-access-profile {
+  display: inline;
+}
+
+/* menu-panel.scss:368 */
+.user-menu.revamped #quick-access-profile ul {
+  flex-wrap: nowrap;
+  height: 100%;
+  align-items: center;
+  overflow-y: auto;
+}
+
+/* menu-panel.scss:375 */
+.user-menu.revamped #quick-access-profile li {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 3.25em;
+}
+
+/* menu-panel.scss:381 */
+.user-menu.revamped #quick-access-profile li>* {
+  align-items: center;
+  margin: 0;
+  padding: var(--list-item-padding);
+  flex: 1 1 auto;
+}
+
+/* menu-panel.scss:389 */
+.user-menu.revamped #quick-access-profile li img.emoji {
+  height: 1em;
+  width: 1em;
+  padding-top: .2em;
+  margin-right: .5em;
+}
+
+/* menu-panel.scss:396 */
+.user-menu.revamped #quick-access-profile li .d-icon {
+  padding-top: 0;
+}
+
+/* menu-panel.scss:400 */
+.user-menu.revamped #quick-access-profile li.enabled .d-icon {
+  color: var(--tertiary);
+}
+
+/* menu-panel.scss:406 */
+.user-menu.revamped #quick-access-profile .set-user-status .emoji {
+  padding-top: 0;
+}
+
+/* menu-panel.scss:411 */
+.user-menu.revamped #quick-access-profile .profile-tab-btn {
+  justify-content: unset;
+  line-height: var(--line-height-large);
+  width: 100%;
+}
+
+/* menu-panel.scss:416 */
+.user-menu.revamped #quick-access-profile .profile-tab-btn .relative-date {
+  font-size: var(--font-down-3);
+  color: var(--primary-medium);
+}
+
+/* menu-panel.scss:421 */
+.user-menu.revamped #quick-access-profile .profile-tab-btn .d-icon {
+  padding: 0;
+}
+
+/* menu-panel.scss:427 */
+.user-menu.revamped #quick-access-profile .do-not-disturb .d-icon-toggle-on {
+  color: var(--tertiary);
+}
+
+/* menu-panel.scss:432 */
+.user-menu.revamped #quick-access-profile hr {
+  border-top: var(--user-menu-border-width) solid var(--content-border-color);
+  width: 100%;
+}
+
+/* menu-panel.scss:525 */
+.menu-links.columned li {
+  width: 50%;
+  float: left;
+}
+
+/* menu-panel.scss:532 */
+.user-menu .quick-access-panel,
+.user-notifications-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* menu-panel.scss:543 */
+.user-menu .quick-access-panel:focus,
+.user-notifications-list:focus {
+  outline: none;
+}
+
+/* menu-panel.scss:547 */
+.user-menu .quick-access-panel .double-user,
+.user-menu .quick-access-panel .multi-user,
+.user-notifications-list .double-user,
+.user-notifications-list .multi-user {
+  white-space: unset;
+}
+
+/* menu-panel.scss:552 */
+.user-menu .quick-access-panel .item-label,
+.user-notifications-list .item-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--primary);
+}
+
+/* menu-panel.scss:559 */
+.user-menu .quick-access-panel h3,
+.user-notifications-list h3 {
+  padding: 0 .4em;
+  font-weight: bold;
+  margin: .5em 0;
+}
+
+/* menu-panel.scss:565 */
+.user-menu .quick-access-panel ul,
+.user-notifications-list ul {
+  display: flex;
+  flex-flow: column wrap;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+/* menu-panel.scss:573 */
+.user-menu .quick-access-panel .user-menu-button-profile .item-label,
+.user-notifications-list .user-menu-button-profile .item-label {
+  font-weight: normal;
+}
+
+/* menu-panel.scss:577 */
+.user-menu .quick-access-panel .user-menu-button-profile .d-icon,
+.user-notifications-list .user-menu-button-profile .d-icon {
+  color: var(--primary-500);
+}
+
+/* menu-panel.scss:582 */
+.user-menu .quick-access-panel li,
+.user-notifications-list li {
+  box-sizing: border-box;
+  list-style-type: none;
+}
+
+/* menu-panel.scss:586 */
+.user-menu .quick-access-panel li.unread,
+.user-menu .quick-access-panel li.pending,
+.user-notifications-list li.unread,
+.user-notifications-list li.pending {
+  background-color: var(--d-unread-notification-background);
+}
+
+/* menu-panel.scss:591 */
+.user-menu .quick-access-panel li:hover,
+.user-notifications-list li:hover {
+  background-color: var(--d-hover);
+  outline: none;
+}
+
+/* menu-panel.scss:596 */
+.user-menu .quick-access-panel li:focus-within,
+.user-notifications-list li:focus-within {
+  background: var(--d-hover);
+}
+
+/* menu-panel.scss:599 */
+.user-menu .quick-access-panel li:focus-within a,
+.user-notifications-list li:focus-within a {
+  outline: 0;
+}
+
+/* menu-panel.scss:604 */
+.user-menu .quick-access-panel li:focus-within .btn-flat:focus,
+.user-menu .quick-access-panel li:focus-within .json-editor-btn-collapse:focus,
+.user-notifications-list li:focus-within .btn-flat:focus,
+.user-notifications-list li:focus-within .json-editor-btn-collapse:focus {
+  background: rgba(0,0,0,0);
+}
+
+/* menu-panel.scss:612 */
+.user-menu .quick-access-panel li div .fa,
+.user-notifications-list li div .fa {
+  display: none;
+}
+
+/* menu-panel.scss:616 */
+.user-menu .quick-access-panel li span.double-user,
+.user-menu .quick-access-panel li span.multi-user,
+.user-notifications-list li span.double-user,
+.user-notifications-list li span.multi-user {
+  display: inline;
+  max-width: 100%;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+/* menu-panel.scss:630 */
+.user-menu .quick-access-panel li span.multi-user span.multi-username:nth-of-type(2),
+.user-notifications-list li span.multi-user span.multi-username:nth-of-type(2) {
+  margin-right: .25em;
+}
+
+/* menu-panel.scss:637 */
+.user-menu .quick-access-panel li span.multi-username,
+.user-notifications-list li span.multi-username {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 1.2em;
+  max-width: 10em;
+}
+
+/* menu-panel.scss:643 */
+.user-menu .quick-access-panel li span.multi-username:nth-of-type(2),
+.user-notifications-list li span.multi-username:nth-of-type(2) {
+  margin-left: .25em;
+}
+
+/* menu-panel.scss:649 */
+.user-menu .quick-access-panel li a,
+.user-notifications-list li a {
+  display: flex;
+  padding: var(--list-item-padding);
+}
+
+/* menu-panel.scss:653 */
+.user-menu .quick-access-panel li a .item-label,
+.user-notifications-list li a .item-label {
+  font-weight: bold;
+}
+
+/* menu-panel.scss:657 */
+.user-menu .quick-access-panel li a .item-description,
+.user-notifications-list li a .item-description {
+  color: var(--primary);
+  overflow: hidden;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* menu-panel.scss:668 */
+.user-menu .quick-access-panel li a>div,
+.user-menu .quick-access-panel li button>div,
+.user-notifications-list li a>div,
+.user-notifications-list li button>div {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* menu-panel.scss:675 */
+.user-menu .quick-access-panel li p,
+.user-notifications-list li p {
+  margin: 0;
+  overflow: hidden;
+}
+
+/* menu-panel.scss:681 */
+.user-menu .quick-access-panel li:not(.show-all),
+.user-notifications-list li:not(.show-all) {
+  padding: 0;
+  align-self: flex-start;
+  width: 100%;
+}
+
+/* menu-panel.scss:686 */
+.user-menu .quick-access-panel li:not(.show-all) .d-icon,
+.user-notifications-list li:not(.show-all) .d-icon {
+  padding-top: .2em;
+  margin-right: .5em;
+}
+
+/* menu-panel.scss:693 */
+.user-menu .quick-access-panel .is-warning .d-icon-envelope,
+.user-notifications-list .is-warning .d-icon-envelope {
+  color: var(--danger);
+}
+
+/* menu-panel.scss:698 */
+.user-menu .quick-access-panel .read,
+.user-menu .quick-access-panel .bookmark,
+.user-notifications-list .read,
+.user-notifications-list .bookmark {
+  background-color: var(--secondary);
+}
+
+/* menu-panel.scss:702 */
+.user-menu .quick-access-panel .read a .d-icon,
+.user-menu .quick-access-panel .bookmark a .d-icon,
+.user-notifications-list .read a .d-icon,
+.user-notifications-list .bookmark a .d-icon {
+  color: var(--primary-medium);
+}
+
+/* menu-panel.scss:707 */
+.user-menu .quick-access-panel .none,
+.user-notifications-list .none {
+  padding-top: 5px;
+}
+
+/* menu-panel.scss:711 */
+.user-menu .quick-access-panel .spinner-container,
+.user-notifications-list .spinner-container {
+  min-height: 2em;
+  margin: auto;
+}
+
+/* menu-panel.scss:716 */
+.user-menu .quick-access-panel .spinner,
+.user-notifications-list .spinner {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin: 0 auto;
+}
+
+/* menu-panel.scss:723 */
+.user-menu .quick-access-panel .show-all a,
+.user-notifications-list .show-all a {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 30px;
+  color: var(--primary-med-or-secondary-high);
+  background: var(--blend-primary-secondary-5);
+}
+
+/* menu-panel.scss:732 */
+.user-menu .quick-access-panel .show-all a:hover,
+.user-notifications-list .show-all a:hover {
+  color: var(--primary);
+  background: var(--primary-low);
+}
+
+/* menu-panel.scss:746 */
+.user-menu.show-avatars li.notification a,
+.user-menu.show-avatars li.bookmark a,
+.user-menu.show-avatars li.reviewable a,
+.user-menu.show-avatars li.message a,
+.user-notifications-list.show-avatars li.notification a,
+.user-notifications-list.show-avatars li.bookmark a,
+.user-notifications-list.show-avatars li.reviewable a,
+.user-notifications-list.show-avatars li.message a {
+  color: var(--primary);
+  align-items: center;
+}
+
+/* menu-panel.scss:750 */
+.user-menu.show-avatars li.notification a .item-label,
+.user-menu.show-avatars li.bookmark a .item-label,
+.user-menu.show-avatars li.reviewable a .item-label,
+.user-menu.show-avatars li.message a .item-label,
+.user-notifications-list.show-avatars li.notification a .item-label,
+.user-notifications-list.show-avatars li.bookmark a .item-label,
+.user-notifications-list.show-avatars li.reviewable a .item-label,
+.user-notifications-list.show-avatars li.message a .item-label {
+  font-weight: bold;
+}
+
+/* menu-panel.scss:754 */
+.user-menu.show-avatars li.notification a .item-description,
+.user-menu.show-avatars li.bookmark a .item-description,
+.user-menu.show-avatars li.reviewable a .item-description,
+.user-menu.show-avatars li.message a .item-description,
+.user-notifications-list.show-avatars li.notification a .item-description,
+.user-notifications-list.show-avatars li.bookmark a .item-description,
+.user-notifications-list.show-avatars li.reviewable a .item-description,
+.user-notifications-list.show-avatars li.message a .item-description {
+  color: var(--primary);
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* menu-panel.scss:760 */
+.user-menu.show-avatars li.notification a .icon-avatar,
+.user-menu.show-avatars li.bookmark a .icon-avatar,
+.user-menu.show-avatars li.reviewable a .icon-avatar,
+.user-menu.show-avatars li.message a .icon-avatar,
+.user-notifications-list.show-avatars li.notification a .icon-avatar,
+.user-notifications-list.show-avatars li.bookmark a .icon-avatar,
+.user-notifications-list.show-avatars li.reviewable a .icon-avatar,
+.user-notifications-list.show-avatars li.message a .icon-avatar {
+  display: flex;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+  width: 2em;
+  height: 2em;
+  margin: .3em 1em auto 0;
+}
+
+/* menu-panel.scss:769 */
+.user-menu.show-avatars li.notification a .icon-avatar .avatar,
+.user-menu.show-avatars li.bookmark a .icon-avatar .avatar,
+.user-menu.show-avatars li.reviewable a .icon-avatar .avatar,
+.user-menu.show-avatars li.message a .icon-avatar .avatar,
+.user-notifications-list.show-avatars li.notification a .icon-avatar .avatar,
+.user-notifications-list.show-avatars li.bookmark a .icon-avatar .avatar,
+.user-notifications-list.show-avatars li.reviewable a .icon-avatar .avatar,
+.user-notifications-list.show-avatars li.message a .icon-avatar .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+/* menu-panel.scss:774 */
+.user-menu.show-avatars li.notification a .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.bookmark a .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.reviewable a .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.message a .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.notification a .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.bookmark a .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.reviewable a .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.message a .icon-avatar__icon-wrapper {
+  position: absolute;
+  right: -0.65em;
+  top: -0.45em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 100%;
+  background: var(--secondary);
+}
+
+/* menu-panel.scss:786 */
+.user-menu.show-avatars li.notification a .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.bookmark a .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.reviewable a .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.message a .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.notification a .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.bookmark a .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.reviewable a .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.message a .icon-avatar__icon-wrapper .d-icon {
+  display: block;
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-down-1);
+  color: var(--primary);
+}
+
+/* menu-panel.scss:796 */
+.user-menu.show-avatars li.notification a+div,
+.user-menu.show-avatars li.bookmark a+div,
+.user-menu.show-avatars li.reviewable a+div,
+.user-menu.show-avatars li.message a+div,
+.user-notifications-list.show-avatars li.notification a+div,
+.user-notifications-list.show-avatars li.bookmark a+div,
+.user-notifications-list.show-avatars li.reviewable a+div,
+.user-notifications-list.show-avatars li.message a+div {
+  padding: .25em 0;
+}
+
+/* menu-panel.scss:803 */
+.user-menu.show-avatars li.notification.unread .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.notification.pending .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.bookmark.unread .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.bookmark.pending .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.reviewable.unread .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.reviewable.pending .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.message.unread .icon-avatar__icon-wrapper,
+.user-menu.show-avatars li.message.pending .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.notification.unread .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.notification.pending .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.bookmark.unread .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.bookmark.pending .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.reviewable.unread .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.reviewable.pending .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.message.unread .icon-avatar__icon-wrapper,
+.user-notifications-list.show-avatars li.message.pending .icon-avatar__icon-wrapper {
+  background: var(--tertiary);
+}
+
+/* menu-panel.scss:806 */
+.user-menu.show-avatars li.notification.unread .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.notification.pending .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.bookmark.unread .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.bookmark.pending .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.reviewable.unread .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.reviewable.pending .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.message.unread .icon-avatar__icon-wrapper .d-icon,
+.user-menu.show-avatars li.message.pending .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.notification.unread .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.notification.pending .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.bookmark.unread .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.bookmark.pending .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.reviewable.unread .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.reviewable.pending .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.message.unread .icon-avatar__icon-wrapper .d-icon,
+.user-notifications-list.show-avatars li.message.pending .icon-avatar__icon-wrapper .d-icon {
+  color: var(--secondary);
+}
+
+/* menu-panel.scss:829 */
+.sidebar-section-header .sidebar-section-header-global-indicator .d-icon {
+  color: var(--d-sidebar-header-icon-color);
+}
+

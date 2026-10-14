@@ -8,6 +8,8 @@
 #            visibility: hidden on both sides, for content that differs by
 #            the clock
 #   wait=    extra milliseconds after load (default 1500)
+#   click=   selectors clicked in turn after the wait (a menu opened),
+#            separated by ";"; the screenshot is then the viewport's
 
 # Anonymous
 /latest

@@ -848,15 +848,13 @@ async fn the_user_menu_shows_chat_mentions() {
     let mut user0 = Client::logged_in(st, "user0").await;
     let html = user0.page("/user-menu").await;
     assert!(
-        html.contains(r#"<a href="/chat/c/general/2/7"><strong>user1</strong> mentioned you in &#34;General&#34; <span class="title"></span></a>"#)
-            || html.contains(r#"<a href="/chat/c/general/2/7"><strong>user1</strong> mentioned you in &quot;General&quot; <span class="title"></span></a>"#),
+        html.contains(r#"<span class="item-label ">user1</span><span class="item-description ">mentioned you in &quot;General&quot;</span>"#)
+            && html.contains(r#"<a href="/chat/c/general/2/7" title="#),
         "{html}"
     );
     // No slug: the title slugified.
     assert!(
-        html.contains(
-            r#"<a href="/chat/c/general/2/8"><strong>user1</strong> mentioned @squad in"#
-        ),
+        html.contains(r#"<a href="/chat/c/general/2/8" title="#),
         "{html}"
     );
 }

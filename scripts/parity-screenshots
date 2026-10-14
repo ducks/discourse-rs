@@ -167,7 +167,7 @@ def parse_pages(path):
         if not line or line.startswith("#"):
             continue
         path, *options = line.split()
-        page = {"path": path, "as": None, "ua": None, "mask": [], "wait": 1500}
+        page = {"path": path, "as": None, "ua": None, "mask": [], "wait": 1500, "click": []}
         for option in options:
             key, _, value = option.partition("=")
             if key == "as":
@@ -180,6 +180,8 @@ def parse_pages(path):
                 page["mask"] = [s for s in value.split(",") if s]
             elif key == "wait":
                 page["wait"] = int(value)
+            elif key == "click":
+                page["click"] = [s for s in value.split(";") if s]
             else:
                 sys.exit(f"{pages_file}:{number}: unknown option {option}")
         pages.append(page)
@@ -192,6 +194,8 @@ def slug(page):
         name += f"--as-{page['as']}"
     if page["ua"]:
         name += "--crawler"
+    if page["click"]:
+        name += "--click-" + "-".join(page["click"])
     return re.sub(r"[^A-Za-z0-9._-]+", "_", name)
 
 
@@ -232,12 +236,15 @@ def capture(browser, base, page, path):
         response = tab.goto(base + page["path"], wait_until="load")
         tab.evaluate("document.fonts.ready")
         tab.wait_for_timeout(page["wait"])
+        for selector in page["click"]:
+            tab.click(selector)
+            tab.wait_for_timeout(1000)
         css = BASE_CSS + "".join(
             f"{selector} {{ visibility: hidden !important; }}\n" for selector in page["mask"]
         )
         tab.add_style_tag(content=css)
         tab.wait_for_timeout(100)
-        tab.screenshot(path=str(path), full_page=True, animations="disabled")
+        tab.screenshot(path=str(path), full_page=not page["click"], animations="disabled")
         return {"status": response.status if response else None, "error": None}
     except Exception as e:  # reported on the page's row
         return {"status": None, "error": f"{type(e).__name__}: {e}".splitlines()[0]}
@@ -357,6 +364,7 @@ with sync_playwright() as p:
             [page["path"]]
             + ([f"as={page['as']}"] if page["as"] else [])
             + (["ua=crawler"] if page["ua"] else [])
+            + ([f"click={';'.join(page['click'])}"] if page["click"] else [])
         )
         result = {
             "slug": name,

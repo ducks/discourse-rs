@@ -25,7 +25,7 @@ const DEFAULT_ARCHETYPE: &str = "regular";
 
 /// `Notification.types` (app/models/notification.rb), plugin-reserved ids
 /// included since they're declared in core.
-const NOTIFICATION_TYPES: &[(&str, i64)] = &[
+pub(crate) const NOTIFICATION_TYPES: &[(&str, i64)] = &[
     ("mentioned", 1),
     ("replied", 2),
     ("quoted", 3),

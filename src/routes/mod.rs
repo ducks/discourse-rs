@@ -465,6 +465,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(bookmarks::user_menu),
         )
         .route(
+            "/u/{username}/user-menu-private-messages",
+            get(user_menu::messages),
+        )
+        .route(
+            "/u/{username}/user-menu-private-messages.json",
+            get(user_menu::messages),
+        )
+        .route(
             "/u/{username}/{*rest}",
             get(users::show_with_tail).put(user_badges::put_user_tail),
         )
@@ -481,6 +489,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/users/{username}/user-menu-bookmarks.json",
             get(bookmarks::user_menu),
+        )
+        .route(
+            "/users/{username}/user-menu-private-messages",
+            get(user_menu::messages),
+        )
+        .route(
+            "/users/{username}/user-menu-private-messages.json",
+            get(user_menu::messages),
         )
         .route(
             "/users/{username}/{*rest}",
@@ -1302,6 +1318,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/messages-dropdown.js", get(asset))
         .route("/assets/users-directory.js", get(asset))
+        .route("/assets/user-menu.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))
         .route("/assets/composer.js", get(asset))

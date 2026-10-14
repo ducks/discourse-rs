@@ -340,6 +340,19 @@ impl Notifications<'_> {
         notification_type: i32,
         limit: i64,
     ) -> Result<Vec<Value>, NotificationsError> {
+        self.for_user_menu(user_id, &[notification_type], false, limit)
+            .await
+    }
+
+    /// `Notification.for_user_menu(user_id, limit:).where(read:,
+    /// notification_type: types)`, serialized, unfiltered.
+    pub async fn for_user_menu(
+        &mut self,
+        user_id: i32,
+        types: &[i32],
+        read: bool,
+        limit: i64,
+    ) -> Result<Vec<Value>, NotificationsError> {
         // populate_acting_user, as in post_filter.
         if self.settings.get("show_user_menu_avatars")?.truthy()
             || self.settings.get("prioritize_full_name_in_ux")?.truthy()
@@ -349,19 +362,48 @@ impl Notifications<'_> {
         let rows: Vec<Row> = sqlx::query_as(&format!(
             "SELECT {COLUMNS} FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
              WHERE notifications.user_id = $1 AND (topics.id IS NULL OR topics.deleted_at IS NULL) \
-             AND notifications.read = FALSE AND notifications.notification_type = $2 \
+             AND notifications.read = $4 AND notifications.notification_type = ANY($2) \
              ORDER BY notifications.high_priority AND NOT notifications.read DESC, NOT notifications.read DESC, \
                       notifications.created_at DESC, notifications.id DESC LIMIT $3"
         ))
         .bind(user_id)
-        .bind(notification_type)
+        .bind(types)
         .bind(limit)
+        .bind(read)
         .fetch_all(&mut *self.conn)
         .await?;
         match self.serialize(&rows)? {
             Value::Array(items) => Ok(items),
             _ => Ok(Vec::new()),
         }
+    }
+
+    /// `Notification.filter_inaccessible_topic_notifications` on serialized
+    /// notifications: the ones whose topic the guardian can't see go.
+    pub async fn filter_inaccessible_topics(
+        &mut self,
+        items: Vec<Value>,
+    ) -> Result<Vec<Value>, NotificationsError> {
+        let mut topic_ids: Vec<i32> = Vec::new();
+        for n in &items {
+            if let Some(id) = n["topic_id"].as_i64().map(|id| id as i32)
+                && !topic_ids.contains(&id)
+            {
+                topic_ids.push(id);
+            }
+        }
+        let accessible = self
+            .guardian
+            .can_see_topic_ids(&mut *self.conn, self.settings, &topic_ids)
+            .await?;
+        Ok(items
+            .into_iter()
+            .filter(|n| {
+                n["topic_id"]
+                    .as_i64()
+                    .is_none_or(|id| accessible.contains(&(id as i32)))
+            })
+            .collect())
     }
 
     /// `filter_inaccessible_topic_notifications` then

@@ -1,0 +1,149 @@
+{
+  "name": "user_menu_messages",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/user-menu-private-messages.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user2/user-menu-private-messages.json"
+    }
+  ],
+  "started_at": "2026-10-14T10:28:44.156332",
+  "transaction_started_at": "2026-10-14T10:28:38.798195",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "unread_notifications": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 50,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:41:12.656Z",
+            "post_number": 1,
+            "topic_id": 44,
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "data": {
+              "topic_title": "Parity fixture: PM user2 to user1, archived",
+              "original_post_id": 51,
+              "original_post_type": 1,
+              "original_username": "user2",
+              "revision_number": null,
+              "display_username": "user2",
+              "display_name": "User2"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 48,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:41:12.501Z",
+            "post_number": 1,
+            "topic_id": 43,
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "data": {
+              "topic_title": "Parity fixture: PM admin to user1 and user2",
+              "original_post_id": 50,
+              "original_post_type": 1,
+              "original_username": "admin",
+              "revision_number": null,
+              "display_username": "admin",
+              "display_name": "Admin"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 44,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:39:51.818Z",
+            "post_number": 2,
+            "topic_id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "data": {
+              "topic_title": "Parity fixture: PM user1 to user0",
+              "original_post_id": 49,
+              "original_post_type": 1,
+              "original_username": "user0",
+              "revision_number": null,
+              "display_username": "user0",
+              "display_name": "User0"
+            }
+          }
+        ],
+        "read_notifications": [],
+        "topics": [],
+        "users": []
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 160,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rRS54nFNoehkro6T1MUEp8e7joQ=",
+            "created_at": "2026-10-14T10:28:40.922732",
+            "rotated_at": "2026-10-14T10:28:40.918285",
+            "updated_at": "2026-10-14T10:28:40.922732",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "rRS54nFNoehkro6T1MUEp8e7joQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 160,
+            "seen_at": "2026-10-14T10:28:44.167795",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rRS54nFNoehkro6T1MUEp8e7joQ=",
+            "created_at": "2026-10-14T10:28:40.922732",
+            "rotated_at": "2026-10-14T10:28:40.918285",
+            "updated_at": "2026-10-14T10:28:40.922732",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "rRS54nFNoehkro6T1MUEp8e7joQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "350f9d62fb7fc779848031317988f1fb4e555ce0e40adf39d57501057ef9488d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

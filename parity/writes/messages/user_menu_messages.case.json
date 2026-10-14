@@ -1,0 +1,7 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/u/user1/user-menu-private-messages.json" },
+    { "method": "GET", "path": "/u/user2/user-menu-private-messages.json" }
+  ]
+}

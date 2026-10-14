@@ -1,107 +1,165 @@
-//! GET /user-menu: a member's recent notifications as the header menu's
-//! HTML. It is the list the Ember client's user menu fetches
-//! (`/notifications?recent=true`, 30 at most): the same prioritized list,
-//! and the same bump of what the member has seen, whose published
-//! notification state clears the header's count over the live stream.
+//! The header's user menu. GET /user-menu?tab= renders it as the Ember
+//! client does once a tab's list has loaded (crate::user_menu_view): the
+//! notifications lists come from what `/notifications?recent=true` returns
+//! (30 at most, the all-notifications tab bumping what the member has
+//! seen, whose published notification state clears the header's count
+//! over the live stream; the others `filter_by_types` and silent), the
+//! messages tab from UsersController#user_menu_messages, the bookmarks tab
+//! from #user_menu_bookmarks. GET /u/:username/user-menu-private-messages
+//! is that action's JSON.
 
-use askama::Template;
-use axum::extract::State;
+use axum::Json;
+use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, header};
 use axum::response::{IntoResponse, Response};
-use serde_json::Value;
+use serde::Deserialize;
+use serde_json::{Value, json};
 
 use crate::notifications::{self, Notifications};
-use crate::session::current::AuthGuardian;
+use crate::session::current::{AuthGuardian, Incoming};
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState};
+use crate::user_menu_view::{self, MenuContext};
+use crate::{AppError, AppState, Unsupported};
 
-/// The user menu's page size.
+/// The notifications lists' page size (`setNotificationsLimit`'s default).
 const LIMIT: i64 = 30;
 
-#[derive(Template)]
-#[template(path = "user_menu.html")]
-pub struct UserMenu {
-    pub base_path: String,
-    pub items: Vec<MenuItem>,
-    pub username: String,
-    pub csrf_token: String,
+/// `UsersController::USER_MENU_LIST_LIMIT`
+const USER_MENU_LIST_LIMIT: i64 = 20;
+
+#[derive(Deserialize, Default)]
+pub struct MenuParams {
+    tab: Option<String>,
 }
 
-pub struct MenuItem {
-    pub url: String,
-    pub actor: String,
-    pub verb: String,
-    /// HTML: a topic's fancy title is stored escaped; anything else is
-    /// escaped here.
-    pub title_html: String,
-    pub read: bool,
-}
-
-/// GET /user-menu
+/// GET /user-menu?tab=
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    axum::Extension(incoming): axum::Extension<Incoming>,
+    Query(params): Query<MenuParams>,
     headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    let Some(user) = guardian.user().cloned() else {
+    let (Some(user), Some(session)) = (guardian.user().cloned(), incoming.session.as_ref()) else {
         return Ok(super::login_required::not_logged_in(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let votes_released = state
-        .i18n
-        .t(
-            if settings.get("topic_voting_enable_vote_limits")?.truthy() {
-                "js.topic_voting.notification_label.vote_released"
-            } else {
-                "js.topic_voting.notification_label.voting_closed"
-            },
-        )
-        .unwrap_or_default()
-        .to_string();
-    let query = notifications::Query {
-        recent: true,
-        silent: false,
-        limit: LIMIT,
-        offset: 0,
-        filter: None,
-        types: Vec::new(),
-    };
-    let (doc, bumped) = Notifications {
-        conn: &mut conn,
-        settings: &settings,
-        guardian: &guardian,
+    if settings.get("show_user_menu_avatars")?.truthy() {
+        return Err(Unsupported("show_user_menu_avatars (the items' avatars)").into());
     }
-    .index(user.id, &user.username, &query)
-    .await?;
-    if bumped {
-        crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user.id).await?;
-    }
+    let current_user =
+        crate::current_user::serialize(&mut conn, &state, &settings, session).await?;
+    let can_chat = crate::plugins::chat::enabled(&settings)?
+        && crate::plugins::chat::can_chat(&mut conn, &settings, &guardian).await?
+        && crate::plugins::chat::options(&mut conn, user.id)
+            .await?
+            .is_some_and(|o| o.chat_enabled);
     let base_path = state.config.globals.relative_url_root().to_string();
-    let items = doc["notifications"]
-        .as_array()
-        .map(|list| {
-            list.iter()
-                .map(|n| menu_item(&state.i18n, &base_path, n, &votes_released))
-                .collect()
-        })
-        .unwrap_or_default();
-    // Logging out is in the menu, as in the Ember client's profile tab.
+    let cx = MenuContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        mobile: crate::mobile::mobile_view(),
+        user: &current_user,
+        notification_types: crate::site::NOTIFICATION_TYPES,
+        prioritize_full_name: settings.get("prioritize_full_name_in_ux")?.truthy(),
+        vote_limits: settings.get("topic_voting_enable_vote_limits")?.truthy(),
+        enable_user_status: settings.get("enable_user_status")?.truthy(),
+        can_chat,
+        emojis: settings.emojis(),
+        now: crate::clock::now(),
+    };
+    let (top, bottom) = user_menu_view::tabs(&cx);
+    let requested = params.tab.as_deref().unwrap_or("all-notifications");
+    let Some(tab) = top.iter().chain(bottom.iter()).find(|t| t.id == requested) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let panel = match tab.id {
+        "profile" => user_menu_view::profile_tab(&cx),
+        "review-queue" => {
+            return Err(
+                Unsupported("the user menu's review queue (UserMenuReviewablesList)").into(),
+            );
+        }
+        "messages" => {
+            let doc = messages_doc(&state, &mut conn, &settings, &guardian, user.id).await?;
+            let options = user_menu_view::list_options(&cx, tab);
+            user_menu_view::items_list(tab, &message_items(&cx, &doc), &options)
+        }
+        "bookmarks" => {
+            let urls = crate::url::Urls {
+                config: &state.config,
+                settings: &settings,
+            };
+            let doc = crate::bookmarks::Bookmarks {
+                conn: &mut conn,
+                settings: &settings,
+                i18n: &state.i18n,
+                guardian: &guardian,
+                urls: &urls,
+            }
+            .user_menu(user.id)
+            .await?;
+            let mut items: Vec<String> = doc["notifications"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|n| user_menu_view::notification_item(&cx, n))
+                .collect();
+            items.extend(
+                doc["bookmarks"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|b| user_menu_view::bookmark_item(&cx, b)),
+            );
+            let options = user_menu_view::list_options(&cx, tab);
+            user_menu_view::items_list(tab, &items, &options)
+        }
+        _ => {
+            // UserMenuNotificationsList#fetchItems
+            let types: Vec<i32> = tab
+                .types
+                .iter()
+                .filter_map(|name| {
+                    crate::site::NOTIFICATION_TYPES
+                        .iter()
+                        .find(|(n, _)| n == name)
+                        .map(|(_, id)| *id as i32)
+                })
+                .collect();
+            let query = notifications::Query {
+                recent: true,
+                silent: !tab.types.is_empty(),
+                limit: LIMIT,
+                offset: 0,
+                filter: None,
+                types,
+            };
+            let (doc, bumped) = Notifications {
+                conn: &mut conn,
+                settings: &settings,
+                guardian: &guardian,
+            }
+            .index(user.id, &user.username, &query)
+            .await?;
+            if bumped {
+                crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user.id)
+                    .await?;
+            }
+            let items: Vec<String> = doc["notifications"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|n| user_menu_view::notification_item(&cx, n))
+                .collect();
+            let options = user_menu_view::list_options(&cx, tab);
+            user_menu_view::items_list(tab, &items, &options)
+        }
+    };
+    let html = user_menu_view::menu(&cx, tab.id, &panel);
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
-    let csrf_token = vs
-        .viewer
-        .as_ref()
-        .map(|v| v.csrf_token.clone())
-        .unwrap_or_default();
-    let html = UserMenu {
-        base_path,
-        items,
-        username: user.username.clone(),
-        csrf_token,
-    }
-    .render()
-    .map_err(crate::html::HtmlError::from)?;
     let response = (
         [
             (header::CONTENT_TYPE, "text/html; charset=utf-8"),
@@ -113,102 +171,182 @@ pub async fn show(
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
-/// `Notification.types[:votes_released]` (discourse-topic-voting)
-const VOTES_RELEASED: i64 = 26;
-
-/// One notification as the menu shows it: who, what, where, and the link.
-/// `votes_released` is discourse-topic-voting's label for its type's
-/// notifications, in the actor's place.
-fn menu_item(
-    i18n: &crate::i18n::I18n,
-    base_path: &str,
-    n: &Value,
-    votes_released: &str,
-) -> MenuItem {
-    let data = &n["data"];
-    if n["notification_type"] == CHAT_MENTION {
-        return chat_mention_item(i18n, base_path, n);
+/// UserMenuMessagesList#fetchItems: the unread message notifications, then
+/// the read ones and the messages merged newest first.
+fn message_items(cx: &MenuContext, doc: &Value) -> Vec<String> {
+    let list = |key: &str| doc[key].as_array().cloned().unwrap_or_default();
+    let users = list("users");
+    let mut items: Vec<String> = list("unread_notifications")
+        .iter()
+        .map(|n| user_menu_view::notification_item(cx, n))
+        .collect();
+    let read = list("read_notifications");
+    let topics = list("topics");
+    // mergeSortedLists(read, topics, topic bumped after the notification)
+    let time = |v: &Value| {
+        v.as_str()
+            .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+            .map(|d| d.timestamp_millis())
+    };
+    let (mut i, mut j) = (0, 0);
+    while i < read.len() || j < topics.len() {
+        let take_topic = i == read.len()
+            || (j < topics.len()
+                && match (time(&topics[j]["bumped_at"]), time(&read[i]["created_at"])) {
+                    (Some(t), Some(n)) => t > n,
+                    _ => false,
+                });
+        if take_topic {
+            items.push(user_menu_view::message_item(cx, &topics[j], &users));
+            j += 1;
+        } else {
+            items.push(user_menu_view::notification_item(cx, &read[i]));
+            i += 1;
+        }
     }
-    let text = |v: &Value| v.as_str().unwrap_or_default().to_string();
-    // A bookmark reminder is the member's own: no actor, as Discourse shows it.
-    let actor = if n["notification_type"] == 24 {
-        String::new()
-    } else if n["notification_type"] == VOTES_RELEASED {
-        votes_released.to_string()
-    } else {
-        data["display_username"]
-            .as_str()
-            .or(data["username"].as_str())
-            .unwrap_or_default()
-            .to_string()
-    };
-    let title_html = match n["fancy_title"].as_str() {
-        Some(fancy) => fancy.to_string(),
-        None => match data["topic_title"].as_str().or(data["badge_name"].as_str()) {
-            Some(t) => html_escape::encode_text(t).into_owned(),
-            None => String::new(),
-        },
-    };
-    let url = match n["topic_id"].as_i64() {
-        Some(topic_id) => format!(
-            "{base_path}/t/{}/{topic_id}/{}",
-            text(&n["slug"]),
-            n["post_number"].as_i64().unwrap_or(1)
-        ),
-        None => format!("{base_path}/u/{}", text(&data["username"])),
-    };
-    MenuItem {
-        url,
-        actor,
-        verb: crate::html::notification_verb(n["notification_type"].as_i64().unwrap_or(0))
-            .to_string(),
-        title_html,
-        read: n["read"] == true,
-    }
+    items
 }
 
-/// `Notification.types[:chat_mention]`
-const CHAT_MENTION: i64 = 29;
-
-/// The chat plugin's chat_mention renderer: who mentioned, whom (them, or
-/// the group, @here or @all) in which channel, linking to the message.
-fn chat_mention_item(i18n: &crate::i18n::I18n, base_path: &str, n: &Value) -> MenuItem {
-    let data = &n["data"];
-    let text = |v: &Value| v.as_str().unwrap_or_default().to_string();
-    let identifier = data["identifier"].as_str().map(|i| format!("@{i}"));
-    let prefix = if data["is_direct_message_channel"] == true {
-        "js.notifications.popup.direct_message_chat_mention"
-    } else {
-        "js.notifications.popup.chat_mention"
+/// UsersController#user_menu_messages for the current user.
+async fn messages_doc(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    const PRIVATE_MESSAGE: i32 = 6;
+    const GROUP_MESSAGE_SUMMARY: i32 = 16;
+    let mut notes = Notifications {
+        conn: &mut *conn,
+        settings,
+        guardian,
     };
-    let suffix = if identifier.is_some() {
-        "other_plain"
-    } else {
-        "direct"
-    };
-    let channel = text(&data["chat_channel_title"]);
-    let verb = i18n
-        .t_with(
-            &format!("{prefix}.{suffix}"),
-            &[
-                ("identifier", identifier.as_deref().unwrap_or_default()),
-                ("channel", &channel),
-            ],
+    let unread = notes
+        .for_user_menu(
+            user_id,
+            &[PRIVATE_MESSAGE, GROUP_MESSAGE_SUMMARY],
+            false,
+            USER_MENU_LIST_LIMIT,
         )
-        .unwrap_or_default();
-    let slug = slugify_channel(data["chat_channel_slug"].as_str(), &channel);
-    let mut url = format!("{base_path}/chat/c/{slug}/{}", data["chat_channel_id"]);
-    match data["chat_thread_id"].as_i64() {
-        Some(thread) => url.push_str(&format!("/t/{thread}")),
-        None => url.push_str(&format!("/{}", data["chat_message_id"])),
+        .await?;
+    let unread = notes.filter_inaccessible_topics(unread).await?;
+    let mut topics = Vec::new();
+    let mut users = Vec::new();
+    let mut read = Vec::new();
+    if (unread.len() as i64) < USER_MENU_LIST_LIMIT {
+        let mut exclude: Vec<i32> = Vec::new();
+        for n in &unread {
+            if let Some(id) = n["topic_id"].as_i64().map(|id| id as i32)
+                && !exclude.contains(&id)
+            {
+                exclude.push(id);
+            }
+        }
+        let limit = USER_MENU_LIST_LIMIT - unread.len() as i64;
+        let list = crate::pm_lists::PmQuery {
+            conn: &mut *conn,
+            settings,
+            guardian,
+            options: crate::topic_query::Options {
+                per_page: Some(limit),
+                ..Default::default()
+            },
+            owner_id: user_id,
+        }
+        .direct_and_groups_watching(&exclude)
+        .await?;
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings,
+        };
+        let json = crate::topic_list::TopicListSerializer {
+            conn: &mut *conn,
+            settings,
+            i18n: &state.i18n,
+            guardian,
+            urls: &urls,
+            more_topics_url: None,
+            category_id: None,
+            group_id: None,
+            prefetched: Default::default(),
+        }
+        .serialize(&list)
+        .await?;
+        topics = json["topic_list"]["topics"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        // The last posters as BasicUserSerializer has them, unless names
+        // and avatars are both off.
+        if settings.get("show_user_menu_avatars")?.truthy()
+            || !settings.get("prioritize_username_in_ux")?.truthy()
+        {
+            let all = json["users"].as_array().cloned().unwrap_or_default();
+            for t in &topics {
+                let Some(id) = t["posters"]
+                    .as_array()
+                    .and_then(|p| p.last())
+                    .and_then(|p| p["user_id"].as_i64())
+                else {
+                    continue;
+                };
+                if users.iter().any(|u: &Value| u["id"].as_i64() == Some(id)) {
+                    continue;
+                }
+                if let Some(u) = all.iter().find(|u| u["id"].as_i64() == Some(id)) {
+                    let mut basic = serde_json::Map::new();
+                    for key in ["id", "username", "name", "avatar_template"] {
+                        if let Some(v) = u.get(key) {
+                            basic.insert(key.into(), v.clone());
+                        }
+                    }
+                    users.push(Value::Object(basic));
+                }
+            }
+        }
+        let mut notes = Notifications {
+            conn: &mut *conn,
+            settings,
+            guardian,
+        };
+        let r = notes
+            .for_user_menu(user_id, &[GROUP_MESSAGE_SUMMARY], true, limit)
+            .await?;
+        read = notes.filter_inaccessible_topics(r).await?;
     }
-    MenuItem {
-        url,
-        actor: text(&data["mentioned_by_username"]),
-        verb,
-        title_html: String::new(),
-        read: n["read"] == true,
+    Ok(json!({
+        "unread_notifications": unread,
+        "read_notifications": read,
+        "topics": topics,
+        "users": users,
+    }))
+}
+
+/// GET /u/:username/user-menu-private-messages(.json)
+pub async fn messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(username): Path<String>,
+) -> Result<Response, AppError> {
+    let Some(user) = guardian.user().cloned() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let username = username.strip_suffix(".json").unwrap_or(&username);
+    // username_equals_to?
+    if user.username.to_lowercase() != username.to_lowercase() {
+        return Ok(super::search::invalid_access(&state));
     }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !guardian.is_staff()
+        && !guardian.in_setting_groups(&settings, "personal_message_enabled_groups")?
+    {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let doc = messages_doc(&state, &mut conn, &settings, &guardian, user.id).await?;
+    Ok(([(header::CACHE_CONTROL, "no-cache, no-store")], Json(doc)).into_response())
 }
 
 /// chat's slugifyChannel: the slug, else the title slugified (utilities'
