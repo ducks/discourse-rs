@@ -558,6 +558,279 @@
   scroll-padding: calc(var(--fade-inset, 0px) + var(--fade-width, 2em));
 }
 
+/* The chevrons and the scroll strip fade (d-overflow-controls.scss,
+   horizontal-overflow-nav.scss, mixins.scss scroll-strip) that
+   static/js/overflow-controls.js draws and stamps. */
+
+/* horizontal-overflow-nav.scss:18 */
+.d-overflow-controls.horizontal-overflow-nav__controls .d-overflow-controls__btn .d-icon {
+  color: var(--d-nav-color--active);
+  margin-bottom: .2em;
+}
+
+/* d-overflow-controls.scss:23 */
+.d-overflow-controls__btn {
+  position: absolute;
+  z-index: 2;
+  background: var(--fade-color);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  color: var(--primary-high);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* d-overflow-controls.scss:37 */
+.d-overflow-controls__btn:hover {
+  color: var(--primary);
+}
+
+/* d-overflow-controls.scss:41 */
+.d-overflow-controls__btn.--left,
+.d-overflow-controls__btn.--right {
+  top: 0;
+  bottom: 0;
+  width: var(--d-overflow-controls-btn-size);
+  margin-block: 1px;
+}
+
+/* d-overflow-controls.scss:49 */
+.d-overflow-controls__btn.--up,
+.d-overflow-controls__btn.--down {
+  left: 0;
+  right: 0;
+  height: var(--d-overflow-controls-btn-size);
+  margin-inline: 1px;
+}
+
+/* d-overflow-controls.scss:57 */
+.d-overflow-controls__btn.--left {
+  /*! rtl: ignore */left:0;
+}
+
+/* d-overflow-controls.scss:62 */
+.rtl .d-overflow-controls__btn.--left .d-icon {
+  transform: scaleX(1);
+}
+
+/* d-overflow-controls.scss:67 */
+.d-overflow-controls__btn.--right {
+  /*! rtl: ignore */right:0;
+}
+
+/* d-overflow-controls.scss:72 */
+.rtl .d-overflow-controls__btn.--right .d-icon {
+  transform: scaleX(1);
+}
+
+/* d-overflow-controls.scss:77 */
+.d-overflow-controls__btn.--up {
+  top: 0;
+}
+
+/* d-overflow-controls.scss:81 */
+.d-overflow-controls__btn.--down {
+  bottom: 0;
+}
+
+/* mixins.scss:335 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=horizontal][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:345 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:352 */
+@media(forced-colors: none) {
+  .rtl .d-tabs__tablist[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to left, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:361 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:368 */
+@media(forced-colors: none) {
+  .rtl .d-tabs__tablist[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to left, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:378 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=vertical][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:387 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:395 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:406 */
+@media(forced-colors: none) {
+  .d-tabs__tablist[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end],
+  .rtl .d-tabs__tablist[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end] {
+    mask-image: none;
+  }
+}
+
+/* mixins.scss:335 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=horizontal][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:345 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:352 */
+@media(forced-colors: none) {
+  .rtl .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to left, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:361 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:368 */
+@media(forced-colors: none) {
+  .rtl .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to left, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:378 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=vertical][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:387 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:395 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:406 */
+@media(forced-colors: none) {
+  .horizontal-overflow-nav .nav-pills[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end],
+  .rtl .horizontal-overflow-nav .nav-pills[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end] {
+    mask-image: none;
+  }
+}
+
+/* mixins.scss:335 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=horizontal][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:345 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:352 */
+@media(forced-colors: none) {
+  .rtl .d-overflow-controls__content[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to left, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:361 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to right, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:368 */
+@media(forced-colors: none) {
+  .rtl .d-overflow-controls__content[data-d-scroll-axis=horizontal][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to left, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:378 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=vertical][data-d-scroll-overflow] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end), #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:387 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-start] {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--scroll-strip-fade-end)), transparent calc(100% - var(--scroll-strip-fade-start)));
+  }
+}
+
+/* mixins.scss:395 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-axis=vertical][data-d-scroll-overflow][data-d-scroll-at-end] {
+    mask-image: linear-gradient(to bottom, transparent var(--scroll-strip-fade-start), #000 var(--scroll-strip-fade-end));
+  }
+}
+
+/* mixins.scss:406 */
+@media(forced-colors: none) {
+  .d-overflow-controls__content[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end],
+  .rtl .d-overflow-controls__content[data-d-scroll-overflow][data-d-scroll-at-start][data-d-scroll-at-end] {
+    mask-image: none;
+  }
+}
+
+
 /* common/base/compose.scss */
 
 /* compose.scss:4 */

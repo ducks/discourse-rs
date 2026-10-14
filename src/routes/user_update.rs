@@ -172,6 +172,111 @@ fn errors(status: StatusCode, message: String) -> Response {
     (status, Json(json!({ "errors": [message] }))).into_response()
 }
 
+/// PUT /u/:username/notification_level(.json): UsersController
+/// #notification_level, the user notifications dropdown's normal and mute;
+/// the ignore level (IgnoreDurationModal's) is refused.
+pub async fn notification_level(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    username: String,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    let Some(me) = guardian.user().cloned() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let t = |key: &str| {
+        state
+            .i18n
+            .t(&format!("notification_level.{key}"))
+            .unwrap_or_default()
+            .to_string()
+    };
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // fetch_user_from_params: active users only, but for staff.
+    let lower = username.to_lowercase();
+    let lower = lower.strip_suffix(".json").unwrap_or(&lower);
+    let target: Option<(i32, bool, bool)> = sqlx::query_as(
+        "SELECT id, admin, moderator FROM users WHERE username_lower = $1 AND (active OR $2 OR id = $3)",
+    )
+    .bind(lower)
+    .bind(guardian.is_staff())
+    .bind(me.id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((target_id, target_admin, target_moderator)) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    // acting_user_id: staff may act for someone else.
+    let mut acting = me.id;
+    if let Some(id) = params::string(&p, "acting_user_id").filter(|v| !v.is_empty()) {
+        let id = crate::ruby::to_i(&id) as i32;
+        if id != me.id {
+            if !guardian.is_staff() {
+                return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, t("error")));
+            }
+            return Err(crate::Unsupported("notification_level for another acting user").into());
+        }
+        acting = id;
+    }
+    let target_staff = target_admin || target_moderator;
+    let level = params::string(&p, "notification_level").unwrap_or_default();
+    match level.as_str() {
+        "ignore" => {
+            return Err(crate::Unsupported("the ignore notification level").into());
+        }
+        "mute" => {
+            // guardian.ensure_can_mute_user!
+            if !(guardian.can_mute_users() && target_id != me.id && !target_staff) {
+                return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, t("mute_error")));
+            }
+            sqlx::query("DELETE FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2")
+                .bind(acting)
+                .bind(target_id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query(
+                "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) \
+                 SELECT $1, $2, now(), now() WHERE NOT EXISTS \
+                 (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2)",
+            )
+            .bind(acting)
+            .bind(target_id)
+            .execute(&mut *tx)
+            .await?;
+        }
+        "normal" => {
+            sqlx::query("DELETE FROM muted_users WHERE user_id = $1 AND muted_user_id = $2")
+                .bind(acting)
+                .bind(target_id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query("DELETE FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2")
+                .bind(acting)
+                .bind(target_id)
+                .execute(&mut *tx)
+                .await?;
+        }
+        other => {
+            let message = state
+                .i18n
+                .t_with("notification_level.invalid_value", &[("value", other)])
+                .unwrap_or_default();
+            return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, message));
+        }
+    }
+    let _ = &settings;
+    tx.commit().await?;
+    Ok((StatusCode::OK, Json(json!({ "success": "OK" }))).into_response())
+}
+
 /// PUT /u/:username/preferences/username(.json): UsersController#username.
 pub async fn username(
     state: AppState,

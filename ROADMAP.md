@@ -435,8 +435,16 @@ with the viewport, guessing from the user agent without it
     (mini-tag-chooser and tags/filter/search), the composer actions
     menu, the rich editor (ProseMirror, the reference's default) and its
     toggle, the toolbar's heading, list and options menus and emoji
-97. `feat/mobile-user-pages` M: profile, activity, messages and their
-    nav as a menu, the users directory
+97. ~~`feat/mobile-user-pages`~~ (done) M: the user pages at a phone's
+    width: DOverflowControls' chevrons and scroll-strip fade on the
+    navs (and the composer's toolbar), the profile's
+    UserNotificationsDropdown with users#notification_level (normal,
+    mute; ignore refused), the summary stats' template whitespace, and
+    the mobile rules a later base rule overrides in Discourse's bundle
+    left out of mobile.css. Left, on both views: /u/:username/badges,
+    /notifications and /activity/topics, which render the summary in
+    place of their pages (ListController#topics_by, the badges and
+    notifications lists aren't ported)
 98. `feat/mobile-menus` M: the remaining menus as bottom sheets
     (tracking, drafts, post and topic admin menus), the topic footer's
     "..." menu and icon-only notifications button, the progress bar's

@@ -8,7 +8,11 @@
  * the areas' desktop rules, as each follows its base rule in Discourse's
  * bundle. Last the plugins' _mobile bundles, which Discourse links with
  * media="(width < 40rem)". The admin, review, wizard, embed, crawler and
- * nested-view rules are left out until those pages are ported.
+ * nested-view rules are left out until those pages are ported. So are
+ * the declarations a later rule of the bundle, with the same selector and
+ * holding at a phone's width, overrides there (user-card.scss:410's
+ * max-height, discourse.scss:256's margins, topic-post.scss:1892's left,
+ * and the two noted in place): coming last here, they would win instead.
  */
 
 /* _col.scss:9 */
@@ -721,7 +725,6 @@
 /* user-card.scss:410 */
 @media (width < 40rem) {
   .user-card .public-user-fields {
-    max-height: 40vh;
     overflow-y: auto;
   }
 }
@@ -2247,8 +2250,6 @@
 @media (width < 40rem) {
   blockquote {
     clear: both;
-    margin-left: 0;
-    margin-right: 0;
   }
 }
 
@@ -3057,16 +3058,8 @@
   }
 }
 
-/* menu-panel.scss:287 */
-@media (width < 40rem) {
-  .user-menu.revamped .tabs-list .btn,
-  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
-  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list .json-editor-btn-add,
-  .user-menu.revamped .tabs-list .d-modal.json-schema-editor-modal .je-ready button,
-  .d-modal.json-schema-editor-modal .je-ready .user-menu.revamped .tabs-list button {
-    padding: .75em .875em;
-  }
-}
+/* menu-panel.scss:287's mobile padding of the user menu's tabs is left
+   out: its base rule, compiled after it, wins. */
 
 /* menu-panel.scss:350 */
 @media (width < 40rem) {
@@ -3174,6 +3167,8 @@
 /* new-user.scss:233's `.user-content { margin-top: 1em }` is left out:
    user.scss's `.user-content { margin-top: 2em }` follows it in
    common.css and wins at every width. */
+/* new-user.scss:233 (.user-content { margin-top: 1em }) is left out: in
+   Discourse's bundle user.scss:93 comes after it and keeps 2em. */
 
 /* new-user.scss:240 */
 @media (width < 40rem) {
@@ -4115,7 +4110,6 @@
 @media (width < 40rem) {
   .post-admin-menu {
     bottom: -50px;
-    left: 135px;
   }
 }
 

@@ -1,0 +1,107 @@
+{
+  "name": "notification_level_normal",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/notification_level",
+      "params": {
+        "notification_level": "normal"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/notification_level.json",
+      "params": {
+        "notification_level": "loud"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:46:23.273769",
+  "transaction_started_at": "2026-10-14T11:46:20.927734",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "\"loud\" is not a valid notification level."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "muted_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "muted_user_id": 3
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 192,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+/liACRHjTr7w24DInR/EbfCJvA=",
+            "created_at": "2026-10-14T11:46:21.743468",
+            "rotated_at": "2026-10-14T11:46:21.740948",
+            "updated_at": "2026-10-14T11:46:21.743468",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "+/liACRHjTr7w24DInR/EbfCJvA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 192,
+            "seen_at": "2026-10-14T11:46:23.282867",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+/liACRHjTr7w24DInR/EbfCJvA=",
+            "created_at": "2026-10-14T11:46:21.743468",
+            "rotated_at": "2026-10-14T11:46:21.740948",
+            "updated_at": "2026-10-14T11:46:21.743468",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "+/liACRHjTr7w24DInR/EbfCJvA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES ((SELECT id FROM users WHERE username = 'user0'), (SELECT id FROM users WHERE username = 'user1'), '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "include_tables": [
+    "muted_users",
+    "ignored_users"
+  ],
+  "recorded_from": {
+    "case": "f9ab1ae33f26cedc8a00d92391ebc0750a4724604e018953ccc1c0488e82ee96",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

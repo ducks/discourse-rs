@@ -420,6 +420,53 @@ pub fn render(
             escape(&t(cx, "user.private_message"))
         ));
     }
+    // UserNotificationsDropdown: normal, muted, ignored when the viewer may
+    // (canMuteOrIgnoreUser); static/js/user-notifications.js runs it.
+    if u["can_ignore_user"] == true || u["can_mute_user"] == true {
+        let level = if u["ignored"] == true {
+            "changeToIgnored"
+        } else if u["muted"] == true {
+            "changeToMuted"
+        } else {
+            "changeToNormal"
+        };
+        let mut options = vec![
+            ("changeToNormal", "bell", "normal"),
+            ("changeToMuted", "bell-slash", "mute"),
+        ];
+        if u["can_ignore_user"] == true {
+            options.push(("changeToIgnored", "far-eye-slash", "ignore"));
+        }
+        let mut rows = String::new();
+        let mut selected = ("", "");
+        for (index, (id, icon_name, key)) in options.iter().enumerate() {
+            let name = escape(&t(cx, &format!("user.user_notifications.{key}_option")));
+            let is = *id == level;
+            if is {
+                selected = (icon_name, id);
+            }
+            rows.push_str(&format!(
+                "<li aria-checked=\"{is}\" role=\"menuitemradio\" data-index=\"{index}\" data-name=\"{name}\" data-value=\"{id}\" title=\"{name}\" tabindex=\"0\" class=\"select-kit-row dropdown-select-box-row{}\"><div class=\"icons\"><span class=\"selection-indicator\"></span>{}</div><div class=\"texts\"><span class=\"name\">{name}</span><span class=\"desc\">{}</span></div></li>",
+                if is { " is-highlighted is-selected" } else { "" },
+                icon(icon_name, None),
+                escape(&t(cx, &format!("user.user_notifications.{key}_option_title")))
+            ));
+        }
+        let key = match level {
+            "changeToIgnored" => "ignore",
+            "changeToMuted" => "mute",
+            _ => "normal",
+        };
+        let name = escape(&t(cx, &format!("user.user_notifications.{key}_option")));
+        let filter_by = escape(&t_with(cx, "select_kit.filter_by", &[("name", &name)]));
+        out.push_str(&format!(
+            "<li><details class=\"select-kit single-select dropdown-select-box user-notifications user-notifications-dropdown has-selection\"><summary aria-label=\"{filter_by}\" name=\"{filter_by}\" data-name=\"{name}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header single-select-header dropdown-select-box-header btn btn-icon-text btn-default\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{name}\" data-value=\"{}\" title=\"{name}\">{}<span class=\"name\">{name}</span></div>{}&#8203;</div></summary><div class=\"select-kit-body\"><div class=\"select-kit-filter\"></div><ul aria-live=\"polite\" class=\"select-kit-collection\" role=\"menu\">{rows}</ul></div></details></li>",
+            selected.1,
+            selected.1,
+            icon(selected.0, None),
+            icon("angle-down", Some("angle-icon")),
+        ));
+    }
     // chat's user-profile-controls connector: ChatDirectMessageButton.
     if u["can_chat_user"] == true && !viewing_self && viewer.can_direct_message {
         out.push_str(&format!(
@@ -1295,7 +1342,10 @@ fn summary_content(
             title
                 .map(|t| format!(" title=\"{}\"", escape(&t)))
                 .unwrap_or_default(),
-            icon_name.map(|i| icon(i, None)).unwrap_or_default()
+            // The template's whitespace between the icon and the label.
+            icon_name
+                .map(|i| format!("{} ", icon(i, None)))
+                .unwrap_or_default()
         )
     };
     let count_stat = |key: &str, label_key: &str, icon_name: Option<&str>| {
@@ -1309,9 +1359,11 @@ fn summary_content(
     let linked = m["can_see_user_actions"] == true;
     let li = |class: &str, href: Option<String>, inner: String| match href.filter(|_| linked) {
         Some(href) => {
-            format!("<li class=\"{class} linked-stat\"><a href=\"{href}\">{inner}</a></li>")
+            format!(" <li class=\"{class} linked-stat\"><a href=\"{href}\">{inner}</a></li>")
         }
-        None => format!("<li class=\"{class}\">{inner}</li>"),
+        // The template's whitespace between the items, which are inline
+        // blocks.
+        None => format!(" <li class=\"{class}\">{inner}</li>"),
     };
     if m["can_see_summary_stats"] == true {
         out.push_str(&format!(
@@ -1396,7 +1448,7 @@ fn summary_content(
         let solved = n("solved_count");
         if settings.solved && solved > 0 {
             out.push_str(&format!(
-                "<li class=\"user-summary-stat-outlet solved-count linked-stat\"><a href=\"{user_path}/activity/solved\">{}</a></li>",
+                " <li class=\"user-summary-stat-outlet solved-count linked-stat\"><a href=\"{user_path}/activity/solved\">{}</a></li>",
                 stat(
                     number(cx, solved),
                     escape(&t_count(cx, "solved.solution_summary", solved, &[])),

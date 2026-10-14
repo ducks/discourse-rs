@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, expiring_at, created_at, updated_at) VALUES ((SELECT id FROM users WHERE username = 'user0'), (SELECT id FROM users WHERE username = 'user2'), '2030-01-01 00:00:00', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1/notification_level.json", "params": { "notification_level": "mute" } },
+    { "method": "PUT", "path": "/u/user1/notification_level.json", "params": { "notification_level": "mute" } },
+    { "method": "PUT", "path": "/u/User2/notification_level.json", "params": { "notification_level": "mute" } }
+  ],
+  "include_tables": ["muted_users", "ignored_users"]
+}
