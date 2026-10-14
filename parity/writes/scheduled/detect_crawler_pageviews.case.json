@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO browser_pageview_events (id, url, ip_address, user_agent, session_id, created_at) VALUES (9001, '/latest', '10.0.0.1', 'curl/8.0', 's1', now() - interval '50 minutes')"
+  ],
+  "requests": [],
+  "enqueue": [["detect_crawler_pageviews", {}]],
+  "run_jobs": ["detect_crawler_pageviews"]
+}

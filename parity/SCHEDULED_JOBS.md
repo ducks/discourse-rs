@@ -67,6 +67,8 @@ Classes:
 | fix_user_usernames_and_groups_names_clash | 1w (UsernameChanger inline, no staff log) | scheduled/username_group_clash* |
 | run_problem_checks (and run_problem_check with its retries), cleanup_problem_check_trackers, notify_admins_of_problems | 10m, 10m, 30m (group_email_credentials with SMTP on and twitter_login while enabled refused: they need the network) | scheduled/run_problem_check*, scheduled/cleanup_problem_check_trackers, scheduled/notify_admins_of_problems* |
 | warm_dashboard_reports | 30m (the reports cache, in cached_values) | scheduled/warm_dashboard_reports |
+| maintain_user_visit_daily_rollups, maintain_category_activity_daily_rollups, rebuild_category_activity_daily_rollups | 3h, 3h, 1d (from the worker's start; Rails: 5am) | scheduled/user_visit_rollups_*, scheduled/category_activity_rollups* |
+| maintain_browser_pageview_rollups (with the referrer, URL and browser backfills), clean_up_browser_pageview_events, clean_up_crawler_stats, detect_crawler_pageviews | 10m, 1d, 1d, 10m (CrawlerScorer refused while improved_crawler_detection is on) | scheduled/browser_pageview_*, scheduled/crawler_stats_cleanup, scheduled/detect_crawler_pageviews |
 
 ## Ready, in porting order
 
@@ -91,8 +93,7 @@ the features below (ROADMAP.md's queue has them).
 | create_missing_avatars | gravatar downloads |
 | poll_mailbox | POP3 (mail arrives through /admin/email/handle_mail) |
 | recalculate_nested_hot_scores, backfill_nested_reply_stats | the nested replies view |
-| flush_browser_pageview_events, clean_up_browser_pageview_events, maintain_browser_pageview_rollups, detect_crawler_pageviews, clean_up_crawler_stats | pageview analytics |
-| maintain_category_activity_daily_rollups, rebuild_category_activity_daily_rollups, maintain_user_visit_daily_rollups | the dashboard's rollups |
+| flush_browser_pageview_events | the beacon's queue (pageview tracking) |
 
 ## Infra
 

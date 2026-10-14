@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM category_activity_daily_rollups"
+  ],
+  "requests": [],
+  "enqueue": [["maintain_category_activity_daily_rollups", {}]],
+  "run_jobs": ["maintain_category_activity_daily_rollups"],
+  "unordered": {"category_activity_daily_rollups": ["id"]}
+}

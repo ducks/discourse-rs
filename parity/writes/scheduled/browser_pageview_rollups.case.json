@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO browser_pageview_events (id, url, ip_address, referrer, user_agent, session_id, topic_id, user_id, country_code, created_at, normalized_referrer, normalized_referrer_version, normalized_url, normalized_url_version, browser) VALUES (9001, 'https://localhost/t/35?u=x', '10.0.0.1', 'https://www.Google.com/search?q=x&utm_source=y#frag', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 's1', 35, NULL, 'DE', now() - interval '1 day', NULL, NULL, NULL, NULL, NULL), (9002, '/latest/', '10.0.0.1', NULL, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 's1', NULL, NULL, 'DE', now() - interval '1 day' + interval '1 minute', NULL, NULL, NULL, NULL, NULL), (9003, '/c/general/4', '10.0.0.2', 'http://localhost/latest', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 's2', NULL, 2, 'US', now() - interval '2 hours', NULL, NULL, NULL, NULL, NULL), (9004, '/', '10.0.0.3', 'https://news.example.com:8443/a/b/?ref_src=z&k=1', 'curl/8.0', 's3', NULL, NULL, NULL, now() - interval '3 days', NULL, NULL, NULL, NULL, NULL)",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, mouse_move_events, created_at, updated_at) VALUES ('s1', 25, 3, now() - interval '1 day', now() - interval '1 day'), ('s3', 2, 0, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [],
+  "enqueue": [["maintain_browser_pageview_rollups", {}]],
+  "run_jobs": ["maintain_browser_pageview_rollups"]
+}

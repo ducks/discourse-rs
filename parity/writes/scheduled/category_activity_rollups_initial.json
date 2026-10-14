@@ -1,0 +1,103 @@
+{
+  "name": "category_activity_rollups_initial",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:39:57.892251",
+  "transaction_started_at": "2026-10-14T16:39:55.162997",
+  "responses": [],
+  "changes": {
+    "category_activity_daily_rollups": {
+      "inserted": [
+        {
+          "id": 48,
+          "date": "2026-09-30",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 49,
+          "date": "2026-09-30",
+          "posts": 6,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 50,
+          "date": "2026-07-25",
+          "posts": 4,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 3,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 51,
+          "date": "2026-10-01",
+          "posts": 1,
+          "topics": 0,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 52,
+          "date": "2026-07-25",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 53,
+          "date": "2026-09-30",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 54,
+          "date": "2026-07-25",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "category_activity_daily_rollups": 48
+  },
+  "setup": [
+    "DELETE FROM category_activity_daily_rollups"
+  ],
+  "enqueue": [
+    [
+      "maintain_category_activity_daily_rollups",
+      {}
+    ]
+  ],
+  "unordered": {
+    "category_activity_daily_rollups": [
+      "id"
+    ]
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c42b9acb56edbfc21e319aaddc42027bca0d1b01f854d6878b6405851c5b1696",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

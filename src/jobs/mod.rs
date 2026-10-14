@@ -22,6 +22,7 @@ pub mod list_stats;
 pub mod moderation;
 pub mod periodical;
 pub mod problem_checks;
+pub mod rollups;
 pub mod scores;
 pub mod search_jobs;
 pub mod topic_timers;
@@ -454,6 +455,35 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(30 * 60),
     ),
     (
+        rollups::MAINTAIN_USER_VISIT_DAILY_ROLLUPS,
+        Duration::from_secs(3 * 3600),
+    ),
+    (
+        rollups::MAINTAIN_CATEGORY_ACTIVITY_DAILY_ROLLUPS,
+        Duration::from_secs(3 * 3600),
+    ),
+    // Rails runs it daily at 5am; here, daily from the worker's start.
+    (
+        rollups::REBUILD_CATEGORY_ACTIVITY_DAILY_ROLLUPS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        rollups::MAINTAIN_BROWSER_PAGEVIEW_ROLLUPS,
+        Duration::from_secs(10 * 60),
+    ),
+    (
+        rollups::CLEAN_UP_BROWSER_PAGEVIEW_EVENTS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        rollups::CLEAN_UP_CRAWLER_STATS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        rollups::DETECT_CRAWLER_PAGEVIEWS,
+        Duration::from_secs(10 * 60),
+    ),
+    (
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS,
         Duration::from_secs(30 * 60),
     ),
@@ -589,6 +619,23 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         crate::username_changer::FIX_CLASH => crate::username_changer::fix_clash(state).await,
         problem_checks::RUN_PROBLEM_CHECKS => problem_checks::run_problem_checks(state).await,
         dashboard::WARM_DASHBOARD_REPORTS => dashboard::warm_dashboard_reports(state).await,
+        rollups::MAINTAIN_USER_VISIT_DAILY_ROLLUPS => {
+            rollups::maintain_user_visit_daily_rollups(state).await
+        }
+        rollups::MAINTAIN_CATEGORY_ACTIVITY_DAILY_ROLLUPS => {
+            rollups::maintain_category_activity_daily_rollups(state).await
+        }
+        rollups::REBUILD_CATEGORY_ACTIVITY_DAILY_ROLLUPS => {
+            rollups::rebuild_category_activity_daily_rollups(state).await
+        }
+        rollups::MAINTAIN_BROWSER_PAGEVIEW_ROLLUPS => {
+            rollups::maintain_browser_pageview_rollups(state).await
+        }
+        rollups::CLEAN_UP_BROWSER_PAGEVIEW_EVENTS => {
+            rollups::clean_up_browser_pageview_events(state).await
+        }
+        rollups::CLEAN_UP_CRAWLER_STATS => rollups::clean_up_crawler_stats(state).await,
+        rollups::DETECT_CRAWLER_PAGEVIEWS => rollups::detect_crawler_pageviews(state).await,
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS => {
             problem_checks::notify_admins_of_problems(state).await
         }

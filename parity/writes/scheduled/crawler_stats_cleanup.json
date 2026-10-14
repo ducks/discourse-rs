@@ -1,0 +1,82 @@
+{
+  "name": "crawler_stats_cleanup",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:28:25.821719",
+  "transaction_started_at": "2026-10-14T16:28:23.63065",
+  "responses": [],
+  "changes": {
+    "web_crawler_requests": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "date": "2026-09-04",
+          "count": 100,
+          "user_agent": "OldBot"
+        },
+        {
+          "id": 2,
+          "date": "2026-09-13",
+          "count": 5,
+          "user_agent": "OldishBot"
+        },
+        {
+          "id": 6,
+          "date": "2026-10-13",
+          "count": 1,
+          "user_agent": "Bot1"
+        },
+        {
+          "id": 7,
+          "date": "2026-10-13",
+          "count": 2,
+          "user_agent": "Bot2"
+        },
+        {
+          "id": 8,
+          "date": "2026-10-13",
+          "count": 3,
+          "user_agent": "Bot3"
+        },
+        {
+          "id": 9,
+          "date": "2026-10-13",
+          "count": 4,
+          "user_agent": "Bot4"
+        },
+        {
+          "id": 10,
+          "date": "2026-10-13",
+          "count": 5,
+          "user_agent": "Bot5"
+        },
+        {
+          "id": 11,
+          "date": "2026-10-13",
+          "count": 6,
+          "user_agent": "Bot6"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO web_crawler_requests (date, user_agent, count) VALUES ((now() - interval '40 days')::date, 'OldBot', 100), ((now() - interval '31 days')::date, 'OldishBot', 5), ((now() - interval '29 days')::date, 'RecentBot', 5), ((now() - interval '1 day')::date, 'Googlebot', 30), (now()::date, 'Bingbot', 20)",
+    "INSERT INTO web_crawler_requests (date, user_agent, count) SELECT (now() - interval '1 day')::date, 'Bot' || g, g FROM generate_series(1, 205) g"
+  ],
+  "enqueue": [
+    [
+      "clean_up_crawler_stats",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "249f235748e1b17d063d873f4daff0f946cc0a9ca7390905fb45d7c2270570ed",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

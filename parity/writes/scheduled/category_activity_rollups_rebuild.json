@@ -1,0 +1,197 @@
+{
+  "name": "category_activity_rollups_rebuild",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:40:05.032268",
+  "transaction_started_at": "2026-10-14T16:40:00.48405",
+  "responses": [],
+  "changes": {
+    "category_activity_daily_rollups": {
+      "inserted": [
+        {
+          "id": 49,
+          "date": "2026-07-25",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 50,
+          "date": "2026-07-25",
+          "posts": 4,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 3,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 51,
+          "date": "2026-07-25",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 52,
+          "date": "2026-09-30",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 53,
+          "date": "2026-10-14",
+          "posts": 0,
+          "topics": 0,
+          "page_views": 10,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 54,
+          "date": "2026-09-30",
+          "posts": 6,
+          "topics": 3,
+          "page_views": 7,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 55,
+          "date": "2026-10-13",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 56,
+          "date": "2026-10-01",
+          "posts": 1,
+          "topics": 0,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 57,
+          "date": "2026-09-30",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        }
+      ],
+      "deleted": [
+        {
+          "id": 27,
+          "date": "2026-07-25",
+          "posts": 4,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 3,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 28,
+          "date": "2026-07-25",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 30,
+          "date": "2026-07-25",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 44,
+          "date": "2026-09-30",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 45,
+          "date": "2026-09-30",
+          "posts": 6,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 46,
+          "date": "2026-10-01",
+          "posts": 1,
+          "topics": 0,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 47,
+          "date": "2026-09-30",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 48,
+          "date": "2026-07-01",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 1,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "category_activity_daily_rollups": 49
+  },
+  "setup": [
+    "UPDATE topics SET created_at = now() - interval '1 day' WHERE id = 38",
+    "UPDATE posts SET created_at = now() - interval '1 day' WHERE topic_id = 38",
+    "INSERT INTO topic_view_stats (topic_id, viewed_at, anonymous_views, logged_in_views) VALUES (35, '2026-09-30', 3, 4), (38, now()::date, 10, 0)",
+    "INSERT INTO category_activity_daily_rollups (date, category_id, topics, posts, page_views, likely_crawler_page_views) VALUES ('2026-07-01', 4, 1, 1, 1, 0)"
+  ],
+  "enqueue": [
+    [
+      "rebuild_category_activity_daily_rollups",
+      {}
+    ]
+  ],
+  "unordered": {
+    "category_activity_daily_rollups": [
+      "id"
+    ]
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d6cadd24dc4153963448d04f464cd675b30773bb84c0d9c1e19c51f7f5de7205",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
