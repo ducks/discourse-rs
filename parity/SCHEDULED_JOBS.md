@@ -35,7 +35,7 @@ Classes:
 | DiscourseReactions::ScheduledLikeSynchronizer | 1h | scheduled/like_sync_* |
 | tl3_promotions | 1d (from the worker's start; Rails: 4am) | scheduled/tl3_* |
 | reviewable_priorities | 1d | scheduled/reviewable_priorities* |
-| auto_queue_handler | 1d (flagged posts; queued posts and users refused) | scheduled/auto_queue_* |
+| auto_queue_handler | 1d (flagged posts and users; queued posts refused) | scheduled/auto_queue_* |
 | destroy_old_deletion_stubs | 30m | scheduled/deletion_stubs |
 | destroy_old_hidden_posts | 1d (posts in messages refused) | scheduled/hidden_posts* |
 | activation_reminder_emails | 2h | scheduled/activation_reminder* |

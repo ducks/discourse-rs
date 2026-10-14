@@ -198,6 +198,158 @@ pub async fn reject_for_deleted_user(
     reject(conn, reviewable_id, performer).await
 }
 
+/// What ReviewableUser#perform_delete_user(_block) is given.
+pub struct DeleteArgs {
+    /// `delete_user_block`: the user's emails and IPs screened too.
+    pub block: bool,
+    pub reject_reason: Option<String>,
+    /// `additional_args`: `params[:send_email] != "false"`.
+    pub send_email: bool,
+    /// `increment_version!(version)`; None increments unconditionally.
+    pub version: Option<i64>,
+}
+
+/// How `reviewable.perform(performer, :delete_user)` ends.
+pub enum DeleteOutcome {
+    /// The new version, and the other reviewables of the user it
+    /// resolved, with their statuses (`reviewable_updates`).
+    Done {
+        version: i64,
+        resolved: Vec<(i64, i32)>,
+    },
+    /// `Reviewable::InvalidAction`, the user still there.
+    InvalidAction,
+    /// `Reviewable::InvalidAction` on a handled reviewable whose user is
+    /// gone (reviewables.already_handled_and_user_not_exist).
+    AlreadyHandled,
+    /// `Reviewable::UpdateConflict`
+    Conflict,
+}
+
+/// `ReviewableUser#perform(performer, :delete_user | :delete_user_block)`:
+/// a pending account review rejected, the user destroyed when they can
+/// be (one with posts, or that the performer may not delete, stays), as
+/// "Reviewable user rejected" or, by system, "Auto handle queued
+/// reviewables".
+pub async fn perform_delete_user(
+    conn: &mut PgConnection,
+    ctx: &crate::posting::Ctx<'_>,
+    performer: &crate::guardian::Guardian,
+    reviewable_id: i64,
+    args: &DeleteArgs,
+) -> Result<DeleteOutcome, AppError> {
+    let actor = performer
+        .user()
+        .ok_or(Unsupported("reviewing anonymously"))?
+        .clone();
+    let (status, target_id, topic_id): (i32, Option<i32>, Option<i32>) =
+        sqlx::query_as("SELECT status, target_id, topic_id FROM reviewables WHERE id = $1")
+            .bind(reviewable_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let target: Option<i32> = match target_id {
+        Some(id) => {
+            sqlx::query_scalar("SELECT id FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
+    // validate_action!: the delete actions are built while pending.
+    if status != PENDING {
+        return Ok(if target.is_none() {
+            DeleteOutcome::AlreadyHandled
+        } else {
+            DeleteOutcome::InvalidAction
+        });
+    }
+    if topic_id.is_some() {
+        return Err(Unsupported("user reviewables with a topic (claims)").into());
+    }
+    // pending_reviewable_ids_for_target_user
+    let candidates: Vec<i64> = match target {
+        Some(user_id) => {
+            sqlx::query_scalar(
+                "SELECT id FROM reviewables WHERE status = $1 AND id <> $3 \
+               AND (target_created_by_id = $2 OR (target_type = 'User' AND target_id = $2)) \
+             ORDER BY id",
+            )
+            .bind(PENDING)
+            .bind(user_id)
+            .bind(reviewable_id)
+            .fetch_all(&mut *conn)
+            .await?
+        }
+        None => Vec::new(),
+    };
+    // increment_version!
+    let version: Option<i32> = match args.version {
+        Some(v) => sqlx::query_scalar(
+            "UPDATE reviewables SET version = version + 1 WHERE id = $1 AND version = $2 RETURNING version",
+        )
+        .bind(reviewable_id)
+        .bind(v as i32),
+        None => sqlx::query_scalar(
+            "UPDATE reviewables SET version = version + 1 WHERE id = $1 RETURNING version",
+        )
+        .bind(reviewable_id),
+    }
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(version) = version else {
+        return Ok(DeleteOutcome::Conflict);
+    };
+    if let Some(user_id) = target {
+        if args
+            .reject_reason
+            .as_deref()
+            .is_some_and(|r| r.chars().count() > 2000)
+        {
+            return Err(Unsupported("a reject reason over 2000 characters (RecordInvalid)").into());
+        }
+        if args.send_email && ctx.settings.get("must_approve_users")?.truthy() {
+            return Err(Unsupported("rejection emails (signup_after_reject)").into());
+        }
+        sqlx::query("UPDATE reviewables SET reject_reason = $2 WHERE id = $1")
+            .bind(reviewable_id)
+            .bind(&args.reject_reason)
+            .execute(&mut *conn)
+            .await?;
+        let context = if actor.id == SYSTEM_USER_ID {
+            "user.destroy_reasons.reviewable_reject_auto"
+        } else {
+            "user.destroy_reasons.reviewable_reject"
+        };
+        let opts = crate::user_destroyer::Options {
+            block_ip: args.block,
+            block_email: args.block,
+            context: Some(ctx.t(context)),
+            reviewable_id: Some(reviewable_id),
+            ..Default::default()
+        };
+        // PostsExistError and InvalidAccess rescued: the user stays.
+        crate::user_destroyer::destroy(conn, ctx, performer, user_id, &opts).await?;
+    }
+    let performer = Performer {
+        id: actor.id,
+        username: &actor.username,
+    };
+    reject(conn, reviewable_id, &performer).await?;
+    // resolved_reviewable_ids, with their statuses for the serializer.
+    let resolved: Vec<(i64, i32)> = sqlx::query_as(
+        "SELECT id, status FROM reviewables WHERE id = ANY($1) AND status <> $2 ORDER BY id",
+    )
+    .bind(&candidates)
+    .bind(PENDING)
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(DeleteOutcome::Done {
+        version: i64::from(version),
+        resolved,
+    })
+}
+
 /// `transition_to(:rejected, performer)` and the notify_reviewable job
 /// Reviewable#perform enqueues for it.
 pub(crate) async fn reject(
