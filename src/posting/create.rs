@@ -59,6 +59,8 @@ pub struct NewPost {
     pub subtype: Option<String>,
     /// `post_alert_options:`, handed to the post_alert job.
     pub post_alert_options: Option<serde_json::Value>,
+    /// `topic_opts: { custom_fields: }`: a new topic's custom fields.
+    pub topic_custom_fields: Vec<(String, String)>,
     /// Sent by PostsController, which passes the writing device; email and
     /// system messages have none.
     pub from_composer: bool,
@@ -139,6 +141,8 @@ struct TopicPlan {
     all_topics_wiki: bool,
     /// A message's subtype.
     subtype: Option<String>,
+    /// The topic's custom fields (`topic_opts[:custom_fields]`).
+    custom_fields: Vec<(String, String)>,
 }
 
 /// `BrowserDetection.device(user_agent)`
@@ -197,6 +201,7 @@ async fn regular_topic_plan(
         slow_mode_seconds: slow_mode,
         all_topics_wiki,
         subtype: None,
+        custom_fields: Vec::new(),
     })
 }
 
@@ -460,9 +465,12 @@ pub async fn create(
                 slow_mode_seconds: None,
                 all_topics_wiki: false,
                 subtype: args.subtype.clone(),
+                custom_fields: args.topic_custom_fields.clone(),
             });
         } else {
-            plan = Some(regular_topic_plan(&mut conn, s, title, category_id).await?);
+            let mut regular = regular_topic_plan(&mut conn, s, title, category_id).await?;
+            regular.custom_fields = args.topic_custom_fields.clone();
+            plan = Some(regular);
         }
     }
     if !new_topic {
@@ -1370,6 +1378,18 @@ async fn create_topic(
     .bind(pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")))
     .fetch_one(&mut *conn)
     .await?;
+    // HasCustomFields: the topic's custom fields, saved with it.
+    for (name, value) in &plan.custom_fields {
+        sqlx::query(
+            "INSERT INTO topic_custom_fields (topic_id, name, value, created_at, updated_at) \
+             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(topic_id)
+        .bind(name)
+        .bind(value)
+        .execute(&mut *conn)
+        .await?;
+    }
     // before_save on create: the category's auto close, saved with the
     // topic (topic_timers <<).
     crate::topic_timer::inherit_auto_close_from_category(

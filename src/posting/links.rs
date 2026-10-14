@@ -299,7 +299,7 @@ fn parse_url(url: &str) -> Option<Parsed<'_>> {
 }
 
 /// Site paths Rails' router recognizes, the users ones apart.
-const RECOGNIZED: [&str; 18] = [
+const RECOGNIZED: [&str; 19] = [
     "/c/",
     "/tag/",
     "/tags",
@@ -310,6 +310,7 @@ const RECOGNIZED: [&str; 18] = [
     "/categories",
     "/search",
     "/g/",
+    "/groups",
     "/badges",
     "/about",
     "/faq",

@@ -1,0 +1,123 @@
+{
+  "name": "membership_handle_request_deny",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/handle_membership_request.json",
+      "params": {
+        "user_id": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/handle_membership_request.json",
+      "params": {
+        "user_id": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/handle_membership_request.json",
+      "params": {
+        "user_id": 99999
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:09:19.41572",
+  "transaction_started_at": "2026-10-14T09:09:16.977989",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: user_id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "group_requests": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9001,
+          "reason": "Please",
+          "user_id": 2,
+          "group_id": 9001,
+          "created_at": "2026-10-01T10:00:00",
+          "updated_at": "2026-10-01T10:00:00"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jyZor6C5NQRLXRkRU7LlugaKbFo=",
+            "created_at": "2026-10-14T09:09:17.994277",
+            "rotated_at": "2026-10-14T09:09:17.991842",
+            "updated_at": "2026-10-14T09:09:17.994277",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jyZor6C5NQRLXRkRU7LlugaKbFo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:09:19.444422",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jyZor6C5NQRLXRkRU7LlugaKbFo=",
+            "created_at": "2026-10-14T09:09:17.994277",
+            "rotated_at": "2026-10-14T09:09:17.991842",
+            "updated_at": "2026-10-14T09:09:17.994277",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jyZor6C5NQRLXRkRU7LlugaKbFo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, allow_membership_requests, user_count, created_at, updated_at) VALUES (9001, 'askers', TRUE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_requests (id, group_id, user_id, reason, created_at, updated_at) VALUES (9001, 9001, 2, 'Please', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "0689a10f7879c9acd9402fa0f5a6e4f77969406861b7f8e214bf2ef44c6e811f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

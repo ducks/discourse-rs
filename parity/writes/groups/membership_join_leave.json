@@ -1,0 +1,158 @@
+{
+  "name": "membership_join_leave",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002/join.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9001/leave.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9002/leave.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/join.json"
+    }
+  ],
+  "started_at": "2026-10-14T09:09:23.733255",
+  "transaction_started_at": "2026-10-14T09:09:21.527501",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T09:09:23.989434",
+          "prev_value": null,
+          "updated_at": "2026-10-14T09:09:23.989434",
+          "acting_user_id": 3,
+          "target_user_id": 3
+        },
+        {
+          "id": 2,
+          "action": 3,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T09:09:24.613463",
+          "prev_value": null,
+          "updated_at": "2026-10-14T09:09:24.613463",
+          "acting_user_id": 3,
+          "target_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AhPwu3gRc7TO6TaOQQVAQw+P/Fs=",
+            "created_at": "2026-10-14T09:09:22.396008",
+            "rotated_at": "2026-10-14T09:09:22.393706",
+            "updated_at": "2026-10-14T09:09:22.396008",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "AhPwu3gRc7TO6TaOQQVAQw+P/Fs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:09:23.747552",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AhPwu3gRc7TO6TaOQQVAQw+P/Fs=",
+            "created_at": "2026-10-14T09:09:22.396008",
+            "rotated_at": "2026-10-14T09:09:22.393706",
+            "updated_at": "2026-10-14T09:09:22.396008",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "AhPwu3gRc7TO6TaOQQVAQw+P/Fs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "group_histories": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, public_admission, public_exit, title, created_at, updated_at) VALUES (9001, 'open', TRUE, TRUE, 'Opener', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'closed', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "f9c98d2c1650aaf65e806885bd6df55effdceb761de62b02e2383eec82d9d0c5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

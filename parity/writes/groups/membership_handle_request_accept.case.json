@@ -1,0 +1,35 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, allow_membership_requests, user_count, created_at, updated_at) VALUES (9001, 'askers', TRUE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/groups/askers/request_membership.json",
+      "params": {
+        "reason": "Admin wants in"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "{{responses.0.body.relative_url}}.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/handle_membership_request.json",
+      "params": {
+        "user_id": 1,
+        "accept": true
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/1/body/timeline_lookup",
+    "/responses/1/body/message_bus_last_id",
+    "/responses/1/body/discourse_zendesk_plugin_zendesk_id",
+    "/responses/1/body/discourse_zendesk_plugin_zendesk_url",
+    "/responses/1/body/details/allowed_users"
+  ]
+}

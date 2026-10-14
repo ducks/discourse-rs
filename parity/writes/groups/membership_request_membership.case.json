@@ -1,0 +1,36 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO groups (id, name, allow_membership_requests, user_count, created_at, updated_at) VALUES (9001, 'askers', TRUE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'closed', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/groups/askers/request_membership.json",
+      "params": {
+        "reason": "Please let me in"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/groups/askers/request_membership.json",
+      "params": {
+        "reason": "Again"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/groups/closed/request_membership.json",
+      "params": {
+        "reason": "No"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/groups/askers/request_membership.json",
+      "params": {}
+    }
+  ]
+}

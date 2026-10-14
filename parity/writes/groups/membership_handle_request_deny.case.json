@@ -1,0 +1,31 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, allow_membership_requests, user_count, created_at, updated_at) VALUES (9001, 'askers', TRUE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_requests (id, group_id, user_id, reason, created_at, updated_at) VALUES (9001, 9001, 2, 'Please', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/handle_membership_request.json",
+      "params": {
+        "user_id": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/handle_membership_request.json",
+      "params": {
+        "user_id": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/handle_membership_request.json",
+      "params": {
+        "user_id": 99999
+      }
+    }
+  ]
+}
