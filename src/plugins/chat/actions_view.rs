@@ -19,7 +19,7 @@ fn s(v: &Value) -> &str {
 pub struct Toolbar<'a> {
     pub t: &'a dyn Fn(&str) -> String,
     pub base_path: &'a str,
-    pub emoji_set: &'a str,
+    pub emojis: &'a crate::emojis::Emojis,
     pub viewer_id: i64,
     pub staff: bool,
     /// `chat_quick_reactions_custom` when the member's
@@ -49,7 +49,7 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
     let can_modify = status == "open" || (tb.staff && status == "closed");
     let flag = |b: bool| if b { "true" } else { "false" };
     let mut out = format!(
-        "<template class=\"chat-message-actions-template\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-modify=\"{}\" data-following=\"{}\" data-can-moderate=\"{}\" data-can-delete-self=\"{}\" data-can-delete-others=\"{}\" data-can-flag=\"{}\" data-can-pin=\"{}\" data-quick-custom=\"{}\" data-quick-defaults=\"{}\" data-tonable=\"{}\" data-emoji-url=\"{}\" data-label-add=\"{}\" data-label-remove=\"{}\" data-label-bookmark=\"{}\" data-label-bookmark-edit=\"{}\" data-label-created-generic=\"{}\" data-label-created-reminder=\"{}\" data-label-reminder-today=\"{}\" data-label-reminder-tomorrow=\"{}\" data-label-reminder-at=\"{}\" data-label-link-copied=\"{}\" data-label-too-long=\"{}\">",
+        "<template class=\"chat-message-actions-template\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-modify=\"{}\" data-following=\"{}\" data-can-moderate=\"{}\" data-can-delete-self=\"{}\" data-can-delete-others=\"{}\" data-can-flag=\"{}\" data-can-pin=\"{}\" data-quick-custom=\"{}\" data-quick-defaults=\"{}\" data-tonable=\"{}\" data-emoji-url=\"{}\" data-custom-emoji=\"{}\" data-label-add=\"{}\" data-label-remove=\"{}\" data-label-bookmark=\"{}\" data-label-bookmark-edit=\"{}\" data-label-created-generic=\"{}\" data-label-created-reminder=\"{}\" data-label-reminder-today=\"{}\" data-label-reminder-tomorrow=\"{}\" data-label-reminder-at=\"{}\" data-label-link-copied=\"{}\" data-label-too-long=\"{}\">",
         tb.viewer_id,
         flag(tb.staff),
         flag(can_modify),
@@ -62,12 +62,8 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
         escape(tb.quick_custom.unwrap_or_default()),
         escape(tb.default_reactions),
         escape(&tonable_json()),
-        escape(&format!(
-            "{}/images/emoji/{}/%{{name}}.png?v={}",
-            tb.base_path,
-            tb.emoji_set,
-            crate::emoji::image_version()
-        )),
+        escape(&tb.emojis.url_template(tb.base_path)),
+        escape(&tb.emojis.custom_urls_json()),
         escape(&t("chat.reactions.add")),
         escape(&t("chat.reactions.remove")),
         escape(&t("chat.bookmark_message")),
@@ -158,12 +154,7 @@ fn emoji_picker_template(tb: &Toolbar) -> String {
     format!(
         "<template class=\"emoji-picker-template\" data-base-path=\"{}\" data-emoji-url=\"{}\" data-labels=\"{}\"><div class=\"emoji-picker-icons\">{}{}{}{}</div></template>",
         escape(tb.base_path),
-        escape(&format!(
-            "{}/images/emoji/{}/%{{name}}.png?v={}",
-            tb.base_path,
-            tb.emoji_set,
-            crate::emoji::image_version()
-        )),
+        escape(&tb.emojis.url_template(tb.base_path)),
         escape(&Value::Object(labels).to_string()),
         d_icon("magnifying-glass", Some("-left")),
         d_icon("trash-can", None),

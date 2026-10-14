@@ -109,9 +109,11 @@ pub async fn html_for_with(
     ));
     match (category.style_type, &category.icon, &category.emoji) {
         (1, Some(icon), _) if !icon.is_empty() => out.push_str(&crate::svg_sprite::raw_svg(icon)?),
-        (2, _, Some(emoji)) if !emoji.is_empty() => {
-            out.push_str(&codes_to_img(settings, base_path, &format!(":{emoji}:"))?)
-        }
+        (2, _, Some(emoji)) if !emoji.is_empty() => out.push_str(&codes_to_img(
+            settings.emojis(),
+            base_path,
+            &format!(":{emoji}:"),
+        )),
         _ => {}
     }
     out.push_str("<span class='badge-category__name'>");
@@ -209,19 +211,10 @@ fn is_entity(rest: &str) -> bool {
     !body.is_empty() && body.chars().all(|c| c.is_ascii_alphabetic())
 }
 
-/// `Emoji.codes_to_img`: each `:code:` of a known emoji as its image, the
-/// text between escaped once. Custom emojis are not consulted: callers
-/// refuse sites that have them.
-pub fn codes_to_img(settings: &SiteSettings, base_path: &str, s: &str) -> Result<String, AppError> {
-    Ok(codes_to_img_with(
-        &settings.get("emoji_set")?.to_s(),
-        base_path,
-        s,
-    ))
-}
-
-/// `codes_to_img` with the emoji set given.
-pub fn codes_to_img_with(set: &str, base_path: &str, s: &str) -> String {
+/// `Emoji.codes_to_img`: each `:code:` of a custom emoji as its upload
+/// (no version), of a known emoji as its image, the text between escaped
+/// once. The deny list does not apply.
+pub fn codes_to_img(emojis: &crate::emojis::Emojis, base_path: &str, s: &str) -> String {
     static CODE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
     let code_re = CODE.get_or_init(|| regex::Regex::new(r":([\w\-+]+(?::t\d)?):").unwrap());
     let mut out = String::new();
@@ -230,19 +223,17 @@ pub fn codes_to_img_with(set: &str, base_path: &str, s: &str) -> String {
         let whole = m.get(0).expect("match");
         let code = &m[1];
         out.push_str(&html_escape_once(&s[last..whole.start()]));
-        let (name, tone) = match code.split_once(":t") {
-            Some((name, tone)) => (name, Some(tone)),
-            None => (code, None),
+        let name = code.split_once(":t").map_or(code, |(name, _)| name);
+        let url = match emojis.custom(name) {
+            // Emoji[code] looks among the standard emoji first.
+            Some(_) if crate::emoji::DATA.names.contains(name) => {
+                Some(emojis.url_for(base_path, name))
+            }
+            Some(custom) => Some(custom.cdn_url.clone().unwrap_or_default()),
+            None if crate::emoji::DATA.exists(name) => Some(emojis.url_for(base_path, code)),
+            None => None,
         };
-        if crate::emoji::DATA.exists(name) {
-            let path = match tone {
-                Some(t) => format!("{name}/{t}"),
-                None => name.to_string(),
-            };
-            let url = format!(
-                "{base_path}/images/emoji/{set}/{path}.png?v={}",
-                crate::emoji::image_version()
-            );
+        if let Some(url) = url {
             let code = html_escape(code);
             out.push_str(&format!(
                 "<img src=\"{}\" title=\"{code}\" class=\"emoji\" alt=\"{code}\" loading=\"lazy\" width=\"20\" height=\"20\">",

@@ -302,7 +302,8 @@ async fn rebake_old_posts(
         bus: &state.bus,
     };
     for id in ids {
-        let Err(e) = crate::posting::rebake::rebake(&state.pool, &ctx, id).await else {
+        let Err(e) = crate::posting::rebake::rebake(&state.pool, &ctx, id, Some("ultra_low")).await
+        else {
             continue;
         };
         if e.is_unsupported() {

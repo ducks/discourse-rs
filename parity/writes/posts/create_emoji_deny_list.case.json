@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "settings": {
+    "emoji_deny_list": "heart|+1|party_parrot"
+  },
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "a :heart: b :+1: c :thumbsup: :smile: d :party_parrot:\n\nonly :heart: and :red_heart: here\n\n:heart: :wave:"
+      }
+    }
+  ]
+}

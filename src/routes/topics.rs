@@ -406,8 +406,12 @@ async fn topic_crawler(
         Some(u) => Some(urls.absolute(u)?),
         None => crate::html::site_opengraph_image(&mut *conn, &urls).await?,
     };
-    let mut crawler = crate::html::Crawler::for_request(&urls, uri, Some(canonical))?
-        .with_meta(&title, &summary, image);
+    let mut crawler = crate::html::Crawler::for_request(&urls, uri, Some(canonical))?.with_meta(
+        urls.settings.emojis(),
+        &title,
+        &summary,
+        image,
+    );
     crawler.description = description;
     Ok(crawler)
 }

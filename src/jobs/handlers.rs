@@ -33,6 +33,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::username_changer::UPDATE_USERNAME => {
             crate::username_changer::run_update_username(state, &job.args).await
         }
+        crate::custom_emoji::REBAKE_JOB => {
+            crate::custom_emoji::rebake_posts(state, &job.args).await
+        }
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,

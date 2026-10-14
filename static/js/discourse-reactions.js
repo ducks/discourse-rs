@@ -224,6 +224,7 @@
   function emojiImg(config, name, cls) {
     var path = name.replace(/:t(\d)$/, "/$1");
     var src =
+      (config.emoji.custom || {})[name.toLowerCase()] ||
       config.basePath + "/images/emoji/" + config.emoji.set + "/" + path + ".png?v=" +
       config.emoji.version;
     return (

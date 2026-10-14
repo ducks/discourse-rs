@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'Party', 1), ('Blob', 35, now(), now(), NULL, 2), ('aardvark', 35, now(), now(), 'animals', 1), ('zebra', 34, now(), now(), 'default', 1)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/emoji.json"
+    },
+    {
+      "method": "GET",
+      "path": "/site/emoji.json"
+    }
+  ]
+}

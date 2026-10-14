@@ -635,16 +635,11 @@ async fn local_topic_html(
         None => String::new(),
     };
     let unescape = |t: &str| -> Result<String, AppError> {
-        Ok(if s.get("enable_emoji")?.truthy() {
-            crate::topic_list_view::emoji_unescape_with(
-                t,
-                s.get("enable_inline_emoji_translation")?.truthy(),
-                &s.get("emoji_set")?.to_s(),
-                site.base_path,
-            )
-        } else {
-            t.to_string()
-        })
+        Ok(crate::topic_list_view::unescape_emoji(
+            t,
+            s.emojis(),
+            site.base_path,
+        ))
     };
     Ok(Some(crate::mustache::render(
         TOPIC_TEMPLATE,
@@ -968,7 +963,7 @@ async fn inline_title(
                 .as_deref()
                 .map_or(0, crate::ruby::to_i)
                 .min(i64::from(topic.highest_post_number));
-            let mut title = crate::emoji::gsub_emoji_to_unicode(&topic.title);
+            let mut title = site.settings.emojis().gsub_to_unicode(&topic.title);
             if post_number > 1 {
                 // post_author_for_title: an anonymous reader's view.
                 let author: Option<(String, i32, i32)> = sqlx::query_as(
@@ -1075,7 +1070,7 @@ async fn crawled_title(
         .filter(|t| t.chars().count() >= 2),
     }
     // onebox_for
-    .map(|t| crate::emoji::gsub_emoji_to_unicode(&t));
+    .map(|t| s.emojis().gsub_to_unicode(&t));
     let title = match title {
         Some(t) if !t.trim().is_empty() => Some(censored(conn, t).await?),
         t => t,

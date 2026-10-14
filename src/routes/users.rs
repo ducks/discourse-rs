@@ -583,8 +583,12 @@ async fn respond(
         .as_str()
         .map(|t| urls.absolute(&t.replace("{size}", "45")))
         .transpose()?;
-    let mut crawler =
-        crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
+    let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(
+        urls.settings.emojis(),
+        &user.username,
+        "",
+        avatar,
+    );
     crawler.description = settings.get("site_description")?.to_s();
     page.crawler = crawler;
     let response = (
@@ -1009,8 +1013,12 @@ async fn messages_page(
         .as_str()
         .map(|t| urls.absolute(&t.replace("{size}", "45")))
         .transpose()?;
-    let mut crawler =
-        crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
+    let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(
+        urls.settings.emojis(),
+        &user.username,
+        "",
+        avatar,
+    );
     crawler.description = settings.get("site_description")?.to_s();
     page.crawler = crawler;
     render(page)

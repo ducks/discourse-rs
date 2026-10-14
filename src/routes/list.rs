@@ -732,7 +732,8 @@ async fn categories_response(
     )
     .await?;
     site.bus_position = bus_position;
-    let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
+    let mut page =
+        crate::html::categories_page(&mut conn, &state.i18n, settings.emojis(), site, &doc).await?;
     let base_path = state.config.globals.relative_url_root();
     let style = settings.get("desktop_category_page_style")?.to_s();
     let created_order = style == "categories_and_latest_topics_created_date";
@@ -1140,6 +1141,7 @@ async fn list_crawler(
     });
     let image = crate::html::site_opengraph_image(conn, &urls).await?;
     let mut crawler = crate::html::Crawler::for_request(&urls, uri, canonical)?.with_meta(
+        urls.settings.emojis(),
         &title,
         &description,
         image,

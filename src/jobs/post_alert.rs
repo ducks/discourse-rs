@@ -944,6 +944,7 @@ impl Alerter<'_> {
                     text_entities: true,
                     strip_links: true,
                     remap_emoji: true,
+                    denied_emojis: ctx.settings.emojis().denied.clone(),
                     plain_hashtags: true,
                     ..Default::default()
                 },

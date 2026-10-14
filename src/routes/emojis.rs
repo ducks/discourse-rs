@@ -13,9 +13,7 @@ pub async fn index(State(state): State<AppState>) -> Result<Json<Value>, AppErro
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let base_path = state.config.globals.relative_url_root();
-    Ok(Json(
-        crate::emojis::grouped(&mut conn, &settings, base_path).await?,
-    ))
+    Ok(Json(crate::emojis::grouped(&settings, base_path)?))
 }
 
 /// GET /emojis/search-aliases.json

@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1), ('smile', 35, now(), now(), NULL, 1)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "hello :party_parrot: and :Party_Parrot: world :smile: :wave:\n\n:party_parrot: :wave:\n\n:party_parrot:"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

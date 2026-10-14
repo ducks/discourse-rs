@@ -1,6 +1,7 @@
 mod about;
 mod accounts;
 mod admin_email;
+mod admin_emoji;
 mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
@@ -478,6 +479,20 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route(
+            "/admin/config/emoji",
+            get(admin_emoji::index).post(admin_emoji::create),
+        )
+        .route(
+            "/admin/config/emoji.json",
+            get(admin_emoji::index).post(admin_emoji::create),
+        )
+        .route("/admin/config/emoji/new", get(admin_emoji::page))
+        .route("/admin/config/emoji/settings", get(admin_emoji::page))
+        .route("/admin/config/emoji/import", get(admin_emoji::page))
+        .route("/admin/config/emoji/{id}", delete(admin_emoji::destroy))
+        .route("/site/emoji", get(admin_emoji::site_emoji))
+        .route("/site/emoji.json", get(admin_emoji::site_emoji))
         .route("/admin/site_settings", get(admin_site_settings::index))
         .route("/admin/site_settings.json", get(admin_site_settings::index))
         .route(

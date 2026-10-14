@@ -932,7 +932,8 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
     ));
     // PostListItemDetails
     let title = s(&a["title"]);
-    let title_html = crate::topic_list_view::emoji_unescape(&escape(title), &cx.settings, base);
+    let title_html =
+        crate::topic_list_view::emoji_unescape(&escape(title), &cx.settings.emojis, base);
     let post_number = a["post_number"].as_i64().unwrap_or(0);
     let slug = a["slug"]
         .as_str()
@@ -1166,7 +1167,7 @@ fn reactions_list(
         // PostListItemDetails: the flattened item has no post number.
         let title_html = crate::topic_list_view::emoji_unescape(
             s(&post["topic"]["fancy_title"]),
-            &cx.settings,
+            &cx.settings.emojis,
             base,
         );
         let url = format!(

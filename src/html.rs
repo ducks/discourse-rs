@@ -205,6 +205,10 @@ pub struct Chrome {
     /// location for the set, the images' version, `hashtag_icons.tag`.
     pub emoji_base: String,
     pub emoji_version: String,
+    /// The custom emoji by lowercase name and the denied ones, as JSON
+    /// (`registerEmoji`, `site.denied_emojis`).
+    pub custom_emoji: String,
+    pub denied_emoji: String,
     pub hashtag_tag_icon: String,
     /// What lightbox.js needs besides PhotoSwipe's urls, as data
     /// attributes for its script tag (`lightbox_attrs`).
@@ -517,6 +521,8 @@ impl Site {
             None => format!("{}/images/emoji/{emoji_set}", self.base_path),
         };
         self.chrome.emoji_version = crate::emoji::image_version().to_string();
+        self.chrome.custom_emoji = settings.emojis().custom_urls_json();
+        self.chrome.denied_emoji = serde_json::json!(settings.emojis().denied).to_string();
         if settings.get("tagging_enabled")?.truthy() {
             self.chrome.hashtag_tag_icon = "tag".into();
         }
@@ -564,7 +570,6 @@ impl Site {
                 base_path: &self.base_path,
                 active: &active,
                 member: member.as_ref(),
-                emoji_set: &emoji_set,
                 plugin_sections,
             })
         };
@@ -1801,6 +1806,7 @@ pub struct CategoriesPage {
 pub async fn categories_page(
     conn: &mut PgConnection,
     _i18n: &I18n,
+    emojis: &crate::emojis::Emojis,
     site: Site,
     doc: &Value,
 ) -> Result<CategoriesPage, HtmlError> {
@@ -1836,7 +1842,7 @@ pub async fn categories_page(
                             .map(|ts| {
                                 ts.iter()
                                     .map(|t| FeaturedTopic {
-                                        title: crate::emoji::gsub_emoji_to_unicode(&s(&t["title"])),
+                                        title: emojis.gsub_to_unicode(&s(&t["title"])),
                                         url: format!("{base}/t/{}/{}", s(&t["slug"]), t["id"]),
                                         bumped_at: date(&s(&t["bumped_at"])),
                                         bumped_at_iso: s(&t["bumped_at"]),
@@ -2023,9 +2029,15 @@ impl Crawler {
 
     /// `crawlable_meta_data(title:, description:, image:)`: the site's
     /// OpenGraph image when the page has none.
-    pub fn with_meta(mut self, title: &str, description: &str, image: Option<String>) -> Crawler {
-        self.title = crate::emoji::gsub_emoji_to_unicode(title);
-        self.og_description = crate::emoji::gsub_emoji_to_unicode(description);
+    pub fn with_meta(
+        mut self,
+        emojis: &crate::emojis::Emojis,
+        title: &str,
+        description: &str,
+        image: Option<String>,
+    ) -> Crawler {
+        self.title = emojis.gsub_to_unicode(title);
+        self.og_description = emojis.gsub_to_unicode(description);
         self.image = image.filter(|i| !i.is_empty());
         self
     }

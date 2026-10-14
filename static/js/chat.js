@@ -1096,8 +1096,14 @@
       .slice(0, 3);
   }
 
+  // emojiUrlFor: a custom emoji's upload, else the standard image.
   function emojiUrl(tpl, emoji) {
-    return tpl.dataset.emojiUrl.replace("%{name}", emoji.replace(":t", "/"));
+    var custom = JSON.parse(tpl.dataset.customEmoji || "{}");
+    var code = emoji.toLowerCase();
+    if (custom[code]) {
+      return custom[code];
+    }
+    return tpl.dataset.emojiUrl.replace("%{name}", code.replace(":t", "/"));
   }
 
   // ChatMessageReaction without its count: the message's own reaction

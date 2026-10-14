@@ -1,0 +1,75 @@
+{
+  "name": "toggle_custom_emoji",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/party_parrot/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T05:39:03.675031",
+  "transaction_started_at": "2026-10-14T05:39:02.649372",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, an error has occurred."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mD1jv/LoPwiG+Ou2WIZKSa0r6Us=",
+            "created_at": "2026-10-14T05:39:03.170444",
+            "rotated_at": "2026-10-14T05:39:03.166953",
+            "updated_at": "2026-10-14T05:39:03.170444",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mD1jv/LoPwiG+Ou2WIZKSa0r6Us=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T05:39:03.683997",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mD1jv/LoPwiG+Ou2WIZKSa0r6Us=",
+            "created_at": "2026-10-14T05:39:03.170444",
+            "rotated_at": "2026-10-14T05:39:03.166953",
+            "updated_at": "2026-10-14T05:39:03.170444",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mD1jv/LoPwiG+Ou2WIZKSa0r6Us=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1)"
+  ],
+  "recorded_from": {
+    "case": "62184171198282998fa0932196a3d0cf476f4c173184c0b44c1fbbb795d7665b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

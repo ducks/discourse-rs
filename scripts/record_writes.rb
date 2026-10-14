@@ -280,7 +280,8 @@ cases.each do |c|
     end
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
-    reset_plugin_caches if c["setup"]
+    # Always: a case's settings (emoji_deny_list) are cached too.
+    reset_plugin_caches
     # `rate_limits`: the limiter on for the case's requests and jobs only
     # (after the login and setup, which would count otherwise).
     RateLimiter.enable if c["rate_limits"]
@@ -390,6 +391,8 @@ cases.each do |c|
     # (SiteSetting.set_and_log), which the rollback undoes in the database
     # but not in the in-process cache.
     SiteSetting.refresh!
-    reset_plugin_caches if c["setup"]
+    # Always: the custom emoji a case wrote and the deny list it set stay
+    # in Emoji's caches after the rollback.
+    reset_plugin_caches
   end
 end

@@ -113,8 +113,6 @@ pub struct Context<'a> {
     pub active: &'a Active,
     /// The member, or None for an anonymous visitor.
     pub member: Option<&'a Member>,
-    /// SiteSetting.emoji_set, for emoji prefixes.
-    pub emoji_set: &'a str,
     /// The bundled plugins' sections (chat's), after the core ones.
     pub plugin_sections: &'a str,
 }
@@ -506,20 +504,23 @@ pub(crate) fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) ->
     }
 }
 
-/// dReplaceEmoji(`:name:`, class "prefix-emoji"): a known emoji's image,
-/// else the text as written.
+/// dReplaceEmoji(`:name:`, class "prefix-emoji"): a known or custom
+/// emoji's image, nothing for a denied one, else the text as written.
 fn emoji_html(name: &str, cx: &Context) -> String {
-    if !crate::emoji::DATA.exists(name) {
-        return escape(&format!(":{name}:"));
+    let emojis = cx.settings.emojis();
+    if emojis.enabled && emojis.is_denied(name) {
+        return String::new();
     }
-    let set = cx.emoji_set;
-    let url = format!(
-        "{}/images/emoji/{set}/{name}.png?v={}",
-        cx.base_path,
-        crate::emoji::image_version()
-    );
+    let Some(url) = emojis.url(name, cx.base_path).filter(|_| emojis.enabled) else {
+        return escape(&format!(":{name}:"));
+    };
+    let class = if emojis.is_custom(name) {
+        "emoji emoji-custom prefix-emoji"
+    } else {
+        "emoji prefix-emoji"
+    };
     format!(
-        "<img width=\"20\" height=\"20\" src=\"{}\" title=\"{n}\" alt=\"{n}\" class=\"emoji prefix-emoji\">",
+        "<img width=\"20\" height=\"20\" src=\"{}\" title=\"{n}\" alt=\"{n}\" class=\"{class}\">",
         escape(&url),
         n = escape(name)
     )

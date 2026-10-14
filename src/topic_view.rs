@@ -494,7 +494,7 @@ impl TopicView<'_> {
         if crate::emoji::has_emoji_code(&topic.title) {
             out.insert(
                 "unicode_title".into(),
-                json!(crate::emoji::gsub_emoji_to_unicode(&topic.title)),
+                json!(self.settings.emojis().gsub_to_unicode(&topic.title)),
             );
         }
         // MessageBus.last_id("/topic/:id"): no message bus yet.

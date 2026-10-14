@@ -117,12 +117,6 @@ async fn topics_partial(
     i18n: &I18n,
     base_path: &str,
 ) -> Result<String, AppError> {
-    let custom_emoji: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM custom_emojis)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if custom_emoji {
-        return Err(Unsupported("custom emojis in the not-found page's titles").into());
-    }
     let definitions: Vec<i32> =
         sqlx::query_scalar("SELECT topic_id FROM categories WHERE topic_id IS NOT NULL")
             .fetch_all(&mut *conn)
@@ -195,7 +189,7 @@ async fn topics_partial(
                 "        <div class='not-found-topic'>\n          <a href=\"{base_path}/t/{}/{}\">{}</a>{badge}\n        </div>\n",
                 row.slug.as_deref().ok_or(Unsupported("topics without a stored slug (Slug.for)"))?,
                 row.id,
-                codes_to_img(settings, base_path, &fancy)?,
+                codes_to_img(settings.emojis(), base_path, &fancy),
             ));
         }
         out.push_str(&format!(

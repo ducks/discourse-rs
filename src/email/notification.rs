@@ -378,10 +378,7 @@ pub async fn build(
             &[
                 ("username", &original_username),
                 ("group_name", group_name.as_deref().unwrap_or_default()),
-                (
-                    "topic_title",
-                    &crate::emoji::gsub_emoji_to_unicode(&topic_title),
-                ),
+                ("topic_title", &s.emojis().gsub_to_unicode(&topic_title)),
                 ("topic_excerpt", &excerpt),
                 ("site_title", &site_title),
                 ("site_description", &s.get("site_description")?.to_s()),
@@ -572,7 +569,7 @@ pub async fn build(
     } else {
         String::new()
     };
-    let topic_title_unicode = crate::emoji::gsub_emoji_to_unicode(&topic_title);
+    let topic_title_unicode = s.emojis().gsub_to_unicode(&topic_title);
     // The invite's own subject template (no use_site_subject).
     let subject = if invite {
         let key = format!("{template}.subject_template");

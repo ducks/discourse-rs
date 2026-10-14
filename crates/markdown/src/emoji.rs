@@ -79,14 +79,18 @@ fn build_unicode_map() -> HashMap<String, String> {
     map
 }
 
-/// `Emoji.lookup_unicode(name)`; the deny list isn't applied yet.
-pub fn lookup_unicode(name: &str) -> Option<&'static str> {
+/// `Emoji.lookup_unicode(name)`: "" for a name `Emoji.denied` holds.
+pub fn lookup_unicode(name: &str, denied: &[String]) -> Option<&'static str> {
+    if denied.iter().any(|d| d == name) {
+        return Some("");
+    }
     UNICODE.get(name).map(String::as_str)
 }
 
 /// `Emoji.gsub_emoji_to_unicode`: replaces `:name:` and `:name:t2` codes
-/// (`/:([\w\-+]+(?::t\d)?):/`, ASCII \w) that name a known emoji.
-pub fn gsub_emoji_to_unicode(s: &str) -> String {
+/// (`/:([\w\-+]+(?::t\d)?):/`, ASCII \w) that name a known emoji; a
+/// denied one (`Emoji.denied`) disappears.
+pub fn gsub_emoji_to_unicode(s: &str, denied: &[String]) -> String {
     let mut out = String::with_capacity(s.len());
     let mut rest = s;
     while let Some(start) = rest.find(':') {
@@ -94,7 +98,7 @@ pub fn gsub_emoji_to_unicode(s: &str) -> String {
         let after = &rest[start + 1..];
         match match_code(after) {
             Some((name, len)) => {
-                match lookup_unicode(name) {
+                match lookup_unicode(name, denied) {
                     Some(unicode) => out.push_str(unicode),
                     None => {
                         out.push(':');
@@ -272,20 +276,37 @@ mod tests {
 
     #[test]
     fn converts_known_codes_and_aliases() {
+        let gsub = |s: &str| gsub_emoji_to_unicode(s, &[]);
         assert_eq!(
-            gsub_emoji_to_unicode("Welcome to Discourse! :wave:"),
+            gsub("Welcome to Discourse! :wave:"),
             "Welcome to Discourse! 👋"
         );
-        assert_eq!(gsub_emoji_to_unicode(":waving_hand:"), "👋");
-        assert_eq!(gsub_emoji_to_unicode(":waving_hand:t2:"), "👋\u{1f3fb}");
+        assert_eq!(gsub(":waving_hand:"), "👋");
+        assert_eq!(gsub(":waving_hand:t2:"), "👋\u{1f3fb}");
         // Tones exist for canonical names only, exactly as in Emoji.lookup_unicode.
-        assert_eq!(gsub_emoji_to_unicode(":wave:t2:"), ":wave:t2:");
-        assert_eq!(gsub_emoji_to_unicode("time 10:30: ok"), "time 10:30: ok");
+        assert_eq!(gsub(":wave:t2:"), ":wave:t2:");
+        assert_eq!(gsub("time 10:30: ok"), "time 10:30: ok");
+        assert_eq!(gsub(":not_an_emoji_xyz:"), ":not_an_emoji_xyz:");
+        assert_eq!(gsub("no emoji"), "no emoji");
+    }
+
+    #[test]
+    fn denied_codes_disappear() {
+        // Emoji.denied with emoji_deny_list "heart|+1": the names, then
+        // their aliases. Probed on the reference: "a  b 😄".
+        let denied: Vec<String> = ["heart", "+1", "red_heart", "thumbs_up", "thumbsup"]
+            .map(String::from)
+            .to_vec();
         assert_eq!(
-            gsub_emoji_to_unicode(":not_an_emoji_xyz:"),
-            ":not_an_emoji_xyz:"
+            gsub_emoji_to_unicode("a :heart: b :smile:", &denied),
+            "a  b 😄"
         );
-        assert_eq!(gsub_emoji_to_unicode("no emoji"), "no emoji");
+        assert_eq!(gsub_emoji_to_unicode(":thumbsup:", &denied), "");
+        // A tone is its own name, not on the list.
+        assert_eq!(
+            lookup_unicode("+1:t2", &denied),
+            UNICODE.get("+1:t2").map(String::as_str)
+        );
     }
 
     #[test]

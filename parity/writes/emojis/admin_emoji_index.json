@@ -1,0 +1,128 @@
+{
+  "name": "admin_emoji_index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/emoji.json"
+    },
+    {
+      "method": "GET",
+      "path": "/site/emoji.json"
+    }
+  ],
+  "started_at": "2026-10-14T05:38:54.384419",
+  "transaction_started_at": "2026-10-14T05:38:53.553667",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "name": "Blob",
+          "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "group": "default",
+          "created_by": "user0"
+        },
+        {
+          "name": "zebra",
+          "url": "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png",
+          "group": "default",
+          "created_by": "admin"
+        },
+        {
+          "name": "aardvark",
+          "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "group": "animals",
+          "created_by": "admin"
+        },
+        {
+          "name": "party_parrot",
+          "url": "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png",
+          "group": "Party",
+          "created_by": "admin"
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "name": "aardvark",
+          "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "group": "animals",
+          "created_by": "admin"
+        },
+        {
+          "name": "Blob",
+          "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "group": "default",
+          "created_by": "user0"
+        },
+        {
+          "name": "party_parrot",
+          "url": "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png",
+          "group": "Party",
+          "created_by": "admin"
+        },
+        {
+          "name": "zebra",
+          "url": "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png",
+          "group": "default",
+          "created_by": "admin"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qwXqqnVdldVrWw4RxamdQ6qxwr8=",
+            "created_at": "2026-10-14T05:38:53.927015",
+            "rotated_at": "2026-10-14T05:38:53.926034",
+            "updated_at": "2026-10-14T05:38:53.927015",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qwXqqnVdldVrWw4RxamdQ6qxwr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T05:38:54.390081",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qwXqqnVdldVrWw4RxamdQ6qxwr8=",
+            "created_at": "2026-10-14T05:38:53.927015",
+            "rotated_at": "2026-10-14T05:38:53.926034",
+            "updated_at": "2026-10-14T05:38:53.927015",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qwXqqnVdldVrWw4RxamdQ6qxwr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'Party', 1), ('Blob', 35, now(), now(), NULL, 2), ('aardvark', 35, now(), now(), 'animals', 1), ('zebra', 34, now(), now(), 'default', 1)"
+  ],
+  "recorded_from": {
+    "case": "5f6f8f4cfa53ec3d897f2868ce2d7e1bd830bb623a5691000f5f7663769e0eca",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

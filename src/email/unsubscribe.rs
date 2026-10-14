@@ -150,7 +150,11 @@ pub async fn associated_topic(
 
 /// `render_topic_title(topic)`: a link to the topic with its title's emoji
 /// as unicode.
-pub fn render_topic_title(base_path: &str, topic: &KeyTopic) -> String {
+pub fn render_topic_title(
+    base_path: &str,
+    emojis: &crate::emojis::Emojis,
+    topic: &KeyTopic,
+) -> String {
     format!(
         "<a href=\"{}\">{}</a>",
         html_escape(&format!(
@@ -158,7 +162,7 @@ pub fn render_topic_title(base_path: &str, topic: &KeyTopic) -> String {
             topic.slug.as_deref().unwrap_or(""),
             topic.id
         )),
-        html_escape(&crate::emoji::gsub_emoji_to_unicode(&topic.title))
+        html_escape(&emojis.gsub_to_unicode(&topic.title))
     )
 }
 
@@ -417,7 +421,7 @@ pub fn render_unsubscribe(
         token_tag(csrf)
     ));
     if let Some(topic) = &o.topic {
-        let link = render_topic_title(base_path, topic);
+        let link = render_topic_title(base_path, settings.emojis(), topic);
         let (name, text) = if o.watching_topic {
             ("unwatch_topic", "unsubscribe.stop_watching_topic")
         } else {
@@ -552,6 +556,7 @@ pub fn render_unsubscribe(
 /// it, `topic_id` whether one was named.
 pub fn render_unsubscribed(
     i18n: &I18n,
+    settings: &SiteSettings,
     base_path: &str,
     email: &str,
     topic: Option<&KeyTopic>,
@@ -579,7 +584,10 @@ pub fn render_unsubscribed(
             translated_with(
                 i18n,
                 "unsubscribed.topic_description",
-                &[("link", &render_topic_title(base_path, topic))]
+                &[(
+                    "link",
+                    &render_topic_title(base_path, settings.emojis(), topic)
+                )]
             )?
         ));
     } else if topic_id {

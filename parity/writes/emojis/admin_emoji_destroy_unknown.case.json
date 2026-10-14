@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/config/emoji/no_such_emoji.json"
+    }
+  ]
+}

@@ -23,6 +23,7 @@ pub mod color_scheme;
 pub mod composer_view;
 pub mod config;
 pub mod current_user;
+pub mod custom_emoji;
 pub mod directory;
 pub mod discourse_diff;
 pub mod do_not_disturb;

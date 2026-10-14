@@ -53,10 +53,6 @@ pub struct PostSettings {
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
-    /// `emoji_set` and `external_emoji_url`, for the emoji the hashtag
-    /// decorator adds.
-    pub emoji_set: String,
-    pub external_emoji_url: Option<String>,
 }
 
 impl PostSettings {
@@ -109,11 +105,6 @@ impl PostSettings {
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
-            emoji_set: settings.get("emoji_set")?.to_s().to_string(),
-            external_emoji_url: settings
-                .get("external_emoji_url")?
-                .presence()
-                .map(|u| u.to_string()),
         })
     }
 }
@@ -370,7 +361,7 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
         view["id"],
         crate::topic_list_view::topic_statuses(list, view),
         escape(url),
-        crate::topic_list_view::emoji_unescape(fancy, &list.settings, list.base_path),
+        crate::topic_list_view::emoji_unescape(fancy, &list.settings.emojis, list.base_path),
         crate::topic_list_view::tags_html(list, view, title, &[])
     )
 }
@@ -530,17 +521,12 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
 /// The cooked content as Ember's post decorations leave it: hashtags'
 /// icons.
 fn decorated_cooked(cx: &PostContext, cooked: &str) -> String {
-    let set = &cx.settings.emoji_set;
-    let emoji_base = match &cx.settings.external_emoji_url {
-        Some(external) => format!("{external}/{set}"),
-        None => format!("{}/images/emoji/{set}", cx.list.base_path),
-    };
     crate::hashtag_decorator::decorate(
         cooked,
         &crate::hashtag_decorator::Icons {
             tag: cx.settings.hashtag_tag_icon.clone(),
-            emoji_base,
-            emoji_version: crate::emoji::image_version().to_string(),
+            emojis: cx.list.settings.emojis.clone(),
+            base_path: cx.list.base_path.to_string(),
         },
     )
 }
@@ -592,7 +578,7 @@ fn notice(cx: &PostContext, p: &Value) -> String {
     let emoji = |name: &str| {
         crate::topic_list_view::emoji_unescape(
             &format!(":{name}:"),
-            &cx.list.settings,
+            &cx.list.settings.emojis,
             cx.list.base_path,
         )
     };
@@ -2162,8 +2148,12 @@ mod tests {
                 relative_date_duration: 30,
                 avatar_size_24: 24,
                 prioritize_name: false,
-                inline_emoji: false,
-                emoji_set: "twitter".into(),
+                emojis: std::sync::Arc::new(crate::emojis::Emojis {
+                    enabled: true,
+                    shortcuts: true,
+                    set: "twitter".into(),
+                    ..Default::default()
+                }),
                 support_mixed_text_direction: false,
             },
         };
@@ -2193,8 +2183,6 @@ mod tests {
             solved: None,
             presence: false,
             hashtag_tag_icon: None,
-            emoji_set: "twitter".into(),
-            external_emoji_url: None,
         };
         let topic = TopicInfo {
             id: 9,
@@ -2332,8 +2320,12 @@ mod tests {
                 relative_date_duration: 30,
                 avatar_size_24: 24,
                 prioritize_name: false,
-                inline_emoji: false,
-                emoji_set: "twitter".into(),
+                emojis: std::sync::Arc::new(crate::emojis::Emojis {
+                    enabled: true,
+                    shortcuts: true,
+                    set: "twitter".into(),
+                    ..Default::default()
+                }),
                 support_mixed_text_direction: false,
             },
         };
@@ -2363,8 +2355,6 @@ mod tests {
             solved: None,
             presence: false,
             hashtag_tag_icon: None,
-            emoji_set: "twitter".into(),
-            external_emoji_url: None,
         };
         let topic = TopicInfo {
             id: 9,

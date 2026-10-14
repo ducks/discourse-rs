@@ -149,8 +149,6 @@ fn t(ctx: &Ctx, key: &str) -> Value {
 
 /// `Emoji.codes_to_img(Onebox::Helpers.sanitize(name))`
 fn label_name(ctx: &Ctx, name: &Value) -> Result<Value, Fail> {
-    static CODE: LazyLock<regex::Regex> =
-        LazyLock::new(|| regex::Regex::new(r":([\w\-+]+(?::t\d)?):").unwrap());
     let Value::String(name) = name else {
         return Ok(Value::Null);
     };
@@ -161,14 +159,8 @@ fn label_name(ctx: &Ctx, name: &Value) -> Result<Value, Fail> {
     if crate::ruby::is_blank(&sanitized) {
         return Ok(Value::Null);
     }
-    for c in CODE.captures_iter(&sanitized) {
-        let code = c[1].split(":t").next().unwrap_or("");
-        if !crate::emoji::DATA.exists(code) {
-            return Err(Unsupported("GitHub labels naming emojis that may be custom").into());
-        }
-    }
-    Ok(json!(crate::category_badge::codes_to_img_with(
-        &ctx.settings.emoji_set,
+    Ok(json!(crate::category_badge::codes_to_img(
+        &ctx.settings.emojis,
         &ctx.settings.base_path,
         &sanitized
     )))

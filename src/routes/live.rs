@@ -728,7 +728,6 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
             tracking,
         )
         .await?;
-        let emoji_set = live.settings.get("emoji_set")?.to_s().to_string();
         let links = crate::sidebar::tracked_links(
             &site,
             &crate::sidebar::Context {
@@ -737,7 +736,6 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
                 base_path,
                 active,
                 member: member.as_ref(),
-                emoji_set: &emoji_set,
                 plugin_sections: "",
             },
         )?;
@@ -817,14 +815,12 @@ async fn chat_chrome(live: &mut Live, id: Option<Position>) -> Result<(), AppErr
         tracking,
     )
     .await?;
-    let emoji_set = live.settings.get("emoji_set")?.to_s().to_string();
     let cx = crate::sidebar::Context {
         i18n: &live.state.i18n,
         settings: &live.settings,
         base_path,
         active: &active,
         member: member.as_ref(),
-        emoji_set: &emoji_set,
         plugin_sections: "",
     };
     let Some(chat) = crate::plugins::chat::view::load(

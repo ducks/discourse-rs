@@ -1,0 +1,126 @@
+{
+  "name": "admin_emoji_create_group_too_long",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/emoji.json",
+      "params": {
+        "name": "longgroup",
+        "group": "a group name longer than twenty",
+        "file": {
+          "fixture": "animated.gif"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T05:38:47.487141",
+  "transaction_started_at": "2026-10-14T05:38:46.52562",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Group is too long (maximum is 20 characters)"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/6fb5a7d37690acdf4f27ba443819a476d214d28c.gif",
+          "etag": null,
+          "sha1": "6fb5a7d37690acdf4f27ba443819a476d214d28c",
+          "width": 4,
+          "height": 3,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": true,
+          "filesize": 93,
+          "extension": "gif",
+          "created_at": "2026-10-14T05:38:47.555689",
+          "updated_at": "2026-10-14T05:38:47.567714",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "FF0000",
+          "thumbnail_width": 4,
+          "thumbnail_height": 3,
+          "original_filename": "animated.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/de2loEBsRavLlWlbOLnIdwd5S8=",
+            "created_at": "2026-10-14T05:38:46.932944",
+            "rotated_at": "2026-10-14T05:38:46.931721",
+            "updated_at": "2026-10-14T05:38:46.932944",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/de2loEBsRavLlWlbOLnIdwd5S8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T05:38:47.50211",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/de2loEBsRavLlWlbOLnIdwd5S8=",
+            "created_at": "2026-10-14T05:38:46.932944",
+            "rotated_at": "2026-10-14T05:38:46.931721",
+            "updated_at": "2026-10-14T05:38:46.932944",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/de2loEBsRavLlWlbOLnIdwd5S8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T05:38:47.574536"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "recorded_from": {
+    "case": "6a5f320dbad720a28a3a74545255cbb514be8634fbe83ba3b1e2d0d2fcc85334",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

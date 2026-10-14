@@ -736,6 +736,8 @@ impl From<sqlx::Error> for SettingError {
 pub struct SiteSettings {
     /// Shared with the cache: a request's copy is a reference count.
     values: std::sync::Arc<HashMap<String, Value>>,
+    /// The emoji settings with `Emoji.custom` and `Emoji.denied`.
+    emojis: std::sync::Arc<crate::emojis::Emojis>,
 }
 
 impl SiteSettings {
@@ -823,8 +825,10 @@ impl SiteSettings {
             .entry("default_locale".into())
             .or_insert_with(|| Value::Str(DEFAULT_LOCALE.into()));
 
+        let emojis = crate::emojis::Emojis::from_values(|name| values.get(name).cloned());
         Ok(SiteSettings {
             values: std::sync::Arc::new(values),
+            emojis: std::sync::Arc::new(emojis),
         })
     }
 
@@ -838,7 +842,9 @@ impl SiteSettings {
         globals: &GlobalSettings,
     ) -> Result<Self, SettingError> {
         let fingerprint: String = sqlx::query_scalar(
-            "SELECT COALESCE(max(updated_at)::text, '') || '/' || count(*)::text FROM site_settings",
+            "SELECT (SELECT COALESCE(max(updated_at)::text, '') || '/' || count(*)::text FROM site_settings) \
+             || '/' || (SELECT COALESCE(max(updated_at)::text, '') || '/' || count(*)::text \
+             || '/' || COALESCE(sum(upload_id), 0)::text FROM custom_emojis)",
         )
         .fetch_one(&mut *conn)
         .await?;
@@ -852,9 +858,14 @@ impl SiteSettings {
         }
         let rows: Vec<(String, i32, Option<String>)> =
             sqlx::query_as("SELECT name, data_type, value FROM site_settings")
-                .fetch_all(conn)
+                .fetch_all(&mut *conn)
                 .await?;
-        let settings = Self::resolve(defs, rows, globals)?;
+        let mut settings = Self::resolve(defs, rows, globals)?;
+        let custom = crate::emojis::Emojis::load_custom(conn, globals.cdn_url()).await?;
+        settings.emojis = std::sync::Arc::new(crate::emojis::Emojis {
+            custom,
+            ..(*settings.emojis).clone()
+        });
         let mut cache = defs.cache.lock().unwrap_or_else(|e| e.into_inner());
         *cache = Some((fingerprint, settings.clone()));
         Ok(settings)
@@ -916,6 +927,12 @@ impl SiteSettings {
             out.insert(def.name.clone(), json);
         }
         Ok(out)
+    }
+
+    /// What emoji drawing reads: the emoji settings, `Emoji.custom` (as of
+    /// the load) and `Emoji.denied`.
+    pub fn emojis(&self) -> &std::sync::Arc<crate::emojis::Emojis> {
+        &self.emojis
     }
 
     pub fn get(&self, name: &str) -> Result<&Value, SettingError> {

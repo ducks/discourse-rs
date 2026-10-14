@@ -603,7 +603,7 @@ impl TopicListSerializer<'_> {
         if crate::emoji::has_emoji_code(&t.title) {
             out.insert(
                 "unicode_title".into(),
-                json!(crate::emoji::gsub_emoji_to_unicode(&t.title)),
+                json!(self.settings.emojis().gsub_to_unicode(&t.title)),
             );
         }
         if let Some(reason) = t.visibility_reason_id {

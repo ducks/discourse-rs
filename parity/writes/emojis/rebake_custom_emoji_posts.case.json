@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO custom_emojis (id, name, upload_id, created_at, updated_at, \"group\", user_id) VALUES (900, 'party_parrot', 34, now(), now(), 'party', 1)",
+    "UPDATE posts SET raw = 'Reply one with :party_parrot: in it.' WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/config/emoji/party_parrot.json"
+    }
+  ],
+  "run_jobs": [
+    "rebake_custom_emoji_posts"
+  ]
+}

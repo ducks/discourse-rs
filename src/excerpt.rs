@@ -23,6 +23,8 @@ pub struct Options {
     pub keep_quotes: bool,
     pub keep_svg: bool,
     pub remap_emoji: bool,
+    /// `Emoji.denied`, which remapped emoji consult (lookup_unicode).
+    pub denied_emojis: Vec<String>,
     pub image_mode: ImageMode,
     pub plain_hashtags: bool,
     /// `options[:post]`'s url (Post#excerpt passes the post), for the poll
@@ -261,9 +263,10 @@ impl Parser {
                     if self.options.remap_emoji {
                         let alt = attr(attrs, "alt").unwrap_or("");
                         let title = alt.replace(':', "");
-                        let text = crate::emoji::lookup_unicode(&title)
-                            .map(str::to_string)
-                            .unwrap_or_else(|| alt.to_string());
+                        let text =
+                            crate::emoji::lookup_unicode(&title, &self.options.denied_emojis)
+                                .map(str::to_string)
+                                .unwrap_or_else(|| alt.to_string());
                         self.characters(&text, true, true, true)?;
                     } else if self.options.keep_emoji_images {
                         self.include_tag(name, attrs)?;
