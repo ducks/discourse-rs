@@ -161,7 +161,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 56. ~~`feat/badge-grant`~~ (done) M, 57. ~~`feat/badge-queue`~~ (done) M (Rails' queue is
     Redis: the harness cannot see a missed enqueue, so each enqueue
-    site gets a backlog case), 58. `feat/badge-jobs` M,
+    site gets a backlog case), 58. ~~`feat/badge-jobs`~~ (done) M,
     59. `feat/badges-read` M
 60. `feat/topic-timers` L, 61. `feat/topic-timer-jobs` M,
     62. `feat/category-auto-close` M

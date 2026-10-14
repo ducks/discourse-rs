@@ -1,0 +1,235 @@
+{
+  "name": "job_backfill_badge_revokes_title",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T01:03:40.984663",
+  "transaction_started_at": "2026-10-14T01:03:37.981217",
+  "responses": [],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "icon": "user",
+            "name": "Regular",
+            "query": "SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 4,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.288303",
+            "show_posts": false,
+            "updated_at": "2026-10-01T06:13:15.823478",
+            "allow_title": true,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 3,
+            "target_posts": false,
+            "badge_type_id": 2,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 4,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 3,
+            "icon": "user",
+            "name": "Regular",
+            "query": "SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 4,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.288303",
+            "show_posts": false,
+            "updated_at": "2026-10-14T01:03:41.062653",
+            "allow_title": true,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 2,
+            "target_posts": false,
+            "badge_type_id": 2,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 4,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 901,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 2,
+          "badge_id": 3,
+          "created_at": "2026-10-11T01:03:37.981217",
+          "granted_at": "2026-10-11T01:03:37.981217",
+          "is_favorite": null,
+          "featured_rank": null,
+          "granted_by_id": -1,
+          "notification_id": null
+        }
+      ],
+      "updated": []
+    },
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 2,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": 3,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 2,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": "Regular",
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": "",
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "INSERT INTO user_badges (id, badge_id, user_id, granted_at, granted_by_id, seq, created_at) VALUES (901, 3, 2, now() - interval '3 days', -1, 0, now() - interval '3 days')",
+    "UPDATE badges SET grant_count = 3 WHERE id = 3",
+    "UPDATE users SET title = 'Regular' WHERE id = 2",
+    "UPDATE user_profiles SET granted_title_badge_id = 3 WHERE user_id = 2"
+  ],
+  "enqueue": [
+    [
+      "backfill_badge",
+      {
+        "badge_id": 3
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "47f13d4adf1625797a7fb267496df013e8ab3dfb9c60629a41f73ca2ded10432",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "job_badges_disabled",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T01:03:52.073434",
+  "transaction_started_at": "2026-10-14T01:03:48.153875",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_badges": false
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE users SET created_at = now() - interval '2 years' WHERE id = 3",
+    "UPDATE user_badges SET featured_rank = NULL WHERE id IN (17, 18)"
+  ],
+  "enqueue": [
+    [
+      "badge_grant",
+      {}
+    ],
+    [
+      "backfill_badge",
+      {
+        "badge_id": 11
+      }
+    ],
+    [
+      "ensure_badges_consistency",
+      {}
+    ],
+    [
+      "grant_anniversary_badges",
+      {}
+    ],
+    [
+      "grant_new_user_of_the_month_badges",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "bc32e504946b3f0b6f7c85a9cad3ca5b8518909b4c447c07656fb479813546dd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

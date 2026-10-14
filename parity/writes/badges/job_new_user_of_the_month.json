@@ -1,0 +1,570 @@
+{
+  "name": "job_new_user_of_the_month",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T01:04:00.065068",
+  "transaction_started_at": "2026-10-14T01:03:58.391877",
+  "responses": [],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 44,
+            "icon": "medal",
+            "name": "New User of the Month",
+            "query": null,
+            "system": true,
+            "enabled": true,
+            "trigger": 0,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.44645",
+            "show_posts": false,
+            "updated_at": "2026-07-25T05:58:07.44645",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 44,
+            "icon": "medal",
+            "name": "New User of the Month",
+            "query": null,
+            "system": true,
+            "enabled": true,
+            "trigger": 0,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.44645",
+            "show_posts": false,
+            "updated_at": "2026-07-25T05:58:07.44645",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Congratulations, you've earned the New User of the Month award for September 2026 . :trophy: This award is only granted to two new users per month, and it will be permanently visible on the badges page . You've quickly become a valuable member of our community. Thanks for joining, and keep up the great work!",
+          "search_data": "'2026':22 'award':19,25 'badg':43 'becom':48 'communiti':54 'congratul':9 'earn':12 'grant':28 'great':62 'join':57 'keep':59 'member':51 'month':8A,18,34 'new':4A,14,31 'page':44 'per':33 'perman':39 'quick':47 're':2A 'septemb':21 'thank':55 'trophi':23 'two':30 'user':5A,15,32 'valuabl':50 've':11,46 'visibl':40 'work':63",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T01:04:03.493988",
+          "updated_at": "2026-10-14T01:04:03.493988",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Congratulations, you've earned the **New User of the Month award for September 2026**. :trophy:\n\nThis award is only granted to two new users per month, and it will be permanently visible on [the badges page](http://localhost:3048/badges).\n\nYou've quickly become a valuable member of our community. Thanks for joining, and keep up the great work!",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Congratulations, you’ve earned the <strong>New User of the Month award for September 2026</strong>. <img src=\"/images/emoji/twitter/trophy.png?v=15\" title=\":trophy:\" class=\"emoji\" alt=\":trophy:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>\n<p>This award is only granted to two new users per month, and it will be permanently visible on <a href=\"http://localhost:3048/badges\">the badges page</a>.</p>\n<p>You’ve quickly become a valuable member of our community. Thanks for joining, and keep up the great work!</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-14T01:04:03.399684",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T01:04:03.399762",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T01:04:03.399762",
+          "word_count": 59,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T01:04:03.491783",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 2,
+          "topic_id": 45,
+          "created_at": "2026-10-14T01:04:03.320417",
+          "updated_at": "2026-10-14T01:04:03.320417"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T01:04:03.324049",
+          "updated_at": "2026-10-14T01:04:03.324049"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3048/badges",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T01:04:03.572211",
+          "reflection": false,
+          "updated_at": "2026-10-14T01:04:03.572211",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 2,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-14T01:04:03.360836",
+          "first_visited_at": "2026-10-14T01:04:03.360836",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T01:04:03.359954"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T01:04:03.576776",
+          "last_visited_at": "2026-10-14T01:04:03.34862",
+          "first_visited_at": "2026-10-14T01:04:03.34862",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T01:04:03.346201"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "youre-a-new-user-of-the-month",
+          "score": null,
+          "title": "You're a new user of the month!",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Congratulations, you’ve earned the New User of the Month award for September 2026. :trophy: \nThis award is only granted to two new users per month, and it will be permanently visible on the badges page. \nYou’ve quickly b&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-14T01:04:03.399762",
+          "pinned_at": null,
+          "created_at": "2026-10-14T01:04:03.315684",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T01:04:03.587189",
+          "word_count": 59,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "You&rsquo;re a new user of the month!",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T01:04:03.399762",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-14T01:04:03.315684",
+          "updated_at": "2026-10-14T01:04:03.3799",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 2,
+          "created_at": "2026-10-14T01:04:03.315684",
+          "updated_at": "2026-10-14T01:04:03.391399",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T01:04:03.709872",
+          "updated_at": "2026-10-14T01:04:03.709872"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 20,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 2,
+          "badge_id": 44,
+          "created_at": "2026-10-14T01:04:00.077027",
+          "granted_at": "2026-09-30T23:59:59.999999",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 16,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 2,
+            "badge_id": 5,
+            "created_at": "2026-09-30T07:28:37.803087",
+            "granted_at": "2026-09-30T07:28:30.313407",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 42
+          },
+          "after": {
+            "id": 16,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 2,
+            "badge_id": 5,
+            "created_at": "2026-09-30T07:28:37.803087",
+            "granted_at": "2026-09-30T07:28:30.313407",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 42
+          }
+        },
+        {
+          "before": {
+            "id": 17,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 2,
+            "badge_id": 11,
+            "created_at": "2026-10-01T15:40:15.189338",
+            "granted_at": "2026-10-01T15:39:52.050551",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 46
+          },
+          "after": {
+            "id": 17,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 2,
+            "badge_id": 11,
+            "created_at": "2026-10-01T15:40:15.189338",
+            "granted_at": "2026-10-01T15:39:52.050551",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 46
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": "2026-10-13T23:11:11.711128",
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": "2026-10-13T23:11:11.711128",
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65,
+    "user_archived_messages": 2,
+    "user_badges": 20
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE users SET created_at = date_trunc('month', now()) - interval '10 days' WHERE id = 2",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (901, 52, 1, 2, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "enqueue": [
+    [
+      "grant_new_user_of_the_month_badges",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "9d5fcb9e9c1de553ca0998bc45cab00674f90223e112c329458b27695389882c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
