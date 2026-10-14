@@ -1,0 +1,155 @@
+{
+  "name": "api_key_create_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "g",
+          "scope_mode": "granular"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "g",
+          "scope_mode": "granular",
+          "scopes": [
+            {
+              "scope_id": "topics:nope"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "u",
+          "username": "nobody"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "description": "no key"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:16:54.95792",
+  "transaction_started_at": "2026-10-14T09:16:51.563631",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Api key scopes at least one must be selected"
+        ],
+        "error_type": "record_invalid"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Description is too long (maximum is 255 characters)"
+        ],
+        "error_type": "record_invalid"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3yPLI8WVcmNBWi38gbcnKqzA3nc=",
+            "created_at": "2026-10-14T09:16:53.046421",
+            "rotated_at": "2026-10-14T09:16:53.03919",
+            "updated_at": "2026-10-14T09:16:53.046421",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3yPLI8WVcmNBWi38gbcnKqzA3nc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:16:54.965675",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3yPLI8WVcmNBWi38gbcnKqzA3nc=",
+            "created_at": "2026-10-14T09:16:53.046421",
+            "rotated_at": "2026-10-14T09:16:53.03919",
+            "updated_at": "2026-10-14T09:16:53.046421",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3yPLI8WVcmNBWi38gbcnKqzA3nc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7757ef31c12f981fbdba296ed748848de17df00a2a6c131847f2a5d30625953d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

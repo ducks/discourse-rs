@@ -1,0 +1,918 @@
+{
+  "name": "api_keys_scopes",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/api/keys/scopes.json"
+    }
+  ],
+  "started_at": "2026-10-14T09:14:56.706661",
+  "transaction_started_at": "2026-10-14T09:14:55.68601",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "scopes": {
+          "badges": [
+            {
+              "scope_id": "badges:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/admin/badges (GET)",
+                "/badges (GET)"
+              ]
+            },
+            {
+              "scope_id": "badges:create",
+              "key": "create",
+              "name": "create",
+              "params": null,
+              "urls": [
+                "/admin/badges (POST)"
+              ]
+            },
+            {
+              "scope_id": "badges:show",
+              "key": "show",
+              "name": "show",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/badges/:id(/:slug) (GET)"
+              ]
+            },
+            {
+              "scope_id": "badges:update",
+              "key": "update",
+              "name": "update",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/admin/badges/:id (PUT)"
+              ]
+            },
+            {
+              "scope_id": "badges:delete",
+              "key": "delete",
+              "name": "delete",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/admin/badges/:id (DELETE)"
+              ]
+            },
+            {
+              "scope_id": "badges:list_user_badges",
+              "key": "list_user_badges",
+              "name": "list user badges",
+              "params": [
+                "username"
+              ],
+              "urls": [
+                "/user-badges/:username.json (GET)",
+                "/user-badges/:username (GET)"
+              ]
+            },
+            {
+              "scope_id": "badges:assign_badge_to_user",
+              "key": "assign_badge_to_user",
+              "name": "assign badge to user",
+              "params": [
+                "username"
+              ],
+              "urls": [
+                "/user_badges (POST)"
+              ]
+            },
+            {
+              "scope_id": "badges:revoke_badge_from_user",
+              "key": "revoke_badge_from_user",
+              "name": "revoke badge from user",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/user_badges/:id (DELETE)"
+              ]
+            }
+          ],
+          "categories": [
+            {
+              "scope_id": "categories:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/categories (GET)",
+                "/categories/:parent_category_id (GET)",
+                "/c/*category_slug_path_with_id/subcategories (GET)",
+                "/ (GET)"
+              ]
+            },
+            {
+              "scope_id": "categories:show",
+              "key": "show",
+              "name": "show",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/c/:id/show (GET)"
+              ]
+            }
+          ],
+          "chat": [
+            {
+              "scope_id": "chat:create_message",
+              "key": "create_message",
+              "name": "create message",
+              "params": [
+                "chat_channel_id"
+              ],
+              "urls": [
+                "/chat/:chat_channel_id (POST)"
+              ]
+            }
+          ],
+          "email": [
+            {
+              "scope_id": "email:receive_emails",
+              "key": "receive_emails",
+              "name": "receive emails",
+              "params": null,
+              "urls": [
+                "/admin/email/smtp_should_reject (GET)",
+                "/admin/email/handle_mail (POST)"
+              ]
+            }
+          ],
+          "global": [
+            {
+              "scope_id": "global:read",
+              "key": "read",
+              "name": "read",
+              "params": null,
+              "urls": [
+                "* (get)"
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "scope_id": "groups:manage_groups",
+              "key": "manage_groups",
+              "name": "manage groups",
+              "params": [
+                "id",
+                "name"
+              ],
+              "urls": [
+                "/groups/:id/members (DELETE)",
+                "/groups/:id/members (PUT)",
+                "/groups/:name/members (GET)",
+                "/g/:id/members (DELETE)",
+                "/g/:id/members (PUT)",
+                "/g/:name/members (GET)",
+                "/admin/groups/:id/members (DELETE)",
+                "/admin/groups/:id/members (PUT)"
+              ]
+            },
+            {
+              "scope_id": "groups:administer_groups",
+              "key": "administer_groups",
+              "name": "administer groups",
+              "params": [
+                "id",
+                "name"
+              ],
+              "urls": [
+                "/admin/groups (POST)",
+                "/admin/groups/:id (DELETE)",
+                "/groups (GET)",
+                "/groups/:id (PUT)",
+                "/groups/by-id/:id (GET)",
+                "/groups/:name (GET)",
+                "/groups/:name/activity (GET)",
+                "/groups/:name/activity/:filter (GET)",
+                "/groups/:name/requests (GET)",
+                "/groups/:name/messages (GET)",
+                "/groups/:name/messages/inbox (GET)",
+                "/groups/:name/messages/archive (GET)",
+                "/groups/:name/manage (GET)",
+                "/groups/:name/manage/profile (GET)",
+                "/groups/:name/manage/members (GET)",
+                "/groups/:name/manage/membership (GET)",
+                "/groups/:name/manage/interaction (GET)",
+                "/groups/:name/manage/email (GET)",
+                "/groups/:name/manage/categories (GET)",
+                "/groups/:name/manage/tags (GET)",
+                "/groups/:name/manage/logs (GET)",
+                "/g (GET)",
+                "/g/:id (PUT)",
+                "/g/by-id/:id (GET)",
+                "/g/:name (GET)",
+                "/g/:name/activity (GET)",
+                "/g/:name/activity/:filter (GET)",
+                "/g/:name/requests (GET)",
+                "/g/:name/messages (GET)",
+                "/g/:name/messages/inbox (GET)",
+                "/g/:name/messages/archive (GET)",
+                "/g/:name/manage (GET)",
+                "/g/:name/manage/profile (GET)",
+                "/g/:name/manage/members (GET)",
+                "/g/:name/manage/membership (GET)",
+                "/g/:name/manage/interaction (GET)",
+                "/g/:name/manage/email (GET)",
+                "/g/:name/manage/categories (GET)",
+                "/g/:name/manage/tags (GET)",
+                "/g/:name/manage/logs (GET)",
+                "/g/:id/assigned (GET)",
+                "/g/:id/assigned/:route_type (GET)"
+              ]
+            }
+          ],
+          "invites": [
+            {
+              "scope_id": "invites:create",
+              "key": "create",
+              "name": "create",
+              "params": null,
+              "urls": [
+                "/invites (POST)"
+              ]
+            }
+          ],
+          "logs": [
+            {
+              "scope_id": "logs:messages",
+              "key": "messages",
+              "name": "messages",
+              "params": null,
+              "urls": [
+                "/logs/messages.json (POST)",
+                "/logs/show/:id.json (GET)"
+              ]
+            }
+          ],
+          "posts": [
+            {
+              "scope_id": "posts:edit",
+              "key": "edit",
+              "name": "edit",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/posts/:id (PUT)"
+              ]
+            },
+            {
+              "scope_id": "posts:delete",
+              "key": "delete",
+              "name": "delete",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/posts/:id (DELETE)"
+              ]
+            },
+            {
+              "scope_id": "posts:recover",
+              "key": "recover",
+              "name": "recover",
+              "params": [
+                "post_id"
+              ],
+              "urls": [
+                "/posts/:post_id/recover (PUT)"
+              ]
+            },
+            {
+              "scope_id": "posts:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/posts (GET)",
+                "/private-posts (GET)"
+              ]
+            }
+          ],
+          "revisions": [
+            {
+              "scope_id": "revisions:read",
+              "key": "read",
+              "name": "read",
+              "params": [
+                "post_id"
+              ],
+              "urls": [
+                "/posts/:post_id/revisions/latest (GET)",
+                "/posts/:post_id/revisions/:revision (GET)"
+              ]
+            },
+            {
+              "scope_id": "revisions:modify",
+              "key": "modify",
+              "name": "modify",
+              "params": [
+                "post_id"
+              ],
+              "urls": [
+                "/posts/:post_id/revisions/:revision/hide (PUT)",
+                "/posts/:post_id/revisions/:revision/show (PUT)",
+                "/posts/:post_id/revisions/:revision/revert (PUT)"
+              ]
+            },
+            {
+              "scope_id": "revisions:permanently_delete",
+              "key": "permanently_delete",
+              "name": "permanently delete",
+              "params": [
+                "post_id"
+              ],
+              "urls": [
+                "/posts/:post_id/revisions/permanently_delete (DELETE)"
+              ]
+            }
+          ],
+          "search": [
+            {
+              "scope_id": "search:show",
+              "key": "show",
+              "name": "show",
+              "params": [
+                "q",
+                "page"
+              ],
+              "urls": [
+                "/search (GET)"
+              ]
+            },
+            {
+              "scope_id": "search:query",
+              "key": "query",
+              "name": "query",
+              "params": [
+                "term"
+              ],
+              "urls": [
+                "/search/query (GET)"
+              ]
+            }
+          ],
+          "solved": [
+            {
+              "scope_id": "solved:answer",
+              "key": "answer",
+              "name": "answer",
+              "params": null,
+              "urls": [
+                "/solution/accept (POST)",
+                "/solution/unaccept (POST)"
+              ]
+            }
+          ],
+          "tag_groups": [
+            {
+              "scope_id": "tag_groups:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/tag_groups (GET)"
+              ]
+            },
+            {
+              "scope_id": "tag_groups:show",
+              "key": "show",
+              "name": "show",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/tag_groups/:id (GET)"
+              ]
+            },
+            {
+              "scope_id": "tag_groups:create",
+              "key": "create",
+              "name": "create",
+              "params": null,
+              "urls": [
+                "/tag_groups (POST)"
+              ]
+            },
+            {
+              "scope_id": "tag_groups:update",
+              "key": "update",
+              "name": "update",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/tag_groups/:id (PUT)"
+              ]
+            }
+          ],
+          "tags": [
+            {
+              "scope_id": "tags:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/tags (GET)",
+                "/tags/filter/list (GET)"
+              ]
+            }
+          ],
+          "topics": [
+            {
+              "scope_id": "topics:write",
+              "key": "write",
+              "name": "write",
+              "params": [
+                "topic_id"
+              ],
+              "urls": [
+                "/posts (POST)"
+              ]
+            },
+            {
+              "scope_id": "topics:update",
+              "key": "update",
+              "name": "update",
+              "params": [
+                "category_id",
+                "topic_id"
+              ],
+              "urls": [
+                "/t/:topic_id (PUT)",
+                "/t/:slug/:topic_id (PUT)",
+                "/t/:slug/:topic_id/status (PUT)",
+                "/t/:topic_id/status (PUT)"
+              ]
+            },
+            {
+              "scope_id": "topics:delete",
+              "key": "delete",
+              "name": "delete",
+              "params": [
+                "topic_id"
+              ],
+              "urls": [
+                "/t/:id (DELETE)"
+              ]
+            },
+            {
+              "scope_id": "topics:recover",
+              "key": "recover",
+              "name": "recover",
+              "params": [
+                "topic_id"
+              ],
+              "urls": [
+                "/t/:topic_id/recover (PUT)"
+              ]
+            },
+            {
+              "scope_id": "topics:read",
+              "key": "read",
+              "name": "read",
+              "params": [
+                "topic_id",
+                "external_id"
+              ],
+              "urls": [
+                "/t/:topic_id/:post_number (GET)",
+                "/t/:topic_id (GET)",
+                "/t/:slug/:topic_id/:post_number (GET)",
+                "/t/:slug/:topic_id (GET)",
+                "/t/:id (GET)",
+                "/t/external_id/:external_id (GET)",
+                "/t/:slug/:topic_id/print (GET)",
+                "/t/:slug/:topic_id/summary (GET)",
+                "/t/:topic_id/summary (GET)",
+                "/t/:topic_id/last (GET)",
+                "/t/:slug/:topic_id.rss (GET)",
+                "/t/:slug/:topic_id/last (GET)",
+                "/t/:topic_id/posts (GET)",
+                "/t/:slug/:topic_id/zoom (GET)"
+              ]
+            },
+            {
+              "scope_id": "topics:read_lists",
+              "key": "read_lists",
+              "name": "read lists",
+              "params": [
+                "category_id"
+              ],
+              "urls": [
+                "/ (GET)",
+                "/latest (GET)",
+                "/new (GET)",
+                "/unread (GET)",
+                "/top (GET)",
+                "/c/*category_slug_path_with_id (GET)",
+                "/c/*category_slug_path_with_id.rss (GET)",
+                "/c/*category_slug_path_with_id/l/latest (GET)",
+                "/c/*category_slug_path_with_id/l/unread (GET)",
+                "/c/*category_slug_path_with_id/l/new (GET)",
+                "/c/*category_slug_path_with_id/l/top (GET)",
+                "/latest.rss (GET)"
+              ]
+            },
+            {
+              "scope_id": "topics:status",
+              "key": "status",
+              "name": "status",
+              "params": [
+                "category_id",
+                "status",
+                "enabled",
+                "topic_id"
+              ],
+              "urls": [
+                "/t/:slug/:topic_id/status (PUT)",
+                "/t/:topic_id/status (PUT)"
+              ]
+            },
+            {
+              "scope_id": "topics:change_owner",
+              "key": "change_owner",
+              "name": "change owner",
+              "params": [
+                "topic_id"
+              ],
+              "urls": [
+                "/t/:topic_id/change-owner (POST)"
+              ]
+            }
+          ],
+          "uploads": [
+            {
+              "scope_id": "uploads:create",
+              "key": "create",
+              "name": "create",
+              "params": null,
+              "urls": [
+                "/uploads (POST)",
+                "/uploads/generate-presigned-put (POST)",
+                "/uploads/complete-external-upload (POST)",
+                "/uploads/create-multipart (POST)",
+                "/uploads/complete-multipart (POST)",
+                "/uploads/abort-multipart (POST)",
+                "/uploads/batch-presign-multipart-parts (POST)"
+              ]
+            }
+          ],
+          "user_status": [
+            {
+              "scope_id": "user_status:read",
+              "key": "read",
+              "name": "read",
+              "params": null,
+              "urls": [
+                "/user-status (GET)"
+              ]
+            },
+            {
+              "scope_id": "user_status:update",
+              "key": "update",
+              "name": "update",
+              "params": null,
+              "urls": [
+                "/user-status (PUT)",
+                "/user-status (DELETE)"
+              ]
+            }
+          ],
+          "users": [
+            {
+              "scope_id": "users:bookmarks",
+              "key": "bookmarks",
+              "name": "bookmarks",
+              "params": [
+                "username"
+              ],
+              "urls": [
+                "/users/:username/bookmarks (GET)",
+                "/u/:username/bookmarks (GET)"
+              ]
+            },
+            {
+              "scope_id": "users:sync_sso",
+              "key": "sync_sso",
+              "name": "sync sso",
+              "params": [
+                "sso",
+                "sig"
+              ],
+              "urls": [
+                "/admin/users/sync_sso (POST)"
+              ]
+            },
+            {
+              "scope_id": "users:show",
+              "key": "show",
+              "name": "show",
+              "params": [
+                "username",
+                "external_id",
+                "external_provider"
+              ],
+              "urls": [
+                "/users/:username/private-messages (GET)",
+                "/users/:username/private-messages/:filter (GET)",
+                "/users/:username/messages (GET)",
+                "/users/:username/messages/:filter (GET)",
+                "/users/:username/messages/group/:group_name (GET)",
+                "/users/:username/messages/group/:group_name/:filter (GET)",
+                "/users/:username.json (GET)",
+                "/users/:username (GET)",
+                "/users/:username/activity (GET)",
+                "/users/:username/activity/:filter (GET)",
+                "/users/:username/notifications (GET)",
+                "/users/:username/notifications/:filter (GET)",
+                "/users/by-external/:external_id (GET)",
+                "/users/by-external/:external_provider/:external_id (GET)",
+                "/users/:username/deleted-posts (GET)",
+                "/u/:username/private-messages (GET)",
+                "/u/:username/private-messages/:filter (GET)",
+                "/u/:username/messages (GET)",
+                "/u/:username/messages/:filter (GET)",
+                "/u/:username/messages/group/:group_name (GET)",
+                "/u/:username/messages/group/:group_name/:filter (GET)",
+                "/u/:username.json (GET)",
+                "/u/:username (GET)",
+                "/u/:username/activity (GET)",
+                "/u/:username/activity/:filter (GET)",
+                "/u/:username/notifications (GET)",
+                "/u/:username/notifications/:filter (GET)",
+                "/u/by-external/:external_id (GET)",
+                "/u/by-external/:external_provider/:external_id (GET)",
+                "/u/:username/deleted-posts (GET)",
+                "/u/:username/billing (GET)",
+                "/u/:username/billing/:id (GET)",
+                "/u/:username/billing/subscriptions/card/:subscription_id (GET)"
+              ]
+            },
+            {
+              "scope_id": "users:check_emails",
+              "key": "check_emails",
+              "name": "check emails",
+              "params": [
+                "username"
+              ],
+              "urls": [
+                "/users/:username/emails (GET)",
+                "/u/:username/emails (GET)"
+              ]
+            },
+            {
+              "scope_id": "users:create",
+              "key": "create",
+              "name": "create",
+              "params": null,
+              "urls": [
+                "/users (POST)",
+                "/u (POST)"
+              ]
+            },
+            {
+              "scope_id": "users:update",
+              "key": "update",
+              "name": "update",
+              "params": [
+                "username"
+              ],
+              "urls": [
+                "/users/:username (PUT)",
+                "/users/:username/preferences/badge_title (PUT)",
+                "/users/:username/preferences/avatar/pick (PUT)",
+                "/users/:username/preferences/avatar/select (PUT)",
+                "/users/:username/feature-topic (PUT)",
+                "/users/:username/clear-featured-topic (PUT)",
+                "/u/:username (PUT)",
+                "/u/:username/preferences/badge_title (PUT)",
+                "/u/:username/preferences/avatar/pick (PUT)",
+                "/u/:username/preferences/avatar/select (PUT)",
+                "/u/:username/feature-topic (PUT)",
+                "/u/:username/clear-featured-topic (PUT)"
+              ]
+            },
+            {
+              "scope_id": "users:log_out",
+              "key": "log_out",
+              "name": "log out",
+              "params": [
+                "user_id"
+              ],
+              "urls": [
+                "/admin/users/:user_id/log_out (POST)"
+              ]
+            },
+            {
+              "scope_id": "users:anonymize",
+              "key": "anonymize",
+              "name": "anonymize",
+              "params": [
+                "user_id"
+              ],
+              "urls": [
+                "/admin/users/:user_id/anonymize (PUT)"
+              ]
+            },
+            {
+              "scope_id": "users:suspend",
+              "key": "suspend",
+              "name": "suspend",
+              "params": [
+                "user_id"
+              ],
+              "urls": [
+                "/admin/users/:user_id/suspend (PUT)"
+              ]
+            },
+            {
+              "scope_id": "users:delete",
+              "key": "delete",
+              "name": "delete",
+              "params": [
+                "id"
+              ],
+              "urls": [
+                "/admin/users/:id (DELETE)"
+              ]
+            },
+            {
+              "scope_id": "users:list",
+              "key": "list",
+              "name": "list",
+              "params": null,
+              "urls": [
+                "/admin/users/list (GET)",
+                "/admin/users/list/:query (GET)",
+                "/admin/users (GET)"
+              ]
+            }
+          ],
+          "wordpress": [
+            {
+              "scope_id": "wordpress:publishing",
+              "key": "publishing",
+              "name": "publishing",
+              "params": null,
+              "urls": [
+                "/t/:topic_id/:post_number (GET)",
+                "/t/:topic_id (GET)",
+                "/t/:slug/:topic_id/:post_number (GET)",
+                "/t/:slug/:topic_id (GET)",
+                "/site (GET)",
+                "/posts (POST)",
+                "/t/:id (GET)",
+                "/t/:topic_id (PUT)",
+                "/t/:slug/:topic_id/print (GET)",
+                "/t/:slug/:topic_id/summary (GET)",
+                "/t/:topic_id/summary (GET)",
+                "/t/:slug/:topic_id (PUT)",
+                "/t/:slug/:topic_id/status (PUT)",
+                "/t/:topic_id/status (PUT)",
+                "/t/:topic_id/last (GET)",
+                "/t/:slug/:topic_id/last (GET)",
+                "/t/:slug/:topic_id/zoom (GET)"
+              ]
+            },
+            {
+              "scope_id": "wordpress:commenting",
+              "key": "commenting",
+              "name": "commenting",
+              "params": null,
+              "urls": [
+                "/t/:slug/:topic_id/wordpress (GET)",
+                "/t/:topic_id/wordpress (GET)"
+              ]
+            },
+            {
+              "scope_id": "wordpress:discourse_connect",
+              "key": "discourse_connect",
+              "name": "discourse connect",
+              "params": null,
+              "urls": [
+                "/admin/users/list (GET)",
+                "/admin/users/list/:query (GET)",
+                "/admin/users/:user_id/log_out (POST)",
+                "/admin/users (GET)",
+                "/admin/users/sync_sso (POST)",
+                "/users/:username/private-messages (GET)",
+                "/users/:username/private-messages/:filter (GET)",
+                "/users/:username/messages (GET)",
+                "/users/:username/messages/:filter (GET)",
+                "/users/:username/messages/group/:group_name (GET)",
+                "/users/:username/messages/group/:group_name/:filter (GET)",
+                "/users/:username.json (GET)",
+                "/users/:username (GET)",
+                "/users/:username/activity (GET)",
+                "/users/:username/activity/:filter (GET)",
+                "/users/:username/notifications (GET)",
+                "/users/:username/notifications/:filter (GET)",
+                "/users/by-external/:external_id (GET)",
+                "/users/by-external/:external_provider/:external_id (GET)",
+                "/users/:username/deleted-posts (GET)",
+                "/u/:username/private-messages (GET)",
+                "/u/:username/private-messages/:filter (GET)",
+                "/u/:username/messages (GET)",
+                "/u/:username/messages/:filter (GET)",
+                "/u/:username/messages/group/:group_name (GET)",
+                "/u/:username/messages/group/:group_name/:filter (GET)",
+                "/u/:username.json (GET)",
+                "/u/:username (GET)",
+                "/u/:username/activity (GET)",
+                "/u/:username/activity/:filter (GET)",
+                "/u/:username/notifications (GET)",
+                "/u/:username/notifications/:filter (GET)",
+                "/u/by-external/:external_id (GET)",
+                "/u/by-external/:external_provider/:external_id (GET)",
+                "/u/:username/deleted-posts (GET)",
+                "/u/:username/billing (GET)",
+                "/u/:username/billing/:id (GET)",
+                "/u/:username/billing/subscriptions/card/:subscription_id (GET)"
+              ]
+            },
+            {
+              "scope_id": "wordpress:utilities",
+              "key": "utilities",
+              "name": "utilities",
+              "params": null,
+              "urls": [
+                "/users (POST)",
+                "/u (POST)",
+                "/groups (GET)",
+                "/g (GET)",
+                "/g/:id/assigned (GET)",
+                "/g/:id/assigned/:route_type (GET)"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jT8echx7ggXDd7/VGaAbeWViABQ=",
+            "created_at": "2026-10-14T09:14:56.103098",
+            "rotated_at": "2026-10-14T09:14:56.102012",
+            "updated_at": "2026-10-14T09:14:56.103098",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jT8echx7ggXDd7/VGaAbeWViABQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:14:56.711651",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jT8echx7ggXDd7/VGaAbeWViABQ=",
+            "created_at": "2026-10-14T09:14:56.103098",
+            "rotated_at": "2026-10-14T09:14:56.102012",
+            "updated_at": "2026-10-14T09:14:56.103098",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jT8echx7ggXDd7/VGaAbeWViABQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "43b55a02edb5b603067e7baadbb25397f62b1e35888246b45347be4f79673531",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

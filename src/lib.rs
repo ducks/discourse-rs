@@ -34,6 +34,7 @@ pub mod email;
 pub mod email_logs;
 pub mod emojis;
 pub use discourse_markdown::emoji;
+pub mod api_key_scopes;
 pub mod crass;
 pub mod crawler_detection;
 pub mod excerpt;

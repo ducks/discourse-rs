@@ -1,0 +1,28 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "granular",
+          "scope_mode": "granular",
+          "scopes": [
+            {
+              "scope_id": "topics:write",
+              "topic_id": "35, 36"
+            },
+            {
+              "scope_id": "users:show",
+              "username": ""
+            },
+            {
+              "scope_id": "categories:list"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

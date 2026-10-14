@@ -1,0 +1,44 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9301, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'scoped', encode(sha256(convert_to('scoped-9301', 'UTF8')), 'hex'), 'scop', 2, NULL, false)",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9301, 9301, 'topics', 'write', '{\"topic_id\":[\"35\"]}', now() - interval '5 days', now() - interval '5 days')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "headers": {
+        "Api-Key": "scoped-9301",
+        "Api-Username": "user1"
+      },
+      "params": {
+        "topic_id": "35",
+        "raw": "A reply through a granular API key, long enough."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "headers": {
+        "Api-Key": "scoped-9301",
+        "Api-Username": "user1"
+      },
+      "params": {
+        "topic_id": "36",
+        "raw": "Another reply through a granular API key, long enough."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json",
+      "headers": {
+        "Api-Key": "scoped-9301",
+        "Api-Username": "user1"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

@@ -664,6 +664,31 @@ fn hide_secrets(doc: &mut Value) {
             secrets.push((v.replace('-', ""), "<bounce_key>"));
         }
     }
+    // A new admin API key's first four characters (truncated_key): the
+    // whole value where it stands alone (the row, a staff log's subject)
+    // and inside the log's list of changes.
+    for response in doc["responses"].as_array().cloned().unwrap_or_default() {
+        let key = &response["body"]["key"];
+        if let (Some(full), Some(truncated)) = (key["key"].as_str(), key["truncated_key"].as_str())
+            && full.len() == 64
+            && full.starts_with(truncated)
+        {
+            secrets.push((
+                format!("truncated_key: {truncated}"),
+                "truncated_key: <truncated_key>",
+            ));
+            let truncated = truncated.to_string();
+            fn exact(v: &mut Value, truncated: &str) {
+                match v {
+                    Value::String(s) if s == truncated => *s = "<truncated_key>".into(),
+                    Value::Array(a) => a.iter_mut().for_each(|x| exact(x, truncated)),
+                    Value::Object(m) => m.values_mut().for_each(|x| exact(x, truncated)),
+                    _ => {}
+                }
+            }
+            exact(doc, &truncated);
+        }
+    }
     secrets.retain(|(v, _)| v.len() >= 6);
     fn walk(v: &mut Value, secrets: &[(String, &str)]) {
         match v {
@@ -685,8 +710,12 @@ fn hide_secrets(doc: &mut Value) {
 /// DateTime#to_s times inside a longer text (a staff log's details), in
 /// whole seconds, taken during the case: `<now>`.
 fn embedded_now(s: &str, started: NaiveDateTime) -> String {
+    // DateTime#to_s, or TimeWithZone#to_s (a staff log's list of changes).
     static ISO: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-        regex::Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00").unwrap()
+        regex::Regex::new(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC",
+        )
+        .unwrap()
     });
     if !ISO.is_match(s) || timestamp(s).is_some() {
         return s.to_string();

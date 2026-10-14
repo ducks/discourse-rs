@@ -1,0 +1,190 @@
+{
+  "name": "api_keys_show",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/api/keys/9202.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/api/keys/9201.json"
+    }
+  ],
+  "started_at": "2026-10-14T09:16:58.131943",
+  "transaction_started_at": "2026-10-14T09:16:57.026557",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "key": {
+          "id": 9202,
+          "truncated_key": "k920",
+          "description": "user1 key",
+          "scope_mode": "granular",
+          "last_used_at": "2026-10-13T09:16:57.026Z",
+          "created_at": "2026-10-10T09:16:57.026Z",
+          "updated_at": "2026-10-10T09:16:57.026Z",
+          "revoked_at": null,
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "api_key_scopes": [
+            {
+              "resource": "topics",
+              "action": "write",
+              "parameters": [
+                "topic_id"
+              ],
+              "urls": [
+                "/posts (POST)"
+              ],
+              "allowed_parameters": {
+                "topic_id": [
+                  "1",
+                  "2"
+                ]
+              },
+              "key": "write"
+            },
+            {
+              "resource": "users",
+              "action": "show",
+              "parameters": [
+                "username",
+                "external_id",
+                "external_provider"
+              ],
+              "urls": [
+                "/users/:username/private-messages (GET)",
+                "/users/:username/private-messages/:filter (GET)",
+                "/users/:username/messages (GET)",
+                "/users/:username/messages/:filter (GET)",
+                "/users/:username/messages/group/:group_name (GET)",
+                "/users/:username/messages/group/:group_name/:filter (GET)",
+                "/users/:username.json (GET)",
+                "/users/:username (GET)",
+                "/users/:username/activity (GET)",
+                "/users/:username/activity/:filter (GET)",
+                "/users/:username/notifications (GET)",
+                "/users/:username/notifications/:filter (GET)",
+                "/users/by-external/:external_id (GET)",
+                "/users/by-external/:external_provider/:external_id (GET)",
+                "/users/:username/deleted-posts (GET)",
+                "/u/:username/private-messages (GET)",
+                "/u/:username/private-messages/:filter (GET)",
+                "/u/:username/messages (GET)",
+                "/u/:username/messages/:filter (GET)",
+                "/u/:username/messages/group/:group_name (GET)",
+                "/u/:username/messages/group/:group_name/:filter (GET)",
+                "/u/:username.json (GET)",
+                "/u/:username (GET)",
+                "/u/:username/activity (GET)",
+                "/u/:username/activity/:filter (GET)",
+                "/u/:username/notifications (GET)",
+                "/u/:username/notifications/:filter (GET)",
+                "/u/by-external/:external_id (GET)",
+                "/u/by-external/:external_provider/:external_id (GET)",
+                "/u/:username/deleted-posts (GET)",
+                "/u/:username/billing (GET)",
+                "/u/:username/billing/:id (GET)",
+                "/u/:username/billing/subscriptions/card/:subscription_id (GET)"
+              ],
+              "allowed_parameters": null,
+              "key": "show"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "key": {
+          "id": 9201,
+          "truncated_key": "k920",
+          "description": "all users",
+          "scope_mode": null,
+          "last_used_at": null,
+          "created_at": "2026-10-09T09:16:57.026Z",
+          "updated_at": "2026-10-09T09:16:57.026Z",
+          "revoked_at": null,
+          "user": null,
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "api_key_scopes": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jpT2ZcARCnc3mjjDRXIo20Uawcg=",
+            "created_at": "2026-10-14T09:16:57.477067",
+            "rotated_at": "2026-10-14T09:16:57.475267",
+            "updated_at": "2026-10-14T09:16:57.477067",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jpT2ZcARCnc3mjjDRXIo20Uawcg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:16:58.140893",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jpT2ZcARCnc3mjjDRXIo20Uawcg=",
+            "created_at": "2026-10-14T09:16:57.477067",
+            "rotated_at": "2026-10-14T09:16:57.475267",
+            "updated_at": "2026-10-14T09:16:57.477067",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jpT2ZcARCnc3mjjDRXIo20Uawcg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9201, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'all users', encode(sha256(convert_to('k9201aaaa', 'UTF8')), 'hex'), 'k920', NULL, NULL, false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9202, 3, 1, now() - interval '4 days', now() - interval '4 days', now() - interval '1 day', 'user1 key', encode(sha256(convert_to('k9202bbbb', 'UTF8')), 'hex'), 'k920', 2, NULL, false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9203, NULL, 1, now() - interval '6 days', now() - interval '6 days', NULL, 'revoked', encode(sha256(convert_to('k9203cccc', 'UTF8')), 'hex'), 'k920', 0, now() - interval '2 days', false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9204, NULL, 1, now() - interval '3 days', now() - interval '3 days', NULL, 'hidden', encode(sha256(convert_to('k9204dddd', 'UTF8')), 'hex'), 'k920', NULL, NULL, true)",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9201, 9202, 'topics', 'write', '{\"topic_id\":[\"1\",\"2\"]}', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9202, 9202, 'users', 'show', NULL, now() - interval '5 days', now() - interval '5 days')"
+  ],
+  "recorded_from": {
+    "case": "ba10d2d8caa00ee1e3af3edd0ec8b346da7449c2fa7ee620ba3fb74003903287",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

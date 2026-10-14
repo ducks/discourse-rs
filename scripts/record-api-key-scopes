@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Record the admin API key scope mappings and the route table they are
+# matched against from a reference agent into
+# vendor/discourse/config/api_key_scopes.json
+# (scripts/api_key_scopes_export.rb). Run after vendoring, from an agent at
+# the vendored commit with the bundled plugins.
+#
+# Usage: scripts/record-api-key-scopes <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but vendor/ is from $vendored" >&2
+  exit 1
+fi
+dv copy "$root/scripts/api_key_scopes_export.rb" "$agent:/tmp/api_key_scopes_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/api_key_scopes_export.rb /tmp/api_key_scopes.json | tail -1
+dv copy "$agent:/tmp/api_key_scopes.json" "$root/vendor/discourse/config/api_key_scopes.json" > /dev/null
