@@ -189,21 +189,18 @@
                     {%- if mobile %}{% call search_button() %}{% endif %}
                     {{- chrome.chat_header_icon|safe }}
                     {%- if !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
-                    {#- The avatar opens the user menu, its notifications
-                        fetched as HTML, or closes it when it is open. The
-                        badge is the unread count, kept current live. -#}
+                    {#- The avatar opens the user menu (user-menu.js, which
+                        fetches it from /user-menu), or closes it when it is
+                        open. The badge is the unread count, kept current
+                        live. -#}
                     <li class="header-dropdown-toggle current-user user-menu-panel" id="current-user">
-                      <button id="toggle-current-user" class="btn no-text icon btn-flat" type="button"
-                              title="Notifications and account" aria-label="Notifications and account"
-                              aria-haspopup="true" aria-controls="user-menu" aria-expanded="false"
-                              hx-get="{{ base_path }}/user-menu" hx-target="#user-menu"
-                              hx-on::before-request="var menu = document.getElementById('user-menu'); if (menu.childElementCount) { menu.replaceChildren(); this.setAttribute('aria-expanded', 'false'); event.preventDefault(); } else { this.setAttribute('aria-expanded', 'true'); }">
+                      <button aria-label="Notifications and account" class="btn no-text icon btn-flat" id="toggle-current-user" title="Notifications and account" aria-haspopup="true" type="button">
                         <img alt="" width="48" height="48" src="{{ v.avatar_url }}" class="avatar">
                         <span id="notification-count" class="badge-notification unread-notifications"></span>
                       </button>
                     </li>
                   </ul>
-                  <div id="user-menu" class="user-menu"></div>
+                  <script src="{{ crate::assets::url(base_path, "user-menu.js") }}" data-user-menu="{{ base_path }}/user-menu" data-username="{{ v.username }}"></script>
                   <div id="notification-alert" class="notification-alert" role="status" aria-live="polite"></div>
                   {% else %}
                   <span class="header-buttons">

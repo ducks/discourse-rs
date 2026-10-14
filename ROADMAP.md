@@ -344,8 +344,16 @@ with the viewport, guessing from the user agent without it
     Reply, suggested topics' mobile rows
 94. `feat/mobile-search-menu` M: the header's search button opens the
     search menu panel (today it goes to /search)
-95. `feat/mobile-user-menu` M: the user menu as the mobile panel, the
-    notification tabs
+95. ~~`feat/mobile-user-menu`~~ (done) M: the user menu as Ember renders
+    it in both views (a drop-down, or a slide-in over the cloak): the tabs
+    with their unread counts (chat's included), the notification items
+    with every core type's renderer and the reactions, voting and chat
+    ones, the messages tab (UsersController#user_menu_messages, also as
+    JSON), the bookmarks tab, the profile tab, show all, dismiss with its
+    confirmation, the menu-panel.scss rules. Left: the review queue tab
+    (refused), the bookmarks tab with a chat message bookmark (refused by
+    the bookmarks list), the do not disturb and user status modals,
+    show_user_menu_avatars (refused)
 96. `feat/mobile-composer` L: the mobile composer (fullscreen, its
     toolbar and preview toggle, the keyboard-visible states)
 97. `feat/mobile-user-pages` M: profile, activity, messages and their

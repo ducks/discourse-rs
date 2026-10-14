@@ -1649,7 +1649,7 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
 
     let page = client.get("/latest").await;
     assert!(
-        page.body.contains(r#"hx-get="/user-menu""#),
+        page.body.contains(r#"data-user-menu="/user-menu""#),
         "{}",
         page.body
     );
@@ -1665,13 +1665,19 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     let menu = client.get("/user-menu").await;
     assert_eq!(menu.status, StatusCode::OK);
     assert!(
-        menu.body.contains(
-            r#"<li class="notification unread"><a href="/t/parity-fixture-replies-and-posters/35/2"><strong>user2</strong> mentioned you in"#
-        ),
+        menu.body
+            .contains(r#"<li class="notification unread mentioned" data-notification-id="#),
         "{}",
         menu.body
     );
-    assert!(menu.body.contains("Mark all read"));
+    assert!(menu.body.contains(
+        r#"<a href="/t/parity-fixture-replies-and-posters/35/2" title="mentioned"><svg class="fa d-icon d-icon-at svg-icon"#
+    ));
+    assert!(menu.body.contains(r#"<span class="item-label ">user2</span><span class="item-description " data-topic-id="35">Parity fixture: replies and posters</span>"#));
+    assert!(menu.body.contains("notifications-dismiss"));
+    // The tabs, with their unread counts.
+    assert!(menu.body.contains(r#"<div class="user-menu revamped menu-panel drop-down" data-max-width="320" data-tab-id="all-notifications">"#));
+    assert!(menu.body.contains(r#"title="Replies - 2 unread replies""#));
     assert_eq!(
         common::next_sse_event(&mut body, &mut buffer, "header").await,
         r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
@@ -2268,11 +2274,11 @@ async fn the_composer_stays_across_pages() {
     assert!(page.body.contains(
         r#"<div id="reply-control" class="closed hide-preview" hx-preserve="true" data-page-attrs="data-default-category""#
     ), "{}", page.body);
-    // The logout form leaves the page for real.
-    let menu = client.get("/user-menu").await;
+    // The profile tab logs out (user-menu.js).
+    let menu = client.get("/user-menu?tab=profile").await;
     assert!(
         menu.body
-            .contains(r#"<form class="user-menu-logout" hx-boost="false" method="post""#),
+            .contains(r#"<li class="logout"><button class="btn no-text btn-flat profile-tab-btn" type="button">"#),
         "{}",
         menu.body
     );

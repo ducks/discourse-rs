@@ -186,6 +186,104 @@ impl PmQuery<'_> {
                 }
             }
         }
+        self.fetch(&joins, &wheres, per_page).await
+    }
+
+    /// `list_private_messages_direct_and_groups(owner,
+    /// groups_messages_notification_level: :watching)` less the topics the
+    /// block excludes: the user menu's messages tab.
+    pub async fn direct_and_groups_watching(
+        &mut self,
+        exclude_topic_ids: &[i32],
+    ) -> Result<TopicList, TopicQueryError> {
+        let per_page = self
+            .options
+            .per_page
+            .unwrap_or(crate::topic_query::DEFAULT_PER_PAGE);
+        let owner = self.owner_id;
+        let joins = vec![
+            format!(
+                "LEFT OUTER JOIN topic_users AS tu ON (topics.id = tu.topic_id AND tu.user_id = {owner})"
+            ),
+            // not_archived, not_archived_in_groups
+            format!(
+                "LEFT JOIN user_archived_messages um ON um.user_id = {owner} AND um.topic_id = topics.id"
+            ),
+            "LEFT OUTER JOIN group_archived_messages ON group_archived_messages.topic_id = topics.id"
+                .to_string(),
+        ];
+        let mut wheres = vec![
+            "topics.deleted_at IS NULL".to_string(),
+            "topics.archetype = 'private_message'".to_string(),
+        ];
+        if !self.guardian.is_staff() {
+            wheres.push("topics.visible = TRUE".to_string());
+        }
+        // user_personal_and_groups_private_messages: the owner's message
+        // groups (group_with_messages_ids), their topics only where the
+        // owner watches them.
+        let owner_user = crate::session::current::SessionUser::load(&mut *self.conn, owner)
+            .await?
+            .ok_or(Unsupported("message list owner without a user row"))?;
+        let owner_guardian = Guardian::for_user(&mut *self.conn, &owner_user).await?;
+        let groups: Vec<i32> = sqlx::query_scalar(
+            "SELECT groups.id FROM groups INNER JOIN group_users ON group_users.group_id = groups.id \
+             WHERE group_users.user_id = $1 AND groups.has_messages = TRUE ORDER BY groups.id",
+        )
+        .bind(owner)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let moderators = crate::guardian::auto_groups::MODERATORS as i32;
+        let groups: Vec<i32> = if owner_guardian.is_admin()
+            || owner_guardian.in_setting_groups(self.settings, "personal_message_enabled_groups")?
+        {
+            groups
+        } else if owner_guardian.is_moderator() {
+            groups.into_iter().filter(|id| *id == moderators).collect()
+        } else {
+            Vec::new()
+        };
+        if groups.is_empty() {
+            wheres.push(format!(
+                "EXISTS (SELECT 1 FROM topic_allowed_users tau WHERE tau.topic_id = topics.id AND tau.user_id = {owner})"
+            ));
+        } else {
+            let ids = groups
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            wheres.push(format!(
+                "topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {owner} \
+                 UNION ALL SELECT topic_allowed_groups.topic_id FROM topic_allowed_groups \
+                 INNER JOIN topic_users ON topic_users.topic_id = topic_allowed_groups.topic_id AND topic_users.user_id = {owner} \
+                 WHERE group_id IN ({ids}) AND topic_users.notification_level >= 3)"
+            ));
+        }
+        wheres.push("(um.user_id IS NULL)".to_string());
+        wheres.push("(group_archived_messages.id IS NULL)".to_string());
+        // have_posts_from_others
+        wheres.push(format!(
+            "(NOT (topics.participant_count = 1 AND topics.user_id = {owner} AND topics.moderator_posts_count = 0))"
+        ));
+        if !exclude_topic_ids.is_empty() {
+            let ids = exclude_topic_ids
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            wheres.push(format!("topics.id NOT IN ({ids})"));
+        }
+        self.fetch(&joins, &wheres, per_page).await
+    }
+
+    /// The list's page in the options' order.
+    async fn fetch(
+        &mut self,
+        joins: &[String],
+        wheres: &[String],
+        per_page: i64,
+    ) -> Result<TopicList, TopicQueryError> {
         let order = crate::topic_query::sortable_order(
             self.options.order.as_deref(),
             self.options.ascending,
