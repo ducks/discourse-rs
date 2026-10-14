@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "settings": {
+    "log_anonymizer_details": false,
+    "full_name_requirement": "required_at_signup"
+  },
+  "setup": [
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, previous_value, new_value, admin_only, created_at, updated_at) VALUES (21, 1, 4, 'user2', 'user2x', FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO search_logs (term, user_id, ip_address, created_at, search_type) VALUES ('cats', 4, '10.0.0.9', now() - interval '1 day', 1)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/anonymize.json",
+      "params": {
+        "anonymize_ip": "127.0.0.2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "update_username",
+    "anonymize_user"
+  ],
+  "ignore": [
+    "/jobs/1/1/avatar_template"
+  ]
+}

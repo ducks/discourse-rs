@@ -229,7 +229,9 @@ Bugs or silent gaps in what is merged, small and independent.
     engines)
 77. ~~`feat/username-changer`~~ (done) L (non-ASCII usernames and a
     category description a rewritten definition would change are
-    refused), 78. `feat/user-anonymizer` M,
+    refused), 78. ~~`feat/user-anonymizer`~~ (done) M (cases normalize
+    the random `anon<n>` name; verbose token logging and non-address IPs
+    refused),
     79. `feat/user-merger` L
 
 [users-digests-dnd]

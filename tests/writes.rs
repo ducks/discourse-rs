@@ -436,6 +436,9 @@ fn unrandom(s: &str) -> String {
     });
     static NONCE: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r#" nonce="[^"]*""#).unwrap());
+    // UserAnonymizer's `anon<random number>` username, wherever it lands.
+    static ANON: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\banon[0-9]{1,8}\b").unwrap());
     if HEX32.is_match(s) {
         return "<hex>".into();
     }
@@ -454,6 +457,7 @@ fn unrandom(s: &str) -> String {
     static UNSUB: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"\bunsub_[0-9a-f]{32}\b").unwrap());
     let s = UNSUB.replace_all(&s, "unsub_<hex>");
+    let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()

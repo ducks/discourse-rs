@@ -661,6 +661,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/unsilence.json",
             put(admin_users::unsilence),
         )
+        .route(
+            "/admin/users/{user_id}/anonymize",
+            put(admin_users::anonymize),
+        )
+        .route(
+            "/admin/users/{user_id}/anonymize.json",
+            put(admin_users::anonymize),
+        )
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
             "/admin/email/preview-digest",

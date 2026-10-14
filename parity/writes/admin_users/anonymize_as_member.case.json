@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "PUT", "path": "/admin/users/4/anonymize.json"}
+  ]
+}

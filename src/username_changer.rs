@@ -196,6 +196,8 @@ pub enum Update {
     Enqueue,
     /// `Jobs::UpdateUsername.new.execute(...)` on this connection.
     Inline,
+    /// `run_update_job: false`: the caller runs it.
+    Skip,
 }
 
 /// `UsernameChanger.new(user, new_username, actor).change`
@@ -251,6 +253,9 @@ pub async fn change(
         .execute(&mut *conn)
         .await?;
     }
+    if update == Update::Skip {
+        return Ok(Changed::Changed);
+    }
     let avatar_template = avatar_template_url(ctx, user.id, new_username, user.uploaded_avatar_id)?;
     let args = json!({
         "user_id": user.id,
@@ -261,6 +266,7 @@ pub async fn change(
     match update {
         Update::Enqueue => crate::jobs::enqueue(&mut *conn, UPDATE_USERNAME, args).await?,
         Update::Inline => update_username(&mut *conn, ctx, &args).await?,
+        Update::Skip => {}
     }
     Ok(Changed::Changed)
 }

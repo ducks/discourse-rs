@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET uploaded_avatar_id = 34 WHERE id = 5",
+    "UPDATE user_avatars SET custom_upload_id = 34 WHERE user_id = 5",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) SELECT 34, 'UserAvatar', id, now(), now() FROM user_avatars WHERE user_id = 5",
+    "UPDATE user_profiles SET profile_background_upload_id = 34 WHERE user_id = 5",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (34, 'UserProfile', 5, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/5/anonymize.json"
+    }
+  ],
+  "run_jobs": [
+    "anonymize_user"
+  ],
+  "ignore": [
+    "/jobs/2/1/avatar_template"
+  ]
+}
