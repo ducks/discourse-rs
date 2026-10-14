@@ -1,0 +1,83 @@
+{
+  "name": "suspend_bulk_one_suspended",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/suspend-bulk.json",
+      "params": {
+        "reason": "Spam wave",
+        "suspend_until": "2027-01-01T00:00:00Z",
+        "user_ids": [
+          "4",
+          "3"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T10:14:15.353253",
+  "transaction_started_at": "2026-10-14T10:14:13.858295",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "One or more of the selected users can't be suspended."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7FCvOcrwIhooD1rTYhLG7KPOfdM=",
+            "created_at": "2026-10-14T10:14:14.55497",
+            "rotated_at": "2026-10-14T10:14:14.553218",
+            "updated_at": "2026-10-14T10:14:14.55497",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7FCvOcrwIhooD1rTYhLG7KPOfdM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:14:15.362561",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7FCvOcrwIhooD1rTYhLG7KPOfdM=",
+            "created_at": "2026-10-14T10:14:14.55497",
+            "rotated_at": "2026-10-14T10:14:14.553218",
+            "updated_at": "2026-10-14T10:14:14.55497",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7FCvOcrwIhooD1rTYhLG7KPOfdM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET suspended_till = now() + interval '30 days', suspended_at = now() WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "132cc5ce6be3ca7ad7caf8ec80271ed2180f2375ac769329f63a0942d73c3279",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

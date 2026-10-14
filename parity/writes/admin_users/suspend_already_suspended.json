@@ -1,0 +1,78 @@
+{
+  "name": "suspend_already_suspended",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/suspend.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "suspend_until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T10:13:52.785704",
+  "transaction_started_at": "2026-10-14T10:13:51.754851",
+  "responses": [
+    {
+      "status": 409,
+      "body": {
+        "failed": "FAILED",
+        "message": "User was already suspended by admin 3 days ago."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l6RfBFw/VaU4LmFFxf+WTDRkuSQ=",
+            "created_at": "2026-10-14T10:13:52.19571",
+            "rotated_at": "2026-10-14T10:13:52.194794",
+            "updated_at": "2026-10-14T10:13:52.19571",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "l6RfBFw/VaU4LmFFxf+WTDRkuSQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:13:52.790583",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l6RfBFw/VaU4LmFFxf+WTDRkuSQ=",
+            "created_at": "2026-10-14T10:13:52.19571",
+            "rotated_at": "2026-10-14T10:13:52.194794",
+            "updated_at": "2026-10-14T10:13:52.19571",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "l6RfBFw/VaU4LmFFxf+WTDRkuSQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET suspended_till = now() + interval '30 days', suspended_at = now() - interval '3 days' WHERE id = 4",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (10, 1, 4, 'Earlier', now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "8c542d85f51b17cc6258aede05647da6578a19d3f80eaf792fa9477602e5deca",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

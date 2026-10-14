@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET suspended_till = now() + interval '30 days', suspended_at = now() - interval '3 days' WHERE id = 4",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (10, 1, 4, 'Earlier', now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/suspend.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "suspend_until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ]
+}

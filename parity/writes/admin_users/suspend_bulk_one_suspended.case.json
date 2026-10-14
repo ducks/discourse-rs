@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET suspended_till = now() + interval '30 days', suspended_at = now() WHERE id = 3"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/suspend-bulk.json",
+      "params": {
+        "reason": "Spam wave",
+        "suspend_until": "2027-01-01T00:00:00Z",
+        "user_ids": [
+          "4",
+          "3"
+        ]
+      }
+    }
+  ]
+}

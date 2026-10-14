@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET ip_address = NULL WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/4/similar-users.json"
+    }
+  ]
+}

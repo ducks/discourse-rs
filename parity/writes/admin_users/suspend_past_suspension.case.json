@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET suspended_till = now() - interval '1 day', suspended_at = now() - interval '5 days' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/suspend.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "suspend_until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ]
+}

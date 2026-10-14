@@ -1,0 +1,78 @@
+{
+  "name": "penalty_history_missing_user",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/99999/penalty_history.json"
+    }
+  ],
+  "started_at": "2026-10-14T10:13:11.777443",
+  "transaction_started_at": "2026-10-14T10:13:10.566095",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "932MPrs82bS6Y6tLFUjdNl1eWcU=",
+            "created_at": "2026-10-14T10:13:11.09183",
+            "rotated_at": "2026-10-14T10:13:11.090047",
+            "updated_at": "2026-10-14T10:13:11.09183",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "932MPrs82bS6Y6tLFUjdNl1eWcU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:13:11.784015",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "932MPrs82bS6Y6tLFUjdNl1eWcU=",
+            "created_at": "2026-10-14T10:13:11.09183",
+            "rotated_at": "2026-10-14T10:13:11.090047",
+            "updated_at": "2026-10-14T10:13:11.09183",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "932MPrs82bS6Y6tLFUjdNl1eWcU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (10, 1, 4, 'x', now() - interval '9 days', now() - interval '9 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (11, 1, 4, 'x', now() - interval '8 days', now() - interval '8 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (30, 1, 4, 'x', now() - interval '7 days', now() - interval '7 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (31, 1, 4, 'x', now() - interval '6 days', now() - interval '6 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (19, 1, 4, 'x', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (10, 1, 3, 'x', now() - interval '4 days', now() - interval '4 days')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) VALUES (60, 1, 4, 'x', now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "4ff60746ea1fe7258a4879fe029d789729ead40974f0d5b630cebc39952f37a5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

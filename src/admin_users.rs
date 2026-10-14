@@ -383,6 +383,7 @@ pub async fn list(
     for r in &rows {
         let opts = EntryOptions {
             emails_desired: p.show_emails,
+            can_be_deleted: true,
             can_be_suspended: true,
             silence_reason: Some(format_penalty_reason(silence_reasons.get(&r.id))?),
             suspend_reason: Some(format_penalty_reason(suspend_reasons.get(&r.id))?),
@@ -418,6 +419,8 @@ pub(crate) const ROW_SELECT: &str = "SELECT users.id, users.username, users.name
 pub(crate) struct EntryOptions {
     /// `emails_desired` (show_emails)
     pub emails_desired: bool,
+    /// `include_can_be_deleted`
+    pub can_be_deleted: bool,
     /// `include_can_be_suspended`
     pub can_be_suspended: bool,
     /// `silence_reason` when included
@@ -528,10 +531,12 @@ pub(crate) async fn entry(
     if local_logins && r.second_factor {
         u.insert("second_factor_enabled".into(), json!(true));
     }
-    u.insert(
-        "can_be_deleted".into(),
-        json!(can_delete_user(conn, settings, guardian, r).await?),
-    );
+    if opts.can_be_deleted {
+        u.insert(
+            "can_be_deleted".into(),
+            json!(can_delete_user(conn, settings, guardian, r).await?),
+        );
+    }
     if opts.can_be_suspended {
         let can_unsuspend =
             guardian.is_staff() && (!(r.admin || r.moderator) || guardian.is_admin());

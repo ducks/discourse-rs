@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET ip_address = '203.0.113.9' WHERE id IN (1, 2, 3, 4, 5, 92100)",
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 5"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/3/similar-users.json"
+    }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/users"
+  ]
+}

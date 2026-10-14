@@ -817,6 +817,23 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/unsilence.json",
             put(admin_users::unsilence),
         )
+        .route("/admin/users/suspend-bulk", put(admin_users::suspend_bulk))
+        .route(
+            "/admin/users/suspend-bulk.json",
+            put(admin_users::suspend_bulk),
+        )
+        .route(
+            "/admin/users/{user_id}/penalty_history",
+            delete(admin_users::penalty_history),
+        )
+        .route(
+            "/admin/users/{user_id}/penalty_history.json",
+            delete(admin_users::penalty_history),
+        )
+        .route(
+            "/admin/users/{user_id}/similar-users.json",
+            get(admin_users::similar_users),
+        )
         .route(
             "/admin/users/{user_id}/anonymize",
             put(admin_users::anonymize),
