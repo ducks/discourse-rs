@@ -1,0 +1,75 @@
+{
+  "user": "admin",
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users;  \n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users",
+        "trigger": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE :post_ids OR :user_ids",
+        "trigger": "2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE id IN (:post_ids)",
+        "trigger": "4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE id IN (:user_ids)",
+        "trigger": "8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users",
+        "target_posts": "true"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id, created_at granted_at FROM users"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at FROM users"
+      }
+    }
+  ],
+  "settings": {
+    "enable_badge_sql": true
+  }
+}

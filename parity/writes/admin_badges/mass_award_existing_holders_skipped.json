@@ -1,0 +1,164 @@
+{
+  "name": "mass_award_existing_holders_skipped",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/award/11.json",
+      "params": {
+        "file": {
+          "fixture": "badge_award_usernames.csv"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:08.830421",
+  "transaction_started_at": "2026-10-14T09:52:07.911758",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "unmatched_entries": [
+          "nobody"
+        ],
+        "matched_users_count": 2,
+        "unmatched_entries_count": 1
+      }
+    }
+  ],
+  "changes": {
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user2\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": null,
+          "created_at": "2026-10-14T09:52:08.876595",
+          "updated_at": "2026-10-14T09:52:08.876595",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Rxmf/70QcpS06yiRYVIH3SCZwWM=",
+            "created_at": "2026-10-14T09:52:08.278634",
+            "rotated_at": "2026-10-14T09:52:08.276942",
+            "updated_at": "2026-10-14T09:52:08.278634",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Rxmf/70QcpS06yiRYVIH3SCZwWM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:08.843255",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Rxmf/70QcpS06yiRYVIH3SCZwWM=",
+            "created_at": "2026-10-14T09:52:08.278634",
+            "rotated_at": "2026-10-14T09:52:08.276942",
+            "updated_at": "2026-10-14T09:52:08.278634",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Rxmf/70QcpS06yiRYVIH3SCZwWM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 19,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 4,
+          "badge_id": 11,
+          "created_at": "2026-10-14T09:52:08.874086",
+          "granted_at": "2026-10-14T09:52:08.874086",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": 53
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 3
+          },
+          "after": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 3
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "mass_award_badge",
+      {
+        "user": 4,
+        "badge": 11,
+        "count": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "notifications": 53,
+    "user_badges": 19
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "15492022b766014ee1e991eef1f9ce1f43df4ba573ae798ab3504c8890271834",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

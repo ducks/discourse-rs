@@ -1,0 +1,106 @@
+{
+  "name": "preview_target_posts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT user_id, id post_id, created_at granted_at FROM posts WHERE id IN (36, 37, 46) ORDER BY id",
+        "target_posts": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:39.870448",
+  "transaction_started_at": "2026-10-14T09:52:37.912627",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "grant_count": 3,
+        "sample": [
+          {
+            "id": 3,
+            "username": "user1",
+            "post_id": 36,
+            "title": "Parity fixture: replies and posters",
+            "granted_at": "2026-09-30T07:28:29.079Z"
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "post_id": 37,
+            "title": "Parity fixture: replies and posters",
+            "granted_at": "2026-09-30T07:28:29.179Z"
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "post_id": 46,
+            "title": "Parity fixture: liked and archived",
+            "granted_at": "2026-09-30T07:28:30.163Z"
+          }
+        ],
+        "query_plan": null
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yWxVRKI93PkEZ3+g67m9RaE7IKk=",
+            "created_at": "2026-10-14T09:52:38.615026",
+            "rotated_at": "2026-10-14T09:52:38.512151",
+            "updated_at": "2026-10-14T09:52:38.615026",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yWxVRKI93PkEZ3+g67m9RaE7IKk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:39.877396",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yWxVRKI93PkEZ3+g67m9RaE7IKk=",
+            "created_at": "2026-10-14T09:52:38.615026",
+            "rotated_at": "2026-10-14T09:52:38.512151",
+            "updated_at": "2026-10-14T09:52:38.615026",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yWxVRKI93PkEZ3+g67m9RaE7IKk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_badge_sql": true
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "219194b2e4c347f1b19941720c584af49b7c100e25b83f748fdfb6f039414c37",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

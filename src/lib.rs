@@ -1,6 +1,7 @@
 pub mod about;
 pub mod about_view;
 pub mod accounts;
+pub mod admin_badges;
 pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;
@@ -9,6 +10,7 @@ pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod badge_granter;
+pub mod badge_preview;
 pub mod badges_view;
 pub mod bookmark_manager;
 pub mod bookmarks;

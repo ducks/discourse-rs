@@ -1,0 +1,210 @@
+{
+  "name": "update_image_set",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/badges/138.json",
+      "params": {
+        "image_upload_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:53:33.66278",
+  "transaction_started_at": "2026-10-14T09:53:31.413863",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "badge": {
+          "id": 138,
+          "name": "Custom Fixture",
+          "description": "Custom description",
+          "grant_count": 2,
+          "allow_title": true,
+          "multiple_grant": false,
+          "icon": "far-star",
+          "image_url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+          "listable": true,
+          "enabled": true,
+          "badge_grouping_id": 5,
+          "system": false,
+          "long_description": "Custom long description",
+          "slug": "custom-fixture",
+          "manually_grantable": true,
+          "show_in_post_header": false,
+          "query": null,
+          "trigger": null,
+          "target_posts": false,
+          "auto_revoke": true,
+          "show_posts": false,
+          "image_upload_id": 35,
+          "badge_type_id": 3
+        }
+      }
+    }
+  ],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 138,
+            "icon": "far-star",
+            "name": "Custom Fixture",
+            "query": null,
+            "system": false,
+            "enabled": true,
+            "trigger": null,
+            "listable": true,
+            "created_at": "2026-10-01T10:00:00",
+            "show_posts": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "allow_title": true,
+            "auto_revoke": true,
+            "description": "Custom description",
+            "grant_count": 2,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": "Custom long description",
+            "badge_grouping_id": 5,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 138,
+            "icon": "far-star",
+            "name": "Custom Fixture",
+            "query": null,
+            "system": false,
+            "enabled": true,
+            "trigger": null,
+            "listable": true,
+            "created_at": "2026-10-01T10:00:00",
+            "show_posts": false,
+            "updated_at": "2026-10-14T09:53:33.682096",
+            "allow_title": true,
+            "auto_revoke": true,
+            "description": "Custom description",
+            "grant_count": 2,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": 35,
+            "long_description": "Custom long description",
+            "badge_grouping_id": 5,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "upload_references": {
+      "inserted": [
+        {
+          "id": 36,
+          "target_id": 138,
+          "upload_id": 35,
+          "created_at": "2026-10-14T09:53:33.683416",
+          "updated_at": "2026-10-14T09:53:33.683431",
+          "target_type": "Badge"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mADsst+5fgP++VTmOWpAf26VHRc=",
+            "created_at": "2026-10-14T09:53:32.736506",
+            "rotated_at": "2026-10-14T09:53:32.734165",
+            "updated_at": "2026-10-14T09:53:32.736506",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mADsst+5fgP++VTmOWpAf26VHRc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:53:33.670537",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mADsst+5fgP++VTmOWpAf26VHRc=",
+            "created_at": "2026-10-14T09:53:32.736506",
+            "rotated_at": "2026-10-14T09:53:32.734165",
+            "updated_at": "2026-10-14T09:53:32.736506",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mADsst+5fgP++VTmOWpAf26VHRc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 58,
+          "context": null,
+          "details": "id: 138\nimage_upload_id: 35",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T09:53:33.69026",
+          "ip_address": null,
+          "updated_at": "2026-10-14T09:53:33.69026",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "upload_references": 36,
+    "user_histories": 74
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "INSERT INTO badges (id, name, description, long_description, badge_type_id, allow_title, multiple_grant, icon, listable, enabled, auto_revoke, badge_grouping_id, system, show_posts, target_posts, grant_count, created_at, updated_at) VALUES (138, 'Custom Fixture', 'Custom description', 'Custom long description', 3, true, false, 'far-star', true, true, true, 5, false, false, false, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "badcc4cd1311915ffec4b53a054432c570588e9d2415a6cdcaf1c1cc28285156",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -44,6 +44,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
         super::badges::BACKFILL_BADGE => super::badges::backfill_badge(state, &job.args).await,
+        crate::admin_badges::MASS_AWARD_BADGE => {
+            crate::admin_badges::mass_award_badge(state, &job.args).await
+        }
+        crate::admin_badges::BULK_USER_TITLE_UPDATE => {
+            crate::admin_badges::bulk_user_title_update(state, &job.args).await
+        }
         "post_alert" => post_alert(state, &job.args).await,
         "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
         "group_pm_alert" => group_pm_alert(state, &job.args).await,
