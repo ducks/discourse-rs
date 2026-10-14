@@ -1,0 +1,74 @@
+{
+  "name": "create_refused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "client_id": "abc123"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:35:35.446124",
+  "transaction_started_at": "2026-10-14T15:35:32.991465",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: with_uploads"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NCxJc/nOZMd20Bb7s26weriIbKI=",
+            "created_at": "2026-10-14T15:35:34.735832",
+            "rotated_at": "2026-10-14T15:35:34.733816",
+            "updated_at": "2026-10-14T15:35:34.735832",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NCxJc/nOZMd20Bb7s26weriIbKI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T15:35:35.455381",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NCxJc/nOZMd20Bb7s26weriIbKI=",
+            "created_at": "2026-10-14T15:35:34.735832",
+            "rotated_at": "2026-10-14T15:35:34.733816",
+            "updated_at": "2026-10-14T15:35:34.735832",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NCxJc/nOZMd20Bb7s26weriIbKI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "0009defa5795245c7c65ce9498929efac1060bf0f0751151b523749d2864cbeb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

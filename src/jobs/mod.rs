@@ -431,6 +431,11 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     // The rate limiters' expired lists (Redis expires them itself).
     ("rate_limits_cleanup", Duration::from_secs(15 * 60)),
+    // Jobs::ScheduleBackup, daily (from the worker's start; Rails: midnight).
+    (
+        crate::backup_restore::jobs::SCHEDULE_BACKUP,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -556,6 +561,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         upload_cleanup::PURGE_DELETED_UPLOADS => upload_cleanup::purge_deleted_uploads(state).await,
         crate::username_changer::FIX_CLASH => crate::username_changer::fix_clash(state).await,
         "rate_limits_cleanup" => Ok(crate::rate_limiter::cleanup(&state.pool).await?),
+        crate::backup_restore::jobs::SCHEDULE_BACKUP => {
+            crate::backup_restore::jobs::schedule_backup(state).await
+        }
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

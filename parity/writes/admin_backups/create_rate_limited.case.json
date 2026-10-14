@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "with_uploads": "true"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "with_uploads": "true"
+      }
+    }
+  ]
+}

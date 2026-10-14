@@ -311,6 +311,9 @@ pub struct NewUpload<'a> {
     pub pasted: bool,
     /// `params[:for_private_message] == "true"`
     pub for_private_message: bool,
+    /// UploadCreator's `for_export`: checked against
+    /// export_authorized_extensions and max_export_file_size_kb.
+    pub for_export: bool,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -561,7 +564,11 @@ fn validate(
         .extension()
         .map(|e| e.to_string_lossy().to_string())
         .unwrap_or_default();
-    let authorized_setting = s.get("authorized_extensions")?.to_s();
+    let authorized_setting = if up.for_export {
+        s.get("export_authorized_extensions")?.to_s()
+    } else {
+        s.get("authorized_extensions")?.to_s()
+    };
     let staff_setting = s.get("authorized_extensions_for_staff")?.to_s();
     let all = authorized_setting.contains('*') || (up.staff && staff_setting.contains('*'));
     let authorized = extensions_to_set(&authorized_setting);
@@ -602,7 +609,9 @@ fn validate(
     }
     // maximum_file_size
     let kind = if image { "image" } else { "attachment" };
-    let max_kb = if up.user_id == -1 && kind == "attachment" {
+    let max_kb = if up.for_export {
+        s.get("max_export_file_size_kb")?.to_i()
+    } else if up.user_id == -1 && kind == "attachment" {
         s.get("system_user_max_attachment_size_kb")?
             .to_i()
             .max(s.get("max_attachment_size_kb")?.to_i())

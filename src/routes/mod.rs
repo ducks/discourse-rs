@@ -1064,8 +1064,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(permalinks::show).fallback(permalinks::no_route),
         )
         // Admin::BackupsController
-        .route("/admin/backups", get(backups::index))
-        .route("/admin/backups.json", get(backups::index))
+        .route("/admin/backups", get(backups::index).post(backups::create))
+        .route(
+            "/admin/backups.json",
+            get(backups::index).post(backups::create),
+        )
+        .route("/admin/backups/cancel", delete(backups::cancel))
+        .route("/admin/backups/cancel.json", delete(backups::cancel))
         .route("/admin/backups/settings", get(backups::index))
         .route("/admin/backups/settings.json", get(backups::index))
         .route("/admin/backups/status", get(backups::status))

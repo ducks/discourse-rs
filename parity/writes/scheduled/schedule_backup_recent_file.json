@@ -1,0 +1,25 @@
+{
+  "name": "schedule_backup_recent_file",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T15:35:48.397035",
+  "transaction_started_at": "2026-10-14T15:35:47.296031",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "enqueue": [
+    [
+      "schedule_backup"
+    ]
+  ],
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "add52802443f02085883cb9791bf632bc1aad916183c626606bdd22ad57d3b91",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

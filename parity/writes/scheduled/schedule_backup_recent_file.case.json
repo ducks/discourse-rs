@@ -1,0 +1,14 @@
+{
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "enqueue": [
+    [
+      "schedule_backup"
+    ]
+  ],
+  "run_jobs": [
+    "schedule_backup"
+  ],
+  "requests": []
+}

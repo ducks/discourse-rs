@@ -158,17 +158,22 @@ pub struct Raised;
 
 /// Actions `allow_in_readonly_mode` lets through, by route.
 fn allowed_in_readonly_mode(method: &Method, route: &str) -> bool {
-    // Admin::BackupsController: readonly, email, destroy, the chunk upload
-    // and the multipart uploads.
+    // Admin::BackupsController: create, cancel, readonly, email, destroy,
+    // the chunk upload and the multipart uploads.
     match *method {
         Method::PUT => matches!(
             route,
             "/admin/backups/readonly" | "/admin/backups/readonly.json" | "/admin/backups/{id}"
         ),
-        Method::DELETE => route == "/admin/backups/{id}",
+        Method::DELETE => matches!(
+            route,
+            "/admin/backups/{id}" | "/admin/backups/cancel" | "/admin/backups/cancel.json"
+        ),
         Method::POST => matches!(
             route,
-            "/admin/backups/upload"
+            "/admin/backups"
+                | "/admin/backups.json"
+                | "/admin/backups/upload"
                 | "/admin/backups/upload.json"
                 | "/admin/backups/create-multipart"
                 | "/admin/backups/create-multipart.json"

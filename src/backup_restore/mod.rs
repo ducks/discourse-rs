@@ -3,6 +3,7 @@
 //! (the running flag, the cancel signal, the emailed download tokens),
 //! here in `discourse_rs.cached_values`.
 
+pub mod creator;
 pub mod jobs;
 pub mod store;
 
@@ -55,6 +56,74 @@ pub async fn set_shutdown_signal(conn: &mut PgConnection) -> Result<(), sqlx::Er
 /// `clear_shutdown_signal!`
 pub async fn clear_shutdown_signal(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
     crate::owned_schema::cached_del(conn, SHUTDOWN_KEY).await
+}
+
+/// `mark_as_running!` with `keep_it_running` and the Creator's (and
+/// Restorer's) `listen_for_shutdown_signal`: the running flag set and kept
+/// alive every 30 seconds, the shutdown flag cleared and then watched
+/// every 0.1 second while the operation runs. Both stop when `stop` turns
+/// true; the returned future resolves when the operation is cancelled.
+pub(crate) async fn keep_running(
+    state: &AppState,
+    stop: tokio::sync::watch::Receiver<bool>,
+) -> Result<impl std::future::Future<Output = ()> + use<>, sqlx::Error> {
+    let mut conn = state.pool.acquire().await?;
+    mark_as_running(&mut conn).await?;
+    clear_shutdown_signal(&mut conn).await?;
+    drop(conn);
+    let pool = state.pool.clone();
+    let mut alive_stop = stop.clone();
+    tokio::spawn(async move {
+        loop {
+            tokio::select! {
+                _ = alive_stop.changed() => break,
+                () = tokio::time::sleep(std::time::Duration::from_secs(30)) => {}
+            }
+            // Redis's EXPIRE: only a key still there.
+            let extended = sqlx::query(
+                "UPDATE discourse_rs.cached_values \
+                 SET expires_at = clock_timestamp() + interval '60 seconds' \
+                 WHERE key = $1 AND expires_at > clock_timestamp()",
+            )
+            .bind(RUNNING_KEY)
+            .execute(&pool)
+            .await;
+            if let Err(e) = extended {
+                tracing::error!("keeping the backup operation running: {e}");
+            }
+        }
+    });
+    let (cancel, cancelled) = tokio::sync::oneshot::channel::<()>();
+    let pool = state.pool.clone();
+    tokio::spawn(async move {
+        loop {
+            if *stop.borrow() {
+                return;
+            }
+            let checked = async {
+                let mut conn = pool.acquire().await?;
+                Ok::<_, sqlx::Error>((
+                    is_operation_running(&mut conn).await?,
+                    should_shutdown(&mut conn).await?,
+                ))
+            };
+            match checked.await {
+                Ok((false, _)) => return,
+                Ok((true, true)) => {
+                    let _ = cancel.send(());
+                    return;
+                }
+                Ok((true, false)) => {}
+                Err(e) => tracing::error!("watching for a backup cancel: {e}"),
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+    });
+    Ok(async move {
+        if cancelled.await.is_err() {
+            std::future::pending::<()>().await;
+        }
+    })
 }
 
 /// `can_rollback?`: a table left in the `backup` schema by a restore.

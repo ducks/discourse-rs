@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "backup_time_of_day": "1:10"
+  },
+  "enqueue": [
+    [
+      "schedule_backup"
+    ]
+  ],
+  "run_jobs": [
+    "schedule_backup"
+  ],
+  "random_delays": {
+    "create_backup": 600
+  },
+  "requests": []
+}
