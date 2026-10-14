@@ -713,6 +713,14 @@ Open in phases 9 and 10 (2026-10-14): 89 items, 120-208. By size: 24 S,
 9 L). Not counted here: the open items above (90f, 90g, 92b), 100 (in
 Phase 10, after 192) and 101-119.
 
+Next, in order (2026-10-15): the gaps a logged-in member meets first,
+so a member can use the port without telling it from Rails. 188 topic
+edits (started), 189 tags writes (the composer refuses tags), 193 the
+user pages (preferences), 143 advanced search (the search menu's `#`,
+`@` and `in:` suggestions run searches the port refuses), 131 avatars.
+Then the rest of Phase 10's core forum actions (190 categories writes,
+191 external auth, 192 invites), then 100.
+
 The refusals of merged items, grouped by feature and ordered by how
 often a real site meets them (reading and posting first, then
 moderation, then admin, then the Ruby-compatibility engines). Counted
