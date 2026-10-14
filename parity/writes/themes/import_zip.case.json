@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_fancy.zip"}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"},
+    {"method": "GET", "path": "/admin/config/customize/themes.json"},
+    {"method": "GET", "path": "/admin/themes.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/3/body/themes/0/theme_fields",
+    "/responses/3/body/themes/1/theme_fields",
+    "/responses/3/body/themes/2/theme_fields"
+  ]
+}

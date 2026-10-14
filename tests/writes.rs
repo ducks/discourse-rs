@@ -337,6 +337,26 @@ fn is_fixture(value: &Value) -> bool {
     value.get("fixture").is_some_and(Value::is_string)
 }
 
+/// `Rack::Mime.mime_type(File.extname(path), "application/octet-stream")`,
+/// the type the recorder's Rack::Test::UploadedFile sends, for the
+/// extensions parity/writes/files holds.
+fn rack_mime_type(file: &str) -> &'static str {
+    let ext = file.rsplit_once('.').map_or("", |(_, e)| e);
+    match ext {
+        "gz" => "application/x-gzip",
+        "zip" => "application/zip",
+        "tar" => "application/x-tar",
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "svg" => "image/svg+xml",
+        "txt" => "text/plain",
+        "csv" => "text/csv",
+        "pem" => "application/x-x509-ca-cert",
+        _ => "application/octet-stream",
+    }
+}
+
 fn multipart(params: &Map<String, Value>) -> (String, Vec<u8>) {
     let boundary = "----discourse-rs-writes-boundary";
     let files = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes/files");
@@ -345,10 +365,11 @@ fn multipart(params: &Map<String, Value>) -> (String, Vec<u8>) {
         out.extend_from_slice(format!("--{boundary}\r\n").as_bytes());
         if is_fixture(value) {
             let file = value["fixture"].as_str().unwrap();
+            let content_type = rack_mime_type(file);
             out.extend_from_slice(
                 format!(
                     "Content-Disposition: form-data; name=\"{name}\"; filename=\"{file}\"\r\n\
-                     Content-Type: application/octet-stream\r\n\r\n"
+                     Content-Type: {content_type}\r\n\r\n"
                 )
                 .as_bytes(),
             );

@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_fancy.zip"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "banner_text", "value": "Kept"}},
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_fancy_v2.zip"}, "theme_id": "{{responses.0.body.theme.id}}"}},
+    {"method": "GET", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"},
+    {"method": "GET", "path": "/admin/customize/themes/{{responses.0.body.theme.id}}/export"},
+    {"method": "GET", "path": "/admin/config/colors.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields"
+  ]
+}

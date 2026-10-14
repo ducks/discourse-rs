@@ -1,0 +1,1104 @@
+{
+  "name": "import_formats",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_dark.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_plain.gz"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_component.tar"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "bundle": {
+          "fixture": "theme_component.tar"
+        },
+        "theme_id": "4242"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/4242.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/themes/{{responses.0.body.theme.id}}/export"
+    }
+  ],
+  "started_at": "2026-10-14T22:29:23.759236",
+  "transaction_started_at": "2026-10-14T22:29:19.877494",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Dusk",
+          "description": null,
+          "created_at": "2026-10-14T22:29:23.863Z",
+          "updated_at": "2026-10-14T22:29:24.077Z",
+          "component": false,
+          "color_scheme_id": 20,
+          "dark_color_scheme_id": 19,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "screenshot_dark",
+              "target": "common",
+              "value": "",
+              "type_id": 7,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "dark.png",
+              "file_path": null
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Dusk\",\n  \"modifiers\": {\"only_theme_color_schemes\": true},\n  \"color_schemes\": {\n    \"Night\": {\"primary\": \"eeeeee\", \"secondary\": \"111111\"},\n    \"Day\": {\"primary\": \"111111\", \"secondary\": \"eeeeee\"},\n    \"Noon\": {\"primary\": \"222222\", \"secondary\": \"ffffff\"}\n  },\n  \"screenshots\": \"screenshots/dark.png\"\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": true,
+          "color_scheme": {
+            "id": 20,
+            "name": "Day",
+            "is_base": null,
+            "base_scheme_id": null,
+            "theme_id": 1,
+            "theme_name": "Dusk",
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": false,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "eeeeee",
+                "default_hex": "eeeeee",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "08c",
+                "default_hex": "08c",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "fff",
+                "default_hex": "fff",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "333",
+                "default_hex": "333",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "d1f0ff",
+                "default_hex": "d1f0ff",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "f2f2f2",
+                "default_hex": "f2f2f2",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "ffff4d",
+                "default_hex": "ffff4d",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "c80001",
+                "default_hex": "c80001",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "090",
+                "default_hex": "090",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Import Error: about.json does not exist, or is invalid. Are you sure this is a Discourse Theme?"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The file you uploaded does not appear to be a valid Discourse theme."
+        ]
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 4242,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T22:29:25.637Z",
+          "updated_at": "2026-10-14T22:29:25.637Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 4242,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T22:29:25.637Z",
+          "updated_at": "2026-10-14T22:29:25.637Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "zip": [
+          {
+            "name": "about.json",
+            "size": 1456,
+            "sha256": "390bc806443e03e23bf6512d1353df6a19e2e0683b62098fc66fc6e66b575acf"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "color_scheme_colors": {
+      "inserted": [
+        {
+          "id": 325,
+          "hex": "eeeeee",
+          "name": "primary",
+          "created_at": "2026-10-14T22:29:23.885604",
+          "updated_at": "2026-10-14T22:29:23.885604",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 326,
+          "hex": "111111",
+          "name": "secondary",
+          "created_at": "2026-10-14T22:29:23.88924",
+          "updated_at": "2026-10-14T22:29:23.88924",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 327,
+          "hex": "08c",
+          "name": "tertiary",
+          "created_at": "2026-10-14T22:29:23.893178",
+          "updated_at": "2026-10-14T22:29:23.893178",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 328,
+          "hex": "e45735",
+          "name": "quaternary",
+          "created_at": "2026-10-14T22:29:23.897145",
+          "updated_at": "2026-10-14T22:29:23.897145",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 329,
+          "hex": "fff",
+          "name": "header_background",
+          "created_at": "2026-10-14T22:29:23.90117",
+          "updated_at": "2026-10-14T22:29:23.90117",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 330,
+          "hex": "333",
+          "name": "header_primary",
+          "created_at": "2026-10-14T22:29:23.90456",
+          "updated_at": "2026-10-14T22:29:23.90456",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 331,
+          "hex": "ffff4d",
+          "name": "highlight",
+          "created_at": "2026-10-14T22:29:23.908352",
+          "updated_at": "2026-10-14T22:29:23.908352",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 332,
+          "hex": "d1f0ff",
+          "name": "selected",
+          "created_at": "2026-10-14T22:29:23.911556",
+          "updated_at": "2026-10-14T22:29:23.911556",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 333,
+          "hex": "f2f2f2",
+          "name": "hover",
+          "created_at": "2026-10-14T22:29:23.915611",
+          "updated_at": "2026-10-14T22:29:23.915611",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 334,
+          "hex": "c80001",
+          "name": "danger",
+          "created_at": "2026-10-14T22:29:23.919089",
+          "updated_at": "2026-10-14T22:29:23.919089",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 335,
+          "hex": "090",
+          "name": "success",
+          "created_at": "2026-10-14T22:29:23.922609",
+          "updated_at": "2026-10-14T22:29:23.922609",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 336,
+          "hex": "fa6c8d",
+          "name": "love",
+          "created_at": "2026-10-14T22:29:23.926008",
+          "updated_at": "2026-10-14T22:29:23.926008",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 337,
+          "hex": "111111",
+          "name": "primary",
+          "created_at": "2026-10-14T22:29:23.9321",
+          "updated_at": "2026-10-14T22:29:23.9321",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 338,
+          "hex": "eeeeee",
+          "name": "secondary",
+          "created_at": "2026-10-14T22:29:23.93471",
+          "updated_at": "2026-10-14T22:29:23.93471",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 339,
+          "hex": "08c",
+          "name": "tertiary",
+          "created_at": "2026-10-14T22:29:23.937637",
+          "updated_at": "2026-10-14T22:29:23.937637",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 340,
+          "hex": "e45735",
+          "name": "quaternary",
+          "created_at": "2026-10-14T22:29:23.940799",
+          "updated_at": "2026-10-14T22:29:23.940799",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 341,
+          "hex": "fff",
+          "name": "header_background",
+          "created_at": "2026-10-14T22:29:23.944458",
+          "updated_at": "2026-10-14T22:29:23.944458",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 342,
+          "hex": "333",
+          "name": "header_primary",
+          "created_at": "2026-10-14T22:29:23.948057",
+          "updated_at": "2026-10-14T22:29:23.948057",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 343,
+          "hex": "ffff4d",
+          "name": "highlight",
+          "created_at": "2026-10-14T22:29:23.950821",
+          "updated_at": "2026-10-14T22:29:23.950821",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 344,
+          "hex": "d1f0ff",
+          "name": "selected",
+          "created_at": "2026-10-14T22:29:23.953666",
+          "updated_at": "2026-10-14T22:29:23.953666",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 345,
+          "hex": "f2f2f2",
+          "name": "hover",
+          "created_at": "2026-10-14T22:29:23.956484",
+          "updated_at": "2026-10-14T22:29:23.956484",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 346,
+          "hex": "c80001",
+          "name": "danger",
+          "created_at": "2026-10-14T22:29:23.959357",
+          "updated_at": "2026-10-14T22:29:23.959357",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 347,
+          "hex": "090",
+          "name": "success",
+          "created_at": "2026-10-14T22:29:23.962025",
+          "updated_at": "2026-10-14T22:29:23.962025",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 348,
+          "hex": "fa6c8d",
+          "name": "love",
+          "created_at": "2026-10-14T22:29:23.96485",
+          "updated_at": "2026-10-14T22:29:23.96485",
+          "color_scheme_id": 20
+        },
+        {
+          "id": 349,
+          "hex": "222222",
+          "name": "primary",
+          "created_at": "2026-10-14T22:29:23.970678",
+          "updated_at": "2026-10-14T22:29:23.970678",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 350,
+          "hex": "ffffff",
+          "name": "secondary",
+          "created_at": "2026-10-14T22:29:23.973647",
+          "updated_at": "2026-10-14T22:29:23.973647",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 351,
+          "hex": "08c",
+          "name": "tertiary",
+          "created_at": "2026-10-14T22:29:23.976534",
+          "updated_at": "2026-10-14T22:29:23.976534",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 352,
+          "hex": "e45735",
+          "name": "quaternary",
+          "created_at": "2026-10-14T22:29:23.97973",
+          "updated_at": "2026-10-14T22:29:23.97973",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 353,
+          "hex": "fff",
+          "name": "header_background",
+          "created_at": "2026-10-14T22:29:23.982838",
+          "updated_at": "2026-10-14T22:29:23.982838",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 354,
+          "hex": "333",
+          "name": "header_primary",
+          "created_at": "2026-10-14T22:29:23.985737",
+          "updated_at": "2026-10-14T22:29:23.985737",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 355,
+          "hex": "ffff4d",
+          "name": "highlight",
+          "created_at": "2026-10-14T22:29:23.988861",
+          "updated_at": "2026-10-14T22:29:23.988861",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 356,
+          "hex": "d1f0ff",
+          "name": "selected",
+          "created_at": "2026-10-14T22:29:23.99169",
+          "updated_at": "2026-10-14T22:29:23.99169",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 357,
+          "hex": "f2f2f2",
+          "name": "hover",
+          "created_at": "2026-10-14T22:29:23.994533",
+          "updated_at": "2026-10-14T22:29:23.994533",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 358,
+          "hex": "c80001",
+          "name": "danger",
+          "created_at": "2026-10-14T22:29:24.015729",
+          "updated_at": "2026-10-14T22:29:24.015729",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 359,
+          "hex": "090",
+          "name": "success",
+          "created_at": "2026-10-14T22:29:24.019999",
+          "updated_at": "2026-10-14T22:29:24.019999",
+          "color_scheme_id": 21
+        },
+        {
+          "id": 360,
+          "hex": "fa6c8d",
+          "name": "love",
+          "created_at": "2026-10-14T22:29:24.024865",
+          "updated_at": "2026-10-14T22:29:24.024865",
+          "color_scheme_id": 21
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "color_schemes": {
+      "inserted": [
+        {
+          "id": 19,
+          "name": "Night",
+          "version": 1,
+          "theme_id": 1,
+          "created_at": "2026-10-14T22:29:23.882637",
+          "updated_at": "2026-10-14T22:29:23.882637",
+          "via_wizard": false,
+          "remote_copy": false,
+          "base_scheme_id": null,
+          "user_selectable": false
+        },
+        {
+          "id": 20,
+          "name": "Day",
+          "version": 1,
+          "theme_id": 1,
+          "created_at": "2026-10-14T22:29:23.929155",
+          "updated_at": "2026-10-14T22:29:23.929155",
+          "via_wizard": false,
+          "remote_copy": false,
+          "base_scheme_id": null,
+          "user_selectable": false
+        },
+        {
+          "id": 21,
+          "name": "Noon",
+          "version": 1,
+          "theme_id": 1,
+          "created_at": "2026-10-14T22:29:23.96767",
+          "updated_at": "2026-10-14T22:29:23.96767",
+          "via_wizard": false,
+          "remote_copy": false,
+          "base_scheme_id": null,
+          "user_selectable": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "javascript_caches": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": null,
+          "digest": "4be4e818cc61a952c082db5ee8b0756e38728388",
+          "content": "/* Translation data for theme 4242 (en)*/\nconst localeData = window._discourse_locale_data ??= {};\nlocaleData.theme ??= {};\nlocaleData.theme[4242] = {\"en\":{\"label\":\"Tiny\"}};\n",
+          "theme_id": null,
+          "created_at": "2026-10-14T22:29:25.732427",
+          "source_map": null,
+          "updated_at": "2026-10-14T22:29:25.732427",
+          "theme_field_id": 173,
+          "external_plugin_imports": []
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "remote_themes": {
+      "inserted": [
+        {
+          "id": 36,
+          "branch": null,
+          "authors": null,
+          "about_url": null,
+          "created_at": "2026-10-14T22:29:23.858449",
+          "remote_url": "",
+          "updated_at": "2026-10-14T22:29:23.858449",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        },
+        {
+          "id": 37,
+          "branch": null,
+          "authors": "John Roe",
+          "about_url": "not a url",
+          "created_at": "2026-10-14T22:29:25.634142",
+          "remote_url": "",
+          "updated_at": "2026-10-14T22:29:25.634142",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 169,
+          "name": "screenshot_dark",
+          "error": null,
+          "value": "",
+          "type_id": 7,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": 36,
+          "created_at": "2026-10-14T22:29:23.868739",
+          "updated_at": "2026-10-14T22:29:23.868739",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 170,
+          "name": "about",
+          "error": null,
+          "value": "{\n  \"name\": \"Dusk\",\n  \"modifiers\": {\"only_theme_color_schemes\": true},\n  \"color_schemes\": {\n    \"Night\": {\"primary\": \"eeeeee\", \"secondary\": \"111111\"},\n    \"Day\": {\"primary\": \"111111\", \"secondary\": \"eeeeee\"},\n    \"Noon\": {\"primary\": \"222222\", \"secondary\": \"ffffff\"}\n  },\n  \"screenshots\": \"screenshots/dark.png\"\n}\n",
+          "type_id": 8,
+          "theme_id": 1,
+          "target_id": 9,
+          "upload_id": null,
+          "created_at": "2026-10-14T22:29:23.879557",
+          "updated_at": "2026-10-14T22:29:23.879557",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 171,
+          "name": "about",
+          "error": null,
+          "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+          "type_id": 8,
+          "theme_id": 4242,
+          "target_id": 9,
+          "upload_id": null,
+          "created_at": "2026-10-14T22:29:25.639446",
+          "updated_at": "2026-10-14T22:29:25.639446",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 172,
+          "name": "after_header",
+          "error": null,
+          "value": "<div class=\"tiny\">Tiny</div>\n",
+          "type_id": 0,
+          "theme_id": 4242,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-14T22:29:25.641939",
+          "updated_at": "2026-10-14T22:29:25.641939",
+          "value_baked": "<div class=\"tiny\">Tiny</div>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 173,
+          "name": "en",
+          "error": null,
+          "value": "en:\n  label: Tiny\n",
+          "type_id": 5,
+          "theme_id": 4242,
+          "target_id": 4,
+          "upload_id": null,
+          "created_at": "2026-10-14T22:29:25.643527",
+          "updated_at": "2026-10-14T22:29:25.643527",
+          "value_baked": "<script type=\"module\" src=\"/theme-javascripts/4be4e818cc61a952c082db5ee8b0756e38728388.js?__ws=localhost\" data-theme-id=\"4242\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": true,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        },
+        {
+          "id": 4,
+          "theme_id": 4242,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": true,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Dusk",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T22:29:23.863251",
+          "updated_at": "2026-10-14T22:29:24.077706",
+          "auto_update": false,
+          "color_scheme_id": 20,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": 19
+        },
+        {
+          "id": 4242,
+          "name": "Tiny Component",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": true,
+          "created_at": "2026-10-14T22:29:25.637864",
+          "updated_at": "2026-10-14T22:29:25.637864",
+          "auto_update": false,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "upload_references": {
+      "inserted": [
+        {
+          "id": 36,
+          "target_id": 169,
+          "upload_id": 36,
+          "created_at": "2026-10-14T22:29:23.872366",
+          "updated_at": "2026-10-14T22:29:23.8724",
+          "target_type": "ThemeField"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "etag": null,
+          "sha1": "043b0aa221f492e60cda981a865188e2c0afe6e0",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": null,
+          "filesize": 48867,
+          "extension": "png",
+          "created_at": "2026-10-14T22:29:23.813597",
+          "updated_at": "2026-10-14T22:29:23.817028",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "dark.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jkMIDD0LNHmyBTqQg1GuJqY2GKA=",
+            "created_at": "2026-10-14T22:29:21.481661",
+            "rotated_at": "2026-10-14T22:29:21.475863",
+            "updated_at": "2026-10-14T22:29:21.481661",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jkMIDD0LNHmyBTqQg1GuJqY2GKA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T22:29:23.769564",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jkMIDD0LNHmyBTqQg1GuJqY2GKA=",
+            "created_at": "2026-10-14T22:29:21.481661",
+            "rotated_at": "2026-10-14T22:29:21.475863",
+            "updated_at": "2026-10-14T22:29:21.481661",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jkMIDD0LNHmyBTqQg1GuJqY2GKA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Dusk",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Dusk\",\"description\":null,\"created_at\":\"2026-10-14T22:29:23.863Z\",\"updated_at\":\"2026-10-14T22:29:24.077Z\",\"component\":false,\"color_scheme_id\":20,\"dark_color_scheme_id\":19,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"screenshot_dark\",\"target\":\"common\",\"value\":\"\",\"type_id\":7,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"dark.png\",\"file_path\":null},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Dusk\\\",\\n  \\\"modifiers\\\": {\\\"only_theme_color_schemes\\\": true},\\n  \\\"color_schemes\\\": {\\n    \\\"Night\\\": {\\\"primary\\\": \\\"eeeeee\\\", \\\"secondary\\\": \\\"111111\\\"},\\n    \\\"Day\\\": {\\\"primary\\\": \\\"111111\\\", \\\"secondary\\\": \\\"eeeeee\\\"},\\n    \\\"Noon\\\": {\\\"primary\\\": \\\"222222\\\", \\\"secondary\\\": \\\"ffffff\\\"}\\n  },\\n  \\\"screenshots\\\": \\\"screenshots/dark.png\\\"\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":true,\"color_scheme\":{\"id\":20,\"name\":\"Day\",\"is_base\":null,\"base_scheme_id\":null,\"theme_id\":1,\"theme_name\":\"Dusk\",\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":false,\"colors\":[{\"name\":\"primary\",\"hex\":\"111111\",\"default_hex\":\"111111\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"eeeeee\",\"default_hex\":\"eeeeee\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"08c\",\"default_hex\":\"08c\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"fff\",\"default_hex\":\"fff\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"333\",\"default_hex\":\"333\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"d1f0ff\",\"default_hex\":\"d1f0ff\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"f2f2f2\",\"default_hex\":\"f2f2f2\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"ffff4d\",\"default_hex\":\"ffff4d\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"c80001\",\"default_hex\":\"c80001\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"090\",\"default_hex\":\"090\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false}]},\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T22:29:25.440038",
+          "ip_address": null,
+          "updated_at": "2026-10-14T22:29:25.440038",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": "{\"id\":4242,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T22:29:25.637Z\",\"updated_at\":\"2026-10-14T22:29:25.637Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"tiny\\\"\\u003eTiny\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/after_header.html\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  label: Tiny\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Tiny Component\\\",\\n  \\\"component\\\": true,\\n  \\\"authors\\\": \\\"John Roe\\\",\\n  \\\"about_url\\\": \\\"not a url\\\",\\n  \\\"modifiers\\\": {\\\"serialize_topic_is_hot\\\": true}\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"label\",\"value\":\"Tiny\",\"default\":\"Tiny\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T22:29:25.854698",
+          "ip_address": null,
+          "updated_at": "2026-10-14T22:29:25.854698",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T22:29:23.823212"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "color_scheme_colors": 325,
+    "color_schemes": 19,
+    "javascript_caches": 1,
+    "remote_themes": 36,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "upload_references": 36,
+    "uploads": 36,
+    "user_histories": 74,
+    "user_uploads": 36
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "8cbdb63e2d8f241223b81f4442494ed85a6ca5d9664e11bc464fdddf6945f91d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

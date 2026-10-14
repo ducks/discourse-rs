@@ -541,9 +541,39 @@ then by what running a forum needs (milestone 6). Briefs:
     (their compile errors), extra_js (ThemeJavascriptCompiler), inline
     scripts (AssetProcessor), migrations, uploads and svg sprites,
     other locales' translations, settings that request a refresh,
-    destroying a theme's own color schemes), 90f.
-    `feat/theme-imports` M (import, export, remote themes, uploads,
-    objects settings, the design wizard), 90g. `feat/admin-shell` L (the
+    destroying a theme's own color schemes), 90f. `feat/theme-imports`
+    M, split: 90f1. ~~`feat/theme-imports`~~ (done) M (Admin::
+    ThemesController#import of zip, tar, tar.gz and gz bundles through
+    ThemeStore::ZipImporter (Compression's strategies and size budget,
+    the root directory stripped, Dir.glob's file order) and
+    RemoteTheme.update_theme: assets uploaded for themes, screenshots,
+    about.json's metadata and version validations, modifiers (setting
+    modifiers refreshed), color schemes (created, updated with their
+    version bumped, the ones it no longer names destroyed, light and dark
+    picked by only_theme_color_schemes), theme site settings, every file
+    set as its field and the fields the bundle lost destroyed, imports
+    into an existing theme (`theme_id`), `components` none or sync;
+    export through ThemeStore::ZipExporter with generate_metadata_hash;
+    upload_asset and theme upload fields (theme_upload_var and
+    screenshots, their upload references, a `.js` upload's javascript
+    cache, the icons-sprite's theme_svg_sprites row and XML check);
+    RemoteThemeSerializer and `supported?` from the remote theme's
+    versions; remote imports up to the clone (GitUrl.normalize,
+    MAX_REMOTE_LENGTH, allowed_theme_repos, generate_key_pair's ssh key,
+    unsupported schemes and keyless ssh as import errors, placeholders,
+    `force`), update_source's checks, remote_check and remote_update of
+    a theme that isn't git, the remote theme destroyed with its theme,
+    git themes' fields refused; Jobs::CheckOutOfDateThemes scheduled.
+    Refused (171): cloning a git repository, so remote imports, update
+    checks, updates and source changes of git themes, and the child
+    components about.json names; pax tar headers; sprites libxml2 would
+    reject (its own error text)), 90f2. `feat/theme-settings-types` M
+    (theme settings of the objects type with SchemaSettingsObjectValidator
+    and objects_setting_metadata, and of the list, upload and icon types;
+    site settings of the objects type with uploads), 90f3.
+    `feat/design-wizard` M (Admin::Config::DesignWizardController's index
+    and update, DesignWizard::Apply; the setup wizard's steps), 90g.
+    `feat/admin-shell` L (the
     admin pages' HTML: the port has none; /admin/customize/* and
     /admin/config/* refuse non-JSON requests today), 90h.
     ~~`feat/template-client-strings`~~ (done) M (the templates' and
@@ -719,10 +749,10 @@ with the viewport, guessing from the user agent without it
 
 ### Phase 9: what done items still refuse
 
-Open in phases 9 and 10 (2026-10-14): 89 items, 120-208. By size: 24 S,
-46 M, 19 L. Phase 9: 68 (22 S, 36 M, 10 L); phase 10: 21 (2 S, 10 M,
-9 L). Not counted here: the open items above (90f, 90g, 92b), 100 (in
-Phase 10, after 192) and 101-119.
+Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
+47 M, 19 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 10 M,
+9 L). Not counted here: the open items above (90f2, 90f3, 90g, 92b),
+100 (in Phase 10, after 192) and 101-119.
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
@@ -747,11 +777,12 @@ names the refusals it lifts; a reason that appears in many places is
 cited by its main sites.
 
 Already owned elsewhere, so not repeated here: the admin's Ember pages
-(26 "(Ember)" and "admin ... page" refusals) are 90g; remote themes,
-theme uploads and objects settings, the wizard (themes.rs:305;
-theme_writes.rs:196,1213,1232; routes/themes.rs:1040;
-admin_site_settings.rs:218; site.rs:566; routes/accounts.rs:1062) are
-90f; MessageBus's own ids and positions are 100.
+(26 "(Ember)" and "admin ... page" refusals) are 90g; theme settings
+of the objects, list, upload and icon types and objects site settings
+with uploads (themes.rs:655; theme_writes.rs:1251,1493;
+admin_site_settings.rs:218) are 90f2, the wizards (site.rs:566;
+routes/accounts.rs:1062) 90f3; MessageBus's own ids and positions are
+100.
 
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146), notify_post_revision (137),
@@ -1142,7 +1173,7 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     and reseeding (routes/site_texts.rs:64,915), the unsubscribe pages
     (routes/email.rs:45), email templates
     (routes/admin_email_templates.rs:221), theme translations
-    (theme_writes.rs:273; routes/themes.rs:1107,1437), MessageFormat
+    (theme_writes.rs:353; routes/themes.rs:1045,1401), MessageFormat
     keys (routes/site_texts.rs:603), the default_locale entry
     (admin_site_settings.rs:145), slugs by transliteration
     (posting/text.rs:332), moment locales (49). Needs: the reference's
@@ -1155,21 +1186,32 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     plugins/solved/by_user.rs:47; about.rs:299; posting/rebake.rs:52;
     routes/users.rs:1279), 90c's sidebar content localization
 169. `feat/theme-scss` L: new or changed scss fields
-    (theme_writes.rs:250,263) and recompiling theme fields on restore
-    (91c). Needs: an SCSS compiler with Discourse's theme pipeline
+    (theme_writes.rs:330,343), so imported bundles with stylesheets
+    (90f1), and recompiling theme fields on restore (91c). Needs: an
+    SCSS compiler with Discourse's theme pipeline
     (grass, as 88's email style uses, plus the color definitions, theme
     variables and imports Stylesheet::Compiler adds) and the stylesheet
     routes the port doesn't serve
-170. `feat/theme-javascript` L: extra_js (theme_writes.rs:267,437),
-    inline scripts in theme html (:608, AssetProcessor), theme settings
-    migrations (:270). Needs: ThemeJavascriptCompiler's toolchain in
+170. `feat/theme-javascript` L: extra_js (theme_writes.rs:347,553),
+    so imported bundles with javascripts/ (90f1), inline scripts in
+    theme html (:872, AssetProcessor), theme settings migrations (:350;
+    an import's `skip_migrations` has nothing to skip until then).
+    Needs: ThemeJavascriptCompiler's toolchain in
     process (Rails runs rollup, Babel and the Ember template compiler
     under mini_racer) and the theme-javascripts routes
-171. `feat/theme-writes-rest` S: settings that request a refresh
-    (routes/themes.rs:1163,1378, Discourse.request_refresh!, with 100),
-    destroying a theme's own color schemes (theme_writes.rs:1258), a
-    field over 1 MiB (:278), svg sprites (:539, with 90f's uploads), html
-    that does not parse (:606)
+171. `feat/theme-writes-rest` M: settings that request a refresh
+    (routes/themes.rs:1125,1342, Discourse.request_refresh!, with 100),
+    destroying a theme's own color schemes (theme_writes.rs:1519), a
+    field over 1 MiB (:358), html that does not parse (:870), svg sprites
+    libxml2 rejects or whose file is gone (:711,720, their error texts),
+    pax tar headers in imported bundles (theme_import.rs:426); git themes
+    (90f1): cloning a repository for a remote import
+    (theme_import.rs:1831,1837), update checks and updates
+    (routes/themes.rs:1088; Jobs::CheckOutOfDateThemes,
+    theme_import.rs:1861), source changes (routes/themes.rs:1917), the
+    child components about.json names (theme_import.rs:1620,1667).
+    Needs: network (git over http(s) behind FinalDestination's SSRF
+    guard, and over ssh with the deploy key)
 172. `feat/admin-email-templates-rest` S: updating, showing and reverting
     customized email templates (routes/admin_email_templates.rs:407,444,
     478), unblocked by 90a's override layer
@@ -1950,8 +1992,8 @@ API keys for posting, and grant_moderation! for the first admin's login.
 - [ ] Customize: themes and components, color schemes, site texts
       (translation overrides), sidebar defaults; the `/admin/config` pages.
       Site texts (90a), color schemes (90b), sidebar defaults (90c) and
-      the themes' reads and writes (90d, 90e) done; left: 90f, 90g and
-      169-171
+      the themes' reads and writes (90d, 90e), imports and exports (90f1)
+      done; left: 90f2, 90f3, 90g and 169-171
 
 ## Not planned
 

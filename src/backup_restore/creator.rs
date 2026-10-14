@@ -728,6 +728,8 @@ pub(crate) async fn logs_markdown(
             pasted: false,
             for_private_message: false,
             for_export: true,
+            for_theme: false,
+            skip_validations: false,
         },
     )
     .await?;

@@ -1,0 +1,68 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "notes.txt"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_no_about.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_no_name.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_bad_json.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_bad_version.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_bad_modifier.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_bad_screenshot.zip"
+        }
+      }
+    }
+  ]
+}

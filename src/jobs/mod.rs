@@ -530,6 +530,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::backup_restore::jobs::DROP_BACKUP_SCHEMA,
         Duration::from_secs(24 * 3600),
     ),
+    (
+        crate::theme_import::CHECK_OUT_OF_DATE_THEMES,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -705,6 +709,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         }
         crate::backup_restore::jobs::DROP_BACKUP_SCHEMA => {
             crate::backup_restore::restorer::drop_backup_schema(state).await
+        }
+        crate::theme_import::CHECK_OUT_OF_DATE_THEMES => {
+            crate::theme_import::check_out_of_date_themes(state).await
         }
         _ => unreachable!("every SCHEDULED job has a handler"),
     }

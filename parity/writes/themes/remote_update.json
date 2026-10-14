@@ -1,0 +1,702 @@
+{
+  "name": "remote_update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_component.zip"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/source.json",
+      "params": {
+        "remote_url": "https://github.com/discourse/x"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "remote": "git://example.com/placeholder.git",
+        "force": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/source.json",
+      "params": {
+        "remote_url": "  "
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/999/source.json",
+      "params": {
+        "remote_url": "x"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Renamed placeholder",
+          "auto_update": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/source.json",
+      "params": {
+        "remote_url": "https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T21:44:44.215028",
+  "transaction_started_at": "2026-10-14T21:44:41.994589",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:44:44.279Z",
+          "updated_at": "2026-10-14T21:44:44.279Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: remote_theme"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 2,
+          "name": "placeholder",
+          "description": null,
+          "created_at": "2026-10-14T21:44:44.750Z",
+          "updated_at": "2026-10-14T21:44:44.750Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": 37,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": {
+            "id": 37,
+            "remote_url": "git://example.com/placeholder.git",
+            "remote_version": null,
+            "local_version": null,
+            "commits_behind": null,
+            "branch": null,
+            "local_compat_ref": null,
+            "remote_compat_ref": null,
+            "remote_updated_at": null,
+            "updated_at": "2026-10-14T21:44:44.747Z",
+            "last_error_text": null,
+            "is_git": true,
+            "license_url": null,
+            "about_url": null,
+            "authors": null,
+            "theme_version": null,
+            "minimum_discourse_version": null,
+            "maximum_discourse_version": null,
+            "has_private_key": false
+          },
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: remote_url"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 2,
+          "name": "Renamed placeholder",
+          "description": null,
+          "created_at": "2026-10-14T21:44:44.750Z",
+          "updated_at": "2026-10-14T21:44:45.208Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": 37,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": {
+            "id": 37,
+            "remote_url": "git://example.com/placeholder.git",
+            "remote_version": null,
+            "local_version": null,
+            "commits_behind": null,
+            "branch": null,
+            "local_compat_ref": null,
+            "remote_compat_ref": null,
+            "remote_updated_at": null,
+            "updated_at": "2026-10-14T21:44:44.747Z",
+            "last_error_text": null,
+            "is_git": true,
+            "license_url": null,
+            "about_url": null,
+            "authors": null,
+            "theme_version": null,
+            "minimum_discourse_version": null,
+            "maximum_discourse_version": null,
+            "has_private_key": false
+          },
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:44:44.279Z",
+          "updated_at": "2026-10-14T21:44:44.279Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "`https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` is not in the list of allowed themes (check `allowed_theme_repos` global setting)."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "javascript_caches": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": null,
+          "digest": "42ff519ba84dab33476efe709ee6cfb868f0575b",
+          "content": "/* Translation data for theme 1 (en)*/\nconst localeData = window._discourse_locale_data ??= {};\nlocaleData.theme ??= {};\nlocaleData.theme[1] = {\"en\":{\"label\":\"Tiny\"}};\n",
+          "theme_id": null,
+          "created_at": "2026-10-14T21:44:44.422535",
+          "source_map": null,
+          "updated_at": "2026-10-14T21:44:44.422535",
+          "theme_field_id": 171,
+          "external_plugin_imports": []
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "remote_themes": {
+      "inserted": [
+        {
+          "id": 36,
+          "branch": null,
+          "authors": "John Roe",
+          "about_url": "not a url",
+          "created_at": "2026-10-14T21:44:44.275979",
+          "remote_url": "",
+          "updated_at": "2026-10-14T21:44:44.275979",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        },
+        {
+          "id": 37,
+          "branch": null,
+          "authors": null,
+          "about_url": null,
+          "created_at": "2026-10-14T21:44:44.747542",
+          "remote_url": "git://example.com/placeholder.git",
+          "updated_at": "2026-10-14T21:44:44.747542",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 169,
+          "name": "about",
+          "error": null,
+          "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+          "type_id": 8,
+          "theme_id": 1,
+          "target_id": 9,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:44:44.282464",
+          "updated_at": "2026-10-14T21:44:44.282464",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 170,
+          "name": "after_header",
+          "error": null,
+          "value": "<div class=\"tiny\">Tiny</div>\n",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:44:44.285517",
+          "updated_at": "2026-10-14T21:44:44.285517",
+          "value_baked": "<div class=\"tiny\">Tiny</div>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 171,
+          "name": "en",
+          "error": null,
+          "value": "en:\n  label: Tiny\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 4,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:44:44.289092",
+          "updated_at": "2026-10-14T21:44:44.289092",
+          "value_baked": "<script type=\"module\" src=\"/theme-javascripts/42ff519ba84dab33476efe709ee6cfb868f0575b.js?__ws=localhost\" data-theme-id=\"1\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": true,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        },
+        {
+          "id": 4,
+          "theme_id": 2,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Tiny Component",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": true,
+          "created_at": "2026-10-14T21:44:44.279712",
+          "updated_at": "2026-10-14T21:44:44.279712",
+          "auto_update": false,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        },
+        {
+          "id": 2,
+          "name": "Renamed placeholder",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T21:44:44.750704",
+          "updated_at": "2026-10-14T21:44:45.208946",
+          "auto_update": false,
+          "color_scheme_id": null,
+          "remote_theme_id": 37,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "QxABpayqLUXKHePK9dqJoZMKtds=",
+            "created_at": "2026-10-14T21:44:42.699634",
+            "rotated_at": "2026-10-14T21:44:42.696604",
+            "updated_at": "2026-10-14T21:44:42.699634",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "QxABpayqLUXKHePK9dqJoZMKtds=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T21:44:44.240618",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "QxABpayqLUXKHePK9dqJoZMKtds=",
+            "created_at": "2026-10-14T21:44:42.699634",
+            "rotated_at": "2026-10-14T21:44:42.696604",
+            "updated_at": "2026-10-14T21:44:42.699634",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "QxABpayqLUXKHePK9dqJoZMKtds=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T21:44:44.279Z\",\"updated_at\":\"2026-10-14T21:44:44.279Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"tiny\\\"\\u003eTiny\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/after_header.html\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  label: Tiny\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Tiny Component\\\",\\n  \\\"component\\\": true,\\n  \\\"authors\\\": \\\"John Roe\\\",\\n  \\\"about_url\\\": \\\"not a url\\\",\\n  \\\"modifiers\\\": {\\\"serialize_topic_is_hot\\\": true}\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"label\",\"value\":\"Tiny\",\"default\":\"Tiny\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:44:44.538454",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:44:44.538454",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed placeholder",
+          "topic_id": null,
+          "new_value": "{\"id\":2,\"name\":\"Renamed placeholder\",\"updated_at\":\"2026-10-14T21:44:45.208Z\",\"auto_update\":false}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:44:45.411685",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:44:45.411685",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":2,\"name\":\"placeholder\",\"updated_at\":\"2026-10-14T21:44:44.750Z\",\"auto_update\":true}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "javascript_caches": 1,
+    "remote_themes": 36,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "user_histories": 74
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "76bcaabcfbe0c418a5bd225f28228b5905fb0188cc38f56a3903e3718ac9d73a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

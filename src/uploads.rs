@@ -148,7 +148,12 @@ fn extensions_to_set(value: &str) -> Vec<String> {
         .filter(|c| !c.is_whitespace() && *c != '.')
         .collect::<String>()
         .to_lowercase();
-    for ext in cleaned.split('|') {
+    // String#split drops trailing empty fields ("" splits to none).
+    let mut parts: Vec<&str> = cleaned.split('|').collect();
+    while parts.last() == Some(&"") {
+        parts.pop();
+    }
+    for ext in parts {
         if !ext.contains('*') && !out.contains(&ext.to_string()) {
             out.push(ext.to_string());
         }
@@ -314,6 +319,12 @@ pub struct NewUpload<'a> {
     /// UploadCreator's `for_export`: checked against
     /// export_authorized_extensions and max_export_file_size_kb.
     pub for_export: bool,
+    /// UploadCreator's `for_theme`: never processed as an image, checked
+    /// against theme_authorized_extensions, its errors as full messages
+    /// (what the theme callers render).
+    pub for_theme: bool,
+    /// UploadCreator's `skip_validations`: saved without UploadValidator.
+    pub skip_validations: bool,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -342,8 +353,9 @@ pub async fn create(
         return Err(Unsupported("secure uploads").into());
     }
     let detected = detect(up.bytes);
-    let is_image = is_supported_image(up.filename)
-        || detected.is_some_and(|d| is_supported_image(&format!("test.{}", d.name())));
+    let is_image = !up.for_theme
+        && (is_supported_image(up.filename)
+            || detected.is_some_and(|d| is_supported_image(&format!("test.{}", d.name()))));
     let mut image: Option<(u32, u32, bool)> = None;
     let mut image_type: Option<&'static str> = None;
     let mut bytes: Vec<u8> = up.bytes.to_vec();
@@ -469,9 +481,11 @@ pub async fn create(
     };
 
     // UploadValidator on save.
-    let errors = validate(s, i18n, up, &original_filename, bytes.len())?;
-    if !errors.is_empty() {
-        return Ok(Outcome::Invalid(errors));
+    if !up.skip_validations {
+        let errors = validate(s, i18n, up, &original_filename, bytes.len())?;
+        if !errors.is_empty() {
+            return Ok(Outcome::Invalid(errors));
+        }
     }
 
     let (width, height, thumb, animated) = match image {
@@ -564,7 +578,9 @@ fn validate(
         .extension()
         .map(|e| e.to_string_lossy().to_string())
         .unwrap_or_default();
-    let authorized_setting = if up.for_export {
+    let authorized_setting = if up.for_theme {
+        s.get("theme_authorized_extensions")?.to_s()
+    } else if up.for_export {
         s.get("export_authorized_extensions")?.to_s()
     } else {
         s.get("authorized_extensions")?.to_s()
@@ -594,8 +610,16 @@ fn validate(
             &[("authorized_extensions", &listed.join(", "))],
         )
     };
+    // errors.full_messages for the theme callers: the attribute first.
+    let full = |attribute: &str, message: String| {
+        if up.for_theme {
+            format!("{attribute} {message}")
+        } else {
+            message
+        }
+    };
     if let Some(message) = check(&authorized) {
-        return Ok(vec![message]);
+        return Ok(vec![full("Original filename", message)]);
     }
     let image = is_supported_image(original_filename);
     let subset: Vec<String> = authorized
@@ -605,7 +629,7 @@ fn validate(
         .collect();
     let mut errors = Vec::new();
     if let Some(message) = check(&subset) {
-        errors.push(message);
+        errors.push(full("Original filename", message));
     }
     // maximum_file_size
     let kind = if image { "image" } else { "attachment" };
@@ -620,13 +644,14 @@ fn validate(
     };
     let max_bytes = max_kb * 1024;
     if filesize as i64 > max_bytes {
-        errors.push(
+        errors.push(full(
+            "Filesize",
             i18n.t_with(
                 &format!("upload.{kind}s.too_large_humanized"),
                 &[("max_size", &human_size(max_bytes))],
             )
             .unwrap_or_default(),
-        );
+        ));
     }
     Ok(errors)
 }
