@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 101)",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/posts.json", "params": {"title": "A new topic that web hooks hear about", "category": 4, "raw": "The first post of a topic a web hook hears about."}}
+  ]
+}

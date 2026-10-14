@@ -343,11 +343,6 @@ async fn destroy(
         return Err(Unsupported("deleting another's post without moderating the topic").into());
     }
     refuse_unported_deletion(&mut conn, &post, &topic).await?;
-    // post_destroyed, and topic_destroyed for a first post.
-    crate::web_hooks::refuse(&mut conn, "post_destroyed", "post_destroyed web hooks").await?;
-    if post.is_first_post() {
-        crate::web_hooks::refuse(&mut conn, "topic_destroyed", "topic_destroyed web hooks").await?;
-    }
     // resolve_reviewables_for_author_deletion
     if own {
         let pending: bool = sqlx::query_scalar(
@@ -401,12 +396,6 @@ pub async fn destroy_by_staff_in(
         && post.post_number != 1
         && post.post_type != post_types::WHISPER;
     refuse_unported_deletion(&mut *conn, &post, &topic).await?;
-    // post_destroyed, and topic_destroyed for a first post.
-    crate::web_hooks::refuse(&mut *conn, "post_destroyed", "post_destroyed web hooks").await?;
-    if post.is_first_post() {
-        crate::web_hooks::refuse(&mut *conn, "topic_destroyed", "topic_destroyed web hooks")
-            .await?;
-    }
     if post.user_id == Some(user.id) {
         return Err(Unsupported("staff deleting their own posts in a transaction").into());
     }
@@ -438,6 +427,14 @@ async fn finish(
 ) -> Result<(), AppError> {
     let pm = topic.archetype == "private_message";
     let tx = conn;
+    // The topic as PostDestroyer holds it, for the web hooks' payloads.
+    let held = if crate::web_hooks::active(&mut *tx, "post_destroyed").await?
+        || (post.is_first_post() && crate::web_hooks::active(&mut *tx, "topic_destroyed").await?)
+    {
+        Some(crate::topic_view::HeldTopic::take(&mut *tx, topic.id).await?)
+    } else {
+        None
+    };
     if perform {
         perform_delete(&mut *tx, ctx, user_id, post, topic, req).await?;
         // Permanent deletion (:destroyed) is not ported.
@@ -473,6 +470,25 @@ async fn finish(
             .await?;
         }
     }
+    // post_destroyed's web hooks: the post as PostDestroyer holds it, its
+    // topic in hand.
+    let payloads = crate::web_hooks::Payloads {
+        settings: ctx.settings,
+        i18n: ctx.i18n,
+        config: ctx.config,
+    };
+    crate::web_hooks::enqueue_post_hooks(
+        &mut *tx,
+        &payloads,
+        "post_destroyed",
+        post.id,
+        crate::topic_view::Held {
+            topic_loaded: true,
+            just_created: false,
+            topic_posts_count: held.as_ref().map(crate::topic_view::HeldTopic::posts_count),
+        },
+    )
+    .await?;
     crate::jobs::enqueue(
         &mut *tx,
         "sync_topic_user_bookmarked",
@@ -520,6 +536,15 @@ async fn finish(
                 }
             }
         }
+        // topic_destroyed's web hooks, the topic as a view of it now shows.
+        crate::web_hooks::enqueue_topic_hooks(
+            &mut *tx,
+            &payloads,
+            "topic_destroyed",
+            topic.id,
+            held.clone(),
+        )
+        .await?;
     }
     if should_reset_bumped_at {
         reset_bumped_at(&mut *tx, topic.id).await?;
@@ -1248,7 +1273,13 @@ pub async fn staff_recover_in(
     if post.is_first_post() {
         return Err(Unsupported("recovering topics").into());
     }
-    crate::web_hooks::refuse(&mut *conn, "post_recovered", "post_recovered web hooks").await?;
+    // The topic's posts_count as PostDestroyer holds it (its statistics
+    // are updated in the row only).
+    let posts_count_before: i32 =
+        sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
+            .bind(topic.id)
+            .fetch_one(&mut *conn)
+            .await?;
     let pm = topic.archetype == "private_message";
     let (deleted_likes, quotes): (bool, bool) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'), \
@@ -1372,6 +1403,23 @@ pub async fn staff_recover_in(
         "recovered",
         Default::default(),
         true,
+    )
+    .await?;
+    // DiscourseEvent :post_recovered: its web hooks.
+    crate::web_hooks::enqueue_post_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "post_recovered",
+        post.id,
+        crate::topic_view::Held {
+            topic_loaded: true,
+            just_created: false,
+            topic_posts_count: Some(posts_count_before),
+        },
     )
     .await?;
     crate::jobs::enqueue(

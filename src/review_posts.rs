@@ -740,12 +740,6 @@ async fn notify_approved(
             slug.filter(|s| !s.is_empty()).unwrap_or("topic")
         ),
     });
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "notification_created",
-        "notification_created web hooks",
-    )
-    .await?;
     let notification_id: i64 = sqlx::query_scalar(
         "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
                                     high_priority, created_at, updated_at) \
@@ -791,7 +785,8 @@ async fn notify_approved(
         )
         .await?;
     }
-    Ok(())
+    crate::notification_create::notification_created(&mut *conn, ctx.settings, notification_id)
+        .await
 }
 
 /// `UserStat#update_pending_posts` for a user still there: the count of

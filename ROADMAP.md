@@ -321,7 +321,11 @@ then by what running a forum needs (milestone 6). Briefs:
     failed_redeliver; emit_web_hook_event's delivery through
     FinalDestination's checked POST, its headers and signature, retries
     and deactivation; the five scheduled jobs; the admin pages refused),
-    83c. `feat/web-hooks-posts` M, 83d.
+    83c. ~~`feat/web-hooks-posts`~~ (done) M (post and topic created,
+    edited, destroyed, recovered and status updated, small actions and
+    email replies, post_liked and notification_created, with
+    WebHookPost, WebHookTopicView, WebHookLike and Notification payloads
+    of the objects as Rails holds them; PostSerializer's via_email), 83d.
     `feat/web-hooks-users` M;
 84. ~~`feat/user-api-keys`~~ (done) M (the `User-Api-Key` header: lookup,
     the two limiters, scopes by route, last use and client id writes, no
