@@ -259,9 +259,6 @@ pub async fn accept(
     if t.view.accepted(t.post.id) {
         return Ok(Outcome::Failed);
     }
-    if crate::web_hooks::active(conn, "accepted_solution").await? {
-        return Err(Unsupported("accepted_solution web hooks").into());
-    }
     let me = guardian
         .user_id()
         .ok_or(Unsupported("accepting anonymously"))?;
@@ -454,6 +451,18 @@ pub async fn accept(
             .await?;
         }
     }
+    // enqueue_web_hooks, after the transaction.
+    crate::web_hooks::enqueue_solved_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "accepted_solution",
+        t.post.id,
+    )
+    .await?;
     Ok(Outcome::Done(topic_id))
 }
 
@@ -461,10 +470,11 @@ pub async fn accept(
 pub async fn unaccept(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
-    settings: &SiteSettings,
+    payloads: &crate::web_hooks::Payloads<'_>,
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Outcome, AppError> {
+    let settings = payloads.settings;
     let Some(t) = target(conn, settings, guardian, post_id, guardian.is_staff()).await? else {
         return Ok(Outcome::NotFound);
     };
@@ -476,9 +486,6 @@ pub async fn unaccept(
     let topic_id = t.topic.id;
     if !accepted {
         return Ok(Outcome::Done(topic_id));
-    }
-    if crate::web_hooks::active(conn, "unaccepted_solution").await? {
-        return Err(Unsupported("unaccepted_solution web hooks").into());
     }
     lock_topic(conn, topic_id).await?;
     // revoke_solved_credit
@@ -524,5 +531,7 @@ pub async fn unaccept(
     for user_id in removed {
         crate::bus::publish_notifications_state(bus, &mut *conn, settings, user_id).await?;
     }
+    crate::web_hooks::enqueue_solved_hooks(&mut *conn, payloads, "unaccepted_solution", t.post.id)
+        .await?;
     Ok(Outcome::Done(topic_id))
 }

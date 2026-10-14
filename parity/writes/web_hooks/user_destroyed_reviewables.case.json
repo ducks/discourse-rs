@@ -1,0 +1,28 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET approved = FALSE WHERE id = 5",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, score, potential_spam, target_id, target_type, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9302, 'ReviewableUser', 'core', 0, -1, TRUE, 6, TRUE, 5, 'User', '{\"username\":\"user3\",\"name\":\"User3\",\"email\":\"user3@example.com\",\"bio\":null,\"website\":null,\"avatar_upload_id\":null,\"avatar_url\":null}', 0, now() - interval '1 day', TRUE, FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9302, 9302, -1, 9, 0, 6, 0, 0, 'must_approve_users', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9302, 9302, 0, 0, -1, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order, deleted_at, deleted_by_id) VALUES (9301, 35, 5, 6, 'A deleted reply by user3', '<p>A deleted reply by user3</p>', now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 6, now() - interval '1 day', 1)",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 9301, 3, 3, now() - interval '1 day', now() - interval '1 day', FALSE, FALSE)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 9301, 'Post', 5, '{\"targets_topic\":false}', 0, now() - interval '1 day', FALSE, FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_claimed_topics (id, user_id, topic_id, created_at, updated_at, automatic) VALUES (9302, 1, 35, now(), now(), FALSE)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9303, 'ReviewableQueuedPost', 'core', 1, 5, TRUE, 4, 35, 3, FALSE, NULL, NULL, 5, '{\"raw\":\"queued\"}', 1, now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 307)",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 902)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3"
+      }
+    }
+  ]
+}

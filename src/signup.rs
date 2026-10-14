@@ -182,8 +182,14 @@ pub async fn create(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     i18n: &I18n,
+    config: &crate::config::Config,
     s: &Signup<'_>,
 ) -> Result<Created, AppError> {
+    let payloads = crate::web_hooks::Payloads {
+        settings,
+        i18n,
+        config,
+    };
     if settings.get("invite_code")?.presence().is_some() {
         return Err(Unsupported("invite codes at signup").into());
     }
@@ -352,7 +358,6 @@ pub async fn create(
         })));
     }
 
-    crate::web_hooks::refuse(&mut *conn, "user_created", "user_created web hooks").await?;
     // The insert and the after_create callbacks.
     let trust_level = settings.get("default_trust_level")?.to_i() as i32;
     let locale = s.locale.filter(|l| !l.is_empty()).unwrap_or("en");
@@ -400,7 +405,7 @@ pub async fn create(
     {
         return Err(Unsupported("random avatars at signup").into());
     }
-    ensure_in_trust_level_group(&mut *conn, user_id, trust_level).await?;
+    let joined = ensure_in_trust_level_group(&mut *conn, &payloads, user_id, trust_level).await?;
     default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
     default_sidebar_links(&mut *conn, settings, user_id).await?;
     // after_save: save_custom_fields (HasCustomFields, included first),
@@ -428,6 +433,17 @@ pub async fn create(
         s.name,
     )
     .await?;
+    // after_commit: user_created's web hooks.
+    crate::web_hooks::enqueue_user_hooks(&mut *conn, &payloads, "user_created", user_id).await?;
+    // The group users' after_commit (GroupManager#sync_add_side_effects),
+    // after the user's: the groups' counts, so user_created's payload has
+    // them as they were.
+    for group_id in joined {
+        sqlx::query("UPDATE groups SET user_count = user_count + 1 WHERE id = $1")
+            .bind(group_id)
+            .execute(&mut *conn)
+            .await?;
+    }
 
     // activation.finish: EmailActivator.
     let token =
@@ -609,18 +625,15 @@ pub(crate) async fn create_user_option(
 
 /// `Group.user_trust_level_change!` for a new user: the trust level groups
 /// up to theirs (trust_level_0 is group 10), with GroupManager's side
-/// effects for groups that have none to apply.
+/// effects for groups that have none to apply. The groups joined, whose
+/// counts the caller increases after the user's after_commit.
 async fn ensure_in_trust_level_group(
     conn: &mut PgConnection,
+    payloads: &crate::web_hooks::Payloads<'_>,
     user_id: i32,
     trust_level: i32,
-) -> Result<(), AppError> {
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "user_added_to_group",
-        "user_added_to_group web hooks",
-    )
-    .await?;
+) -> Result<Vec<i32>, AppError> {
+    let mut joined = Vec::new();
     for level in 0..=trust_level {
         let group_id = 10 + level;
         #[derive(sqlx::FromRow)]
@@ -656,24 +669,30 @@ async fn ensure_in_trust_level_group(
             )
             .into());
         }
-        let inserted = sqlx::query(
+        let inserted: Option<i64> = sqlx::query_scalar(
             "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) \
-             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp()) ON CONFLICT DO NOTHING",
+             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp()) ON CONFLICT DO NOTHING RETURNING id::int8",
         )
         .bind(group_id)
         .bind(user_id)
         .bind(group.default_notification_level)
-        .execute(&mut *conn)
-        .await?
-        .rows_affected();
-        if inserted > 0 {
-            sqlx::query("UPDATE groups SET user_count = user_count + 1 WHERE id = $1")
-                .bind(group_id)
-                .execute(&mut *conn)
-                .await?;
+        .fetch_optional(&mut *conn)
+        .await?;
+        if let Some(group_user_id) = inserted {
+            joined.push(group_id);
+            // trigger_user_added_event
+            crate::web_hooks::enqueue_group_user_hooks(
+                &mut *conn,
+                payloads,
+                "user_added_to_group",
+                group_user_id,
+                group_id,
+                None,
+            )
+            .await?;
         }
     }
-    Ok(())
+    Ok(joined)
 }
 
 /// `set_default_categories_preferences` and `set_default_tags_preferences`.

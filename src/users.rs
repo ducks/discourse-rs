@@ -585,9 +585,31 @@ impl Users<'_> {
         u.insert("moderator".into(), json!(user.moderator));
         u.insert("admin".into(), json!(user.admin));
         u.insert("title".into(), json!(user.title));
-        if user.suspended() || user.silenced() {
-            return Err(
-                Unsupported("suspended or silenced users (staff reason sanitizing)").into(),
+        // suspend_reason, suspended_till, silence_reason, silenced_till
+        if user.suspended() {
+            if !self.settings.get("hide_suspension_reasons")?.truthy()
+                || g.is_me(user.id)
+                || g.is_staff()
+            {
+                let reason = self.penalty_reason(user.id, 10).await?;
+                u.insert("suspend_reason".into(), reason);
+            }
+            u.insert(
+                "suspended_till".into(),
+                json!(user.suspended_till.map(time_json)),
+            );
+        }
+        if user.silenced() {
+            if !self.settings.get("hide_silencing_reasons")?.truthy()
+                || g.is_me(user.id)
+                || g.is_staff()
+            {
+                let reason = self.penalty_reason(user.id, 30).await?;
+                u.insert("silence_reason".into(), reason);
+            }
+            u.insert(
+                "silenced_till".into(),
+                json!(user.silenced_till.map(time_json)),
             );
         }
         u.insert(
@@ -996,6 +1018,30 @@ impl Users<'_> {
     }
 
     /// Whether the viewer ignores or muted the target.
+    /// `suspend_reason` / `silence_reason`: the latest penalty record's
+    /// details through `User.sanitize_staff_reason`, first line. Reasons
+    /// with markup would need the sanitizer, not ported.
+    async fn penalty_reason(&mut self, user_id: i32, action: i32) -> Result<Value, UsersError> {
+        let details: Option<Option<String>> = sqlx::query_scalar(
+            "SELECT details FROM user_histories WHERE target_user_id = $1 AND action = $2 \
+             ORDER BY id DESC LIMIT 1",
+        )
+        .bind(user_id)
+        .bind(action)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some(Some(details)) = details else {
+            return Ok(Value::Null);
+        };
+        if crate::ruby::is_blank(&details) {
+            return Ok(Value::Null);
+        }
+        if details.contains(['<', '>', '&', '"', '\'']) {
+            return Err(Unsupported("penalty reasons with markup (sanitize_staff_reason)").into());
+        }
+        Ok(json!(details.split('\n').next().unwrap_or_default()))
+    }
+
     async fn ignored_and_muted(&mut self, target_id: i32) -> Result<(bool, bool), UsersError> {
         let Some(uid) = self.guardian.user_id() else {
             return Ok((false, false));

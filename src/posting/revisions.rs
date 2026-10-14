@@ -30,7 +30,7 @@ pub async fn find_post(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Option<PostAccess>, AppError> {
-    find(conn, ctx, guardian, post_id, false).await
+    find(conn, ctx.settings, guardian, post_id, false).await
 }
 
 /// `find_post_from_params` as `find_post_using` does it in full: a deleted
@@ -41,12 +41,22 @@ pub async fn find_post_with_deleted(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Option<PostAccess>, AppError> {
-    find(conn, ctx, guardian, post_id, true).await
+    find(conn, ctx.settings, guardian, post_id, true).await
+}
+
+/// `find_post_with_deleted` with the site's settings alone.
+pub async fn find_post_with_deleted_in(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    guardian: &Guardian,
+    post_id: i32,
+) -> Result<Option<PostAccess>, AppError> {
+    find(conn, settings, guardian, post_id, true).await
 }
 
 async fn find(
     conn: &mut PgConnection,
-    ctx: &Ctx<'_>,
+    settings: &crate::site_settings::SiteSettings,
     guardian: &Guardian,
     post_id: i32,
     with_deleted: bool,
@@ -78,7 +88,7 @@ async fn find(
     let Some(row) = row else {
         return Ok(None);
     };
-    let s = ctx.settings;
+    let s = settings;
     let Some(topic) = TopicCtx::load(&mut *conn, s, guardian, row.topic_id).await? else {
         return Ok(None);
     };

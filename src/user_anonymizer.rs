@@ -8,7 +8,7 @@
 //!
 //! Refused: watched words (user and profile saves), verbose auth token
 //! logging, anonymize IPs that are not plain addresses, and the
-//! `user_anonymized` and `user_updated` listeners the port doesn't have.
+//! automations and workflows on `user_anonymized` and `user_updated`.
 
 use rand::Rng;
 use serde_json::{Value, json};
@@ -138,9 +138,6 @@ async fn expire_auth_tokens(
 
 /// The listeners of an event the port doesn't have.
 async fn event_unsupported(conn: &mut PgConnection, event: &str) -> Result<(), AppError> {
-    if crate::web_hooks::active(conn, event).await? {
-        return Err(Unsupported("user web hooks").into());
-    }
     let automations: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM discourse_automation_automations \
          WHERE enabled AND trigger = $1)",
@@ -255,6 +252,17 @@ pub async fn make_anonymous(
     // change_display_name.
     if old_avatar.is_some() && user_id > 0 {
         event_unsupported(&mut *conn, "user_updated").await?;
+        crate::web_hooks::enqueue_user_hooks(
+            &mut *conn,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            "user_updated",
+            user_id,
+        )
+        .await?;
     }
     if old_name != name {
         crate::jobs::enqueue(
@@ -462,6 +470,18 @@ pub async fn make_anonymous(
             "prev_username": prev_username,
             "anonymize_ip": anonymize_ip,
         }),
+    )
+    .await?;
+    // DiscourseEvent :user_anonymized: its web hooks.
+    crate::web_hooks::enqueue_user_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "user_anonymized",
+        user_id,
     )
     .await?;
     Ok(username)

@@ -143,6 +143,7 @@ pub async fn join(
             settings: &req.settings,
             i18n: &state.i18n,
             host: &host,
+            config: &state.config,
         };
         let cx = manager(&state, &promotion);
         let g = group_manager::find(&mut tx, group.id)
@@ -193,6 +194,7 @@ pub async fn leave(
         settings: &req.settings,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let cx = manager(&state, &promotion);
     let removed = group_manager::remove_many(&mut tx, &cx, &g, &[user_id]).await?;
@@ -397,6 +399,7 @@ pub async fn handle_membership_request(
             settings: &req.settings,
             i18n: &state.i18n,
             host: &host,
+            config: &state.config,
         };
         let cx = manager(&state, &promotion);
         let g = group_manager::find(&mut tx, group.id)

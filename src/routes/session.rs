@@ -454,8 +454,6 @@ pub async fn create(
         })));
     }
 
-    // log_on_user: user.logged_in.
-    crate::web_hooks::refuse(&mut conn, "user_logged_in", "user_logged_in web hooks").await?;
     // login(user): timezone, log_on_user, UserSerializer.
     crate::accounts::update_timezone_if_missing(&mut conn, user.id, param(&form, "timezone"))
         .await?;
@@ -487,6 +485,18 @@ pub async fn create(
         &mut conn,
         user.id,
         settings.get("maximum_session_age")?.to_i(),
+    )
+    .await?;
+    // user.logged_in: user_logged_in's web hooks.
+    crate::web_hooks::enqueue_user_hooks(
+        &mut conn,
+        &crate::web_hooks::Payloads {
+            settings: &settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        "user_logged_in",
+        user.id,
     )
     .await?;
     let cookie = current::auth_cookie(&state.keys, &settings, &user, &unhashed)?;
@@ -597,8 +607,6 @@ pub async fn destroy(
     }
     let redirect_url = redirect_url.unwrap_or_else(|| format!("{base_path}/"));
     if let Some(session) = &incoming.session {
-        // user.logged_out, or the user_logged_out event.
-        crate::web_hooks::refuse(&mut conn, "user_logged_out", "user_logged_out web hooks").await?;
         if settings.get("log_out_strict")?.truthy() {
             sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")
                 .bind(session.user.id)
@@ -610,6 +618,18 @@ pub async fn destroy(
                 .execute(&mut *conn)
                 .await?;
         }
+        // user.logged_out, or the user_logged_out event: its web hooks.
+        crate::web_hooks::enqueue_user_hooks(
+            &mut conn,
+            &crate::web_hooks::Payloads {
+                settings: &settings,
+                i18n: &state.i18n,
+                config: &state.config,
+            },
+            "user_logged_out",
+            session.user.id,
+        )
+        .await?;
     }
     let xhr = headers
         .get("x-requested-with")

@@ -10,9 +10,8 @@
 //! `:post_ids`, `:user_ids`, `:id`, `:multiple_grant`), which are bound
 //! here as literals the way mini_sql expands them.
 //!
-//! Not ported: notifications in a locale other than English, the
-//! user_badge_granted web hooks and automations, each refused when it
-//! would apply.
+//! Not ported: notifications in a locale other than English and
+//! automations, each refused when it would apply.
 
 use serde_json::json;
 use sqlx::PgConnection;
@@ -372,6 +371,7 @@ pub async fn backfill(
             .bind(row.id)
             .execute(&mut *conn)
             .await?;
+        crate::web_hooks::enqueue_user_badge_granted(&mut *conn, badge.id, row.user_id).await?;
     }
 
     // reset_grant_count!
@@ -556,6 +556,7 @@ pub async fn grant(
     update_distinct_badge_count(&mut *conn, Some(&[user_id])).await?;
     update_featured_ranks(&mut *conn, Some(&[user_id])).await?;
     user_badge_granted_unsupported(&mut *conn).await?;
+    crate::web_hooks::enqueue_user_badge_granted(&mut *conn, badge.id, user_id).await?;
     if opts.granted_by != SYSTEM_USER_ID {
         // StaffActionLogger#log_badge_grant
         user_history(
@@ -619,6 +620,15 @@ pub async fn destroy_user_badge(
     settings: &SiteSettings,
     user_badge_id: i32,
 ) -> Result<Option<(i32, i32)>, AppError> {
+    // user_badge_revoked's payload: the grant as it was.
+    let revoked_payload = if crate::web_hooks::active(&mut *conn, "user_badge_revoked").await? {
+        Some(
+            crate::web_hooks::payloads::user_badge_json(&mut *conn, i64::from(user_badge_id))
+                .await?,
+        )
+    } else {
+        None
+    };
     let row: Option<(i32, i32, Option<i64>)> = sqlx::query_as(
         "DELETE FROM user_badges WHERE id = $1 RETURNING user_id, badge_id, notification_id",
     )
@@ -635,8 +645,17 @@ pub async fn destroy_user_badge(
         .await?;
     update_distinct_badge_count(&mut *conn, Some(&[user_id])).await?;
     update_featured_ranks(&mut *conn, Some(&[user_id])).await?;
-    if crate::web_hooks::active(&mut *conn, "user_badge_revoked").await? {
-        return Err(Unsupported("user_badge_revoked web hooks").into());
+    // DiscourseEvent :user_badge_revoked: its web hooks, the grant as
+    // Rails still holds it.
+    if let Some(payload) = revoked_payload {
+        let mut opts = serde_json::Map::new();
+        opts.insert("id".into(), serde_json::json!(user_badge_id));
+        opts.insert(
+            "payload".into(),
+            serde_json::json!(crate::web_hooks::to_json(&payload)),
+        );
+        crate::web_hooks::enqueue_hooks(&mut *conn, "user_badge", "user_badge_revoked", opts)
+            .await?;
     }
     // belongs_to :notification, dependent: :destroy
     if let Some(notification_id) = notification_id {
@@ -1100,12 +1119,9 @@ pub async fn process_queue(
     Ok(())
 }
 
-/// UserBadge.trigger_user_badge_granted_event: web hooks for
-/// user_badge_granted and automations triggered by it aren't ported.
+/// UserBadge.trigger_user_badge_granted_event: automations triggered by
+/// user_badge_granted aren't ported.
 async fn user_badge_granted_unsupported(conn: &mut PgConnection) -> Result<(), AppError> {
-    if crate::web_hooks::active(conn, "user_badge_granted").await? {
-        return Err(Unsupported("user_badge_granted web hooks").into());
-    }
     let automations: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM discourse_automation_automations \
          WHERE enabled AND trigger = 'user_badge_granted')",

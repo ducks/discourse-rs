@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "INSERT INTO user_badges (id, badge_id, user_id, granted_at, granted_by_id, seq, created_at) VALUES (950, 6, 3, '2026-10-02 10:00:00', -1, 0, '2026-10-02 10:00:00')",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1301)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "mass_award_badge",
+      {
+        "user": 3,
+        "badge": 6,
+        "count": 2
+      }
+    ]
+  ],
+  "run_jobs": [
+    "mass_award_badge"
+  ]
+}

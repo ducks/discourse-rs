@@ -1,0 +1,188 @@
+{
+  "name": "group_join_leave",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002/join.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9001/leave.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9002/leave.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/join.json"
+    }
+  ],
+  "started_at": "2026-10-14T11:39:34.027473",
+  "transaction_started_at": "2026-10-14T11:39:33.093929",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T11:39:34.074497",
+          "prev_value": null,
+          "updated_at": "2026-10-14T11:39:34.074497",
+          "acting_user_id": 3,
+          "target_user_id": 3
+        },
+        {
+          "id": 2,
+          "action": 3,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T11:39:34.169373",
+          "prev_value": null,
+          "updated_at": "2026-10-14T11:39:34.169373",
+          "acting_user_id": 3,
+          "target_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kKUDxSV59b1yDKjouZcC2/VMQ9w=",
+            "created_at": "2026-10-14T11:39:33.461186",
+            "rotated_at": "2026-10-14T11:39:33.460306",
+            "updated_at": "2026-10-14T11:39:33.461186",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kKUDxSV59b1yDKjouZcC2/VMQ9w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T11:39:34.045083",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kKUDxSV59b1yDKjouZcC2/VMQ9w=",
+            "created_at": "2026-10-14T11:39:33.461186",
+            "rotated_at": "2026-10-14T11:39:33.460306",
+            "updated_at": "2026-10-14T11:39:33.461186",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kKUDxSV59b1yDKjouZcC2/VMQ9w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "group_ids": [
+          9001
+        ],
+        "id": 68,
+        "payload": "{\"group_id\":9001,\"user_id\":3,\"notification_level\":3,\"id\":68,\"created_at\":\"2026-10-14T11:39:33.093Z\"}",
+        "web_hook_id": 9001,
+        "event_name": "user_added_to_group",
+        "event_type": "group_user"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 68,
+        "payload": "{\"group_id\":9001,\"user_id\":3,\"notification_level\":3,\"id\":68,\"created_at\":\"2026-10-14T11:39:33.093Z\"}",
+        "group_ids": [
+          9001
+        ],
+        "web_hook_id": 9001,
+        "event_name": "user_removed_from_group",
+        "event_type": "group_user"
+      }
+    ]
+  ],
+  "next_ids": {
+    "group_histories": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, public_admission, public_exit, title, created_at, updated_at) VALUES (9001, 'open', TRUE, TRUE, 'Opener', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'closed', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1401)",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1402)"
+  ],
+  "recorded_from": {
+    "case": "a767cd62b2a24d7624941d72faf4b6b4ea9d597e79d5377513af8384054e8828",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

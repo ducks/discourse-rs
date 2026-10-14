@@ -21,10 +21,10 @@ use sqlx::PgConnection;
 
 use crate::guardian::Guardian;
 use crate::params;
-use crate::posting::Ctx;
 use crate::topic_list::{Mode, TopicListSerializer, time_json};
 use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
 use crate::url::Urls;
+use crate::web_hooks::Payloads as Ctx;
 use crate::{AppError, Unsupported};
 
 /// `ReviewablesController::PER_PAGE`
@@ -341,7 +341,7 @@ pub async fn index(
     let mut out = Out::default();
     let mut reviewables = Vec::new();
     for id in ids {
-        reviewables.push(serialize(&mut *conn, ctx, guardian, id, &mut out).await?);
+        reviewables.push(serialize(&mut *conn, ctx, guardian, id, &mut out, false).await?);
     }
 
     // meta: the filters as the controller holds them, then the rest.
@@ -494,6 +494,15 @@ struct Out {
 struct Seen {
     users: HashSet<i32>,
     topics: HashSet<i32>,
+    /// A web hook's payload: the root object alone, no side-loaded users.
+    web_hook: bool,
+}
+
+impl Seen {
+    /// Whether to side-load this user: the first time it is seen.
+    fn user(&mut self, id: i32) -> bool {
+        !self.web_hook && self.users.insert(id)
+    }
 }
 
 #[derive(sqlx::FromRow)]
@@ -542,6 +551,7 @@ async fn serialize(
     guardian: &Guardian,
     id: i64,
     out: &mut Out,
+    web_hook: bool,
 ) -> Result<Value, AppError> {
     let s = ctx.settings;
     let urls = Urls {
@@ -574,7 +584,8 @@ async fn serialize(
     .bind(r.id)
     .fetch_one(&mut *conn)
     .await?;
-    if claimed || notes {
+    // A web hook's payload shows a claimed topic and notes by their ids.
+    if (claimed || notes) && !web_hook {
         return Err(Unsupported("claimed topics and notes in the queue").into());
     }
     let post: Option<Post> = match (r.target_type.as_deref(), r.target_id) {
@@ -593,13 +604,22 @@ async fn serialize(
     if post.as_ref().is_some_and(|p| p.user_deleted) {
         return Err(Unsupported("posts the user deleted in the queue").into());
     }
+    // target_deleted_by / target_deleted_at read target_post_with_deleted.
+    let deleted_by = post.as_ref().and_then(|p| p.deleted_by_id);
+    let target_deleted_at = post
+        .as_ref()
+        .and_then(|p| p.deleted_by_id.and(p.deleted_at));
+    // A web hook's serializer runs outside `with_deleted_content`: a
+    // trashed post or topic is no target.
+    let post = post.filter(|p| !web_hook || p.deleted_at.is_none());
     let topic: Option<TopicRow> = match r.topic_id {
-        Some(tid) => {
-            sqlx::query_as(&format!("SELECT {TOPIC_COLUMNS} FROM topics WHERE id = $1"))
-                .bind(tid)
-                .fetch_optional(&mut *conn)
-                .await?
-        }
+        Some(tid) => sqlx::query_as(&format!(
+            "SELECT {TOPIC_COLUMNS} FROM topics WHERE id = $1 AND (NOT $2 OR deleted_at IS NULL)"
+        ))
+        .bind(tid)
+        .bind(web_hook)
+        .fetch_optional(&mut *conn)
+        .await?,
         None => None,
     };
     let author = match r.target_created_by_id {
@@ -613,7 +633,10 @@ async fn serialize(
         return Err(Unsupported("authors under a penalty (author_penalties)").into());
     }
 
-    let mut seen = Seen::default();
+    let mut seen = Seen {
+        web_hook,
+        ..Seen::default()
+    };
     let mut d = Map::new();
     d.insert("id".into(), json!(r.id));
     d.insert("type".into(), json!(r.kind));
@@ -660,10 +683,7 @@ async fn serialize(
     }
     // target_deleted_by / target_deleted_at (posts the user deleted are
     // refused above).
-    let deleted_by = post.as_ref().and_then(|p| p.deleted_by_id);
-    if let (Some(p), Some(_)) = (&post, deleted_by)
-        && let Some(at) = p.deleted_at
-    {
+    if let Some(at) = target_deleted_at {
         d.insert("target_deleted_at".into(), json!(time_json(at)));
     }
     if topic.is_some() && s.get("tagging_enabled")?.truthy() {
@@ -731,14 +751,14 @@ async fn serialize(
     // has_one :target_created_by (FlaggedUserSerializer)
     d.insert("target_created_by_id".into(), json!(r.target_created_by_id));
     if let Some(a) = &author
-        && seen.users.insert(a.id)
+        && seen.user(a.id)
     {
         out.users
             .push(flagged_user(&mut *conn, ctx, guardian, &urls, a).await?);
     }
     // has_one :created_by (UserWithCustomFieldsSerializer)
     d.insert("created_by_id".into(), json!(r.created_by_id));
-    if seen.users.insert(r.created_by_id) {
+    if seen.user(r.created_by_id) {
         let u = load_user(&mut *conn, ctx, r.created_by_id).await?;
         let mut v = basic_user(ctx, &urls, &u)?;
         v["custom_fields"] = custom_fields(&mut *conn, ctx, guardian, u.id).await?;
@@ -747,7 +767,7 @@ async fn serialize(
     // has_one :target_deleted_by (BasicUserSerializer)
     if let Some(uid) = deleted_by {
         d.insert("target_deleted_by_id".into(), json!(uid));
-        if seen.users.insert(uid) {
+        if seen.user(uid) {
             let u = load_user(&mut *conn, ctx, uid).await?;
             out.users.push(basic_user(ctx, &urls, &u)?);
         }
@@ -784,19 +804,27 @@ async fn serialize(
         _ => Vec::new(),
     };
     d.insert("bundled_action_ids".into(), json!(bundle_ids));
-    d.insert("reviewable_note_ids".into(), json!([]));
+    let note_ids: Vec<i64> = if web_hook {
+        sqlx::query_scalar("SELECT id FROM reviewable_notes WHERE reviewable_id = $1 ORDER BY ctid")
+            .bind(r.id)
+            .fetch_all(&mut *conn)
+            .await?
+    } else {
+        Vec::new()
+    };
+    d.insert("reviewable_note_ids".into(), json!(note_ids));
 
     // has_many :reviewable_histories
     let histories: Vec<(i64, NaiveDateTime, i32, i32, i32)> = sqlx::query_as(
         "SELECT id, created_at, reviewable_history_type, status, created_by_id \
-         FROM reviewable_histories WHERE reviewable_id = $1 ORDER BY id",
+         FROM reviewable_histories WHERE reviewable_id = $1 ORDER BY ctid",
     )
     .bind(r.id)
     .fetch_all(&mut *conn)
     .await?;
     let mut history_ids = Vec::new();
     for (hid, at, kind, status, by) in histories {
-        if seen.users.insert(by) {
+        if seen.user(by) {
             let u = load_user(&mut *conn, ctx, by).await?;
             out.users.push(basic_user(ctx, &urls, &u)?);
         }
@@ -892,7 +920,7 @@ async fn scores(
         score.insert("reviewed_by_id".into(), json!(sc.reviewed_by_id));
         out.scores.push(Value::Object(score));
         // has_one :user, :score_type, :reviewed_by in that order.
-        if seen.users.insert(sc.user_id) {
+        if seen.user(sc.user_id) {
             let u = load_user(&mut *conn, ctx, sc.user_id).await?;
             out.users.push(basic_user(ctx, urls, &u)?);
         }
@@ -909,7 +937,7 @@ async fn scores(
             "type": t.key,
         }));
         if let Some(by) = sc.reviewed_by_id
-            && seen.users.insert(by)
+            && seen.user(by)
         {
             let u = load_user(&mut *conn, ctx, by).await?;
             out.users.push(basic_user(ctx, urls, &u)?);
@@ -1129,9 +1157,13 @@ async fn actions(
     }
 
     // can_delete_post_or_topic?
-    let access =
-        crate::posting::revisions::find_post_with_deleted(&mut *conn, ctx, guardian, post.id)
-            .await?;
+    let access = crate::posting::revisions::find_post_with_deleted_in(
+        &mut *conn,
+        ctx.settings,
+        guardian,
+        post.id,
+    )
+    .await?;
     let can_delete = match &access {
         Some(a) if post.post_number == 1 => guardian.can_delete_topic(s, &a.topic)?,
         Some(a) => guardian.can_delete_post(s, &a.topic, &a.post, a.can_see_post)?,
@@ -1460,4 +1492,220 @@ async fn can_delete_user(
         first_post_created_at: first_post,
     };
     Ok(guardian.can_delete_user(conn, ctx.settings, &user).await?)
+}
+
+/// `reviewable.serializer` (root: false) for a web hook's payload, seen by
+/// the system user: flagged posts (the queue's serializer, without what it
+/// side-loads) and users.
+pub async fn web_hook_json(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    id: i64,
+) -> Result<Value, AppError> {
+    let kind: String = sqlx::query_scalar("SELECT type FROM reviewables WHERE id = $1")
+        .bind(id)
+        .fetch_one(&mut *conn)
+        .await?;
+    match kind.as_str() {
+        "ReviewableFlaggedPost" => {
+            let mut out = Out::default();
+            let mut v = serialize(conn, ctx, guardian, id, &mut out, true).await?;
+            if let Some(m) = v.as_object_mut() {
+                m.shift_remove("claimed_by_id");
+            }
+            Ok(v)
+        }
+        "ReviewableUser" => user_json(conn, ctx, guardian, id).await,
+        _ => Err(Unsupported(
+            "web hook payloads of reviewables other than flagged posts and users",
+        )
+        .into()),
+    }
+}
+
+/// ReviewableUserSerializer, root: false.
+async fn user_json(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    id: i64,
+) -> Result<Value, AppError> {
+    #[derive(sqlx::FromRow)]
+    struct Row {
+        id: i64,
+        type_source: Option<String>,
+        target_id: Option<i32>,
+        target_type: Option<String>,
+        created_at: NaiveDateTime,
+        score: f64,
+        version: i32,
+        status: i32,
+        reject_reason: Option<String>,
+        payload: Option<Value>,
+        created_by_id: i32,
+        topic_id: Option<i32>,
+    }
+    let r: Row = sqlx::query_as(
+        "SELECT id, type_source, target_id, target_type, created_at, score, version, status, reject_reason, \
+                payload::json AS payload, created_by_id, topic_id \
+         FROM reviewables WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if r.topic_id.is_some() {
+        return Err(Unsupported("user reviewables with a topic in web hook payloads").into());
+    }
+    let urls = Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    };
+    let target = match r.target_id {
+        Some(uid) => {
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+                    .bind(uid)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            if exists {
+                let u = load_user(&mut *conn, ctx, uid).await?;
+                Some(flagged_user(&mut *conn, ctx, guardian, &urls, &u).await?)
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+    let score_ids: Vec<i64> = sqlx::query_scalar(
+        "SELECT id FROM reviewable_scores WHERE reviewable_id = $1 ORDER BY created_at DESC",
+    )
+    .bind(r.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let history_ids: Vec<i64> = sqlx::query_scalar(
+        "SELECT id FROM reviewable_histories WHERE reviewable_id = $1 ORDER BY ctid",
+    )
+    .bind(r.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    // build_actions (ReviewableUser#build_combined_actions) for the system
+    // user, an admin: nothing once approved; scrub for a rejected review
+    // whose user is gone or renamed; removing a pending user's avatar,
+    // approving them, rejecting them.
+    let suspect: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM reviewable_scores WHERE reviewable_id = $1 AND reason = 'suspect_user')",
+    )
+    .bind(r.id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if suspect && r.status == crate::reviewables::PENDING {
+        return Err(Unsupported("suspect user reviewables in web hook payloads").into());
+    }
+    let target_row: Option<(String, bool, Option<i32>)> = match r.target_id {
+        Some(uid) => {
+            sqlx::query_as("SELECT username, approved, uploaded_avatar_id FROM users WHERE id = $1")
+                .bind(uid)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
+    let mut bundles: Vec<String> = Vec::new();
+    const APPROVED: i32 = 1;
+    const REJECTED_STATUS: i32 = 2;
+    if r.status != APPROVED {
+        let payload_username = r
+            .payload
+            .as_ref()
+            .and_then(|p| p.get("username"))
+            .and_then(Value::as_str)
+            .filter(|u| !u.trim().is_empty());
+        if guardian.is_admin()
+            && r.status == REJECTED_STATUS
+            && let Some(username) = payload_username
+            && target_row
+                .as_ref()
+                .is_none_or(|(name, _, _)| name != username)
+        {
+            bundles.push(format!("{}-user-scrub", r.id));
+        }
+        let pending = r.status == crate::reviewables::PENDING;
+        if pending && target_row.as_ref().is_some_and(|t| t.2.is_some()) {
+            bundles.push(format!("{}-user-remove_avatar", r.id));
+        }
+        if pending && target_row.as_ref().is_some_and(|t| !t.1) && guardian.is_staff() {
+            bundles.push(format!("{}-user-approve_user", r.id));
+        }
+        if pending {
+            bundles.push(format!("{}-reject_user", r.id));
+        }
+    }
+    let bundles = json!(bundles);
+    let mut d = Map::new();
+    d.insert("id".into(), json!(r.id));
+    d.insert("type".into(), json!("ReviewableUser"));
+    d.insert("type_source".into(), json!(r.type_source));
+    d.insert("target_type".into(), json!(r.target_type));
+    d.insert("target_id".into(), json!(r.target_id));
+    d.insert("created_at".into(), json!(time_json(r.created_at)));
+    d.insert("can_edit".into(), json!(false));
+    d.insert("score".into(), json!(r.score));
+    d.insert("version".into(), json!(r.version));
+    d.insert("target_created_by_trust_level".into(), Value::Null);
+    d.insert("created_from_flag".into(), json!(false));
+    d.insert("status".into(), json!(r.status));
+    d.insert(
+        "link_admin".into(),
+        json!(guardian.is_staff() && target.is_some()),
+    );
+    d.insert("reject_reason".into(), json!(r.reject_reason));
+    let present = target.is_some();
+    if let Some(target) = target {
+        d.insert("target_user".into(), target);
+    }
+    d.insert("removed_topic_id".into(), Value::Null);
+    if present {
+        d.insert("user_id".into(), json!(r.target_id));
+    }
+    // payload_attributes, sliced in their order (the system user may
+    // check emails).
+    let stored = r.payload.unwrap_or(Value::Null);
+    let mut payload = Map::new();
+    for key in [
+        "username",
+        "email",
+        "name",
+        "bio",
+        "website",
+        "avatar_url",
+        "scrubbed_by",
+        "scrubbed_reason",
+        "scrubbed_at",
+    ] {
+        if let Some(v) = stored.get(key) {
+            payload.insert(key.into(), v.clone());
+        }
+    }
+    d.insert("payload".into(), Value::Object(payload));
+    // has_one :target_created_by: a user reviewable's is its target.
+    d.insert(
+        "target_created_by_id".into(),
+        json!(target_row.as_ref().and(r.target_id)),
+    );
+    d.insert("created_by_id".into(), json!(r.created_by_id));
+    d.insert("topic_id".into(), Value::Null);
+    d.insert("editable_fields".into(), json!([]));
+    d.insert("reviewable_score_ids".into(), json!(score_ids));
+    d.insert("bundled_action_ids".into(), bundles);
+    let note_ids: Vec<i64> = sqlx::query_scalar(
+        "SELECT id FROM reviewable_notes WHERE reviewable_id = $1 ORDER BY ctid",
+    )
+    .bind(r.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    d.insert("reviewable_note_ids".into(), json!(note_ids));
+    d.insert("reviewable_history_ids".into(), json!(history_ids));
+    d.insert("author_penalties".into(), json!([]));
+    Ok(Value::Object(d))
 }

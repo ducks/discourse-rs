@@ -101,7 +101,17 @@ async fn handle(
         }
         Action::Unsuspend => {
             let mut tx = state.pool.begin().await?;
-            let outcome = user_penalties::unsuspend(&mut tx, &guardian, user_id).await?;
+            let outcome = user_penalties::unsuspend(
+                &mut tx,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
+                &guardian,
+                user_id,
+            )
+            .await?;
             if matches!(outcome, Outcome::Done(_)) {
                 tx.commit().await?;
             }
@@ -923,6 +933,7 @@ async fn trust_level_route(
         settings: &settings,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let acting = guardian.user_id().unwrap_or_default();
     let s = &settings;
@@ -1178,8 +1189,16 @@ async fn account_route(
             if !target.active || target.approved {
                 return Ok(super::search::invalid_access(&state));
             }
-            let Some(reviewable_id) =
-                crate::reviewable_user::find_or_create(&mut tx, &settings, user_id).await?
+            let Some(reviewable_id) = crate::reviewable_user::find_or_create(
+                &mut tx,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
+                user_id,
+            )
+            .await?
             else {
                 // Rails calls `.reviewable` on the job's nil: a 500.
                 return Err(crate::Unsupported(
@@ -1197,7 +1216,11 @@ async fn account_route(
             };
             let approved = crate::reviewable_user::approve(
                 &mut tx,
-                &settings,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
                 reviewable_id,
                 user_id,
                 &performer,
@@ -1210,8 +1233,6 @@ async fn account_route(
             return Ok(StatusCode::OK.into_response());
         }
         AccountAction::LogOut => {
-            crate::web_hooks::refuse(&mut tx, "user_logged_out", "user_logged_out web hooks")
-                .await?;
             if settings.get("verbose_auth_token_logging")?.truthy() {
                 return Err(crate::Unsupported("verbose auth token logging").into());
             }
@@ -1233,6 +1254,17 @@ async fn account_route(
                     Some(&[crate::bus::user_tag(user_id)]),
                 )
                 .await?;
+            crate::web_hooks::enqueue_user_hooks(
+                &mut tx,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
+                "user_logged_out",
+                user_id,
+            )
+            .await?;
             tx.commit().await?;
             return Ok(Json(json!({ "success": "OK" })).into_response());
         }
@@ -1423,6 +1455,7 @@ async fn membership(
         settings: &settings,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let cx = crate::group_manager::Cx {
         state: &state,
@@ -1814,7 +1847,17 @@ pub async fn suspend_bulk(
     let total = users.len();
     for (position, (id, username, ..)) in users.iter().enumerate() {
         // User::Action::SuspendAndPublish
-        user_penalties::suspend_user(&state.pool, *id, &suspension).await?;
+        user_penalties::suspend_user(
+            &state.pool,
+            &crate::web_hooks::Payloads {
+                settings: &settings,
+                i18n: &state.i18n,
+                config: &state.config,
+            },
+            *id,
+            &suspension,
+        )
+        .await?;
         let data = json!({ "position": position + 1, "username": username, "total": total, "success": true });
         let mut conn = state.pool.acquire().await?;
         state

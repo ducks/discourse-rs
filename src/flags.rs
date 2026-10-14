@@ -247,6 +247,11 @@ pub async fn flag(
     if types.is_notify_flag(req.type_id) && post.user_id.is_some_and(|id| id >= 0) {
         let reviewable_id = reviewables::create_flagged_post(
             &mut tx,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
             &NewFlaggedPost {
                 created_by_id: user.id,
                 post_id: post.id,
@@ -266,6 +271,11 @@ pub async fn flag(
         };
         reviewables::add_score(
             &mut tx,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
             reviewable_id,
             access.topic_id,
             &flagger,
@@ -276,7 +286,6 @@ pub async fn flag(
                 reason: req.reason,
                 context: req.context.clone(),
             },
-            ctx.settings,
         )
         .await?;
         reviewable_score =

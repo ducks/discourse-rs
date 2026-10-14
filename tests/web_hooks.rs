@@ -81,12 +81,25 @@ async fn hooks_match_their_event_types_once_translated() {
     );
 }
 
-/// PublishGroupMembershipUpdates hands only additions to web hooks.
+/// PublishGroupMembershipUpdates hands additions to the
+/// `user_added_to_group` hooks (removals have theirs from GroupManager);
+/// a payload URL on an internal address is blocked, its event logged.
 #[tokio::test]
-async fn group_membership_updates_refuse_only_additions_with_hooks() {
+async fn group_membership_additions_reach_hooks() {
     let db = TestDb::new().await;
     let app = state(db.pool.clone(), recorded_config()).await;
     hook(&db.pool, 9001, false, true, &[1401]).await;
+    sqlx::query("UPDATE web_hooks SET payload_url = 'http://127.0.0.1/hook' WHERE id = 9001")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) \
+         VALUES (10, 1, 3, now(), now()) ON CONFLICT DO NOTHING",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let mut conn = db.pool.acquire().await.unwrap();
     for kind in ["add", "remove"] {
         jobs::enqueue(
@@ -99,12 +112,13 @@ async fn group_membership_updates_refuse_only_additions_with_hooks() {
     }
     drop(conn);
     jobs::drain(&app).await.unwrap();
-    let left: Vec<(serde_json::Value, Option<String>)> =
-        sqlx::query_as("SELECT args, last_error FROM discourse_rs.jobs ORDER BY id")
+    let events: Vec<(Option<String>,)> =
+        sqlx::query_as("SELECT payload FROM web_hook_events ORDER BY id")
             .fetch_all(&db.pool)
             .await
             .unwrap();
-    assert_eq!(left.len(), 1, "{left:?}");
-    assert_eq!(left[0].0["type"], "add");
-    assert!(left[0].1.as_deref().unwrap().contains("web hooks"));
+    assert_eq!(events.len(), 1, "{events:?}");
+    let payload = events[0].0.as_deref().unwrap();
+    assert!(payload.contains("\"group_id\":10"), "{payload}");
+    assert!(payload.contains("\"user_id\":1,"), "{payload}");
 }

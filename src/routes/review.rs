@@ -158,7 +158,18 @@ pub async fn index(
     };
     let p = params::parse(uri.query(), &headers, &body);
     Ok(
-        match crate::review_list::index(&mut tx, &ctx, &guardian, &p).await? {
+        match crate::review_list::index(
+            &mut tx,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            &guardian,
+            &p,
+        )
+        .await?
+        {
             Listed::Page(doc) => (StatusCode::OK, Json(doc)).into_response(),
             Listed::InvalidParameter(name) => super::search::invalid_parameters(&state, name),
         },

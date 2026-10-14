@@ -1910,8 +1910,12 @@ impl TopicView<'_> {
                 p.insert("reviewable_score_count".into(), json!(total));
                 p.insert("reviewable_score_pending_count".into(), json!(pending));
             }
-            if u.is_some_and(|u| u.suspended_till.is_some()) {
-                return Err(Unsupported("user_suspended").into());
+            // include_user_suspended?: object.user&.suspended?
+            if u.is_some_and(|u| {
+                u.suspended_till
+                    .is_some_and(|t| t > crate::clock::now_naive())
+            }) {
+                p.insert("user_suspended".into(), json!(true));
             }
             if let Some(ids) = mentioned.get(&post.id) {
                 let mut users = Vec::with_capacity(ids.len());

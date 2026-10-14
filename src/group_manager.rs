@@ -3,12 +3,12 @@
 //! flair, granted trust levels, the group's category and tag
 //! notification defaults, the member count), the /categories update or
 //! refresh to the members, and the `user_added_to_group` /
-//! `user_removed_from_group` events (chat's auto join and auto leave).
+//! `user_removed_from_group` events (their web hooks, chat's auto join
+//! and auto leave).
 //! `add` and `remove` are `Group#add` and `Group#remove` for one user with
 //! GroupActionLogger's membership logs, as the admin user routes use them.
 //!
-//! Refused: active web hooks for group membership, and a /categories
-//! update with categories the member may now see (CategorySerializer is
+//! Refused: a /categories update with categories the member may now see (CategorySerializer is
 //! not ported).
 
 use serde_json::json;
@@ -70,11 +70,14 @@ pub struct Cx<'a> {
     pub promotion: &'a crate::promotion::Ctx<'a>,
 }
 
-async fn refuse_web_hooks(conn: &mut PgConnection, event: &str) -> Result<(), AppError> {
-    if crate::web_hooks::active(conn, event).await? {
-        return Err(Unsupported("web hooks for group membership").into());
+impl Cx<'_> {
+    fn payloads(&self) -> crate::web_hooks::Payloads<'_> {
+        crate::web_hooks::Payloads {
+            settings: self.promotion.settings,
+            i18n: self.promotion.i18n,
+            config: self.promotion.config,
+        }
     }
-    Ok(())
 }
 
 /// GroupActionLogger's membership logs (one `GroupHistory.insert_all` for
@@ -192,12 +195,29 @@ pub async fn add_many(
     if added.is_empty() {
         return Ok(added);
     }
-    refuse_web_hooks(conn, "user_added_to_group").await?;
     sync_add_side_effects(conn, cx, group, &added).await?;
     bulk_publish_category_updates(conn, cx, group, &added).await?;
     let mut ordered = added.clone();
     ordered.sort_unstable();
     for user_id in ordered {
+        // trigger_user_added_event: the web hooks' listener, then the
+        // plugins'.
+        let group_user_id: i64 = sqlx::query_scalar(
+            "SELECT id::int8 FROM group_users WHERE group_id = $1 AND user_id = $2",
+        )
+        .bind(group.id)
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        crate::web_hooks::enqueue_group_user_hooks(
+            &mut *conn,
+            &cx.payloads(),
+            "user_added_to_group",
+            group_user_id,
+            group.id,
+            None,
+        )
+        .await?;
         crate::plugins::user_added_to_group(conn, cx.state, cx.promotion.settings, user_id).await?;
     }
     Ok(added)
@@ -520,7 +540,20 @@ pub async fn remove_many(
     if removed.is_empty() {
         return Ok(removed);
     }
-    refuse_web_hooks(conn, "user_removed_from_group").await?;
+    // build_user_removed_webhook_payloads: before the rows go, by id.
+    let mut hook_payloads: Vec<(i64, serde_json::Value)> = Vec::new();
+    if crate::web_hooks::active(&mut *conn, "user_removed_from_group").await? {
+        let ids: Vec<i64> = sqlx::query_scalar(
+            "SELECT id::int8 FROM group_users WHERE group_id = $1 AND user_id = ANY($2) ORDER BY id",
+        )
+        .bind(group.id)
+        .bind(&removed)
+        .fetch_all(&mut *conn)
+        .await?;
+        for id in ids {
+            hook_payloads.push((id, cx.payloads().group_user(&mut *conn, id).await?));
+        }
+    }
     // bulk_remove_transaction
     sqlx::query("DELETE FROM group_users WHERE group_id = $1 AND user_id = ANY($2)")
         .bind(group.id)
@@ -569,6 +602,18 @@ pub async fn remove_many(
     ordered.sort_unstable();
     for user_id in ordered {
         crate::plugins::user_removed_from_group(conn, cx.promotion.settings, user_id).await?;
+    }
+    // enqueue_user_removed_webhook_events
+    for (group_user_id, payload) in hook_payloads {
+        crate::web_hooks::enqueue_group_user_hooks(
+            &mut *conn,
+            &cx.payloads(),
+            "user_removed_from_group",
+            group_user_id,
+            group.id,
+            Some(payload),
+        )
+        .await?;
     }
     Ok(removed)
 }

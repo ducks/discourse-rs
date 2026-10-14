@@ -180,9 +180,9 @@ pub struct NewFlaggedPost {
 /// commit as it is pending.
 pub async fn create_flagged_post(
     conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
     r: &NewFlaggedPost,
 ) -> Result<i64, AppError> {
-    crate::web_hooks::refuse(&mut *conn, "reviewable_created", "reviewable web hooks").await?;
     let id: i64 = sqlx::query_scalar(
         "INSERT INTO reviewables (type, type_source, status, created_by_id, reviewable_by_moderator, \
                                   reviewable_by_group_id, category_id, topic_id, score, potential_spam, \
@@ -215,6 +215,8 @@ pub async fn create_flagged_post(
     .bind(r.created_by_id)
     .execute(&mut *conn)
     .await?;
+    // after_commit: reviewable_created's web hooks.
+    crate::web_hooks::enqueue_reviewable_hooks(&mut *conn, p, "reviewable_created", id).await?;
     crate::jobs::enqueue(
         &mut *conn,
         "notify_reviewable",
@@ -238,18 +240,13 @@ pub struct NewScore {
 /// reason, a meta topic or forcing review. Returns the score added.
 pub async fn add_score(
     conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
     reviewable_id: i64,
     topic_id: i32,
     user: &Flagger,
     new: &NewScore,
-    s: &SiteSettings,
 ) -> Result<f64, AppError> {
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "reviewable_score_updated",
-        "reviewable web hooks",
-    )
-    .await?;
+    let s = p.settings;
     let (score_type, created_at) = (new.score_type, new.created_at);
     let take_action_bonus = if new.take_action { 5.0 } else { 0.0 };
     let type_bonus: Option<f64> =
@@ -300,6 +297,14 @@ pub async fn add_score(
         &mut *conn,
         "notify_reviewable",
         json!({ "reviewable_id": reviewable_id }),
+    )
+    .await?;
+    // reviewable_score_updated's web hooks.
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        p,
+        "reviewable_score_updated",
+        reviewable_id,
     )
     .await?;
     // topic.update(reviewable_score: topic.reviewable_score + rs.score)

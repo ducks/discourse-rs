@@ -8,8 +8,7 @@
 //! and destroying one with its dependents.
 //!
 //! Refused: flair uploads (UploadReference), group SMTP settings, plugin
-//! custom fields, associated groups and active web hooks for group
-//! events.
+//! custom fields and associated groups.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;

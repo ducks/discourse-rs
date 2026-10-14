@@ -1,0 +1,140 @@
+{
+  "name": "topic_unvote",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/unvote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:18:23.222566",
+  "transaction_started_at": "2026-10-14T09:18:21.158034",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "can_vote": true,
+        "vote_limit": 6,
+        "vote_count": 1,
+        "who_voted": [
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        ],
+        "votes_left": 6
+      }
+    }
+  ],
+  "changes": {
+    "topic_voting_topic_vote_count": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-14T09:18:21.158034",
+            "updated_at": "2026-10-14T09:18:21.158034",
+            "votes_count": 2
+          },
+          "after": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-14T09:18:21.158034",
+            "updated_at": "2026-10-14T09:18:21.158034",
+            "votes_count": 1
+          }
+        }
+      ]
+    },
+    "topic_voting_votes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "archive": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-13T23:18:21.158034",
+          "updated_at": "2026-10-13T23:18:21.158034"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bscjw3y3JVvReoM6g8ZWwye6rXg=",
+            "created_at": "2026-10-14T09:18:21.872801",
+            "rotated_at": "2026-10-14T09:18:21.871941",
+            "updated_at": "2026-10-14T09:18:21.872801",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bscjw3y3JVvReoM6g8ZWwye6rXg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T09:18:23.24746",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bscjw3y3JVvReoM6g8ZWwye6rXg=",
+            "created_at": "2026-10-14T09:18:21.872801",
+            "rotated_at": "2026-10-14T09:18:21.871941",
+            "updated_at": "2026-10-14T09:18:21.872801",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bscjw3y3JVvReoM6g8ZWwye6rXg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "category_id": 4,
+        "tag_ids": [
+          2
+        ],
+        "payload": "{\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"voter_id\":3,\"vote_count\":1}",
+        "web_hook_id": 9001,
+        "event_name": "topic_unvote",
+        "event_type": "topic_voting"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now() - interval '10 hours', now() - interval '10 hours'), (35, 4, false, now() - interval '20 hours', now() - interval '20 hours')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1702)"
+  ],
+  "recorded_from": {
+    "case": "14fcf69b62fa6a833245a34b34a033ec701b843b458585cbc7be2d1918070811",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

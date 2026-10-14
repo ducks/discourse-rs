@@ -14,8 +14,8 @@
 //! Refused until ported: `block_urls` on a user with external
 //! links (Oneboxer's engine check), a category definition post of the
 //! user's, posts PostDestroyer refuses (a pending flag, embeds), associated
-//! groups that put the user in groups, MCP authorizations, active
-//! `user_destroyed` web hooks, and the unported plugins' rows.
+//! groups that put the user in groups, MCP authorizations,
+//! and the unported plugins' rows.
 
 use chrono::NaiveDateTime;
 use serde_json::json;
@@ -330,7 +330,17 @@ pub async fn destroy(
             id: actor_user.id,
             username: &actor_user.username,
         };
-        crate::reviewable_user::reject_for_deleted_user(conn, reviewable_id, &performer).await?;
+        crate::reviewable_user::reject_for_deleted_user(
+            conn,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            reviewable_id,
+            &performer,
+        )
+        .await?;
     }
     Ok(Outcome::Destroyed)
 }
@@ -458,15 +468,11 @@ async fn refuse_unported(
     .bind(user_id)
     .fetch_one(&mut *conn)
     .await?;
-    let hooks = crate::web_hooks::active(&mut *conn, "user_destroyed").await?;
     if associated_groups {
         return Err(Unsupported("deleting a user that associated groups put in groups").into());
     }
     if mcp {
         return Err(Unsupported("deleting a user with MCP authorizations").into());
-    }
-    if hooks {
-        return Err(Unsupported("user_destroyed web hooks").into());
     }
     Ok(())
 }
@@ -514,12 +520,6 @@ async fn resolve_reviewables_targeting(
         .bind(&note)
         .execute(&mut *conn)
         .await?;
-        crate::web_hooks::refuse(
-            &mut *conn,
-            "reviewable_transitioned_to",
-            "reviewable web hooks",
-        )
-        .await?;
         // transition_to(:ignored, system)
         if let Some(topic_id) = topic_id {
             release_manual_claim(conn, ctx, topic_id).await?;
@@ -532,6 +532,19 @@ async fn resolve_reviewables_targeting(
         .execute(&mut *conn)
         .await?;
         log_history(conn, id, HISTORY_TRANSITIONED, IGNORED, SYSTEM_USER_ID).await?;
+        // DiscourseEvent :reviewable_transitioned_to: its web hooks, before
+        // the scores move.
+        crate::web_hooks::enqueue_reviewable_hooks(
+            &mut *conn,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            "reviewable_transitioned_to",
+            id,
+        )
+        .await?;
         sqlx::query(
             "UPDATE reviewable_scores SET status = $2, reviewed_by_id = $3, reviewed_at = clock_timestamp() \
              WHERE reviewable_id = $1 AND status IN ($4, $5)",
@@ -770,10 +783,21 @@ async fn remove_post_actions(
 /// :clear_acls`.
 async fn destroy_user_row(
     conn: &mut PgConnection,
-    _ctx: &Ctx<'_>,
+    ctx: &Ctx<'_>,
     user_id: i32,
     after_commit: &mut Vec<(&'static str, serde_json::Value)>,
 ) -> Result<(), AppError> {
+    // HasDestroyedWebHook: the payload before the destroy, the hooks after.
+    let payloads = crate::web_hooks::Payloads {
+        settings: ctx.settings,
+        i18n: ctx.i18n,
+        config: ctx.config,
+    };
+    let destroyed_payload = if crate::web_hooks::active(&mut *conn, "user_destroyed").await? {
+        Some(payloads.user(&mut *conn, user_id).await?)
+    } else {
+        None
+    };
     let exec = |sql: &'static str| sqlx::query(sql).bind(user_id);
 
     exec("DELETE FROM category_users WHERE user_id = $1")
@@ -847,7 +871,24 @@ async fn destroy_user_row(
         sqlx::query(sql).bind(user_id).execute(&mut *conn).await?;
     }
     // user_badges (for_enabled_badges): each one's notification, and the
-    // badge's grant count down.
+    // badge's grant count down. Each one's after_destroy triggers
+    // user_badge_revoked: its web hooks get the grant as Rails held it.
+    let mut revoked: Vec<(i64, serde_json::Value)> = Vec::new();
+    if crate::web_hooks::active(&mut *conn, "user_badge_revoked").await? {
+        let ids: Vec<i64> = sqlx::query_scalar(
+            "SELECT ub.id::int8 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id \
+             WHERE b.enabled AND ub.user_id = $1 ORDER BY ub.ctid",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for id in ids {
+            revoked.push((
+                id,
+                crate::web_hooks::payloads::user_badge_json(&mut *conn, id).await?,
+            ));
+        }
+    }
     let badges: Vec<(i32, Option<i64>)> = sqlx::query_as(
         "DELETE FROM user_badges ub USING badges b \
          WHERE ub.badge_id = b.id AND b.enabled AND ub.user_id = $1 \
@@ -866,6 +907,13 @@ async fn destroy_user_row(
         sqlx::query("UPDATE badges SET grant_count = COALESCE(grant_count, 0) - 1 WHERE id = $1")
             .bind(badge_id)
             .execute(&mut *conn)
+            .await?;
+    }
+    for (id, payload) in revoked {
+        let mut opts = serde_json::Map::new();
+        opts.insert("id".into(), json!(id));
+        opts.insert("payload".into(), json!(crate::web_hooks::to_json(&payload)));
+        crate::web_hooks::enqueue_hooks(&mut *conn, "user_badge", "user_badge_revoked", opts)
             .await?;
     }
     // UserAuthToken's before_destroy logs only with verbose logging, and
@@ -970,6 +1018,12 @@ async fn destroy_user_row(
         "DELETE FROM users WHERE id = $1",
     ] {
         sqlx::query(sql).bind(user_id).execute(&mut *conn).await?;
+    }
+    if let Some(payload) = destroyed_payload {
+        let mut opts = serde_json::Map::new();
+        opts.insert("id".into(), json!(user_id));
+        opts.insert("payload".into(), json!(crate::web_hooks::to_json(&payload)));
+        crate::web_hooks::enqueue_hooks(&mut *conn, "user", "user_destroyed", opts).await?;
     }
     // after_destroy :clear_acls
     crate::jobs::enqueue(
