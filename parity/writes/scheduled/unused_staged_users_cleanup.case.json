@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET staged = TRUE, created_at = now() - interval '400 days' WHERE id IN (4, 5)"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_unused_staged_users", {}]],
+  "run_jobs": ["clean_up_unused_staged_users"]
+}

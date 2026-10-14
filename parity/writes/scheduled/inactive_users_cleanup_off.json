@@ -1,0 +1,26 @@
+{
+  "name": "inactive_users_cleanup_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:20:31.082848",
+  "transaction_started_at": "2026-10-14T00:20:27.295833",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET trust_level = 0, created_at = now() - interval '60 days', last_seen_at = now() - interval '45 days' WHERE id = 5"
+  ],
+  "enqueue": [
+    [
+      "clean_up_inactive_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "8a221e5c56494af7bf7be6fae6d72ac0f8a86da1e67f91f0a6ad584b8d6749c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

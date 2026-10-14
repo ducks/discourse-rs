@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "settings": { "clean_up_inactive_users_after_days": 30 },
+  "setup": [
+    "UPDATE users SET trust_level = 0, created_at = now() - interval '60 days', last_seen_at = now() - interval '45 days' WHERE id = 5",
+    "UPDATE users SET trust_level = 0, created_at = now() - interval '60 days', last_seen_at = NULL WHERE id = 4",
+    "UPDATE users SET last_posted_at = NULL WHERE id = 4",
+    "UPDATE posts SET deleted_at = now() - interval '40 days' WHERE user_id = 4",
+    "UPDATE topics SET deleted_at = now() - interval '40 days' WHERE user_id = 4"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_inactive_users", {}]],
+  "run_jobs": ["clean_up_inactive_users"]
+}

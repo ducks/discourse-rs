@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 days' WHERE id IN (4, 5)"
+  ],
+  "requests": [],
+  "enqueue": [["purge_unactivated", {}]],
+  "run_jobs": ["purge_unactivated"]
+}

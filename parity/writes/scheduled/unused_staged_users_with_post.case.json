@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET staged = TRUE, created_at = now() - interval '400 days' WHERE id = 5",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order, deleted_at, deleted_by_id) VALUES (9301, 35, 5, 6, 'A deleted reply by user3', '<p>A deleted reply by user3</p>', now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 6, now() - interval '1 day', 1)"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_unused_staged_users", {}]],
+  "run_jobs": ["clean_up_unused_staged_users"]
+}
