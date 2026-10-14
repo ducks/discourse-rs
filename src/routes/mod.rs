@@ -307,11 +307,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/solution/by_user.json", get(solved::by_user))
         .route(
             "/category/{category_id}/notifications",
-            post(category_notifications::set_notifications),
+            post(category_notifications::set_notifications).get(permalinks::category_redirect),
         )
         .route(
             "/category/{category_id}/notifications.json",
-            post(category_notifications::set_notifications),
+            post(category_notifications::set_notifications).get(permalinks::category_redirect),
         )
         // discourse-reactions' CustomReactionsController.
         .route(
@@ -692,7 +692,6 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/permalink-check", get(permalinks::check))
         .route("/permalink-check.json", get(permalinks::check))
-        .route("/category/{*path}", get(permalinks::category_redirect))
         // The last route, under PermalinkConstraint.
         .route(
             permalinks::CATCH_ALL,

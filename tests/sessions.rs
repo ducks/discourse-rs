@@ -720,9 +720,18 @@ async fn private_messages_open_for_participants_only() {
         .await;
     assert_eq!(reply.json()["message_archived"], true);
 
-    // user0 is not in 43: a 404 with the not-found extras, nothing deleted.
+    // user0 is not in 43: a 404 with the not-found extras. The
+    // InvalidAccess rescue's Notification.remove_for(user, params[:topic_id])
+    // has no topic_id on `/t/:id`, so it deletes the viewer's notifications
+    // with no topic (recorded in parity/writes/permalinks/deleted_topic).
     let mut user0 = Client::new(app_state.clone());
     user0.login("user0", "password").await;
+    let (before, without_topic): (i64, i64) = sqlx::query_as(
+        "SELECT count(*), count(*) FILTER (WHERE topic_id IS NULL) FROM notifications WHERE user_id = 2",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
     let reply = user0.get("/t/43.json").await;
     assert_eq!(reply.status, StatusCode::NOT_FOUND);
     assert_eq!(reply.json()["error_type"], "not_found");
@@ -731,10 +740,8 @@ async fn private_messages_open_for_participants_only() {
             .fetch_one(&db.pool)
             .await
             .unwrap();
-    assert_eq!(
-        notifications, 6,
-        "Rails' InvalidAccess rescue deletes notifications; the port must not"
-    );
+    assert!(without_topic > 0);
+    assert_eq!(notifications, before - without_topic);
 
     // Anonymous: the same 404.
     let mut anon = Client::new(app_state);

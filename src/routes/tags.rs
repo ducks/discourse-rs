@@ -180,6 +180,7 @@ pub(super) fn next_url(
 }
 
 /// GET /tag/{*path}
+#[allow(clippy::too_many_arguments)]
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -199,6 +200,7 @@ pub async fn show(
 }
 
 /// GET /tags/c/{*path}
+#[allow(clippy::too_many_arguments)]
 pub async fn show_in_category(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -230,6 +232,7 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
 }
 
 /// `show_#{filter}`.
+#[allow(clippy::too_many_arguments)]
 async fn show_list(
     state: AppState,
     guardian: Guardian,

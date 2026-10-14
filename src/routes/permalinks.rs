@@ -31,6 +31,14 @@ pub async fn constraint(
     if !catch_all {
         return Ok(next.run(request).await);
     }
+    // `get "category/*path"` comes before `*url` in Rails' routes; matchit
+    // cannot hold that glob beside `/category/{category_id}/notifications`,
+    // so the `*url` route matches it and `show` hands it on.
+    if (request.method() == Method::GET || request.method() == Method::HEAD)
+        && category_glob(request.uri()).is_some()
+    {
+        return Ok(next.run(request).await);
+    }
     // `get "*url"`: other methods have no route.
     if request.method() != Method::GET && request.method() != Method::HEAD {
         return Ok(StatusCode::NOT_FOUND.into_response());
@@ -71,6 +79,9 @@ pub async fn show(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    if category_glob(&uri).is_some() {
+        return category_redirect(State(state), AuthGuardian(guardian), headers, uri).await;
+    }
     let fullpath = uri
         .path_and_query()
         .map(|p| p.as_str().to_string())
@@ -135,16 +146,26 @@ pub async fn check(
     Ok(Json(body).into_response())
 }
 
+/// `params[:path]` of `/category/*path`, when the request matches it.
+fn category_glob(uri: &Uri) -> Option<String> {
+    let rest = uri.path().strip_prefix("/category/")?;
+    let path = crate::upload_references::percent_decode(rest);
+    // The glob leaves the format out.
+    let path = path.strip_suffix(".json").unwrap_or(&path).to_string();
+    (!path.trim_matches('/').is_empty()).then_some(path)
+}
+
 /// GET /category/*path (CategoriesController#redirect): a permalink for
 /// `/category/<path>`, else a 302 to `/c/<path>`.
 pub async fn category_redirect(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
-    Path(path): Path<String>,
     headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
-    // The glob leaves the format out.
-    let path = path.strip_suffix(".json").unwrap_or(&path).to_string();
+    let Some(path) = category_glob(&uri) else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;

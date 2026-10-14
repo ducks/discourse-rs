@@ -447,6 +447,7 @@ mod tests {
 /// `.../none` -> list#category_none_default (both in the category's
 /// default view), and `.../l/<filter>` with or without `/none` for the
 /// ported filters.
+#[allow(clippy::too_many_arguments)]
 pub async fn category(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
