@@ -1,0 +1,109 @@
+{
+  "name": "preview_sample_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, NULL::timestamp granted_at FROM users WHERE id = 1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT 3 user_id, NULL::int post_id, now() granted_at",
+        "target_posts": "true"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT 3 user_id, 999999 post_id, now() granted_at",
+        "target_posts": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:37.506597",
+  "transaction_started_at": "2026-10-14T09:52:35.321391",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "errors": "Query did not return a badge grant time\n(Try using 'current_timestamp granted_at')"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Query did not return a post ID"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Query returned a non-existent post ID:\n999999"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uoNBuaOfB9A0S2dKBgdn4xaoma0=",
+            "created_at": "2026-10-14T09:52:35.812559",
+            "rotated_at": "2026-10-14T09:52:35.810579",
+            "updated_at": "2026-10-14T09:52:35.812559",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uoNBuaOfB9A0S2dKBgdn4xaoma0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:37.51758",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uoNBuaOfB9A0S2dKBgdn4xaoma0=",
+            "created_at": "2026-10-14T09:52:35.812559",
+            "rotated_at": "2026-10-14T09:52:35.810579",
+            "updated_at": "2026-10-14T09:52:35.812559",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uoNBuaOfB9A0S2dKBgdn4xaoma0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_badge_sql": true
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "5b1d3e7afa33d78a8d23d04709ccd6325910e3f6819ecc6242d0566f47ac6560",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

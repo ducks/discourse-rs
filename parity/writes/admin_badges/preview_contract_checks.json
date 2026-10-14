@@ -1,0 +1,177 @@
+{
+  "name": "preview_contract_checks",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users;  \n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users",
+        "trigger": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE :post_ids OR :user_ids",
+        "trigger": "2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE id IN (:post_ids)",
+        "trigger": "4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE id IN (:user_ids)",
+        "trigger": "8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users",
+        "target_posts": "true"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id, created_at granted_at FROM users"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at FROM users"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:29.456453",
+  "transaction_started_at": "2026-10-14T09:52:26.777583",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery ends with a semicolon. Remove the semicolon; your sql will be used in a subquery."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery triggers on posts, but does not reference the ':post_ids' array"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery triggers on posts, but references the ':user_ids' array"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery triggers on users, but does not reference the ':user_ids' array"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery is triggered, but does not reference the ':backfill' parameter.\n(Hint: if :backfill is TRUE, you should ignore the :post_ids/:user_ids)"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery targets posts, but does not return a 'post_id' column"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery does not return a 'user_id' column"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": "Contract violation:\nQuery does not return a 'granted_at' column"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bE8Vn4UlDDcN/9El4rgj2ovP0/s=",
+            "created_at": "2026-10-14T09:52:28.07104",
+            "rotated_at": "2026-10-14T09:52:28.068031",
+            "updated_at": "2026-10-14T09:52:28.07104",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bE8Vn4UlDDcN/9El4rgj2ovP0/s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:29.468063",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bE8Vn4UlDDcN/9El4rgj2ovP0/s=",
+            "created_at": "2026-10-14T09:52:28.07104",
+            "rotated_at": "2026-10-14T09:52:28.068031",
+            "updated_at": "2026-10-14T09:52:28.07104",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bE8Vn4UlDDcN/9El4rgj2ovP0/s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_badge_sql": true
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "c1edf7d6b49018e4c99e1ca39359cdf6560a80dc6667fa593132122df6c5c0cc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

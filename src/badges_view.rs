@@ -33,12 +33,18 @@ pub(crate) struct BadgeRow {
     pub badge_type_id: i32,
     pub badge_type_name: String,
     pub grouping_position: Option<i32>,
+    pub query: Option<String>,
+    pub trigger: Option<i32>,
+    pub target_posts: Option<bool>,
+    pub auto_revoke: bool,
+    pub image_upload_id: Option<i32>,
 }
 
 pub(crate) const BADGE_ROW_SELECT: &str = "SELECT b.id, b.name, b.description, b.long_description, b.grant_count, b.allow_title, \
             b.multiple_grant, b.icon, u.url AS image_upload_url, b.listable, b.enabled, \
             b.badge_grouping_id, b.system, b.show_in_post_header, b.show_posts, b.badge_type_id, \
-            bt.name AS badge_type_name, bg.position AS grouping_position \
+            bt.name AS badge_type_name, bg.position AS grouping_position, b.query, b.trigger, \
+            b.target_posts, b.auto_revoke, b.image_upload_id \
      FROM badges b JOIN badge_types bt ON bt.id = b.badge_type_id \
      LEFT JOIN badge_groupings bg ON bg.id = b.badge_grouping_id \
      LEFT JOIN uploads u ON u.id = b.image_upload_id";
@@ -51,7 +57,7 @@ impl BadgeRow {
             .await
     }
 
-    fn i18n_name(&self) -> String {
+    pub(crate) fn i18n_name(&self) -> String {
         self.name.to_lowercase().replace(' ', "_")
     }
 
@@ -65,7 +71,7 @@ impl BadgeRow {
 
 /// `Badge#description` / `#long_description`: the locale's text with
 /// `base_uri` and `max_likes_per_day`, else the column, else "".
-fn badge_text(
+pub(crate) fn badge_text(
     i18n: &I18n,
     settings: &SiteSettings,
     base_path: &str,
@@ -136,6 +142,36 @@ pub(crate) fn badge_json(
     out.insert("show_in_post_header".into(), json!(b.show_in_post_header));
     out.insert("badge_type_id".into(), json!(b.badge_type_id));
     Ok(Value::Object(out))
+}
+
+/// AdminBadgeSerializer: BadgeSerializer with the long description and
+/// the badge's query, trigger and image upload; `i18n_name` for system
+/// badges.
+pub(crate) fn admin_badge_json(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    urls: &Urls<'_>,
+    base_path: &str,
+    b: &BadgeRow,
+) -> Result<Value, AppError> {
+    let Value::Object(mut base) = badge_json(i18n, settings, urls, base_path, b, true, None)?
+    else {
+        unreachable!("badge_json is an object");
+    };
+    let type_id = base.shift_remove("badge_type_id");
+    base.insert("query".into(), json!(b.query));
+    base.insert("trigger".into(), json!(b.trigger));
+    base.insert("target_posts".into(), json!(b.target_posts));
+    base.insert("auto_revoke".into(), json!(b.auto_revoke));
+    base.insert("show_posts".into(), json!(b.show_posts));
+    if b.system {
+        base.insert("i18n_name".into(), json!(b.i18n_name()));
+    }
+    base.insert("image_upload_id".into(), json!(b.image_upload_id));
+    if let Some(t) = type_id {
+        base.insert("badge_type_id".into(), t);
+    }
+    Ok(Value::Object(base))
 }
 
 /// BadgeTypeSerializer

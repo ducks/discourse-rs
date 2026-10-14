@@ -1,5 +1,6 @@
 mod about;
 mod accounts;
+mod admin_badges;
 mod admin_email;
 mod admin_emoji;
 mod admin_groups;
@@ -500,6 +501,36 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/config/emoji/{id}", delete(admin_emoji::destroy))
         .route("/site/emoji", get(admin_emoji::site_emoji))
         .route("/site/emoji.json", get(admin_emoji::site_emoji))
+        .route(
+            "/admin/badges",
+            get(admin_badges::index).post(admin_badges::create),
+        )
+        .route(
+            "/admin/badges.json",
+            get(admin_badges::index).post(admin_badges::create),
+        )
+        .route("/admin/badges/types", get(admin_badges::badge_types))
+        .route("/admin/badges/types.json", get(admin_badges::badge_types))
+        .route(
+            "/admin/badges/badge_groupings",
+            post(admin_badges::save_badge_groupings),
+        )
+        .route(
+            "/admin/badges/badge_groupings.json",
+            post(admin_badges::save_badge_groupings),
+        )
+        .route("/admin/badges/preview", post(admin_badges::preview))
+        .route("/admin/badges/preview.json", post(admin_badges::preview))
+        .route(
+            "/admin/badges/award/{badge_id}",
+            get(admin_badges::page).post(admin_badges::mass_award),
+        )
+        .route(
+            "/admin/badges/{id}",
+            get(admin_badges::page)
+                .put(admin_badges::update)
+                .delete(admin_badges::destroy),
+        )
         .route("/admin/site_settings", get(admin_site_settings::index))
         .route("/admin/site_settings.json", get(admin_site_settings::index))
         .route(

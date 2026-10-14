@@ -391,7 +391,7 @@ pub async fn backfill(
 /// `BadgeGranter.send_notification`: the granted_badge notification in
 /// the user's locale (`notification_locale`), English only.
 #[allow(clippy::too_many_arguments)]
-async fn send_notification(
+pub(crate) async fn send_notification(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
     settings: &SiteSettings,
@@ -609,18 +609,16 @@ pub async fn grant(
     Ok(Some(user_badge_id))
 }
 
-/// `BadgeGranter.revoke(user_badge, revoked_by:)`: the grant destroyed
-/// (UserBadge's after_destroy, and its notification with it), logged
-/// when someone revoked it, and the user's title taken away when it was
-/// the badge's name or its custom name.
-pub async fn revoke(
+/// `UserBadge#destroy`: the row deleted, its after_destroy (the badge's
+/// grant count, the user's distinct badge count and featured ranks, the
+/// user_badge_revoked event) and its notification destroyed. The grant's
+/// user and badge, None when it was already gone.
+pub async fn destroy_user_badge(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
     settings: &SiteSettings,
-    i18n: &crate::i18n::I18n,
     user_badge_id: i32,
-    revoked_by: Option<i32>,
-) -> Result<(), AppError> {
+) -> Result<Option<(i32, i32)>, AppError> {
     let row: Option<(i32, i32, Option<i64>)> = sqlx::query_as(
         "DELETE FROM user_badges WHERE id = $1 RETURNING user_id, badge_id, notification_id",
     )
@@ -628,14 +626,11 @@ pub async fn revoke(
     .fetch_optional(&mut *conn)
     .await?;
     let Some((user_id, badge_id, notification_id)) = row else {
-        return Ok(());
+        return Ok(None);
     };
-    let badge = Badge::find(&mut *conn, badge_id)
-        .await?
-        .ok_or(Unsupported("revoking a grant of a missing badge"))?;
     // after_destroy
     sqlx::query("UPDATE badges SET grant_count = grant_count - 1 WHERE id = $1")
-        .bind(badge.id)
+        .bind(badge_id)
         .execute(&mut *conn)
         .await?;
     update_distinct_badge_count(&mut *conn, Some(&[user_id])).await?;
@@ -655,6 +650,36 @@ pub async fn revoke(
             crate::bus::publish_notifications_state(bus, &mut *conn, settings, owner).await?;
         }
     }
+    Ok(Some((user_id, badge_id)))
+}
+
+/// `BadgeGranter.revoke(user_badge, revoked_by:)`: the grant destroyed
+/// (UserBadge's after_destroy, and its notification with it), logged
+/// when someone revoked it, and the user's title taken away when it was
+/// the badge's name or its custom name.
+pub async fn revoke(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    user_badge_id: i32,
+    revoked_by: Option<i32>,
+) -> Result<(), AppError> {
+    let badge_id: Option<i32> =
+        sqlx::query_scalar("SELECT badge_id FROM user_badges WHERE id = $1")
+            .bind(user_badge_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(badge_id) = badge_id else {
+        return Ok(());
+    };
+    let badge = Badge::find(&mut *conn, badge_id)
+        .await?
+        .ok_or(Unsupported("revoking a grant of a missing badge"))?;
+    let Some((user_id, _)) = destroy_user_badge(&mut *conn, bus, settings, user_badge_id).await?
+    else {
+        return Ok(());
+    };
     if let Some(by) = revoked_by {
         // StaffActionLogger#log_badge_revoke
         user_history(

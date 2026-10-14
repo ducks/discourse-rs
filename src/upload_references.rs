@@ -410,6 +410,40 @@ pub async fn link_post_uploads(
     Ok(())
 }
 
+/// `UploadReference.ensure_exist!(upload_ids: [upload_id], target:)` for
+/// one upload: the target's other references deleted and the upload's
+/// inserted when missing; with none, every reference of the target
+/// deleted.
+pub async fn ensure_exist(
+    conn: &mut PgConnection,
+    target_type: &str,
+    target_id: i64,
+    upload_id: Option<i64>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "DELETE FROM upload_references WHERE target_type = $1 AND target_id = $2 \
+         AND ($3::bigint IS NULL OR upload_id <> $3)",
+    )
+    .bind(target_type)
+    .bind(target_id)
+    .bind(upload_id)
+    .execute(&mut *conn)
+    .await?;
+    if let Some(upload_id) = upload_id {
+        // insert_all: the existing row skipped.
+        sqlx::query(
+            "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, now(), now()) ON CONFLICT DO NOTHING",
+        )
+        .bind(upload_id)
+        .bind(target_type)
+        .bind(target_id)
+        .execute(conn)
+        .await?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

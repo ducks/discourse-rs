@@ -1,0 +1,282 @@
+{
+  "name": "mass_award_usernames",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/award/100.json",
+      "params": {
+        "file": {
+          "fixture": "badge_award_usernames.csv"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:26.450547",
+  "transaction_started_at": "2026-10-14T09:52:24.008071",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "unmatched_entries": [
+          "nobody"
+        ],
+        "matched_users_count": 2,
+        "unmatched_entries_count": 1
+      }
+    }
+  ],
+  "changes": {
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user1\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-14T09:52:26.48572",
+          "updated_at": "2026-10-14T09:52:26.48572",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        },
+        {
+          "id": 54,
+          "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user2\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": null,
+          "created_at": "2026-10-14T09:52:26.507054",
+          "updated_at": "2026-10-14T09:52:26.507054",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y9J3BSyOnL8DYq2MX8CvkGaMJT0=",
+            "created_at": "2026-10-14T09:52:25.196919",
+            "rotated_at": "2026-10-14T09:52:25.19469",
+            "updated_at": "2026-10-14T09:52:25.196919",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Y9J3BSyOnL8DYq2MX8CvkGaMJT0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:26.461875",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y9J3BSyOnL8DYq2MX8CvkGaMJT0=",
+            "created_at": "2026-10-14T09:52:25.196919",
+            "rotated_at": "2026-10-14T09:52:25.19469",
+            "updated_at": "2026-10-14T09:52:25.196919",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Y9J3BSyOnL8DYq2MX8CvkGaMJT0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 19,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 3,
+          "badge_id": 100,
+          "created_at": "2026-10-14T09:52:26.483747",
+          "granted_at": "2026-10-14T09:52:26.483747",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": 53
+        },
+        {
+          "id": 20,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 4,
+          "badge_id": 100,
+          "created_at": "2026-10-14T09:52:26.50618",
+          "granted_at": "2026-10-14T09:52:26.50618",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": 54
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 15,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 3,
+            "badge_id": 11,
+            "created_at": "2026-09-30T07:28:37.785684",
+            "granted_at": "2026-09-30T07:28:30.313407",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 41
+          },
+          "after": {
+            "id": 15,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 3,
+            "badge_id": 11,
+            "created_at": "2026-09-30T07:28:37.785684",
+            "granted_at": "2026-09-30T07:28:30.313407",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 41
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 2
+          },
+          "after": {
+            "id": 3,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 5,
+            "granted_by_id": -1,
+            "notification_id": 2
+          }
+        },
+        {
+          "before": {
+            "id": 18,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-10-01T15:40:15.2316",
+            "granted_at": "2026-10-01T15:39:52.050551",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 47
+          },
+          "after": {
+            "id": 18,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-10-01T15:40:15.2316",
+            "granted_at": "2026-10-01T15:39:52.050551",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 47
+          }
+        },
+        {
+          "before": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 3
+          },
+          "after": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 3
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "mass_award_badge",
+      {
+        "user": 3,
+        "badge": 100,
+        "count": 1
+      }
+    ],
+    [
+      "mass_award_badge",
+      {
+        "user": 4,
+        "badge": 100,
+        "count": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "notifications": 53,
+    "user_badges": 19
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "0c5310e796a6f9a20c815eedc9cb32bcba53a61aaf1f496fbb3b6ac902098ae4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

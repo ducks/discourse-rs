@@ -313,7 +313,15 @@ then by what running a forum needs (milestone 6). Briefs:
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries
     and the scheduled jobs, 84. `feat/user-api-keys` M (and their jobs)
 85. `feat/admin-badges` M: creating, editing, deleting badges and
-    groupings, badge SQL with its preview, the badges pages' HTML
+    groupings, badge SQL with its preview, the badges pages' HTML,
+    85a. ~~`feat/admin-badges`~~ (done) M (Admin::BadgesController's
+    JSON: index, types, create/update/destroy with Badge's validations,
+    callbacks and staff logs, save_badge_groupings, preview with the
+    contract checks, ActiveRecord's named binds and libpq's error text,
+    mass award with MassAwardBadge and BulkUserTitleUpdate; refused:
+    custom descriptions with markup or entities, CSV files with quotes
+    or mixed line endings, error positions past Latin characters, the
+    Ember admin pages),
 86. `feat/admin-users-rest` M: granting admin (second factor or email
     confirmation), impersonation, penalties on several users
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,

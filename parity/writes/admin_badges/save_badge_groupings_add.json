@@ -1,0 +1,270 @@
+{
+  "name": "save_badge_groupings_add",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/badge_groupings.json",
+      "params": {
+        "ids": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "-1"
+        ],
+        "names": [
+          "Getting Started",
+          "Community",
+          "Posting",
+          "Trust Level",
+          "Other",
+          "Voice",
+          "Brand New"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:59.485266",
+  "transaction_started_at": "2026-10-14T09:52:58.436344",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badge_groupings": [
+          {
+            "id": 1,
+            "name": "Getting Started",
+            "description": null,
+            "position": 0,
+            "system": true
+          },
+          {
+            "id": 2,
+            "name": "Community",
+            "description": null,
+            "position": 1,
+            "system": true
+          },
+          {
+            "id": 3,
+            "name": "Posting",
+            "description": null,
+            "position": 2,
+            "system": true
+          },
+          {
+            "id": 4,
+            "name": "Trust Level",
+            "description": null,
+            "position": 3,
+            "system": true
+          },
+          {
+            "id": 5,
+            "name": "Other",
+            "description": null,
+            "position": 4,
+            "system": true
+          },
+          {
+            "id": 6,
+            "name": "Voice",
+            "description": null,
+            "position": 5,
+            "system": false
+          },
+          {
+            "id": 7,
+            "name": "Brand New",
+            "description": null,
+            "position": 6,
+            "system": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "badge_groupings": {
+      "inserted": [
+        {
+          "id": 7,
+          "name": "Brand New",
+          "position": 6,
+          "created_at": "2026-10-14T09:52:59.521918",
+          "updated_at": "2026-10-14T09:52:59.521918",
+          "description": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Getting Started",
+            "position": 10,
+            "created_at": "2026-07-25T05:58:07.202154",
+            "updated_at": "2026-07-25T05:58:07.202154",
+            "description": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Getting Started",
+            "position": 0,
+            "created_at": "2026-07-25T05:58:07.202154",
+            "updated_at": "2026-10-14T09:52:59.503009",
+            "description": null
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "name": "Community",
+            "position": 11,
+            "created_at": "2026-07-25T05:58:07.211654",
+            "updated_at": "2026-07-25T05:58:07.211654",
+            "description": null
+          },
+          "after": {
+            "id": 2,
+            "name": "Community",
+            "position": 1,
+            "created_at": "2026-07-25T05:58:07.211654",
+            "updated_at": "2026-10-14T09:52:59.506352",
+            "description": null
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "name": "Posting",
+            "position": 12,
+            "created_at": "2026-07-25T05:58:07.224844",
+            "updated_at": "2026-07-25T05:58:07.224844",
+            "description": null
+          },
+          "after": {
+            "id": 3,
+            "name": "Posting",
+            "position": 2,
+            "created_at": "2026-07-25T05:58:07.224844",
+            "updated_at": "2026-10-14T09:52:59.509553",
+            "description": null
+          }
+        },
+        {
+          "before": {
+            "id": 4,
+            "name": "Trust Level",
+            "position": 13,
+            "created_at": "2026-07-25T05:58:07.237229",
+            "updated_at": "2026-07-25T05:58:07.237229",
+            "description": null
+          },
+          "after": {
+            "id": 4,
+            "name": "Trust Level",
+            "position": 3,
+            "created_at": "2026-07-25T05:58:07.237229",
+            "updated_at": "2026-10-14T09:52:59.512679",
+            "description": null
+          }
+        },
+        {
+          "before": {
+            "id": 5,
+            "name": "Other",
+            "position": 14,
+            "created_at": "2026-07-25T05:58:07.247067",
+            "updated_at": "2026-07-25T05:58:07.247067",
+            "description": null
+          },
+          "after": {
+            "id": 5,
+            "name": "Other",
+            "position": 4,
+            "created_at": "2026-07-25T05:58:07.247067",
+            "updated_at": "2026-10-14T09:52:59.51562",
+            "description": null
+          }
+        },
+        {
+          "before": {
+            "id": 6,
+            "name": "Voice",
+            "position": 15,
+            "created_at": "2026-09-27T21:00:35.468458",
+            "updated_at": "2026-09-27T21:00:35.468458",
+            "description": null
+          },
+          "after": {
+            "id": 6,
+            "name": "Voice",
+            "position": 5,
+            "created_at": "2026-09-27T21:00:35.468458",
+            "updated_at": "2026-10-14T09:52:59.518947",
+            "description": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "c3C7E5R2jt5yYCA4hzGpU7pAvuc=",
+            "created_at": "2026-10-14T09:52:58.888801",
+            "rotated_at": "2026-10-14T09:52:58.887778",
+            "updated_at": "2026-10-14T09:52:58.888801",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "c3C7E5R2jt5yYCA4hzGpU7pAvuc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:59.493341",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "c3C7E5R2jt5yYCA4hzGpU7pAvuc=",
+            "created_at": "2026-10-14T09:52:58.888801",
+            "rotated_at": "2026-10-14T09:52:58.887778",
+            "updated_at": "2026-10-14T09:52:58.888801",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "c3C7E5R2jt5yYCA4hzGpU7pAvuc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "badge_groupings": 7
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "80797e3f77f49fbd826070a00cb6b8bd61a875ab16eec3f873446b426ae81799",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

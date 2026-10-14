@@ -1,0 +1,90 @@
+{
+  "name": "preview_empty_array_binding",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/preview.json",
+      "params": {
+        "sql": "SELECT id user_id, created_at granted_at FROM users WHERE id IN (:user_ids) OR (:backfill AND id = 1)",
+        "trigger": "8"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:52:34.934017",
+  "transaction_started_at": "2026-10-14T09:52:33.092875",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "grant_count": 1,
+        "sample": [
+          {
+            "id": 1,
+            "username": "admin",
+            "granted_at": "2026-07-25T05:59:14.988Z"
+          }
+        ],
+        "query_plan": null
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y8a2doA4Zd5jWcFlkUwRR4bywEQ=",
+            "created_at": "2026-10-14T09:52:33.504262",
+            "rotated_at": "2026-10-14T09:52:33.503223",
+            "updated_at": "2026-10-14T09:52:33.504262",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Y8a2doA4Zd5jWcFlkUwRR4bywEQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T09:52:34.941997",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y8a2doA4Zd5jWcFlkUwRR4bywEQ=",
+            "created_at": "2026-10-14T09:52:33.504262",
+            "rotated_at": "2026-10-14T09:52:33.503223",
+            "updated_at": "2026-10-14T09:52:33.504262",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Y8a2doA4Zd5jWcFlkUwRR4bywEQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_badge_sql": true
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "ede3a3282adc05ea73802b84acc9c9dd6e0037686cc04264654a4eb4af7ed564",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
