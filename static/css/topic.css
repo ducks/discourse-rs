@@ -2520,3 +2520,92 @@ html.anon #topic-footer-buttons {
 .post-controls .actions > [hidden] {
   display: none;
 }
+
+/* topic-footer.scss: the progress bar, the timeline's stand-in in the
+   mobile view (TopicProgress) */
+
+/* topic.scss:44 */
+@media screen and (width >= 925px) {
+  .container.posts .topic-navigation.with-topic-progress {
+    align-self: end;
+  }
+}
+
+/* topic-footer.scss:97 */
+.with-topic-progress {
+  position: sticky;
+  bottom: calc(env(safe-area-inset-bottom) + var(--composer-height, 0px));
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* topic-footer.scss:103 */
+.with-topic-progress > * {
+  pointer-events: auto;
+}
+
+/* topic-footer.scss:107 */
+.composer-open:not(.composer-has-preview) .with-topic-progress {
+  position: fixed;
+  max-width: var(--composer-max-width--hide-preview);
+  width: 100%;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+}
+
+/* topic-footer.scss:151 */
+#topic-progress-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+/* topic-footer.scss:162 */
+#topic-progress-wrapper .btn.progress-back {
+  border: 0;
+}
+
+/* topic-footer.scss:166 */
+#topic-progress-wrapper #topic-progress {
+  position: relative;
+  background-color: var(--secondary);
+  color: var(--tertiary);
+  padding: .5rem 1em;
+  border: 1px solid var(--tertiary-low);
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* topic-footer.scss:176 */
+#topic-progress-wrapper #topic-progress .nums {
+  display: flex;
+  gap: .3rem;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-width: 6ch;
+  position: relative;
+  z-index: 1;
+  font-size: var(--font-up-1);
+  font-weight: bold;
+}
+
+/* topic-footer.scss:189 */
+#topic-progress-wrapper #topic-progress .d-icon {
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
+  z-index: 1;
+}
+
+/* topic-footer.scss:196 */
+#topic-progress-wrapper #topic-progress .bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--progress-bg-width, 0);
+  background-color: var(--tertiary-low);
+}

@@ -40,6 +40,9 @@ pub struct PostSettings {
     pub read_time_word_count: i64,
     pub show_topic_map_in_topics_without_replies: bool,
     pub show_bottom_topic_map: bool,
+    /// TopicProgress#hugeNumberOfPosts: from this many posts on, the
+    /// progress bar shows the reader's post alone.
+    pub short_progress_text_threshold: i64,
     /// `post_menu`: the menu's buttons, in order.
     pub post_menu: Vec<String>,
     /// `post_menu_hidden_items`: the buttons behind show more.
@@ -99,6 +102,7 @@ impl PostSettings {
                 "show_topic_map_in_topics_without_replies",
             )?,
             show_bottom_topic_map: flag("show_bottom_topic_map")?,
+            short_progress_text_threshold: settings.get("short_progress_text_threshold")?.to_i(),
             post_menu: list("post_menu")?,
             post_menu_hidden_items: list("post_menu_hidden_items")?,
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
@@ -1135,11 +1139,26 @@ fn delete_button(cx: &PostContext, p: &Value) -> Option<String> {
     ))
 }
 
-/// post/menu/buttons/reply
+/// post/menu/buttons/reply: labelled on desktop (showLabel), an icon in
+/// the mobile view.
 fn reply_button(cx: &PostContext, p: &Value) -> String {
     let username = s(&p["username"]);
+    let (classes, label) = if crate::mobile::mobile_view() {
+        (
+            "btn no-text btn-icon post-action-menu__reply reply btn-flat",
+            "<span aria-hidden=\"true\">&#8203;</span>".to_string(),
+        )
+    } else {
+        (
+            "btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat",
+            format!(
+                "<span class=\"d-button-label\">{}</span>",
+                escape(&t(cx.list, "topic.reply.title"))
+            ),
+        )
+    };
     format!(
-        "<button aria-label=\"{}\" class=\"btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat\" data-post-number=\"{}\" data-username=\"{}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+        "<button aria-label=\"{}\" class=\"{classes}\" data-post-number=\"{}\" data-username=\"{}\" title=\"{}\" type=\"button\">{}{label}</button>",
         escape(&t_with(
             cx.list,
             "post.sr_reply_to",
@@ -1152,7 +1171,6 @@ fn reply_button(cx: &PostContext, p: &Value) -> String {
         escape(username),
         escape(&t(cx.list, "post.controls.reply")),
         icon("reply", None),
-        escape(&t(cx.list, "topic.reply.title"))
     )
 }
 
@@ -1525,7 +1543,8 @@ pub fn topic_map(cx: &PostContext, view: &Value, modifier: &str) -> String {
         .as_array()
         .cloned()
         .unwrap_or_default();
-    if posts_count >= 3 && participants.len() >= 2 {
+    // shouldShowParticipants: not in the mobile view.
+    if posts_count >= 3 && participants.len() >= 2 && !crate::mobile::mobile_view() {
         stats.push_str("<div class=\"topic-map__users-list --users-summary\">");
         for p in participants.iter().take(5) {
             let username = s(&p["username"]);
@@ -1674,6 +1693,11 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         .as_array()
         .map(|s| s.iter().filter_map(Value::as_i64).collect())
         .unwrap_or_default();
+    // TopicNavigation#renderTimeline: never in the mobile view, which has
+    // the progress bar.
+    if crate::mobile::mobile_view() {
+        return topic_progress(cx, &stream, view);
+    }
     let total = stream.len().max(1);
     let start = date(&view["created_at"])
         .map(|at| timeline_date(cx, at))
@@ -1759,6 +1783,23 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         )),
         escape(&url),
         view["highest_post_number"].as_i64().unwrap_or(1),
+    )
+}
+
+/// TopicProgress: the reader's post and the topic's count, its bar
+/// filled as far as they have scrolled (topic.js keeps both current).
+/// The expanded timeline it opens is not ported.
+fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value) -> String {
+    let title = escape(&t(cx.list, "topic.progress.title"));
+    // hugeNumberOfPosts: the count and its slash are hidden.
+    let huge = i64::try_from(stream.len()).unwrap_or(i64::MAX)
+        >= cx.settings.short_progress_text_threshold;
+    let hidden = if huge { " class=\"hidden\"" } else { "" };
+    format!(
+        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\"><nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div></div>",
+        no_answer(cx, view),
+        escape(&serde_json::to_string(stream).unwrap_or_default()),
+        stream.len()
     )
 }
 
@@ -2173,6 +2214,7 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
+            short_progress_text_threshold: 10000,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
                 .split('|')
                 .map(str::to_string)
@@ -2347,6 +2389,7 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
+            short_progress_text_threshold: 10000,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
                 .split('|')
                 .map(str::to_string)

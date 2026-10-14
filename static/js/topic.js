@@ -1,7 +1,8 @@
 // The topic page's client side: the buttons that act in the browser (copy
 // link, share, show more, an anonymous reader's reply), live updates
-// arriving twice, and the timeline, which follows
-// the post being read as Ember's does (components/topic-timeline,
+// arriving twice, and the timeline, or in the mobile view the progress
+// bar, which follow the post being read as Ember's do
+// (components/topic-timeline, topic-progress,
 // modifiers/post-stream-viewport-tracker).
 (function () {
   "use strict";
@@ -9,6 +10,83 @@
   if (!Discourse.once("topic")) {
     return;
   }
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  function headerHeight() {
+    var header = document.querySelector(".d-header-wrap");
+    return header ? header.getBoundingClientRect().height : 0;
+  }
+
+  // The post at the eyeline, which slides from the top of the posts to the
+  // bottom of the window as the reader nears the end of the page: its
+  // index in the stream, and how far through the topic that is
+  // (TopicController#currentPostScrolled's percent). Null between posts.
+  function position(stream) {
+    var total = Math.max(stream.length, 1);
+    var wrapper = document.querySelector(".posts-wrapper");
+    var boundary = document.querySelector(".post-stream__bottom-boundary");
+    var top = Math.max(headerHeight(), wrapper.getBoundingClientRect().top) + 1;
+    var bottom = boundary
+      ? boundary.getBoundingClientRect().top
+      : window.innerHeight;
+    var docH = document.documentElement.scrollHeight;
+    var vh = window.innerHeight;
+    var span = Math.min(vh, docH - (bottom + window.scrollY), docH - vh);
+    var progress =
+      span > 0 ? 1 - clamp((docH - vh - window.scrollY) / span, 0, 1) : 1;
+    var eyeline = top + progress * (bottom - top);
+    var posts = document.querySelectorAll("#posts article[data-post-id]");
+    for (var i = 0; i < posts.length; i++) {
+      var rect = posts[i].getBoundingClientRect();
+      // The last post holds the eyeline at its bottom edge too: the end of
+      // the page.
+      var last = i === posts.length - 1;
+      if (eyeline >= rect.top && (eyeline < rect.bottom || (last && eyeline <= rect.bottom))) {
+        var index = stream.indexOf(parseInt(posts[i].dataset.postId, 10)) + 1;
+        if (index < 1) {
+          return null;
+        }
+        var within = (eyeline - rect.top) / rect.height;
+        return { index: index, percent: clamp((index + within - 1) / total, 0, 1) };
+      }
+    }
+    return null;
+  }
+
+  // The progress bar (TopicProgress): the post's index and the bar's fill.
+  Discourse.onPage(function () {
+    var nav = document.getElementById("topic-progress");
+    if (!nav) {
+      return;
+    }
+    var stream = JSON.parse(nav.dataset.stream);
+    var current = nav.querySelector(".nums span");
+    var pending = false;
+    function onScroll() {
+      if (pending) {
+        return;
+      }
+      pending = true;
+      window.requestAnimationFrame(function () {
+        pending = false;
+        var at = position(stream);
+        if (at) {
+          current.textContent = at.index;
+          nav.style.setProperty("--progress-bg-width", (at.percent * 100).toFixed(2) + "%");
+        }
+      });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    onScroll();
+    return function () {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  });
 
   document.addEventListener("click", function (event) {
     // Mark unread (deferTopic): stop timing the page, unread its last
@@ -118,15 +196,6 @@
     var height = 300;
     var current = 1;
 
-    function clamp(v, lo, hi) {
-      return Math.max(lo, Math.min(hi, v));
-    }
-
-    function headerHeight() {
-      var header = document.querySelector(".d-header-wrap");
-      return header ? header.getBoundingClientRect().height : 0;
-    }
-
     // The lookup's date label for an index: the exact entry or the nearest
     // one before it.
     function agoFor(index) {
@@ -161,37 +230,9 @@
       }
     }
 
-    // The post at the eyeline, which slides from the top of the posts to the
-    // bottom of the window as the reader nears the end of the page.
     function percentNow() {
-      var wrapper = document.querySelector(".posts-wrapper");
-      var boundary = document.querySelector(".post-stream__bottom-boundary");
-      var top = Math.max(headerHeight(), wrapper.getBoundingClientRect().top) + 1;
-      var bottom = boundary
-        ? boundary.getBoundingClientRect().top
-        : window.innerHeight;
-      var docH = document.documentElement.scrollHeight;
-      var vh = window.innerHeight;
-      var span = Math.min(vh, docH - (bottom + window.scrollY), docH - vh);
-      var progress =
-        span > 0 ? 1 - clamp((docH - vh - window.scrollY) / span, 0, 1) : 1;
-      var eyeline = top + progress * (bottom - top);
-      var posts = document.querySelectorAll("#posts article[data-post-id]");
-      for (var i = 0; i < posts.length; i++) {
-        var rect = posts[i].getBoundingClientRect();
-        // The last post holds the eyeline at its bottom edge too: the end of
-        // the page.
-        var last = i === posts.length - 1;
-        if (eyeline >= rect.top && (eyeline < rect.bottom || (last && eyeline <= rect.bottom))) {
-          var index = stream.indexOf(parseInt(posts[i].dataset.postId, 10)) + 1;
-          if (index < 1) {
-            return null;
-          }
-          var within = (eyeline - rect.top) / rect.height;
-          return clamp((index + within - 1) / total, 0, 1);
-        }
-      }
-      return null;
+      var at = position(stream);
+      return at ? at.percent : null;
     }
 
     // timeline-docked above the posts, timeline-docked-bottom past them.
