@@ -132,7 +132,9 @@ def clear_redis_state
   # otp_*: the user API one-time passwords a case hands out.
   # readonly_mode*: read-only mode's keys (a case's `readonly`, or the
   # admin toggle), which would refuse every later case's writes.
-  %w[readonly_mode* postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
+  # email-backup-token:*, backup_restore_operation_*, start_logs_message_id:
+  # the backups' download tokens and running state (a case's `redis`).
+  %w[readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -162,6 +164,9 @@ def reset_plugin_caches
   # removes.
   PostActionType.reload_types
 end
+
+# Every file and directory under public/backups.
+def backup_files = Dir.glob(File.join(Rails.root, "public", "backups", "**", "*"))
 
 def checksums
   (TABLES.keys - (BACKGROUND_TABLES - INCLUDED_TABLES)).to_h do |t|
@@ -268,6 +273,7 @@ end
 
 cases.each do |c|
   ENQUEUED.clear
+  backups_before = backup_files
   pool.pin_connection!(true)
   PINNED.replace([ActiveRecord::Base.connection.current_transaction])
   begin
@@ -299,6 +305,9 @@ cases.each do |c|
     # (readonly_mode:user, readonly_mode:staff_writes_only, ...), as
     # Discourse.enable_readonly_mode sets them, less the TTL keep-alive.
     (c["readonly"] || []).each { |key| Discourse.redis.set(key, 1) }
+    # `redis`: other Redis values the case's requests read (a backup
+    # download token, the backups' running flag), set without a TTL.
+    (c["redis"] || {}).each { |key, value| Discourse.redis.set(key, value) }
     # `rate_limits`: the limiter on for the case's requests and jobs only
     # (after the login and setup, which would count otherwise).
     RateLimiter.enable if c["rate_limits"]
@@ -374,6 +383,7 @@ cases.each do |c|
     record[:settings] = c["settings"] if c["settings"]
     record[:setup] = c["setup"] if c["setup"]
     record[:readonly] = c["readonly"] if c["readonly"]
+    record[:redis] = c["redis"] if c["redis"]
     record[:enqueue] = c["enqueue"] if c["enqueue"]
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]
@@ -402,6 +412,9 @@ cases.each do |c|
       path = File.join(Rails.root, "public", u["url"].to_s)
       File.delete(path) if u["url"].to_s.start_with?("/uploads/") && File.file?(path)
     end
+    # Backups a case's requests or jobs wrote (uploaded chunks, merged
+    # uploads) are not rolled back either.
+    (backup_files - backups_before).sort.reverse.each { |p| File.directory?(p) ? Dir.rmdir(p) : File.delete(p) }
     RateLimiter.disable
     clear_redis_state
     pool.unpin_connection!

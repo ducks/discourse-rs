@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": "x.zip"}},
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": "x y.tar.gz"}},
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": ""}},
+    {"method": "GET", "path": "/admin/backups/upload_url"}
+  ]
+}

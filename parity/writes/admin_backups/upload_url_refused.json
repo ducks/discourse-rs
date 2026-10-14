@@ -1,0 +1,116 @@
+{
+  "name": "upload_url_refused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload_url",
+      "params": {
+        "filename": "x.zip"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload_url",
+      "params": {
+        "filename": "x y.tar.gz"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload_url",
+      "params": {
+        "filename": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload_url"
+    }
+  ],
+  "started_at": "2026-10-14T15:09:40.832785",
+  "transaction_started_at": "2026-10-14T15:09:36.237153",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The backup file should be a .tar.gz archive."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The backup filename contains invalid characters. Valid characters are a-z 0-9 . - _."
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: filename"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: filename"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "02N0CA5k1U91PdqENQiKmcQZybY=",
+            "created_at": "2026-10-14T15:09:37.955883",
+            "rotated_at": "2026-10-14T15:09:37.948541",
+            "updated_at": "2026-10-14T15:09:37.955883",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "02N0CA5k1U91PdqENQiKmcQZybY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T15:09:40.849536",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "02N0CA5k1U91PdqENQiKmcQZybY=",
+            "created_at": "2026-10-14T15:09:37.955883",
+            "rotated_at": "2026-10-14T15:09:37.948541",
+            "updated_at": "2026-10-14T15:09:37.955883",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "02N0CA5k1U91PdqENQiKmcQZybY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "c4f2037d82e60bea4e34e69ccd121e24735b886bae62e5bdbdea796b15abbe60",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "run_jobs": [
+    "download_backup_email"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    }
+  ]
+}

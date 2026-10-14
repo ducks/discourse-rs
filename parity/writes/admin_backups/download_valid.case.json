@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "redis": {
+    "email-backup-token:1": "0123456789abcdef0123456789abcdef"
+  },
+  "keep_headers": [
+    "Content-Type",
+    "Content-Disposition",
+    "Content-Length"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=0123456789abcdef0123456789abcdef"
+    }
+  ]
+}

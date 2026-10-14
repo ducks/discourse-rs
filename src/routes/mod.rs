@@ -1063,8 +1063,70 @@ pub fn router(state: &AppState) -> Router<AppState> {
             permalinks::CATCH_ALL,
             get(permalinks::show).fallback(permalinks::no_route),
         )
+        // Admin::BackupsController
+        .route("/admin/backups", get(backups::index))
+        .route("/admin/backups.json", get(backups::index))
+        .route("/admin/backups/settings", get(backups::index))
+        .route("/admin/backups/settings.json", get(backups::index))
+        .route("/admin/backups/status", get(backups::status))
+        .route("/admin/backups/status.json", get(backups::status))
+        .route("/admin/backups/logs", get(backups::logs))
+        .route("/admin/backups/logs.json", get(backups::logs))
         .route("/admin/backups/readonly", put(backups::readonly))
         .route("/admin/backups/readonly.json", put(backups::readonly))
+        .route(
+            "/admin/backups/upload",
+            get(backups::check_backup_chunk)
+                .post(backups::upload_backup_chunk)
+                .layer(axum::extract::DefaultBodyLimit::max(
+                    backups::CHUNK_BODY_LIMIT,
+                )),
+        )
+        .route(
+            "/admin/backups/upload.json",
+            get(backups::check_backup_chunk)
+                .post(backups::upload_backup_chunk)
+                .layer(axum::extract::DefaultBodyLimit::max(
+                    backups::CHUNK_BODY_LIMIT,
+                )),
+        )
+        .route("/admin/backups/upload_url", get(backups::create_upload_url))
+        .route(
+            "/admin/backups/upload_url.json",
+            get(backups::create_upload_url),
+        )
+        .route("/admin/backups/create-multipart", post(backups::multipart))
+        .route(
+            "/admin/backups/create-multipart.json",
+            post(backups::multipart),
+        )
+        .route(
+            "/admin/backups/complete-multipart",
+            post(backups::multipart),
+        )
+        .route(
+            "/admin/backups/complete-multipart.json",
+            post(backups::multipart),
+        )
+        .route("/admin/backups/abort-multipart", post(backups::multipart))
+        .route(
+            "/admin/backups/abort-multipart.json",
+            post(backups::multipart),
+        )
+        .route(
+            "/admin/backups/batch-presign-multipart-parts",
+            post(backups::multipart),
+        )
+        .route(
+            "/admin/backups/batch-presign-multipart-parts.json",
+            post(backups::multipart),
+        )
+        .route(
+            "/admin/backups/{id}",
+            get(backups::show)
+                .put(backups::email)
+                .delete(backups::destroy),
+        )
         // Admin::ApiController
         .route("/admin/api", get(admin_api_keys::index))
         .route("/admin/api.json", get(admin_api_keys::index))

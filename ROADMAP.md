@@ -406,7 +406,17 @@ then by what running a forum needs (milestone 6). Briefs:
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,
     91. `feat/backups` L (creating, listing, downloading, restoring
-    through the app, read-only mode)
+    through the app; read-only mode is 79c), split:
+    91a. ~~`feat/backup-files`~~ (done) M (the local store under
+    public/backups/default: the list, status, the emailed download
+    link with its token and the download, deleting, chunked uploads and
+    backup_chunks_merger, staff logs 45/46, the read-only allowlist and
+    ensure_backups_enabled. Refused: the S3 store, upload URLs and
+    multipart uploads, the Ember index and logs pages),
+    91b. `feat/backup-create` M (Creator, create_backup and
+    schedule_backup with retention, cancel, logs on the bus),
+    91c. `feat/backup-restore` L (Restorer, rollback,
+    drop_backup_schema)
 
 [phase-8]
 

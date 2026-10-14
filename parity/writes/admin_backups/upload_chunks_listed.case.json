@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableTotalSize": "29",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "29",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ]
+}

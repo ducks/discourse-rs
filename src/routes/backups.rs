@@ -1,14 +1,538 @@
-//! Admin::BackupsController: only its read-only toggle so far.
+//! Admin::BackupsController (AdminConstraint: everyone but admins gets the
+//! routing 404): the backups list and status, emailing a download link
+//! and downloading with its token, deleting, uploading in chunks, and the
+//! read-only toggle. The admin pages themselves (index and logs as HTML)
+//! are Ember's; S3 (the store, upload URLs, multipart uploads) is refused.
 
 use axum::Json;
-use axum::body::Bytes;
-use axum::extract::State;
-use axum::http::{HeaderMap, StatusCode, Uri};
+use axum::body::{Body, Bytes};
+use axum::extract::{Path, Request, State};
+use axum::http::{HeaderMap, HeaderValue, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
-use serde_json::json;
+use serde_json::{Map, Value, json};
 
+use crate::backup_restore::{self, store, store::LocalBackupStore};
+use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
-use crate::{AppError, AppState};
+use crate::site_settings::SiteSettings;
+use crate::{AppError, AppState, Unsupported};
+
+/// The largest chunk request taken: the uploader sends 5 MB chunks (Rails
+/// leaves the limit to the proxy in front of it).
+pub const CHUNK_BODY_LIMIT: usize = 64 << 20;
+
+fn pairs(p: &Map<String, Value>) -> Vec<(String, String)> {
+    p.iter()
+        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+        .collect()
+}
+
+/// AdminConstraint: the route does not match for anyone else.
+fn admin_only(state: &AppState, guardian: &Guardian) -> Option<Response> {
+    (!guardian.is_admin()).then(|| super::topics::not_found_response(state))
+}
+
+/// `check_xhr`: a request that is neither XHR nor JSON renders the empty
+/// app instead.
+fn xhr_or_json(uri: &Uri, headers: &HeaderMap) -> bool {
+    headers
+        .get("x-requested-with")
+        .is_some_and(|v| v == "XMLHttpRequest")
+        || uri.path().ends_with(".json")
+        || super::wants_json(uri.query(), headers)
+}
+
+/// `params.fetch(key)` missing: ActionController::ParameterMissing.
+fn param_missing(key: &str) -> Response {
+    (
+        StatusCode::BAD_REQUEST,
+        Json(json!({
+            "errors": [format!("param is missing or the value is empty or invalid: {key}")]
+        })),
+    )
+        .into_response()
+}
+
+/// `render status: :unsupported_media_type, plain: I18n.t(key)`
+fn unsupported_media_type(state: &AppState, key: &str) -> Response {
+    let text = state.i18n.t(key).unwrap_or(key).to_string();
+    (
+        StatusCode::UNSUPPORTED_MEDIA_TYPE,
+        [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],
+        text,
+    )
+        .into_response()
+}
+
+async fn settings(state: &AppState) -> Result<SiteSettings, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    Ok(SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?)
+}
+
+/// `ensure_backups_enabled`: Discourse::InvalidAccess unless enable_backups.
+fn backups_disabled(
+    state: &AppState,
+    settings: &SiteSettings,
+) -> Result<Option<Response>, AppError> {
+    Ok((!settings.get("enable_backups")?.truthy()).then(|| super::search::invalid_access(state)))
+}
+
+/// The `:id` of the member routes (RouteFormat.backup, anchored) and the
+/// optional format after it; anything else does not route.
+fn backup_id(raw: &str) -> Option<(String, Option<String>)> {
+    static ID: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(?i)^([a-zA-Z0-9._-]+\.(?:sql\.gz|tar\.gz|tgz))(?:\.([^/.?]+))?$")
+            .unwrap()
+    });
+    let c = ID.captures(raw)?;
+    Some((c[1].to_string(), c.get(2).map(|m| m.as_str().to_string())))
+}
+
+/// GET /admin/backups(.json) and /admin/backups/settings: the store's files
+/// (BackupFileSerializer), newest first. The page is Ember's.
+pub async fn index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    if !uri.path().ends_with(".json") && !super::wants_json(uri.query(), &headers) {
+        return Err(Unsupported("the admin backups pages (Ember)").into());
+    }
+    let settings = settings(&state).await?;
+    let store = LocalBackupStore::create(&state, &settings)?;
+    let files: Vec<Value> = store.files()?.iter().map(store::BackupFile::json).collect();
+    Ok(Json(Value::Array(files)).into_response())
+}
+
+/// GET /admin/backups/logs: the logs page (Ember's, with the operation's
+/// status and logs preloaded).
+pub async fn logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    Err(Unsupported("the admin backups logs page (Ember)").into())
+}
+
+/// GET /admin/backups/status(.json): `BackupRestore.operations_status`.
+pub async fn status(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    Ok(
+        Json(backup_restore::operations_status(&state, &mut conn, &settings).await?)
+            .into_response(),
+    )
+}
+
+/// GET /admin/backups/:id?token= (#show): the file, once, for the admin
+/// the download link was mailed to.
+pub async fn show(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let (Some((id, _)), None) = (backup_id(&raw), admin_only(&state, &guardian)) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let user_id = guardian.user_id().unwrap_or_default();
+    let p = crate::params::parse(uri.query(), &headers, &[]);
+    let Some(token) = p.get("token").and_then(crate::params::scalar) else {
+        return Ok(param_missing("token"));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !backup_restore::token::compare(&mut conn, user_id, &token).await? {
+        // admin/backups/show in the no_ember layout.
+        let error = crate::category_badge::html_escape(
+            state
+                .i18n
+                .t("download_backup_mailer.no_token")
+                .unwrap_or_default(),
+        );
+        let html = format!(
+            "<div id=\"simple-container\">\n    <div class='alert alert-error'>\n      {error}\n    </div>\n</div>\n"
+        );
+        let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+        let mut response =
+            super::email::render_page(&state, &mut conn, &settings, &uri, &guardian, html, vs)
+                .await?;
+        *response.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
+        return Ok(response);
+    }
+    let store = LocalBackupStore::create(&state, &settings)?;
+    let Some(backup) = store.file(&id)? else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut tx = state.pool.begin().await?;
+    backup_restore::token::del(&mut tx, user_id).await?;
+    backup_restore::log_staff_action(&mut tx, "backup_download", user_id, Some(&backup.filename))
+        .await?;
+    tx.commit().await?;
+    send_file(&backup).await
+}
+
+/// `send_file`: the file streamed as an attachment, typed by its
+/// extension as Mime::Type knows it (`.gz` only).
+async fn send_file(backup: &store::BackupFile) -> Result<Response, AppError> {
+    use futures_util::StreamExt;
+    use tokio::io::AsyncReadExt;
+    let file = tokio::fs::File::open(&backup.path).await?;
+    let stream = futures_util::stream::unfold(file, |mut file| async move {
+        let mut buf = vec![0u8; 64 * 1024];
+        match file.read(&mut buf).await {
+            Ok(0) => None,
+            Ok(n) => {
+                buf.truncate(n);
+                Some((Ok::<_, std::io::Error>(Bytes::from(buf)), file))
+            }
+            Err(e) => Some((Err(e), file)),
+        }
+    })
+    .boxed();
+    let content_type = if backup.filename.to_ascii_lowercase().ends_with(".gz") {
+        "application/gzip"
+    } else {
+        "application/octet-stream"
+    };
+    let name = &backup.filename;
+    let mut response = Response::new(Body::from_stream(stream));
+    let h = response.headers_mut();
+    h.insert(header::CONTENT_TYPE, HeaderValue::from_static(content_type));
+    h.insert(header::CONTENT_LENGTH, HeaderValue::from(backup.size));
+    // ActionDispatch::Http::ContentDisposition; the name is already
+    // limited to characters that need no escaping.
+    h.insert(
+        header::CONTENT_DISPOSITION,
+        HeaderValue::from_str(&format!(
+            "attachment; filename=\"{name}\"; filename*=UTF-8''{name}"
+        ))?,
+    );
+    h.insert(
+        "content-transfer-encoding",
+        HeaderValue::from_static("binary"),
+    );
+    Ok(response)
+}
+
+/// The request's own URL for a path (`url_for`), with its scheme, host and
+/// the site's subfolder.
+fn request_url(state: &AppState, headers: &HeaderMap, path: &str) -> String {
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    let scheme = match headers
+        .get("x-forwarded-proto")
+        .and_then(|v| v.to_str().ok())
+    {
+        Some(p) if p.eq_ignore_ascii_case("https") => "https",
+        _ => "http",
+    };
+    let root = state.config.globals.relative_url_root();
+    format!("{scheme}://{host}{root}{path}")
+}
+
+/// PUT /admin/backups/:id (#email): mails the admin a download link.
+pub async fn email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let (Some((id, _)), None) = (backup_id(&raw), admin_only(&state, &guardian)) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "PUT") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    let store = LocalBackupStore::create(&state, &settings)?;
+    if store.file(&id)?.is_none() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    crate::jobs::enqueue(
+        &mut conn,
+        backup_restore::jobs::DOWNLOAD_BACKUP_EMAIL,
+        json!({
+            "user_id": guardian.user_id(),
+            "backup_file_path": request_url(&state, &headers, &format!("/admin/backups/{id}")),
+        }),
+    )
+    .await?;
+    Ok(StatusCode::OK.into_response())
+}
+
+/// DELETE /admin/backups/:id (#destroy): logged as backup_destroy first.
+pub async fn destroy(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let (Some((id, _)), None) = (backup_id(&raw), admin_only(&state, &guardian)) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "DELETE") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let store = LocalBackupStore::create(&state, &settings)?;
+    let Some(backup) = store.file(&id)? else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    backup_restore::log_staff_action(
+        &mut conn,
+        "backup_destroy",
+        guardian.user_id().unwrap_or_default(),
+        Some(&backup.filename),
+    )
+    .await?;
+    store.delete_file(&backup.filename)?;
+    Ok(StatusCode::OK.into_response())
+}
+
+/// GET /admin/backups/upload (#check_backup_chunk): 200 when that chunk
+/// is already there whole, else 404.
+pub async fn check_backup_chunk(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let mut fetched = Vec::new();
+    for key in [
+        "resumableIdentifier",
+        "resumableFilename",
+        "resumableChunkNumber",
+        "resumableCurrentChunkSize",
+    ] {
+        match p.get(key).and_then(crate::params::scalar) {
+            Some(v) => fetched.push(v),
+            None => return Ok(param_missing(key)),
+        }
+    }
+    let [identifier, filename, chunk_number, current] = &fetched[..] else {
+        unreachable!("four params fetched");
+    };
+    if !store::valid_filename(identifier) {
+        return Ok(super::search::invalid_parameters(
+            &state,
+            "resumableIdentifier",
+        ));
+    }
+    if !store::valid_filename(filename) {
+        return Ok(super::search::invalid_parameters(
+            &state,
+            "resumableFilename",
+        ));
+    }
+    let store = LocalBackupStore::create(&state, &settings)?;
+    let chunk = store.chunk_path(identifier, filename, chunk_number);
+    let current = crate::ruby::to_i(current);
+    let uploaded = std::fs::metadata(&chunk)
+        .ok()
+        .is_some_and(|m| m.is_file() && i64::try_from(m.len()).ok() == Some(current));
+    Ok(if uploaded {
+        StatusCode::OK
+    } else {
+        StatusCode::NOT_FOUND
+    }
+    .into_response())
+}
+
+/// POST /admin/backups/upload (#upload_backup_chunk): one chunk stored;
+/// the last one queues the merge in 5 seconds.
+pub async fn upload_backup_chunk(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    request: Request,
+) -> Result<Response, AppError> {
+    let path = request.uri().path().to_string();
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let form = super::uploads::read_form(request, &state).await?;
+    if !super::session::csrf_ok(&state, &headers, &form.fields, &path, "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let get = |key: &str| form.get(key).map(str::to_string);
+    let Some(filename) = get("resumableFilename") else {
+        return Ok(param_missing("resumableFilename"));
+    };
+    let Some(total_size) = get("resumableTotalSize") else {
+        return Ok(param_missing("resumableTotalSize"));
+    };
+    let total_size = crate::ruby::to_i(&total_size);
+    let Some(identifier) = get("resumableIdentifier") else {
+        return Ok(param_missing("resumableIdentifier"));
+    };
+    if !store::valid_filename(&identifier) {
+        return Ok(super::search::invalid_parameters(
+            &state,
+            "resumableIdentifier",
+        ));
+    }
+    if !store::valid_extension(&filename) {
+        return Ok(unsupported_media_type(
+            &state,
+            "backup.backup_file_should_be_tar_gz",
+        ));
+    }
+    let store = LocalBackupStore::create(&state, &settings)?;
+    let free = store::free_bytes(&state.config.public_dir.join("backups"))?;
+    if i64::try_from(free).unwrap_or(i64::MAX) <= total_size {
+        return Ok(unsupported_media_type(
+            &state,
+            "backup.not_enough_space_on_disk",
+        ));
+    }
+    if !store::valid_filename(&filename) {
+        return Ok(unsupported_media_type(&state, "backup.invalid_filename"));
+    }
+    let Some((_, file)) = form.file.as_ref() else {
+        return Ok(param_missing("file"));
+    };
+    let mut numbers = Vec::new();
+    for key in [
+        "resumableChunkNumber",
+        "resumableChunkSize",
+        "resumableCurrentChunkSize",
+    ] {
+        match get(key) {
+            Some(v) => numbers.push(crate::ruby::to_i(&v)),
+            None => return Ok(param_missing(key)),
+        }
+    }
+    let [chunk_number, chunk_size, current_chunk_size] = numbers[..] else {
+        unreachable!("three params fetched");
+    };
+    let chunk = store.chunk_path(&identifier, &filename, &chunk_number.to_string());
+    if let Some(dir) = chunk.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(&chunk, file)?;
+    if (chunk_number - 1) * chunk_size + current_chunk_size >= total_size {
+        let mut conn = state.pool.acquire().await?;
+        crate::jobs::enqueue_in(
+            &mut conn,
+            5,
+            backup_restore::jobs::BACKUP_CHUNKS_MERGER,
+            json!({"filename": filename, "identifier": identifier, "chunks": chunk_number}),
+        )
+        .await?;
+    }
+    Ok(StatusCode::OK.into_response())
+}
+
+/// GET /admin/backups/upload_url (#create_upload_url): checked as Rails
+/// checks it; a local store has no upload URL (NotImplementedError).
+pub async fn create_upload_url(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    // params.require(:filename): blank is missing too.
+    let Some(filename) = p
+        .get("filename")
+        .and_then(crate::params::scalar)
+        .filter(|f| !f.is_empty())
+    else {
+        return Ok(param_missing("filename"));
+    };
+    let error = |key: &str| {
+        let text = state.i18n.t(key).unwrap_or(key).to_string();
+        (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": [text] })),
+        )
+            .into_response()
+    };
+    if !store::valid_extension(&filename) {
+        return Ok(error("backup.backup_file_should_be_tar_gz"));
+    }
+    if !store::valid_filename(&filename) {
+        return Ok(error("backup.invalid_filename"));
+    }
+    LocalBackupStore::create(&state, &settings)?;
+    Err(Unsupported("backup upload URLs (direct S3 uploads)").into())
+}
+
+/// POST /admin/backups/{create,complete,abort}-multipart and
+/// batch-presign-multipart-parts: S3 direct uploads.
+pub async fn multipart(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    Err(Unsupported("direct S3 backup uploads").into())
+}
 
 /// PUT /admin/backups/readonly(.json)?enable= (BackupsController#readonly,
 /// AdminConstraint): the user read-only key on or off, logged as
@@ -24,29 +548,19 @@ pub async fn readonly(
         return Ok(super::topics::not_found_response(&state));
     }
     let p = crate::params::parse(uri.query(), &headers, &body);
-    let pairs: Vec<(String, String)> = p
-        .iter()
-        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
-        .collect();
-    if !super::session::csrf_ok(&state, &headers, &pairs, uri.path(), "PUT") {
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "PUT") {
         return Ok(super::session::bad_csrf());
     }
     // check_xhr: not skipped for this action.
-    let xhr = headers
-        .get("x-requested-with")
-        .is_some_and(|v| v == "XMLHttpRequest");
-    if !xhr && !uri.path().ends_with(".json") && !super::wants_json(uri.query(), &headers) {
+    if !xhr_or_json(&uri, &headers) {
         return Ok(super::session::render_empty());
+    }
+    if let Some(r) = backups_disabled(&state, &settings(&state).await?)? {
+        return Ok(r);
     }
     // params.fetch(:enable): present, even blank.
     let Some(enable) = p.get("enable") else {
-        return Ok((
-            StatusCode::BAD_REQUEST,
-            Json(json!({
-                "errors": ["param is missing or the value is empty or invalid: enable"]
-            })),
-        )
-            .into_response());
+        return Ok(param_missing("enable"));
     };
     let enable = crate::params::scalar(enable).as_deref() == Some("true");
     let mut tx = state.pool.begin().await?;
@@ -73,4 +587,27 @@ pub async fn readonly(
     .await?;
     tx.commit().await?;
     Ok(StatusCode::OK.into_response())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::backup_id;
+
+    #[test]
+    fn member_ids_route_as_rails_does() {
+        assert_eq!(
+            backup_id("discourse-2026-10-01-033000-v20260925054715.tar.gz"),
+            Some((
+                "discourse-2026-10-01-033000-v20260925054715.tar.gz".into(),
+                None
+            ))
+        );
+        assert_eq!(
+            backup_id("x.tar.gz.json"),
+            Some(("x.tar.gz".into(), Some("json".into())))
+        );
+        assert_eq!(backup_id("x.sql.gz"), Some(("x.sql.gz".into(), None)));
+        assert_eq!(backup_id("notes.txt"), None);
+        assert_eq!(backup_id("bad name.tar.gz"), None);
+    }
 }

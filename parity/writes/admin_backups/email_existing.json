@@ -1,0 +1,159 @@
+{
+  "name": "email_existing",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    }
+  ],
+  "started_at": "2026-10-14T14:54:10.219044",
+  "transaction_started_at": "2026-10-14T14:54:09.269345",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-14T14:54:11.753063",
+          "email_type": "download_backup_message",
+          "message_id": "3bfad3c2-b152-4732-a8ce-a3983294a9f0@localhost",
+          "to_address": "admin@example.com",
+          "updated_at": "2026-10-14T14:54:11.753063",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K55/AmsS107NAbc3Qe0UaRkZgso=",
+            "created_at": "2026-10-14T14:54:09.673686",
+            "rotated_at": "2026-10-14T14:54:09.672721",
+            "updated_at": "2026-10-14T14:54:09.673686",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "K55/AmsS107NAbc3Qe0UaRkZgso=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T14:54:10.224369",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K55/AmsS107NAbc3Qe0UaRkZgso=",
+            "created_at": "2026-10-14T14:54:09.673686",
+            "rotated_at": "2026-10-14T14:54:09.672721",
+            "updated_at": "2026-10-14T14:54:09.673686",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "K55/AmsS107NAbc3Qe0UaRkZgso=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "download_backup_email",
+      {
+        "user_id": 1,
+        "backup_file_path": "http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_logs": 1
+  },
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "admin@example.com"
+        ],
+        [
+          "Message-ID",
+          "<3bfad3c2-b152-4732-a8ce-a3983294a9f0@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Site Backup Download"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6acf9793b481a_4afdf28-4e9"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Here's the [site backup download](http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=dbcde0baaee61e91577059f9cc7f4177) you requested.\n\nWe sent this download link to your validated email address for security reasons.\n\n(If you *didn't* request this download, you should be seriously concerned -- someone has admin access to your site.)\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Here’s the <a href=\"http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=dbcde0baaee61e91577059f9cc7f4177\" style=\"text-decoration:none;font-weight:bold;color:#006699\">site backup download</a> you requested.</p>\n<p>We sent this download link to your validated email address for security reasons.</p>\n<p>(If you <em>didn’t</em> request this download, you should be seriously concerned – someone has admin access to your site.)</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "3d90d04446de8a058d8d5c9d9d124d7933a36fcecb293bea4ff41927b7490fe6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

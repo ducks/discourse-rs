@@ -1,0 +1,44 @@
+{
+  "user": "admin",
+  "settings": {
+    "enable_backups": false
+  },
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/readonly.json",
+      "params": {
+        "enable": "false"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc",
+        "resumableFilename": "x.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "10"
+      }
+    }
+  ]
+}

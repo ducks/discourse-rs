@@ -1,0 +1,31 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=abc"
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "name": "destroy_in_readonly",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:54:01.078067",
+  "transaction_started_at": "2026-10-14T14:53:59.583232",
+  "responses": [
+    {
+      "status": 200,
+      "body": "",
+      "headers": {
+        "Discourse-Readonly": "true"
+      }
+    },
+    {
+      "status": 404,
+      "body": "",
+      "headers": {
+        "Discourse-Readonly": "true"
+      }
+    },
+    {
+      "status": 200,
+      "body": [],
+      "headers": {
+        "Discourse-Readonly": "true"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Cf+yeq/ZfAUS8LgMe3MinI/qyrI=",
+            "created_at": "2026-10-14T14:54:00.400649",
+            "rotated_at": "2026-10-14T14:54:00.397878",
+            "updated_at": "2026-10-14T14:54:00.400649",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Cf+yeq/ZfAUS8LgMe3MinI/qyrI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T14:54:01.086701",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Cf+yeq/ZfAUS8LgMe3MinI/qyrI=",
+            "created_at": "2026-10-14T14:54:00.400649",
+            "rotated_at": "2026-10-14T14:54:00.397878",
+            "updated_at": "2026-10-14T14:54:00.400649",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Cf+yeq/ZfAUS8LgMe3MinI/qyrI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 46,
+          "context": null,
+          "details": "discourse-2026-10-01-033000-v20260925054715.tar.gz",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T14:54:01.098207",
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-14T14:54:01.098207",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "readonly": [
+    "readonly_mode:user"
+  ],
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "keep_headers": [
+    "Discourse-Readonly"
+  ],
+  "recorded_from": {
+    "case": "56abdd0f40fa4385720ba6cb181387b26154b26818cc83489c7d48b69070b44f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -158,13 +158,29 @@ pub struct Raised;
 
 /// Actions `allow_in_readonly_mode` lets through, by route.
 fn allowed_in_readonly_mode(method: &Method, route: &str) -> bool {
-    // Admin::BackupsController#readonly (the backups' other actions are
-    // not ported).
-    method == Method::PUT
-        && matches!(
+    // Admin::BackupsController: readonly, email, destroy, the chunk upload
+    // and the multipart uploads.
+    match *method {
+        Method::PUT => matches!(
             route,
-            "/admin/backups/readonly" | "/admin/backups/readonly.json"
-        )
+            "/admin/backups/readonly" | "/admin/backups/readonly.json" | "/admin/backups/{id}"
+        ),
+        Method::DELETE => route == "/admin/backups/{id}",
+        Method::POST => matches!(
+            route,
+            "/admin/backups/upload"
+                | "/admin/backups/upload.json"
+                | "/admin/backups/create-multipart"
+                | "/admin/backups/create-multipart.json"
+                | "/admin/backups/complete-multipart"
+                | "/admin/backups/complete-multipart.json"
+                | "/admin/backups/abort-multipart"
+                | "/admin/backups/abort-multipart.json"
+                | "/admin/backups/batch-presign-multipart-parts"
+                | "/admin/backups/batch-presign-multipart-parts.json"
+        ),
+        _ => false,
+    }
 }
 
 /// Actions `allow_in_staff_writes_only_mode` lets through, by route. The
@@ -471,6 +487,14 @@ mod tests {
             "/admin/backups/readonly.json"
         ));
         assert!(!allowed_in_readonly_mode(&Method::POST, "/posts.json"));
+        assert!(allowed_in_readonly_mode(
+            &Method::DELETE,
+            "/admin/backups/{id}"
+        ));
+        assert!(allowed_in_readonly_mode(
+            &Method::POST,
+            "/admin/backups/upload"
+        ));
         assert!(allowed_in_staff_writes_only_mode(
             &Method::POST,
             "/session.json"

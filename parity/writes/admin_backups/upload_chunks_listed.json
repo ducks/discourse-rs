@@ -1,0 +1,95 @@
+{
+  "name": "upload_chunks_listed",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableTotalSize": "29",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "29",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:54:33.036911",
+  "transaction_started_at": "2026-10-14T14:54:31.45293",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": []
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vcFNZJ2QFYvCYCh57n8uumwbdH0=",
+            "created_at": "2026-10-14T14:54:31.923283",
+            "rotated_at": "2026-10-14T14:54:31.922031",
+            "updated_at": "2026-10-14T14:54:31.923283",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vcFNZJ2QFYvCYCh57n8uumwbdH0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T14:54:33.04588",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vcFNZJ2QFYvCYCh57n8uumwbdH0=",
+            "created_at": "2026-10-14T14:54:31.923283",
+            "rotated_at": "2026-10-14T14:54:31.922031",
+            "updated_at": "2026-10-14T14:54:31.923283",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vcFNZJ2QFYvCYCh57n8uumwbdH0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "backup_chunks_merger in 5s",
+      {
+        "filename": "uploaded.tar.gz",
+        "identifier": "abc-123",
+        "chunks": 1
+      }
+    ]
+  ],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "3de567d04f091c0ebbfe90cfe694128b1ca902ed7003458b881d915115ce7e81",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
