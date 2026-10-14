@@ -769,6 +769,7 @@ dependencies = [
  "imagequant",
  "kamadak-exif",
  "lettre",
+ "libc",
  "libtest-mimic",
  "mail-parser",
  "markdown-it",

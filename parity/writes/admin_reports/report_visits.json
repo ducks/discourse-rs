@@ -1,0 +1,511 @@
+{
+  "name": "report_visits",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/visits.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/visits.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "group": "12"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/visits.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-09-02"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/mobile_visits.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/dau_by_mau.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/dau_by_mau.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-09-02"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:03:20.751672",
+  "transaction_started_at": "2026-10-14T15:03:16.646388",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "visits",
+          "title": "User Visits",
+          "xaxis": {
+            "desktop": "Desktop",
+            "mobile": "Mobile"
+          },
+          "yaxis": "Number of visits",
+          "description": "Number of signed-in user visits by device type.",
+          "description_link": null,
+          "data": [
+            {
+              "req": "desktop",
+              "label": "Desktop",
+              "color": "#1EB8D1",
+              "data": [
+                {
+                  "x": "2026-10-01",
+                  "y": 3
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 1
+                },
+                {
+                  "x": "2026-10-12",
+                  "y": 1
+                },
+                {
+                  "x": "2026-10-13",
+                  "y": 1
+                }
+              ]
+            },
+            {
+              "req": "mobile",
+              "label": "Mobile",
+              "color": "#9BC53D",
+              "data": [
+                {
+                  "x": "2026-10-12",
+                  "y": 1
+                }
+              ]
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:visits:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "stacked_chart"
+          ],
+          "icon": "user",
+          "total": "7.0",
+          "default_group_by": "weekly"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "visits",
+          "title": "User Visits",
+          "xaxis": {
+            "desktop": "Desktop",
+            "mobile": "Mobile"
+          },
+          "yaxis": "Number of visits",
+          "description": "Number of signed-in user visits by device type.",
+          "description_link": null,
+          "data": [
+            {
+              "req": "desktop",
+              "label": "Desktop",
+              "color": "#1EB8D1",
+              "data": [
+                {
+                  "x": "2026-10-01",
+                  "y": 2
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 1
+                },
+                {
+                  "x": "2026-10-13",
+                  "y": 1
+                }
+              ]
+            },
+            {
+              "req": "mobile",
+              "label": "Mobile",
+              "color": "#9BC53D",
+              "data": [
+                {
+                  "x": "2026-10-12",
+                  "y": 1
+                }
+              ]
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:visits:20260920:20261031:[:total, :prev30Days]:{\"group\":\"12\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": "12"
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "stacked_chart"
+          ],
+          "icon": "user",
+          "total": "5.0",
+          "default_group_by": "weekly"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "visits",
+          "title": "User Visits",
+          "xaxis": {
+            "desktop": "Desktop",
+            "mobile": "Mobile"
+          },
+          "yaxis": "Number of visits",
+          "description": "Number of signed-in user visits by device type.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-09-02T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-30T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:visits:20260901:20260902:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "stacked_chart"
+          ],
+          "icon": "user",
+          "total": 0,
+          "default_group_by": "weekly"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "mobile_visits",
+          "title": "User Visits (mobile)",
+          "xaxis": "Day",
+          "yaxis": "Number of visits",
+          "description": "Number of unique signed-in users who visited using a mobile device.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:mobile_visits:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "total": 2
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "dau_by_mau",
+          "title": "DAU / MAU",
+          "xaxis": "Day",
+          "yaxis": "DAU/MAU",
+          "description": "The share of monthly active members who returned in the last day. This percentage shows how regularly people come back; also called the community 'stickiness'. Aim for > 20%.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-01",
+              "y": 100.0
+            },
+            {
+              "x": "2026-10-11",
+              "y": 33.34
+            },
+            {
+              "x": "2026-10-12",
+              "y": 50.0
+            },
+            {
+              "x": "2026-10-13",
+              "y": 0
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 14.29,
+          "dates_filtering": true,
+          "report_key": "reports:dau_by_mau:20260920:20261031:[:prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "percent",
+              "property": "y",
+              "title": "Percent"
+            }
+          ],
+          "average": true,
+          "percent": true,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "prev_period": 14.29
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "dau_by_mau",
+          "title": "DAU / MAU",
+          "xaxis": "Day",
+          "yaxis": "DAU/MAU",
+          "description": "The share of monthly active members who returned in the last day. This percentage shows how regularly people come back; also called the community 'stickiness'. Aim for > 20%.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-09-02T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-30T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:dau_by_mau:20260901:20260902:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "percent",
+              "property": "y",
+              "title": "Percent"
+            }
+          ],
+          "average": true,
+          "percent": true,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3JJ3jcdf6UOKSTbppvbB0EVrACo=",
+            "created_at": "2026-10-14T15:03:18.422303",
+            "rotated_at": "2026-10-14T15:03:18.41947",
+            "updated_at": "2026-10-14T15:03:18.422303",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3JJ3jcdf6UOKSTbppvbB0EVrACo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:03:20.766985",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3JJ3jcdf6UOKSTbppvbB0EVrACo=",
+            "created_at": "2026-10-14T15:03:18.422303",
+            "rotated_at": "2026-10-14T15:03:18.41947",
+            "updated_at": "2026-10-14T15:03:18.422303",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3JJ3jcdf6UOKSTbppvbB0EVrACo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (2, (now() - interval '2 days')::date, 3, false, 60), (3, (now() - interval '2 days')::date, 1, true, 30), (4, (now() - interval '3 days')::date, 0, false, 10), (2, (now() - interval '40 days')::date, 0, true, 0), (1, (now() - interval '1 day')::date, 5, false, 600)",
+    "INSERT INTO user_visit_daily_rollups (date, dau, mau) VALUES ((now() - interval '3 days')::date, 1, 3), ((now() - interval '2 days')::date, 2, 4), ((now() - interval '1 day')::date, 0, 0), ((now() - interval '40 days')::date, 1, 7)"
+  ],
+  "recorded_from": {
+    "case": "6191ade7c2bb9bd2a22ec5ff6ee1ff0f987b68cb62e4f89e43c73b591611bb95",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

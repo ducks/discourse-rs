@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/bulk.json", "params": {"reports": {"signups": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["prev_period"]}, "no_such_report": {"start_date": "2026-09-20"}, "page_view_anon_reqs": {"start_date": "2026-09-20", "end_date": "2026-10-31"}, "users_by_type": {"start_date": "2026-09-20"}}}},
+    {"method": "GET", "path": "/admin/reports/bulk.json", "params": {"reports": {"signups": {"start_date": "2026-09-20", "cache": "true"}, "users_by_type": {"cache": "true"}}}},
+    {"method": "GET", "path": "/admin/reports/bulk.json", "params": {"reports": {"Bad-Type": {"start_date": "2026-09-20"}}}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "cache": "true"}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "limit": "51"}}
+  ]
+}

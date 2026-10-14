@@ -1,0 +1,882 @@
+{
+  "name": "report_user_tables",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_users_by_likes_received.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_users_by_likes_received_from_a_variety_of_people.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_users_by_likes_received_from_inferior_trust_level.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_ignored_users.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/user_flagging_ratio.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/profile_views.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/profile_views.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "group": "12"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/topic_view_stats.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/topic_view_stats.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4",
+          "include_subcategories": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bookmarks.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:03:15.083369",
+  "transaction_started_at": "2026-10-14T15:03:10.86006",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_users_by_likes_received",
+          "title": "Top Users by likes received",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Top 10 users who have received likes.",
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 2,
+              "username": "user0",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "qtt_like": 3
+            },
+            {
+              "user_id": 3,
+              "username": "user1",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "qtt_like": 2
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_users_by_likes_received:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "id": "user_id",
+                "username": "username",
+                "avatar": "user_avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "type": "number",
+              "property": "qtt_like",
+              "title": "Likes Received"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "icon": "heart"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_users_by_likes_received_from_a_variety_of_people",
+          "title": "Top Users by likes received from a variety of people",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Top 10 users who have had likes from a wide range of people.",
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 4,
+              "username": "user2",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "qtt_like": 2
+            },
+            {
+              "user_id": 1,
+              "username": "admin",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "qtt_like": 1
+            },
+            {
+              "user_id": 2,
+              "username": "user0",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "qtt_like": 1
+            },
+            {
+              "user_id": 3,
+              "username": "user1",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "qtt_like": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_users_by_likes_received_from_a_variety_of_people:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "id": "user_id",
+                "username": "username",
+                "avatar": "user_avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "type": "number",
+              "property": "qtt_like",
+              "title": "Likes Received"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true,
+          "icon": "heart"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_users_by_likes_received_from_inferior_trust_level",
+          "title": "Top Users by likes received from a user with a lower trust level",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Top 10 users in a higher trust level being liked by people in a lower trust level.",
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 1,
+              "username": "admin",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "trust_level": 4,
+              "qtt_like": 1
+            },
+            {
+              "user_id": 3,
+              "username": "user1",
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "trust_level": 2,
+              "qtt_like": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_users_by_likes_received_from_inferior_trust_level:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "id": "user_id",
+                "username": "username",
+                "avatar": "user_avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "type": "number",
+              "property": "trust_level",
+              "title": "Trust level"
+            },
+            {
+              "type": "number",
+              "property": "qtt_like",
+              "title": "Likes Received"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true,
+          "icon": "heart"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_ignored_users",
+          "title": "Top Ignored / Muted Users",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Users who have been muted and/or ignored by many other users.",
+          "description_link": null,
+          "data": [
+            {
+              "ignored_user_id": 4,
+              "ignored_username": "user2",
+              "ignored_user_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "ignores_count": 2,
+              "mutes_count": 1
+            },
+            {
+              "ignored_user_id": 5,
+              "ignored_username": "user3",
+              "ignored_user_avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+              "ignores_count": 1,
+              "mutes_count": 0
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_ignored_users:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "id": "ignored_user_id",
+                "username": "ignored_username",
+                "avatar": "ignored_user_avatar_template"
+              },
+              "title": "Ignored User"
+            },
+            {
+              "type": "number",
+              "properties": [
+                "ignores_count"
+              ],
+              "title": "Ignores count"
+            },
+            {
+              "type": "number",
+              "properties": [
+                "mutes_count"
+              ],
+              "title": "Mutes count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "user_flagging_ratio",
+          "title": "User Flagging Ratio",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List of users ordered by ratio of staff response to their flags (disagreed to agreed).",
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 2,
+              "username": "user0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "disagreed_flags": "1.0",
+              "ignored_flags": "0.0",
+              "agreed_flags": "2.0",
+              "score": "1.0"
+            },
+            {
+              "user_id": 3,
+              "username": "user1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "disagreed_flags": "1.0",
+              "ignored_flags": "1.0",
+              "agreed_flags": "0.0",
+              "score": "1.0"
+            },
+            {
+              "user_id": 4,
+              "username": "user2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "disagreed_flags": "0.0",
+              "ignored_flags": "0.0",
+              "agreed_flags": "0.0",
+              "score": "0.0"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:user_flagging_ratio:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "type": "number",
+              "property": "disagreed_flags",
+              "title": "Disagreed flags"
+            },
+            {
+              "type": "number",
+              "property": "agreed_flags",
+              "title": "Agreed flags"
+            },
+            {
+              "type": "number",
+              "property": "ignored_flags",
+              "title": "Ignored flags"
+            },
+            {
+              "type": "number",
+              "property": "score",
+              "title": "Score"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "profile_views",
+          "title": "User Profile Views",
+          "xaxis": "Day",
+          "yaxis": "Number of user profiles viewed",
+          "description": "Total new views of user profiles.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 4
+            },
+            {
+              "x": "2026-10-01",
+              "y": 7
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:profile_views:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "total": 11
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "profile_views",
+          "title": "User Profile Views",
+          "xaxis": "Day",
+          "yaxis": "Number of user profiles viewed",
+          "description": "Total new views of user profiles.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-01",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:profile_views:20260920:20261031:[:total, :prev30Days]:{\"group\":\"12\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": "12"
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "total": 11
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topic_view_stats",
+          "title": "Topic View Stats",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "The top 100 most viewed topics in a date range, combining logged in and anonymous views. Can be filtered by category.",
+          "description_link": null,
+          "data": [
+            {
+              "topic_id": 38,
+              "topic_title": "Parity fixture: tagged in a subcategory",
+              "total_anonymous_views": 10,
+              "total_logged_in_views": 0,
+              "total_views": 10
+            },
+            {
+              "topic_id": 35,
+              "topic_title": "Parity fixture: replies and posters",
+              "total_anonymous_views": 4,
+              "total_logged_in_views": 5,
+              "total_views": 9
+            },
+            {
+              "topic_id": 3,
+              "topic_title": "About the General category",
+              "total_anonymous_views": 0,
+              "total_logged_in_views": 1,
+              "total_views": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:topic_view_stats:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "topic",
+              "properties": {
+                "title": "topic_title",
+                "id": "topic_id"
+              },
+              "title": "Topic"
+            },
+            {
+              "property": "total_anonymous_views",
+              "type": "number",
+              "title": "Anonymous"
+            },
+            {
+              "property": "total_logged_in_views",
+              "type": "number",
+              "title": "Logged In"
+            },
+            {
+              "property": "total_views",
+              "type": "number",
+              "title": "Total"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topic_view_stats",
+          "title": "Topic View Stats",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "The top 100 most viewed topics in a date range, combining logged in and anonymous views. Can be filtered by category.",
+          "description_link": null,
+          "data": [
+            {
+              "topic_id": 38,
+              "topic_title": "Parity fixture: tagged in a subcategory",
+              "total_anonymous_views": 10,
+              "total_logged_in_views": 0,
+              "total_views": 10
+            },
+            {
+              "topic_id": 35,
+              "topic_title": "Parity fixture: replies and posters",
+              "total_anonymous_views": 4,
+              "total_logged_in_views": 5,
+              "total_views": 9
+            },
+            {
+              "topic_id": 3,
+              "topic_title": "About the General category",
+              "total_anonymous_views": 0,
+              "total_logged_in_views": 1,
+              "total_views": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:topic_view_stats:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\",\"include_subcategories\":\"true\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": true
+            }
+          ],
+          "labels": [
+            {
+              "type": "topic",
+              "properties": {
+                "title": "topic_title",
+                "id": "topic_id"
+              },
+              "title": "Topic"
+            },
+            {
+              "property": "total_anonymous_views",
+              "type": "number",
+              "title": "Anonymous"
+            },
+            {
+              "property": "total_logged_in_views",
+              "type": "number",
+              "title": "Logged In"
+            },
+            {
+              "property": "total_views",
+              "type": "number",
+              "title": "Total"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "bookmarks",
+          "title": "Bookmarks",
+          "xaxis": "Day",
+          "yaxis": "Number of new bookmarks",
+          "description": "Number of new topics and posts bookmarked.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-01",
+              "y": 7
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:bookmarks:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "bookmark",
+          "total": 7
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IW2Ru1wncyuAn6wnM4UvkzgCKm8=",
+            "created_at": "2026-10-14T15:03:12.623971",
+            "rotated_at": "2026-10-14T15:03:12.620977",
+            "updated_at": "2026-10-14T15:03:12.623971",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "IW2Ru1wncyuAn6wnM4UvkzgCKm8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:03:15.094971",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IW2Ru1wncyuAn6wnM4UvkzgCKm8=",
+            "created_at": "2026-10-14T15:03:12.623971",
+            "rotated_at": "2026-10-14T15:03:12.620977",
+            "updated_at": "2026-10-14T15:03:12.623971",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "IW2Ru1wncyuAn6wnM4UvkzgCKm8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (2, 2, 35, 37, 4, now() - interval '2 days', now() - interval '2 days'), (2, 2, 35, 37, 3, now() - interval '2 days', now() - interval '2 days'), (2, 3, 38, 47, 2, now() - interval '3 days', now() - interval '3 days'), (1, 4, 35, 37, 4, now() - interval '2 days', now() - interval '2 days'), (1, 5, 35, 37, 5, now() - interval '2 days', now() - interval '2 days'), (1, 2, 38, 47, 2, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (2, 4, now() - interval '2 days', now() - interval '2 days', now() + interval '1 day'), (3, 4, now() - interval '2 days', now() - interval '2 days', now() + interval '1 day'), (2, 5, now() - interval '3 days', now() - interval '3 days', now() + interval '1 day')",
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (5, 4, now() - interval '2 days', now() - interval '2 days'), (3, 2, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO reviewables (id, type, status, created_by_id, target_type, target_id, topic_id, category_id, created_at, updated_at, payload, potential_spam, score, force_review) VALUES (9401, 'ReviewableFlaggedPost', 0, 2, 'Post', 37, 35, 4, now() - interval '2 days', now() - interval '2 days', '{}', false, 1.0, false)",
+    "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at) VALUES (9401, 2, 3, 1, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 2, 4, 1, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 2, 7, 2, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 3, 3, 2, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 3, 4, 3, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 4, 4, 0, 1.0, 0, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_profile_views (user_profile_id, viewed_at, ip_address, user_id) VALUES (3, now() - interval '2 days', '10.0.0.1', 2), (3, now() - interval '2 days', '10.0.0.2', 4), (2, now() - interval '3 days', '10.0.0.1', NULL), (2, now() - interval '40 days', '10.0.0.1', 4)",
+    "INSERT INTO topic_view_stats (topic_id, viewed_at, anonymous_views, logged_in_views) VALUES (35, (now() - interval '2 days')::date, 3, 4), (38, (now() - interval '2 days')::date, 10, 0), (35, (now() - interval '3 days')::date, 1, 1), (3, (now() - interval '3 days')::date, 0, 1)"
+  ],
+  "recorded_from": {
+    "case": "fbe0f3500179d2d1c360ec1b2b6400faaced6ed7ed3762f69d34806fe313f580",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

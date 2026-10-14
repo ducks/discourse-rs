@@ -7,6 +7,7 @@ mod admin_email;
 mod admin_emoji;
 mod admin_groups;
 mod admin_logs;
+mod admin_reports;
 mod admin_site_settings;
 mod admin_users;
 mod admin_watched_words;
@@ -675,6 +676,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/customize/watched_words/action/{id}/download",
             get(admin_watched_words::download),
         )
+        .route("/admin/reports", get(admin_reports::index))
+        .route("/admin/reports.json", get(admin_reports::index))
+        .route("/admin/reports/bulk", get(admin_reports::bulk))
+        .route("/admin/reports/bulk.json", get(admin_reports::bulk))
+        .route("/admin/reports/{kind}", get(admin_reports::show))
         .route("/admin/dashboard/problems", post(admin_dashboard::problems))
         .route(
             "/admin/dashboard/problems.json",

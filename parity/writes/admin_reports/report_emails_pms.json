@@ -1,0 +1,475 @@
+{
+  "name": "report_emails_pms",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/emails.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/user_to_user_private_messages.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/user_to_user_private_messages_with_replies.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/system_private_messages.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/moderator_warning_private_messages.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/notify_moderators_private_messages.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/notify_user_private_messages.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:21.819774",
+  "transaction_started_at": "2026-10-14T15:02:19.575644",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "emails",
+          "title": "Emails Sent",
+          "xaxis": "Day",
+          "yaxis": "Number of Emails",
+          "description": "Number of new emails sent.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-10",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:emails:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 4,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "user_to_user_private_messages",
+          "title": "User-to-User (excluding replies)",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of newly initiated personal messages.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-01",
+              "y": 3
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:user_to_user_private_messages:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "envelope",
+          "total": 3
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "user_to_user_private_messages_with_replies",
+          "title": "User-to-User (with replies)",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of all new personal messages and responses.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-01",
+              "y": 4
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:user_to_user_private_messages_with_replies:20260901:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "envelope",
+          "total": 4,
+          "prev_period": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "system_private_messages",
+          "title": "System",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of personal messages sent automatically by the System.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:system_private_messages:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "envelope",
+          "total": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "moderator_warning_private_messages",
+          "title": "Moderator Warning",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of warnings sent by personal messages from moderators.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:moderator_warning_private_messages:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "envelope",
+          "total": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "notify_moderators_private_messages",
+          "title": "Notify Moderators",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of times moderators received personal messages with additional flag details.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:notify_moderators_private_messages:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "envelope",
+          "total": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "notify_user_private_messages",
+          "title": "Notify User",
+          "xaxis": "Day",
+          "yaxis": "Number of messages",
+          "description": "Number of times users have been sent personal messages using the flag dialog.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:notify_user_private_messages:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "envelope",
+          "total": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ODHqJk+9K7eVbL7snMuC1YVAHEY=",
+            "created_at": "2026-10-14T15:02:20.2749",
+            "rotated_at": "2026-10-14T15:02:20.27259",
+            "updated_at": "2026-10-14T15:02:20.2749",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ODHqJk+9K7eVbL7snMuC1YVAHEY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:21.828394",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ODHqJk+9K7eVbL7snMuC1YVAHEY=",
+            "created_at": "2026-10-14T15:02:20.2749",
+            "rotated_at": "2026-10-14T15:02:20.27259",
+            "updated_at": "2026-10-14T15:02:20.2749",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ODHqJk+9K7eVbL7snMuC1YVAHEY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_logs (to_address, email_type, user_id, created_at, updated_at) VALUES ('user0@example.com', 'digest', 2, now() - interval '2 days', now() - interval '2 days'), ('user1@example.com', 'user_replied', 3, now() - interval '2 days', now() - interval '2 days'), ('user1@example.com', 'signup', 3, now() - interval '4 days', now() - interval '4 days'), ('user2@example.com', 'digest', 4, now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "recorded_from": {
+    "case": "af19959d5d30693e4e7fe79f5f59ad8a22ed83f0485950d14bd2e691bc899240",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

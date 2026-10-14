@@ -1,0 +1,539 @@
+{
+  "name": "report_staff_tables",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/moderators_activity.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/flags_status.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/post_edits.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/post_edits.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "editor": "user2",
+          "category": "4"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:38:43.701809",
+  "transaction_started_at": "2026-10-14T15:38:37.223398",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "moderators_activity",
+          "title": "Moderator Activity",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List of moderator activity including flags reviewed, reading time, topics created, posts created, personal messages created, and revisions.",
+          "description_link": null,
+          "data": [
+            {
+              "username": "admin",
+              "user_id": 1,
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "time_read": 300,
+              "flag_count": 1,
+              "revision_count": 1,
+              "topic_count": 3,
+              "post_count": 7,
+              "pm_count": 1
+            },
+            {
+              "username": "user2",
+              "user_id": 4,
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "time_read": 120,
+              "flag_count": 2,
+              "revision_count": null,
+              "topic_count": 2,
+              "post_count": 3,
+              "pm_count": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:moderators_activity:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "user_avatar_template"
+              },
+              "title": "Moderator"
+            },
+            {
+              "property": "flag_count",
+              "type": "number",
+              "title": "Flags reviewed"
+            },
+            {
+              "type": "seconds",
+              "property": "time_read",
+              "title": "Time reading"
+            },
+            {
+              "property": "topic_count",
+              "type": "number",
+              "title": "Topics created"
+            },
+            {
+              "property": "pm_count",
+              "type": "number",
+              "title": "PMs created"
+            },
+            {
+              "property": "post_count",
+              "type": "number",
+              "title": "Posts created"
+            },
+            {
+              "property": "revision_count",
+              "type": "number",
+              "title": "Revisions"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "flags_status",
+          "title": "Flags Status",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List of flags' statuses including type of flag, poster, flagger, and time to resolution.",
+          "description_link": null,
+          "data": [
+            {
+              "post_type": "off_topic",
+              "post_number": 3,
+              "topic_id": 35,
+              "staff_username": "user2",
+              "staff_id": 4,
+              "staff_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "poster_username": "user2",
+              "poster_id": 4,
+              "poster_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "flagger_id": 2,
+              "flagger_username": "user0",
+              "flagger_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "resolution": "Agreed",
+              "response_time": 86400.0
+            },
+            {
+              "post_type": "inappropriate",
+              "post_number": 4,
+              "topic_id": 35,
+              "staff_username": "admin",
+              "staff_id": 1,
+              "staff_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "poster_username": "admin",
+              "poster_id": 1,
+              "poster_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "flagger_id": 2,
+              "flagger_username": "user0",
+              "flagger_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "resolution": "Disagreed",
+              "response_time": 1800.0
+            },
+            {
+              "post_type": "spam",
+              "post_number": 1,
+              "topic_id": 41,
+              "staff_username": "user2",
+              "staff_id": 4,
+              "staff_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "poster_username": "user0",
+              "poster_id": 2,
+              "poster_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "flagger_id": 3,
+              "flagger_username": "user1",
+              "flagger_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "resolution": "Deferred",
+              "response_time": 300.0
+            },
+            {
+              "post_type": "notify_moderators",
+              "post_number": 3,
+              "topic_id": 35,
+              "poster_username": "user2",
+              "poster_id": 4,
+              "poster_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "flagger_id": 3,
+              "flagger_username": "user1",
+              "flagger_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "resolution": "No action",
+              "response_time": null
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:flags_status:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "post",
+              "properties": {
+                "topic_id": "topic_id",
+                "number": "post_number",
+                "truncated_raw": "post_type"
+              },
+              "title": "Type"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "staff_username",
+                "id": "staff_id",
+                "avatar": "staff_avatar_template"
+              },
+              "title": "Assigned"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "poster_username",
+                "id": "poster_id",
+                "avatar": "poster_avatar_template"
+              },
+              "title": "Poster"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "flagger_username",
+                "id": "flagger_id",
+                "avatar": "flagger_avatar_template"
+              },
+              "title": "Flagger"
+            },
+            {
+              "type": "seconds",
+              "property": "response_time",
+              "title": "Resolution time"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "post_edits",
+          "title": "Post Edits",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Number of new post edits.",
+          "description_link": null,
+          "data": [
+            {
+              "editor_id": 1,
+              "editor_username": "admin",
+              "editor_avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "author_id": 2,
+              "author_username": "user0",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "edit_reason": null,
+              "created_at": "2026-10-11T15:38:37.223Z",
+              "post_raw": "An archived topic whose first post got a",
+              "topic_id": 41,
+              "post_number": 1
+            },
+            {
+              "editor_id": 2,
+              "editor_username": "user0",
+              "editor_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "author_id": 4,
+              "author_username": "user2",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "edit_reason": "typo",
+              "created_at": "2026-10-13T15:38:37.223Z",
+              "post_raw": "Reply two from user2, also long enough t",
+              "topic_id": 35,
+              "post_number": 3
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:post_edits:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "created_at",
+              "title": "Date"
+            },
+            {
+              "type": "post",
+              "properties": {
+                "topic_id": "topic_id",
+                "number": "post_number",
+                "truncated_raw": "post_raw"
+              },
+              "title": "Post"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "editor_username",
+                "id": "editor_id",
+                "avatar": "editor_avatar_template"
+              },
+              "title": "Editor"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "author_username",
+                "id": "author_id",
+                "avatar": "author_avatar_template"
+              },
+              "title": "Author"
+            },
+            {
+              "type": "text",
+              "property": "edit_reason",
+              "title": "Reason"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "post_edits",
+          "title": "Post Edits",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Number of new post edits.",
+          "description_link": null,
+          "data": [
+            {
+              "editor_id": 4,
+              "editor_username": "user2",
+              "editor_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "author_id": 4,
+              "author_username": "user2",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "edit_reason": null,
+              "created_at": "2026-10-12T15:38:37.223Z",
+              "post_raw": "Reply two from user2, also long enough t",
+              "topic_id": 35,
+              "post_number": 3
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:post_edits:20260920:20261031:[:total, :prev30Days]:{\"editor\":\"user2\",\"category\":\"4\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "created_at",
+              "title": "Date"
+            },
+            {
+              "type": "post",
+              "properties": {
+                "topic_id": "topic_id",
+                "number": "post_number",
+                "truncated_raw": "post_raw"
+              },
+              "title": "Post"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "editor_username",
+                "id": "editor_id",
+                "avatar": "editor_avatar_template"
+              },
+              "title": "Editor"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "author_username",
+                "id": "author_id",
+                "avatar": "author_avatar_template"
+              },
+              "title": "Author"
+            },
+            {
+              "type": "text",
+              "property": "edit_reason",
+              "title": "Reason"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IEdm/lvRjxASUJs622Hx4MWSBt4=",
+            "created_at": "2026-10-14T15:38:40.06291",
+            "rotated_at": "2026-10-14T15:38:40.052683",
+            "updated_at": "2026-10-14T15:38:40.06291",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "IEdm/lvRjxASUJs622Hx4MWSBt4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:38:43.721261",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IEdm/lvRjxASUJs622Hx4MWSBt4=",
+            "created_at": "2026-10-14T15:38:40.06291",
+            "rotated_at": "2026-10-14T15:38:40.052683",
+            "updated_at": "2026-10-14T15:38:40.06291",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "IEdm/lvRjxASUJs622Hx4MWSBt4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (4, (now() - interval '2 days')::date, 3, false, 120), (1, (now() - interval '2 days')::date, 3, false, 300)",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, agreed_at, agreed_by_id, disagreed_at, disagreed_by_id, deferred_at, deferred_by_id) VALUES (9301, 37, 2, 3, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 4, NULL, NULL, NULL, NULL), (9302, 38, 2, 4, now() - interval '2 days', now() - interval '2 days', NULL, NULL, now() - interval '2 days' + interval '30 minutes', 1, NULL, NULL), (9303, 46, 3, 8, now() - interval '3 days', now() - interval '3 days', NULL, NULL, NULL, NULL, now() - interval '3 days' + interval '5 minutes', 4), (9304, 37, 3, 7, now() - interval '1 day', now() - interval '1 day', NULL, NULL, NULL, NULL, NULL, NULL)",
+    "INSERT INTO post_revisions (user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (4, 37, '--- {}', 2, now() - interval '2 days', now() - interval '2 days', false), (1, 46, '--- {}', 2, now() - interval '3 days', now() - interval '3 days', false), (2, 37, '--- {}', 3, now() - interval '1 day', now() - interval '1 day', false)",
+    "UPDATE posts SET version = 3, edit_reason = 'typo' WHERE id = 37",
+    "INSERT INTO topics (id, title, user_id, archetype, category_id, created_at, updated_at, bumped_at, last_post_user_id) VALUES (9701, 'Moderator topic for the activity report', 4, 'regular', 4, now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 4)",
+    "INSERT INTO posts (id, user_id, topic_id, post_number, raw, cooked, created_at, updated_at, sort_order, last_version_at) VALUES (9711, 4, 9701, 1, 'A moderator writes', '<p>A moderator writes</p>', now() - interval '2 days', now() - interval '2 days', 1, now() - interval '2 days'), (9712, 4, 42, 9, 'A moderator in a PM', '<p>A moderator in a PM</p>', now() - interval '2 days', now() - interval '2 days', 9, now() - interval '2 days')"
+  ],
+  "unordered_responses": [
+    "/responses/1/body/report/data"
+  ],
+  "recorded_from": {
+    "case": "7c53e8413fbcf2c9a246c14d4e5096a2427068c832149d6628b647668aff47fa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

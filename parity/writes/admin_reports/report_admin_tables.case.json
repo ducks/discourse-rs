@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_auth_token_logs (action, user_auth_token_id, user_id, client_ip, user_agent, auth_token, created_at, path) VALUES ('generate', NULL, 1, '10.0.0.9', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 'x', now() - interval '2 days', '/session'), ('generate', NULL, 1, '10.0.0.9', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 'y', now() - interval '1 day', '/session'), ('generate', NULL, 2, '10.0.0.7', 'curl/8.0', 'z', now() - interval '1 day', '/session'), ('suspicious', NULL, 3, '10.0.0.5', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 'w', now() - interval '3 days', '/session')",
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, width, height, url, created_at, updated_at, sha1, extension) VALUES (9801, 3, 'a-really-long-file-name-for-the-report.png', 120000, 10, 10, '/uploads/default/original/1X/9801.png', now() - interval '2 days', now() - interval '2 days', 'sha9801', 'png'), (9802, 2, 'notes.pdf', 50000, NULL, NULL, '/uploads/default/original/1X/9802.pdf', now() - interval '3 days', now() - interval '3 days', 'sha9802', 'pdf'), (9803, -1, 'system.png', 900000, 10, 10, '/uploads/default/original/1X/9803.png', now() - interval '3 days', now() - interval '3 days', 'sha9803', 'png')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/admin_logins.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/suspicious_logins.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_uploads.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_uploads.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"file_extension": ".pdf"}}},
+    {"method": "GET", "path": "/admin/reports/top_uploads.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"file_extension": "exe"}}}
+  ]
+}

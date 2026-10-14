@@ -1,0 +1,10 @@
+{
+  "user": "user2",
+  "setup": ["UPDATE users SET moderator = TRUE WHERE id = 4"],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports.json"},
+    {"method": "GET", "path": "/admin/reports/admin_logins.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_uploads.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "include_related_items": "true"}}
+  ]
+}

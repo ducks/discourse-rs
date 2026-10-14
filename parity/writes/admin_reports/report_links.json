@@ -1,0 +1,442 @@
+{
+  "name": "report_links",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referred_topics.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referred_topics.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "limit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referred_topics.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_traffic_sources.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referrers.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:27:43.019536",
+  "transaction_started_at": "2026-10-14T15:27:39.744992",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referred_topics",
+          "title": "Top Referred Topics",
+          "xaxis": "",
+          "yaxis": null,
+          "description": "Topics that have received the most clicks from external sources.",
+          "description_link": null,
+          "data": [
+            {
+              "topic_id": 35,
+              "topic_title": "Parity fixture: replies and posters",
+              "topic_url": "/t/parity-fixture-replies-and-posters/35",
+              "num_clicks": 4
+            },
+            {
+              "topic_id": 41,
+              "topic_title": "Parity fixture: liked and archived",
+              "topic_url": "/t/parity-fixture-liked-and-archived/41",
+              "num_clicks": 3
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referred_topics:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "topic",
+              "properties": {
+                "title": "topic_title",
+                "id": "topic_id"
+              },
+              "title": "Topic"
+            },
+            {
+              "property": "num_clicks",
+              "type": "number",
+              "title": "Clicks"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referred_topics",
+          "title": "Top Referred Topics",
+          "xaxis": "",
+          "yaxis": null,
+          "description": "Topics that have received the most clicks from external sources.",
+          "description_link": null,
+          "data": [
+            {
+              "topic_id": 35,
+              "topic_title": "Parity fixture: replies and posters",
+              "topic_url": "/t/parity-fixture-replies-and-posters/35",
+              "num_clicks": 4
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referred_topics:20260901:20261031:[:total, :prev30Days]:1:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "topic",
+              "properties": {
+                "title": "topic_title",
+                "id": "topic_id"
+              },
+              "title": "Topic"
+            },
+            {
+              "property": "num_clicks",
+              "type": "number",
+              "title": "Clicks"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "limit": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referred_topics",
+          "title": "Top Referred Topics",
+          "xaxis": "",
+          "yaxis": null,
+          "description": "Topics that have received the most clicks from external sources.",
+          "description_link": null,
+          "data": [
+            {
+              "topic_id": 35,
+              "topic_title": "Parity fixture: replies and posters",
+              "topic_url": "/t/parity-fixture-replies-and-posters/35",
+              "num_clicks": 4
+            },
+            {
+              "topic_id": 41,
+              "topic_title": "Parity fixture: liked and archived",
+              "topic_url": "/t/parity-fixture-liked-and-archived/41",
+              "num_clicks": 3
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referred_topics:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "topic",
+              "properties": {
+                "title": "topic_title",
+                "id": "topic_id"
+              },
+              "title": "Topic"
+            },
+            {
+              "property": "num_clicks",
+              "type": "number",
+              "title": "Clicks"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_traffic_sources",
+          "title": "Top Traffic Sources",
+          "xaxis": "Domain",
+          "yaxis": null,
+          "description": "External sources that have linked to this site the most.",
+          "description_link": null,
+          "data": [
+            {
+              "domain": "example.org",
+              "num_clicks": 5,
+              "num_topics": 2
+            },
+            {
+              "domain": "news.example.com",
+              "num_clicks": 2,
+              "num_topics": 2
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_traffic_sources:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "property": "domain",
+              "title": "Domain"
+            },
+            {
+              "property": "num_clicks",
+              "type": "number",
+              "title": "Clicks"
+            },
+            {
+              "property": "num_topics",
+              "type": "number",
+              "title": "Topics"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referrers",
+          "title": "Top Referrers",
+          "xaxis": "User",
+          "yaxis": null,
+          "description": "Users listed by number of clicks on links they have shared.",
+          "description_link": null,
+          "data": [
+            {
+              "username": "user1",
+              "user_id": 3,
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "num_clicks": 3,
+              "num_topics": 2
+            },
+            {
+              "username": "user0",
+              "user_id": 2,
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "num_clicks": 2,
+              "num_topics": 2
+            },
+            {
+              "username": "user2",
+              "user_id": 4,
+              "user_avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "num_clicks": 1,
+              "num_topics": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referrers:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "user_avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "num_clicks",
+              "type": "number",
+              "title": "Clicks"
+            },
+            {
+              "property": "num_topics",
+              "type": "number",
+              "title": "Topics"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2l215MBhozCNykePMh72TmXfvo0=",
+            "created_at": "2026-10-14T15:27:41.340857",
+            "rotated_at": "2026-10-14T15:27:41.335522",
+            "updated_at": "2026-10-14T15:27:41.340857",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2l215MBhozCNykePMh72TmXfvo0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:27:43.029308",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2l215MBhozCNykePMh72TmXfvo0=",
+            "created_at": "2026-10-14T15:27:41.340857",
+            "rotated_at": "2026-10-14T15:27:41.335522",
+            "updated_at": "2026-10-14T15:27:41.340857",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2l215MBhozCNykePMh72TmXfvo0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO incoming_domains (id, name, https, port) VALUES (9601, 'example.org', true, 443), (9602, 'news.example.com', false, 80)",
+    "INSERT INTO incoming_referers (id, path, incoming_domain_id) VALUES (9611, '/a', 9601), (9612, '/b', 9602)",
+    "INSERT INTO incoming_links (created_at, user_id, ip_address, current_user_id, post_id, incoming_referer_id) VALUES (now() - interval '2 days', 3, '10.0.0.1', NULL, 37, 9611), (now() - interval '2 days', 3, '10.0.0.1', NULL, 46, 9611), (now() - interval '3 days', 3, '10.0.0.1', NULL, 37, 9611), (now() - interval '3 days', 2, '10.0.0.2', NULL, 37, 9612), (now() - interval '4 days', 2, '10.0.0.2', NULL, 46, 9612), (now() - interval '1 day', NULL, '10.0.0.3', NULL, 47, 9611), (now() - interval '1 day', 4, '10.0.0.4', NULL, 36, 9611)"
+  ],
+  "recorded_from": {
+    "case": "135293b3c2d74292a20aadee6948b9d7f25cf8021e73eba4d90c651fb5206f02",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

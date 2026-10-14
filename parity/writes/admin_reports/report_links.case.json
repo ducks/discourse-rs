@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO incoming_domains (id, name, https, port) VALUES (9601, 'example.org', true, 443), (9602, 'news.example.com', false, 80)",
+    "INSERT INTO incoming_referers (id, path, incoming_domain_id) VALUES (9611, '/a', 9601), (9612, '/b', 9602)",
+    "INSERT INTO incoming_links (created_at, user_id, ip_address, current_user_id, post_id, incoming_referer_id) VALUES (now() - interval '2 days', 3, '10.0.0.1', NULL, 37, 9611), (now() - interval '2 days', 3, '10.0.0.1', NULL, 46, 9611), (now() - interval '3 days', 3, '10.0.0.1', NULL, 37, 9611), (now() - interval '3 days', 2, '10.0.0.2', NULL, 37, 9612), (now() - interval '4 days', 2, '10.0.0.2', NULL, 46, 9612), (now() - interval '1 day', NULL, '10.0.0.3', NULL, 47, 9611), (now() - interval '1 day', 4, '10.0.0.4', NULL, 36, 9611)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/top_referred_topics.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_referred_topics.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "limit": "1"}},
+    {"method": "GET", "path": "/admin/reports/top_referred_topics.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4"}}},
+    {"method": "GET", "path": "/admin/reports/top_traffic_sources.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_referrers.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}}
+  ]
+}

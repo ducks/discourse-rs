@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (4, (now() - interval '2 days')::date, 3, false, 120), (1, (now() - interval '2 days')::date, 3, false, 300)",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, agreed_at, agreed_by_id, disagreed_at, disagreed_by_id, deferred_at, deferred_by_id) VALUES (9301, 37, 2, 3, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 4, NULL, NULL, NULL, NULL), (9302, 38, 2, 4, now() - interval '2 days', now() - interval '2 days', NULL, NULL, now() - interval '2 days' + interval '30 minutes', 1, NULL, NULL), (9303, 46, 3, 8, now() - interval '3 days', now() - interval '3 days', NULL, NULL, NULL, NULL, now() - interval '3 days' + interval '5 minutes', 4), (9304, 37, 3, 7, now() - interval '1 day', now() - interval '1 day', NULL, NULL, NULL, NULL, NULL, NULL)",
+    "INSERT INTO post_revisions (user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (4, 37, '--- {}', 2, now() - interval '2 days', now() - interval '2 days', false), (1, 46, '--- {}', 2, now() - interval '3 days', now() - interval '3 days', false), (2, 37, '--- {}', 3, now() - interval '1 day', now() - interval '1 day', false)",
+    "UPDATE posts SET version = 3, edit_reason = 'typo' WHERE id = 37",
+    "INSERT INTO topics (id, title, user_id, archetype, category_id, created_at, updated_at, bumped_at, last_post_user_id) VALUES (9701, 'Moderator topic for the activity report', 4, 'regular', 4, now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 4)",
+    "INSERT INTO posts (id, user_id, topic_id, post_number, raw, cooked, created_at, updated_at, sort_order, last_version_at) VALUES (9711, 4, 9701, 1, 'A moderator writes', '<p>A moderator writes</p>', now() - interval '2 days', now() - interval '2 days', 1, now() - interval '2 days'), (9712, 4, 42, 9, 'A moderator in a PM', '<p>A moderator in a PM</p>', now() - interval '2 days', now() - interval '2 days', 9, now() - interval '2 days')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/moderators_activity.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/flags_status.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/post_edits.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/post_edits.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"editor": "user2", "category": "4"}}}
+  ],
+  "unordered_responses": [
+    "/responses/1/body/report/data"
+  ]
+}

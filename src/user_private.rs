@@ -936,7 +936,7 @@ impl Private<'_> {
 }
 
 /// `BrowserDetection.browser/device/os` keys, first match wins.
-fn browser_detection(ua: &str) -> (&'static str, &'static str, &'static str) {
+pub(crate) fn browser_detection(ua: &str) -> (&'static str, &'static str, &'static str) {
     let has = |needles: &[&str]| {
         needles
             .iter()

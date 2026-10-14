@@ -1,0 +1,529 @@
+{
+  "name": "report_admin_tables",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/admin_logins.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/suspicious_logins.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_uploads.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_uploads.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "file_extension": ".pdf"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_uploads.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "file_extension": "exe"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:18.961122",
+  "transaction_started_at": "2026-10-14T15:02:17.360877",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "admin_logins",
+          "title": "Admin Logins",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List of admin login times with locations.",
+          "description_link": null,
+          "data": [
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "user_id": 1,
+              "username": "admin",
+              "location": null,
+              "created_at": "2026-10-14T15:02:18.262Z"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "user_id": 1,
+              "username": "admin",
+              "location": null,
+              "created_at": "2026-10-13T15:02:17.360Z"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:admin_logins:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "location",
+              "title": "Location"
+            },
+            {
+              "property": "created_at",
+              "type": "precise_date",
+              "title": "Login at"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "suspicious_logins",
+          "title": "Suspicious Logins",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Details of new logins that differ suspiciously from previous logins.",
+          "description_link": null,
+          "data": [
+            {
+              "username": "user1",
+              "user_id": 3,
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "client_ip": "10.0.0.5",
+              "location": null,
+              "browser": "Safari",
+              "device": "iPhone",
+              "os": "iOS",
+              "login_time": "2026-10-11T15:02:17.360Z"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:suspicious_logins:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "client_ip",
+              "title": "Client IP"
+            },
+            {
+              "property": "location",
+              "title": "Location"
+            },
+            {
+              "property": "browser",
+              "title": "Browser"
+            },
+            {
+              "property": "device",
+              "title": "Device"
+            },
+            {
+              "property": "os",
+              "title": "Operating System"
+            },
+            {
+              "type": "date",
+              "property": "login_time",
+              "title": "Login Time"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_uploads",
+          "title": "Top Uploads",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List all uploads by extension, filesize and author.",
+          "description_link": null,
+          "data": [
+            {
+              "author_id": 3,
+              "author_username": "user1",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "filesize": 120000,
+              "extension": "png",
+              "file_url": "/uploads/default/original/1X/9801.png",
+              "file_name": "a-really-long-file-nam..."
+            },
+            {
+              "author_id": 2,
+              "author_username": "user0",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "filesize": 50000,
+              "extension": "pdf",
+              "file_url": "/uploads/default/original/1X/9802.pdf",
+              "file_name": "notes.pdf"
+            },
+            {
+              "author_id": -2,
+              "author_username": "discobot",
+              "author_avatar_template": "/user_avatar/localhost/discobot/{size}/35_2.png",
+              "filesize": 10228,
+              "extension": "png",
+              "file_url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png",
+              "file_name": "gravatar.png"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_uploads:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "file_extension",
+              "type": "list",
+              "default": "any",
+              "choices": [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "heic",
+                "heif",
+                "webp",
+                "avif",
+                "svg",
+                "jxl"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "type": "link",
+              "properties": [
+                "file_url",
+                "file_name"
+              ],
+              "title": "Filename"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "author_username",
+                "id": "author_id",
+                "avatar": "author_avatar_template"
+              },
+              "title": "Author"
+            },
+            {
+              "type": "text",
+              "property": "extension",
+              "title": "Extension"
+            },
+            {
+              "type": "bytes",
+              "property": "filesize",
+              "title": "File size"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_uploads",
+          "title": "Top Uploads",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List all uploads by extension, filesize and author.",
+          "description_link": null,
+          "data": [
+            {
+              "author_id": 2,
+              "author_username": "user0",
+              "author_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "filesize": 50000,
+              "extension": "pdf",
+              "file_url": "/uploads/default/original/1X/9802.pdf",
+              "file_name": "notes.pdf"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_uploads:20260920:20261031:[:total, :prev30Days]:{\"file_extension\":\".pdf\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "file_extension",
+              "type": "list",
+              "default": ".pdf",
+              "choices": [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "heic",
+                "heif",
+                "webp",
+                "avif",
+                "svg",
+                "jxl",
+                ".pdf"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "type": "link",
+              "properties": [
+                "file_url",
+                "file_name"
+              ],
+              "title": "Filename"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "author_username",
+                "id": "author_id",
+                "avatar": "author_avatar_template"
+              },
+              "title": "Author"
+            },
+            {
+              "type": "text",
+              "property": "extension",
+              "title": "Extension"
+            },
+            {
+              "type": "bytes",
+              "property": "filesize",
+              "title": "File size"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_uploads",
+          "title": "Top Uploads",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List all uploads by extension, filesize and author.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_uploads:20260920:20261031:[:total, :prev30Days]:{\"file_extension\":\"exe\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "file_extension",
+              "type": "list",
+              "default": "exe",
+              "choices": [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "heic",
+                "heif",
+                "webp",
+                "avif",
+                "svg",
+                "jxl",
+                "exe"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "type": "link",
+              "properties": [
+                "file_url",
+                "file_name"
+              ],
+              "title": "Filename"
+            },
+            {
+              "type": "user",
+              "properties": {
+                "username": "author_username",
+                "id": "author_id",
+                "avatar": "author_avatar_template"
+              },
+              "title": "Author"
+            },
+            {
+              "type": "text",
+              "property": "extension",
+              "title": "Extension"
+            },
+            {
+              "type": "bytes",
+              "property": "filesize",
+              "title": "File size"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dTtVvLyFTpozrzI1Kx7STsVbqK4=",
+            "created_at": "2026-10-14T15:02:18.257875",
+            "rotated_at": "2026-10-14T15:02:18.256376",
+            "updated_at": "2026-10-14T15:02:18.257875",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "dTtVvLyFTpozrzI1Kx7STsVbqK4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:18.967055",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dTtVvLyFTpozrzI1Kx7STsVbqK4=",
+            "created_at": "2026-10-14T15:02:18.257875",
+            "rotated_at": "2026-10-14T15:02:18.256376",
+            "updated_at": "2026-10-14T15:02:18.257875",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "dTtVvLyFTpozrzI1Kx7STsVbqK4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_auth_token_logs (action, user_auth_token_id, user_id, client_ip, user_agent, auth_token, created_at, path) VALUES ('generate', NULL, 1, '10.0.0.9', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 'x', now() - interval '2 days', '/session'), ('generate', NULL, 1, '10.0.0.9', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36', 'y', now() - interval '1 day', '/session'), ('generate', NULL, 2, '10.0.0.7', 'curl/8.0', 'z', now() - interval '1 day', '/session'), ('suspicious', NULL, 3, '10.0.0.5', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 'w', now() - interval '3 days', '/session')",
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, width, height, url, created_at, updated_at, sha1, extension) VALUES (9801, 3, 'a-really-long-file-name-for-the-report.png', 120000, 10, 10, '/uploads/default/original/1X/9801.png', now() - interval '2 days', now() - interval '2 days', 'sha9801', 'png'), (9802, 2, 'notes.pdf', 50000, NULL, NULL, '/uploads/default/original/1X/9802.pdf', now() - interval '3 days', now() - interval '3 days', 'sha9802', 'pdf'), (9803, -1, 'system.png', 900000, 10, 10, '/uploads/default/original/1X/9803.png', now() - interval '3 days', now() - interval '3 days', 'sha9803', 'png')"
+  ],
+  "recorded_from": {
+    "case": "74a6c50b55990828f88a6f8f526a7a6b6e0ac3357d9000c66e1bd9bf38accd56",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

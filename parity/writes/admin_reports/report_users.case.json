@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "UPDATE users SET suspended_till = now() + interval '10 days', suspended_at = now() - interval '1 day' WHERE id = 2",
+    "UPDATE users SET silenced_till = now() + interval '10 days' WHERE id = 3",
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 3",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, previous_value, new_value, created_at, updated_at, admin_only) VALUES (2, 1, 2, '0', '1', now() - interval '2 days', now() - interval '2 days', false), (2, 1, 3, '1', '2', now() - interval '2 days', now() - interval '2 days', false), (15, -1, 5, '3', '4', now() - interval '3 days', now() - interval '3 days', false), (15, -1, 4, '3', '2', now() - interval '3 days', now() - interval '3 days', false)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/users_by_type.json"},
+    {"method": "GET", "path": "/admin/reports/users_by_trust_level.json"},
+    {"method": "GET", "path": "/admin/reports/trust_level_pipeline.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/trust_level_growth.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/associated_accounts_by_provider.json"}
+  ]
+}

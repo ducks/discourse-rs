@@ -1,0 +1,376 @@
+{
+  "name": "report_engagement",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/daily_engaged_users.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/daily_engaged_users.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/new_contributors.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/new_contributors.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "include_related_items": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:24.174559",
+  "transaction_started_at": "2026-10-14T15:02:22.310846",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "daily_engaged_users",
+          "title": "Daily Engaged Users",
+          "xaxis": "Day",
+          "yaxis": "Engaged Users",
+          "description": "Number of users that have liked or posted in the last day.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 5
+            },
+            {
+              "x": "2026-10-01",
+              "y": 4
+            },
+            {
+              "x": "2026-10-12",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:daily_engaged_users:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": true,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 5
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "daily_engaged_users",
+          "title": "Daily Engaged Users",
+          "xaxis": "Day",
+          "yaxis": "Engaged Users",
+          "description": "Number of users that have liked or posted in the last day.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 5
+            },
+            {
+              "x": "2026-10-01",
+              "y": 4
+            },
+            {
+              "x": "2026-10-12",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:daily_engaged_users:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": true,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 5,
+          "prev_period": 1.0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "new_contributors",
+          "title": "New Contributors",
+          "xaxis": "Day",
+          "yaxis": "Number of new contributors",
+          "description": "Number of users who made their first post during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:new_contributors:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 5,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "new_contributors",
+          "title": "New Contributors",
+          "xaxis": "Day",
+          "yaxis": "Number of new contributors",
+          "description": "Number of users who made their first post during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:new_contributors:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 5,
+          "related_items": {
+            "users": [
+              {
+                "user": {
+                  "id": 4,
+                  "username": "user2",
+                  "name": "User2",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                },
+                "timestamp": "2026-10-12T15:02:22Z"
+              },
+              {
+                "user": {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                },
+                "timestamp": "2026-10-11T15:02:22Z"
+              },
+              {
+                "user": {
+                  "id": 1,
+                  "username": "admin",
+                  "name": "Admin",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                },
+                "timestamp": "2026-09-30T07:28:29Z"
+              }
+            ]
+          },
+          "related_items_totals": {
+            "users": 3
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "4MjKfw3CMyyATsVq8iJQiT2DfDs=",
+            "created_at": "2026-10-14T15:02:22.727101",
+            "rotated_at": "2026-10-14T15:02:22.726169",
+            "updated_at": "2026-10-14T15:02:22.727101",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "4MjKfw3CMyyATsVq8iJQiT2DfDs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:24.187836",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "4MjKfw3CMyyATsVq8iJQiT2DfDs=",
+            "created_at": "2026-10-14T15:02:22.727101",
+            "rotated_at": "2026-10-14T15:02:22.726169",
+            "updated_at": "2026-10-14T15:02:22.727101",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "4MjKfw3CMyyATsVq8iJQiT2DfDs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (1, 4, 41, 46, 4, now() - interval '2 days', now() - interval '2 days'), (5, 3, 41, 46, 3, now() - interval '2 days', now() - interval '2 days'), (5, 3, 41, 47, 3, now() - interval '2 days' + interval '1 minute', now() - interval '2 days'), (4, 2, 41, NULL, 2, now() - interval '40 days', now() - interval '40 days')",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '2 days' WHERE user_id = 4",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '3 days' WHERE user_id = 3",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '45 days' WHERE user_id = 2"
+  ],
+  "recorded_from": {
+    "case": "7da3a0c480f2336964bd272af26633611c25c165d84180d17a08ae090ca01fec",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

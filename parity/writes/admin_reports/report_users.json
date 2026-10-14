@@ -1,0 +1,523 @@
+{
+  "name": "report_users",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/users_by_type.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/users_by_trust_level.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/trust_level_pipeline.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/trust_level_growth.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/associated_accounts_by_provider.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:03:09.603452",
+  "transaction_started_at": "2026-10-14T15:03:05.686895",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "users_by_type",
+          "title": "Users per Type",
+          "xaxis": "Type",
+          "yaxis": "Number of Users",
+          "description": "Number of users grouped by admin, moderator, suspended, and silenced.",
+          "description_link": null,
+          "data": [
+            {
+              "url": "/admin/users/list/admins",
+              "icon": "shield-halved",
+              "key": "admins",
+              "x": "Admin",
+              "y": 1
+            },
+            {
+              "url": "/admin/users/list/moderators",
+              "icon": "shield-halved",
+              "key": "moderators",
+              "x": "Moderator",
+              "y": 2
+            },
+            {
+              "url": "/admin/users/list/suspended",
+              "icon": "ban",
+              "key": "suspended",
+              "x": "Suspended",
+              "y": 1
+            },
+            {
+              "url": "/admin/users/list/silenced",
+              "icon": "ban",
+              "key": "silenced",
+              "x": "Silenced",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-10-13T00:00:00Z",
+          "end_date": "2026-11-12T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-12T00:00:00Z",
+          "prev_end_date": "2026-10-13T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": false,
+          "report_key": "reports:users_by_type:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "x",
+              "title": "Type"
+            },
+            {
+              "property": "y",
+              "type": "number",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "users_by_trust_level",
+          "title": "Users per Trust Level",
+          "xaxis": "Trust Level",
+          "yaxis": "Number of Users",
+          "description": "Number of users grouped by trust level.",
+          "description_link": "https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/",
+          "data": [
+            {
+              "url": "/admin/users/list/basic",
+              "key": "basic",
+              "x": 1,
+              "y": 1
+            },
+            {
+              "url": "/admin/users/list/member",
+              "key": "member",
+              "x": 2,
+              "y": 2
+            },
+            {
+              "url": "/admin/users/list/leader",
+              "key": "leader",
+              "x": 4,
+              "y": 2
+            }
+          ],
+          "start_date": "2026-10-13T00:00:00Z",
+          "end_date": "2026-11-12T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-12T00:00:00Z",
+          "prev_end_date": "2026-10-13T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": false,
+          "report_key": "reports:users_by_trust_level:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "key",
+              "title": "Level"
+            },
+            {
+              "property": "y",
+              "type": "number",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "trust_level_pipeline",
+          "title": "Trust level pipeline",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Member movement between trust levels for the selected period. Counts the members currently at each trust level, their share of the total membership, the number of members promoted or demoted into each trust level during the period, and new sign-ups.",
+          "description_link": "https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/",
+          "data": [
+            {
+              "trust_level": 4,
+              "name": "Leader",
+              "count": 2,
+              "share": 40.0,
+              "share_formatted": "40.0%",
+              "promoted_in": 1,
+              "demoted_in": 0,
+              "signups": 0
+            },
+            {
+              "trust_level": 3,
+              "name": "Regular",
+              "count": 0,
+              "share": 0.0,
+              "share_formatted": "0.0%",
+              "promoted_in": 0,
+              "demoted_in": 0,
+              "signups": 0
+            },
+            {
+              "trust_level": 2,
+              "name": "Member",
+              "count": 2,
+              "share": 40.0,
+              "share_formatted": "40.0%",
+              "promoted_in": 1,
+              "demoted_in": 2,
+              "signups": 0
+            },
+            {
+              "trust_level": 1,
+              "name": "Basic",
+              "count": 1,
+              "share": 20.0,
+              "share_formatted": "20.0%",
+              "promoted_in": 1,
+              "demoted_in": 0,
+              "signups": 0
+            },
+            {
+              "trust_level": 0,
+              "name": "New",
+              "count": 0,
+              "share": 0.0,
+              "share_formatted": "0.0%",
+              "promoted_in": 0,
+              "demoted_in": 0,
+              "signups": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:trust_level_pipeline:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Trust level"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Members"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            },
+            {
+              "property": "promoted_in",
+              "type": "number",
+              "title": "Promoted in"
+            },
+            {
+              "property": "demoted_in",
+              "type": "number",
+              "title": "Demoted in"
+            },
+            {
+              "property": "signups",
+              "type": "number",
+              "title": "Sign-ups"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 5,
+          "prev_period": {
+            "direction": "climbing",
+            "net": 1
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "trust_level_growth",
+          "title": "Trust Level growth",
+          "xaxis": {
+            "tl1_reached": "Reached TL1",
+            "tl2_reached": "Reached TL2",
+            "tl3_reached": "Reached TL3",
+            "tl4_reached": "Reached TL4"
+          },
+          "yaxis": "Day",
+          "description": "Number of users who increased their Trust Level during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "req": "tl1_reached",
+              "label": "Reached TL1",
+              "color": "#9BC53D",
+              "data": [
+                {
+                  "x": "2026-09-30",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-12",
+                  "y": 1
+                }
+              ]
+            },
+            {
+              "req": "tl2_reached",
+              "label": "Reached TL2",
+              "color": "#E84A5F",
+              "data": [
+                {
+                  "x": "2026-09-30",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-12",
+                  "y": 1
+                }
+              ]
+            },
+            {
+              "req": "tl3_reached",
+              "label": "Reached TL3",
+              "color": "#FFCD56",
+              "data": [
+                {
+                  "x": "2026-09-30",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-12",
+                  "y": 0
+                }
+              ]
+            },
+            {
+              "req": "tl4_reached",
+              "label": "Reached TL4",
+              "color": "#721D8D",
+              "data": [
+                {
+                  "x": "2026-09-30",
+                  "y": 0
+                },
+                {
+                  "x": "2026-10-11",
+                  "y": 1
+                },
+                {
+                  "x": "2026-10-12",
+                  "y": 0
+                }
+              ]
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:trust_level_growth:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "stacked_chart"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "associated_accounts_by_provider",
+          "title": "Associated accounts by login method",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Show number of associated accounts grouped by login provider. Applicable only when social login methods are enabled.",
+          "description_link": null,
+          "data": [
+            {
+              "key": "total_users",
+              "provider": "Total active user accounts",
+              "count": 3
+            },
+            {
+              "key": "no_accounts",
+              "provider": "No associated accounts",
+              "count": 3
+            }
+          ],
+          "start_date": "2026-10-13T00:00:00Z",
+          "end_date": "2026-11-12T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-12T00:00:00Z",
+          "prev_end_date": "2026-10-13T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": false,
+          "report_key": "reports:associated_accounts_by_provider:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "provider",
+              "title": "Login provider"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "m/DFR4aO6+9aLFlIIhSvQ/bkHwQ=",
+            "created_at": "2026-10-14T15:03:07.316467",
+            "rotated_at": "2026-10-14T15:03:07.30326",
+            "updated_at": "2026-10-14T15:03:07.316467",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "m/DFR4aO6+9aLFlIIhSvQ/bkHwQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:03:09.617217",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "m/DFR4aO6+9aLFlIIhSvQ/bkHwQ=",
+            "created_at": "2026-10-14T15:03:07.316467",
+            "rotated_at": "2026-10-14T15:03:07.30326",
+            "updated_at": "2026-10-14T15:03:07.316467",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "m/DFR4aO6+9aLFlIIhSvQ/bkHwQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "UPDATE users SET suspended_till = now() + interval '10 days', suspended_at = now() - interval '1 day' WHERE id = 2",
+    "UPDATE users SET silenced_till = now() + interval '10 days' WHERE id = 3",
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 3",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, previous_value, new_value, created_at, updated_at, admin_only) VALUES (2, 1, 2, '0', '1', now() - interval '2 days', now() - interval '2 days', false), (2, 1, 3, '1', '2', now() - interval '2 days', now() - interval '2 days', false), (15, -1, 5, '3', '4', now() - interval '3 days', now() - interval '3 days', false), (15, -1, 4, '3', '2', now() - interval '3 days', now() - interval '3 days', false)"
+  ],
+  "recorded_from": {
+    "case": "c02e2e6fdf7e4320c06f80d15e72eaffe5ce34c44e57bbe91cc249399ead86f0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

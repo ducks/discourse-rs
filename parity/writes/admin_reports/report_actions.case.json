@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9301, 37, 4, 2, now() - interval '1 day', now() - interval '1 day'), (9302, 38, 4, 2, now() - interval '1 day', now() - interval '1 day'), (9303, 38, 2, 2, now() - interval '40 days', now() - interval '40 days'), (9304, 37, 2, 3, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO reviewables (id, type, status, created_by_id, target_type, target_id, topic_id, category_id, created_at, updated_at, payload, potential_spam, score, force_review, reject_reason) VALUES (9401, 'ReviewableFlaggedPost', 0, 2, 'Post', 37, 35, 4, now() - interval '2 days', now() - interval '2 days', '{}', false, 1.0, false, NULL)",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at) VALUES (9501, 9401, 2, 3, 0, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9502, 9401, 3, 3, 1, 1.0, 0, now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/likes.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/likes.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"category": "34"}}},
+    {"method": "GET", "path": "/admin/reports/flags.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/flags.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"category": "4", "include_subcategories": "true"}}}
+  ]
+}

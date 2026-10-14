@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET created_at = now() - interval '2 days' WHERE id = 37",
+    "UPDATE topics SET created_at = now() - interval '45 days' WHERE id = 39",
+    "UPDATE posts SET created_at = now() - interval '2 days' WHERE topic_id = 37",
+    "UPDATE posts SET created_at = now() - interval '45 days' WHERE topic_id = 39"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/topics.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/topics.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/topics.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4"}}},
+    {"method": "GET", "path": "/admin/reports/topics.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4", "include_subcategories": "true"}}},
+    {"method": "GET", "path": "/admin/reports/posts.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/posts.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/posts.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4"}}},
+    {"method": "GET", "path": "/admin/reports/posts.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4", "include_subcategories": "1"}}}
+  ]
+}

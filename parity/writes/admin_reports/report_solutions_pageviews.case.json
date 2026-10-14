@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (id, topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 35, 38, 2, now() - interval '2 days', now() - interval '2 days'), (9902, 38, 42, 3, now() - interval '3 days', now() - interval '3 days'), (9903, 41, NULL, 2, now() - interval '50 days', now() - interval '50 days')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 38, 2, now() - interval '2 days', now() - interval '2 days'), (9901, 37, 2, now() - interval '2 days', now() - interval '2 days'), (9901, 52, 2, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO browser_pageview_entry_url_daily_rollups (date, entry_url, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, '/t/35', 10, 3, 1, 0), ((now() - interval '2 days')::date, '/latest', 30, 10, 0, 0), ((now() - interval '1 day')::date, '/t/35', 5, 1, 0, 0)",
+    "INSERT INTO browser_pageview_country_daily_rollups (date, country_code, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'DE', 10, 3, 1, 0), ((now() - interval '2 days')::date, 'US', 30, 10, 0, 0), ((now() - interval '2 days')::date, 'ZZ', 9, 0, 0, 0)",
+    "INSERT INTO browser_pageview_referrer_daily_rollups (date, normalized_referrer, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'google.com', 10, 3, 1, 0), ((now() - interval '2 days')::date, 'localhost/t/1', 30, 10, 0, 0), ((now() - interval '2 days')::date, 'example.org/a', 7, 0, 0, 0)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/accepted_solutions.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/accepted_solutions.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"category_ids": "34"}}},
+    {"method": "GET", "path": "/admin/reports/accepted_solutions.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "include_related_items": "true"}},
+    {"method": "GET", "path": "/admin/reports/top_entry_urls.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_countries_by_browser_pageviews.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_referrers_by_browser_pageviews.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/web_hook_events_daily_aggregate.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/storage_stats.json"}
+  ],
+  "ignore": [
+    "/responses/7/body/report/data/backups/free_bytes",
+    "/responses/7/body/report/data/uploads/free_bytes"
+  ]
+}

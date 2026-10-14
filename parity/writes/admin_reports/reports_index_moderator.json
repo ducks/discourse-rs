@@ -1,0 +1,362 @@
+{
+  "name": "reports_index_moderator",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/admin_logins.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_uploads.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "include_related_items": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:47.951132",
+  "transaction_started_at": "2026-10-14T15:02:45.580912",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reports": [
+          {
+            "type": "accepted_solutions",
+            "title": "Accepted solutions",
+            "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+            "description_link": null,
+            "plugin": "discourse-solved",
+            "plugin_display_name": "Solved"
+          },
+          {
+            "type": "activity_by_category",
+            "title": "Activity by category",
+            "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_anon_browser_reqs",
+            "title": "Anonymous Browser Pageviews",
+            "description": "Number of pageviews by anonymous visitors using real browsers.",
+            "description_link": null
+          },
+          {
+            "type": "dau_by_mau",
+            "title": "DAU / MAU",
+            "description": "The share of monthly active members who returned in the last day. This percentage shows how regularly people come back; also called the community 'stickiness'. Aim for > 20%.",
+            "description_link": null
+          },
+          {
+            "type": "daily_engaged_users",
+            "title": "Daily Engaged Users",
+            "description": "Number of users that have liked or posted in the last day.",
+            "description_link": null
+          },
+          {
+            "type": "emails",
+            "title": "Emails Sent",
+            "description": "Number of new emails sent.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_embed_reqs",
+            "title": "Embedded pageviews",
+            "description": "Number of pageviews served inside the full app embed iframe.",
+            "description_link": null
+          },
+          {
+            "type": "consolidated_page_views",
+            "title": "Legacy Consolidated Pageviews",
+            "description": "Legacy report showing pageviews for logged in users, anonymous users and crawlers. This has been superseded by the 'Site traffic' report.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_legacy_total_reqs",
+            "title": "Legacy Pageviews",
+            "description": "Legacy report showing the number of new pageviews from all visitors.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_logged_in_browser_reqs",
+            "title": "Logged In Browser Pageviews",
+            "description": "Number of pageviews by logged-in visitors using real browsers.",
+            "description_link": null
+          },
+          {
+            "type": "moderators_activity",
+            "title": "Moderator Activity",
+            "description": "List of moderator activity including flags reviewed, reading time, topics created, posts created, personal messages created, and revisions.",
+            "description_link": null
+          },
+          {
+            "type": "new_contributors",
+            "title": "New Contributors",
+            "description": "Number of users who made their first post during this period.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_total_reqs",
+            "title": "Pageviews",
+            "description": "Number of new pageviews from all visitors.",
+            "description_link": null
+          },
+          {
+            "type": "posts",
+            "title": "Posts",
+            "description": "New posts created during this period",
+            "description_link": null
+          },
+          {
+            "type": "signups",
+            "title": "Signups",
+            "description": "New account registrations for this period.",
+            "description_link": null
+          },
+          {
+            "type": "site_traffic",
+            "title": "Site traffic",
+            "description": "Pageviews for logged in users, anonymous users, known crawlers and other traffic.",
+            "description_link": "https://meta.discourse.org/t/understanding-pageviews-and-the-site-traffic-report/324062"
+          },
+          {
+            "type": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "description_link": null
+          },
+          {
+            "type": "top_ignored_users",
+            "title": "Top Ignored / Muted Users",
+            "description": "Users who have been muted and/or ignored by many other users.",
+            "description_link": null
+          },
+          {
+            "type": "top_referred_topics",
+            "title": "Top Referred Topics",
+            "description": "Topics that have received the most clicks from external sources.",
+            "description_link": null
+          },
+          {
+            "type": "top_traffic_sources",
+            "title": "Top Traffic Sources",
+            "description": "External sources that have linked to this site the most.",
+            "description_link": null
+          },
+          {
+            "type": "top_users_by_likes_received",
+            "title": "Top Users by likes received",
+            "description": "Top 10 users who have received likes.",
+            "description_link": null
+          },
+          {
+            "type": "topics",
+            "title": "Topics",
+            "description": "New topics created during this period.",
+            "description_link": null
+          },
+          {
+            "type": "topics_with_no_response",
+            "title": "Topics with no response",
+            "description": "Number of new topics created that did not receive a response.",
+            "description_link": null
+          },
+          {
+            "type": "trending_search",
+            "title": "Trending Search Terms",
+            "description": "Most popular search terms with their click-through rates.",
+            "description_link": null
+          },
+          {
+            "type": "trust_level_pipeline",
+            "title": "Trust level pipeline",
+            "description": "Member movement between trust levels for the selected period. Counts the members currently at each trust level, their share of the total membership, the number of members promoted or demoted into each trust level during the period, and new sign-ups.",
+            "description_link": "https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/"
+          },
+          {
+            "type": "visits",
+            "title": "User Visits",
+            "description": "Number of signed-in user visits by device type.",
+            "description_link": null
+          },
+          {
+            "type": "user_to_user_private_messages_with_replies",
+            "title": "User-to-User (with replies)",
+            "description": "Number of all new personal messages and responses.",
+            "description_link": null
+          },
+          {
+            "type": "users_by_trust_level",
+            "title": "Users per Trust Level",
+            "description": "Number of users grouped by trust level.",
+            "description_link": "https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/"
+          },
+          {
+            "type": "users_by_type",
+            "title": "Users per Type",
+            "description": "Number of users grouped by admin, moderator, suspended, and silenced.",
+            "description_link": null
+          },
+          {
+            "type": "page_view_crawler_reqs",
+            "title": "Web Crawler Pageviews",
+            "description": "Total pageviews from web crawlers over time.",
+            "description_link": null
+          },
+          {
+            "type": "web_crawlers",
+            "title": "Web Crawler User Agents",
+            "description": "List of web crawler user agents, sorted by pageviews.",
+            "description_link": null
+          },
+          {
+            "type": "posters_by_member_type",
+            "title": "Who's posting?",
+            "description": "Posts authored in the selected period, bucketed by member type. \"New members\" signed up during the period, \"Returning\" signed up before it, and \"Staff\" are admins or moderators.",
+            "description_link": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260901:20261031:[:total, :prev30Days]:5:4:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kIFEnDC4nPf2pGsmC8/xJ5Fe3HU=",
+            "created_at": "2026-10-14T15:02:47.013205",
+            "rotated_at": "2026-10-14T15:02:47.010435",
+            "updated_at": "2026-10-14T15:02:47.013205",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kIFEnDC4nPf2pGsmC8/xJ5Fe3HU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:47.956098",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kIFEnDC4nPf2pGsmC8/xJ5Fe3HU=",
+            "created_at": "2026-10-14T15:02:47.013205",
+            "rotated_at": "2026-10-14T15:02:47.010435",
+            "updated_at": "2026-10-14T15:02:47.013205",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kIFEnDC4nPf2pGsmC8/xJ5Fe3HU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "e8a8069cace8b90dcfbf51ad7aff4ed37247e2b4e24ce70e53bfcbf17da8ecb4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

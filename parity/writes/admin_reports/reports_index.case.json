@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/reports.json"}
+  ]
+}
