@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 day' WHERE id = 1",
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4"
+  ],
+  "requests": [],
+  "enqueue": [["warm_dashboard_reports", {}]],
+  "run_jobs": ["warm_dashboard_reports"]
+}

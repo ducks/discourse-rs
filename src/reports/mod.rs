@@ -11,6 +11,7 @@
 mod counts;
 mod lists;
 mod pageviews;
+pub use pageviews::browser_pageviews_where as pageviews_browser_where;
 mod tables;
 
 use chrono::{Duration, NaiveDate, NaiveDateTime, NaiveTime};
@@ -783,6 +784,57 @@ pub fn get(cx: &Cx<'_>, viewer: &Viewer<'_>, kind: &str, opts: &Opts) -> Result<
     };
     report.report_key = cache_key(&report, viewer, cx.settings)?;
     Ok(report)
+}
+
+/// The context reports are drawn in, with the tertiary colour looked up.
+pub async fn context<'a>(
+    conn: &mut PgConnection,
+    settings: &'a SiteSettings,
+    defs: &'a Definitions,
+    i18n: &'a I18n,
+    urls: &'a Urls<'a>,
+) -> Result<Cx<'a>, AppError> {
+    let tertiary = crate::color_scheme::hex_for_name(conn, settings, "tertiary").await?;
+    Ok(Cx {
+        settings,
+        defs,
+        i18n,
+        urls,
+        tertiary,
+    })
+}
+
+/// `Report.find_cached(type, opts)`: the cached JSON, if any (never for
+/// reports with related items).
+pub async fn find_cached(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    viewer: &Viewer<'_>,
+    kind: &str,
+    opts: &Opts,
+) -> Result<Option<Value>, AppError> {
+    let report = get(cx, viewer, kind, opts)?;
+    if report.include_related_items {
+        return Ok(None);
+    }
+    let hit = crate::owned_schema::cached_get(conn, report.report_key()).await?;
+    Ok(hit.and_then(|s| serde_json::from_str(&s).ok()))
+}
+
+/// `Report.cache(report)`: an hour, a minute after an exception.
+pub async fn cache(conn: &mut PgConnection, cx: &Cx<'_>, report: &Report) -> Result<(), AppError> {
+    if report.include_related_items {
+        return Ok(());
+    }
+    let seconds = if report.error == Some("exception") {
+        60
+    } else {
+        3600
+    };
+    let json = report.as_json(cx);
+    crate::owned_schema::cached_setex(conn, report.report_key(), seconds, &json.to_string())
+        .await?;
+    Ok(())
 }
 
 /// Whether a report type has a `report_<type>` method the port runs.

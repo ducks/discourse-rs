@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/dashboard/reports/bulk.json", "params": {"items": [{"source": "core_report", "identifier": "signups"}, {"source": "core_report", "identifier": "page_view_anon_reqs"}, {"source": "core_report", "identifier": "nope"}, {"source": "data_explorer_query", "identifier": "3"}, {"source": "core_report", "identifier": "users_by_type"}], "filters": {"start_date": "2026-09-20", "end_date": "2026-10-14"}}},
+    {"method": "POST", "path": "/admin/dashboard/reports/bulk.json", "params": {"items": [{"source": "core_report", "identifier": "topics"}]}}
+  ]
+}

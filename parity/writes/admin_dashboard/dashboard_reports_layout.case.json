@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard/reports/available.json"},
+    {"method": "GET", "path": "/admin/dashboard/reports/available.json", "params": {"search": "page"}},
+    {"method": "GET", "path": "/admin/dashboard/reports/available.json", "params": {"cursor": {"title": "Pageviews", "key": "core_report:page_view_total_reqs"}}},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": [{"source": "core_report", "identifier": "signups", "rows": "2", "cols": "2"}, {"source": "core_report", "identifier": "topics"}, {"source": "core_report", "identifier": "posts", "rows": "1", "cols": "1"}]}},
+    {"method": "GET", "path": "/admin/dashboard/reports/available.json"},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": [{"source": "core_report", "identifier": "signups", "rows": "2", "cols": "1"}]}},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": [{"source": "core_report", "identifier": "no_such_report"}]}},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": [{"source": "data_explorer_query", "identifier": "1"}]}},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": [{"source": "core_report", "identifier": "signups", "rows": "5"}]}},
+    {"method": "PUT", "path": "/admin/dashboard/reports/layout.json", "params": {"items": "nope"}}
+  ]
+}

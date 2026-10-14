@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "DELETE FROM search_logs",
+    "DELETE FROM admin_dashboard_sections WHERE section_id = 'engagement'"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/activity_by_category.json", "params": {"category_ids": ["4", "2"]}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/whos_posting.json", "params": {"category_ids": ["4"], "groups": ["staff", "group:12"]}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/whos_posting.json", "params": {"category_ids": []}},
+    {"method": "GET", "path": "/admin/dashboard.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-14"}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/activity_by_category.json", "params": {"category_ids": ["4", "4"]}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/activity_by_category.json", "params": {"category_ids": ["999"]}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/activity_by_category.json", "params": {"category_ids": "4"}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/whos_posting.json", "params": {"category_ids": [], "groups": ["group:0"]}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/engagement/settings/nope.json", "params": {"category_ids": []}},
+    {"method": "PUT", "path": "/admin/dashboard/sections/search/settings/activity_by_category.json", "params": {"category_ids": []}}
+  ],
+  "ignore": [
+    "/responses/3/body/sections/*/data/storage/backups/free_bytes",
+    "/responses/3/body/sections/*/data/storage/uploads/free_bytes",
+    "/responses/3/body/sections/*/data/dashboard_updated_at"
+  ]
+}

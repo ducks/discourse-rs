@@ -1,0 +1,22 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "UPDATE admin_dashboard_sections SET visible = FALSE WHERE section_id = 'search'"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-14"}},
+    {"method": "GET", "path": "/admin/dashboard/general.json"},
+    {"method": "GET", "path": "/admin/dashboard/moderation.json"},
+    {"method": "GET", "path": "/admin/dashboard/security.json"},
+    {"method": "GET", "path": "/admin/dashboard/reports.json"},
+    {"method": "GET", "path": "/admin/dashboard/reports/available.json"},
+    {"method": "PUT", "path": "/admin/dashboard/configuration.json", "params": {"sections": [{"id": "search", "visible": "true"}]}},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json"}
+  ],
+  "ignore": [
+    "/responses/0/body/sections/*/data/storage/uploads/free_bytes",
+    "/responses/0/body/sections/*/data/dashboard_updated_at",
+    "/responses/1/body/updated_at"
+  ]
+}

@@ -1,0 +1,1288 @@
+{
+  "name": "dashboard_reports_layout",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/reports/available.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/reports/available.json",
+      "params": {
+        "search": "page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/reports/available.json",
+      "params": {
+        "cursor": {
+          "title": "Pageviews",
+          "key": "core_report:page_view_total_reqs"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "rows": "2",
+            "cols": "2"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "posts",
+            "rows": "1",
+            "cols": "1"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/reports/available.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "rows": "2",
+            "cols": "1"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "no_such_report"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": [
+          {
+            "source": "data_explorer_query",
+            "identifier": "1"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "rows": "5"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/reports/layout.json",
+      "params": {
+        "items": "nope"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T16:00:02.074404",
+  "transaction_started_at": "2026-10-14T15:59:59.76509",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "providers": [
+          {
+            "source": "core_report",
+            "label": null
+          }
+        ],
+        "enabled": [
+          {
+            "source": "core_report",
+            "identifier": "daily_engaged_users",
+            "title": "Daily Engaged Users",
+            "description": "Number of users that have liked or posted in the last day.",
+            "label": null,
+            "url": "/admin/reports/daily_engaged_users",
+            "key": "core_report:daily_engaged_users",
+            "rows": 1,
+            "cols": 1
+          },
+          {
+            "source": "core_report",
+            "identifier": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "label": null,
+            "url": "/admin/reports/time_to_first_response",
+            "key": "core_report:time_to_first_response",
+            "rows": 1,
+            "cols": 1
+          }
+        ],
+        "available": [
+          {
+            "source": "core_report",
+            "identifier": "accepted_solutions",
+            "title": "Accepted solutions",
+            "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+            "label": null,
+            "url": "/admin/reports/accepted_solutions",
+            "key": "core_report:accepted_solutions"
+          },
+          {
+            "source": "core_report",
+            "identifier": "activity_by_category",
+            "title": "Activity by category",
+            "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+            "label": null,
+            "url": "/admin/reports/activity_by_category",
+            "key": "core_report:activity_by_category"
+          },
+          {
+            "source": "core_report",
+            "identifier": "admin_logins",
+            "title": "Admin Logins",
+            "description": "List of admin login times with locations.",
+            "label": null,
+            "url": "/admin/reports/admin_logins",
+            "key": "core_report:admin_logins"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_anon_browser_reqs",
+            "title": "Anonymous Browser Pageviews",
+            "description": "Number of pageviews by anonymous visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_anon_browser_reqs",
+            "key": "core_report:page_view_anon_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "daily_engaged_users",
+            "title": "Daily Engaged Users",
+            "description": "Number of users that have liked or posted in the last day.",
+            "label": null,
+            "url": "/admin/reports/daily_engaged_users",
+            "key": "core_report:daily_engaged_users"
+          },
+          {
+            "source": "core_report",
+            "identifier": "dau_by_mau",
+            "title": "DAU / MAU",
+            "description": "The share of monthly active members who returned in the last day. This percentage shows how regularly people come back; also called the community 'stickiness'. Aim for > 20%.",
+            "label": null,
+            "url": "/admin/reports/dau_by_mau",
+            "key": "core_report:dau_by_mau"
+          },
+          {
+            "source": "core_report",
+            "identifier": "emails",
+            "title": "Emails Sent",
+            "description": "Number of new emails sent.",
+            "label": null,
+            "url": "/admin/reports/emails",
+            "key": "core_report:emails"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_embed_reqs",
+            "title": "Embedded pageviews",
+            "description": "Number of pageviews served inside the full app embed iframe.",
+            "label": null,
+            "url": "/admin/reports/page_view_embed_reqs",
+            "key": "core_report:page_view_embed_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "consolidated_page_views",
+            "title": "Legacy Consolidated Pageviews",
+            "description": "Legacy report showing pageviews for logged in users, anonymous users and crawlers. This has been superseded by the 'Site traffic' report.",
+            "label": null,
+            "url": "/admin/reports/consolidated_page_views",
+            "key": "core_report:consolidated_page_views"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_legacy_total_reqs",
+            "title": "Legacy Pageviews",
+            "description": "Legacy report showing the number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_legacy_total_reqs",
+            "key": "core_report:page_view_legacy_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_logged_in_browser_reqs",
+            "title": "Logged In Browser Pageviews",
+            "description": "Number of pageviews by logged-in visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_logged_in_browser_reqs",
+            "key": "core_report:page_view_logged_in_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "moderators_activity",
+            "title": "Moderator Activity",
+            "description": "List of moderator activity including flags reviewed, reading time, topics created, posts created, personal messages created, and revisions.",
+            "label": null,
+            "url": "/admin/reports/moderators_activity",
+            "key": "core_report:moderators_activity"
+          },
+          {
+            "source": "core_report",
+            "identifier": "new_contributors",
+            "title": "New Contributors",
+            "description": "Number of users who made their first post during this period.",
+            "label": null,
+            "url": "/admin/reports/new_contributors",
+            "key": "core_report:new_contributors"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_total_reqs",
+            "title": "Pageviews",
+            "description": "Number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_total_reqs",
+            "key": "core_report:page_view_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "posts",
+            "title": "Posts",
+            "description": "New posts created during this period",
+            "label": null,
+            "url": "/admin/reports/posts",
+            "key": "core_report:posts"
+          },
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "title": "Signups",
+            "description": "New account registrations for this period.",
+            "label": null,
+            "url": "/admin/reports/signups",
+            "key": "core_report:signups"
+          },
+          {
+            "source": "core_report",
+            "identifier": "site_traffic",
+            "title": "Site traffic",
+            "description": "Pageviews for logged in users, anonymous users, known crawlers and other traffic.",
+            "label": null,
+            "url": "/admin/reports/site_traffic",
+            "key": "core_report:site_traffic"
+          },
+          {
+            "source": "core_report",
+            "identifier": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "label": null,
+            "url": "/admin/reports/time_to_first_response",
+            "key": "core_report:time_to_first_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_countries_by_browser_pageviews",
+            "title": "Top countries",
+            "description": "Countries driving the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_countries_by_browser_pageviews",
+            "key": "core_report:top_countries_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_entry_urls",
+            "title": "Top entry URLs",
+            "description": "Pages that received the most direct or externally referred browser visits in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_entry_urls",
+            "key": "core_report:top_entry_urls"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_ignored_users",
+            "title": "Top Ignored / Muted Users",
+            "description": "Users who have been muted and/or ignored by many other users.",
+            "label": null,
+            "url": "/admin/reports/top_ignored_users",
+            "key": "core_report:top_ignored_users"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referred_topics",
+            "title": "Top Referred Topics",
+            "description": "Topics that have received the most clicks from external sources.",
+            "label": null,
+            "url": "/admin/reports/top_referred_topics",
+            "key": "core_report:top_referred_topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referrers_by_browser_pageviews",
+            "title": "Top referrers",
+            "description": "External sites referring the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_referrers_by_browser_pageviews",
+            "key": "core_report:top_referrers_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_traffic_sources",
+            "title": "Top Traffic Sources",
+            "description": "External sources that have linked to this site the most.",
+            "label": null,
+            "url": "/admin/reports/top_traffic_sources",
+            "key": "core_report:top_traffic_sources"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_uploads",
+            "title": "Top Uploads",
+            "description": "List all uploads by extension, filesize and author.",
+            "label": null,
+            "url": "/admin/reports/top_uploads",
+            "key": "core_report:top_uploads"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_users_by_likes_received",
+            "title": "Top Users by likes received",
+            "description": "Top 10 users who have received likes.",
+            "label": null,
+            "url": "/admin/reports/top_users_by_likes_received",
+            "key": "core_report:top_users_by_likes_received"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topic_view_stats",
+            "title": "Topic View Stats",
+            "description": "The top 100 most viewed topics in a date range, combining logged in and anonymous views. Can be filtered by category.",
+            "label": null,
+            "url": "/admin/reports/topic_view_stats",
+            "key": "core_report:topic_view_stats"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics",
+            "title": "Topics",
+            "description": "New topics created during this period.",
+            "label": null,
+            "url": "/admin/reports/topics",
+            "key": "core_report:topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics_with_no_response",
+            "title": "Topics with no response",
+            "description": "Number of new topics created that did not receive a response.",
+            "label": null,
+            "url": "/admin/reports/topics_with_no_response",
+            "key": "core_report:topics_with_no_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "trending_search",
+            "title": "Trending Search Terms",
+            "description": "Most popular search terms with their click-through rates.",
+            "label": null,
+            "url": "/admin/reports/trending_search",
+            "key": "core_report:trending_search"
+          }
+        ],
+        "has_more": true,
+        "cursor": {
+          "title": "Trending Search Terms",
+          "key": "core_report:trending_search"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "providers": [
+          {
+            "source": "core_report",
+            "label": null
+          }
+        ],
+        "enabled": [],
+        "available": [
+          {
+            "source": "core_report",
+            "identifier": "page_view_anon_browser_reqs",
+            "title": "Anonymous Browser Pageviews",
+            "description": "Number of pageviews by anonymous visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_anon_browser_reqs",
+            "key": "core_report:page_view_anon_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_embed_reqs",
+            "title": "Embedded pageviews",
+            "description": "Number of pageviews served inside the full app embed iframe.",
+            "label": null,
+            "url": "/admin/reports/page_view_embed_reqs",
+            "key": "core_report:page_view_embed_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "consolidated_page_views",
+            "title": "Legacy Consolidated Pageviews",
+            "description": "Legacy report showing pageviews for logged in users, anonymous users and crawlers. This has been superseded by the 'Site traffic' report.",
+            "label": null,
+            "url": "/admin/reports/consolidated_page_views",
+            "key": "core_report:consolidated_page_views"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_legacy_total_reqs",
+            "title": "Legacy Pageviews",
+            "description": "Legacy report showing the number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_legacy_total_reqs",
+            "key": "core_report:page_view_legacy_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_logged_in_browser_reqs",
+            "title": "Logged In Browser Pageviews",
+            "description": "Number of pageviews by logged-in visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_logged_in_browser_reqs",
+            "key": "core_report:page_view_logged_in_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_total_reqs",
+            "title": "Pageviews",
+            "description": "Number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_total_reqs",
+            "key": "core_report:page_view_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "site_traffic",
+            "title": "Site traffic",
+            "description": "Pageviews for logged in users, anonymous users, known crawlers and other traffic.",
+            "label": null,
+            "url": "/admin/reports/site_traffic",
+            "key": "core_report:site_traffic"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_countries_by_browser_pageviews",
+            "title": "Top countries",
+            "description": "Countries driving the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_countries_by_browser_pageviews",
+            "key": "core_report:top_countries_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_entry_urls",
+            "title": "Top entry URLs",
+            "description": "Pages that received the most direct or externally referred browser visits in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_entry_urls",
+            "key": "core_report:top_entry_urls"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referrers_by_browser_pageviews",
+            "title": "Top referrers",
+            "description": "External sites referring the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_referrers_by_browser_pageviews",
+            "key": "core_report:top_referrers_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_crawler_reqs",
+            "title": "Web Crawler Pageviews",
+            "description": "Total pageviews from web crawlers over time.",
+            "label": null,
+            "url": "/admin/reports/page_view_crawler_reqs",
+            "key": "core_report:page_view_crawler_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "web_crawlers",
+            "title": "Web Crawler User Agents",
+            "description": "List of web crawler user agents, sorted by pageviews.",
+            "label": null,
+            "url": "/admin/reports/web_crawlers",
+            "key": "core_report:web_crawlers"
+          }
+        ],
+        "has_more": false,
+        "cursor": null
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "providers": [
+          {
+            "source": "core_report",
+            "label": null
+          }
+        ],
+        "enabled": [
+          {
+            "source": "core_report",
+            "identifier": "daily_engaged_users",
+            "title": "Daily Engaged Users",
+            "description": "Number of users that have liked or posted in the last day.",
+            "label": null,
+            "url": "/admin/reports/daily_engaged_users",
+            "key": "core_report:daily_engaged_users",
+            "rows": 1,
+            "cols": 1
+          },
+          {
+            "source": "core_report",
+            "identifier": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "label": null,
+            "url": "/admin/reports/time_to_first_response",
+            "key": "core_report:time_to_first_response",
+            "rows": 1,
+            "cols": 1
+          }
+        ],
+        "available": [
+          {
+            "source": "core_report",
+            "identifier": "posts",
+            "title": "Posts",
+            "description": "New posts created during this period",
+            "label": null,
+            "url": "/admin/reports/posts",
+            "key": "core_report:posts"
+          },
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "title": "Signups",
+            "description": "New account registrations for this period.",
+            "label": null,
+            "url": "/admin/reports/signups",
+            "key": "core_report:signups"
+          },
+          {
+            "source": "core_report",
+            "identifier": "site_traffic",
+            "title": "Site traffic",
+            "description": "Pageviews for logged in users, anonymous users, known crawlers and other traffic.",
+            "label": null,
+            "url": "/admin/reports/site_traffic",
+            "key": "core_report:site_traffic"
+          },
+          {
+            "source": "core_report",
+            "identifier": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "label": null,
+            "url": "/admin/reports/time_to_first_response",
+            "key": "core_report:time_to_first_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_countries_by_browser_pageviews",
+            "title": "Top countries",
+            "description": "Countries driving the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_countries_by_browser_pageviews",
+            "key": "core_report:top_countries_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_entry_urls",
+            "title": "Top entry URLs",
+            "description": "Pages that received the most direct or externally referred browser visits in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_entry_urls",
+            "key": "core_report:top_entry_urls"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_ignored_users",
+            "title": "Top Ignored / Muted Users",
+            "description": "Users who have been muted and/or ignored by many other users.",
+            "label": null,
+            "url": "/admin/reports/top_ignored_users",
+            "key": "core_report:top_ignored_users"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referred_topics",
+            "title": "Top Referred Topics",
+            "description": "Topics that have received the most clicks from external sources.",
+            "label": null,
+            "url": "/admin/reports/top_referred_topics",
+            "key": "core_report:top_referred_topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referrers_by_browser_pageviews",
+            "title": "Top referrers",
+            "description": "External sites referring the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_referrers_by_browser_pageviews",
+            "key": "core_report:top_referrers_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_traffic_sources",
+            "title": "Top Traffic Sources",
+            "description": "External sources that have linked to this site the most.",
+            "label": null,
+            "url": "/admin/reports/top_traffic_sources",
+            "key": "core_report:top_traffic_sources"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_uploads",
+            "title": "Top Uploads",
+            "description": "List all uploads by extension, filesize and author.",
+            "label": null,
+            "url": "/admin/reports/top_uploads",
+            "key": "core_report:top_uploads"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_users_by_likes_received",
+            "title": "Top Users by likes received",
+            "description": "Top 10 users who have received likes.",
+            "label": null,
+            "url": "/admin/reports/top_users_by_likes_received",
+            "key": "core_report:top_users_by_likes_received"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topic_view_stats",
+            "title": "Topic View Stats",
+            "description": "The top 100 most viewed topics in a date range, combining logged in and anonymous views. Can be filtered by category.",
+            "label": null,
+            "url": "/admin/reports/topic_view_stats",
+            "key": "core_report:topic_view_stats"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics",
+            "title": "Topics",
+            "description": "New topics created during this period.",
+            "label": null,
+            "url": "/admin/reports/topics",
+            "key": "core_report:topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics_with_no_response",
+            "title": "Topics with no response",
+            "description": "Number of new topics created that did not receive a response.",
+            "label": null,
+            "url": "/admin/reports/topics_with_no_response",
+            "key": "core_report:topics_with_no_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "trending_search",
+            "title": "Trending Search Terms",
+            "description": "Most popular search terms with their click-through rates.",
+            "label": null,
+            "url": "/admin/reports/trending_search",
+            "key": "core_report:trending_search"
+          },
+          {
+            "source": "core_report",
+            "identifier": "trust_level_pipeline",
+            "title": "Trust level pipeline",
+            "description": "Member movement between trust levels for the selected period. Counts the members currently at each trust level, their share of the total membership, the number of members promoted or demoted into each trust level during the period, and new sign-ups.",
+            "label": null,
+            "url": "/admin/reports/trust_level_pipeline",
+            "key": "core_report:trust_level_pipeline"
+          },
+          {
+            "source": "core_report",
+            "identifier": "visits",
+            "title": "User Visits",
+            "description": "Number of signed-in user visits by device type.",
+            "label": null,
+            "url": "/admin/reports/visits",
+            "key": "core_report:visits"
+          },
+          {
+            "source": "core_report",
+            "identifier": "user_to_user_private_messages_with_replies",
+            "title": "User-to-User (with replies)",
+            "description": "Number of all new personal messages and responses.",
+            "label": null,
+            "url": "/admin/reports/user_to_user_private_messages_with_replies",
+            "key": "core_report:user_to_user_private_messages_with_replies"
+          },
+          {
+            "source": "core_report",
+            "identifier": "users_by_trust_level",
+            "title": "Users per Trust Level",
+            "description": "Number of users grouped by trust level.",
+            "label": null,
+            "url": "/admin/reports/users_by_trust_level",
+            "key": "core_report:users_by_trust_level"
+          },
+          {
+            "source": "core_report",
+            "identifier": "users_by_type",
+            "title": "Users per Type",
+            "description": "Number of users grouped by admin, moderator, suspended, and silenced.",
+            "label": null,
+            "url": "/admin/reports/users_by_type",
+            "key": "core_report:users_by_type"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_crawler_reqs",
+            "title": "Web Crawler Pageviews",
+            "description": "Total pageviews from web crawlers over time.",
+            "label": null,
+            "url": "/admin/reports/page_view_crawler_reqs",
+            "key": "core_report:page_view_crawler_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "web_crawlers",
+            "title": "Web Crawler User Agents",
+            "description": "List of web crawler user agents, sorted by pageviews.",
+            "label": null,
+            "url": "/admin/reports/web_crawlers",
+            "key": "core_report:web_crawlers"
+          },
+          {
+            "source": "core_report",
+            "identifier": "posters_by_member_type",
+            "title": "Who's posting?",
+            "description": "Posts authored in the selected period, bucketed by member type. \"New members\" signed up during the period, \"Returning\" signed up before it, and \"Staff\" are admins or moderators.",
+            "label": null,
+            "url": "/admin/reports/posters_by_member_type",
+            "key": "core_report:posters_by_member_type"
+          }
+        ],
+        "has_more": false,
+        "cursor": null
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": {
+        "providers": [
+          {
+            "source": "core_report",
+            "label": null
+          }
+        ],
+        "enabled": [
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "title": "Signups",
+            "description": "New account registrations for this period.",
+            "label": null,
+            "url": "/admin/reports/signups",
+            "key": "core_report:signups",
+            "rows": 2,
+            "cols": 2
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics",
+            "title": "Topics",
+            "description": "New topics created during this period.",
+            "label": null,
+            "url": "/admin/reports/topics",
+            "key": "core_report:topics",
+            "rows": 1,
+            "cols": 1
+          },
+          {
+            "source": "core_report",
+            "identifier": "posts",
+            "title": "Posts",
+            "description": "New posts created during this period",
+            "label": null,
+            "url": "/admin/reports/posts",
+            "key": "core_report:posts",
+            "rows": 1,
+            "cols": 1
+          }
+        ],
+        "available": [
+          {
+            "source": "core_report",
+            "identifier": "accepted_solutions",
+            "title": "Accepted solutions",
+            "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+            "label": null,
+            "url": "/admin/reports/accepted_solutions",
+            "key": "core_report:accepted_solutions"
+          },
+          {
+            "source": "core_report",
+            "identifier": "activity_by_category",
+            "title": "Activity by category",
+            "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+            "label": null,
+            "url": "/admin/reports/activity_by_category",
+            "key": "core_report:activity_by_category"
+          },
+          {
+            "source": "core_report",
+            "identifier": "admin_logins",
+            "title": "Admin Logins",
+            "description": "List of admin login times with locations.",
+            "label": null,
+            "url": "/admin/reports/admin_logins",
+            "key": "core_report:admin_logins"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_anon_browser_reqs",
+            "title": "Anonymous Browser Pageviews",
+            "description": "Number of pageviews by anonymous visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_anon_browser_reqs",
+            "key": "core_report:page_view_anon_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "daily_engaged_users",
+            "title": "Daily Engaged Users",
+            "description": "Number of users that have liked or posted in the last day.",
+            "label": null,
+            "url": "/admin/reports/daily_engaged_users",
+            "key": "core_report:daily_engaged_users"
+          },
+          {
+            "source": "core_report",
+            "identifier": "dau_by_mau",
+            "title": "DAU / MAU",
+            "description": "The share of monthly active members who returned in the last day. This percentage shows how regularly people come back; also called the community 'stickiness'. Aim for > 20%.",
+            "label": null,
+            "url": "/admin/reports/dau_by_mau",
+            "key": "core_report:dau_by_mau"
+          },
+          {
+            "source": "core_report",
+            "identifier": "emails",
+            "title": "Emails Sent",
+            "description": "Number of new emails sent.",
+            "label": null,
+            "url": "/admin/reports/emails",
+            "key": "core_report:emails"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_embed_reqs",
+            "title": "Embedded pageviews",
+            "description": "Number of pageviews served inside the full app embed iframe.",
+            "label": null,
+            "url": "/admin/reports/page_view_embed_reqs",
+            "key": "core_report:page_view_embed_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "consolidated_page_views",
+            "title": "Legacy Consolidated Pageviews",
+            "description": "Legacy report showing pageviews for logged in users, anonymous users and crawlers. This has been superseded by the 'Site traffic' report.",
+            "label": null,
+            "url": "/admin/reports/consolidated_page_views",
+            "key": "core_report:consolidated_page_views"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_legacy_total_reqs",
+            "title": "Legacy Pageviews",
+            "description": "Legacy report showing the number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_legacy_total_reqs",
+            "key": "core_report:page_view_legacy_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_logged_in_browser_reqs",
+            "title": "Logged In Browser Pageviews",
+            "description": "Number of pageviews by logged-in visitors using real browsers.",
+            "label": null,
+            "url": "/admin/reports/page_view_logged_in_browser_reqs",
+            "key": "core_report:page_view_logged_in_browser_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "moderators_activity",
+            "title": "Moderator Activity",
+            "description": "List of moderator activity including flags reviewed, reading time, topics created, posts created, personal messages created, and revisions.",
+            "label": null,
+            "url": "/admin/reports/moderators_activity",
+            "key": "core_report:moderators_activity"
+          },
+          {
+            "source": "core_report",
+            "identifier": "new_contributors",
+            "title": "New Contributors",
+            "description": "Number of users who made their first post during this period.",
+            "label": null,
+            "url": "/admin/reports/new_contributors",
+            "key": "core_report:new_contributors"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_total_reqs",
+            "title": "Pageviews",
+            "description": "Number of new pageviews from all visitors.",
+            "label": null,
+            "url": "/admin/reports/page_view_total_reqs",
+            "key": "core_report:page_view_total_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "posts",
+            "title": "Posts",
+            "description": "New posts created during this period",
+            "label": null,
+            "url": "/admin/reports/posts",
+            "key": "core_report:posts"
+          },
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "title": "Signups",
+            "description": "New account registrations for this period.",
+            "label": null,
+            "url": "/admin/reports/signups",
+            "key": "core_report:signups"
+          },
+          {
+            "source": "core_report",
+            "identifier": "site_traffic",
+            "title": "Site traffic",
+            "description": "Pageviews for logged in users, anonymous users, known crawlers and other traffic.",
+            "label": null,
+            "url": "/admin/reports/site_traffic",
+            "key": "core_report:site_traffic"
+          },
+          {
+            "source": "core_report",
+            "identifier": "time_to_first_response",
+            "title": "Time to first response",
+            "description": "Average time (in hours) of the first response to new topics.",
+            "label": null,
+            "url": "/admin/reports/time_to_first_response",
+            "key": "core_report:time_to_first_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_countries_by_browser_pageviews",
+            "title": "Top countries",
+            "description": "Countries driving the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_countries_by_browser_pageviews",
+            "key": "core_report:top_countries_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_entry_urls",
+            "title": "Top entry URLs",
+            "description": "Pages that received the most direct or externally referred browser visits in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_entry_urls",
+            "key": "core_report:top_entry_urls"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_ignored_users",
+            "title": "Top Ignored / Muted Users",
+            "description": "Users who have been muted and/or ignored by many other users.",
+            "label": null,
+            "url": "/admin/reports/top_ignored_users",
+            "key": "core_report:top_ignored_users"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referred_topics",
+            "title": "Top Referred Topics",
+            "description": "Topics that have received the most clicks from external sources.",
+            "label": null,
+            "url": "/admin/reports/top_referred_topics",
+            "key": "core_report:top_referred_topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_referrers_by_browser_pageviews",
+            "title": "Top referrers",
+            "description": "External sites referring the most browser pageviews to your forum in the selected period.",
+            "label": null,
+            "url": "/admin/reports/top_referrers_by_browser_pageviews",
+            "key": "core_report:top_referrers_by_browser_pageviews"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_traffic_sources",
+            "title": "Top Traffic Sources",
+            "description": "External sources that have linked to this site the most.",
+            "label": null,
+            "url": "/admin/reports/top_traffic_sources",
+            "key": "core_report:top_traffic_sources"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_uploads",
+            "title": "Top Uploads",
+            "description": "List all uploads by extension, filesize and author.",
+            "label": null,
+            "url": "/admin/reports/top_uploads",
+            "key": "core_report:top_uploads"
+          },
+          {
+            "source": "core_report",
+            "identifier": "top_users_by_likes_received",
+            "title": "Top Users by likes received",
+            "description": "Top 10 users who have received likes.",
+            "label": null,
+            "url": "/admin/reports/top_users_by_likes_received",
+            "key": "core_report:top_users_by_likes_received"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topic_view_stats",
+            "title": "Topic View Stats",
+            "description": "The top 100 most viewed topics in a date range, combining logged in and anonymous views. Can be filtered by category.",
+            "label": null,
+            "url": "/admin/reports/topic_view_stats",
+            "key": "core_report:topic_view_stats"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics",
+            "title": "Topics",
+            "description": "New topics created during this period.",
+            "label": null,
+            "url": "/admin/reports/topics",
+            "key": "core_report:topics"
+          },
+          {
+            "source": "core_report",
+            "identifier": "topics_with_no_response",
+            "title": "Topics with no response",
+            "description": "Number of new topics created that did not receive a response.",
+            "label": null,
+            "url": "/admin/reports/topics_with_no_response",
+            "key": "core_report:topics_with_no_response"
+          },
+          {
+            "source": "core_report",
+            "identifier": "trending_search",
+            "title": "Trending Search Terms",
+            "description": "Most popular search terms with their click-through rates.",
+            "label": null,
+            "url": "/admin/reports/trending_search",
+            "key": "core_report:trending_search"
+          }
+        ],
+        "has_more": true,
+        "cursor": {
+          "title": "Trending Search Terms",
+          "key": "core_report:trending_search"
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: items"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: items"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: items"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: items"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "admin_dashboard_reports": {
+      "inserted": [
+        {
+          "id": 3,
+          "cols": 2,
+          "rows": 2,
+          "source": "core_report",
+          "position": 0,
+          "created_at": "2026-10-14T16:00:02.172149",
+          "identifier": "signups",
+          "updated_at": "2026-10-14T16:00:02.172149"
+        },
+        {
+          "id": 4,
+          "cols": 1,
+          "rows": 1,
+          "source": "core_report",
+          "position": 1,
+          "created_at": "2026-10-14T16:00:02.172149",
+          "identifier": "topics",
+          "updated_at": "2026-10-14T16:00:02.172149"
+        },
+        {
+          "id": 5,
+          "cols": 1,
+          "rows": 1,
+          "source": "core_report",
+          "position": 2,
+          "created_at": "2026-10-14T16:00:02.172149",
+          "identifier": "posts",
+          "updated_at": "2026-10-14T16:00:02.172149"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 1,
+          "cols": 1,
+          "rows": 1,
+          "source": "core_report",
+          "position": 1,
+          "created_at": "2026-07-25T05:58:16.442783",
+          "identifier": "daily_engaged_users",
+          "updated_at": "2026-07-25T05:58:16.442783"
+        },
+        {
+          "id": 2,
+          "cols": 1,
+          "rows": 1,
+          "source": "core_report",
+          "position": 2,
+          "created_at": "2026-07-25T05:58:16.450977",
+          "identifier": "time_to_first_response",
+          "updated_at": "2026-07-25T05:58:16.450977"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cbUN9Lfv7BEPu4qEcdsPsOVQ19E=",
+            "created_at": "2026-10-14T16:00:01.475251",
+            "rotated_at": "2026-10-14T16:00:01.472772",
+            "updated_at": "2026-10-14T16:00:01.475251",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "cbUN9Lfv7BEPu4qEcdsPsOVQ19E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T16:00:02.081404",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cbUN9Lfv7BEPu4qEcdsPsOVQ19E=",
+            "created_at": "2026-10-14T16:00:01.475251",
+            "rotated_at": "2026-10-14T16:00:01.472772",
+            "updated_at": "2026-10-14T16:00:01.475251",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "cbUN9Lfv7BEPu4qEcdsPsOVQ19E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "admin_dashboard_reports": 3
+  },
+  "recorded_from": {
+    "case": "7de1f4b21780bc5bab331c3f059698a36a1ca05006baae14d0835ac4d926fddd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

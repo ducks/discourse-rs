@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": ["DELETE FROM search_logs"],
+  "requests": [
+    {"method": "PUT", "path": "/admin/dashboard/configuration.json", "params": {"sections": [{"id": "search", "visible": "false"}, {"id": "nope", "visible": "true"}, {"id": "highlights", "visible": "true"}, {"id": "search", "visible": "true"}, {"id": "traffic", "visible": "0"}]}},
+    {"method": "GET", "path": "/admin/dashboard.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-14"}},
+    {"method": "PUT", "path": "/admin/dashboard/configuration.json"}
+  ],
+  "ignore": [
+    "/responses/1/body/sections/*/data/storage/backups/free_bytes",
+    "/responses/1/body/sections/*/data/storage/uploads/free_bytes",
+    "/responses/1/body/sections/*/data/dashboard_updated_at"
+  ]
+}

@@ -1,0 +1,317 @@
+{
+  "name": "dashboard_reports_bulk",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/dashboard/reports/bulk.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "signups"
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_anon_reqs"
+          },
+          {
+            "source": "core_report",
+            "identifier": "nope"
+          },
+          {
+            "source": "data_explorer_query",
+            "identifier": "3"
+          },
+          {
+            "source": "core_report",
+            "identifier": "users_by_type"
+          }
+        ],
+        "filters": {
+          "start_date": "2026-09-20",
+          "end_date": "2026-10-14"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/dashboard/reports/bulk.json",
+      "params": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "topics"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:59:59.388629",
+  "transaction_started_at": "2026-10-14T15:59:58.424925",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "signups",
+            "key": "core_report:signups",
+            "data": {
+              "type": "signups",
+              "title": "Signups",
+              "xaxis": "Day",
+              "yaxis": "Number of signups",
+              "description": "New account registrations for this period.",
+              "description_link": null,
+              "data": [
+                {
+                  "x": "2026-10-11",
+                  "y": 1
+                }
+              ],
+              "start_date": "2026-09-20T00:00:00Z",
+              "end_date": "2026-10-14T23:59:59Z",
+              "prev_data": null,
+              "prev_start_date": "2026-08-26T00:00:00Z",
+              "prev_end_date": "2026-09-20T00:00:00Z",
+              "prev30Days": 0,
+              "dates_filtering": true,
+              "report_key": "reports:signups:20260920:20261014:[:total, :prev30Days]:5:1:true:false",
+              "primary_color": "rgba(0,136,204,1)",
+              "secondary_color": "rgba(0,136,204,0.1)",
+              "available_filters": [
+                {
+                  "id": "group",
+                  "type": "group",
+                  "default": null
+                }
+              ],
+              "labels": [
+                {
+                  "type": "date",
+                  "property": "x",
+                  "title": "Day"
+                },
+                {
+                  "type": "number",
+                  "property": "y",
+                  "title": "Count"
+                }
+              ],
+              "average": false,
+              "percent": false,
+              "higher_is_better": true,
+              "modes": [
+                "chart",
+                "table"
+              ],
+              "icon": "user-plus",
+              "total": 5,
+              "empty": false
+            },
+            "error": false
+          },
+          {
+            "source": "core_report",
+            "identifier": "page_view_anon_reqs",
+            "key": "core_report:page_view_anon_reqs",
+            "data": null,
+            "error": false
+          },
+          {
+            "source": "core_report",
+            "identifier": "nope",
+            "key": "core_report:nope",
+            "data": null,
+            "error": false
+          },
+          {
+            "source": "data_explorer_query",
+            "identifier": "3",
+            "key": "data_explorer_query:3",
+            "data": null,
+            "error": false
+          },
+          {
+            "source": "core_report",
+            "identifier": "users_by_type",
+            "key": "core_report:users_by_type",
+            "data": {
+              "type": "users_by_type",
+              "title": "Users per Type",
+              "xaxis": "Type",
+              "yaxis": "Number of Users",
+              "description": "Number of users grouped by admin, moderator, suspended, and silenced.",
+              "description_link": null,
+              "data": [
+                {
+                  "url": "/admin/users/list/admins",
+                  "icon": "shield-halved",
+                  "key": "admins",
+                  "x": "Admin",
+                  "y": 1
+                },
+                {
+                  "url": "/admin/users/list/moderators",
+                  "icon": "shield-halved",
+                  "key": "moderators",
+                  "x": "Moderator",
+                  "y": 1
+                }
+              ],
+              "start_date": "2026-09-20T00:00:00Z",
+              "end_date": "2026-10-14T23:59:59Z",
+              "prev_data": null,
+              "prev_start_date": "2026-08-26T00:00:00Z",
+              "prev_end_date": "2026-09-20T00:00:00Z",
+              "prev30Days": null,
+              "dates_filtering": false,
+              "report_key": "reports:users_by_type:20260920:20261014:[:total, :prev30Days]:5:1:true:false",
+              "primary_color": "rgba(0,136,204,1)",
+              "secondary_color": "rgba(0,136,204,0.1)",
+              "available_filters": [],
+              "labels": [
+                {
+                  "property": "x",
+                  "title": "Type"
+                },
+                {
+                  "property": "y",
+                  "type": "number",
+                  "title": "Count"
+                }
+              ],
+              "average": false,
+              "percent": false,
+              "higher_is_better": true,
+              "modes": [
+                "table"
+              ],
+              "empty": false
+            },
+            "error": false
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "source": "core_report",
+            "identifier": "topics",
+            "key": "core_report:topics",
+            "data": {
+              "type": "topics",
+              "title": "Topics",
+              "xaxis": "Day",
+              "yaxis": "Number of new topics",
+              "description": "New topics created during this period.",
+              "description_link": null,
+              "data": [
+                {
+                  "x": "2026-09-30",
+                  "y": 6
+                }
+              ],
+              "start_date": "2026-09-14T00:00:00Z",
+              "end_date": "2026-10-14T23:59:59Z",
+              "prev_data": null,
+              "prev_start_date": "2026-08-14T00:00:00Z",
+              "prev_end_date": "2026-09-14T00:00:00Z",
+              "prev30Days": 0,
+              "dates_filtering": true,
+              "report_key": "reports:topics:20260914:20261014:[:total, :prev30Days]:5:1:true:false",
+              "primary_color": "rgba(0,136,204,1)",
+              "secondary_color": "rgba(0,136,204,0.1)",
+              "available_filters": [
+                {
+                  "id": "category",
+                  "type": "category",
+                  "default": null
+                }
+              ],
+              "labels": [
+                {
+                  "type": "date",
+                  "property": "x",
+                  "title": "Day"
+                },
+                {
+                  "type": "number",
+                  "property": "y",
+                  "title": "Count"
+                }
+              ],
+              "average": false,
+              "percent": false,
+              "higher_is_better": true,
+              "modes": [
+                "chart",
+                "table"
+              ],
+              "total": 12,
+              "empty": false
+            },
+            "error": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OxQTBzGEbGnt96C7QKt8i8hrx/k=",
+            "created_at": "2026-10-14T15:59:58.830113",
+            "rotated_at": "2026-10-14T15:59:58.828658",
+            "updated_at": "2026-10-14T15:59:58.830113",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OxQTBzGEbGnt96C7QKt8i8hrx/k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:59:59.394811",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OxQTBzGEbGnt96C7QKt8i8hrx/k=",
+            "created_at": "2026-10-14T15:59:58.830113",
+            "rotated_at": "2026-10-14T15:59:58.828658",
+            "updated_at": "2026-10-14T15:59:58.830113",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OxQTBzGEbGnt96C7QKt8i8hrx/k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "58756034e4dd8365af97f0fb68e191f9b25ce5782127ee5bb0d27e036c1aa9c4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
