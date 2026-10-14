@@ -189,6 +189,8 @@ pub(crate) async fn create(
     let Some(Target { access }) = target(&mut *tx, ctx, guardian, post_id).await? else {
         return Ok(Outcome::NotFound);
     };
+    // like_created: post_liked.
+    crate::web_hooks::refuse(&mut *tx, "post_liked", "post_liked web hooks").await?;
     let post = &access.post;
     let types = ActionTypes::load(&mut *tx).await?;
     let taken = post_actions::taken_actions(&mut *tx, &[post.id], Some(user.id)).await?;

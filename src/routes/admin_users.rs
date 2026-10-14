@@ -1210,6 +1210,8 @@ async fn account_route(
             return Ok(StatusCode::OK.into_response());
         }
         AccountAction::LogOut => {
+            crate::web_hooks::refuse(&mut tx, "user_logged_out", "user_logged_out web hooks")
+                .await?;
             if settings.get("verbose_auth_token_logging")?.truthy() {
                 return Err(crate::Unsupported("verbose auth token logging").into());
             }

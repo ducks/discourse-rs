@@ -75,16 +75,21 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
             crate::backup_restore::jobs::create_backup(state).await
         }
         // Fires user_added_to_group / user_removed_from_group, which core
-        // only hands to web hooks (none are ported).
+        // only hands to web hooks (user_added_to_group's: the removal's
+        // come from GroupManager alone).
         "publish_group_membership_updates" => {
-            let hooks: bool =
-                match sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM web_hooks WHERE active)")
-                    .fetch_one(&state.pool)
-                    .await
-                {
-                    Ok(hooks) => hooks,
+            let hooks = if job.args["type"] == "add" {
+                let mut conn = match state.pool.acquire().await {
+                    Ok(conn) => conn,
                     Err(e) => return Err(AppError::from(e).into()),
                 };
+                match crate::web_hooks::active(&mut conn, "user_added_to_group").await {
+                    Ok(hooks) => hooks,
+                    Err(e) => return Err(AppError::from(e).into()),
+                }
+            } else {
+                false
+            };
             if hooks {
                 Err(Unsupported("web hooks for group membership").into())
             } else {

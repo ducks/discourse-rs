@@ -343,6 +343,11 @@ async fn destroy(
         return Err(Unsupported("deleting another's post without moderating the topic").into());
     }
     refuse_unported_deletion(&mut conn, &post, &topic).await?;
+    // post_destroyed, and topic_destroyed for a first post.
+    crate::web_hooks::refuse(&mut conn, "post_destroyed", "post_destroyed web hooks").await?;
+    if post.is_first_post() {
+        crate::web_hooks::refuse(&mut conn, "topic_destroyed", "topic_destroyed web hooks").await?;
+    }
     // resolve_reviewables_for_author_deletion
     if own {
         let pending: bool = sqlx::query_scalar(
@@ -396,6 +401,12 @@ pub async fn destroy_by_staff_in(
         && post.post_number != 1
         && post.post_type != post_types::WHISPER;
     refuse_unported_deletion(&mut *conn, &post, &topic).await?;
+    // post_destroyed, and topic_destroyed for a first post.
+    crate::web_hooks::refuse(&mut *conn, "post_destroyed", "post_destroyed web hooks").await?;
+    if post.is_first_post() {
+        crate::web_hooks::refuse(&mut *conn, "topic_destroyed", "topic_destroyed web hooks")
+            .await?;
+    }
     if post.user_id == Some(user.id) {
         return Err(Unsupported("staff deleting their own posts in a transaction").into());
     }
@@ -1237,6 +1248,7 @@ pub async fn staff_recover_in(
     if post.is_first_post() {
         return Err(Unsupported("recovering topics").into());
     }
+    crate::web_hooks::refuse(&mut *conn, "post_recovered", "post_recovered web hooks").await?;
     let pm = topic.archetype == "private_message";
     let (deleted_likes, quotes): (bool, bool) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'), \

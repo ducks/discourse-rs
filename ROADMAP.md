@@ -311,7 +311,12 @@ then by what running a forum needs (milestone 6). Briefs:
     the request message's topic custom field and requested_group_name;
     requests in locales other than English refused)
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries
-    and the scheduled jobs,
+    and the scheduled jobs, split: 83a. ~~`fix/web-hook-guards`~~ (done)
+    S (`web_hooks::active`, Rails' INNER JOIN on the event types and its
+    event name translation, at every site; each core event the port
+    writes refused while a hook would receive it), 83b.
+    `feat/web-hooks-admin` M, 83c. `feat/web-hooks-posts` M, 83d.
+    `feat/web-hooks-users` M;
 84. ~~`feat/user-api-keys`~~ (done) M (the `User-Api-Key` header: lookup,
     the two limiters, scopes by route, last use and client id writes, no
     CSRF or session refresh; revoke and undo-revoke, the user's own key

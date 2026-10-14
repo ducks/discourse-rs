@@ -448,20 +448,17 @@ async fn refuse_unported(
             return Err(Unsupported("blocking a deleted user's links (block_urls)").into());
         }
     }
-    let (associated_groups, mcp, hooks): (bool, bool, bool) = sqlx::query_as(
+    let (associated_groups, mcp): (bool, bool) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM user_associated_groups uag \
                         JOIN group_associated_groups gag ON gag.associated_group_id = uag.associated_group_id \
                         WHERE uag.user_id = $1), \
                 EXISTS (SELECT 1 FROM mcp_oauth_authorizations WHERE user_id = $1) \
-                  OR EXISTS (SELECT 1 FROM mcp_oauth_access_tokens WHERE user_id = $1), \
-                EXISTS (SELECT 1 FROM web_hooks w \
-                        LEFT JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
-                        LEFT JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
-                        WHERE w.active AND (w.wildcard_web_hook OR t.name = 'user_destroyed'))",
+                  OR EXISTS (SELECT 1 FROM mcp_oauth_access_tokens WHERE user_id = $1)",
     )
     .bind(user_id)
     .fetch_one(&mut *conn)
     .await?;
+    let hooks = crate::web_hooks::active(&mut *conn, "user_destroyed").await?;
     if associated_groups {
         return Err(Unsupported("deleting a user that associated groups put in groups").into());
     }
@@ -516,6 +513,12 @@ async fn resolve_reviewables_targeting(
         .bind(SYSTEM_USER_ID)
         .bind(&note)
         .execute(&mut *conn)
+        .await?;
+        crate::web_hooks::refuse(
+            &mut *conn,
+            "reviewable_transitioned_to",
+            "reviewable web hooks",
+        )
         .await?;
         // transition_to(:ignored, system)
         if let Some(topic_id) = topic_id {

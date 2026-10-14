@@ -475,6 +475,12 @@ async fn run(
         FlagAction::AgreeAndKeep | FlagAction::Ignore => {}
     }
 
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "reviewable_transitioned_to",
+        "reviewable web hooks",
+    )
+    .await?;
     // transition_to: the status saved, its history, the scores settled.
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable.id)

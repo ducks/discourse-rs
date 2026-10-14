@@ -300,7 +300,7 @@ pub async fn can_edit_username(
 /// The `user_updated` and `username_changed` listeners the port doesn't
 /// have: web hooks, automations and workflows.
 async fn user_updated_unsupported(conn: &mut PgConnection) -> Result<(), AppError> {
-    if crate::plugins::web_hooks_active(conn, "user_updated").await? {
+    if crate::web_hooks::active(conn, "user_updated").await? {
         return Err(Unsupported("user_updated web hooks").into());
     }
     let automations: bool = sqlx::query_scalar(

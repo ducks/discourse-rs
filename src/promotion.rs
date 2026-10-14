@@ -201,12 +201,10 @@ pub async fn change_trust_level(
             .unwrap_or_default();
         return Ok(Err(message));
     }
-    let web_hooks: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM web_hooks WHERE active)")
-            .fetch_one(&mut *conn)
+    // user_promoted, which the web hooks skip for a demotion.
+    if new_level >= old_level {
+        crate::web_hooks::refuse(&mut *conn, "user_promoted", "web hooks for user_promoted")
             .await?;
-    if web_hooks {
-        return Err(Unsupported("web hooks for user_promoted").into());
     }
 
     let (action, acting) = match log_action_for {
@@ -405,6 +403,12 @@ pub async fn user_trust_level_change(
         if member {
             continue;
         }
+        crate::web_hooks::refuse(
+            &mut *conn,
+            "user_added_to_group",
+            "user_added_to_group web hooks",
+        )
+        .await?;
         if group.title.as_deref().is_some_and(|t| !t.is_empty())
             || group.primary_group
             || group.grant_trust_level.is_some_and(|l| l != 0)

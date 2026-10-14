@@ -159,6 +159,13 @@ pub async fn apply(
             .bind(topic_id)
             .fetch_one(&mut *conn)
             .await?;
+    // topic_status_updated: topic_<status>_status_updated (topic_edited).
+    crate::web_hooks::refuse(
+        &mut *conn,
+        &format!("topic_{}_status_updated", status.name()),
+        "topic status web hooks",
+    )
+    .await?;
     // @topic_timer: closing and opening act on the public timer.
     let topic_timer = crate::topic_timer::public_topic_timer(&mut *conn, topic.id).await?;
 

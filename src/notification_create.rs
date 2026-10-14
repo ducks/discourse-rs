@@ -94,6 +94,12 @@ async fn insert(
     n: &NewNotification,
     data: &Map<String, Value>,
 ) -> Result<i64, AppError> {
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "notification_created",
+        "notification_created web hooks",
+    )
+    .await?;
     let high_priority = n.high_priority || HIGH_PRIORITY_TYPES.contains(&n.notification_type);
     Ok(sqlx::query_scalar(
         "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \

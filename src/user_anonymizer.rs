@@ -138,7 +138,7 @@ async fn expire_auth_tokens(
 
 /// The listeners of an event the port doesn't have.
 async fn event_unsupported(conn: &mut PgConnection, event: &str) -> Result<(), AppError> {
-    if crate::plugins::web_hooks_active(conn, event).await? {
+    if crate::web_hooks::active(conn, event).await? {
         return Err(Unsupported("user web hooks").into());
     }
     let automations: bool = sqlx::query_scalar(

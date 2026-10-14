@@ -85,6 +85,12 @@ impl Context<'_> {
         let Some(user) = g.user().cloned() else {
             return Ok(Outcome::Forbidden);
         };
+        crate::web_hooks::refuse(
+            &mut *self.conn,
+            "chat_message_created",
+            "chat message web hooks",
+        )
+        .await?;
         // policy :no_silenced_user, policy :accept_blocks
         if g.is_silenced() {
             return Ok(Outcome::Forbidden);

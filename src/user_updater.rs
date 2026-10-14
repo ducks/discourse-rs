@@ -296,6 +296,8 @@ pub async fn update(
             return Err(Unsupported("changing the title, primary group or flair group").into());
         }
     }
+    crate::web_hooks::refuse(&mut *conn, "user_updated", "user_updated web hooks").await?;
+
     // LEGACY_SHOW_ORIGINAL_CONTENT_ATTR
     let mut attrs = attrs.clone();
     if let Some(legacy) = attrs.remove("show_original_content")
