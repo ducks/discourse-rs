@@ -3,10 +3,13 @@
 //! settings, and ThemeSerializer with BasicThemeSerializer,
 //! ThemeIndexSerializer and ComponentIndexSerializer.
 //!
+//! Settings of every ThemeSetting type read as their managers read them
+//! (lists with the everyone alias, uploads as their urls, objects with
+//! their uploads hydrated) and show through ThemeSettingsSerializer.
 //! Remote themes show through RemoteThemeSerializer, and decide
 //! `supported?` from their minimum and maximum Discourse versions.
 //!
-//! Refused: theme settings of the list, upload, objects and icon types.
+//! Refused: settings YAML that doesn't parse (Psych's message).
 
 use serde_json::{Map, Value, json};
 use serde_yaml_ng::Value as Yaml;
@@ -589,7 +592,32 @@ async fn disabled_log(
     .await
 }
 
+/// `ThemeSetting.types`
+pub const SETTING_TYPES: [(&str, i32); 9] = [
+    ("integer", 0),
+    ("float", 1),
+    ("string", 2),
+    ("bool", 3),
+    ("list", 4),
+    ("enum", 5),
+    ("upload", 6),
+    ("objects", 7),
+    ("icon", 8),
+];
+
+/// `ThemeSetting.guess_type`
+pub fn guess_setting_type(v: &Yaml) -> Option<(&'static str, i32)> {
+    match v {
+        Yaml::Number(n) if n.is_i64() || n.is_u64() => Some(("integer", 0)),
+        Yaml::Number(_) => Some(("float", 1)),
+        Yaml::String(_) => Some(("string", 2)),
+        Yaml::Bool(_) => Some(("bool", 3)),
+        _ => None,
+    }
+}
+
 /// One parsed theme setting (ThemeSettingsParser and its manager).
+#[derive(Debug, Clone)]
 pub struct Setting {
     pub name: String,
     pub type_name: &'static str,
@@ -602,6 +630,114 @@ pub struct Setting {
     /// `min` and `max` when numeric (integer, float and string settings).
     pub min: Option<Yaml>,
     pub max: Option<Yaml>,
+    pub list_type: Option<Yaml>,
+    pub disallowed_groups: Option<Yaml>,
+    pub resolve_group_membership: bool,
+    pub json_schema: Option<Yaml>,
+    /// An objects setting's schema, as JSON.
+    pub schema: Option<Value>,
+}
+
+/// A settings YAML entry as ThemeSettingsParser yields it: name, default,
+/// type (None for one ThemeSetting doesn't know) and the raw options.
+pub struct ParsedSetting<'a> {
+    pub name: String,
+    pub default: Yaml,
+    pub kind: Option<(&'static str, i32)>,
+    pub opts: Option<&'a serde_yaml_ng::Mapping>,
+}
+
+/// `ThemeSettingsParser#load` over a parsed YAML hash.
+pub fn parse_settings(map: &serde_yaml_ng::Mapping) -> Result<Vec<ParsedSetting<'_>>, AppError> {
+    let mut out = Vec::new();
+    for (k, v) in map {
+        let name = k
+            .as_str()
+            .ok_or(Unsupported("theme settings with non-string names"))?
+            .to_string();
+        let parsed = if let Some(kind) = guess_setting_type(v) {
+            ParsedSetting {
+                name,
+                default: v.clone(),
+                kind: Some(kind),
+                opts: None,
+            }
+        } else if let Some(h) = v.as_mapping() {
+            let default = h.get("default").cloned().unwrap_or(Yaml::Null);
+            let kind = match h.get("type") {
+                Some(t) => {
+                    let t = t
+                        .as_str()
+                        .ok_or(Unsupported("a theme setting type that is not a name"))?;
+                    SETTING_TYPES.iter().find(|(n, _)| *n == t).copied()
+                }
+                None => guess_setting_type(&default),
+            };
+            ParsedSetting {
+                name,
+                default,
+                kind,
+                opts: Some(h),
+            }
+        } else {
+            ParsedSetting {
+                name,
+                default: v.clone(),
+                kind: None,
+                opts: None,
+            }
+        };
+        out.push(parsed);
+    }
+    Ok(out)
+}
+
+/// `create_opts`: the setting the manager holds.
+fn setting_from(parsed: &ParsedSetting<'_>, kind: (&'static str, i32)) -> Setting {
+    let opt = |key: &str| parsed.opts.and_then(|h| h.get(key));
+    let truthy = |key: &str| opt(key).is_some_and(|v| !matches!(v, Yaml::Null | Yaml::Bool(false)));
+    let description = match opt("description") {
+        Some(Yaml::String(s)) => Some(s.clone()),
+        Some(Yaml::Mapping(m)) => m
+            .get("en")
+            .and_then(Yaml::as_str)
+            .map(str::to_string)
+            .or_else(|| m.values().find_map(|v| v.as_str().map(str::to_string))),
+        _ => None,
+    };
+    let mut choices: Vec<Yaml> = match opt("choices") {
+        Some(Yaml::Sequence(s)) => s.clone(),
+        _ => Vec::new(),
+    };
+    if kind.0 == "enum" && !choices.contains(&parsed.default) {
+        choices.push(parsed.default.clone());
+    }
+    let numeric_bounds = matches!(kind.0, "integer" | "string" | "float");
+    Setting {
+        name: parsed.name.clone(),
+        type_name: kind.0,
+        type_id: kind.1,
+        default: parsed.default.clone(),
+        description,
+        choices,
+        textarea: truthy("textarea"),
+        refresh: truthy("refresh"),
+        min: opt("min")
+            .filter(|v| numeric_bounds && v.is_number())
+            .cloned(),
+        max: opt("max")
+            .filter(|v| numeric_bounds && v.is_number())
+            .cloned(),
+        list_type: opt("list_type")
+            .filter(|v| !matches!(v, Yaml::Null | Yaml::Bool(false)))
+            .cloned(),
+        disallowed_groups: opt("disallowed_groups")
+            .filter(|v| !matches!(v, Yaml::Null | Yaml::Bool(false)))
+            .cloned(),
+        resolve_group_membership: truthy("resolve_group_membership"),
+        json_schema: opt("json_schema").cloned(),
+        schema: opt("schema").map(yaml_json),
+    }
 }
 
 /// `Theme#settings`: the settings field parsed, when it has no error.
@@ -624,140 +760,240 @@ pub async fn settings_of(conn: &mut PgConnection, theme_id: i32) -> Result<Vec<S
     let Some(map) = parsed.as_mapping() else {
         return Err(Unsupported("theme settings YAML that is not a hash").into());
     };
-    let guess = |v: &Yaml| -> Option<(&'static str, i32)> {
-        match v {
-            Yaml::Number(n) if n.is_i64() || n.is_u64() => Some(("integer", 0)),
-            Yaml::Number(_) => Some(("float", 1)),
-            Yaml::String(_) => Some(("string", 2)),
-            Yaml::Bool(_) => Some(("bool", 3)),
-            _ => None,
-        }
-    };
     let mut out = Vec::new();
-    for (k, v) in map {
-        let name = k
-            .as_str()
-            .ok_or(Unsupported("theme settings with non-string names"))?
-            .to_string();
-        let (default, kind, opts) = if let Some(kind) = guess(v) {
-            (v.clone(), kind, None)
-        } else if let Some(h) = v.as_mapping() {
-            let default = h.get("default").cloned().unwrap_or(Yaml::Null);
-            let kind = match h.get("type") {
-                Some(t) => match t.as_str() {
-                    Some("integer") => ("integer", 0),
-                    Some("float") => ("float", 1),
-                    Some("string") => ("string", 2),
-                    Some("bool") => ("bool", 3),
-                    Some("enum") => ("enum", 5),
-                    Some(_) => {
-                        return Err(Unsupported(
-                            "theme settings of the list, upload, objects and icon types",
-                        )
-                        .into());
-                    }
-                    None => return Err(Unsupported("a theme setting without a type").into()),
-                },
-                None => guess(&default).ok_or(Unsupported("a theme setting without a type"))?,
-            };
-            (default, kind, Some(h))
-        } else {
-            return Err(Unsupported("a theme setting without a type").into());
-        };
-        let opt = |key: &str| opts.and_then(|h| h.get(key));
-        let description = match opt("description") {
-            Some(Yaml::String(s)) => Some(s.clone()),
-            Some(Yaml::Mapping(m)) => m
-                .get("en")
-                .and_then(Yaml::as_str)
-                .map(str::to_string)
-                .or_else(|| m.values().find_map(|v| v.as_str().map(str::to_string))),
-            _ => None,
-        };
-        let mut choices: Vec<Yaml> = match opt("choices") {
-            Some(Yaml::Sequence(s)) => s.clone(),
-            _ => Vec::new(),
-        };
-        if kind.0 == "enum" && !choices.contains(&default) {
-            choices.push(default.clone());
-        }
-        out.push(Setting {
-            name,
-            type_name: kind.0,
-            type_id: kind.1,
-            default,
-            description,
-            choices,
-            textarea: matches!(opt("textarea"), Some(Yaml::Bool(true))),
-            refresh: matches!(opt("refresh"), Some(Yaml::Bool(true))),
-            min: opt("min").filter(|v| v.is_number()).cloned(),
-            max: opt("max").filter(|v| v.is_number()).cloned(),
-        });
+    for p in parse_settings(map)? {
+        let kind = p
+            .kind
+            .ok_or(Unsupported("a theme setting without a type"))?;
+        out.push(setting_from(&p, kind));
     }
     Ok(out)
+}
+
+/// Every setting of a settings YAML with a type, errors or not (what
+/// validate_yaml! checks).
+pub fn settings_in(
+    map: &serde_yaml_ng::Mapping,
+) -> Result<Vec<(ParsedSetting<'_>, Option<Setting>)>, AppError> {
+    Ok(parse_settings(map)?
+        .into_iter()
+        .map(|p| {
+            let setting = p.kind.map(|kind| setting_from(&p, kind));
+            (p, setting)
+        })
+        .collect())
 }
 
 pub fn yaml_json(v: &Yaml) -> Value {
     serde_json::to_value(v).unwrap_or(Value::Null)
 }
 
-impl Setting {
-    /// `value_for_editing` from the stored row's value, else the default.
-    pub fn value(&self, stored: Option<&str>) -> Value {
-        let raw = match stored {
-            Some(s) => Value::String(s.to_string()),
-            None => yaml_json(&self.default),
-        };
-        match self.type_name {
-            "bool" => json!(matches!(&raw, Value::Bool(true)) || raw == json!("true")),
-            "integer" => match &raw {
-                Value::String(s) => json!(crate::ruby::to_i(s)),
-                other => other.clone(),
-            },
-            "float" => match &raw {
-                Value::String(s) => json!(crate::ruby::to_f(s)),
-                other => other.clone(),
-            },
-            "enum" => {
-                let as_string = match &raw {
-                    Value::String(s) => s.clone(),
-                    other => other.to_string(),
-                };
-                self.choices
-                    .iter()
-                    .map(yaml_json)
-                    .find(|c| {
-                        *c == raw || c.as_str().map_or(c.to_string(), str::to_string) == as_string
-                    })
-                    .unwrap_or(raw)
-            }
-            _ => raw,
-        }
-    }
+/// A `theme_settings` row.
+#[derive(sqlx::FromRow, Debug, Clone)]
+pub struct StoredSetting {
+    pub name: String,
+    pub data_type: i32,
+    pub value: Option<String>,
+    pub json_value: Option<Value>,
 }
 
-/// `theme_settings` rows of a theme: name, data_type, value.
+/// `theme_settings` rows of a theme.
 pub async fn stored_settings(
     conn: &mut PgConnection,
     theme_id: i32,
-) -> Result<Vec<(String, i32, Option<String>)>, sqlx::Error> {
-    sqlx::query_as("SELECT name, data_type, value FROM theme_settings WHERE theme_id = $1")
-        .bind(theme_id)
-        .fetch_all(conn)
-        .await
+) -> Result<Vec<StoredSetting>, sqlx::Error> {
+    sqlx::query_as(
+        "SELECT name, data_type, value, json_value FROM theme_settings WHERE theme_id = $1",
+    )
+    .bind(theme_id)
+    .fetch_all(conn)
+    .await
+}
+
+impl Setting {
+    /// `db_record`: the setting's row, by name and type.
+    pub fn row<'a>(&self, stored: &'a [StoredSetting]) -> Option<&'a StoredSetting> {
+        stored
+            .iter()
+            .find(|r| r.name == self.name && r.data_type == self.type_id)
+    }
+
+    /// The settings' `@opts[:schema]` (`{}` without one).
+    pub fn schema(&self) -> Value {
+        self.schema.clone().unwrap_or(Value::Null)
+    }
+}
+
+/// The DB values a setting's value reads beyond its row.
+pub struct ValueCx<'a> {
+    pub store: &'a crate::file_store::FileStore,
+    /// SiteSetting.granular_anonymous_and_logged_in_groups_permissions
+    pub granular_groups: bool,
+}
+
+impl<'a> ValueCx<'a> {
+    pub fn new(
+        store: &'a crate::file_store::FileStore,
+        settings: &SiteSettings,
+    ) -> Result<ValueCx<'a>, AppError> {
+        Ok(ValueCx {
+            store,
+            granular_groups: settings
+                .get("granular_anonymous_and_logged_in_groups_permissions")?
+                .truthy(),
+        })
+    }
+}
+
+/// A Ruby value's `to_s`, for a setting's parsed JSON value.
+fn to_s(v: &Value) -> String {
+    match v {
+        Value::Null => String::new(),
+        Value::String(s) => s.clone(),
+        other => other.to_string(),
+    }
+}
+
+/// `cdn_url(upload_id)` of the upload manager: the upload's url (through
+/// the CDN), None without one.
+async fn upload_cdn_url(
+    conn: &mut PgConnection,
+    vcx: &ValueCx<'_>,
+    upload_id: i64,
+) -> Result<Option<String>, AppError> {
+    let Ok(id) = i32::try_from(upload_id) else {
+        return Ok(None);
+    };
+    let url: Option<String> = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?;
+    Ok(url.map(|u| vcx.store.cdn_url(&u)))
+}
+
+/// What a setting's value reads as: the manager's `default` (as the
+/// serializer shows it), `value`, or `value_for_editing`.
+#[derive(Clone, Copy, PartialEq)]
+pub enum Reading {
+    Default,
+    Value,
+    Editing,
+}
+
+/// ThemeSettingsManager's readers for a setting and its row.
+pub async fn setting_value(
+    conn: &mut PgConnection,
+    vcx: &ValueCx<'_>,
+    theme_id: i32,
+    s: &Setting,
+    row: Option<&StoredSetting>,
+    reading: Reading,
+) -> Result<Value, AppError> {
+    let row = if reading == Reading::Default {
+        None
+    } else {
+        row
+    };
+    let default = yaml_json(&s.default);
+    let raw = match row {
+        Some(r) => r.value.clone().map_or(Value::Null, Value::String),
+        None => default.clone(),
+    };
+    Ok(match s.type_name {
+        _ if reading == Reading::Default && !matches!(s.type_name, "upload" | "objects") => default,
+        "bool" => json!(matches!(&raw, Value::Bool(true)) || raw == json!("true")),
+        "integer" => match &raw {
+            Value::Number(n) if n.is_f64() => json!(n.as_f64().unwrap_or_default().trunc() as i64),
+            Value::Number(_) => raw.clone(),
+            other => json!(crate::ruby::to_i(&to_s(other))),
+        },
+        "float" => match &raw {
+            Value::Number(n) => json!(n.as_f64().unwrap_or_default()),
+            other => json!(crate::ruby::to_f(&to_s(other))),
+        },
+        "enum" => {
+            let as_string = to_s(&raw);
+            s.choices
+                .iter()
+                .map(yaml_json)
+                .find(|c| *c == raw || to_s(c) == as_string)
+                .unwrap_or(raw)
+        }
+        "list" => {
+            let group = s.list_type.as_ref().and_then(Yaml::as_str) == Some("group");
+            if !group || !vcx.granular_groups || reading == Reading::Editing {
+                raw
+            } else {
+                // alias_everyone_to_logged_in_users: everyone (0) as
+                // logged_in_users (5), each id once.
+                let mut ids: Vec<String> = Vec::new();
+                for id in to_s(&raw).split('|') {
+                    let id = if id == "0" { "5" } else { id };
+                    if !ids.iter().any(|i| i == id) {
+                        ids.push(id.to_string());
+                    }
+                }
+                json!(ids.join("|"))
+            }
+        }
+        "upload" => match row {
+            Some(r) => {
+                let id = crate::ruby::to_i(r.value.as_deref().unwrap_or(""));
+                json!(upload_cdn_url(conn, vcx, id).await?)
+            }
+            None => {
+                // default: the theme's upload field the default names.
+                let field_upload: Option<Option<i32>> = sqlx::query_scalar(
+                    "SELECT upload_id FROM theme_fields WHERE theme_id = $1 AND name = $2 \
+                     AND type_id = 2 ORDER BY id LIMIT 1",
+                )
+                .bind(theme_id)
+                .bind(to_s(&default))
+                .fetch_optional(&mut *conn)
+                .await?;
+                match field_upload.flatten() {
+                    Some(id) => json!(upload_cdn_url(conn, vcx, i64::from(id)).await?),
+                    None => Value::Null,
+                }
+            }
+        },
+        "objects" => {
+            let objects = match row {
+                Some(r) => r.json_value.clone().unwrap_or(Value::Null),
+                None => default,
+            };
+            match objects {
+                Value::Array(items) if !items.is_empty() => Value::Array(
+                    crate::schema_objects::hydrate_uploads(
+                        conn,
+                        vcx.store,
+                        &s.schema(),
+                        &items,
+                        true,
+                    )
+                    .await?,
+                ),
+                other => other,
+            }
+        }
+        _ => raw,
+    })
 }
 
 /// ThemeSettingsSerializer for each setting.
-async fn settings_json(conn: &mut PgConnection, theme_id: i32) -> Result<Value, AppError> {
+async fn settings_json(
+    conn: &mut PgConnection,
+    cx: &Ctx<'_>,
+    theme_id: i32,
+) -> Result<Value, AppError> {
     let settings = settings_of(conn, theme_id).await?;
     let stored = stored_settings(conn, theme_id).await?;
     let internal = crate::site_texts::theme_translations_of(conn, theme_id, true).await?;
+    let store = crate::file_store::FileStore::for_site(cx.urls.config, cx.settings)?;
+    let vcx = ValueCx::new(&store, cx.settings)?;
     let mut out = Vec::new();
     for s in settings {
-        let value = stored
-            .iter()
-            .find(|(n, t, _)| *n == s.name && *t == s.type_id)
-            .and_then(|(_, _, v)| v.as_deref());
+        let row = s.row(&stored);
         let mut e = Map::new();
         e.insert("setting".into(), json!(s.name));
         e.insert(
@@ -765,8 +1001,14 @@ async fn settings_json(conn: &mut PgConnection, theme_id: i32) -> Result<Value, 
             json!(crate::admin_site_settings::humanized_name(&s.name)),
         );
         e.insert("type".into(), json!(s.type_name));
-        e.insert("default".into(), yaml_json(&s.default));
-        e.insert("value".into(), s.value(value));
+        e.insert(
+            "default".into(),
+            setting_value(conn, &vcx, theme_id, &s, row, Reading::Default).await?,
+        );
+        e.insert(
+            "value".into(),
+            setting_value(conn, &vcx, theme_id, &s, row, Reading::Editing).await?,
+        );
         let wanted = [
             format!("theme_metadata.settings.{}", s.name),
             format!("theme_metadata.settings.{}.description", s.name),
@@ -818,8 +1060,44 @@ async fn settings_json(conn: &mut PgConnection, theme_id: i32) -> Result<Value, 
                 .collect();
             e.insert("valid_values".into(), Value::Array(values));
         }
+        if s.type_name == "list" {
+            e.insert(
+                "list_type".into(),
+                s.list_type.as_ref().map_or(Value::Null, yaml_json),
+            );
+        }
+        if let Some(groups) = s
+            .disallowed_groups
+            .as_ref()
+            .filter(|g| !matches!(g, Yaml::String(s) if crate::ruby::is_blank(s)))
+        {
+            e.insert("disallowed_groups".into(), yaml_json(groups));
+        }
+        if s.type_name == "list" && s.list_type.as_ref().and_then(Yaml::as_str) == Some("group") {
+            e.insert(
+                "resolve_group_membership".into(),
+                json!(s.resolve_group_membership),
+            );
+        }
         if s.type_name == "string" {
             e.insert("textarea".into(), json!(s.textarea));
+            // json_schema: JSON.parse of the option, false when it can't.
+            let parsed = match &s.json_schema {
+                Some(Yaml::String(text)) => serde_json::from_str::<Value>(text).ok(),
+                _ => None,
+            };
+            if let Some(schema) = parsed.filter(|v| match v {
+                Value::Null | Value::Bool(false) => false,
+                Value::String(s) => !crate::ruby::is_blank(s),
+                Value::Array(a) => !a.is_empty(),
+                Value::Object(m) => !m.is_empty(),
+                _ => true,
+            }) {
+                e.insert("json_schema".into(), schema);
+            }
+        }
+        if s.type_name == "objects" {
+            e.insert("objects_schema".into(), s.schema());
         }
         out.push(Value::Object(e));
     }
@@ -975,7 +1253,7 @@ pub async fn serialize(
     out.insert("user_selectable".into(), json!(t.user_selectable));
     out.insert("auto_update".into(), json!(t.auto_update));
     out.insert("remote_theme_id".into(), json!(t.remote_theme_id));
-    out.insert("settings".into(), settings_json(conn, t.id).await?);
+    out.insert("settings".into(), settings_json(conn, cx, t.id).await?);
     if !t.component {
         out.insert(
             "themeable_site_settings".into(),

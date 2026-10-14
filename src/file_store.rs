@@ -103,6 +103,29 @@ impl FileStore {
         }))
     }
 
+    /// `cdn_url` (UrlHelper.local_cdn_url): an upload's url behind the CDN,
+    /// as it is without one.
+    pub fn cdn_url(&self, url: &str) -> String {
+        match self {
+            FileStore::Local(s) => {
+                let Some(cdn_base) = &s.absolute_base_cdn_url else {
+                    return url.to_string();
+                };
+                let asset_host = cdn_base
+                    .strip_suffix(&s.relative_base_url)
+                    .unwrap_or(cdn_base);
+                if url.starts_with(&format!("/uploads/{CURRENT_DB}/")) {
+                    return format!("{asset_host}{url}");
+                }
+                let base = s
+                    .absolute_base_url
+                    .strip_suffix(&s.relative_base_url)
+                    .unwrap_or(&s.absolute_base_url);
+                url.replacen(base, asset_host, 1)
+            }
+        }
+    }
+
     /// A local store for `base_url` (`http://host`), no base path or CDN.
     #[cfg(test)]
     pub(crate) fn test_local(base_url: &str) -> FileStore {

@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {"granular_anonymous_and_logged_in_groups_permissions": true},
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Bad settings", "theme_fields": [
+      {"name": "yaml", "target": "settings", "value": "too_big:\n  default: 20\n  max: 10\ntoo_small:\n  default: 1\n  min: 3\nshort_text:\n  default: ab\n  min: 3\nlong_text:\n  default: abcdef\n  max: 3\nbad_objects:\n  type: objects\n  default:\n    - name: 5\n    - other: x\n  schema:\n    name: x\n    properties:\n      name:\n        type: string\n        required: true\n      odd:\n        type: wat\nunknown_type:\n  type: color\n  default: red\nmissing_default:\n  type: string\nmembership:\n  type: string\n  default: x\n  resolve_group_membership: true\nobject_membership:\n  type: objects\n  default: []\n  schema:\n    name: z\n    properties:\n      who:\n        type: string\n        resolve_group_membership: true\n"}
+    ]}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Group lists", "theme_fields": [
+      {"name": "yaml", "target": "settings", "value": "who:\n  type: list\n  list_type: group\n  default: \"0|11\"\nplain:\n  type: list\n  default: \"0|1\"\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}/setting.json", "params": {"name": "who", "value": "0|0|12"}},
+    {"method": "GET", "path": "/admin/themes/{{responses.1.body.theme.id}}.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields"
+  ]
+}

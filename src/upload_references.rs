@@ -444,6 +444,45 @@ pub async fn ensure_exist(
     Ok(())
 }
 
+/// `UploadReference.ensure_exist!(upload_ids:, target:)` for several
+/// uploads: the target's other references deleted, the missing ones
+/// inserted; with none, every reference of the target deleted.
+pub async fn ensure_exist_many(
+    conn: &mut PgConnection,
+    target_type: &str,
+    target_id: i64,
+    upload_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    let mut ids: Vec<i64> = Vec::new();
+    for id in upload_ids {
+        if !ids.contains(id) {
+            ids.push(*id);
+        }
+    }
+    sqlx::query(
+        "DELETE FROM upload_references WHERE target_type = $1 AND target_id = $2 \
+         AND NOT (upload_id = ANY($3))",
+    )
+    .bind(target_type)
+    .bind(target_id)
+    .bind(&ids)
+    .execute(&mut *conn)
+    .await?;
+    for id in ids {
+        // insert_all: the existing rows skipped.
+        sqlx::query(
+            "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, now(), now()) ON CONFLICT DO NOTHING",
+        )
+        .bind(id)
+        .bind(target_type)
+        .bind(target_id)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

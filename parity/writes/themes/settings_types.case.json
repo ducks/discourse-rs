@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/upload_asset.json", "params": {"file": {"fixture": "small.png"}}},
+    {"method": "POST", "path": "/admin/themes/upload_asset.json", "params": {"file": {"fixture": "static.gif"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Typed settings", "theme_fields": [
+      {"name": "hero", "target": "common", "type_id": "2", "upload_id": "{{responses.0.body.upload_id}}"},
+      {"name": "yaml", "target": "settings", "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n"},
+      {"name": "en", "target": "translations", "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n"}
+    ]}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.2.body.theme.id}}.json"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "links", "value": "[{\"name\": \"Docs\", \"url\": \"https://example.com/docs\", \"icon\": \"book\", \"image\": \"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\", \"category_ids\": [2, 4], \"tags\": [\"howto\"], \"weight\": 3, \"kind\": \"b\", \"when\": \"2026-10-14T10:00:00Z\", \"flag\": false, \"children\": [{\"label\": \"Kid\", \"groups\": [1, 3]}]}]"}},
+    {"method": "GET", "path": "/admin/themes/{{responses.2.body.theme.id}}/objects_setting_metadata/links.json"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "links", "value": "[{\"url\": \"not a url\", \"category_ids\": [1, 2, 999999], \"weight\": 11, \"kind\": \"c\", \"when\": \"yesterday\", \"topic\": 999999, \"tags\": [\"nope\"], \"flag\": \"yes\", \"children\": [{\"groups\": [\"x\"]}]}, {\"name\": \"A name far longer than twenty\", \"image\": \"/uploads/nothing.png\", \"weight\": 0, \"category_ids\": [1, 2, 3]}]"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "visible_groups", "value": "0|2|3"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "logo", "value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "count", "value": "11"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json", "params": {"name": "star", "value": "far-heart"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}.json", "params": {"theme": {"settings": {"nav_items": "x|y", "ratio": "2.5"}}}},
+    {"method": "GET", "path": "/admin/themes/{{responses.2.body.theme.id}}/objects_setting_metadata/nope.json"},
+    {"method": "GET", "path": "/admin/themes/{{responses.2.body.theme.id}}.json"},
+    {"method": "DELETE", "path": "/admin/themes/{{responses.2.body.theme.id}}.json"}
+  ],
+  "unordered_responses": [
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/11/body/theme/theme_fields",
+    "/responses/13/body/theme/theme_fields"
+  ]
+}

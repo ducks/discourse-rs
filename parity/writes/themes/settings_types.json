@@ -1,0 +1,1610 @@
+{
+  "name": "settings_types",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Typed settings",
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "links",
+        "value": "[{\"name\": \"Docs\", \"url\": \"https://example.com/docs\", \"icon\": \"book\", \"image\": \"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\", \"category_ids\": [2, 4], \"tags\": [\"howto\"], \"weight\": 3, \"kind\": \"b\", \"when\": \"2026-10-14T10:00:00Z\", \"flag\": false, \"children\": [{\"label\": \"Kid\", \"groups\": [1, 3]}]}]"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/objects_setting_metadata/links.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "links",
+        "value": "[{\"url\": \"not a url\", \"category_ids\": [1, 2, 999999], \"weight\": 11, \"kind\": \"c\", \"when\": \"yesterday\", \"topic\": 999999, \"tags\": [\"nope\"], \"flag\": \"yes\", \"children\": [{\"groups\": [\"x\"]}]}, {\"name\": \"A name far longer than twenty\", \"image\": \"/uploads/nothing.png\", \"weight\": 0, \"category_ids\": [1, 2, 3]}]"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "visible_groups",
+        "value": "0|2|3"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "logo",
+        "value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "count",
+        "value": "11"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/setting.json",
+      "params": {
+        "name": "star",
+        "value": "far-heart"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "settings": {
+            "nav_items": "x|y",
+            "ratio": "2.5"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}/objects_setting_metadata/nope.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:12:29.984559",
+  "transaction_started_at": "2026-10-14T23:12:27.447206",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "upload_id": 36
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "upload_id": 37
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Typed settings",
+          "description": null,
+          "created_at": "2026-10-14T23:12:30.104Z",
+          "updated_at": "2026-10-14T23:12:30.104Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "description": "The links",
+              "objects_schema": {
+                "name": "link",
+                "identifier": "name",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true,
+                    "validations": {
+                      "max_length": 20
+                    }
+                  },
+                  "url": {
+                    "type": "string",
+                    "validations": {
+                      "url": true
+                    }
+                  },
+                  "icon": {
+                    "type": "icon"
+                  },
+                  "image": {
+                    "type": "upload"
+                  },
+                  "category_ids": {
+                    "type": "categories",
+                    "validations": {
+                      "max": 2
+                    }
+                  },
+                  "tags": {
+                    "type": "tags"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "validations": {
+                      "min": 1,
+                      "max": 10
+                    }
+                  },
+                  "kind": {
+                    "type": "enum",
+                    "choices": [
+                      "a",
+                      "b"
+                    ]
+                  },
+                  "when": {
+                    "type": "datetime"
+                  },
+                  "topic": {
+                    "type": "topic"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        },
+                        "groups": {
+                          "type": "groups",
+                          "disallowed_groups": "1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "nav_items",
+              "humanized_name": "Nav items",
+              "type": "list",
+              "default": "a|b",
+              "value": "a|b",
+              "list_type": "simple"
+            },
+            {
+              "setting": "visible_groups",
+              "humanized_name": "Visible groups",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|1",
+              "list_type": "group",
+              "disallowed_groups": "2",
+              "resolve_group_membership": true
+            },
+            {
+              "setting": "logo",
+              "humanized_name": "Logo",
+              "type": "upload",
+              "default": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "value": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png"
+            },
+            {
+              "setting": "star",
+              "humanized_name": "Star",
+              "type": "icon",
+              "default": "star",
+              "value": "star"
+            },
+            {
+              "setting": "config_json",
+              "humanized_name": "Config JSON",
+              "type": "string",
+              "default": "{}",
+              "value": "{}",
+              "textarea": false,
+              "json_schema": {
+                "type": "object"
+              }
+            },
+            {
+              "setting": "count",
+              "humanized_name": "Count",
+              "type": "integer",
+              "default": 5,
+              "value": 5
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1,
+              "value": 1.0
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Typed settings",
+          "description": null,
+          "created_at": "2026-10-14T23:12:30.104Z",
+          "updated_at": "2026-10-14T23:12:30.104Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "description": "The links",
+              "objects_schema": {
+                "name": "link",
+                "identifier": "name",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true,
+                    "validations": {
+                      "max_length": 20
+                    }
+                  },
+                  "url": {
+                    "type": "string",
+                    "validations": {
+                      "url": true
+                    }
+                  },
+                  "icon": {
+                    "type": "icon"
+                  },
+                  "image": {
+                    "type": "upload"
+                  },
+                  "category_ids": {
+                    "type": "categories",
+                    "validations": {
+                      "max": 2
+                    }
+                  },
+                  "tags": {
+                    "type": "tags"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "validations": {
+                      "min": 1,
+                      "max": 10
+                    }
+                  },
+                  "kind": {
+                    "type": "enum",
+                    "choices": [
+                      "a",
+                      "b"
+                    ]
+                  },
+                  "when": {
+                    "type": "datetime"
+                  },
+                  "topic": {
+                    "type": "topic"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        },
+                        "groups": {
+                          "type": "groups",
+                          "disallowed_groups": "1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "nav_items",
+              "humanized_name": "Nav items",
+              "type": "list",
+              "default": "a|b",
+              "value": "a|b",
+              "list_type": "simple"
+            },
+            {
+              "setting": "visible_groups",
+              "humanized_name": "Visible groups",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|1",
+              "list_type": "group",
+              "disallowed_groups": "2",
+              "resolve_group_membership": true
+            },
+            {
+              "setting": "logo",
+              "humanized_name": "Logo",
+              "type": "upload",
+              "default": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "value": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png"
+            },
+            {
+              "setting": "star",
+              "humanized_name": "Star",
+              "type": "icon",
+              "default": "star",
+              "value": "star"
+            },
+            {
+              "setting": "config_json",
+              "humanized_name": "Config JSON",
+              "type": "string",
+              "default": "{}",
+              "value": "{}",
+              "textarea": false,
+              "json_schema": {
+                "type": "object"
+              }
+            },
+            {
+              "setting": "count",
+              "humanized_name": "Count",
+              "type": "integer",
+              "default": 5,
+              "value": 5
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1,
+              "value": 1.0
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "links": [
+          {
+            "url": "https://example.com/docs",
+            "flag": false,
+            "icon": "book",
+            "kind": "b",
+            "name": "Docs",
+            "tags": [
+              "howto"
+            ],
+            "when": "2026-10-14T10:00:00Z",
+            "image": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+            "weight": 3,
+            "children": [
+              {
+                "label": "Kid",
+                "groups": [
+                  3
+                ]
+              }
+            ],
+            "category_ids": [
+              2,
+              4
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": {
+          "2": {
+            "id": 2,
+            "name": "Site Feedback",
+            "color": "808281",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "thought_balloon",
+            "slug": "site-feedback",
+            "topic_count": 1,
+            "post_count": 1,
+            "position": 1,
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "topic_url": "/t/about-the-site-feedback-category/1",
+            "read_restricted": false,
+            "permission": null,
+            "notification_level": null,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": null,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          },
+          "4": {
+            "id": 4,
+            "name": "General",
+            "color": "25AAE2",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "blue_book",
+            "slug": "general",
+            "topic_count": 3,
+            "post_count": 6,
+            "position": 3,
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+            "topic_url": "/t/about-the-general-category/3",
+            "read_restricted": false,
+            "permission": null,
+            "notification_level": null,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": null,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          }
+        },
+        "property_descriptions": {
+          "name.label": "Name",
+          "name.description": "The link's name",
+          "children.label.label": "Child label"
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The property at JSON Pointer '/0/name' must be present. The property at JSON Pointer '/0/url' must be a valid URL. The property at JSON Pointer '/0/category_ids' must be an array of valid category ids. The property at JSON Pointer '/0/tags' must be an array of valid tag names. The property at JSON Pointer '/0/weight' must be smaller than or equal to 10. The property at JSON Pointer '/0/kind' must be one of the following [\"a\", \"b\"]. The property at JSON Pointer '/0/when' must be a valid datetime. The property at JSON Pointer '/0/topic' must be a valid topic id. The property at JSON Pointer '/0/flag' must be a boolean. The property at JSON Pointer '/0/children/0/label' must be present. The property at JSON Pointer '/0/children/0/groups' must be an array of valid group ids. The property at JSON Pointer '/1/name' must be at most 20 characters long. The property at JSON Pointer '/1/image' must be a valid upload id. The property at JSON Pointer '/1/category_ids' must have at most 2 category ids. The property at JSON Pointer '/1/weight' must be larger than or equal to 1."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "visible_groups": "5|3"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "logo": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Value must be between -Infinity and 10."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "star": "far-heart"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Typed settings",
+          "description": null,
+          "created_at": "2026-10-14T23:12:30.104Z",
+          "updated_at": "2026-10-14T23:12:30.104Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "url": "https://example.com/docs",
+                  "flag": false,
+                  "icon": "book",
+                  "kind": "b",
+                  "name": "Docs",
+                  "tags": [
+                    "howto"
+                  ],
+                  "when": "2026-10-14T10:00:00Z",
+                  "image": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+                  "weight": 3,
+                  "children": [
+                    {
+                      "label": "Kid",
+                      "groups": [
+                        3
+                      ]
+                    }
+                  ],
+                  "category_ids": [
+                    2,
+                    4
+                  ]
+                }
+              ],
+              "description": "The links",
+              "objects_schema": {
+                "name": "link",
+                "identifier": "name",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true,
+                    "validations": {
+                      "max_length": 20
+                    }
+                  },
+                  "url": {
+                    "type": "string",
+                    "validations": {
+                      "url": true
+                    }
+                  },
+                  "icon": {
+                    "type": "icon"
+                  },
+                  "image": {
+                    "type": "upload"
+                  },
+                  "category_ids": {
+                    "type": "categories",
+                    "validations": {
+                      "max": 2
+                    }
+                  },
+                  "tags": {
+                    "type": "tags"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "validations": {
+                      "min": 1,
+                      "max": 10
+                    }
+                  },
+                  "kind": {
+                    "type": "enum",
+                    "choices": [
+                      "a",
+                      "b"
+                    ]
+                  },
+                  "when": {
+                    "type": "datetime"
+                  },
+                  "topic": {
+                    "type": "topic"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        },
+                        "groups": {
+                          "type": "groups",
+                          "disallowed_groups": "1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "nav_items",
+              "humanized_name": "Nav items",
+              "type": "list",
+              "default": "a|b",
+              "value": "x|y",
+              "list_type": "simple"
+            },
+            {
+              "setting": "visible_groups",
+              "humanized_name": "Visible groups",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|3",
+              "list_type": "group",
+              "disallowed_groups": "2",
+              "resolve_group_membership": true
+            },
+            {
+              "setting": "logo",
+              "humanized_name": "Logo",
+              "type": "upload",
+              "default": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif"
+            },
+            {
+              "setting": "star",
+              "humanized_name": "Star",
+              "type": "icon",
+              "default": "star",
+              "value": "far-heart"
+            },
+            {
+              "setting": "config_json",
+              "humanized_name": "Config JSON",
+              "type": "string",
+              "default": "{}",
+              "value": "{}",
+              "textarea": false,
+              "json_schema": {
+                "type": "object"
+              }
+            },
+            {
+              "setting": "count",
+              "humanized_name": "Count",
+              "type": "integer",
+              "default": 5,
+              "value": 5
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1,
+              "value": 2.5
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: setting_name"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Typed settings",
+          "description": null,
+          "created_at": "2026-10-14T23:12:30.104Z",
+          "updated_at": "2026-10-14T23:12:30.104Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "url": "https://example.com/docs",
+                  "flag": false,
+                  "icon": "book",
+                  "kind": "b",
+                  "name": "Docs",
+                  "tags": [
+                    "howto"
+                  ],
+                  "when": "2026-10-14T10:00:00Z",
+                  "image": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+                  "weight": 3,
+                  "children": [
+                    {
+                      "label": "Kid",
+                      "groups": [
+                        3
+                      ]
+                    }
+                  ],
+                  "category_ids": [
+                    2,
+                    4
+                  ]
+                }
+              ],
+              "description": "The links",
+              "objects_schema": {
+                "name": "link",
+                "identifier": "name",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true,
+                    "validations": {
+                      "max_length": 20
+                    }
+                  },
+                  "url": {
+                    "type": "string",
+                    "validations": {
+                      "url": true
+                    }
+                  },
+                  "icon": {
+                    "type": "icon"
+                  },
+                  "image": {
+                    "type": "upload"
+                  },
+                  "category_ids": {
+                    "type": "categories",
+                    "validations": {
+                      "max": 2
+                    }
+                  },
+                  "tags": {
+                    "type": "tags"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "validations": {
+                      "min": 1,
+                      "max": 10
+                    }
+                  },
+                  "kind": {
+                    "type": "enum",
+                    "choices": [
+                      "a",
+                      "b"
+                    ]
+                  },
+                  "when": {
+                    "type": "datetime"
+                  },
+                  "topic": {
+                    "type": "topic"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        },
+                        "groups": {
+                          "type": "groups",
+                          "disallowed_groups": "1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "nav_items",
+              "humanized_name": "Nav items",
+              "type": "list",
+              "default": "a|b",
+              "value": "x|y",
+              "list_type": "simple"
+            },
+            {
+              "setting": "visible_groups",
+              "humanized_name": "Visible groups",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|3",
+              "list_type": "group",
+              "disallowed_groups": "2",
+              "resolve_group_membership": true
+            },
+            {
+              "setting": "logo",
+              "humanized_name": "Logo",
+              "type": "upload",
+              "default": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif"
+            },
+            {
+              "setting": "star",
+              "humanized_name": "Star",
+              "type": "icon",
+              "default": "star",
+              "value": "far-heart"
+            },
+            {
+              "setting": "config_json",
+              "humanized_name": "Config JSON",
+              "type": "string",
+              "default": "{}",
+              "value": "{}",
+              "textarea": false,
+              "json_schema": {
+                "type": "object"
+              }
+            },
+            {
+              "setting": "count",
+              "humanized_name": "Count",
+              "type": "integer",
+              "default": 5,
+              "value": 5
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1,
+              "value": 2.5
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    identifier: name\n    properties:\n      name:\n        type: string\n        required: true\n        validations:\n          max_length: 20\n      url:\n        type: string\n        validations:\n          url: true\n      icon:\n        type: icon\n      image:\n        type: upload\n      category_ids:\n        type: categories\n        validations:\n          max: 2\n      tags:\n        type: tags\n      weight:\n        type: integer\n        validations:\n          min: 1\n          max: 10\n      kind:\n        type: enum\n        choices: [a, b]\n      when:\n        type: datetime\n      topic:\n        type: topic\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\n            groups:\n              type: groups\n              disallowed_groups: \"1\"\nnav_items:\n  type: list\n  default: \"a|b\"\n  list_type: simple\nvisible_groups:\n  type: list\n  list_type: group\n  default: \"0|1\"\n  disallowed_groups: \"2\"\n  resolve_group_membership: true\nlogo:\n  type: upload\n  default: hero\nstar:\n  type: icon\n  default: star\nconfig_json:\n  type: string\n  default: \"{}\"\n  json_schema: '{\"type\": \"object\"}'\ncount:\n  type: integer\n  default: 5\n  max: 10\nratio:\n  type: float\n  default: 1\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    settings:\n      links:\n        description: The links\n        schema:\n          properties:\n            name:\n              label: Name\n              description: The link's name\n            children:\n              schema:\n                properties:\n                  label:\n                    label: Child label\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "etag": null,
+          "sha1": "043b0aa221f492e60cda981a865188e2c0afe6e0",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": null,
+          "filesize": 48867,
+          "extension": "png",
+          "created_at": "2026-10-14T23:12:30.027009",
+          "updated_at": "2026-10-14T23:12:30.03267",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        },
+        {
+          "id": 37,
+          "url": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+          "etag": null,
+          "sha1": "f5cebe42706fcad01568026c8db70c8ec640d4a2",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": null,
+          "filesize": 44,
+          "extension": "gif",
+          "created_at": "2026-10-14T23:12:30.065938",
+          "updated_at": "2026-10-14T23:12:30.071723",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "static.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zRwMaTZkP5qqLAKyWAyXUl2M7iE=",
+            "created_at": "2026-10-14T23:12:28.243607",
+            "rotated_at": "2026-10-14T23:12:28.241529",
+            "updated_at": "2026-10-14T23:12:28.243607",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zRwMaTZkP5qqLAKyWAyXUl2M7iE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T23:12:30.003947",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zRwMaTZkP5qqLAKyWAyXUl2M7iE=",
+            "created_at": "2026-10-14T23:12:28.243607",
+            "rotated_at": "2026-10-14T23:12:28.241529",
+            "updated_at": "2026-10-14T23:12:28.243607",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zRwMaTZkP5qqLAKyWAyXUl2M7iE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-10-14T23:12:30.104Z\",\"updated_at\":\"2026-10-14T23:12:30.104Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"a|b\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|1\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"star\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":1.0}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    identifier: name\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n        validations:\\n          max_length: 20\\n      url:\\n        type: string\\n        validations:\\n          url: true\\n      icon:\\n        type: icon\\n      image:\\n        type: upload\\n      category_ids:\\n        type: categories\\n        validations:\\n          max: 2\\n      tags:\\n        type: tags\\n      weight:\\n        type: integer\\n        validations:\\n          min: 1\\n          max: 10\\n      kind:\\n        type: enum\\n        choices: [a, b]\\n      when:\\n        type: datetime\\n      topic:\\n        type: topic\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\n            groups:\\n              type: groups\\n              disallowed_groups: \\\"1\\\"\\nnav_items:\\n  type: list\\n  default: \\\"a|b\\\"\\n  list_type: simple\\nvisible_groups:\\n  type: list\\n  list_type: group\\n  default: \\\"0|1\\\"\\n  disallowed_groups: \\\"2\\\"\\n  resolve_group_membership: true\\nlogo:\\n  type: upload\\n  default: hero\\nstar:\\n  type: icon\\n  default: star\\nconfig_json:\\n  type: string\\n  default: \\\"{}\\\"\\n  json_schema: '{\\\"type\\\": \\\"object\\\"}'\\ncount:\\n  type: integer\\n  default: 5\\n  max: 10\\nratio:\\n  type: float\\n  default: 1\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  theme_metadata:\\n    settings:\\n      links:\\n        description: The links\\n        schema:\\n          properties:\\n            name:\\n              label: Name\\n              description: The link's name\\n            children:\\n              schema:\\n                properties:\\n                  label:\\n                    label: Child label\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:30.279433",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:30.279433",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings: links",
+          "topic_id": null,
+          "new_value": "[{\"name\": \"Docs\", \"url\": \"https://example.com/docs\", \"icon\": \"book\", \"image\": \"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\", \"category_ids\": [2, 4], \"tags\": [\"howto\"], \"weight\": 3, \"kind\": \"b\", \"when\": \"2026-10-14T10:00:00Z\", \"flag\": false, \"children\": [{\"label\": \"Kid\", \"groups\": [1, 3]}]}]",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:30.637367",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:30.637367",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "[{\"name\" => \"Home\", \"url\" => \"/latest\"}]",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings: visible_groups",
+          "topic_id": null,
+          "new_value": "0|2|3",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:30.989972",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:30.989972",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "5|1",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings: logo",
+          "topic_id": null,
+          "new_value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:31.408153",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:31.408153",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings: star",
+          "topic_id": null,
+          "new_value": "far-heart",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:31.713323",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:31.713323",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "star",
+          "target_user_id": null
+        },
+        {
+          "id": 79,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Typed settings\",\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"url\":\"https://example.com/docs\",\"flag\":false,\"icon\":\"book\",\"kind\":\"b\",\"name\":\"Docs\",\"tags\":[\"howto\"],\"when\":\"2026-10-14T10:00:00Z\",\"image\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"weight\":3,\"children\":[{\"label\":\"Kid\",\"groups\":[3]}],\"category_ids\":[2,4]}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"x|y\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|3\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"far-heart\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":2.5}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:32.008513",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:32.008513",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Typed settings\",\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"url\":\"https://example.com/docs\",\"flag\":false,\"icon\":\"book\",\"kind\":\"b\",\"name\":\"Docs\",\"tags\":[\"howto\"],\"when\":\"2026-10-14T10:00:00Z\",\"image\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"weight\":3,\"children\":[{\"label\":\"Kid\",\"groups\":[3]}],\"category_ids\":[2,4]}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"a|b\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|3\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"far-heart\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":1.0}]}",
+          "target_user_id": null
+        },
+        {
+          "id": 80,
+          "email": null,
+          "action": 5,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Typed settings",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:32.26944",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:32.26944",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-10-14T23:12:30.104Z\",\"updated_at\":\"2026-10-14T23:12:30.104Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T23:12:30.040512"
+        },
+        {
+          "id": 37,
+          "user_id": 1,
+          "upload_id": 37,
+          "created_at": "2026-10-14T23:12:30.07884"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "uploads": 36,
+    "user_histories": 74,
+    "user_uploads": 36
+  },
+  "unordered_responses": [
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/11/body/theme/theme_fields",
+    "/responses/13/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "6f2ef03ed4dc98e6441607d402c511b25fc2c7ded525e1b2754c7c48daf9be6f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

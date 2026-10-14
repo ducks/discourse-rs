@@ -792,7 +792,7 @@ pub async fn ensure_baked(
             (Some(digest), error, cv)
         } else if f.target_id == SETTINGS {
             let errors = if f.name == "yaml" {
-                validate_yaml(env, &f.value)
+                validate_yaml(conn, env, &f.value).await?
             } else {
                 f.error.clone()
             };
@@ -1057,82 +1057,248 @@ fn javascript_digest(env: &Env<'_>, content: &str) -> String {
     )
 }
 
-/// `ThemeField#validate_yaml!`: the settings' errors, joined.
-fn validate_yaml(env: &Env<'_>, src: &str) -> Option<String> {
-    if crate::ruby::is_blank(src) {
-        return None;
+/// `I18n.t` of a settings error: a pluralized key without its count is
+/// the hash Ruby joins into the message (`{one: "...", other: "..."}`).
+fn settings_error(i18n: &crate::i18n::I18n, key: &str, args: &[(&str, &str)]) -> String {
+    let key = format!("themes.settings_errors.{key}");
+    if let Some(text) = i18n.t_with(&key, args) {
+        return text;
     }
-    let tr = |key: &str, args: &[(&str, &str)]| {
-        env.cx
-            .i18n
-            .t_with(&format!("themes.settings_errors.{key}"), args)
-            .unwrap_or_default()
+    // The plural forms in the locale file's order.
+    let mut forms = Map::new();
+    for form in ["zero", "one", "two", "few", "many", "other"] {
+        if let Some(text) = i18n.t(&format!("{key}.{form}")) {
+            forms.insert(form.to_string(), Value::String(text.to_string()));
+        }
+    }
+    if forms.is_empty() {
+        return format!("Translation missing: en.{key}");
+    }
+    crate::ruby::inspect_value(&Value::Object(forms))
+}
+
+/// A YAML number as Ruby writes it, with create_opts' infinite bounds.
+fn bound_to_s(bound: Option<&Yaml>, negative: bool) -> String {
+    match bound {
+        Some(Yaml::Number(n)) => n.to_string(),
+        Some(other) => themes::yaml_json(other).to_string(),
+        None if negative => "-Infinity".into(),
+        None => "Infinity".into(),
+    }
+}
+
+/// `validate_value_in_range!` with create_opts' bounds (an absent min is
+/// -Infinity, an absent max Infinity).
+fn range_error(
+    i18n: &crate::i18n::I18n,
+    prefix: &str,
+    value: f64,
+    setting: &themes::Setting,
+) -> Option<String> {
+    let num = |y: &Option<Yaml>| y.as_ref().and_then(Yaml::as_f64);
+    let min = num(&setting.min).unwrap_or(f64::NEG_INFINITY);
+    let max = num(&setting.max).unwrap_or(f64::INFINITY);
+    let min_s = bound_to_s(setting.min.as_ref(), true);
+    let max_s = bound_to_s(setting.max.as_ref(), false);
+    if max != f64::INFINITY && !(min..=max).contains(&value) {
+        Some(settings_error(
+            i18n,
+            &format!("{prefix}_value_not_valid_min_max"),
+            &[("min", &min_s), ("max", &max_s)],
+        ))
+    } else if value < min {
+        Some(settings_error(
+            i18n,
+            &format!("{prefix}_value_not_valid_min"),
+            &[("min", &min_s)],
+        ))
+    } else if value > max {
+        Some(settings_error(
+            i18n,
+            &format!("{prefix}_value_not_valid_max"),
+            &[("max", &max_s)],
+        ))
+    } else {
+        None
+    }
+}
+
+/// `validate_object_schema_resolve_group_membership`
+fn schema_group_membership_errors(i18n: &crate::i18n::I18n, schema: &Value) -> Vec<String> {
+    let mut errors = Vec::new();
+    let Some(properties) = schema.get("properties").and_then(Value::as_object) else {
+        return errors;
     };
-    let parsed: Yaml = match serde_yaml_ng::from_str(src) {
-        Ok(p) => p,
-        Err(_) => return Some("theme settings YAML that does not parse".into()),
-    };
+    for (name, attributes) in properties {
+        let kind = attributes.get("type").and_then(Value::as_str);
+        if attributes
+            .get("resolve_group_membership")
+            .is_some_and(|v| !matches!(v, Value::Null | Value::Bool(false)))
+            && kind != Some("groups")
+        {
+            errors.push(settings_error(
+                i18n,
+                "resolve_group_membership_requires_groups_property",
+                &[("property", name)],
+            ));
+        }
+        if kind == Some("objects") {
+            errors.extend(schema_group_membership_errors(
+                i18n,
+                attributes.get("schema").unwrap_or(&Value::Null),
+            ));
+        }
+    }
+    errors
+}
+
+/// `ThemeSettingsValidator.validate_value`: a value's errors for its
+/// setting.
+pub async fn validate_value(
+    conn: &mut PgConnection,
+    i18n: &crate::i18n::I18n,
+    value: &Value,
+    setting: &themes::Setting,
+) -> Result<Vec<String>, AppError> {
+    let mut errors = Vec::new();
+    if setting.resolve_group_membership {
+        if setting.type_name != "list" {
+            errors.push(settings_error(
+                i18n,
+                "resolve_group_membership_requires_list",
+                &[],
+            ));
+        } else if setting.list_type.as_ref().and_then(Yaml::as_str) != Some("group") {
+            errors.push(settings_error(
+                i18n,
+                "resolve_group_membership_requires_group_list",
+                &[],
+            ));
+        }
+    }
+    if setting.type_name == "objects" && setting.schema.as_ref().is_some_and(|s| !s.is_null()) {
+        errors.extend(schema_group_membership_errors(i18n, &setting.schema()));
+    }
+    match setting.type_name {
+        "enum" => {
+            let text = match value {
+                Value::String(s) => Some(s.as_str()),
+                _ => None,
+            };
+            let found = setting.choices.iter().any(|c| {
+                themes::yaml_json(c) == *value || text.is_some_and(|t| choice_to_s(c) == t)
+            });
+            if !found {
+                let choices: Vec<String> = setting.choices.iter().map(choice_to_s).collect();
+                errors.push(settings_error(
+                    i18n,
+                    "enum_value_not_valid",
+                    &[("choices", &choices.join(", "))],
+                ));
+            }
+        }
+        "integer" | "float" => {
+            let number = value.as_f64().ok_or(Unsupported(
+                "a numeric theme setting compared with a value that isn't a number (ArgumentError)",
+            ))?;
+            errors.extend(range_error(i18n, "number", number, setting));
+        }
+        "string" => {
+            let length = match value {
+                Value::String(s) => s.chars().count(),
+                Value::Null => 0,
+                other => other.to_string().chars().count(),
+            };
+            errors.extend(range_error(i18n, "string", length as f64, setting));
+        }
+        "objects" => {
+            let Value::Array(objects) = value else {
+                return Err(Unsupported("an objects theme setting that is not a list").into());
+            };
+            errors.extend(
+                crate::schema_objects::validate_objects(conn, i18n, &setting.schema(), objects)
+                    .await?,
+            );
+        }
+        _ => {}
+    }
+    Ok(errors)
+}
+
+/// `ThemeField#validate_yaml!`: the settings' errors, joined.
+async fn validate_yaml(
+    conn: &mut PgConnection,
+    env: &Env<'_>,
+    src: &str,
+) -> Result<Option<String>, AppError> {
+    if crate::ruby::is_blank(src) {
+        return Ok(None);
+    }
+    let i18n = env.cx.i18n;
+    let parsed: Yaml = serde_yaml_ng::from_str(src).map_err(|_| {
+        Unsupported("theme settings YAML that does not parse (Psych's error message)")
+    })?;
     let Some(map) = parsed.as_mapping() else {
-        return Some(tr("invalid_yaml", &[]));
+        return Ok(Some(settings_error(i18n, "invalid_yaml", &[])));
     };
     let mut errors = Vec::new();
-    for (k, v) in map {
-        let name = k.as_str().unwrap_or_default().to_string();
-        let (default, kind) = match v {
-            Yaml::Mapping(h) => {
-                let default = h.get("default").cloned().unwrap_or(Yaml::Null);
-                let kind = match h.get("type") {
-                    Some(t) => t.as_str().map(str::to_string),
-                    None => guess_setting_type(&default),
-                };
-                (default, kind)
+    for (parsed, setting) in themes::settings_in(map)? {
+        let name = parsed.name.as_str();
+        // ThemeSetting's validations: the name's length, the type.
+        if name.chars().count() > 255 {
+            errors.push(settings_error(i18n, "name_too_long", &[("name", name)]));
+        }
+        let Some(setting) = setting else {
+            errors.push(settings_error(
+                i18n,
+                "data_type_inclusion",
+                &[("name", name)],
+            ));
+            if parsed.default.is_null() {
+                errors.push(settings_error(
+                    i18n,
+                    "default_value_missing",
+                    &[("name", name)],
+                ));
             }
-            other => (other.clone(), guess_setting_type(other)),
+            continue;
         };
-        if name.len() > 255 {
-            errors.push(tr("name_too_long", &[("name", &name)]));
-        }
-        if kind.is_none() {
-            errors.push(tr("data_type_inclusion", &[("name", &name)]));
-        }
-        if default.is_null() {
-            errors.push(tr("default_value_missing", &[("name", &name)]));
+        if parsed.default.is_null() {
+            errors.push(settings_error(
+                i18n,
+                "default_value_missing",
+                &[("name", name)],
+            ));
             continue;
         }
-        let matches_type = match kind.as_deref() {
-            Some("integer") => matches!(&default, Yaml::Number(n) if n.is_i64() || n.is_u64()),
-            Some("float") => default.is_number(),
-            Some("bool") => default.is_bool(),
-            Some("list") | Some("icon") => default.is_string(),
+        let default = themes::yaml_json(&parsed.default);
+        let matches_type = match setting.type_name {
+            "integer" => matches!(&parsed.default, Yaml::Number(n) if n.is_i64() || n.is_u64()),
+            "float" => parsed.default.is_number(),
+            "bool" => parsed.default.is_bool(),
+            "list" | "icon" => parsed.default.is_string(),
+            "objects" => default
+                .as_array()
+                .is_some_and(|items| items.iter().all(Value::is_object)),
             _ => true,
         };
         if !matches_type {
-            errors.push(tr("default_not_match_type", &[("name", &name)]));
+            errors.push(settings_error(
+                i18n,
+                "default_not_match_type",
+                &[("name", name)],
+            ));
         }
-        if kind.as_deref() == Some("enum") {
-            let choices: Vec<Yaml> = v
-                .as_mapping()
-                .and_then(|h| h.get("choices"))
-                .and_then(Yaml::as_sequence)
-                .cloned()
-                .unwrap_or_default();
-            if !choices.is_empty() && !choices.contains(&default) {
-                // create_opts appends the default to the choices, so it
-                // always validates.
-            }
+        let value_errors = validate_value(conn, i18n, &default, &setting).await?;
+        if !value_errors.is_empty() {
+            errors.push(settings_error(
+                i18n,
+                "default_value_not_valid",
+                &[("name", name), ("error_messages", &value_errors.join(" "))],
+            ));
         }
     }
-    (!errors.is_empty()).then(|| errors.join("\n"))
-}
-
-fn guess_setting_type(v: &Yaml) -> Option<String> {
-    match v {
-        Yaml::Number(n) if n.is_i64() || n.is_u64() => Some("integer".into()),
-        Yaml::Number(_) => Some("float".into()),
-        Yaml::String(_) => Some("string".into()),
-        Yaml::Bool(_) => Some("bool".into()),
-        _ => None,
-    }
+    Ok((!errors.is_empty()).then(|| errors.join("\n")))
 }
 
 /// `ThemeSettingsManager#value=` failing.
@@ -1143,37 +1309,120 @@ pub enum SettingError {
     Invalid(String),
 }
 
-/// `cached_settings[name]`: the setting's value as Ruby has it.
-pub fn setting_value(setting: &themes::Setting, stored: Option<&str>) -> Value {
-    match setting.type_name {
-        "bool" => {
-            let raw = match stored {
-                Some(s) => json!(s),
-                None => themes::yaml_json(&setting.default),
-            };
-            json!(raw == json!(true) || raw == json!("true"))
-        }
-        _ => setting.value(stored),
-    }
+/// `cached_settings[name]`: the setting's value as Ruby has it, None for
+/// no such setting.
+pub async fn cached_setting(
+    conn: &mut PgConnection,
+    vcx: &themes::ValueCx<'_>,
+    theme_id: i32,
+    name: &str,
+) -> Result<Option<Value>, AppError> {
+    let settings = themes::settings_of(conn, theme_id).await?;
+    let stored = themes::stored_settings(conn, theme_id).await?;
+    let Some(s) = settings.into_iter().find(|s| s.name == name) else {
+        return Ok(None);
+    };
+    let row = s.row(&stored).cloned();
+    Ok(Some(
+        themes::setting_value(
+            conn,
+            vcx,
+            theme_id,
+            &s,
+            row.as_ref(),
+            themes::Reading::Value,
+        )
+        .await?,
+    ))
 }
 
-/// A Ruby value as the string `previous_value` column stores it.
+/// A Ruby value as the string `previous_value` column stores it (arrays
+/// and hashes as Ruby inspects them).
 pub fn log_string(v: &Value) -> Option<String> {
     match v {
         Value::Null => None,
         Value::Bool(b) => Some(if *b { "t" } else { "f" }.into()),
         Value::String(s) => Some(s.clone()),
         Value::Number(n) => Some(n.to_string()),
-        other => Some(other.to_string()),
+        other => Some(crate::schema_objects::inspect(other)),
     }
 }
 
+/// A param's `to_s` as the managers store it.
+fn param_to_s(v: Option<&Value>) -> String {
+    match v {
+        None | Some(Value::Null) => String::new(),
+        Some(Value::String(s)) => s.clone(),
+        Some(other) => other.to_string(),
+    }
+}
+
+/// `remove_disallowed_groups_from_objects`
+fn remove_disallowed_groups(objects: &mut [Value], schema: &Value) {
+    let Some(properties) = schema.get("properties").and_then(Value::as_object) else {
+        return;
+    };
+    for object in objects.iter_mut() {
+        let Value::Object(map) = object else {
+            continue;
+        };
+        for (name, attributes) in properties {
+            if !map.contains_key(name.as_str()) {
+                continue;
+            }
+            match attributes.get("type").and_then(Value::as_str) {
+                Some("groups") => {
+                    let disallowed: Vec<i64> = match attributes.get("disallowed_groups") {
+                        None | Some(Value::Null) => continue,
+                        Some(v) => param_to_s(Some(v))
+                            .split('|')
+                            .map(crate::ruby::to_i)
+                            .collect(),
+                    };
+                    if disallowed.is_empty() {
+                        continue;
+                    }
+                    let kept: Vec<Value> = match &map[name.as_str()] {
+                        Value::Null => Vec::new(),
+                        Value::Array(items) => items.clone(),
+                        other => vec![other.clone()],
+                    }
+                    .into_iter()
+                    .filter(|id| !id.as_i64().is_some_and(|i| disallowed.contains(&i)))
+                    .collect();
+                    map.insert(name.clone(), Value::Array(kept));
+                }
+                Some("objects") => {
+                    if let Some(Value::Array(children)) = map.get_mut(name.as_str()) {
+                        remove_disallowed_groups(
+                            children,
+                            attributes.get("schema").unwrap_or(&Value::Null),
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
+/// `ThemeSetting#json_value` over `MAXIMUM_JSON_VALUE_SIZE_BYTES`.
+const MAX_JSON_VALUE_BYTES: usize = 512 * 1024;
+
+/// What `value=` stores: the value column, or an objects setting's
+/// json_value.
+enum Stored {
+    Text(String),
+    Json(Option<Value>),
+}
+
 /// `Theme#update_setting`: the value validated, cast, and stored
-/// (ThemeSetting's after_save refreshing the theme's setting modifiers and
-/// invalidating its settings field). Returns whether the setting asks for
-/// a refresh.
+/// (ThemeSetting's after_save: the upload references, the theme's setting
+/// modifiers refreshed, its settings field invalidated). Returns whether
+/// the setting asks for a refresh.
 pub async fn update_setting(
     conn: &mut PgConnection,
+    vcx: &themes::ValueCx<'_>,
     theme_id: i32,
     name: &str,
     new_value: Option<&Value>,
@@ -1183,108 +1432,236 @@ pub async fn update_setting(
     let Some(setting) = settings.into_iter().find(|s| s.name == name) else {
         return Ok(Err(SettingError::NotFound));
     };
-    let text = |v: &Value| match v {
-        Value::String(s) => s.clone(),
-        Value::Null => String::new(),
-        other => other.to_string(),
-    };
-    // ensure_is_valid_value! on the value as given (after the numeric and
-    // boolean casts of their managers).
+    let invalid = |errors: Vec<String>| Ok(Err(SettingError::Invalid(errors.join(" "))));
+    // Each manager's value= casts, then ensure_is_valid_value! (not for
+    // nil), then the value's to_s.
     let stored = match setting.type_name {
         "bool" => {
             let b = matches!(new_value, Some(Value::Bool(true)))
                 || new_value.is_some_and(|v| *v == json!("true"));
-            b.to_string()
+            Stored::Text(b.to_string())
         }
         "integer" => {
             let i = match new_value {
-                Some(Value::Number(n)) if n.is_i64() => n.as_i64().unwrap_or(0),
-                Some(v) => crate::ruby::to_i(&text(v)),
-                None => 0,
+                Some(Value::Number(n)) if n.is_f64() => n.as_f64().unwrap_or(0.0).trunc() as i64,
+                Some(Value::Number(n)) => n.as_i64().unwrap_or(0),
+                v => crate::ruby::to_i(&param_to_s(v)),
             };
-            if let Some(err) = range_error(i18n, "number", i as f64, &setting) {
-                return Ok(Err(SettingError::Invalid(err)));
+            let errors = validate_value(conn, i18n, &json!(i), &setting).await?;
+            if !errors.is_empty() {
+                return invalid(errors);
             }
-            i.to_string()
+            Stored::Text(i.to_string())
         }
         "float" => {
             let f = match new_value {
                 Some(Value::Number(n)) => n.as_f64().unwrap_or(0.0),
-                Some(v) => crate::ruby::to_f(&text(v)),
-                None => 0.0,
+                v => crate::ruby::to_f(&param_to_s(v)),
             };
-            if let Some(err) = range_error(i18n, "number", f, &setting) {
-                return Ok(Err(SettingError::Invalid(err)));
+            let errors = validate_value(conn, i18n, &json!(f), &setting).await?;
+            if !errors.is_empty() {
+                return invalid(errors);
             }
-            crate::ruby::float_to_s(f)
+            Stored::Text(crate::ruby::float_to_s(f))
         }
-        "string" => {
-            let s = new_value.map(text).unwrap_or_default();
-            if new_value.is_some()
-                && let Some(err) = range_error(i18n, "string", s.chars().count() as f64, &setting)
+        "objects" => {
+            let objects: Option<Value> = match new_value {
+                None | Some(Value::Null) => None,
+                Some(Value::String(text)) => Some(serde_json::from_str(text).map_err(|_| {
+                    std::io::Error::other("JSON::ParserError: an objects setting's value")
+                })?),
+                Some(other) => Some(other.clone()),
+            };
+            let schema = setting.schema();
+            let objects = match objects {
+                Some(Value::Array(mut items)) if !items.is_empty() => {
+                    remove_disallowed_groups(&mut items, &schema);
+                    let errors =
+                        validate_value(conn, i18n, &Value::Array(items.clone()), &setting).await?;
+                    if !errors.is_empty() {
+                        return invalid(errors);
+                    }
+                    Some(Value::Array(
+                        crate::schema_objects::normalize_uploads(conn, &schema, &items).await?,
+                    ))
+                }
+                Some(Value::Array(items)) => {
+                    let errors = validate_value(conn, i18n, &json!([]), &setting).await?;
+                    if !errors.is_empty() {
+                        return invalid(errors);
+                    }
+                    Some(Value::Array(items))
+                }
+                None => None,
+                Some(_) => {
+                    return Err(Unsupported("an objects theme setting set to a non-list").into());
+                }
+            };
+            if objects
+                .as_ref()
+                .is_some_and(|o| o.to_string().len() > MAX_JSON_VALUE_BYTES)
             {
-                return Ok(Err(SettingError::Invalid(err)));
+                return Err(std::io::Error::other(
+                    "ActiveRecord::RecordInvalid: json_value too large",
+                )
+                .into());
             }
-            s
+            Stored::Json(objects)
         }
-        "enum" => {
-            let s = new_value.map(text).unwrap_or_default();
-            if new_value.is_some() {
-                // choices.exclude?(value) && choices.map(&:to_s).exclude?(value)
-                let found = setting.choices.iter().any(|c| {
-                    themes::yaml_json(c) == *new_value.unwrap_or(&Value::Null)
-                        || choice_to_s(c) == s
-                });
-                if !found {
-                    let choices: Vec<String> = setting.choices.iter().map(choice_to_s).collect();
-                    let message = i18n
-                        .t_with(
-                            "themes.settings_errors.enum_value_not_valid",
-                            &[("choices", &choices.join(", "))],
-                        )
-                        .unwrap_or_default();
-                    return Ok(Err(SettingError::Invalid(message)));
+        "upload" => {
+            // A present value: the default's url is the default upload,
+            // another url its upload's id.
+            let text = param_to_s(new_value);
+            let value = if crate::ruby::is_blank(&text) {
+                text
+            } else {
+                let default_url = themes::setting_value(
+                    conn,
+                    vcx,
+                    theme_id,
+                    &setting,
+                    None,
+                    themes::Reading::Default,
+                )
+                .await?;
+                if default_url.as_str() == Some(text.as_str()) {
+                    let field_upload: Option<Option<i32>> = sqlx::query_scalar(
+                        "SELECT upload_id FROM theme_fields WHERE theme_id = $1 AND name = $2 \
+                         AND type_id = $3 ORDER BY id LIMIT 1",
+                    )
+                    .bind(theme_id)
+                    .bind(themes::yaml_json(&setting.default).as_str().unwrap_or(""))
+                    .bind(UPLOAD_VAR)
+                    .fetch_optional(&mut *conn)
+                    .await?;
+                    field_upload
+                        .flatten()
+                        .map_or(String::new(), |id| id.to_string())
+                } else {
+                    let found: Option<i32> =
+                        sqlx::query_scalar("SELECT id FROM uploads WHERE url = $1 LIMIT 1")
+                            .bind(&text)
+                            .fetch_optional(&mut *conn)
+                            .await?;
+                    found.map_or(text, |id| id.to_string())
+                }
+            };
+            Stored::Text(value)
+        }
+        "list" => {
+            let mut text = param_to_s(new_value);
+            let group = setting.list_type.as_ref().and_then(Yaml::as_str) == Some("group");
+            if group
+                && let Some(disallowed) = setting
+                    .disallowed_groups
+                    .as_ref()
+                    .map(|d| param_to_s(Some(&themes::yaml_json(d))))
+                    .filter(|d| !crate::ruby::is_blank(d))
+            {
+                let disallowed: Vec<&str> = disallowed.split('|').collect();
+                text = text
+                    .split('|')
+                    .filter(|id| !id.is_empty() && !disallowed.contains(id))
+                    .collect::<Vec<_>>()
+                    .join("|");
+            }
+            if new_value.is_some_and(|v| !v.is_null()) {
+                let errors = validate_value(conn, i18n, &json!(text), &setting).await?;
+                if !errors.is_empty() {
+                    return invalid(errors);
                 }
             }
-            s
+            Stored::Text(text)
         }
-        _ => return Err(Unsupported("theme settings of this type").into()),
+        // string, enum, icon: validated as given.
+        _ => {
+            if let Some(v) = new_value.filter(|v| !v.is_null()) {
+                let errors = validate_value(conn, i18n, v, &setting).await?;
+                if !errors.is_empty() {
+                    return invalid(errors);
+                }
+            }
+            Stored::Text(param_to_s(new_value))
+        }
     };
-    let existing: Option<(i64, Option<String>)> = sqlx::query_as(
-        "SELECT id, value FROM theme_settings WHERE theme_id = $1 AND name = $2 AND data_type = $3 \
-         ORDER BY id LIMIT 1",
+    let existing: Option<(i64, Option<String>, Option<Value>)> = sqlx::query_as(
+        "SELECT id, value, json_value FROM theme_settings WHERE theme_id = $1 AND name = $2 \
+         AND data_type = $3 ORDER BY id LIMIT 1",
     )
     .bind(theme_id)
     .bind(name)
     .bind(setting.type_id)
     .fetch_optional(&mut *conn)
     .await?;
-    match existing {
-        Some((id, current)) => {
-            if current.as_deref() != Some(stored.as_str()) {
+    let (row_id, changed) = match (&existing, &stored) {
+        (Some((id, current, _)), Stored::Text(text)) => {
+            let changed = current.as_deref() != Some(text.as_str());
+            if changed {
                 sqlx::query(
                     "UPDATE theme_settings SET value = $2, updated_at = now() WHERE id = $1",
                 )
                 .bind(id)
-                .bind(&stored)
+                .bind(text)
                 .execute(&mut *conn)
                 .await?;
             }
+            (*id, changed)
         }
-        None => {
-            sqlx::query(
-                "INSERT INTO theme_settings (name, data_type, theme_id, value, created_at, updated_at) \
-                 VALUES ($1, $2, $3, $4, now(), now())",
+        (Some((id, _, current)), Stored::Json(json)) => {
+            let changed = current != json;
+            if changed {
+                sqlx::query(
+                    "UPDATE theme_settings SET json_value = $2, updated_at = now() WHERE id = $1",
+                )
+                .bind(id)
+                .bind(json)
+                .execute(&mut *conn)
+                .await?;
+            }
+            (*id, changed)
+        }
+        (None, stored) => {
+            let (text, json) = match stored {
+                Stored::Text(t) => (Some(t.clone()), None),
+                Stored::Json(j) => (None, j.clone()),
+            };
+            let id: i64 = sqlx::query_scalar(
+                "INSERT INTO theme_settings (name, data_type, theme_id, value, json_value, \
+                 created_at, updated_at) VALUES ($1, $2, $3, $4, $5, now(), now()) RETURNING id",
             )
             .bind(name)
             .bind(setting.type_id)
             .bind(theme_id)
-            .bind(&stored)
-            .execute(&mut *conn)
+            .bind(&text)
+            .bind(&json)
+            .fetch_one(&mut *conn)
             .await?;
+            (id, true)
         }
+    };
+    // after_save: the setting's upload references.
+    match &stored {
+        Stored::Text(text) if setting.type_name == "upload" && changed => {
+            let id = text.parse::<i64>().ok();
+            crate::upload_references::ensure_exist(conn, "ThemeSetting", row_id, id).await?;
+        }
+        Stored::Json(Some(Value::Array(items))) if changed && !items.is_empty() => {
+            let ids = crate::schema_objects::upload_ids(conn, &setting.schema(), items).await?;
+            crate::upload_references::ensure_exist_many(conn, "ThemeSetting", row_id, &ids).await?;
+        }
+        _ => {}
     }
-    refresh_setting_modifiers(conn, theme_id, name, &stored).await?;
+    let modifier_value = match &stored {
+        Stored::Text(text) => Some(text.clone()),
+        Stored::Json(_) => existing.and_then(|(_, v, _)| v),
+    };
+    refresh_setting_modifiers(
+        conn,
+        theme_id,
+        name,
+        modifier_value.as_deref().unwrap_or(""),
+    )
+    .await?;
     // clear_settings_cache: the settings field invalidated.
     let settings_field: Option<i32> = sqlx::query_scalar(
         "SELECT id FROM theme_fields WHERE theme_id = $1 AND target_id = $2 AND name = 'yaml' \
@@ -1305,35 +1682,6 @@ fn choice_to_s(c: &Yaml) -> String {
     match c {
         Yaml::String(x) => x.clone(),
         other => themes::yaml_json(other).to_string(),
-    }
-}
-
-/// `validate_value_in_range!` with the setting's min and max.
-fn range_error(
-    i18n: &crate::i18n::I18n,
-    prefix: &str,
-    value: f64,
-    setting: &themes::Setting,
-) -> Option<String> {
-    let num = |y: &Option<Yaml>| y.as_ref().and_then(Yaml::as_f64);
-    let (min, max) = (num(&setting.min), num(&setting.max));
-    let show = |y: &Option<Yaml>| {
-        y.as_ref()
-            .map(|v| match v {
-                Yaml::Number(n) => n.to_string(),
-                other => themes::yaml_json(other).to_string(),
-            })
-            .unwrap_or_default()
-    };
-    let key = |k: &str| format!("themes.settings_errors.{prefix}_value_not_valid_{k}");
-    match (min, max) {
-        (Some(lo), Some(hi)) if !(lo..=hi).contains(&value) => i18n.t_with(
-            &key("min_max"),
-            &[("min", &show(&setting.min)), ("max", &show(&setting.max))],
-        ),
-        (Some(lo), _) if value < lo => i18n.t_with(&key("min"), &[("min", &show(&setting.min))]),
-        (_, Some(hi)) if value > hi => i18n.t_with(&key("max"), &[("max", &show(&setting.max))]),
-        _ => None,
     }
 }
 
@@ -1482,17 +1830,10 @@ pub async fn destroy(conn: &mut PgConnection, theme: &Theme) -> Result<(), AppEr
     for field in fields {
         destroy_field(conn, field).await?;
     }
-    let uploads: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = 'ThemeSetting' \
-         AND target_id IN (SELECT id FROM theme_settings WHERE theme_id = $1))",
-    )
-    .bind(id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if uploads {
-        return Err(Unsupported("theme settings with uploads").into());
-    }
     for sql in [
+        // ThemeSetting's has_many :upload_references, dependent: :destroy
+        "DELETE FROM upload_references WHERE target_type = 'ThemeSetting' \
+         AND target_id IN (SELECT id FROM theme_settings WHERE theme_id = $1)",
         "DELETE FROM theme_settings WHERE theme_id = $1",
         "DELETE FROM theme_translation_overrides WHERE theme_id = $1",
         "DELETE FROM child_themes WHERE parent_theme_id = $1",
