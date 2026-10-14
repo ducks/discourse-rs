@@ -1,0 +1,30 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "3"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "9999"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "4",
+        "title": "Parity fixture: same category, new title"
+      }
+    }
+  ]
+}

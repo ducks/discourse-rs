@@ -361,7 +361,6 @@ async fn serialize(
         "user_id",
         "reply_to_post_number",
         "tags",
-        "category_id",
         "wiki",
         "post_type",
         "locale",
@@ -456,6 +455,39 @@ async fn serialize(
     out.insert("can_edit".into(), json!(access.can_edit(ctx, guardian)?));
     if diff_error {
         out.insert("diff_error".into(), json!(true));
+    }
+    // category_id_changes: each side as the viewer may see it
+    // (filter_category_id), null when both come out the same.
+    let (prev_category, cur_category) = (
+        field(previous, "category_id"),
+        field(current, "category_id"),
+    );
+    if prev_category != cur_category {
+        let secure = guardian.secure_category_ids(&mut *conn, s).await?;
+        let mut visible = Vec::new();
+        for v in [&prev_category, &cur_category] {
+            let id = v.as_i64().map(|i| i as i32);
+            let seen: Option<i32> = match id {
+                Some(id) => {
+                    sqlx::query_scalar(
+                        "SELECT id FROM categories WHERE id = $1 \
+                           AND (NOT read_restricted OR id = ANY($2))",
+                    )
+                    .bind(id)
+                    .bind(&secure)
+                    .fetch_optional(&mut *conn)
+                    .await?
+                }
+                None => None,
+            };
+            visible.push(seen);
+        }
+        let changes = if visible[0] == visible[1] {
+            Value::Null
+        } else {
+            json!({"previous": visible[0], "current": visible[1]})
+        };
+        out.insert("category_id_changes".into(), changes);
     }
     // The compared fields PostRevisor's track_topic_field adds.
     for k in ["archetype", "featured_link"] {

@@ -1,0 +1,19 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "34"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

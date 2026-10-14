@@ -1,0 +1,18 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "setup": [
+    "UPDATE categories SET minimum_required_tags = 2 WHERE id = 34"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "34"
+      }
+    }
+  ]
+}

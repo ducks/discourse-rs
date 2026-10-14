@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "create_post_for_category_and_tag_changes": true,
+    "whispers_allowed_groups": "3"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": 34,
+        "title": "Parity fixture: moved and renamed"
+      }
+    }
+  ],
+  "not_yet": "the category change whisper: PostCreator for whispers (add_moderator_post with post_type whisper) is not ported"
+}

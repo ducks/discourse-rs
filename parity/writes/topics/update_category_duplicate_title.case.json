@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "duplicate_topic_titles": "allowed_across_categories"
+  },
+  "setup": [
+    "UPDATE topics SET title = 'Parity fixture: replies and posters' WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "2"
+      }
+    }
+  ]
+}

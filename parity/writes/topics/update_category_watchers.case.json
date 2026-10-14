@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE category_users SET notification_level = 3 WHERE user_id = 3 AND category_id = 2",
+    "INSERT INTO category_users (user_id, category_id, notification_level) VALUES (4, 2, 2), (5, 2, 3)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id) VALUES (5, 35, 1, NULL)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "2"
+      }
+    }
+  ]
+}

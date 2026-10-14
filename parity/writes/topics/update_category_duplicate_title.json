@@ -1,0 +1,80 @@
+{
+  "name": "update_category_duplicate_title",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "2"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:11:34.752478",
+  "transaction_started_at": "2026-10-14T22:11:28.065653",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "This title has already been used by <a href='http://localhost:3051/t/parity-fixture-pinned-and-closed/37'>another topic</a>."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OJeLtsnRlaDIK8QJNDImRwbZ6r8=",
+            "created_at": "2026-10-14T22:11:30.746202",
+            "rotated_at": "2026-10-14T22:11:30.735963",
+            "updated_at": "2026-10-14T22:11:30.746202",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OJeLtsnRlaDIK8QJNDImRwbZ6r8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T22:11:34.77889",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OJeLtsnRlaDIK8QJNDImRwbZ6r8=",
+            "created_at": "2026-10-14T22:11:30.746202",
+            "rotated_at": "2026-10-14T22:11:30.735963",
+            "updated_at": "2026-10-14T22:11:30.746202",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OJeLtsnRlaDIK8QJNDImRwbZ6r8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "duplicate_topic_titles": "allowed_across_categories"
+  },
+  "setup": [
+    "UPDATE topics SET title = 'Parity fixture: replies and posters' WHERE id = 37"
+  ],
+  "recorded_from": {
+    "case": "e2b9157117019bbdb594d31b6a65c3771ee49b3b8da0101c7eff57125f517ec0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

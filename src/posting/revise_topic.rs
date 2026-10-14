@@ -252,11 +252,73 @@ pub async fn revise(
             errored = true;
         }
     }
-    if !errored
-        && let Some(category_id) = fields.category_id
-        && Some(category_id) != topic.category_id
-    {
-        return Err(Unsupported("changing a topic's category (188b)").into());
+    // What the topic row holds as the callbacks go: the category callback
+    // saves the topic before the final save does.
+    let mut saved = topic.clone();
+    let saver = Saver {
+        ctx,
+        editor,
+        topic_id,
+        author_admin,
+        author_trust_level,
+    };
+    if !errored && let Some(category_id) = fields.category_id {
+        let new_category = (category_id != 0).then_some(category_id);
+        if new_category.is_none() && new.archetype == "private_message" {
+            record_change(
+                &mut diff,
+                "category_id",
+                json!(new.category_id),
+                Value::Null,
+            );
+            new.category_id = None;
+        } else if new_category.is_none()
+            || can_move_topic_to_category(&mut tx, s, editor, category_id).await?
+        {
+            if let Some(target) = new_category
+                && let Some(message) =
+                    category_tags_error(&mut tx, ctx, editor, topic_id, target, fields).await?
+            {
+                errors.push(message);
+                errored = true;
+            } else {
+                record_change(
+                    &mut diff,
+                    "category_id",
+                    json!(new.category_id),
+                    json!(new_category),
+                );
+                let old_category = new.category_id;
+                match change_category_to_id(
+                    &mut tx,
+                    &saver,
+                    &mut saved,
+                    &mut new,
+                    category_id,
+                    opts.silent,
+                    post.id,
+                )
+                .await?
+                {
+                    Ok(_) => {}
+                    Err(save_errors) => {
+                        errors = save_errors;
+                        errored = true;
+                    }
+                }
+                if !errored
+                    && old_category.is_some()
+                    && new_category.is_some()
+                    && s.get("create_post_for_category_and_tag_changes")?.truthy()
+                    && !s.get("whispers_allowed_groups")?.to_s().is_empty()
+                {
+                    return Err(Unsupported(
+                        "the category change whisper (create_post_for_category_and_tag_changes)",
+                    )
+                    .into());
+                }
+            }
+        }
     }
     if !errored && let Some(link) = &fields.featured_link {
         if link.trim().is_empty() {
@@ -279,20 +341,8 @@ pub async fn revise(
             new.featured_link = Some(link.clone());
         }
     }
-    let mut title_changed = false;
     if !errored {
-        errors = save_topic(
-            &mut tx,
-            ctx,
-            editor,
-            topic_id,
-            &topic,
-            &mut new,
-            author_admin,
-            author_trust_level,
-        )
-        .await?;
-        title_changed = new.title != topic.title;
+        errors = saver.save(&mut tx, &mut saved, &mut new).await?;
         errored = !errors.is_empty();
     }
     if errored {
@@ -401,6 +451,9 @@ pub async fn revise(
         None,
     )
     .await?;
+    if diff.iter().any(|(k, _)| *k == "category_id") {
+        crate::plugins::topic_category_revised(&mut tx, s, topic_id).await?;
+    }
     if editor_user.id != -1 {
         crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
     }
@@ -463,7 +516,6 @@ pub async fn revise(
     {
         return Err(Unsupported("review_every_post on a topic edit").into());
     }
-    let _ = title_changed;
     Ok(Outcome::Revised)
 }
 
@@ -504,10 +556,48 @@ async fn can_change_archetype(
     Ok(true)
 }
 
+/// What saving the topic reads besides its attributes.
+struct Saver<'a, 'b> {
+    ctx: &'a Ctx<'b>,
+    editor: &'a Guardian,
+    topic_id: i32,
+    /// `user.admin?` of the topic's author (its title length).
+    author_admin: bool,
+    author_trust_level: Option<i32>,
+}
+
+impl Saver<'_, '_> {
+    /// `topic.save(validate: true)` from `saved` (the row) to `new`:
+    /// returns the validation errors, and on success `saved` is `new`.
+    async fn save(
+        &self,
+        conn: &mut PgConnection,
+        saved: &mut TopicRow,
+        new: &mut TopicRow,
+    ) -> Result<Vec<String>, AppError> {
+        let errors = save_topic(
+            conn,
+            self.ctx,
+            self.editor,
+            self.topic_id,
+            saved,
+            new,
+            self.author_admin,
+            self.author_trust_level,
+        )
+        .await?;
+        if errors.is_empty() {
+            *saved = new.clone();
+        }
+        Ok(errors)
+    }
+}
+
 /// `@topic.save(validate: true)`: before_validation's cleanup (the title
 /// assigned again through `title=`, the featured link stripped), the
-/// validations, before_save's fancy title and category, the row written
-/// when anything changed, and after_save's search index. Returns the
+/// validations, before_save's fancy title and what a new category brings
+/// (its slow mode and auto close), the row written when anything changed,
+/// after_save's search index and after_update's tag stats. Returns the
 /// validation errors (nothing written when there are some).
 #[allow(clippy::too_many_arguments)]
 async fn save_topic(
@@ -608,10 +698,24 @@ async fn save_topic(
 
     // before_save
     if new.category_id.is_none() && new.archetype == "regular" {
-        return Err(Unsupported("saving a regular topic without a category").into());
+        // ensure_topic_has_a_category
+        new.category_id = Some(s.get("uncategorized_category_id")?.to_i() as i32);
     }
+    let category_changed = new.category_id != old.category_id;
     if title_changed {
         new.fancy_title = Some(fancy_title(&new.title, EmojiEscape::from_settings(s)?)?);
+    }
+    if category_changed {
+        // inherit_slow_mode_from_category
+        let slow_mode: Option<i32> =
+            sqlx::query_scalar("SELECT default_slow_mode_seconds FROM categories WHERE id = $1")
+                .bind(new.category_id)
+                .fetch_optional(&mut *conn)
+                .await?
+                .flatten();
+        if let Some(seconds) = slow_mode {
+            new.slow_mode_seconds = seconds;
+        }
     }
     if (title_changed || category_changed) && old.og_image_upload_id.is_some() {
         return Err(Unsupported("regenerating a topic's og image").into());
@@ -621,11 +725,13 @@ async fn save_topic(
         || new.fancy_title != old.fancy_title
         || new.archetype != old.archetype
         || new.featured_link != old.featured_link
+        || new.slow_mode_seconds != old.slow_mode_seconds
         || category_changed;
     if changed {
         sqlx::query(
             "UPDATE topics SET title = $2, slug = $3, fancy_title = $4, archetype = $5, \
-                    featured_link = $6, category_id = $7, updated_at = clock_timestamp() \
+                    featured_link = $6, category_id = $7, slow_mode_seconds = $8, \
+                    updated_at = clock_timestamp() \
              WHERE id = $1",
         )
         .bind(topic_id)
@@ -635,7 +741,19 @@ async fn save_topic(
         .bind(&new.archetype)
         .bind(&new.featured_link)
         .bind(new.category_id)
+        .bind(new.slow_mode_seconds)
         .execute(&mut *conn)
+        .await?;
+    }
+    if category_changed {
+        // before_save's inherit_auto_close_from_category, its timer
+        // written with the topic.
+        crate::topic_timer::inherit_auto_close_from_category(
+            &mut *conn,
+            ctx,
+            topic_id,
+            crate::topic_timer::types::CLOSE,
+        )
         .await?;
     }
     // after_save: SearchIndexer.queue_post_reindex, then the topic's own
@@ -674,7 +792,370 @@ async fn save_topic(
             .await?;
         }
     }
+    if category_changed {
+        // after_update: CategoryTagStat.topic_moved for a tagged topic,
+        // else the topic leaves profiles when its category is restricted.
+        let tag_ids: Vec<i32> =
+            sqlx::query_scalar("SELECT tag_id FROM topic_tags WHERE topic_id = $1 ORDER BY id")
+                .bind(topic_id)
+                .fetch_all(&mut *conn)
+                .await?;
+        if !tag_ids.is_empty() {
+            category_tag_stats_moved(&mut *conn, &tag_ids, old.category_id, new.category_id)
+                .await?;
+        } else {
+            let restricted: bool = sqlx::query_scalar(
+                "SELECT COALESCE((SELECT read_restricted FROM categories WHERE id = $1), FALSE)",
+            )
+            .bind(new.category_id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if restricted {
+                sqlx::query(
+                    "UPDATE user_profiles SET featured_topic_id = NULL WHERE featured_topic_id = $1",
+                )
+                .bind(topic_id)
+                .execute(&mut *conn)
+                .await?;
+            }
+        }
+    }
     Ok(Vec::new())
+}
+
+/// `CategoryTagStat.topic_moved(topic, from, to)`
+async fn category_tag_stats_moved(
+    conn: &mut PgConnection,
+    tag_ids: &[i32],
+    from: Option<i32>,
+    to: Option<i32>,
+) -> Result<(), sqlx::Error> {
+    if let Some(from) = from {
+        sqlx::query(
+            "UPDATE category_tag_stats SET topic_count = topic_count - 1 \
+             WHERE tag_id = ANY($1) AND category_id = $2 AND topic_count > 0",
+        )
+        .bind(tag_ids)
+        .bind(from)
+        .execute(&mut *conn)
+        .await?;
+    }
+    if let Some(to) = to {
+        let updated: Vec<i64> = sqlx::query_scalar(
+            "UPDATE category_tag_stats SET topic_count = topic_count + 1 \
+             WHERE tag_id = ANY($1) AND category_id = $2 RETURNING tag_id",
+        )
+        .bind(tag_ids)
+        .bind(to)
+        .fetch_all(&mut *conn)
+        .await?;
+        for tag_id in tag_ids
+            .iter()
+            .filter(|t| !updated.contains(&i64::from(**t)))
+        {
+            sqlx::query(
+                "INSERT INTO category_tag_stats (tag_id, category_id, topic_count) VALUES ($1, $2, 1)",
+            )
+            .bind(tag_id)
+            .bind(to)
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    Ok(())
+}
+
+/// `can_move_topic_to_category?(category)`: staff, or those who may
+/// create topics there without review.
+async fn can_move_topic_to_category(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    guardian: &Guardian,
+    category_id: i32,
+) -> Result<bool, AppError> {
+    if guardian.is_staff() {
+        return Ok(true);
+    }
+    let category_id = if category_id == 0 {
+        s.get("uncategorized_category_id")?.to_i() as i32
+    } else {
+        category_id
+    };
+    Ok(
+        can_create_topic_on_category(&mut *conn, s, guardian, category_id).await?
+            && !validate::posting_review_required(
+                &mut *conn,
+                guardian,
+                category_id,
+                validate::REVIEW_TOPIC,
+            )
+            .await?,
+    )
+}
+
+/// `can_create_topic_on_category?(category)`
+pub async fn can_create_topic_on_category(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    guardian: &Guardian,
+    category_id: i32,
+) -> Result<bool, AppError> {
+    Ok(guardian.can_create_topic(&mut *conn, s).await?
+        && guardian
+            .topic_create_allowed_category_ids(&mut *conn, s)
+            .await?
+            .contains(&category_id))
+}
+
+/// `DiscourseTagging.validate_category_tags(guardian, topic, category,
+/// tags)` for the tags the topic will have: the category's minimum
+/// (`tags.minimum_required_tags`). Tag groups, restricted and required
+/// tags wait for tag writes (189).
+async fn category_tags_error(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    topic_id: i32,
+    category_id: i32,
+    fields: &TopicFields,
+) -> Result<Option<String>, AppError> {
+    let tag_count: i64 = sqlx::query_scalar("SELECT count(*) FROM topic_tags WHERE topic_id = $1")
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let restrictions: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM tag_groups) OR EXISTS (SELECT 1 FROM category_tags) \
+           OR EXISTS (SELECT 1 FROM category_required_tag_groups WHERE category_id = $1)",
+    )
+    .bind(category_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if restrictions && (tag_count > 0 || !guardian.is_admin()) {
+        return Err(Unsupported("moving a topic under tag groups or restricted tags (189)").into());
+    }
+    let _ = fields;
+    let minimum: i32 = sqlx::query_scalar(
+        "SELECT COALESCE((SELECT minimum_required_tags FROM categories WHERE id = $1), 0)",
+    )
+    .bind(category_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !guardian.is_admin() && minimum > 0 && tag_count < i64::from(minimum) {
+        return Ok(Some(
+            ctx.t_count("tags.minimum_required_tags", i64::from(minimum)),
+        ));
+    }
+    Ok(None)
+}
+
+/// `Topic#change_category_to_id(category_id, silent:)` from the category
+/// callback: Ok(true) when the topic moved, Err with the topic's errors
+/// when its save failed.
+#[allow(clippy::too_many_arguments)]
+async fn change_category_to_id(
+    conn: &mut PgConnection,
+    saver: &Saver<'_, '_>,
+    saved: &mut TopicRow,
+    new: &mut TopicRow,
+    category_id: i32,
+    silent: bool,
+    first_post_id: i32,
+) -> Result<Result<bool, Vec<String>>, AppError> {
+    let ctx = saver.ctx;
+    let s = ctx.settings;
+    let topic_id = saver.topic_id;
+    // check_result(false): an error-less failure.
+    let refused = Err(Vec::new());
+    if new.archetype == "private_message" {
+        return Ok(refused);
+    }
+    let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
+    let category_id = if category_id == 0 {
+        uncategorized
+    } else {
+        category_id
+    };
+    if new.category_id == Some(category_id) {
+        return Ok(Ok(false));
+    }
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+        .bind(category_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(refused);
+    }
+    sqlx::query("UPDATE reviewables SET category_id = $2 WHERE topic_id = $1")
+        .bind(topic_id)
+        .bind(category_id)
+        .execute(&mut *conn)
+        .await?;
+    // changed_to_category: a category's definition stays where it is.
+    let definition: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if definition {
+        return Ok(Ok(false));
+    }
+    if category_id == uncategorized && !s.get("allow_uncategorized_topics")?.truthy() {
+        return Ok(refused);
+    }
+    let old_category = new.category_id;
+    // update(category_id:): the save's own result goes unchecked; the
+    // final save fails the same way.
+    new.category_id = Some(category_id);
+    let errors = saver.save(&mut *conn, saved, new).await?;
+    if !errors.is_empty() {
+        return Ok(Err(errors));
+    }
+    if let Some(old) = old_category {
+        sqlx::query("UPDATE categories SET topic_count = topic_count - 1 WHERE id = $1")
+            .bind(old)
+            .execute(&mut *conn)
+            .await?;
+        let (old_restricted, new_restricted): (bool, bool) = sqlx::query_as(
+            "SELECT COALESCE((SELECT read_restricted FROM categories WHERE id = $1), FALSE), \
+                    COALESCE((SELECT read_restricted FROM categories WHERE id = $2), FALSE)",
+        )
+        .bind(old)
+        .bind(category_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        let count = match (old_restricted, new_restricted) {
+            (true, false) => Some(1),
+            (false, true) => Some(-1),
+            _ => None,
+        };
+        if let Some(count) = count {
+            sqlx::query(
+                "UPDATE tags SET public_topic_count = COALESCE(public_topic_count, 0) + $2 \
+                 WHERE id IN (SELECT tag_id FROM topic_tags WHERE topic_id = $1)",
+            )
+            .bind(topic_id)
+            .bind(count)
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    category_auto_watch(&mut *conn, category_id, topic_id).await?;
+    category_auto_track(&mut *conn, category_id, topic_id).await?;
+    if !silent && !s.get("disable_category_edit_notifications")?.truthy() {
+        let (user_id, last_editor_id): (Option<i32>, Option<i32>) =
+            sqlx::query_as("SELECT user_id, last_editor_id FROM posts WHERE id = $1")
+                .bind(first_post_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let mut notified: Vec<Option<i32>> = vec![user_id];
+        if last_editor_id != user_id {
+            notified.push(last_editor_id);
+        }
+        crate::jobs::enqueue(
+            &mut *conn,
+            "notify_category_change",
+            json!({"post_id": first_post_id, "notified_user_ids": notified}),
+        )
+        .await?;
+    }
+    crate::jobs::enqueue(
+        &mut *conn,
+        "update_topic_upload_security",
+        json!({"topic_id": topic_id}),
+    )
+    .await?;
+    if s.get("experimental_topic_category_change_notification")?
+        .truthy()
+    {
+        return Err(Unsupported(
+            "experimental_topic_category_change_notification (publish_category_change)",
+        )
+        .into());
+    }
+    sqlx::query("UPDATE categories SET topic_count = topic_count + 1 WHERE id = $1")
+        .bind(category_id)
+        .execute(&mut *conn)
+        .await?;
+    if let Some(old) = old_category {
+        super::create::feature_topics_for(&mut *conn, s, old, None).await?;
+    }
+    if old_category != Some(category_id) {
+        super::create::feature_topics_for(&mut *conn, s, category_id, None).await?;
+    }
+    Ok(Ok(true))
+}
+
+/// `CategoryUser.auto_watch(category_id:, topic_id:)`: the topic's
+/// readers watching the category start watching it, and those it had
+/// watching for a category no longer theirs go back to tracking.
+async fn category_auto_watch(
+    conn: &mut PgConnection,
+    category_id: i32,
+    topic_id: i32,
+) -> Result<(), sqlx::Error> {
+    use super::notification_levels::{REGULAR, TRACKING, WATCHING};
+    use super::notification_reasons::{AUTO_WATCH_CATEGORY, USER_CHANGED};
+    sqlx::query(
+        "UPDATE topic_users tu \
+         SET notification_level = CASE WHEN should_track THEN $3 WHEN should_watch THEN $4 \
+                                       ELSE notification_level END, \
+             notifications_reason_id = CASE WHEN should_track THEN NULL \
+                                            WHEN should_watch THEN $6 \
+                                            ELSE notifications_reason_id END \
+         FROM ( \
+           SELECT tu1.topic_id, tu1.user_id, \
+                  CASE WHEN cu.user_id IS NULL AND tu1.notification_level = $4 \
+                            AND tu1.notifications_reason_id = $6 THEN true ELSE false END should_track, \
+                  CASE WHEN cu.user_id IS NOT NULL AND tu1.notification_level IN ($5, $3) \
+                       THEN true ELSE false END should_watch \
+           FROM topic_users tu1 \
+           JOIN topics t ON t.id = tu1.topic_id \
+           LEFT JOIN category_users cu ON cu.category_id = t.category_id \
+                AND cu.user_id = tu1.user_id AND cu.notification_level = $4 \
+           WHERE COALESCE(tu1.notifications_reason_id, 0) <> $7 AND t.category_id = $1 \
+             AND tu1.topic_id = $2 \
+         ) AS X \
+         WHERE X.topic_id = tu.topic_id AND X.user_id = tu.user_id \
+           AND (should_watch OR should_track) AND tu.topic_id = $2",
+    )
+    .bind(category_id)
+    .bind(topic_id)
+    .bind(TRACKING)
+    .bind(WATCHING)
+    .bind(REGULAR)
+    .bind(AUTO_WATCH_CATEGORY)
+    .bind(USER_CHANGED)
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
+/// `CategoryUser.auto_track(category_id:, topic_id:)`: regular readers
+/// tracking the category start tracking the topic.
+async fn category_auto_track(
+    conn: &mut PgConnection,
+    category_id: i32,
+    topic_id: i32,
+) -> Result<(), sqlx::Error> {
+    use super::notification_levels::{REGULAR, TRACKING};
+    use super::notification_reasons::{AUTO_TRACK_CATEGORY, USER_CHANGED};
+    sqlx::query(
+        "UPDATE topic_users tu SET notification_level = $3, notifications_reason_id = $4 \
+         FROM topics t, category_users cu \
+         WHERE tu.topic_id = t.id AND cu.category_id = t.category_id AND cu.user_id = tu.user_id \
+           AND cu.notification_level = $3 AND tu.notification_level = $5 \
+           AND COALESCE(tu.notifications_reason_id, 0) <> $6 \
+           AND t.category_id = $1 AND tu.topic_id = $2",
+    )
+    .bind(category_id)
+    .bind(topic_id)
+    .bind(TRACKING)
+    .bind(AUTO_TRACK_CATEGORY)
+    .bind(REGULAR)
+    .bind(USER_CHANGED)
+    .execute(conn)
+    .await?;
+    Ok(())
 }
 
 /// `UrlValidator`: an http(s) URL whose host has a dot. Non-ASCII URLs,

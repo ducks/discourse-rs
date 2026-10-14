@@ -63,6 +63,38 @@ pub async fn topic_trashed(
     .await
 }
 
+/// on(:post_edited) for a revision that changed the topic's category: an
+/// open topic with votes reclaims them in a voting category, releases
+/// them elsewhere.
+pub async fn topic_category_changed(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<(), sqlx::Error> {
+    let has_votes: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topic_voting_votes WHERE topic_id = $1)")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if !has_votes {
+        return Ok(());
+    }
+    let (closed, archived, deleted, category_id): (bool, bool, bool, Option<i32>) = sqlx::query_as(
+        "SELECT closed, archived, deleted_at IS NOT NULL, category_id FROM topics WHERE id = $1",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if closed || archived || deleted {
+        return Ok(());
+    }
+    let can_vote = match category_id {
+        Some(id) => super::category_votes(&mut *conn, id).await?,
+        None => false,
+    };
+    let job = if can_vote { RECLAIM } else { RELEASE };
+    crate::jobs::enqueue(conn, job, json!({ "topic_id": topic_id })).await
+}
+
 /// Jobs::DiscourseTopicVoting::VoteRelease
 pub async fn vote_release(
     conn: &mut PgConnection,

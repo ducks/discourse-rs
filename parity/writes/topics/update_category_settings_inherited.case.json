@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE categories SET auto_close_hours = 48, default_slow_mode_seconds = 60 WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "2"
+      }
+    }
+  ]
+}
