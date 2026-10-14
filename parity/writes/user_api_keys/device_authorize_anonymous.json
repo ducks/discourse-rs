@@ -1,0 +1,34 @@
+{
+  "name": "device_authorize_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/authorize.json",
+      "params": {
+        "approval_token": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:03:33.471067",
+  "transaction_started_at": "2026-10-14T09:03:32.395773",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d70561276d8290da0672e38e9ba088437d643911f9f356c48d4bc8867eb23a5d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

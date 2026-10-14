@@ -324,8 +324,11 @@ then by what running a forum needs (milestone 6). Briefs:
     page, `POST /user-api-key` with its redirect or result page, one-time
     passwords and `/session/otp/:token`; the harness decrypts payloads
     with the cases' fixed key. Left: calendar subscriptions, which need
-    the bookmarks `.ics` feed), 84c. `feat/user-api-key-device` M
-    (the device authorization flow), 84d. `feat/admin-api-keys` S/M
+    the bookmarks `.ics` feed), 84c. ~~`feat/user-api-key-device`~~
+    (done) M (the device authorization flow: requests, polls, the
+    activation page by code or request link, approval tokens, authorize
+    and deny, its limiters; Redis's grants, indexes and locks as owned
+    rows. Not ported: the debug traces, which only log), 84d. `feat/admin-api-keys` S/M
     (`/admin/api/keys`, ApiKeyScope mappings)
 85. `feat/admin-badges` M: creating, editing, deleting badges and
     groupings, badge SQL with its preview, the badges pages' HTML

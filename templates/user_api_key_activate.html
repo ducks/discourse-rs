@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block title %}{{ heading }} - {{ site_title }}{% endblock %}
+{% block content %}
+{#- user-api-key-activate: the device code entry, the authorization of a
+    device's grant and its result. The buttons are plain forms posting to
+    the actions the Ember controller calls. -#}
+<div class="authorize-api-key">
+  <h1>{{ heading }}</h1>
+  {%- if kind == "complete" %}
+  <p>{{ note }}</p>
+  {%- else %}
+  {%- for error in errors %}
+  <p class="error-message">{{ error }}</p>
+  {%- endfor %}
+  {%- if kind == "authorize" %}
+  {%- if !no_trust_level %}
+  <div class="authorize-api-key__user">
+    <span class="authorize-api-key__user-label">{{ logged_in_as }}</span>
+    <img alt="" class="avatar" height="24" src="{{ avatar_url }}" width="24">
+    <span class="authorize-api-key__username">{{ username }}</span>
+  </div>
+  <div class="authorize-api-key__summary">
+    <div class="authorize-api-key__permissions">
+      <p class="authorize-api-key__permissions-header">{{ permissions_header }}</p>
+      <ul class="authorize-api-key__scopes">
+        {%- for scope in localized_scopes %}
+        <li>{{ scope }}</li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- for notice in notices %}
+    <div class="authorize-api-key__summary-notice">
+      <p>{{ notice }}</p>
+    </div>
+    {%- endfor %}
+    {%- if !expiry.is_empty() %}
+    <div class="authorize-api-key__expiry authorize-api-key__summary-detail">
+      <p>{{ expiry }}</p>
+    </div>
+    {%- endif %}
+  </div>
+  {%- if show_form %}
+  {%- if !request_token.is_empty() %}
+  <form class="authorize-api-key__code-form" method="post" action="{{ base_path }}/user-api-key/device/authorize">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+    <input type="hidden" name="request" value="{{ request_token }}">
+    <label>{{ code_label }} <input name="code" autocomplete="off" required></label>
+    <p>{{ note }}</p>
+    <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+  </form>
+  {%- else %}
+  <div class="authorize-api-key__buttons">
+    <form method="post" action="{{ base_path }}/user-api-key/device/authorize">
+      <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+      <input type="hidden" name="approval_token" value="{{ approval_token }}">
+      <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+    </form>
+    <form method="post" action="{{ base_path }}/user-api-key/device/deny">
+      <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+      <input type="hidden" name="approval_token" value="{{ approval_token }}">
+      <button class="btn btn-default" type="submit">{{ deny_label }}</button>
+    </form>
+  </div>
+  {%- endif %}
+  {%- endif %}
+  {%- endif %}
+  {%- else if show_form %}
+  <form class="authorize-api-key__code-form" method="post" action="{{ base_path }}/user-api-key/activate">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+    <label>{{ code_label }} <input name="code" autocomplete="off" required></label>
+    <p>{{ note }}</p>
+    <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+  </form>
+  {%- endif %}
+  {%- endif %}
+</div>
+{% endblock %}

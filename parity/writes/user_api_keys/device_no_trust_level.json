@@ -1,0 +1,160 @@
+{
+  "name": "device_no_trust_level",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/activate.json",
+      "params": {
+        "code": "{{responses.0.body.user_code}}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request={{responses.0.body.verification_uri_with_request|request_param}}"
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/authorize.json",
+      "params": {
+        "request": "{{responses.0.body.verification_uri_with_request|request_param}}",
+        "code": "{{responses.0.body.user_code}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:03:45.129467",
+  "transaction_started_at": "2026-10-14T09:03:43.407689",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "5933e0e97e280858954621995f406a70af78fe01f665ca01b8dd1f7079f2453f",
+        "user_code": "DBUX-FBDK",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=Xv3FiIxJ",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "authorize",
+        "request_token": null,
+        "approval_token": null,
+        "no_trust_level": true,
+        "invalid_code": false,
+        "device_auth": {
+          "application_name": "Device App",
+          "localized_scopes": [
+            "Read all",
+            "Write all"
+          ],
+          "write_scope": true,
+          "unregistered_client": true,
+          "expires_at": null
+        },
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "authorize",
+        "request_token": "Xv3FiIxJ",
+        "approval_token": null,
+        "no_trust_level": true,
+        "invalid_code": false,
+        "device_auth": {
+          "application_name": "Device App",
+          "localized_scopes": [
+            "Read all",
+            "Write all"
+          ],
+          "write_scope": true,
+          "unregistered_client": true,
+          "expires_at": null
+        },
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Ds4IPpzRFx6UogIUwt88Lk6kqRY=",
+            "created_at": "2026-10-14T09:03:44.022204",
+            "rotated_at": "2026-10-14T09:03:44.008335",
+            "updated_at": "2026-10-14T09:03:44.022204",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Ds4IPpzRFx6UogIUwt88Lk6kqRY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:03:45.13874",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Ds4IPpzRFx6UogIUwt88Lk6kqRY=",
+            "created_at": "2026-10-14T09:03:44.022204",
+            "rotated_at": "2026-10-14T09:03:44.008335",
+            "updated_at": "2026-10-14T09:03:44.022204",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Ds4IPpzRFx6UogIUwt88Lk6kqRY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "user_api_key_allowed_groups": "1|2|14"
+  },
+  "recorded_from": {
+    "case": "49603725d620439c81c6c15f6088ed64e780c9a3cf73b6de8310713171d6778b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "name": "device_replaces_old_key",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/authorize.json",
+      "params": {
+        "request": "{{responses.0.body.verification_uri_with_request|request_param}}",
+        "code": "{{responses.0.body.user_code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key/device/poll.json",
+      "params": {
+        "device_code": "{{responses.0.body.device_code}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:03:49.401124",
+  "transaction_started_at": "2026-10-14T09:03:47.599889",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "d0532f5b2cd6ad0bcdfe5a40945788dd4ef3e039599f90f6859468c805184909",
+        "user_code": "9DQG-5V2A",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=D1fsuQ68",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "complete",
+        "denied": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "status": "authorized",
+        "payload": "AiN4IURhE7bj8170xMfwGEv86dx/e5n76qymxCKKasnxDe4PufHjZ/rpf6H+\nitlYy3bWcAVE2vOU3KWz7X2pwOy9ge1DsmYkbEorVe5Y18mpvfU5gM9BBBRI\n+CPNOkVUavwaVdRXmhkQofqdRgdGwm/rUHqGkEldP1tpyHvgULp7oeI0oS48\nhyd8wL9LBFd7LNeh7BwtdHY29+j0JoSMmt0OBqh6ByZlfZmFOvOri8NQyyJr\nhYlkLanq3YVgB2f20zxA2OoDXqbCAxkJSvv+JFYybg2FIWuft8vDJeicU8vE\nXNHDFqwJadnO0qzhAvTLqoJBuz+culUCbKNP8lomLg==\n"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T09:03:49.552199",
+          "updated_at": "2026-10-14T09:03:49.552199",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T09:03:49.553869",
+          "updated_at": "2026-10-14T09:03:49.553869",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9101,
+          "name": "read",
+          "created_at": "2026-10-14T09:03:47.599889",
+          "updated_at": "2026-10-14T09:03:47.599889",
+          "user_api_key_id": 9101,
+          "allowed_parameters": null
+        }
+      ],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "key_hash": "fc0e02d52ea911a3d308755f6785cd8d3ac500d31e074cd8ce2ed5bca579e693",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-14T09:03:49.550462",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-14T09:03:49.550462",
+          "last_used_at": "2026-10-14T09:03:47.599889",
+          "application_name": null,
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9101,
+          "user_id": 3,
+          "key_hash": "h9101",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-12T09:03:47.599889",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-12T09:03:47.599889",
+          "last_used_at": "2026-10-13T09:03:47.599889",
+          "application_name": null,
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U6JdLv5AIg7zjgC0jLiiFYwVjgs=",
+            "created_at": "2026-10-14T09:03:48.35358",
+            "rotated_at": "2026-10-14T09:03:48.351501",
+            "updated_at": "2026-10-14T09:03:48.35358",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "U6JdLv5AIg7zjgC0jLiiFYwVjgs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:03:49.411579",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U6JdLv5AIg7zjgC0jLiiFYwVjgs=",
+            "created_at": "2026-10-14T09:03:48.35358",
+            "rotated_at": "2026-10-14T09:03:48.351501",
+            "updated_at": "2026-10-14T09:03:48.35358",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "U6JdLv5AIg7zjgC0jLiiFYwVjgs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_scopes": 1,
+    "user_api_keys": 1
+  },
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'device-app', 'Old Device App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, created_at, updated_at, last_used_at, user_api_key_client_id) VALUES (9101, 3, 'h9101', now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "85144dae4ec1d20987bfbbcb43a0964b0b0ffc7dce616f80068ae9dc287d42dc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

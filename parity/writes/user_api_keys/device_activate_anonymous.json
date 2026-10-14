@@ -1,0 +1,32 @@
+{
+  "name": "device_activate_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request=abcdEFGH"
+    }
+  ],
+  "started_at": "2026-10-14T09:03:24.436132",
+  "transaction_started_at": "2026-10-14T09:03:21.840229",
+  "responses": [
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/login"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "cf3b5dad2cb0ce3939653e48192e8246b32ce6d63b09d865e2fbc5f83df68ab6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

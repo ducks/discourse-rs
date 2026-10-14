@@ -63,6 +63,7 @@ mod topic_timer;
 mod topic_voting;
 mod topics;
 mod user_api_key_auth;
+mod user_api_key_device;
 mod user_api_keys;
 mod user_avatars;
 mod user_badges;
@@ -494,6 +495,46 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/user-api-key/otp.json",
             get(user_api_key_auth::otp).post(user_api_key_auth::create_otp),
+        )
+        .route(
+            "/user-api-key/device",
+            post(user_api_key_device::create_device_request),
+        )
+        .route(
+            "/user-api-key/device.json",
+            post(user_api_key_device::create_device_request),
+        )
+        .route(
+            "/user-api-key/device/poll",
+            post(user_api_key_device::poll_device_request),
+        )
+        .route(
+            "/user-api-key/device/poll.json",
+            post(user_api_key_device::poll_device_request),
+        )
+        .route(
+            "/user-api-key/activate",
+            get(user_api_key_device::activate).post(user_api_key_device::activate),
+        )
+        .route(
+            "/user-api-key/activate.json",
+            get(user_api_key_device::activate).post(user_api_key_device::activate),
+        )
+        .route(
+            "/user-api-key/device/authorize",
+            post(user_api_key_device::authorize_device_request),
+        )
+        .route(
+            "/user-api-key/device/authorize.json",
+            post(user_api_key_device::authorize_device_request),
+        )
+        .route(
+            "/user-api-key/device/deny",
+            post(user_api_key_device::deny_device_request),
+        )
+        .route(
+            "/user-api-key/device/deny.json",
+            post(user_api_key_device::deny_device_request),
         )
         .route(
             "/session/otp/{token}",

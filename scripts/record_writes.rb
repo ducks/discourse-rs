@@ -68,13 +68,15 @@ def resolve(value, state)
   when Array
     value.map { |v| resolve(v, state) }
   when String
-    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment)?\}\}/) do
+    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param)?\}\}/) do
       path, filter = Regexp.last_match(1), Regexp.last_match(2)
       found = path.split(".").reduce(state) { |acc, k| acc.is_a?(Array) ? acc[k.to_i] : acc&.[](k) }
       raise "{{#{path}}} resolved to nothing" if found.nil?
       case filter
       when "|reverse" then found.to_s.reverse
       when "|last_segment" then found.to_s.split("/").last
+      # A url's `request` query value (the device flow's request token).
+      when "|request_param" then CGI.unescape(found.to_s[/[?&]request=([^&#]*)/, 1].to_s)
       else found.to_s
       end
     end

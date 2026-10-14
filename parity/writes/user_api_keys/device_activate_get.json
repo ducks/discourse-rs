@@ -1,0 +1,142 @@
+{
+  "name": "device_activate_get",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/device.json",
+      "params": {
+        "nonce": "device-nonce",
+        "scopes": "read,write",
+        "client_id": "device-app",
+        "application_name": "Device App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "expires_in_seconds": "86400"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request={{responses.0.body.verification_uri_with_request|request_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request=nope"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/activate.json?request=AAAAAAAA"
+    }
+  ],
+  "started_at": "2026-10-14T09:03:29.523301",
+  "transaction_started_at": "2026-10-14T09:03:28.547428",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "device_code": "1d8eb132b82657f705c6c84fbc9fc4a5c6d3b49ac98d16bd05f92c05d5f0f8da",
+        "user_code": "ZJKV-K7DK",
+        "verification_uri": "http://localhost:3051/user-api-key/activate",
+        "verification_uri_with_request": "http://localhost:3051/user-api-key/activate?request=-4n6Yn6r",
+        "expires_in": 600,
+        "interval": 5
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "enter_code"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "authorize",
+        "request_token": "-4n6Yn6r",
+        "approval_token": null,
+        "no_trust_level": false,
+        "invalid_code": false,
+        "device_auth": {
+          "application_name": "Device App",
+          "localized_scopes": [
+            "Read all",
+            "Write all"
+          ],
+          "write_scope": true,
+          "unregistered_client": true,
+          "expires_at": "2026-10-15T09:03:29Z"
+        },
+        "current_user": {
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "enter_code",
+        "expired_code": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "state": "enter_code",
+        "expired_code": true
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcxZVzuRtD6LzR1RdsSQ6epquG4=",
+            "created_at": "2026-10-14T09:03:28.955636",
+            "rotated_at": "2026-10-14T09:03:28.954141",
+            "updated_at": "2026-10-14T09:03:28.955636",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BcxZVzuRtD6LzR1RdsSQ6epquG4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:03:29.535007",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcxZVzuRtD6LzR1RdsSQ6epquG4=",
+            "created_at": "2026-10-14T09:03:28.955636",
+            "rotated_at": "2026-10-14T09:03:28.954141",
+            "updated_at": "2026-10-14T09:03:28.955636",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BcxZVzuRtD6LzR1RdsSQ6epquG4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "0c92c2dfd1b4f1f2790098575b32fd9d1461ef12454b34fa00bb9026bc27908b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
