@@ -54,6 +54,11 @@
 # Messages and chat direct messages
 /u/user1/messages as=user1
 /u/user1/messages/sent as=user1
+/u/user1/messages/new as=user1
+/u/user1/messages/unread as=user1
+/u/user1/messages/archive as=user1
+/u/user2/messages as=user1
+/u/user1/messages as=admin
 /u/admin/messages/group/moderators as=admin
 /t/a-group-message-the-moderators-received/90 as=admin wait=4000
 /latest as=user1

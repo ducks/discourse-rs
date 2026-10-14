@@ -333,7 +333,7 @@ enum Half {
 
 /// `treat_as_new_topic_clause`'s GREATEST, on the params $2 (now), $3
 /// (default_other_new_topic_duration_minutes) and $4 (min_new_topics_time).
-fn treat_as_new() -> String {
+pub(crate) fn treat_as_new() -> String {
     format!(
         "GREATEST(CASE \
          WHEN COALESCE(uo.new_topic_duration_minutes, $3) = {ALWAYS} THEN u.created_at \

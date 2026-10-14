@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
-{% block title %}Profile - {{ username }} - {{ site_title }}{% endblock %}
+{% block title %}{% if !page_title.is_empty() %}{{ page_title }} - {% endif %}{{ site_title }}{% endblock %}
 {% block content %}
 {{ main|safe }}
+{% if main.contains("messages-dropdown-trigger") %}<script src="{{ crate::assets::url(base_path, "messages-dropdown.js") }}"></script>{% endif %}
 {% endblock %}

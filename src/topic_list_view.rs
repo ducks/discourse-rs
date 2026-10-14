@@ -635,6 +635,13 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
             url_for(1)
         }
         Some(last_read) => url_for((last_read + 1).min(highest)),
+        // A null last read post (the message lists send one) is 0 to
+        // Ember's `null + 1`.
+        None if topic["last_read_post_number"].is_null()
+            && topic.get("last_read_post_number").is_some() =>
+        {
+            url_for(1.min(highest))
+        }
         None => url.clone(),
     };
     let title_html = emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
@@ -704,13 +711,39 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         _ => String::new(),
     };
 
+    // ParticipantGroups: a message's groups, each to its page.
+    let participant_groups = match topic["participant_groups"].as_array() {
+        Some(groups) if !groups.is_empty() => {
+            let items: String = groups
+                .iter()
+                .filter_map(Value::as_str)
+                .map(|name| {
+                    format!(
+                        "<div class=\"participant-group\"><a class=\"user-group trigger-group-card\" data-group-card=\"{0}\" href=\"{base}/g/{0}\">{1}{0}</a></div>",
+                        escape(name),
+                        icon("users", None)
+                    )
+                })
+                .collect();
+            format!(
+                "<div aria-label=\"{}\" class=\"participant-group-wrapper\" role=\"list\">{items}</div>",
+                escape(&t(cx, "topic.participant_groups"))
+            )
+        }
+        _ => String::new(),
+    };
     let topic_cell = format!(
-        "<td class=\"main-link topic-list-data\" colspan=\"1\"><span aria-level=\"2\" class=\"link-top-line\" role=\"heading\"><span class=\"topic-statuses\">{statuses}</span><a class=\"title raw-link raw-topic-link\" data-topic-id=\"{id}\" href=\"{last_unread_url}\">{title_html}{read_suffix}</a>{badges}</span><div class=\"link-bottom-line\">{badge}{tags}</div>{excerpt_html}</td>"
+        "<td class=\"main-link topic-list-data\" colspan=\"1\"><span aria-level=\"2\" class=\"link-top-line\" role=\"heading\"><span class=\"topic-statuses\">{statuses}</span><a class=\"title raw-link raw-topic-link\" data-topic-id=\"{id}\" href=\"{last_unread_url}\">{title_html}{read_suffix}</a>{badges}</span><div class=\"link-bottom-line\">{badge}{tags}{participant_groups}</div>{excerpt_html}</td>"
     );
 
     // PostersCell: each poster's avatar, linked.
     let mut posters = String::from("<td class=\"posters topic-list-data\">");
-    for poster in topic["posters"].as_array().into_iter().flatten() {
+    for poster in featured_users(topic) {
+        if let Some(more) = poster["more_count"].as_str() {
+            posters.push_str(&format!("<a class=\"posters-more-count\">{more}</a>"));
+            continue;
+        }
+        let poster = &poster;
         let Some(user) = users.iter().find(|u| u["id"] == poster["user_id"]) else {
             continue;
         };
@@ -848,13 +881,79 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
     )
 }
 
+/// Topic#featuredUsers: the posters; on a message, the participants who
+/// did not post go in too (before the latest poster), up to five, and past
+/// five allowed users the second-last gives way to a `+N` count
+/// (`more_count`). Participants carry no extras (TopicList hydrates only
+/// the posters' extraClasses) and no description.
+fn featured_users(topic: &Value) -> Vec<Value> {
+    const MAX_USER_COUNT: usize = 5;
+    let mut users: Vec<Value> = topic["posters"].as_array().cloned().unwrap_or_default();
+    let private_message = topic["archetype"] == "private_message";
+    if private_message
+        && let Some(participants) = topic["participants"].as_array()
+        && users.len() < MAX_USER_COUNT
+    {
+        let poster_count = users.len();
+        let push_offset = usize::from(
+            poster_count > 1
+                && users[poster_count - 1]["extras"]
+                    .as_str()
+                    .is_some_and(|e| e.contains("latest")),
+        );
+        let poster_ids: Vec<Value> = users.iter().map(|p| p["user_id"].clone()).collect();
+        for p in participants {
+            if !poster_ids.contains(&p["user_id"]) {
+                let at = users.len() - push_offset;
+                users.insert(
+                    at,
+                    serde_json::json!({"user_id": p["user_id"], "extras": null, "description": null}),
+                );
+                if users.len() == MAX_USER_COUNT {
+                    break;
+                }
+            }
+        }
+    }
+    let allowed = topic["allowed_user_count"].as_i64().unwrap_or(0);
+    if private_message && allowed > MAX_USER_COUNT as i64 {
+        if users.len() > MAX_USER_COUNT - 2 {
+            users.remove(MAX_USER_COUNT - 2);
+        }
+        users.push(
+            serde_json::json!({"more_count": format!("+{}", allowed - MAX_USER_COUNT as i64 + 1)}),
+        );
+    }
+    users
+}
+
 /// TopicStatus, for a visitor (a member's pin toggles are links).
 pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
     let flag = |name: &str| topic[name] == true;
     let mut statuses = String::new();
     if flag("bookmarked") {
+        // canAct (a member): a link to the topic.
+        let (open, close) = if cx.member_trust_level.is_some() {
+            let slug = match s(&topic["slug"]).trim() {
+                "" => "topic",
+                slug => slug,
+            };
+            (
+                format!(
+                    "<a class=\"topic-status --bookmarked\" href=\"{}/t/{slug}/{}\"",
+                    cx.base_path,
+                    topic["id"].as_i64().unwrap_or(0)
+                ),
+                "</a>",
+            )
+        } else {
+            (
+                "<span class=\"topic-status --bookmarked\"".to_string(),
+                "</span>",
+            )
+        };
         statuses.push_str(&format!(
-            "<span class=\"topic-status --bookmarked\" title=\"{}\">{}</span>",
+            "{open} title=\"{}\">{}{close}",
             t(cx, "topic_statuses.bookmarked.help"),
             icon("bookmark", None)
         ));
@@ -934,6 +1033,40 @@ pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn featured_users_add_message_participants() {
+        use serde_json::json;
+        // A message's participants who did not post go before the latest
+        // poster, without extras.
+        let topic = serde_json::json!({
+            "archetype": "private_message",
+            "allowed_user_count": 3,
+            "posters": [
+                {"user_id": 1, "extras": null, "description": "Original Poster"},
+                {"user_id": 2, "extras": "latest", "description": "Most Recent Poster"},
+            ],
+            "participants": [
+                {"user_id": 2, "extras": "latest"},
+                {"user_id": 4, "extras": "latest"},
+            ],
+        });
+        let ids: Vec<Value> = featured_users(&topic)
+            .iter()
+            .map(|u| u["user_id"].clone())
+            .collect();
+        assert_eq!(ids, vec![json!(1), json!(4), json!(2)]);
+        assert!(featured_users(&topic)[1]["extras"].is_null());
+        // Past five allowed users, the second-last gives way to a count.
+        let mut many = topic.clone();
+        many["allowed_user_count"] = json!(8);
+        let users = featured_users(&many);
+        assert_eq!(users.last().unwrap()["more_count"], "+4");
+        // A regular topic keeps its posters.
+        let mut regular = topic;
+        regular["archetype"] = json!("regular");
+        assert_eq!(featured_users(&regular).len(), 2);
+    }
 
     #[test]
     fn escapes_as_ember_does() {

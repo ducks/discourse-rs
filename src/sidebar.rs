@@ -30,6 +30,8 @@ pub enum Active {
     Tags,
     /// userActivity.index for the current user: My posts.
     MyPosts,
+    /// userPrivateMessages.* for the current user: My messages.
+    MyMessages,
     /// Full-page chat (the chat.* routes) on no channel.
     Chat,
     /// Full-page chat on this channel.
@@ -47,6 +49,7 @@ impl Active {
             Active::Tag(name) => format!("tag:{name}"),
             Active::Tags => "tags".into(),
             Active::MyPosts => "my-posts".into(),
+            Active::MyMessages => "my-messages".into(),
             Active::Chat => "chat".into(),
             Active::ChatChannel(id) => format!("chat-channel:{id}"),
         }
@@ -64,6 +67,7 @@ impl Active {
                 "categories" => Active::Categories,
                 "tags" => Active::Tags,
                 "my-posts" => Active::MyPosts,
+                "my-messages" => Active::MyMessages,
                 "chat" => Active::Chat,
                 _ => Active::None,
             },
@@ -94,6 +98,9 @@ pub struct Member {
     pub link_to_filtered_list: bool,
     /// Their topic tracking state, for the links' counts.
     pub tracking: crate::topic_tracking_report::Tracking,
+    /// The new and unread messages of their inbox and their groups'
+    /// (MyMessagesSectionLink#totalCount).
+    pub pm_count: i64,
     /// sidebar_sections, sidebar_category_ids, display_sidebar_tags and
     /// sidebar_tags, as the serializer writes them.
     pub fields: serde_json::Map<String, Value>,
@@ -816,6 +823,15 @@ fn member_link(
             link.title = title("my_messages.title");
             link.content = escape(&text);
             link.prefix = icon("link");
+            // currentWhen: userPrivateMessages.
+            link.active = *cx.active == Active::MyMessages;
+            if m.show_count {
+                if m.pm_count > 0 {
+                    link.badge = Some(m.pm_count.to_string());
+                }
+            } else if m.pm_count > 0 {
+                link.suffix = Some("circle");
+            }
         }
         "/review" => {
             if !m.can_review {

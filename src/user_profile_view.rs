@@ -25,6 +25,8 @@ pub struct Viewer {
     pub draft_count: i64,
     /// chat's `userCanDirectMessage`, for its Chat button.
     pub can_direct_message: bool,
+    /// `currentUser.can_invite_to_forum`, for the Invites tab.
+    pub can_invite_to_forum: bool,
 }
 
 /// The routed tab and what it shows.
@@ -46,6 +48,9 @@ pub enum Tab<'a> {
         /// SolvedPostSerializer), empty elsewhere.
         solved: &'a [Value],
     },
+    /// `userPrivateMessages.*`: the messages content (crate::messages_view),
+    /// drawn.
+    Messages(String),
 }
 
 /// The activity sub-navigation's stream routes.
@@ -469,7 +474,7 @@ pub fn render(
                 &format!("{user_path}/activity"),
                 "bars-staggered",
                 &t(cx, "user.activity_stream"),
-                !on_summary,
+                matches!(tab, Tab::Activity { .. }),
             ));
         }
     }
@@ -488,6 +493,15 @@ pub fn render(
             &format!("{user_path}/messages"),
             "envelope",
             &t(cx, "user.private_messages"),
+            matches!(tab, Tab::Messages(_)),
+        ));
+    }
+    if viewer.can_invite_to_forum && !hidden {
+        out.push_str(&nav_item(
+            "user-nav__invites",
+            &format!("{user_path}/invited"),
+            "user-plus",
+            &t(cx, "user.invited.title"),
             false,
         ));
     }
@@ -541,6 +555,7 @@ pub fn render(
                 solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
+            Tab::Messages(content) => out.push_str(content),
         }
     }
     out.push_str("</div></div></section></div>");
