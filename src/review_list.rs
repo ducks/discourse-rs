@@ -48,9 +48,6 @@ const SILENCE_USER: i32 = 30;
 /// `ReviewableQueuedPost.statuses[:rejected]`
 const REJECTED: i32 = 2;
 
-/// `User::MAX_STAFF_DELETE_POST_COUNT`
-const MAX_STAFF_DELETE_POST_COUNT: i64 = 5;
-
 /// Staff user custom fields plugins on the reference allow
 /// (`allow_staff_user_custom_field`: discourse-events, discourse-user-notes).
 const PLUGIN_STAFF_USER_CUSTOM_FIELDS: [&str; 2] = ["on_holiday", "user_notes_count"];
@@ -1362,39 +1359,14 @@ async fn can_delete_user(
     u: &UserRow,
     stats: &(i32, i32, i32, i32, i32, Option<NaiveDateTime>),
 ) -> Result<bool, AppError> {
-    if u.admin {
-        return Ok(false);
-    }
-    if guardian.is_me(u.id) {
-        return Err(Unsupported("reviewing one's own posts").into());
-    }
     let (post_count, topic_count, .., first_post) = *stats;
-    let Some(first_post) = first_post else {
-        return Ok(true);
+    let user = crate::guardian::DeletableUser {
+        id: u.id,
+        admin: u.admin,
+        moderator: u.moderator,
+        topic_count: Some(topic_count),
+        post_count: Some(post_count),
+        first_post_created_at: first_post,
     };
-    // has_more_posts_than?(MAX_STAFF_DELETE_POST_COUNT)
-    let more = if i64::from(topic_count + post_count) > MAX_STAFF_DELETE_POST_COUNT {
-        true
-    } else {
-        let n: i64 = sqlx::query_scalar(
-            "SELECT COUNT(1) FROM ( \
-               SELECT 1 FROM posts p JOIN topics t ON (p.topic_id = t.id) \
-               WHERE p.user_id = $1 AND p.deleted_at IS NULL AND t.deleted_at IS NULL AND \
-                 (t.archetype <> 'private_message' OR \
-                  EXISTS (SELECT 1 FROM topic_allowed_users a \
-                          WHERE a.topic_id = t.id AND a.user_id > 0 AND a.user_id <> $1) OR \
-                  EXISTS (SELECT 1 FROM topic_allowed_groups g WHERE g.topic_id = p.topic_id)) \
-               LIMIT $2) x",
-        )
-        .bind(u.id)
-        .bind(MAX_STAFF_DELETE_POST_COUNT + 1)
-        .fetch_one(conn)
-        .await?;
-        n > MAX_STAFF_DELETE_POST_COUNT
-    };
-    if !more {
-        return Ok(true);
-    }
-    let days = ctx.settings.get("delete_user_max_post_age")?.to_i();
-    Ok(first_post > crate::clock::now_naive() - chrono::Duration::days(days))
+    Ok(guardian.can_delete_user(conn, ctx.settings, &user).await?)
 }

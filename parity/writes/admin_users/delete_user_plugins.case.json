@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_chat_channel_memberships (id, user_id, chat_channel_id, following, created_at, updated_at) VALUES (9301, 5, 2, TRUE, now(), now())",
+    "UPDATE chat_channels SET user_count = user_count + 1 WHERE id = 2",
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, created_at, updated_at) VALUES (9301, 52, 'poll', 0, 0, 0, 0, now(), now())",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9301, 9301, 'digest9301', 'Yes', now(), now())",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, created_at, updated_at) VALUES (9301, 9301, 5, now(), now())",
+    "INSERT INTO topic_voting_votes (id, topic_id, user_id, archive, created_at, updated_at) VALUES (9301, 35, 5, FALSE, now(), now())",
+    "INSERT INTO topic_voting_topic_vote_count (id, topic_id, votes_count, created_at, updated_at) VALUES (9301, 35, 1, now(), now())",
+    "INSERT INTO discourse_solved_shared_issues (id, topic_id, user_id, created_at, updated_at) VALUES (9301, 35, 5, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3"
+      }
+    }
+  ]
+}

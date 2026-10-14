@@ -1,0 +1,77 @@
+{
+  "name": "delete_self_discourse_connect",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json"
+    }
+  ],
+  "started_at": "2026-10-13T23:10:35.718432",
+  "transaction_started_at": "2026-10-13T23:10:31.091619",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iyCtQd8fBML/xKUva1gIrnsOzsk=",
+            "created_at": "2026-10-13T23:10:33.412457",
+            "rotated_at": "2026-10-13T23:10:33.405885",
+            "updated_at": "2026-10-13T23:10:33.412457",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iyCtQd8fBML/xKUva1gIrnsOzsk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:10:35.739375",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iyCtQd8fBML/xKUva1gIrnsOzsk=",
+            "created_at": "2026-10-13T23:10:33.412457",
+            "rotated_at": "2026-10-13T23:10:33.405885",
+            "updated_at": "2026-10-13T23:10:33.412457",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iyCtQd8fBML/xKUva1gIrnsOzsk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "discourse_connect_url": "https://sso.example.com/login",
+    "discourse_connect_secret": "0123456789abcdef",
+    "enable_discourse_connect": true
+  },
+  "recorded_from": {
+    "case": "ce5234250dcf94e82eee552bc9f655a7143b2136e2b2bbb6a4dccf77085d956d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "delete_self_too_many_posts",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user1.json",
+      "params": {
+        "context": "/u/user1/preferences/account"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:10:38.662666",
+  "transaction_started_at": "2026-10-13T23:10:37.479185",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HagcMaJ/YCOeamtGMdKG/1CaI0s=",
+            "created_at": "2026-10-13T23:10:38.12236",
+            "rotated_at": "2026-10-13T23:10:38.121472",
+            "updated_at": "2026-10-13T23:10:38.12236",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HagcMaJ/YCOeamtGMdKG/1CaI0s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:10:38.674658",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HagcMaJ/YCOeamtGMdKG/1CaI0s=",
+            "created_at": "2026-10-13T23:10:38.12236",
+            "rotated_at": "2026-10-13T23:10:38.121472",
+            "updated_at": "2026-10-13T23:10:38.12236",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HagcMaJ/YCOeamtGMdKG/1CaI0s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "36c7b5e748234ca464a76e58e42ede5daf01d9f11f2b409488ecf74478651b0b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -47,6 +47,15 @@ pub fn action_id(name: &str) -> Option<i32> {
     ENUMS.actions.get(name).copied()
 }
 
+/// `UserHistory.staff_action_ids`: the actions `only_staff_actions` keeps.
+pub fn staff_action_ids() -> Vec<i32> {
+    ENUMS
+        .staff_actions
+        .iter()
+        .filter_map(|a| action_id(a))
+        .collect()
+}
+
 fn action_name(id: i32) -> Option<&'static str> {
     ENUMS
         .actions
@@ -256,12 +265,7 @@ pub async fn index(
         clauses.push(format!("subject = ${}", binds.len()));
     }
     // only_staff_actions
-    let staff_ids: Vec<i32> = ENUMS
-        .staff_actions
-        .iter()
-        .filter_map(|a| action_id(a))
-        .collect();
-    binds.push(Bind::Ints(staff_ids));
+    binds.push(Bind::Ints(staff_action_ids()));
     clauses.push(format!("action = ANY(${})", binds.len()));
     if !guardian.is_admin() {
         binds.push(Bind::Ints(moderator_visible_action_ids(s)?));

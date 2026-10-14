@@ -1,0 +1,12 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json",
+      "params": {
+        "context": "/u/user3/preferences/account"
+      }
+    }
+  ]
+}

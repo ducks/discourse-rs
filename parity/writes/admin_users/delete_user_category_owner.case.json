@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE categories SET user_id = 5 WHERE id = 34",
+    "UPDATE topics SET user_id = 5 WHERE id = (SELECT topic_id FROM categories WHERE id = 34)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3"
+      }
+    }
+  ]
+}

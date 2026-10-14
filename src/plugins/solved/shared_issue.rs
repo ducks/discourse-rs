@@ -131,3 +131,13 @@ pub async fn toggle(
     .await?;
     Ok(Outcome::Done { count, created })
 }
+
+/// discourse-solved's `has_many :discourse_solved_shared_issues,
+/// dependent: :delete_all` on User.
+pub async fn user_destroying(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM discourse_solved_shared_issues WHERE user_id = $1")
+        .bind(user_id)
+        .execute(conn)
+        .await?;
+    Ok(())
+}

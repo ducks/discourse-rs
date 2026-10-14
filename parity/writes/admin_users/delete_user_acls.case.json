@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO access_control_lists (id, target_type, target_id, owner, permission, allowed_user_ids, allowed_group_ids, created_at, updated_at) VALUES (9301, 'Topic', 35, 'boards', 'view', '{5}', '{}', now() - interval '1 day', now() - interval '1 day'), (9302, 'Topic', 37, 'boards', 'view', '{3,5}', '{}', now() - interval '1 day', now() - interval '1 day'), (9303, 'Topic', 38, 'boards', 'view', '{3}', '{11}', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3"
+      }
+    }
+  ],
+  "run_jobs": [
+    "cleanup_acls_for_deleted"
+  ]
+}

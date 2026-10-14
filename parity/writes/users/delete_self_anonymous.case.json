@@ -1,0 +1,8 @@
+{
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json"
+    }
+  ]
+}

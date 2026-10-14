@@ -139,3 +139,13 @@ async fn topic_arg(conn: &mut PgConnection, args: &Value) -> Result<Option<i32>,
         .fetch_optional(conn)
         .await?)
 }
+
+/// discourse-topic-voting's `has_many :votes, dependent: :destroy` on
+/// User: the votes go, the topics' vote counts stay as they were.
+pub async fn user_destroying(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM topic_voting_votes WHERE user_id = $1")
+        .bind(user_id)
+        .execute(conn)
+        .await?;
+    Ok(())
+}

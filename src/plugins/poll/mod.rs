@@ -44,6 +44,16 @@ pub fn enabled(settings: &SiteSettings) -> Result<bool, SettingError> {
     Ok(settings.get("poll_enabled")?.truthy())
 }
 
+/// The poll plugin's `has_many :poll_votes, dependent: :delete_all` on
+/// User (poll_votes.user_id has a foreign key: they must go first).
+pub async fn user_destroying(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM poll_votes WHERE user_id = $1")
+        .bind(user_id)
+        .execute(conn)
+        .await?;
+    Ok(())
+}
+
 /// One poll `DiscoursePoll::Poll.extract` found: its `data-poll-*`
 /// attributes (HTML-escaped, the prefix dropped), options and title.
 #[derive(Debug, Clone, PartialEq)]

@@ -25,6 +25,63 @@ fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
 }
 
 /// PUT /u/{username}
+/// DELETE /u/:username(.json): UsersController#destroy, the user deleting
+/// their own account (posts and all), or staff any they may delete.
+pub async fn destroy(
+    State(state): State<AppState>,
+    axum::Extension(incoming): axum::Extension<Incoming>,
+    Path(username): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let guardian = incoming.guardian.clone();
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    let mut tx = state.pool.begin().await?;
+    let Some(target) = user_updater::find_target(&mut tx, &guardian, &username).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(deletable) = crate::guardian::DeletableUser::load(&mut tx, target.id).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if !guardian
+        .can_delete_user(&mut tx, &settings, &deletable)
+        .await?
+    {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let opts = crate::user_destroyer::Options {
+        delete_posts: true,
+        context: p.get("context").and_then(params::scalar),
+        ..Default::default()
+    };
+    match crate::user_destroyer::destroy(&mut tx, &ctx, &guardian, target.id, &opts).await? {
+        crate::user_destroyer::Outcome::Destroyed => {}
+        // delete_posts is given, and the guardian passed above.
+        crate::user_destroyer::Outcome::PostsExist | crate::user_destroyer::Outcome::Forbidden => {
+            return Ok(super::search::invalid_access(&state));
+        }
+    }
+    tx.commit().await?;
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
 pub async fn update(
     State(state): State<AppState>,
     axum::Extension(incoming): axum::Extension<Incoming>,

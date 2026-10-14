@@ -106,6 +106,7 @@ pub mod upload_references;
 pub mod uploads;
 pub mod url;
 pub mod user_comm_screener;
+pub mod user_destroyer;
 pub mod user_penalties;
 pub mod user_private;
 pub mod user_profile_view;

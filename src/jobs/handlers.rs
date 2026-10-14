@@ -18,6 +18,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
         // Publishes reviewable counts to staff on MessageBus, likewise.
         "notify_reviewable" => Ok(()),
+        // Publishes each staff member's reviewable counts, likewise.
+        "refresh_users_reviewable_counts" => Ok(()),
+        "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
+        crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
+            chat_delete_user_messages(state, &job.args).await
+        }
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
@@ -108,6 +114,58 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::CleanupAclsForDeleted: a deleted group or user taken out of the
+/// access control lists, the lists left with no one deleted.
+async fn cleanup_acls_for_deleted(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let group_id = int_arg(args, "group_id")?;
+    let user_id = int_arg(args, "user_id")?;
+    if group_id.is_none() && user_id.is_none() {
+        return Ok(());
+    }
+    let mut tx = state.pool.begin().await?;
+    for (column, id) in [
+        ("allowed_group_ids", group_id),
+        ("allowed_user_ids", user_id),
+    ] {
+        if let Some(id) = id {
+            sqlx::query(&format!(
+                "UPDATE access_control_lists SET {column} = array_remove({column}, $1::bigint), \
+                                                 updated_at = clock_timestamp() \
+                 WHERE {column} @> ARRAY[$1::bigint]"
+            ))
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+        }
+    }
+    sqlx::query(
+        "DELETE FROM access_control_lists \
+         WHERE allowed_group_ids = '{}'::bigint[] AND allowed_user_ids = '{}'::bigint[]",
+    )
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// Jobs::Chat::DeleteUserMessages: Chat::MessageDestroyer over every
+/// message of the user, deleted ones too. Nothing to do for a user
+/// without messages; the destroy itself is not ported.
+async fn chat_delete_user_messages(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(user_id) = int_arg(args, "user_id")? else {
+        return Ok(());
+    };
+    let any: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM chat_messages WHERE user_id = $1)")
+            .bind(user_id)
+            .fetch_one(&state.pool)
+            .await?;
+    if any {
+        return Err(Unsupported("deleting a user's chat messages (Chat::MessageDestroyer)").into());
+    }
+    Ok(())
 }
 
 /// Jobs::DiscourseTopicVoting::VoteRelease

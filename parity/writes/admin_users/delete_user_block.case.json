@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET ip_address = '203.0.113.7', registration_ip_address = '203.0.113.8' WHERE id = 5",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9301, 'facebook', 'example1', 5, now(), '{\"email\":\"User3-Facebook@example.com\"}', '{}', '{}', now(), now())",
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9603, '203.0.113.8', 2, 3, NULL, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/5.json",
+      "params": {
+        "context": "/admin/users/5/user3",
+        "block_email": "true",
+        "block_ip": "true",
+        "block_urls": "true",
+        "delete_posts": "false"
+      }
+    }
+  ]
+}

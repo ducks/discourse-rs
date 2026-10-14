@@ -1,0 +1,25 @@
+{
+  "user": "user3",
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9301, 52, 5, 2, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9302, 52, 3, 2, now() - interval '1 day', now() - interval '1 day')",
+    "UPDATE posts SET like_count = 2, like_score = 2 WHERE id = 52",
+    "UPDATE topics SET like_count = 2 WHERE id = 35",
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (9301, 1, 5, 35, 52, 5, now() - interval '1 day', now() - interval '1 day'), (9302, 2, 2, 35, 52, 5, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO given_daily_likes (user_id, likes_given, given_date, limit_reached) VALUES (5, 1, current_date, FALSE)",
+    "UPDATE user_stats SET likes_given = 1 WHERE user_id = 5",
+    "UPDATE user_stats SET likes_received = likes_received + 1 WHERE user_id = 2",
+    "INSERT INTO topic_users (user_id, topic_id, liked, notification_level, first_visited_at, last_visited_at, last_read_post_number) VALUES (5, 35, TRUE, 1, now() - interval '1 day', now() - interval '1 day', 5)",
+    "INSERT INTO post_timings (topic_id, post_number, user_id, msecs) VALUES (35, 5, 5, 3000)",
+    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, current_date - 1, 5, NULL)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user3.json",
+      "params": {
+        "context": "/u/user3/preferences/account"
+      }
+    }
+  ]
+}
