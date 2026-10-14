@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "close",
+        "based_on_last_post": "true",
+        "duration_minutes": "99999999"
+      }
+    }
+  ]
+}

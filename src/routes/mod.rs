@@ -46,6 +46,7 @@ mod stylesheets;
 mod tags;
 mod topic_notifications;
 mod topic_status;
+mod topic_timer;
 mod topic_voting;
 mod topics;
 mod user_avatars;
@@ -385,6 +386,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
+        // TopicsController#timer; {slug} holds the topic id.
+        .route("/t/{slug}/timer", post(topic_timer::timer))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))
         .route("/t/{slug}/invite", post(pm_invite::invite))

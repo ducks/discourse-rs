@@ -1,0 +1,12 @@
+{
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "close",
+        "time": "24"
+      }
+    }
+  ]
+}

@@ -447,12 +447,12 @@ fn sanitize_text(html: &str) -> String {
 }
 
 /// `Guardian#can_see_category?`
-async fn can_see_category(
+pub(crate) async fn can_see_category(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     guardian: &Guardian,
     category_id: i32,
-) -> Result<bool, AppError> {
+) -> Result<bool, crate::guardian::GuardianError> {
     let restricted: Option<bool> =
         sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
             .bind(category_id)
@@ -477,7 +477,10 @@ async fn can_see_category(
         .contains(&category_id))
 }
 
-async fn guardian_for(conn: &mut PgConnection, user_id: Option<i32>) -> Result<Guardian, AppError> {
+pub(crate) async fn guardian_for(
+    conn: &mut PgConnection,
+    user_id: Option<i32>,
+) -> Result<Guardian, AppError> {
     let Some(id) = user_id else {
         return Ok(Guardian::anonymous());
     };

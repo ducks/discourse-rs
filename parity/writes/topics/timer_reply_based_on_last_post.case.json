@@ -12,6 +12,5 @@
         "raw": "A reply to a topic that closes on a timer."
       }
     }
-  ],
-  "not_yet": "topic timers (PostCreator#update_topic_auto_close)"
+  ]
 }

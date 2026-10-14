@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "settings": {
+    "topic_timers_allowed_groups": "1|2|12"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "close",
+        "time": "24"
+      }
+    }
+  ]
+}
