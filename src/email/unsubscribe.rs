@@ -251,12 +251,15 @@ pub async fn prepare(
     owner: &Owner,
 ) -> Result<Options, AppError> {
     let strategy = strategy_for(key)?;
+    // UserOption#mailing_list_mode reads false while the site disables it.
+    let mailing_list_mode =
+        owner.mailing_list_mode && !settings.get("disable_mailing_list_mode")?.truthy();
     let mut options = Options {
         key_type: key.unsubscribe_key_type.clone().unwrap_or_default(),
         email: owner.email.clone().unwrap_or_default(),
-        mailing_list_mode: owner.mailing_list_mode,
+        mailing_list_mode,
         // UserOption#unsubscribed_from_all?: email_level never is 2.
-        unsubscribed_from_all: !owner.mailing_list_mode
+        unsubscribed_from_all: !mailing_list_mode
             && owner.email_digests != Some(true)
             && owner.email_level == 2
             && owner.email_messages_level == 2,
@@ -446,7 +449,7 @@ pub fn render_unsubscribe(
         }
     }
     out.push('\n');
-    if o.mailing_list_mode && !settings.get("disable_mailing_list_mode")?.truthy() {
+    if o.mailing_list_mode {
         out.push_str("        <p>\n        <label>\n");
         out.push_str(&format!(
             "        {}\n",
