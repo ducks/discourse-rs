@@ -253,15 +253,21 @@ impl Job<'_> {
         }
         // Chat::Notifier.user_has_seen_message?
         let read = membership.last_read_message_id.unwrap_or(0) >= self.message_id;
-        let notification_id: i64 = sqlx::query_scalar(
-            "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, TRUE, now(), now()) RETURNING id",
+        // Notification.create!, its after_commit work (no chat_mention
+        // email: chat's summary emails are their own), then
+        // `mention.notifications << notification`.
+        let notification_id = crate::notification_create::create(
+            conn,
+            &self.state.bus,
+            self.settings,
+            &crate::notification_create::NewNotification::new(
+                CHAT_MENTION,
+                membership.user_id,
+                Value::Object(data),
+            )
+            .read(read)
+            .high_priority(true),
         )
-        .bind(CHAT_MENTION)
-        .bind(membership.user_id)
-        .bind(Value::Object(data).to_string())
-        .bind(read)
-        .fetch_one(&mut *conn)
         .await?;
         sqlx::query(
             "INSERT INTO chat_mention_notifications (chat_mention_id, notification_id) VALUES ($1, $2)",
@@ -269,15 +275,6 @@ impl Job<'_> {
         .bind(mention)
         .bind(notification_id)
         .execute(&mut *conn)
-        .await?;
-        // after_commit refresh_notification_count; send_email has no
-        // chat_mention email (chat's summary emails are their own).
-        crate::bus::publish_notifications_state(
-            &self.state.bus,
-            &mut *conn,
-            self.settings,
-            membership.user_id,
-        )
         .await?;
         Ok(())
     }
@@ -366,18 +363,7 @@ impl Job<'_> {
                 Some(&[crate::bus::user_tag(membership.user_id)]),
             )
             .await?;
-        // PostAlerter.push_notification
-        let push: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
-             OR EXISTS (SELECT 1 FROM user_api_keys k \
-                        WHERE k.user_id = $1 AND k.revoked_at IS NULL AND k.push_url IS NOT NULL)",
-        )
-        .bind(membership.user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if push {
-            return Err(Unsupported("push notifications").into());
-        }
+        crate::jobs::post_alert::push_notification(conn, membership.user_id).await?;
         Ok(())
     }
 }
@@ -664,18 +650,7 @@ pub async fn notify_watching(
                 Some(&[crate::bus::user_tag(membership.user_id)]),
             )
             .await?;
-        // PostAlerter.push_notification
-        let push: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
-             OR EXISTS (SELECT 1 FROM user_api_keys k \
-                        WHERE k.user_id = $1 AND k.revoked_at IS NULL AND k.push_url IS NOT NULL)",
-        )
-        .bind(membership.user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if push {
-            return Err(Unsupported("push notifications").into());
-        }
+        crate::jobs::post_alert::push_notification(conn, membership.user_id).await?;
     }
     Ok(())
 }

@@ -205,34 +205,13 @@ async fn notify(
         json!(bookmark.bookmarkable_type),
     );
     data.insert("bookmarkable_id".into(), json!(bookmark.bookmarkable_id));
-    // high_priority_types: bookmark reminders are.
-    let notification_id: i64 = sqlx::query_scalar(
-        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                    high_priority, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, FALSE, TRUE, clock_timestamp(), clock_timestamp()) RETURNING id",
+    let notification = crate::notification_create::NewNotification::new(
+        BOOKMARK_REMINDER,
+        bookmark.user_id,
+        Value::Object(data),
     )
-    .bind(BOOKMARK_REMINDER)
-    .bind(bookmark.user_id)
-    .bind(target.topic_id)
-    .bind(target.post_number)
-    .bind(Value::Object(data).to_string())
-    .fetch_one(&mut *conn)
-    .await?;
-    crate::bus::publish_notifications_state(&state.bus, &mut *conn, settings, bookmark.user_id)
-        .await?;
-    let do_not_disturb: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \
-           AND starts_at <= now() AND ends_at > now())",
-    )
-    .bind(bookmark.user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if do_not_disturb {
-        sqlx::query("INSERT INTO shelved_notifications (notification_id) VALUES ($1)")
-            .bind(notification_id)
-            .execute(&mut *conn)
-            .await?;
-    }
+    .topic(target.topic_id, Some(target.post_number));
+    crate::notification_create::create(conn, &state.bus, settings, &notification).await?;
     Ok(())
 }
 

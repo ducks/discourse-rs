@@ -203,8 +203,8 @@ Bugs or silent gaps in what is merged, small and independent.
 63. ~~`feat/user-destroyer`~~ (done) L (about 60 tables; self delete needs
     pm-destroy and deleting posts with links and likes),
     64. ~~`feat/jobs-user-cleanup`~~ (done) S, 65. ~~`feat/review-delete-user`~~ (done) S/M
-66. `refactor/notification-insert` S: one path for the ten places that
-    insert notifications, which shelving hooks into
+66. ~~`refactor/notification-insert`~~ (done) S: one path for the ten
+    places that insert notifications, which shelving hooks into
 67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
 69. ~~`feat/email-unsubscribe`~~ (done) M, 70. ~~`feat/digest-email`~~ (done) L,
     71. ~~`feat/jobs-digest`~~ (done) S, 72. ~~`feat/admin-email-digest`~~ (done) S

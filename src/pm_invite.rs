@@ -275,63 +275,18 @@ async fn notify_invited(
     target: i32,
     data: &serde_json::Value,
 ) -> Result<(), AppError> {
-    let notification_id: i64 = sqlx::query_scalar(
-        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                    high_priority, created_at, updated_at) \
-         VALUES ($1, $2, $3, 1, $4, FALSE, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
+    crate::notification_create::create(
+        conn,
+        ctx.bus,
+        ctx.settings,
+        &crate::notification_create::NewNotification::new(
+            INVITED_TO_PRIVATE_MESSAGE,
+            target,
+            data.clone(),
+        )
+        .topic(topic_id, Some(1)),
     )
-    .bind(INVITED_TO_PRIVATE_MESSAGE)
-    .bind(target)
-    .bind(topic_id)
-    .bind(data.to_string())
-    .fetch_one(&mut *conn)
     .await?;
-    crate::bus::publish_notifications_state(ctx.bus, &mut *conn, ctx.settings, target).await?;
-    // send_email: NotificationEmailer#invited_to_private_message, after
-    // personal_email_time_window_seconds unless email_level is never.
-    let (dnd, email_level, active, approved, staged): (bool, Option<i32>, bool, bool, bool) =
-        sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \
-                              AND starts_at <= now() AND ends_at > now()), \
-                    (SELECT email_level FROM user_options WHERE user_id = $1), u.active, u.approved, u.staged \
-             FROM users u WHERE u.id = $1",
-        )
-        .bind(target)
-        .fetch_one(&mut *conn)
-        .await?;
-    let first_post: Option<(i32, i32)> =
-        sqlx::query_as("SELECT id, post_type FROM posts WHERE topic_id = $1 AND post_number = 1")
-            .bind(topic_id)
-            .fetch_optional(&mut *conn)
-            .await?;
-    if dnd {
-        return Err(Unsupported("do not disturb (shelved notifications)").into());
-    }
-    let emailable = email_level != Some(2)
-        && (active || staged)
-        && (approved || staged || !ctx.settings.get("must_approve_users")?.truthy())
-        && first_post.is_some_and(|(_, post_type)| [1, 2, 4].contains(&post_type));
-    if emailable {
-        let mut args = json!({
-            "type": "user_invited_to_private_message",
-            "user_id": target,
-            "notification_id": notification_id,
-            "notification_data_hash": data.clone(),
-            "notification_type": "invited_to_private_message",
-        });
-        if let Some((post_id, _)) = first_post {
-            args["post_id"] = json!(post_id);
-        }
-        crate::jobs::enqueue_in(
-            &mut *conn,
-            ctx.settings
-                .get("personal_email_time_window_seconds")?
-                .to_i(),
-            "user_email",
-            args,
-        )
-        .await?;
-    }
     Ok(())
 }
 

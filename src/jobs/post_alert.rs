@@ -10,8 +10,8 @@
 //! members by their level on it, with the groups' inbox summaries.
 //!
 //! Refused rather than approximated: group and @here mentions, quotes,
-//! links to topics, group SMTP, nested replies, push notifications and do
-//! not disturb.
+//! links to topics, group SMTP, nested replies and push notifications.
+//! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -30,7 +30,6 @@ mod types {
     pub const QUOTED: i32 = 3;
     pub const EDITED: i32 = 4;
     pub const LIKED: i32 = 5;
-    pub const LIKED_CONSOLIDATED: i32 = 19;
     pub const POSTED: i32 = 9;
     pub const PRIVATE_MESSAGE: i32 = 6;
     pub const LINKED: i32 = 11;
@@ -192,247 +191,6 @@ pub async fn notify_reaction(
         .create_notification(conn, author, types::REACTION, &opts)
         .await?;
     Ok(())
-}
-
-/// A notification `create_notification` is about to save.
-struct NewNotification {
-    notification_type: i32,
-    user_id: i32,
-    topic_id: i32,
-    post_number: i32,
-    data: Map<String, Value>,
-    post_action_id: Option<i32>,
-    high_priority: bool,
-}
-
-async fn insert_notification(
-    conn: &mut PgConnection,
-    n: &NewNotification,
-    data: &Map<String, Value>,
-) -> Result<i64, AppError> {
-    Ok(sqlx::query_scalar(
-        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                    high_priority, post_action_id, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, FALSE, $7, $6, clock_timestamp(), clock_timestamp()) RETURNING id",
-    )
-    .bind(n.notification_type)
-    .bind(n.user_id)
-    .bind(n.topic_id)
-    .bind(n.post_number)
-    .bind(Value::Object(data.clone()).to_string())
-    .bind(n.post_action_id)
-    .bind(n.high_priority)
-    .fetch_one(&mut *conn)
-    .await?)
-}
-
-/// A notification's data as `data_hash` reads it.
-fn data_hash(data: &str) -> Map<String, Value> {
-    serde_json::from_str(data).unwrap_or_default()
-}
-
-/// `Notification.consolidate_or_create!`: the first of
-/// ConsolidationPlanner's plans that takes the notification, or a plain
-/// save. Ported for likes (liked_by_two_users, liked) and
-/// discourse-reactions (reacted_by_two_users, consolidated_reactions);
-/// the other types' plans don't apply to what this job creates.
-async fn consolidate_or_create(
-    conn: &mut PgConnection,
-    ctx: &Ctx<'_>,
-    n: &NewNotification,
-    like_frequency: i32,
-) -> Result<i64, AppError> {
-    let reaction = match n.notification_type {
-        types::LIKED => false,
-        types::REACTION => true,
-        _ => return insert_notification(conn, n, &n.data).await,
-    };
-    // DeletePreviousNotifications (liked_by_two_users,
-    // reacted_by_two_users): for users notified of every like, the
-    // newest one of the last day on the post is replaced by one naming
-    // both.
-    if like_frequency == 0 {
-        let previous: Option<(i64, String)> = sqlx::query_as(
-            "SELECT id, data FROM notifications WHERE user_id = $1 AND topic_id = $2 AND post_number = $3 \
-             AND notification_type = $4 AND created_at > now() - interval '1 day' ORDER BY id DESC LIMIT 1",
-        )
-        .bind(n.user_id)
-        .bind(n.topic_id)
-        .bind(n.post_number)
-        .bind(n.notification_type)
-        .fetch_optional(&mut *conn)
-        .await?;
-        if let Some((previous_id, previous_data)) = previous {
-            let same = data_hash(&previous_data);
-            let count = same
-                .get("count")
-                .filter(|c| !c.is_null())
-                .map(|c| match c {
-                    Value::String(s) => crate::ruby::to_i(s),
-                    other => other.as_i64().unwrap_or(0),
-                })
-                .unwrap_or(1)
-                + 1;
-            let mut data = n.data.clone();
-            data.insert("previous_notification_id".into(), json!(previous_id));
-            data.insert(
-                "username2".into(),
-                same.get("display_username").cloned().unwrap_or(Value::Null),
-            );
-            if reaction {
-                data.insert(
-                    "name2".into(),
-                    same.get("display_name").cloned().unwrap_or(Value::Null),
-                );
-            }
-            data.insert("count".into(), json!(count));
-            sqlx::query("DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2 AND id = $3")
-                .bind(n.user_id)
-                .bind(n.notification_type)
-                .bind(previous_id)
-                .execute(&mut *conn)
-                .await?;
-            return insert_notification(conn, n, &data).await;
-        }
-    }
-
-    // ConsolidateNotifications (liked, consolidated_reactions): one
-    // user's likes or reactions within the window roll into one.
-    let threshold = ctx
-        .settings
-        .get("notification_consolidation_threshold")?
-        .to_i();
-    if threshold == 0 {
-        return insert_notification(conn, n, &n.data).await;
-    }
-    let window = ctx
-        .settings
-        .get("likes_notification_consolidation_window_mins")?
-        .to_i() as i32;
-    let to = if reaction {
-        types::REACTION
-    } else {
-        types::LIKED_CONSOLIDATED
-    };
-    let display_username = n.data.get("display_username").and_then(Value::as_str);
-    let mut data = n.data.clone();
-    data.insert(
-        "username".into(),
-        n.data
-            .get("display_username")
-            .cloned()
-            .unwrap_or(Value::Null),
-    );
-    if reaction {
-        data.insert(
-            "name".into(),
-            n.data.get("display_name").cloned().unwrap_or(Value::Null),
-        );
-        data.insert("consolidated".into(), json!(true));
-    }
-
-    // update_consolidated_notification!
-    let consolidated: Option<(i64, String)> = if reaction {
-        sqlx::query_as(
-            "SELECT id, data FROM notifications WHERE user_id = $1 AND notification_type = $2 \
-             AND created_at > now() - make_interval(mins => $3) \
-             AND (data::json ->> 'consolidated')::bool AND data::json ->> 'display_username' = $4 \
-             ORDER BY id LIMIT 1",
-        )
-        .bind(n.user_id)
-        .bind(to)
-        .bind(window)
-        .bind(display_username.unwrap_or(""))
-        .fetch_optional(&mut *conn)
-        .await?
-    } else {
-        sqlx::query_as(
-            "SELECT id, data FROM notifications WHERE user_id = $1 AND notification_type = $2 \
-             AND created_at > now() - make_interval(mins => $3) \
-             AND ($4::text IS NULL OR data::json ->> 'display_username' = $4) \
-             ORDER BY id LIMIT 1",
-        )
-        .bind(n.user_id)
-        .bind(to)
-        .bind(window)
-        .bind(display_username)
-        .fetch_optional(&mut *conn)
-        .await?
-    };
-    if let Some((id, existing)) = consolidated {
-        let existing = data_hash(&existing);
-        let mut merged = existing.clone();
-        for (key, value) in &data {
-            merged.insert(key.clone(), value.clone());
-        }
-        if let Some(count) = merged.get("count").filter(|c| !c.is_null()) {
-            let next = count.as_i64().unwrap_or(0) + 1;
-            merged.insert("count".into(), json!(next));
-        }
-        if reaction && existing.get("reaction_icon") != n.data.get("reaction_icon") {
-            merged.shift_remove("reaction_icon");
-        }
-        sqlx::query(
-            "UPDATE notifications SET data = $2, read = FALSE, updated_at = clock_timestamp() WHERE id = $1",
-        )
-        .bind(id)
-        .bind(Value::Object(merged).to_string())
-        .execute(&mut *conn)
-        .await?;
-        return Ok(id);
-    }
-
-    // create_consolidated_notification!: saving this one would pass the
-    // threshold, so the unconsolidated ones become one dated as the
-    // newest of them.
-    let unconsolidated: Vec<(i64, Option<String>, chrono::NaiveDateTime)> = sqlx::query_as(
-        "SELECT id, data::json ->> 'reaction_icon', created_at FROM notifications \
-         WHERE user_id = $1 AND notification_type = $2 \
-         AND created_at > now() - make_interval(mins => $3) AND data::json ->> 'username2' IS NULL \
-         AND ($4 = FALSE OR data::json ->> 'consolidated' IS NULL) \
-         AND ($5::text IS NULL OR data::json ->> 'display_username' = $5) ORDER BY id",
-    )
-    .bind(n.user_id)
-    .bind(n.notification_type)
-    .bind(window)
-    .bind(reaction)
-    // consolidated_reactions compares `data[:display_username].to_s`.
-    .bind(if reaction {
-        Some(display_username.unwrap_or(""))
-    } else {
-        display_username
-    })
-    .fetch_all(&mut *conn)
-    .await?;
-    let count_after = unconsolidated.len() as i64 + 1;
-    let Some((_, _, timestamp)) = unconsolidated.last().filter(|_| count_after > threshold) else {
-        return insert_notification(conn, n, &n.data).await;
-    };
-    let timestamp = *timestamp;
-    data.insert("count".into(), json!(count_after));
-    if reaction
-        && let Some(icon) = data.get("reaction_icon").and_then(Value::as_str)
-        && unconsolidated
-            .iter()
-            .any(|(_, other, _)| other.as_deref() != Some(icon))
-    {
-        data.shift_remove("reaction_icon");
-    }
-    let ids: Vec<i64> = unconsolidated.iter().map(|(id, _, _)| *id).collect();
-    sqlx::query("DELETE FROM notifications WHERE id = ANY($1)")
-        .bind(&ids)
-        .execute(&mut *conn)
-        .await?;
-    Ok(sqlx::query_scalar(
-        "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) \
-         VALUES ($1, $2, $3, FALSE, FALSE, $4, $4) RETURNING id",
-    )
-    .bind(to)
-    .bind(n.user_id)
-    .bind(Value::Object(data).to_string())
-    .bind(timestamp)
-    .fetch_one(&mut *conn)
-    .await?)
 }
 
 pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result<(), AppError> {
@@ -1155,113 +913,22 @@ impl Alerter<'_> {
         for (key, value) in &opts.custom_data {
             data.insert(key.clone(), value.clone());
         }
-        let data = Value::Object(data);
-        // The group_membership consolidation plan sets group_name on a message
-        // notification's in-memory data (from the post's requested_group_id)
-        // before its precondition fails; the saved row keeps the data as
-        // built, the email job gets the plan's copy.
-        let mut email_data = data.clone();
-        if notification_type == types::PRIVATE_MESSAGE {
-            let requested: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'requested_group_id')",
-            )
-            .bind(post.id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if requested {
-                return Err(Unsupported("group membership request messages").into());
-            }
-            email_data["group_name"] = Value::Null;
-        }
-        let notification_id = consolidate_or_create(
+        // consolidate_or_create!, with its after_commit work (the count,
+        // and the email or the shelf).
+        let mut notification = crate::notification_create::NewNotification::new(
+            notification_type,
+            user_id,
+            Value::Object(data),
+        )
+        .topic(post.topic_id, Some(target_post_number));
+        notification.post_action_id = opts.post_action_id;
+        crate::notification_create::consolidate_or_create(
             &mut *conn,
-            ctx,
-            &NewNotification {
-                notification_type,
-                user_id,
-                topic_id: post.topic_id,
-                post_number: target_post_number,
-                data: data.as_object().cloned().unwrap_or_default(),
-                post_action_id: opts.post_action_id,
-                // high_priority_types: private_message (and bookmark reminders).
-                high_priority: notification_type == types::PRIVATE_MESSAGE,
-            },
-            like_frequency,
+            ctx.bus,
+            ctx.settings,
+            &notification,
         )
         .await?;
-
-        // after_commit refresh_notification_count.
-        crate::bus::publish_notifications_state(ctx.bus, &mut *conn, ctx.settings, user_id).await?;
-
-        // after_commit send_email: NotificationEmailer.process_notification.
-        let (dnd, email_level, email_messages_level, active, approved): (bool, Option<i32>, Option<i32>, bool, bool) = sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \
-                              AND starts_at <= now() AND ends_at > now()), \
-                    (SELECT email_level FROM user_options WHERE user_id = $1), \
-                    (SELECT email_messages_level FROM user_options WHERE user_id = $1), u.active, u.approved \
-             FROM users u WHERE u.id = $1",
-        )
-        .bind(user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if dnd {
-            return Err(Unsupported("do not disturb (shelved notifications)").into());
-        }
-        let email_type = match notification_type {
-            types::PRIVATE_MESSAGE => Some("user_private_message"),
-            types::MENTIONED => Some("user_mentioned"),
-            types::POSTED | types::WATCHING_CATEGORY_OR_TAG => Some("user_posted"),
-            types::QUOTED => Some("user_quoted"),
-            types::REPLIED => Some("user_replied"),
-            types::LINKED => Some("user_linked"),
-            types::WATCHING_FIRST_POST => Some("user_watching_first_post"),
-            _ => None,
-        };
-        // email_level never (2) (email_messages_level for messages, sent
-        // after personal_email_time_window_seconds), inactive users and
-        // unapproved ones under must_approve_users get no email.
-        let level = if notification_type == types::PRIVATE_MESSAGE {
-            email_messages_level
-        } else {
-            email_level
-        };
-        let emailable = level != Some(2)
-            && active
-            && (approved || !ctx.settings.get("must_approve_users")?.truthy())
-            && [1, 2, 4].contains(&post.post_type);
-        if let (Some(email_type), true) = (email_type, emailable) {
-            let type_name = match notification_type {
-                types::MENTIONED => "mentioned",
-                types::REPLIED => "replied",
-                types::QUOTED => "quoted",
-                types::POSTED => "posted",
-                types::LINKED => "linked",
-                types::WATCHING_FIRST_POST => "watching_first_post",
-                types::WATCHING_CATEGORY_OR_TAG => "watching_category_or_tag",
-                types::PRIVATE_MESSAGE => "private_message",
-                _ => "",
-            };
-            super::enqueue_in(
-                &mut *conn,
-                if notification_type == types::PRIVATE_MESSAGE {
-                    ctx.settings
-                        .get("personal_email_time_window_seconds")?
-                        .to_i()
-                } else {
-                    ctx.settings.get("email_time_window_mins")?.to_i() * 60
-                },
-                "user_email",
-                json!({
-                    "type": email_type,
-                    "user_id": user_id,
-                    "notification_id": notification_id,
-                    "notification_data_hash": email_data,
-                    "notification_type": type_name,
-                    "post_id": post.id,
-                }),
-            )
-            .await?;
-        }
         // create_notification_alert for a first notification of a notifiable
         // type: the live alert (to users seen in the last 30 days), then
         // push notifications, refused for users who have push set up.
@@ -1298,18 +965,26 @@ impl Alerter<'_> {
                 ),
             });
             crate::bus::publish_notification_alert(ctx.bus, &mut *conn, user_id, &payload).await?;
-            let push: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
-                 OR EXISTS (SELECT 1 FROM user_api_keys k \
-                            WHERE k.user_id = $1 AND k.revoked_at IS NULL AND k.push_url IS NOT NULL)",
-            )
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if push {
-                return Err(Unsupported("push notifications").into());
-            }
+            push_notification(conn, user_id).await?;
         }
         Ok(true)
     }
+}
+
+/// `PostAlerter.push_notification(user, payload)`: push delivery is not
+/// ported, so a user with a push subscription or a push client is
+/// refused.
+pub async fn push_notification(conn: &mut PgConnection, user_id: i32) -> Result<(), AppError> {
+    let push: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
+         OR EXISTS (SELECT 1 FROM user_api_keys k \
+                    WHERE k.user_id = $1 AND k.revoked_at IS NULL AND k.push_url IS NOT NULL)",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if push {
+        return Err(Unsupported("push notifications").into());
+    }
+    Ok(())
 }

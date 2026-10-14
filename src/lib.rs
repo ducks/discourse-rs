@@ -55,6 +55,8 @@ pub mod messages_view;
 pub mod modifications;
 pub mod mustache;
 pub mod not_found_page;
+pub mod notification_create;
+pub mod notification_emailer;
 pub mod notifications;
 pub mod onebox;
 pub mod optimized_images;
