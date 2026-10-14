@@ -315,6 +315,7 @@ cases.each do |c|
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]
     record[:unordered] = c["unordered"] if c["unordered"]
+    record[:unordered_responses] = c["unordered_responses"] if c["unordered_responses"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
     record[:files] = c["files"] if c["files"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]

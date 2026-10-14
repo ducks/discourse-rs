@@ -11,5 +11,13 @@
       "method": "GET",
       "path": "/user-badges/user1.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/badges",
+    "/responses/0/body/user_badges",
+    "/responses/0/body/badge_types",
+    "/responses/0/body/badge_groupings",
+    "/responses/0/body/users",
+    "/responses/0/body/topics"
   ]
 }

@@ -2,8 +2,8 @@
   "name": "job_anniversary_grant",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T01:03:37.317536",
-  "transaction_started_at": "2026-10-14T01:03:35.4671",
+  "started_at": "2026-10-14T02:08:03.99516",
+  "transaction_started_at": "2026-10-14T02:08:02.221198",
   "responses": [],
   "changes": {
     "badges": {
@@ -70,8 +70,8 @@
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-10-14T01:03:37.427936",
-          "updated_at": "2026-10-14T01:03:37.427936",
+          "created_at": "2026-10-14T02:08:04.020794",
+          "updated_at": "2026-10-14T02:08:04.020794",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -84,13 +84,13 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 20,
+          "id": 19,
           "seq": 0,
           "post_id": null,
           "user_id": 3,
           "badge_id": 24,
-          "created_at": "2026-10-14T01:03:37.348318",
-          "granted_at": "2026-10-14T01:03:37.320646",
+          "created_at": "2026-10-14T02:08:04.002921",
+          "granted_at": "2026-10-14T02:08:03.996627",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": -1,
@@ -210,7 +210,7 @@
             "post_edits_count": null,
             "posts_read_count": 2,
             "first_unread_pm_at": "2026-10-01T15:39:51.342717",
-            "digest_attempted_at": "2026-10-13T23:11:11.706976",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
             "first_post_created_at": "2026-09-30T07:28:29.079439",
@@ -236,7 +236,7 @@
             "post_edits_count": null,
             "posts_read_count": 2,
             "first_unread_pm_at": "2026-10-01T15:39:51.342717",
-            "digest_attempted_at": "2026-10-13T23:11:11.706976",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 5,
             "first_post_created_at": "2026-09-30T07:28:29.079439",
@@ -249,7 +249,7 @@
   "jobs": [],
   "next_ids": {
     "notifications": 53,
-    "user_badges": 20
+    "user_badges": 19
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
