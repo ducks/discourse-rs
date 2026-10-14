@@ -55,6 +55,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
+        "admin_confirmation_email" => admin_confirmation_email(state, &job.args).await,
         // Fires user_added_to_group / user_removed_from_group, which core
         // only hands to web hooks (none are ported).
         "publish_group_membership_updates" => {
@@ -1313,6 +1314,60 @@ async fn send_email_login_code(state: &AppState, args: &Value) -> Result<(), App
     )
     .await?;
     crate::email::sender::send(&mut tx, &ctx, built, "email_login_code", None).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::AdminConfirmationEmail`: AdminConfirmationMailer's email to the
+/// admin who asked to grant admin, with the link that confirms it.
+async fn admin_confirmation_email(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let arg = |k: &str| {
+        args.get(k)
+            .and_then(Value::as_str)
+            .filter(|v| !v.trim().is_empty())
+    };
+    let (Some(to), Some(target_email), Some(target_username), Some(token)) = (
+        arg("to_address"),
+        arg("target_email"),
+        arg("target_username"),
+        arg("token"),
+    ) else {
+        return Err(Unsupported(
+            "admin_confirmation_email with a blank argument (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::email::sender::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        mailer: &state.mailer,
+    };
+    let base_url = crate::url::Urls {
+        config: &state.config,
+        settings: &s,
+    }
+    .base_url()?;
+    let admin_confirm_url = format!("{base_url}/u/confirm-admin/{token}");
+    let mut tx = state.pool.begin().await?;
+    let built = crate::email::account::build_template(
+        &mut tx,
+        &ctx,
+        "admin_confirmation_mailer",
+        to,
+        &[
+            ("target_email", target_email),
+            ("target_username", target_username),
+            ("admin_confirm_url", &admin_confirm_url),
+        ],
+        None,
+    )
+    .await?;
+    crate::email::sender::send(&mut tx, &ctx, built, "admin_confirmation_message", None).await?;
     tx.commit().await?;
     Ok(())
 }

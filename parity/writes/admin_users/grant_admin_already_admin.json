@@ -1,0 +1,75 @@
+{
+  "name": "grant_admin_already_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    }
+  ],
+  "started_at": "2026-10-14T11:04:44.534887",
+  "transaction_started_at": "2026-10-14T11:04:43.255456",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9CQ+QCH4NiWKjyZt906BZ9PWnXg=",
+            "created_at": "2026-10-14T11:04:43.886949",
+            "rotated_at": "2026-10-14T11:04:43.885708",
+            "updated_at": "2026-10-14T11:04:43.886949",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9CQ+QCH4NiWKjyZt906BZ9PWnXg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:04:44.539713",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9CQ+QCH4NiWKjyZt906BZ9PWnXg=",
+            "created_at": "2026-10-14T11:04:43.886949",
+            "rotated_at": "2026-10-14T11:04:43.885708",
+            "updated_at": "2026-10-14T11:04:43.886949",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9CQ+QCH4NiWKjyZt906BZ9PWnXg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET admin = TRUE WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "0518f3a6e84f3c23870b8c3fcd57dfd90508c862cf20a8a36883c82ad1d0289e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

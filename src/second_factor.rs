@@ -73,7 +73,9 @@ impl Enabled {
     }
 }
 
-/// The failure payload, or None when the code was right.
+/// `authenticate_second_factor`: the failure payload, or the TOTP row
+/// whose code was right (its last_used is for the caller to write, with
+/// `mark_used`, once it goes through).
 pub async fn authenticate(
     conn: &mut PgConnection,
     i18n: &I18n,
@@ -82,12 +84,12 @@ pub async fn authenticate(
     method: Option<&str>,
     token: Option<&str>,
     now: i64,
-) -> Result<Option<Value>, AppError> {
+) -> Result<Result<i64, Value>, AppError> {
     let method = method
         .filter(|m| !m.trim().is_empty())
         .map(crate::ruby::to_i);
     let Some(method @ (TOTP | BACKUP_CODES | SECURITY_KEY | PASSKEY)) = method else {
-        return Ok(Some(enabled.failure(
+        return Ok(Err(enabled.failure(
             i18n,
             "login.invalid_second_factor_method",
             "invalid_second_factor_method",
@@ -100,7 +102,7 @@ pub async fn authenticate(
         _ => return Err(Unsupported("passkeys as a second factor").into()),
     };
     if !valid_for_user {
-        return Ok(Some(enabled.failure(
+        return Ok(Err(enabled.failure(
             i18n,
             "login.not_enabled_second_factor_method",
             "not_enabled_second_factor_method",
@@ -112,25 +114,37 @@ pub async fn authenticate(
     if method != TOTP {
         return Err(Unsupported("backup codes").into());
     }
-    let totps: Vec<(String, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
-        "SELECT data, last_used FROM user_second_factors WHERE user_id = $1 AND enabled AND method = 1 \
+    let totps: Vec<(i64, String, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
+        "SELECT id, data, last_used FROM user_second_factors WHERE user_id = $1 AND enabled AND method = 1 \
          ORDER BY id",
     )
     .bind(user_id)
     .fetch_all(&mut *conn)
     .await?;
     let token = token.unwrap_or_default();
-    for (secret, last_used) in totps {
+    for (id, secret, last_used) in totps {
         let after = last_used.map_or(0, |t| t.and_utc().timestamp());
         if !token.trim().is_empty() && verify(&secret, token, now, after)? {
-            return Err(Unsupported("logging in with a second factor").into());
+            return Ok(Ok(id));
         }
     }
-    Ok(Some(enabled.failure(
+    Ok(Err(enabled.failure(
         i18n,
         "login.invalid_second_factor_code",
         "invalid_second_factor",
     )))
+}
+
+/// `totp.update!(last_used: DateTime.now)` for the code just accepted.
+pub async fn mark_used(conn: &mut PgConnection, factor_id: i64) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE user_second_factors SET last_used = clock_timestamp(), updated_at = clock_timestamp() \
+         WHERE id = $1",
+    )
+    .bind(factor_id)
+    .execute(conn)
+    .await?;
+    Ok(())
 }
 
 /// `ROTP::TOTP#verify(otp, drift_ahead: 30, drift_behind: 30, after:)`.
@@ -142,6 +156,11 @@ fn verify(secret: &str, otp: &str, now: i64, after: i64) -> Result<bool, AppErro
     Ok((first..=last)
         .filter(|t| after.is_none_or(|a| *t > a))
         .any(|t| bool::from(code(&key, t).as_bytes().ct_eq(otp.as_bytes()))))
+}
+
+/// `ROTP::TOTP#at(now)`: the code a base32 secret gives at a time.
+pub fn code_at(secret: &str, now: i64) -> Option<String> {
+    Some(code(&base32_decode(secret)?, now / INTERVAL))
 }
 
 /// ROTP::OTP#generate_otp: HOTP over SHA-1, six digits.

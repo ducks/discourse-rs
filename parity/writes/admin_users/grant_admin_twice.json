@@ -1,0 +1,100 @@
+{
+  "name": "grant_admin_twice",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    }
+  ],
+  "started_at": "2026-10-14T11:05:15.447133",
+  "transaction_started_at": "2026-10-14T11:05:14.358561",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_confirmation_required": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_confirmation_required": true
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GCpg4R7jEC1IZ5NiNuJd9NeaPGA=",
+            "created_at": "2026-10-14T11:05:14.75879",
+            "rotated_at": "2026-10-14T11:05:14.757874",
+            "updated_at": "2026-10-14T11:05:14.75879",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "GCpg4R7jEC1IZ5NiNuJd9NeaPGA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:05:15.458257",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GCpg4R7jEC1IZ5NiNuJd9NeaPGA=",
+            "created_at": "2026-10-14T11:05:14.75879",
+            "rotated_at": "2026-10-14T11:05:14.757874",
+            "updated_at": "2026-10-14T11:05:14.75879",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "GCpg4R7jEC1IZ5NiNuJd9NeaPGA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "admin_confirmation_email",
+      {
+        "to_address": "admin@example.com",
+        "target_email": "user1@example.com",
+        "target_username": "user1",
+        "token": "3b08afbe7c3137646ed4cf287f54f43c"
+      }
+    ],
+    [
+      "admin_confirmation_email",
+      {
+        "to_address": "admin@example.com",
+        "target_email": "user1@example.com",
+        "target_username": "user1",
+        "token": "b1cb98d9bf3878607c4d3e9c83ba9b11"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "c977fd41036fd6240dacaf09f123add5589db94a0a0175736e89f64f9aeb0fff",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

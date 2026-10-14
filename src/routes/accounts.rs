@@ -165,7 +165,7 @@ fn normalized_login(p: &Map<String, Value>) -> Result<Option<String>, AppError> 
 }
 
 /// The response with the session cookie when the session changed.
-fn with_session_cookie(
+pub(crate) fn with_session_cookie(
     mut response: Response,
     cookie: Option<String>,
 ) -> Result<Response, AppError> {

@@ -345,6 +345,11 @@ then by what running a forum needs (milestone 6). Briefs:
     an already suspended or silenced user with AgeWords, suspend-bulk,
     penalty_history, similar-users; refused: a post delete for an
     existing reviewable (notify_deletion)),
+    86b. ~~`feat/admin-grant-admin`~~ (done) M (grant_admin through
+    AuthManager: the email confirmation with AdminConfirmation's keys,
+    its job and mail, /u/confirm-admin JSON and page; the 2FA challenge
+    in the server session, GET and POST /session/2fa with TOTP; refused:
+    security keys and passkeys (webauthn), the 2FA page's HTML),
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
     form templates, custom flags, search term and incoming email details
 88. `feat/admin-email` M: the settings test, previews, templates, email

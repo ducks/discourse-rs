@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "admin_confirmation_email"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    }
+  ]
+}

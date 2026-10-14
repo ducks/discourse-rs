@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 1, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "ignore": [
+    "/responses/0/body/second_factor_challenge_nonce"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/2fa.json",
+      "params": {
+        "nonce": "{{responses.0.body.second_factor_challenge_nonce}}",
+        "second_factor_method": "3",
+        "second_factor_token": "abcdef"
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "name": "grant_admin_nonce_not_completed",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json",
+      "params": {
+        "second_factor_nonce": "{{responses.0.body.second_factor_challenge_nonce}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:05:06.536838",
+  "transaction_started_at": "2026-10-14T11:05:05.595329",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "second_factor_challenge_nonce": "0BorrZljuMvg1FNTjnsSpFhGArMUAp5m"
+      }
+    },
+    {
+      "status": 401,
+      "body": {
+        "error": "You've not completed the 2FA challenge to perform this action. Please complete the 2FA challenge and try again."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q/wNO9JpiuuE1SCep5tH+nBw0CU=",
+            "created_at": "2026-10-14T11:05:06.017819",
+            "rotated_at": "2026-10-14T11:05:06.016991",
+            "updated_at": "2026-10-14T11:05:06.017819",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "q/wNO9JpiuuE1SCep5tH+nBw0CU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:05:06.541747",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q/wNO9JpiuuE1SCep5tH+nBw0CU=",
+            "created_at": "2026-10-14T11:05:06.017819",
+            "rotated_at": "2026-10-14T11:05:06.016991",
+            "updated_at": "2026-10-14T11:05:06.017819",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "q/wNO9JpiuuE1SCep5tH+nBw0CU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 1, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "963eea67ed21e4b2ebd76d2bf27775b35fa16ccde3c9a801ae7b9ee934781e67",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

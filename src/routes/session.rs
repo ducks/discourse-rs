@@ -400,7 +400,7 @@ pub async fn create(
     // authenticate_second_factor: only its failures are ported.
     let enabled = crate::second_factor::Enabled::load(&mut conn, &settings, user.id).await?;
     if enabled.any() {
-        let failure = crate::second_factor::authenticate(
+        let outcome = crate::second_factor::authenticate(
             &mut conn,
             &state.i18n,
             user.id,
@@ -410,8 +410,9 @@ pub async fn create(
             crate::clock::now().timestamp(),
         )
         .await?;
-        if let Some(failure) = failure {
-            return Ok(json_response(failure));
+        match outcome {
+            Err(failure) => return Ok(json_response(failure)),
+            Ok(_) => return Err(Unsupported("logging in with a second factor").into()),
         }
     }
     // user.active && user.email_confirmed?

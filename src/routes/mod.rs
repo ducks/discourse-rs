@@ -52,6 +52,7 @@ mod onebox;
 mod polls;
 mod reactions;
 mod session;
+mod session_2fa;
 mod site;
 mod sitemap;
 mod solved;
@@ -786,6 +787,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/unsilence.json",
             put(admin_users::unsilence),
         )
+        .route(
+            "/admin/users/{user_id}/grant_admin",
+            put(admin_users::grant_admin),
+        )
+        .route(
+            "/admin/users/{user_id}/grant_admin.json",
+            put(admin_users::grant_admin),
+        )
         .route("/admin/users/suspend-bulk", put(admin_users::suspend_bulk))
         .route(
             "/admin/users/suspend-bulk.json",
@@ -994,6 +1003,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(email::unsubscribe).post(email::perform_unsubscribe),
         )
         .route("/email/unsubscribed", get(email::unsubscribed))
+        .route(
+            "/session/2fa",
+            get(session_2fa::show).post(session_2fa::perform),
+        )
+        .route(
+            "/session/2fa.json",
+            get(session_2fa::show).post(session_2fa::perform),
+        )
+        .route(
+            "/u/confirm-admin/{token}",
+            get(admin_users::confirm_admin).post(admin_users::confirm_admin),
+        )
+        .route(
+            "/users/confirm-admin/{token}",
+            get(admin_users::confirm_admin).post(admin_users::confirm_admin),
+        )
         .route("/session/csrf", get(session::csrf))
         .route("/session/csrf.json", get(session::csrf))
         .route("/session/current", get(session::current))

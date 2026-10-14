@@ -459,6 +459,10 @@ fn unrandom(s: &str) -> String {
     static UNSUB: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"\bunsub_[0-9a-f]{32}\b").unwrap());
     let s = UNSUB.replace_all(&s, "unsub_<hex>");
+    // AdminConfirmation's token (SecureRandom.hex) in its links.
+    static CONFIRM_ADMIN: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"confirm-admin/[0-9a-f]{32}\b").unwrap());
+    let s = CONFIRM_ADMIN.replace_all(&s, "confirm-admin/<hex>");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");

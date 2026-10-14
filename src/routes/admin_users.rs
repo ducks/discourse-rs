@@ -1939,3 +1939,295 @@ pub async fn similar_users(
     }
     Ok(Json(json!({ "users": out })).into_response())
 }
+
+/// PUT /admin/users/:id/grant_admin(.json): Admin::UsersController
+/// #grant_admin through `run_second_factor!(GrantAdmin)`. The acting
+/// admin's own second factor guards it: with none, an email confirmation;
+/// with one, a challenge for /session/2fa, then this request again with
+/// its nonce.
+pub async fn grant_admin(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::second_factor_auth as auth;
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    // AdminConstraint
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(actor) = guardian.user().map(|u| u.id) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let Some(user_id) = route_user_id(&user_id) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    // fetch_user
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_id = session.server_session_id();
+
+    // GrantAdmin#find_user: the user (404), then ensure_can_grant_admin!.
+    enum Found {
+        User(i32, String),
+        Stop(Response),
+    }
+    async fn find_user(
+        conn: &mut sqlx::PgConnection,
+        state: &AppState,
+        actor: i32,
+        id: Option<i64>,
+    ) -> Result<Found, AppError> {
+        let id = id.and_then(|n| i32::try_from(n).ok()).unwrap_or(0);
+        let username: Option<String> =
+            sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        let Some(username) = username else {
+            return Ok(Found::Stop(super::topics::not_found_response(state)));
+        };
+        if !crate::admin_confirmation::can_grant_admin(&mut *conn, actor, id).await? {
+            return Ok(Found::Stop(super::search::invalid_access(state)));
+        }
+        Ok(Found::User(id, username))
+    }
+
+    let nonce = p
+        .get("second_factor_nonce")
+        .and_then(params::scalar)
+        .filter(|n| !crate::ruby::is_blank(n));
+    let response = if let Some(nonce) = nonce {
+        // verify_second_factor_auth_completed
+        match auth::find(&mut conn, &session_id, &nonce, Some(actor)).await? {
+            Err(bad) => bad.response(&state.i18n),
+            Ok(challenge) if challenge.get("successful") != Some(&Value::Bool(true)) => {
+                auth::BadChallenge {
+                    key: "second_factor_auth.challenge_not_completed",
+                    status: StatusCode::UNAUTHORIZED,
+                }
+                .response(&state.i18n)
+            }
+            Ok(challenge) => {
+                auth::delete(&mut conn, &session_id).await?;
+                let id = challenge
+                    .get("callback_params")
+                    .and_then(|c| c.get("user_id"))
+                    .and_then(Value::as_i64);
+                match find_user(&mut conn, &state, actor, id).await? {
+                    Found::Stop(response) => response,
+                    Found::User(id, _) => {
+                        crate::admin_confirmation::grant_admin(&mut conn, &state.i18n, actor, id)
+                            .await?;
+                        Json(json!({ "success": "OK" })).into_response()
+                    }
+                }
+            }
+        }
+    } else {
+        let mut any = false;
+        for method in auth::DEFAULT_ALLOWED_METHODS {
+            any |= auth::valid_method_for_user(&mut conn, &settings, actor, method).await?;
+        }
+        let param_id = Some(i64::from(user_id));
+        match find_user(&mut conn, &state, actor, param_id).await? {
+            Found::Stop(response) => response,
+            Found::User(id, username) if !any => {
+                // no_second_factors_enabled!: AdminConfirmation#create_confirmation
+                crate::admin_confirmation::create(&mut conn, id, actor).await?;
+                let _ = username;
+                Json(json!({ "success": "OK", "email_confirmation_required": true }))
+                    .into_response()
+            }
+            Found::User(id, username) => {
+                // second_factor_auth_required!, then the challenge staged.
+                let base_path = state.config.globals.relative_url_root();
+                let nonce = auth::new_nonce();
+                let mut challenge = Map::new();
+                challenge.insert("nonce".into(), json!(nonce));
+                challenge.insert("callback_method".into(), json!("PUT"));
+                challenge.insert("callback_path".into(), json!(uri.path()));
+                challenge.insert("callback_params".into(), json!({ "user_id": id }));
+                challenge.insert(
+                    "allowed_methods".into(),
+                    json!(auth::DEFAULT_ALLOWED_METHODS),
+                );
+                challenge.insert(
+                    "generated_at".into(),
+                    json!(crate::clock::now().timestamp()),
+                );
+                challenge.insert("target_user_id".into(), json!(actor));
+                challenge.insert(
+                    "description".into(),
+                    json!(
+                        state
+                            .i18n
+                            .t_with(
+                                "second_factor_auth.actions.grant_admin.description",
+                                &[("username", &format!("@{username}"))],
+                            )
+                            .unwrap_or_default()
+                    ),
+                );
+                challenge.insert(
+                    "redirect_url".into(),
+                    json!(format!("{base_path}/admin/users/{id}/{username}")),
+                );
+                auth::store(&mut conn, &session_id, &challenge).await?;
+                let xhr = headers
+                    .get("x-requested-with")
+                    .and_then(|v| v.to_str().ok())
+                    .is_some_and(|v| v.eq_ignore_ascii_case("XMLHttpRequest"));
+                let base_url = crate::url::Urls {
+                    config: &state.config,
+                    settings: &settings,
+                }
+                .base_url()?;
+                auth::required_response(xhr, &base_url, &nonce)
+            }
+        }
+    };
+    let cookie = session.set_cookie(&state, &settings)?;
+    super::accounts::with_session_cookie(response, cookie)
+}
+
+/// GET|POST /u/confirm-admin/:token (and /users/...): UsersController
+/// #confirm_admin. The token is the credential: anyone may confirm, but a
+/// logged in user other than the admin who asked is refused.
+pub async fn confirm_admin(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(token): Path<String>,
+    method: axum::http::Method,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let post = method == axum::http::Method::POST;
+    let p = params::parse(uri.query(), &headers, &body);
+    if post && !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let (token, json_format) = match token.strip_suffix(".json") {
+        Some(t) => (t.to_string(), true),
+        None => (
+            token.clone(),
+            headers
+                .get(axum::http::header::ACCEPT)
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|a| a.contains("application/json")),
+        ),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let Some(confirmation) = crate::admin_confirmation::find_by_code(&mut conn, &token).await?
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if guardian
+        .user_id()
+        .is_some_and(|id| id != confirmation.performed_by)
+    {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let mut confirmed = false;
+    if post {
+        match crate::admin_confirmation::email_confirmed(&mut conn, &state.i18n, &confirmation)
+            .await?
+        {
+            Ok(()) => confirmed = true,
+            Err(crate::admin_confirmation::Refused) => {
+                return Ok(super::search::invalid_access(&state));
+            }
+        }
+    }
+    if json_format {
+        return Ok(Json(json!({ "success": "OK" })).into_response());
+    }
+    // users/confirm_admin.html.erb in the no_ember layout.
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let (target_username, target_email): (String, Option<String>) = sqlx::query_as(
+        "SELECT u.username, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) \
+         FROM users u WHERE u.id = $1",
+    )
+    .bind(confirmation.target_user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    // The form's token: the viewer's, else an anonymous session's.
+    let mut vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let csrf = match &vs.viewer {
+        Some(viewer) => viewer.csrf_token.clone(),
+        None => {
+            let (csrf, set_cookie) = super::session::anonymous_csrf(&state, &headers, &settings)?;
+            vs.set_cookie = set_cookie;
+            csrf
+        }
+    };
+    let i18n = &state.i18n;
+    let esc = |s: &str| html_escape::encode_quoted_attribute(s).into_owned();
+    let mut html = String::from("<div id='simple-container'>\n");
+    html.push_str(&format!(
+        "  <h2>{}</h2>\n  <br/>\n\n",
+        esc(i18n.t("activation.admin_confirm.title").unwrap_or_default())
+    ));
+    if confirmed {
+        let base_url = crate::url::Urls {
+            config: &state.config,
+            settings: &settings,
+        }
+        .base_url()?;
+        html.push_str(&format!(
+            "    {}\n    <br/>\n    <br/>\n    <a class=\"btn btn-primary\" href=\"{}\">{}</a>\n\n",
+            i18n.t_with(
+                "activation.admin_confirm.complete",
+                &[("target_username", &target_username)]
+            )
+            .unwrap_or_default(),
+            esc(&base_url),
+            esc(&i18n
+                .t_with(
+                    "activation.admin_confirm.back_to",
+                    &[("title", &settings.get("title")?.to_s())]
+                )
+                .unwrap_or_default()),
+        ));
+    } else {
+        let grant = esc(i18n.t("activation.admin_confirm.grant").unwrap_or_default());
+        // form_tag's action: url_for the current route, which Rails
+        // generates from the first of its routes (/users/...).
+        let base_path = state.config.globals.relative_url_root();
+        let token_tag = format!(
+            "<input type=\"hidden\" name=\"authenticity_token\" value=\"{}\" />",
+            esc(&csrf)
+        );
+        html.push_str(&format!(
+            "    {}\n    <br/>\n    <br/>\n\n    <form action=\"{base_path}/users/confirm-admin/{}\" accept-charset=\"UTF-8\" method=\"post\">{token_tag}\n      <input type=\"submit\" name=\"commit\" value=\"{grant}\" class=\"btn btn-primary\" data-disable-with=\"{grant}\" />\n</form>\n",
+            i18n.t_with(
+                "activation.admin_confirm.description",
+                &[
+                    ("target_email", target_email.as_deref().unwrap_or_default()),
+                    ("target_username", &target_username),
+                ]
+            )
+            .unwrap_or_default(),
+            esc(&token),
+        ));
+    }
+    html.push_str("</div>\n");
+    super::email::render_page(&state, &mut conn, &settings, &uri, &guardian, html, vs).await
+}

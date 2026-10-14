@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "fragment": [
+    "<div id='simple-container'>",
+    "</div>"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "POST",
+      "path": "/users/confirm-admin/{{jobs.admin_confirmation_email.token}}",
+      "headers": {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "text/html"
+      }
+    }
+  ]
+}

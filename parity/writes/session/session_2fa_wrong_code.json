@@ -1,0 +1,90 @@
+{
+  "name": "session_2fa_wrong_code",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/2fa.json",
+      "params": {
+        "nonce": "{{responses.0.body.second_factor_challenge_nonce}}",
+        "second_factor_method": "1",
+        "second_factor_token": "000000"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:05:26.77053",
+  "transaction_started_at": "2026-10-14T11:05:25.374705",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "second_factor_challenge_nonce": "KmGRP6vCoGNlW00fr5COStUH5AykNLhb"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "ok": false,
+        "error": "Invalid authentication code. Each code can only be used once.",
+        "reason": "invalid_second_factor",
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eTbziYN0eUzTuWacA68zsB5KhKs=",
+            "created_at": "2026-10-14T11:05:26.114949",
+            "rotated_at": "2026-10-14T11:05:26.113166",
+            "updated_at": "2026-10-14T11:05:26.114949",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "eTbziYN0eUzTuWacA68zsB5KhKs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:05:26.775973",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eTbziYN0eUzTuWacA68zsB5KhKs=",
+            "created_at": "2026-10-14T11:05:26.114949",
+            "rotated_at": "2026-10-14T11:05:26.113166",
+            "updated_at": "2026-10-14T11:05:26.114949",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "eTbziYN0eUzTuWacA68zsB5KhKs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 1, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "a4b017d85597e350e3bb04d76406257f545618183172c9c37182238a2c7fb72b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
