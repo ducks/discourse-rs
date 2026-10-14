@@ -311,7 +311,7 @@ pub async fn user_badges_index(
     if let Some(name) = &username {
         // fetch_user_from_params(include_inactive: true), can_see_profile?
         let name = name.strip_suffix(".json").unwrap_or(name);
-        let Some(user) = User::find_by_username(&mut conn, name).await? else {
+        let Some(user) = User::find_any(&mut conn, name).await? else {
             return Ok(super::topics::not_found_response(&state));
         };
         if !user.visible_to(&settings, &guardian)? {
@@ -406,7 +406,7 @@ pub async fn username(
             .user()
             .is_some_and(|u| u.username.eq_ignore_ascii_case(username))
     {
-        User::find_by_username(&mut conn, username).await?
+        User::find_any(&mut conn, username).await?
     } else {
         User::find_active(&mut conn, username).await?
     };
