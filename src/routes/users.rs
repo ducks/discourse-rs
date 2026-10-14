@@ -560,6 +560,9 @@ async fn respond(
     site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
+    // UserRoute#setupController: the user's searchContext.
+    site.chrome
+        .set_search_context("user", &user.username.to_lowercase());
     let mut page = profile_page(
         &mut conn,
         site,
@@ -773,6 +776,9 @@ async fn messages_page(
     site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
+    // build-private-messages-route: the user's searchContext as an inbox.
+    site.chrome
+        .set_search_context("private_messages", &username_lower);
     let categories = crate::topic_list_view::categories(&mut conn).await?;
     let cx = crate::topic_list_view::ListContext {
         i18n: &state.i18n,

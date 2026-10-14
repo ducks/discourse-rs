@@ -1224,11 +1224,17 @@ fn featured_users(topic: &Value) -> Vec<Value> {
 
 /// TopicStatus, for a visitor (a member's pin toggles are links).
 pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
+    topic_statuses_with(cx, topic, false)
+}
+
+/// TopicStatus; `disable_actions` keeps a member's statuses spans, as
+/// inside another link (a search result's).
+pub fn topic_statuses_with(cx: &ListContext, topic: &Value, disable_actions: bool) -> String {
     let flag = |name: &str| topic[name] == true;
     let mut statuses = String::new();
     if flag("bookmarked") {
         // canAct (a member): a link to the topic.
-        let (open, close) = if cx.member_trust_level.is_some() {
+        let (open, close) = if cx.member_trust_level.is_some() && !disable_actions {
             let slug = match s(&topic["slug"]).trim() {
                 "" => "topic",
                 slug => slug,

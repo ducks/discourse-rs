@@ -6,11 +6,11 @@
     for the browser. -#}
 {%- let mobile = crate::mobile::mobile_view() %}
 {#- The mobile header's buttons (Header::Icons): search, which opens the
-    full search page until the search menu is ported, and the hamburger
-    that opens the sidebar's sections. -#}
+    full-page search with the route's search context (Header#toggleSearchMenu
+    in the mobile view), and the hamburger that opens the sidebar's sections. -#}
 {%- macro search_button() %}
 {%- if chrome.can_search %}
-<li class="header-dropdown-toggle search-dropdown"><button aria-label="Search" class="btn no-text btn-icon icon btn-flat" id="search-button" title="Search" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+<li class="header-dropdown-toggle search-dropdown"><button aria-label="Search" class="btn no-text btn-icon icon btn-flat" id="search-button" title="Search" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search{{ chrome.search_context }}'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
 {%- endif %}
 {%- endmacro %}
 {%- macro hamburger_button() %}

@@ -237,15 +237,65 @@ async fn renders_a_results_page() {
     assert!(html.contains(r#"href="/t/parity-fixture-replies-and-posters/35""#));
     assert!(html.contains("A topic in a subcategory carrying a tag"));
     assert!(html.contains(r#"value="fixture""#));
+    // FullPageSearch's markup: the types, the result count, the entries
+    // and the footer, the page's body class.
+    assert!(html.contains(r#"class="search-types__type active" data-search-type="topics_posts""#));
+    assert!(html.contains(
+        r#"<h2 aria-live="polite" class="result-count" id="search-result-count"><span>4 results for</span><span class='term'>fixture</span></h2>"#
+    ));
+    assert_eq!(
+        html.matches(r#"<div role="listitem" class="fps-result">"#)
+            .count(),
+        4
+    );
+    assert!(html.contains(r#"<h3 class="search-footer">No more results found.</h3>"#));
+    assert!(html.contains("search-page"));
+    // The full-page search has no header search button.
+    assert!(!html.contains(r#"id="search-button""#));
 
     let (status, _, html) = get(&db.pool, "/search").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<title>Search - Discourse</title>"));
+    assert!(html.contains("<title>Search results for '' - Discourse</title>"));
     assert!(!html.contains("No results found"));
+    assert!(html.contains(r#"<div aria-label="results" class="search-results" role="region">"#));
 
     let (status, _, html) = get(&db.pool, "/search?q=nothingmatchesatall").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("No results found"));
+    assert!(html.contains("<div class=\"no-results-container\"><h3>No results found.</h3>"));
+    assert!(
+        html.contains(
+            r#"<form action="//google.com/search" class="inline-form" id="google-search">"#
+        )
+    );
+
+    // The mobile search button's context: the checkbox, off, and no
+    // context search without a term.
+    let (status, _, html) = get(
+        &db.pool,
+        "/search?context=topic&context_id=35&skip_context=true",
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(
+        r#"<div class="search-context"><label><input name="searchContext" type="checkbox">Search this topic</label></div>"#
+    ));
+    // With a term the route searches in the context, which isn't ported.
+    let (status, _, _) = get(
+        &db.pool,
+        "/search?q=fixture&context=topic&context_id=35&skip_context=true",
+    )
+    .await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+
+    // The users type lists the matching users; categories & tags is
+    // refused.
+    let (status, _, html) = get(&db.pool, "/search?q=user1&search_type=users").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"class="search-types__type active" data-search-type="users""#));
+    assert!(html.contains(r#"<a class="fps-user-item""#));
+    assert!(html.contains(r#"<span class="username">user1</span>"#));
+    let (status, _, _) = get(&db.pool, "/search?q=gen&search_type=categories_tags").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
 
     let (status, _, body) = get(&db.pool, "/search?q=ba").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);

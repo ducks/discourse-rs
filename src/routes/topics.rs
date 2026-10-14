@@ -440,6 +440,9 @@ async fn show(
     )
     .await?;
     site.bus_position = bus_position;
+    // TopicRoute#setupController: the topic's searchContext.
+    site.chrome
+        .set_search_context("topic", &rendered.json["id"].to_string());
     let mut page = crate::html::topic_page(
         &mut conn,
         &state.i18n,

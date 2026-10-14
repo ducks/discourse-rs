@@ -316,8 +316,18 @@ with the viewport, guessing from the user agent without it
 93. ~~`feat/mobile-topic-page`~~ (done) M: the progress bar for the
     timeline, the topic map without participants, the post menu's icon
     Reply, suggested topics' mobile rows
-94. `feat/mobile-search-menu` M: the header's search button opens the
-    search menu panel (today it goes to /search)
+94. ~~`feat/mobile-search-menu`~~ (done) M: in the mobile view the
+    header's search button goes to the full-page search with the route's
+    search context (Header#toggleSearchMenu), so the page is what was
+    ported: /search in Ember's markup for both views (the types, the
+    search bar, the context checkbox, the sort order, the result count,
+    the entries with their highlights, more results as they scroll in,
+    the users type), search.scss, the form label and input focus rules.
+    Left: the categories & tags type (refused: Category.search and
+    tags/filter/search), the advanced filters' panel, bulk select, the
+    sort orders' `order:` terms (the search refuses advanced syntax), and
+    the desktop header's search menu (search-menu.gjs, its drop-down and
+    narrow-desktop slide-in) with the icon it hangs off
 95. `feat/mobile-user-menu` M: the user menu as the mobile panel, the
     notification tabs
 96. `feat/mobile-composer` L: the mobile composer (fullscreen, its
