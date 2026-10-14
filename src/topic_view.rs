@@ -797,9 +797,9 @@ impl TopicView<'_> {
         {
             return Ok(true);
         }
-        // WatchedWord.actions[:require_approval] = 4
+        // WatchedWord.actions[:require_approval] = 3 (4 is flag)
         let watched: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 4)")
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 3)")
                 .fetch_one(&mut *self.conn)
                 .await?;
         if watched {
