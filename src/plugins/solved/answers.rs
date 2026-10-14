@@ -152,7 +152,6 @@ fn can_accept(t: &Target, guardian: &Guardian) -> bool {
             .can_accept(guardian, t.post.post_number, t.post.post_type == 4)
 }
 
-/// `WebHook.active_web_hooks(event).exists?`
 /// The topic's row, locked (`lock(:topic)`).
 async fn lock_topic(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
     sqlx::query("SELECT id FROM topics WHERE id = $1 FOR UPDATE")
@@ -260,7 +259,7 @@ pub async fn accept(
     if t.view.accepted(t.post.id) {
         return Ok(Outcome::Failed);
     }
-    if crate::plugins::web_hooks_active(conn, "accepted_solution").await? {
+    if crate::web_hooks::active(conn, "accepted_solution").await? {
         return Err(Unsupported("accepted_solution web hooks").into());
     }
     let me = guardian
@@ -478,7 +477,7 @@ pub async fn unaccept(
     if !accepted {
         return Ok(Outcome::Done(topic_id));
     }
-    if crate::plugins::web_hooks_active(conn, "unaccepted_solution").await? {
+    if crate::web_hooks::active(conn, "unaccepted_solution").await? {
         return Err(Unsupported("unaccepted_solution web hooks").into());
     }
     lock_topic(conn, topic_id).await?;

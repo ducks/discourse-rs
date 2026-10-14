@@ -257,6 +257,12 @@ async fn transition_to(
             return Err(Unsupported("releasing a topic's claim from the review queue").into());
         }
     }
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "reviewable_transitioned_to",
+        "reviewable web hooks",
+    )
+    .await?;
     sqlx::query(
         "UPDATE reviewables SET status = $2, version = $3, updated_at = clock_timestamp() WHERE id = $1",
     )
@@ -734,6 +740,12 @@ async fn notify_approved(
             slug.filter(|s| !s.is_empty()).unwrap_or("topic")
         ),
     });
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "notification_created",
+        "notification_created web hooks",
+    )
+    .await?;
     let notification_id: i64 = sqlx::query_scalar(
         "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
                                     high_priority, created_at, updated_at) \

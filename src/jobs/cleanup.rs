@@ -339,6 +339,8 @@ pub async fn clean_up_tags(state: &AppState) -> Result<(), AppError> {
     if unported {
         return Err(Unsupported("destroying unused tags with live topic tags or synonyms").into());
     }
+    // HasDestroyedWebHook: tag_destroyed.
+    crate::web_hooks::refuse(&mut tx, "tag_destroyed", "tag_destroyed web hooks").await?;
     for (table, column) in [
         ("tag_users", "tag_id"),
         ("topic_tags", "tag_id"),

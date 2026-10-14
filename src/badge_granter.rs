@@ -635,7 +635,7 @@ pub async fn destroy_user_badge(
         .await?;
     update_distinct_badge_count(&mut *conn, Some(&[user_id])).await?;
     update_featured_ranks(&mut *conn, Some(&[user_id])).await?;
-    if crate::plugins::web_hooks_active(&mut *conn, "user_badge_revoked").await? {
+    if crate::web_hooks::active(&mut *conn, "user_badge_revoked").await? {
         return Err(Unsupported("user_badge_revoked web hooks").into());
     }
     // belongs_to :notification, dependent: :destroy
@@ -1103,7 +1103,7 @@ pub async fn process_queue(
 /// UserBadge.trigger_user_badge_granted_event: web hooks for
 /// user_badge_granted and automations triggered by it aren't ported.
 async fn user_badge_granted_unsupported(conn: &mut PgConnection) -> Result<(), AppError> {
-    if crate::plugins::web_hooks_active(conn, "user_badge_granted").await? {
+    if crate::web_hooks::active(conn, "user_badge_granted").await? {
         return Err(Unsupported("user_badge_granted web hooks").into());
     }
     let automations: bool = sqlx::query_scalar(

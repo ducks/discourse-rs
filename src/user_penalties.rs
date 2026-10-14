@@ -324,6 +324,12 @@ pub(crate) async fn suspend_user(
     user_id: i32,
     s: &Suspension<'_>,
 ) -> Result<(String, NaiveDateTime), AppError> {
+    crate::web_hooks::refuse(
+        &mut *pool.acquire().await?,
+        "user_suspended",
+        "user_suspended web hooks",
+    )
+    .await?;
     let mut tx = pool.begin().await?;
     let suspended_at: NaiveDateTime = sqlx::query_scalar(
         "UPDATE users SET suspended_till = $2, suspended_at = clock_timestamp(), updated_at = clock_timestamp() \
@@ -670,6 +676,7 @@ pub async fn unsuspend(
     let actor = guardian
         .user()
         .ok_or(Unsupported("unsuspending anonymously"))?;
+    crate::web_hooks::refuse(&mut *conn, "user_unsuspended", "user_unsuspended web hooks").await?;
     if user.suspended_till.is_some() {
         sqlx::query(
             "UPDATE users SET suspended_at = NULL, suspended_till = NULL, updated_at = clock_timestamp() \

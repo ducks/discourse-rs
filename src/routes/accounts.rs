@@ -694,6 +694,8 @@ pub async fn password_reset_update(
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())
             .map(str::to_string);
+        // log_on_user: user.logged_in.
+        crate::web_hooks::refuse(&mut tx, "user_logged_in", "user_logged_in web hooks").await?;
         let (_, unhashed) = crate::session::token::generate(
             &mut tx,
             user_id,
@@ -800,6 +802,12 @@ pub(crate) async fn confirm_email_token(
     )
     .bind(user_id)
     .execute(&mut *conn)
+    .await?;
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "user_confirmed_email",
+        "user_confirmed_email web hooks",
+    )
     .await?;
     if !active {
         crate::signup::activate_user(&mut *conn, settings, user_id).await?;
@@ -1044,6 +1052,8 @@ pub async fn perform_account_activation(
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())
         .map(str::to_string);
+    // log_on_user: user.logged_in.
+    crate::web_hooks::refuse(&mut tx, "user_logged_in", "user_logged_in web hooks").await?;
     let (_, unhashed) = crate::session::token::generate(
         &mut tx,
         user_id,

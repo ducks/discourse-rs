@@ -259,6 +259,12 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
+        crate::web_hooks::refuse(
+            &mut *self.conn,
+            "chat_message_edited",
+            "chat message web hooks",
+        )
+        .await?;
         // The contract.
         let mut errors = Vec::new();
         if message_id.trim().is_empty() {
@@ -511,6 +517,12 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
+        crate::web_hooks::refuse(
+            &mut *self.conn,
+            "chat_message_trashed",
+            "chat message web hooks",
+        )
+        .await?;
         let channel_id = channel_id.unwrap_or_default();
         let Some(message) = self.find_message(message_id, channel_id, false).await? else {
             return Ok(Outcome::NotFound);
@@ -636,6 +648,12 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
+        crate::web_hooks::refuse(
+            &mut *self.conn,
+            "chat_message_restored",
+            "chat message web hooks",
+        )
+        .await?;
         let channel_id = channel_id.unwrap_or_default();
         let Some(message) = self.find_message(message_id, channel_id, true).await? else {
             return Ok(Outcome::NotFound);

@@ -196,7 +196,7 @@ pub async fn cast(
         json!({ "topic_id": topic.id }),
     )
     .await?;
-    if crate::plugins::web_hooks_active(conn, "topic_upvote").await? {
+    if crate::web_hooks::active(conn, "topic_upvote").await? {
         return Err(Unsupported("topic_upvote web hooks").into());
     }
     workflows_unsupported(conn).await?;
@@ -232,7 +232,7 @@ pub async fn remove(
     .rows_affected();
     if removed > 0 {
         update_vote_count(conn, topic.id).await?;
-        if crate::plugins::web_hooks_active(conn, "topic_unvote").await? {
+        if crate::web_hooks::active(conn, "topic_unvote").await? {
             return Err(Unsupported("topic_unvote web hooks").into());
         }
     }

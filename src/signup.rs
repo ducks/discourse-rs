@@ -352,6 +352,7 @@ pub async fn create(
         })));
     }
 
+    crate::web_hooks::refuse(&mut *conn, "user_created", "user_created web hooks").await?;
     // The insert and the after_create callbacks.
     let trust_level = settings.get("default_trust_level")?.to_i() as i32;
     let locale = s.locale.filter(|l| !l.is_empty()).unwrap_or("en");
@@ -614,6 +615,12 @@ async fn ensure_in_trust_level_group(
     user_id: i32,
     trust_level: i32,
 ) -> Result<(), AppError> {
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "user_added_to_group",
+        "user_added_to_group web hooks",
+    )
+    .await?;
     for level in 0..=trust_level {
         let group_id = 10 + level;
         #[derive(sqlx::FromRow)]

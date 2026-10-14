@@ -132,6 +132,9 @@ pub async fn revise(
         }
         return Ok(Outcome::Revised);
     }
+    // post_process_post: post_edited (topic_edited when the topic changed,
+    // which these fields never do).
+    crate::web_hooks::refuse(&mut conn, "post_edited", "post_edited web hooks").await?;
 
     let (revised_at,): (NaiveDateTime,) = sqlx::query_as("SELECT clock_timestamp()::timestamp")
         .fetch_one(&mut *conn)

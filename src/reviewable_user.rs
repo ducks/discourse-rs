@@ -91,6 +91,13 @@ pub async fn find_or_create(
         "avatar_upload_id": null,
         "avatar_url": null,
     });
+    crate::web_hooks::refuse(&mut *conn, "reviewable_created", "reviewable web hooks").await?;
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "reviewable_score_updated",
+        "reviewable web hooks",
+    )
+    .await?;
     // needs_review!(target:, created_by: system, reviewable_by_moderator:, payload:)
     let id: i64 = sqlx::query_scalar(
         "INSERT INTO reviewables (type, type_source, status, created_by_id, reviewable_by_moderator, \
@@ -190,6 +197,7 @@ pub async fn reject_for_deleted_user(
     if topic_id.is_some() {
         return Err(Unsupported("user reviewables with a topic (claims)").into());
     }
+    crate::web_hooks::refuse(&mut *conn, "user_approved", "user_approved web hooks").await?;
     // increment_version!
     sqlx::query("UPDATE reviewables SET version = version + 1 WHERE id = $1")
         .bind(reviewable_id)
@@ -357,6 +365,12 @@ pub(crate) async fn reject(
     reviewable_id: i64,
     performer: &Performer<'_>,
 ) -> Result<(), AppError> {
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "reviewable_transitioned_to",
+        "reviewable web hooks",
+    )
+    .await?;
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable_id)
         .bind(REJECTED)
@@ -475,6 +489,12 @@ pub async fn approve(
     .execute(&mut *conn)
     .await?;
 
+    crate::web_hooks::refuse(
+        &mut *conn,
+        "reviewable_transitioned_to",
+        "reviewable web hooks",
+    )
+    .await?;
     // transition_to(:approved): the status, its history, the scores agreed.
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable_id)

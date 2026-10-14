@@ -48,6 +48,8 @@ pub async fn add_with_message(
     message: Option<&str>,
     silent: bool,
 ) -> Result<i32, AppError> {
+    // PostCreator#trigger_after_events: post_created.
+    crate::web_hooks::refuse(&mut *conn, "post_created", "post_created web hooks").await?;
     let (topic_id, user_id) = (action.topic_id, action.user_id);
     let raw = message.unwrap_or("").trim_end().to_string();
     let cooked = if raw.is_empty() {

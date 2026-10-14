@@ -71,7 +71,7 @@ pub struct Cx<'a> {
 }
 
 async fn refuse_web_hooks(conn: &mut PgConnection, event: &str) -> Result<(), AppError> {
-    if crate::plugins::web_hooks_active(conn, event).await? {
+    if crate::web_hooks::active(conn, event).await? {
         return Err(Unsupported("web hooks for group membership").into());
     }
     Ok(())

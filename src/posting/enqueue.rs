@@ -227,6 +227,13 @@ pub(super) async fn enqueue(
         None => category_id,
     };
 
+    crate::web_hooks::refuse(&mut conn, "reviewable_created", "reviewable web hooks").await?;
+    crate::web_hooks::refuse(
+        &mut conn,
+        "reviewable_score_updated",
+        "reviewable web hooks",
+    )
+    .await?;
     let mut tx = sqlx::Acquire::begin(&mut *conn).await?;
     let (id, created_at): (i64, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO reviewables (type, type_source, status, created_by_id, reviewable_by_moderator, \

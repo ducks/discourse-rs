@@ -685,6 +685,11 @@ pub async fn create(
             plan.pm_groups = groups;
         }
     }
+    // trigger_after_events: topic_created, post_created.
+    if new_topic {
+        crate::web_hooks::refuse(&mut conn, "topic_created", "topic_created web hooks").await?;
+    }
+    crate::web_hooks::refuse(&mut conn, "post_created", "post_created web hooks").await?;
     let poster = Poster::load(&mut conn, &user).await?;
     drop(conn);
 
