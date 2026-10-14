@@ -555,6 +555,31 @@ then by what running a forum needs (milestone 6). Briefs:
     Refused: backups that need migrations (no db:migrate), db:seed and
     recompiling theme fields (logged as Rails logs those failures), S3
     stores and S3 upload remaps)
+100. `feat/message-bus` L, after 90g (MessageBus on pg-bus, so clients
+    that speak Rails' protocol work against the port: bots and
+    integrations on message-bus-client, apps acting through user API
+    keys). Three branches, done together:
+    100a. pg-bus (its own repo, released with `make release`) M:
+    per-channel ids as MessageBus numbers them (1, 2, 3... per channel),
+    derived rather than stored, so publishing takes no lock: a message's
+    id is its ordinal in the channel in commit order plus what trim has
+    removed from that channel (a per-channel trimmed count trim keeps);
+    `last_id(channel)` and "after id N" as counts over the existing
+    (channel, xid, id) index; and `client:<id>` audience tags for
+    MessageBus's client_ids,
+    100b. discourse-rs S: the pg-bus bump; the real values in the JSON
+    fields that carry them (topic view's `message_bus_last_id`, chat's
+    `channel_message_bus_last_id` and `message_bus_last_ids`, user
+    search, `notification_channel_position`...), their parity ignores
+    dropped; chat's web hook counting of backlog rows and backup logs
+    sent to every admin tab replaced by the per-channel ids and client
+    tags,
+    100c. discourse-rs L: `/message-bus/:client_id/poll` with Rails'
+    semantics (long-poll and chunked streaming, `__seq`, status messages
+    for channels asked from -1, backlog replay by per-channel id, user,
+    group and client filtering, its headers), measured against the
+    reference's own poll responses. The port's /bus/events and /bus/poll
+    (global positions, its own pages) stay as they are
 
 [phase-8]
 
