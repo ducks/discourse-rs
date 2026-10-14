@@ -9,6 +9,7 @@ use sqlx::PgConnection;
 
 use crate::Unsupported;
 use crate::avatar::{self, AvatarError};
+use crate::badges_view::{BadgeRow, badge_json, badge_type_json};
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
 use crate::site_settings::{SettingError, SiteSettings};
@@ -405,25 +406,6 @@ struct UserBadgeRow {
     created_at: NaiveDateTime,
     count: i64,
     post_id: Option<i32>,
-}
-
-#[derive(Debug, sqlx::FromRow)]
-struct BadgeRow {
-    id: i32,
-    name: String,
-    description: Option<String>,
-    grant_count: i32,
-    allow_title: bool,
-    multiple_grant: bool,
-    icon: Option<String>,
-    image_upload_url: Option<String>,
-    listable: bool,
-    enabled: bool,
-    badge_grouping_id: i32,
-    system: bool,
-    show_in_post_header: bool,
-    badge_type_id: i32,
-    badge_type_name: String,
 }
 
 /// The side-loaded roots a document accumulates while serializing badges
@@ -1229,25 +1211,21 @@ impl Users<'_> {
         }
 
         if !side.badge_ids.contains(&row.badge_id) {
-            let badge: BadgeRow = sqlx::query_as(
-                "SELECT b.id, b.name, b.description, b.grant_count, b.allow_title, b.multiple_grant, \
-                        b.icon, u.url AS image_upload_url, b.listable, b.enabled, b.badge_grouping_id, \
-                        b.system, b.show_in_post_header, b.badge_type_id, bt.name AS badge_type_name \
-                 FROM badges b JOIN badge_types bt ON bt.id = b.badge_type_id \
-                 LEFT JOIN uploads u ON u.id = b.image_upload_id WHERE b.id = $1",
-            )
-            .bind(row.badge_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
+            let badge = BadgeRow::load(&mut *self.conn, row.badge_id).await?;
             side.badge_ids.push(row.badge_id);
-            side.badges.push(self.badge_json(&badge)?);
+            side.badges.push(badge_json(
+                self.i18n,
+                self.settings,
+                self.urls,
+                self.base_path,
+                &badge,
+                false,
+                false,
+            )?);
             if !side.badge_type_ids.contains(&badge.badge_type_id) {
                 side.badge_type_ids.push(badge.badge_type_id);
-                side.badge_types.push(json!({
-                    "id": badge.badge_type_id,
-                    "name": badge.badge_type_name,
-                    "sort_order": 10 - badge.badge_type_id,
-                }));
+                side.badge_types
+                    .push(badge_type_json(badge.badge_type_id, &badge.badge_type_name));
             }
         }
         for id in [row.user_id, row.granted_by_id] {
@@ -1272,49 +1250,6 @@ impl Users<'_> {
             side.users.push(json);
         }
         Ok(Value::Object(ub))
-    }
-
-    /// BadgeSerializer: name and description through the badge locale keys.
-    fn badge_json(&self, b: &BadgeRow) -> Result<Value, UsersError> {
-        let key = b.name.to_lowercase().replace(' ', "_");
-        let name = self
-            .i18n
-            .t(&format!("badges.{key}.name"))
-            .unwrap_or(&b.name)
-            .to_string();
-        let max_likes = self.settings.get("max_likes_per_day")?.to_s();
-        let description = self
-            .i18n
-            .t_with(
-                &format!("badges.{key}.description"),
-                &[
-                    ("base_uri", self.base_path),
-                    ("max_likes_per_day", &max_likes),
-                ],
-            )
-            .or_else(|| b.description.clone())
-            .unwrap_or_default();
-        if self.urls.config.globals.cdn_url().is_some() && b.image_upload_url.is_some() {
-            return Err(Unsupported("badge images behind a CDN").into());
-        }
-        Ok(json!({
-            "id": b.id,
-            "name": name,
-            "description": description,
-            "grant_count": b.grant_count,
-            "allow_title": b.allow_title,
-            "multiple_grant": b.multiple_grant,
-            "icon": b.icon,
-            "image_url": b.image_upload_url,
-            "listable": b.listable,
-            "enabled": b.enabled,
-            "badge_grouping_id": b.badge_grouping_id,
-            "system": b.system,
-            "slug": slug_for(&name),
-            "manually_grantable": !b.system,
-            "show_in_post_header": b.show_in_post_header,
-            "badge_type_id": b.badge_type_id,
-        }))
     }
 
     /// users#summary: `{topics, [badges, badge_types, users], user_summary}`.
@@ -2024,28 +1959,6 @@ struct ActionRow {
     category_id: Option<i32>,
 }
 
-/// `Slug.for(name, "-")` for badge names: ASCII-lowercased words joined
-/// by hyphens (the default `ascii` method).
-fn slug_for(name: &str) -> String {
-    let mut out = String::new();
-    let mut last_dash = true;
-    for c in name.chars() {
-        if c.is_ascii_alphanumeric() {
-            out.push(c.to_ascii_lowercase());
-            last_dash = false;
-        } else if !last_dash {
-            out.push('-');
-            last_dash = true;
-        }
-    }
-    let out = out.trim_end_matches('-').to_string();
-    if out.is_empty() {
-        "badge".to_string()
-    } else {
-        out
-    }
-}
-
 /// `UserSerializer#website_name`: the host without `www.` plus the path.
 pub(crate) fn website_name(website: &str) -> Option<String> {
     let rest = website
@@ -2068,8 +1981,8 @@ mod tests {
 
     #[test]
     fn slugs_and_website_names() {
-        assert_eq!(slug_for("Basic"), "basic");
-        assert_eq!(slug_for("First Like"), "first-like");
+        assert_eq!(crate::badges_view::slug_for("Basic"), "basic");
+        assert_eq!(crate::badges_view::slug_for("First Like"), "first-like");
         assert_eq!(
             website_name("https://www.example.com/a/b"),
             Some("example.com/a/b".into())

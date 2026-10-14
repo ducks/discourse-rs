@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_options SET skip_new_user_tips = TRUE WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_badges.json",
+      "params": {
+        "username": "user2",
+        "badge_id": 9
+      }
+    }
+  ]
+}

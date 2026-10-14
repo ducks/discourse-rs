@@ -391,6 +391,8 @@ pub(crate) async fn featured_users(
 const FIRST_EMOJI_BADGE: i32 = 41;
 /// `Badge::FirstOnebox`
 const FIRST_ONEBOX_BADGE: i32 = 42;
+/// `Badge::FirstReplyByEmail`
+const FIRST_REPLY_BY_EMAIL_BADGE: i32 = 43;
 
 /// `has_emoji?`: an emoji image outside the quotes.
 fn has_emoji_outside_quotes(html: &str) -> bool {
@@ -565,33 +567,32 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
             && !post.hidden
             && crate::onebox::can_see_topic(&mut conn, &s, &anonymous, post.topic_id).await?;
         if visible {
+            let mut badges = Vec::new();
             if has_emoji_outside_quotes(&html) {
-                crate::badge_granter::grant(
-                    &mut conn,
-                    &state.bus,
-                    &s,
-                    &state.i18n,
-                    FIRST_EMOJI_BADGE,
-                    user_id,
-                    Some(post_id),
-                )
-                .await?;
+                badges.push(FIRST_EMOJI_BADGE);
             }
             if crate::onebox::has_oneboxes(&post.cooked, s.get("max_oneboxes_per_post")?.to_i()) {
+                badges.push(FIRST_ONEBOX_BADGE);
+            }
+            // is_reply_by_email?
+            if post.via_email && post.post_number > 1 {
+                badges.push(FIRST_REPLY_BY_EMAIL_BADGE);
+            }
+            for badge_id in badges {
+                // Badge.find: a missing badge fails the job.
+                let badge = crate::badge_granter::Badge::find(&mut conn, badge_id)
+                    .await?
+                    .ok_or(sqlx::Error::RowNotFound)?;
                 crate::badge_granter::grant(
                     &mut conn,
                     &state.bus,
                     &s,
                     &state.i18n,
-                    FIRST_ONEBOX_BADGE,
+                    &badge,
                     user_id,
-                    Some(post_id),
+                    &crate::badge_granter::GrantOpts::system(Some(post_id)),
                 )
                 .await?;
-            }
-            // is_reply_by_email?: FirstReplyByEmail
-            if post.via_email && post.post_number > 1 {
-                return Err(Unsupported("the first reply by email badge").into());
             }
         }
     }

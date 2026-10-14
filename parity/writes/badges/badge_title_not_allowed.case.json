@@ -1,0 +1,12 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user3/preferences/badge_title.json",
+      "params": {
+        "user_badge_id": 5
+      }
+    }
+  ]
+}

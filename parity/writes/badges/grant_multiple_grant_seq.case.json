@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE badges SET multiple_grant = TRUE WHERE id = 100",
+    "INSERT INTO user_badges (badge_id, user_id, granted_at, granted_by_id, seq, created_at) VALUES (100, 3, now() - interval '1 day', 1, 0, now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_badges.json",
+      "params": {
+        "username": "user1",
+        "badge_id": 100
+      }
+    }
+  ]
+}

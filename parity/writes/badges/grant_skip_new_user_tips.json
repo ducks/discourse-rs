@@ -1,0 +1,316 @@
+{
+  "name": "grant_skip_new_user_tips",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_badges.json",
+      "params": {
+        "username": "user2",
+        "badge_id": 9
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:45:51.739723",
+  "transaction_started_at": "2026-10-13T23:45:50.909367",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badges": [
+          {
+            "id": 9,
+            "name": "Autobiographer",
+            "description": "Filled out <a href=\"/my/preferences/profile\">profile</a> information",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user-pen",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "slug": "autobiographer",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "granted_bies": [
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "user_badge": {
+          "id": 20,
+          "granted_at": "2026-10-13T23:45:51.753Z",
+          "grouping_position": 10,
+          "is_favorite": null,
+          "can_favorite": false,
+          "badge_id": 9,
+          "granted_by_id": 1
+        }
+      }
+    }
+  ],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9,
+            "icon": "user-pen",
+            "name": "Autobiographer",
+            "query": "SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 8,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.355652",
+            "show_posts": false,
+            "updated_at": "2026-07-25T05:58:07.355652",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 9,
+            "icon": "user-pen",
+            "name": "Autobiographer",
+            "query": "SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 8,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.355652",
+            "show_posts": false,
+            "updated_at": "2026-07-25T05:58:07.355652",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7LG+fn7P7jYht0LodnAYT0CkZVo=",
+            "created_at": "2026-10-13T23:45:51.283768",
+            "rotated_at": "2026-10-13T23:45:51.282926",
+            "updated_at": "2026-10-13T23:45:51.283768",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7LG+fn7P7jYht0LodnAYT0CkZVo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:45:51.745454",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7LG+fn7P7jYht0LodnAYT0CkZVo=",
+            "created_at": "2026-10-13T23:45:51.283768",
+            "rotated_at": "2026-10-13T23:45:51.282926",
+            "updated_at": "2026-10-13T23:45:51.283768",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7LG+fn7P7jYht0LodnAYT0CkZVo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 20,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 4,
+          "badge_id": 9,
+          "created_at": "2026-10-13T23:45:51.755721",
+          "granted_at": "2026-10-13T23:45:51.753986",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": 1,
+          "notification_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 3
+          },
+          "after": {
+            "id": 4,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 4,
+            "badge_id": 1,
+            "created_at": "2026-09-30T06:20:02.086618",
+            "granted_at": "2026-09-30T06:20:02.086618",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 3
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 13,
+          "context": null,
+          "details": "Autobiographer",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-13T23:45:51.762945",
+          "ip_address": null,
+          "updated_at": "2026-10-13T23:45:51.762945",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_badges": 20,
+    "user_histories": 74
+  },
+  "setup": [
+    "UPDATE user_options SET skip_new_user_tips = TRUE WHERE user_id = 4"
+  ],
+  "recorded_from": {
+    "case": "ac40f9f73ae31ca998f10481388f910d80f1604580656a39ed0f725e3c249cb1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

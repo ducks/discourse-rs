@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user_badges/3/toggle_favorite.json"
+    }
+  ]
+}

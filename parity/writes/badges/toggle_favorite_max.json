@@ -1,0 +1,76 @@
+{
+  "name": "toggle_favorite_max",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user_badges/15/toggle_favorite.json"
+    }
+  ],
+  "started_at": "2026-10-13T23:46:01.435958",
+  "transaction_started_at": "2026-10-13T23:46:00.599886",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "V3xm6ho4YNvWUN1C6Vem5K+4liY=",
+            "created_at": "2026-10-13T23:46:00.940222",
+            "rotated_at": "2026-10-13T23:46:00.939057",
+            "updated_at": "2026-10-13T23:46:00.940222",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "V3xm6ho4YNvWUN1C6Vem5K+4liY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:46:01.44234",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "V3xm6ho4YNvWUN1C6Vem5K+4liY=",
+            "created_at": "2026-10-13T23:46:00.940222",
+            "rotated_at": "2026-10-13T23:46:00.939057",
+            "updated_at": "2026-10-13T23:46:00.940222",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "V3xm6ho4YNvWUN1C6Vem5K+4liY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_favorite_badges": 1
+  },
+  "setup": [
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE user_badges SET is_favorite = TRUE WHERE id = 18"
+  ],
+  "recorded_from": {
+    "case": "f9758906dfda678e60f2f72ade863afb8b90864247ae03201a94164122acd906",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

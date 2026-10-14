@@ -1,0 +1,69 @@
+{
+  "name": "toggle_favorite_tl_badge",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user_badges/3/toggle_favorite.json"
+    }
+  ],
+  "started_at": "2026-10-13T23:46:12.938034",
+  "transaction_started_at": "2026-10-13T23:46:11.823547",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CnKpBF1jB2C1cL0Mu1nUk1u3bNA=",
+            "created_at": "2026-10-13T23:46:12.209081",
+            "rotated_at": "2026-10-13T23:46:12.207701",
+            "updated_at": "2026-10-13T23:46:12.209081",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CnKpBF1jB2C1cL0Mu1nUk1u3bNA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:46:12.946947",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CnKpBF1jB2C1cL0Mu1nUk1u3bNA=",
+            "created_at": "2026-10-13T23:46:12.209081",
+            "rotated_at": "2026-10-13T23:46:12.207701",
+            "updated_at": "2026-10-13T23:46:12.209081",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CnKpBF1jB2C1cL0Mu1nUk1u3bNA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "eb5b7932c509ecc3484c013981073eac7e2dc9931b11cb22e002dc6a45b73c88",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
