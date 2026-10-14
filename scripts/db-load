@@ -34,7 +34,9 @@ if [ "$exists" = "1" ]; then
   dropdb "$db"
 fi
 
-createdb "$db"
+# The reference's collation (en_US.UTF-8), so text sorts as Rails' queries
+# do; test databases are copies of this one and inherit it.
+createdb --template=template0 --locale=en_US.UTF-8 "$db"
 psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$schema" -o /dev/null
 for seed in "$root"/seed/*.sql; do
   psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$seed" -o /dev/null
