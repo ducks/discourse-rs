@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "settings": {"log_search_queries": false},
+  "requests": [
+    {"method": "GET", "path": "/u/recent-searches.json"},
+    {"method": "GET", "path": "/u/recent-searches"}
+  ]
+}

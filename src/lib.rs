@@ -124,6 +124,7 @@ pub mod schema;
 pub mod screened;
 pub mod search;
 pub mod search_logs;
+pub mod search_menu_view;
 pub mod search_view;
 pub mod second_factor;
 pub mod second_factor_auth;

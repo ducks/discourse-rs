@@ -391,6 +391,7 @@ pub async fn latest(
         base_path,
         "latest",
     )?;
+    page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     page.nav = crate::html::nav_items(
         &state.i18n,
@@ -871,6 +872,7 @@ async fn categories_response(
         state.config.globals.relative_url_root(),
         "categories",
     )?;
+    page.chrome.welcome_banner = !page.banner.is_empty();
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;
@@ -1166,6 +1168,7 @@ async fn front_list(
         state.config.globals.relative_url_root(),
         kind.name(),
     )?;
+    page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {
         page.live_filter = kind.name().to_string();

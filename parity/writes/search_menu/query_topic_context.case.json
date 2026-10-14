@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {"log_search_queries": true},
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=re&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=%22user1%20also%22%20x&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=user0&context=topic&context_id=35"},
+    {"method": "GET", "path": "/search/query.json?term=reply&context=topic&context_id=35&skip_context=true"},
+    {"method": "GET", "path": "/search/query.json?term=reply&search_context%5Btype%5D=nonsense&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D="},
+    {"method": "GET", "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D=999999"},
+    {"method": "GET", "path": "/search/query.json?term=reply&type_filter=exclude_topics&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"}
+  ]
+}

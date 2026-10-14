@@ -5,12 +5,16 @@
     sniff-capabilities' touch classes, which page.js corrects for the
     browser. -#}
 {%- let mobile = crate::mobile::mobile_view() %}
-{#- The mobile header's buttons (Header::Icons): search, which opens the
-    full-page search with the route's search context (Header#toggleSearchMenu
-    in the mobile view), and the hamburger that opens the sidebar's sections. -#}
+{#- The header's buttons (Header::Icons): search, which in the mobile view
+    opens the full-page search with the route's search context
+    (Header#toggleSearchMenu) and elsewhere the search menu (search-menu.js);
+    outside the mobile view it is not there while the welcome banner's search
+    is (Icons#showSearchButton, which search-menu.js keeps as the banner
+    scrolls), nor on the routes that never show it. Then the hamburger that
+    opens the sidebar's sections. -#}
 {%- macro search_button() %}
-{%- if chrome.can_search %}
-<li class="header-dropdown-toggle search-dropdown"><button aria-label="{{ chrome.t("search.title") }}" class="btn no-text btn-icon icon btn-flat" id="search-button" title="{{ chrome.t("search.title") }}" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search{{ chrome.search_context }}'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+{%- if chrome.can_search && !chrome.hide_search_button && (mobile || !chrome.welcome_banner) %}
+<li class="header-dropdown-toggle search-dropdown"><button aria-label="{{ chrome.t("search.title") }}" class="btn no-text btn-icon icon btn-flat" id="search-button" title="{{ chrome.t("search.title") }}" aria-haspopup="true" type="button"{% if mobile %} onclick="window.location.href = '{{ base_path }}/search{{ chrome.search_context }}'"{% endif %}><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
 {%- endif %}
 {%- endmacro %}
 {%- macro hamburger_button() %}
@@ -113,7 +117,10 @@
     {{ crate::routes::ICONS_SVG|safe }}
     <section id="main">
       <div class="discourse-root">
-        <div class="d-header-wrap">
+        {#- GlimmerSiteHeader: drop-down-mode outside the mobile view and the
+            narrow desktop (whose slide-ins sidebar.js and search-menu.js
+            switch to). -#}
+        <div class="{% if !mobile %}drop-down-mode {% endif %}d-header-wrap">
           <header class="d-header">
             <div class="wrap">
               <div class="contents">
@@ -145,7 +152,7 @@
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
-                    {%- if mobile %}{% call search_button() %}{% endif %}
+                    {%- call search_button() %}
                     {{- chrome.chat_header_icon|safe }}
                     {%- if !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
                     {#- The avatar opens the user menu (user-menu.js, which
@@ -171,7 +178,7 @@
                     </span>
                   </span>
                   <ul class="icons d-header-icons">
-                    {%- if mobile %}{% call search_button() %}{% endif %}
+                    {%- call search_button() %}
                     {%- if !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
                   </ul>
                   {% endif %}
@@ -223,6 +230,11 @@
           {%- endif %}
         </div>
       </div>
+      {#- The search menu (search-menu.js), after the page it watches (the
+          welcome banner's field). -#}
+      {%- if chrome.can_search %}
+      <script src="{{ crate::assets::url(base_path, "search-menu.js") }}" data-search-menu data-context-type="{{ chrome.search_context_type }}" data-context-id="{{ chrome.search_context_id }}" data-strings="{{ chrome.search_menu_strings }}"></script>
+      {%- endif %}
       {%- if !chrome.composer.is_empty() %}
       {{ chrome.composer|safe }}
       <script src="{{ crate::assets::url(base_path, "composer.js") }}" defer></script>

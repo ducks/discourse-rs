@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (id, term, user_id, ip_address, search_type, created_at) VALUES (9001, 'fixture', 3, '127.0.0.1', 1, '2026-10-01 10:00:00'), (9002, 'guide', 3, '127.0.0.1', 1, '2026-10-01 10:00:00'), (9003, 'other', 2, '127.0.0.1', 1, '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/search/click", "params": {"search_log_id": "9001", "search_result_id": "36", "search_result_type": "topic"}},
+    {"method": "POST", "path": "/search/click", "params": {"search_log_id": "9002", "search_result_id": "guide", "search_result_type": "tag"}},
+    {"method": "POST", "path": "/search/click", "params": {"search_log_id": "9003", "search_result_id": "1", "search_result_type": "user"}},
+    {"method": "POST", "path": "/search/click", "params": {"search_log_id": "9001", "search_result_id": "1", "search_result_type": "nonsense"}},
+    {"method": "POST", "path": "/search/click", "params": {"search_log_id": "9001", "search_result_type": "topic"}}
+  ]
+}

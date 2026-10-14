@@ -160,10 +160,19 @@
   color: var(--d-header-icon-color--hover);
 }
 
-.d-header-icons .active .icon {
+/* header.scss:199, the drop-down mode: neither the mobile view nor the
+   narrow desktop's slide-ins */
+.drop-down-mode .d-header-icons .active .icon,
+.drop-down-mode .d-header-icons .header-color-scheme-toggle .-expanded {
   position: relative;
   background-color: var(--d-header-icon-background--active);
   cursor: default;
+}
+
+/* header.scss:205 */
+.drop-down-mode .d-header-icons .active .icon > .d-icon,
+.drop-down-mode .d-header-icons .header-color-scheme-toggle .-expanded > .d-icon {
+  color: var(--d-header-icon-color--active);
 }
 
 .d-header-icons .d-icon {

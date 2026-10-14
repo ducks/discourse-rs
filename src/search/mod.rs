@@ -129,6 +129,16 @@ pub struct SearchArgs {
     /// A `search_type` was given: `log_query?` may log it (search_logs#term
     /// passes none).
     pub log: bool,
+    /// A topic as the `search_context` (the search menu's "in this
+    /// topic"): its posts matching the term, in post order.
+    pub topic_context: Option<TopicContext>,
+}
+
+/// A topic the search is scoped to (`Topic === @search_context`).
+#[derive(Debug, Clone, Copy)]
+pub struct TopicContext {
+    pub id: i32,
+    pub private_message: bool,
 }
 
 /// `SearchLog.log`'s redis dedupe key, `__SEARCH__LOG_<ip>` with a 5 s
@@ -304,6 +314,21 @@ pub fn process_advanced_search(term: &str) -> Result<String, Unsupported> {
     Ok(kept.join(" "))
 }
 
+/// posts_query's `term_without_quote` for a topic's search: the term, or
+/// what its outermost double quotes enclose, or its outermost single
+/// quotes (checked last, so they win).
+pub fn topic_search_term(term: &str) -> String {
+    let mut out = term.to_string();
+    for quote in ['"', '\''] {
+        if let (Some(first), Some(last)) = (term.find(quote), term.rfind(quote))
+            && last > first + 1
+        {
+            out = term[first + 1..last].to_string();
+        }
+    }
+    out
+}
+
 /// `filter_short_terms`: words shorter than min_search_term_length go,
 /// quoted phrases stay; the split ignores whitespace inside quotes.
 pub fn filter_short_terms(term: &str, min_length: usize) -> String {
@@ -450,13 +475,25 @@ impl Search<'_> {
             results.search_log_id = self.log(&clean, args).await?;
         }
 
-        let min_length = self.settings.get("min_search_term_length")?.to_i().max(0) as usize;
-        let term = filter_short_terms(&after_advanced, min_length);
-        if term.trim().is_empty() {
-            return Ok(None);
-        }
+        // A topic's search keeps its short words (and searches the posts
+        // even without any).
+        let topic_context = args.topic_context;
+        let term = match topic_context {
+            Some(_) => after_advanced.clone(),
+            None => {
+                let min_length =
+                    self.settings.get("min_search_term_length")?.to_i().max(0) as usize;
+                let term = filter_short_terms(&after_advanced, min_length);
+                if term.trim().is_empty() {
+                    return Ok(None);
+                }
+                term
+            }
+        };
 
-        let limit = if args.full_page {
+        // use_full_page_limit: the full page and a topic's search.
+        let full_page_limit = args.full_page || topic_context.is_some();
+        let limit = if full_page_limit {
             self.settings.get("search_page_size")?.to_i() + 1
         } else {
             PER_FACET as i64 + 1
@@ -487,25 +524,31 @@ impl Search<'_> {
                 self.topic_search(&term, limit, offset, &mut results)
                     .await?
             }
-            None => {
-                self.user_search(&term, &original_term, &mut results)
-                    .await?;
-                self.category_search(&term, &mut results).await?;
-                self.tags_search(&term, &mut results).await?;
-                self.groups_search(&term, &mut results).await?;
-                self.topic_search(&term, limit, offset, &mut results)
-                    .await?;
-            }
+            None => match topic_context {
+                Some(topic) => {
+                    self.topic_context_search(&term, topic, limit, &mut results)
+                        .await?
+                }
+                None => {
+                    self.user_search(&term, &original_term, &mut results)
+                        .await?;
+                    self.category_search(&term, &mut results).await?;
+                    self.tags_search(&term, &mut results).await?;
+                    self.groups_search(&term, &mut results).await?;
+                    self.topic_search(&term, limit, offset, &mut results)
+                        .await?;
+                }
+            },
         }
         // add()'s limit trick: the extra row flips the flag.
-        let cap = if args.full_page {
+        let cap = if full_page_limit {
             per_filter
         } else {
             PER_FACET
         };
         if results.posts.len() > cap {
             results.posts.truncate(cap);
-            if args.full_page {
+            if full_page_limit {
                 results.more_full_page_results = true;
             } else {
                 results.more_posts = true;
@@ -722,6 +765,89 @@ impl Search<'_> {
                 .posts
                 .extend(query.fetch_all(&mut *self.conn).await?);
         }
+        Ok(())
+    }
+
+    /// `topic_search` with a topic as the context: posts_query's topic
+    /// branch, the topic's visible posts (hidden topics included) whose raw,
+    /// indexed text, author's username (and name) contain the term (the
+    /// first quoted part when it has one), in post order.
+    async fn topic_context_search(
+        &mut self,
+        term: &str,
+        topic: TopicContext,
+        limit: i64,
+        results: &mut Results,
+    ) -> Result<(), SearchError> {
+        let post_types = self
+            .guardian
+            .visible_post_types(self.settings)?
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut sql = String::from(
+            "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
+                    posts.like_count, post_search_data.raw_data, post_search_data.version \
+             FROM posts \
+             INNER JOIN post_search_data ON post_search_data.post_id = posts.id \
+             INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id ",
+        );
+        if !topic.private_message {
+            sql.push_str("LEFT JOIN categories ON categories.id = topics.category_id ");
+        }
+        sql.push_str(&format!(
+            "JOIN users u ON u.id = posts.user_id \
+             WHERE posts.deleted_at IS NULL AND posts.post_type IN ({post_types}) AND posts.hidden = FALSE "
+        ));
+        if topic.private_message {
+            sql.push_str(
+                "AND (topics.archetype = 'private_message' AND post_search_data.private_message) ",
+            );
+            if !self.guardian.is_admin() {
+                let uid = self.guardian.user_id().unwrap_or(-1);
+                sql.push_str(&format!(
+                    "AND (topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {uid}) \
+                     OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
+                       JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id)) "
+                ));
+            }
+        } else {
+            sql.push_str(
+                "AND (topics.archetype <> 'private_message' AND NOT post_search_data.private_message) ",
+            );
+        }
+        let mut fields =
+            "posts.raw || ' ' || post_search_data.raw_data || ' ' || u.username".to_string();
+        if self.settings.get("enable_names")?.truthy() {
+            fields.push_str(" || ' ' || COALESCE(u.name, '')");
+        }
+        sql.push_str(&format!("AND ({fields} ILIKE $1) AND (topics.id = $2) "));
+        if !topic.private_message {
+            let secure_ids = self
+                .guardian
+                .secure_category_ids(&mut *self.conn, self.settings)
+                .await?;
+            if secure_ids.is_empty() {
+                sql.push_str("AND ((categories.id IS NULL) OR (NOT categories.read_restricted)) ");
+            } else {
+                sql.push_str(&format!(
+                    "AND ((categories.id IS NULL) OR (NOT categories.read_restricted) OR (categories.id IN ({}))) ",
+                    secure_ids
+                        .iter()
+                        .map(|id| id.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ));
+            }
+        }
+        sql.push_str("AND (posts.topic_id = $2) ORDER BY posts.post_number ASC LIMIT $3 OFFSET 0");
+        results.posts = sqlx::query_as(&sql)
+            .bind(format!("%{}%", topic_search_term(term)))
+            .bind(topic.id)
+            .bind(limit)
+            .fetch_all(&mut *self.conn)
+            .await?;
         Ok(())
     }
 

@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "settings": {"log_search_queries": true},
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, ip_address, search_type, created_at) VALUES ('fixture', 3, '127.0.0.1', 1, '2026-10-01 10:00:00'), ('reply', 3, '127.0.0.1', 1, '2026-10-02 10:00:00'), ('fixture', 3, '127.0.0.1', 2, '2026-10-03 10:00:00'), ('one', 3, '127.0.0.1', 1, '2026-09-01 10:00:00'), ('two', 3, '127.0.0.1', 1, '2026-09-02 10:00:00'), ('three', 3, '127.0.0.1', 1, '2026-09-03 10:00:00'), ('four', 3, '127.0.0.1', 1, '2026-09-04 10:00:00'), ('other', 2, '127.0.0.1', 1, '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/u/recent-searches.json"},
+    {"method": "GET", "path": "/u/recent-searches", "headers": {"Accept": "application/json"}},
+    {"method": "DELETE", "path": "/u/recent-searches.json"},
+    {"method": "GET", "path": "/u/recent-searches.json"}
+  ]
+}

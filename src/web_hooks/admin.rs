@@ -734,7 +734,7 @@ async fn tag_ids_assigned(conn: &mut PgConnection, ids: &[i32]) -> Result<Vec<i3
 }
 
 /// `DiscourseTagging.clean_tag`
-fn clean_tag(settings: &SiteSettings, tag: &str) -> Result<String, AppError> {
+pub(crate) fn clean_tag(settings: &SiteSettings, tag: &str) -> Result<String, AppError> {
     let mut tag = tag.to_string();
     if settings.get("force_lowercase_tags")?.truthy() {
         tag = tag.to_lowercase();
