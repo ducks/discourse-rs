@@ -1,0 +1,93 @@
+{
+  "name": "inline_crawl_internal",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:15:03.002027",
+  "transaction_started_at": "2026-10-14T00:15:01.066404",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://fixtures.localhost:8099/titled",
+            "title": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "x+JfqWBCdBZobZgtaKfWkh3MehA=",
+            "created_at": "2026-10-14T00:15:02.116309",
+            "rotated_at": "2026-10-14T00:15:02.114673",
+            "updated_at": "2026-10-14T00:15:02.116309",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "x+JfqWBCdBZobZgtaKfWkh3MehA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T00:15:03.015492",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "x+JfqWBCdBZobZgtaKfWkh3MehA=",
+            "created_at": "2026-10-14T00:15:02.116309",
+            "rotated_at": "2026-10-14T00:15:02.114673",
+            "updated_at": "2026-10-14T00:15:02.116309",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "x+JfqWBCdBZobZgtaKfWkh3MehA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_inline_onebox_on_all_domains": true,
+    "allowed_internal_hosts": "",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Not reachable</title>"
+    }
+  },
+  "recorded_from": {
+    "case": "d1b92a0a8fdf05f2b3c4c1ed805d3c7df4dce2f5986930b7b43e75ea9428260d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

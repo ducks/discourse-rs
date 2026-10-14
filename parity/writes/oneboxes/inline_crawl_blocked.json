@@ -1,0 +1,89 @@
+{
+  "name": "inline_crawl_blocked",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:14:55.942144",
+  "transaction_started_at": "2026-10-14T00:14:53.780963",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gQdGWYVNtgVL9hBpLATkFH0XGfI=",
+            "created_at": "2026-10-14T00:14:54.254287",
+            "rotated_at": "2026-10-14T00:14:54.252512",
+            "updated_at": "2026-10-14T00:14:54.254287",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gQdGWYVNtgVL9hBpLATkFH0XGfI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T00:14:55.953154",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gQdGWYVNtgVL9hBpLATkFH0XGfI=",
+            "created_at": "2026-10-14T00:14:54.254287",
+            "rotated_at": "2026-10-14T00:14:54.252512",
+            "updated_at": "2026-10-14T00:14:54.254287",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gQdGWYVNtgVL9hBpLATkFH0XGfI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_inline_onebox_on_all_domains": true,
+    "blocked_onebox_domains": "fixtures.localhost",
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Blocked page</title>"
+    }
+  },
+  "recorded_from": {
+    "case": "7307935f9d6e1dfd9eed0b2fe226ab47089caf9f645b63df8ceffaf8f9672b89",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

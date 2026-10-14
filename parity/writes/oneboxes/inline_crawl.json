@@ -1,0 +1,222 @@
+{
+  "name": "inline_crawl",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled",
+          "http://fixtures.localhost:8099/og",
+          "http://fixtures.localhost:8099/untitled",
+          "http://fixtures.localhost:8099/short",
+          "http://fixtures.localhost:8099/emoji"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/moved",
+          "http://fixtures.localhost:8099/missing",
+          "http://fixtures.localhost:8099/plain",
+          "http://fixtures.localhost:8099/query?a=1",
+          "http://fixtures.localhost/titled"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:14:58.973345",
+  "transaction_started_at": "2026-10-14T00:14:56.36278",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://fixtures.localhost:8099/titled",
+            "title": "A remote page"
+          },
+          {
+            "url": "http://fixtures.localhost:8099/og",
+            "title": "Open graph title"
+          },
+          {
+            "url": "http://fixtures.localhost:8099/untitled",
+            "title": null
+          },
+          {
+            "url": "http://fixtures.localhost:8099/short",
+            "title": null
+          },
+          {
+            "url": "http://fixtures.localhost:8099/emoji",
+            "title": "Hello 😄 there"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://fixtures.localhost:8099/moved",
+            "title": "A remote page"
+          },
+          {
+            "url": "http://fixtures.localhost:8099/missing",
+            "title": null
+          },
+          {
+            "url": "http://fixtures.localhost:8099/plain",
+            "title": "Plain text"
+          },
+          {
+            "url": "http://fixtures.localhost:8099/query?a=1",
+            "title": "With a query"
+          },
+          {
+            "url": "http://fixtures.localhost/titled",
+            "title": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://fixtures.localhost:8099/titled",
+            "title": "A remote page"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NeRTsJbaGxB+q8nr19DkNCWbVtE=",
+            "created_at": "2026-10-14T00:14:56.981178",
+            "rotated_at": "2026-10-14T00:14:56.978983",
+            "updated_at": "2026-10-14T00:14:56.981178",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NeRTsJbaGxB+q8nr19DkNCWbVtE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T00:14:58.986523",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NeRTsJbaGxB+q8nr19DkNCWbVtE=",
+            "created_at": "2026-10-14T00:14:56.981178",
+            "rotated_at": "2026-10-14T00:14:56.978983",
+            "updated_at": "2026-10-14T00:14:56.981178",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NeRTsJbaGxB+q8nr19DkNCWbVtE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_inline_onebox_on_all_domains": true,
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><head><title>\n  A   remote\n  page </title></head><body>hi</body></html>"
+    },
+    "/og": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><head><meta property=\"og:title\" content=\"Open graph title\"></head></html>"
+    },
+    "/untitled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><body><p>nothing</p></body></html>"
+    },
+    "/short": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>A</title>"
+    },
+    "/emoji": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Hello :smile: there</title>"
+    },
+    "/moved": {
+      "status": 301,
+      "headers": {
+        "Location": "http://fixtures.localhost:8099/titled"
+      },
+      "body": ""
+    },
+    "/plain": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/plain"
+      },
+      "body": "<title>Plain text</title>"
+    },
+    "/query?a=1": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>With a query</title>"
+    }
+  },
+  "recorded_from": {
+    "case": "ddb7ee60fae674c73e82db6404c6610b15371c104ef178a3aa0b27a257832a1e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

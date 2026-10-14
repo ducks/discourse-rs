@@ -1013,6 +1013,90 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
     }
 }
 
+/// Where `remote` pages are served, on both sides: fixtures.localhost
+/// resolves to loopback here and in the reference's container.
+const REMOTE_ADDRS: [&str; 2] = ["127.0.0.1:8099", "[::1]:8099"];
+
+/// A case's `remote`: request targets (path and query) on
+/// http://fixtures.localhost:8099 and what each answers, `{status,
+/// headers, body}`, as scripts/record_writes.rb serves them; anything else
+/// is a 404. Cases run side by side, so a case waits for the port.
+async fn serve_remote(case: &Value) -> Vec<tokio::task::JoinHandle<()>> {
+    let Some(pages) = case["remote"].as_object() else {
+        return Vec::new();
+    };
+    let pages = std::sync::Arc::new(pages.clone());
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(300);
+    let listeners = loop {
+        let mut bound = Vec::new();
+        for addr in REMOTE_ADDRS {
+            match tokio::net::TcpListener::bind(addr).await {
+                Ok(l) => bound.push(l),
+                Err(_) => break,
+            }
+        }
+        if bound.len() == REMOTE_ADDRS.len() {
+            break bound;
+        }
+        drop(bound);
+        assert!(
+            std::time::Instant::now() < deadline,
+            "port 8099 stayed busy"
+        );
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    };
+    listeners
+        .into_iter()
+        .map(|listener| {
+            let pages = pages.clone();
+            tokio::spawn(async move {
+                while let Ok((socket, _)) = listener.accept().await {
+                    tokio::spawn(answer_remote(socket, pages.clone()));
+                }
+            })
+        })
+        .collect()
+}
+
+async fn answer_remote(
+    mut socket: tokio::net::TcpStream,
+    pages: std::sync::Arc<Map<String, Value>>,
+) {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let mut request = Vec::new();
+    let mut buf = [0u8; 4096];
+    while !request.windows(4).any(|w| w == b"\r\n\r\n") {
+        match socket.read(&mut buf).await {
+            Ok(0) | Err(_) => return,
+            Ok(n) => request.extend_from_slice(&buf[..n]),
+        }
+    }
+    let request = String::from_utf8_lossy(&request);
+    let mut line = request.lines().next().unwrap_or("").split(' ');
+    let method = line.next().unwrap_or("");
+    let target = line.next().unwrap_or("");
+    let page = pages.get(target);
+    let status = page.and_then(|p| p["status"].as_u64()).unwrap_or(404);
+    let body = page.and_then(|p| p["body"].as_str()).unwrap_or("");
+    let mut head = format!(
+        "HTTP/1.1 {status} X\r\nConnection: close\r\nContent-Length: {}\r\n",
+        body.len()
+    );
+    for (name, value) in page
+        .and_then(|p| p["headers"].as_object())
+        .into_iter()
+        .flatten()
+    {
+        head.push_str(&format!("{name}: {}\r\n", value.as_str().unwrap_or("")));
+    }
+    head.push_str("\r\n");
+    let _ = socket.write_all(head.as_bytes()).await;
+    if method != "HEAD" {
+        let _ = socket.write_all(body.as_bytes()).await;
+    }
+    let _ = socket.shutdown().await;
+}
+
 async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<String> {
     let db = TestDb::with_clock().await;
     // The case runs from when Rails ran it, so what counts from now (days
@@ -1079,6 +1163,9 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         client.csrf = csrf["csrf"].as_str().map(str::to_string);
     }
     apply_settings(&db.pool, &client.state, case).await;
+    // `remote`: the other site's pages the case fetches, served as the
+    // recorder served them; held until the case is done.
+    let _remote = serve_remote(case).await;
     // `setup`: the case's fixture rows, as the recorder ran them.
     for sql in case["setup"].as_array().into_iter().flatten() {
         sqlx::query(sql.as_str().unwrap())
