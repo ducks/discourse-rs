@@ -11,7 +11,9 @@
 //! (Rails would fetch the page) and chat's local oneboxes.
 
 pub mod engines;
+pub mod external;
 pub mod matcher;
+pub mod preview;
 
 use std::sync::LazyLock;
 
@@ -874,20 +876,21 @@ fn local_upload_html(settings: &SiteSettings, url: &str) -> Result<Option<String
     })
 }
 
-/// `Oneboxer.onebox(url, user_id:, category_id:)`: the site's own pages'
-/// HTML (a plain link when there is none), another site's refused.
-async fn onebox(
+/// `Oneboxer.onebox_raw(url, user_id:, category_id:)`: the site's own
+/// pages' HTML (a plain link when there is none), else another site's
+/// onebox (`external_onebox`).
+async fn onebox_raw(
     conn: &mut PgConnection,
     site: &Site<'_>,
     url: &str,
     opts: &Opts,
-) -> Result<String, AppError> {
+) -> Result<external::Onebox, AppError> {
     if !url.is_ascii() || url.chars().any(char::is_whitespace) {
         return Err(Unsupported("onebox URLs that need encoding").into());
     }
     let hostname = site.urls.current_hostname()?;
     let Some(route) = route_for(url, &hostname, site.base_path)? else {
-        return Err(Unsupported("oneboxes of other sites (fetched from the network)").into());
+        return external::external_onebox(conn, site, url).await;
     };
     let html = match route {
         Route::Upload => local_upload_html(site.settings, url)?,
@@ -901,9 +904,13 @@ async fn onebox(
         Route::Other => None,
     };
     let normalized = normalize_url_for_output(url);
-    Ok(html
+    let html = html
         .filter(|h| !h.trim().is_empty())
-        .unwrap_or_else(|| format!("<a href='{normalized}'>{normalized}</a>")))
+        .unwrap_or_else(|| format!("<a href='{normalized}'>{normalized}</a>"));
+    Ok(external::Onebox {
+        onebox: html.clone(),
+        preview: html,
+    })
 }
 
 /// `InlineOneboxer.lookup(url, user_id:, category_id:)`: none when it
@@ -1026,12 +1033,10 @@ async fn crawled_title(
         .into());
     }
     let block_redirects = s.get("block_onebox_on_redirect")?.truthy();
-    let accept_language = if locale == "en" {
-        "en;q=0.9, *;q=0.5".to_string()
-    } else {
-        format!("{};q=0.9, en;q=0.8, *;q=0.5", locale.replace('_', "-"))
-    };
-    let mut headers = vec![("Accept-Language".to_string(), accept_language)];
+    let mut headers = vec![(
+        "Accept-Language".to_string(),
+        external::accept_language(&locale),
+    )];
     let agent = s.get("inline_onebox_user_agent")?.to_s().to_string();
     if !agent.trim().is_empty() {
         headers.push(("User-Agent".into(), agent));
@@ -1061,18 +1066,24 @@ async fn crawled_title(
     Ok(Some(title))
 }
 
-/// `WordWatcher.censor_text`, which onebox_for runs on a title: refused
-/// while there are words to censor.
+/// `WordWatcher.censor_text`, which onebox_for runs on a title.
 async fn censored(conn: &mut PgConnection, title: String) -> Result<String, AppError> {
+    refuse_censored(conn).await?;
+    Ok(title)
+}
+
+/// `WordWatcher.censor` on onebox HTML or titles: refused while there are
+/// words to censor.
+async fn refuse_censored(conn: &mut PgConnection) -> Result<(), AppError> {
     // WatchedWord.actions: censor 2.
     let censor: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 2)")
             .fetch_one(&mut *conn)
             .await?;
     if censor {
-        return Err(Unsupported("censored watched words in inline onebox titles").into());
+        return Err(Unsupported("censored watched words in oneboxes").into());
     }
-    Ok(title)
+    Ok(())
 }
 
 /// What the post processor would refuse to onebox, refused before the post
@@ -1289,7 +1300,7 @@ pub async fn preview(
     url: &str,
     opts: &Opts,
 ) -> Result<String, AppError> {
-    onebox(conn, site, url, opts).await
+    Ok(onebox_raw(conn, site, url, opts).await?.preview)
 }
 
 /// `InlineOneboxer.lookup(url, user_id:, category_id:, topic_id:)`:
@@ -1406,7 +1417,9 @@ pub async fn post_process(
         limit -= 1;
         if is_onebox {
             oneboxes.push(url.clone());
-            outcomes.push(Some(Outcome::Onebox(onebox(conn, site, &url, opts).await?)));
+            outcomes.push(Some(Outcome::Onebox(
+                onebox_raw(conn, site, &url, opts).await?.onebox,
+            )));
         } else {
             inlines.push(url.clone());
             outcomes.push(Some(Outcome::Inline(

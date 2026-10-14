@@ -96,3 +96,26 @@ fn renders_engines_like_rails() {
         failures.join("\n")
     );
 }
+
+/// `Preview#process_html` on the engines' HTML and placeholders.
+#[test]
+fn processes_previews_like_rails() {
+    let rec = recording();
+    let mut failures = Vec::new();
+    for case in rec["previews"].as_array().unwrap() {
+        let url = case["url"].as_str().unwrap();
+        for (raw, processed) in [
+            ("raw", "processed"),
+            ("raw_placeholder", "processed_placeholder"),
+        ] {
+            let ours = discourse_rs::onebox::preview::process_html(case[raw].as_str().unwrap());
+            if ours != case[processed].as_str().unwrap() {
+                failures.push(format!(
+                    "{url} [{processed}]\n  ours  {ours:?}\n  rails {}",
+                    case[processed]
+                ));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
