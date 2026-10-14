@@ -36,6 +36,10 @@ trap 'rm -f "$script"' EXIT
   # CASCADE: javascript_caches, an asset cache the snapshot leaves out,
   # references the theme tables; Discourse rebuilds it.
   echo "TRUNCATE $tables CASCADE;"
+  # Login history the snapshot leaves out with the tokens: deleting a
+  # user deletes its rows, so what earlier logins left would show up in
+  # the recordings of user deletes. The tokens themselves stay.
+  echo "DELETE FROM public.user_auth_token_logs;"
   cat "$seed"
   # The seed sets every sequence, those of the tables it leaves out too
   # (auth tokens, search logs...), whose rows stay: put each sequence past
