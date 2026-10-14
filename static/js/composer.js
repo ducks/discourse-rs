@@ -640,6 +640,9 @@
           if (window.Discourse && Discourse.highlightSyntax) {
             Discourse.highlightSyntax(preview);
           }
+          if (window.Discourse && Discourse.applyLocalDates) {
+            Discourse.applyLocalDates(preview, { title: true });
+          }
         } catch (e) {
           preview.textContent = e.message;
         }

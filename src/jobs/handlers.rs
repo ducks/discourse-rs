@@ -468,6 +468,10 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
     {
         return Err(Unsupported("remove_full_quote_on_direct_reply").into());
     }
+    // DiscourseEvent :before_post_process_cooked, on the cooked html as
+    // the processor starts with it.
+    crate::plugins::local_dates::before_post_process_cooked(&mut conn, &s, post_id, &post.cooked)
+        .await?;
     let html = cooked_post_processor::post_process(
         &mut conn,
         &s,

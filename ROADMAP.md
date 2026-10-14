@@ -149,8 +149,12 @@ Bugs or silent gaps in what is merged, small and independent.
 47. `feat/lightbox` M (PhotoSwipe), 48. ~~`feat/highlight-js`~~ (done) M (posts, the
     composer's preview and chat messages; the rich editor's code blocks
     wait on the rich editor),
-    49. `feat/local-dates` M (moment and moment-timezone vendored, as
-    Discourse renders), 50. `feat/inline-footnotes` S
+    49. ~~`feat/local-dates`~~ (done) M (moment and moment-timezone
+    vendored, as Discourse renders: posts, the composer's preview and chat
+    messages, the tooltip, "Add to calendar" with its modal and .ics; the
+    `local_dates` custom field; emails show data-email-preview. Left: the
+    composer's insert-date modal and Shift+. shortcut, moment locales
+    other than English), 50. `feat/inline-footnotes` S
 51. ~~`feat/onebox-endpoints`~~ (done) S, 52. ~~`feat/onebox-fetch`~~ (done) L
     (FinalDestination: SSRF guard with DNS pinning, redirects, the https
     domain cache; RetrieveTitle; other sites' inline titles. Pages in

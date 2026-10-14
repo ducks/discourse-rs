@@ -224,6 +224,72 @@ pub struct Chrome {
     /// discourse-footnote's inline footnotes (static/js/inline-footnotes.js):
     /// the plugin is on and display_footnotes_inline.
     pub inline_footnotes: bool,
+    /// What static/js/local-dates.js reads, as data attributes for its
+    /// script tag; empty while discourse_local_dates_enabled is off.
+    pub local_dates_attrs: String,
+}
+
+/// The client strings local-dates.js shows, by their js.* key.
+const LOCAL_DATES_STRINGS: &[&str] = &[
+    "discourse_local_dates.relative_dates.today",
+    "discourse_local_dates.relative_dates.tomorrow",
+    "discourse_local_dates.relative_dates.yesterday",
+    "discourse_local_dates.relative_dates.countdown.passed",
+    "download_calendar.add_to_calendar",
+    "download_calendar.default_title",
+    "download_calendar.title",
+    "download_calendar.calendar",
+    "download_calendar.save_ics",
+    "download_calendar.save_google",
+    "download_calendar.save_outlook",
+    "download_calendar.save_apple",
+    "download_calendar.remember",
+    "download_calendar.remember_explanation",
+    "cancel",
+];
+
+/// local-dates.js's script tag attributes: the siteSettings it reads
+/// (discourse_local_dates_default_timezones, title), the default title
+/// (`discourse_local_dates.default_title` with the site's name), the
+/// member's username and `user_option.default_calendar`, and its strings.
+fn local_dates_attrs(
+    settings: &SiteSettings,
+    i18n: &I18n,
+    username: Option<&str>,
+    default_calendar: Option<i32>,
+) -> Result<String, SettingError> {
+    let esc = crate::topic_list_view::escape;
+    let title = settings.get("title")?.to_s();
+    let default_title = i18n
+        .t("js.discourse_local_dates.default_title")
+        .unwrap_or("%{site_name} Event")
+        .replace("%{site_name}", &title);
+    let default_calendar = default_calendar
+        .and_then(|c| {
+            ["none_selected", "ics", "google", "outlook", "apple"]
+                .get(usize::try_from(c).ok()?)
+                .copied()
+        })
+        .unwrap_or("");
+    let strings: serde_json::Map<String, Value> = LOCAL_DATES_STRINGS
+        .iter()
+        .map(|key| {
+            let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+            ((*key).to_string(), Value::String(text.to_string()))
+        })
+        .collect();
+    Ok(format!(
+        " data-default-timezones=\"{}\" data-default-title=\"{}\" data-site-title=\"{}\" \
+         data-username=\"{}\" data-default-calendar=\"{}\" data-strings=\"{}\"",
+        esc(&settings
+            .get("discourse_local_dates_default_timezones")?
+            .to_s()),
+        esc(&default_title),
+        esc(&title),
+        esc(username.unwrap_or("")),
+        default_calendar,
+        esc(&Value::Object(strings).to_string()),
+    ))
 }
 
 /// The site settings the cooked decorators check, as the Ember client
@@ -466,6 +532,25 @@ impl Site {
         );
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
+        if crate::plugins::local_dates::enabled(settings)? {
+            let default_calendar = match guardian.user() {
+                Some(user) => {
+                    sqlx::query_scalar::<_, i32>(
+                        "SELECT default_calendar FROM user_options WHERE user_id = $1",
+                    )
+                    .bind(user.id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+                }
+                None => None,
+            };
+            self.chrome.local_dates_attrs = local_dates_attrs(
+                settings,
+                &state.i18n,
+                guardian.user().map(|u| u.username.as_str()),
+                default_calendar,
+            )?;
+        }
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,

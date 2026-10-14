@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (36, 'local_dates', '[{\"timezone\":\"UTC\",\"time\":\"10:00:00\",\"date\":\"2026-10-20\"}]', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "The same date as stored: [date=2026-10-20 time=10:00:00 timezone=\"UTC\"]"
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

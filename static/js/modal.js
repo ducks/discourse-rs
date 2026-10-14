@@ -1,11 +1,13 @@
 // DModal (ui-kit/d-modal.gts) as the modal service shows it, for the
 // decorators' fullscreen views:
 //
-//   Discourse.modal.show({ className, title, body: fn(bodyEl), onClose })
+//   Discourse.modal.show({ className, title, body: fn(bodyEl, close),
+//                          footer: fn(footerEl, close), onClose })
 //       renders the modal into .modal-container (ModalContainer, the
 //       application template's, inside .discourse-root) with html.modal-open,
-//       and returns its close function. body fills .d-modal__body; onClose
-//       runs once it is gone. A modal shown while one is open replaces it.
+//       and returns its close function. body fills .d-modal__body, footer
+//       a .d-modal__footer after it (the <:footer> block); onClose runs
+//       once it is gone. A modal shown while one is open replaces it.
 //
 // Dismissable as DModal is when given @closeModal: the close button,
 // Escape and a click on the backdrop close it, after the exit animation.
@@ -157,7 +159,13 @@
     });
 
     if (opts.body) {
-      opts.body(body);
+      opts.body(body, close);
+    }
+    if (opts.footer) {
+      var footer = document.createElement("div");
+      footer.className = "d-modal__footer";
+      modalContainer.appendChild(footer);
+      opts.footer(footer, close);
     }
 
     var target = container();

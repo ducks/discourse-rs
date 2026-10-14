@@ -36,6 +36,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/composer.css"),
     include_str!("../static/css/kit.css"),
     include_str!("../static/css/modal.css"),
+    include_str!("../static/css/form-kit.css"),
     include_str!("../static/css/menus.css"),
     include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
@@ -49,6 +50,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/chat.css"),
     include_str!("../static/css/checklist.css"),
     include_str!("../static/css/discourse-details.css"),
+    include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/spoiler-alert.css"),
 );
@@ -93,6 +95,24 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "inline-footnotes.js",
         JS,
         include_str!("../static/js/inline-footnotes.js"),
+    ),
+    (
+        "local-dates.js",
+        JS,
+        include_str!("../static/js/local-dates.js"),
+    ),
+    // moment and moment-timezone as Discourse builds them in
+    // (static/vendor/README), which local-dates.js loads when a page has a
+    // date.
+    (
+        "moment.min.js",
+        JS,
+        include_str!("../static/vendor/moment/moment.min.js"),
+    ),
+    (
+        "moment-timezone-with-data-10-year-range.min.js",
+        JS,
+        include_str!("../static/vendor/moment/moment-timezone-with-data-10-year-range.min.js"),
     ),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("oneboxes.js", JS, include_str!("../static/js/oneboxes.js")),

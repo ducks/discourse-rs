@@ -67,6 +67,9 @@
     {%- if chrome.inline_footnotes %}
     <script src="{{ crate::assets::url(base_path, "inline-footnotes.js") }}" defer></script>
     {%- endif %}
+    {%- if !chrome.local_dates_attrs.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "local-dates.js") }}" defer data-moment="{{ crate::assets::url(base_path, "moment.min.js") }}" data-moment-timezone="{{ crate::assets::url(base_path, "moment-timezone-with-data-10-year-range.min.js") }}"{{ chrome.local_dates_attrs|safe }}></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "oneboxes.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>

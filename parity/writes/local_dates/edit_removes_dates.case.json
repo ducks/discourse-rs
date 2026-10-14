@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (36, 'local_dates', '[{\"date\":\"2026-10-20\",\"timezone\":\"UTC\"}]', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "No dates here any more, only words for the edit."
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

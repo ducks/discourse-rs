@@ -37,3 +37,16 @@ new versions the same way and check them again:
 
   curl -s https://registry.npmjs.org/<pkg>/<version>    # dist.integrity
   curl -sL https://registry.npmjs.org/<pkg>/-/<pkg>-<version>.tgz
+
+  moment/moment.min.js          moment@2.30.1, min/moment.min.js
+                                (served as /assets/moment.min.js)
+  moment/moment-timezone-with-data-10-year-range.min.js
+                                moment-timezone@0.6.3,
+                                builds/moment-timezone-with-data-10-year-range.min.js
+  moment/moment-LICENSE         moment@2.30.1, LICENSE (MIT)
+  moment/moment-timezone-LICENSE
+                                moment-timezone@0.6.3, LICENSE (MIT)
+
+moment and moment-timezone are the versions frontend/discourse/package.json
+pins, and the timezone build is the one load-moment.js imports (the
+10-year range). Both are byte-identical to the reference's node_modules.

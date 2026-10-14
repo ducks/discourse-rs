@@ -17,6 +17,10 @@
 //       a DTooltip: wraps trigger in its span.fk-d-tooltip__trigger and
 //       opens its content (div.fk-d-tooltip__content in #d-tooltip-portals)
 //       on hover or click as DTooltip's listeners do.
+//   Discourse.float.showTooltip(trigger, options) -> instance or null
+//       the tooltip service's show(trigger, options): a tooltip by an
+//       element of the page's own, which is left as it is; showing it
+//       again while open closes it (null).
 //   Discourse.float.close(identifier)
 //       closes the open float with that identifier.
 //
@@ -710,6 +714,33 @@
     return instance;
   }
 
+  // The tooltip service's show(trigger, options): the trigger is any
+  // element, left as it is (detachedTrigger); showing it again while its
+  // tooltip is open closes it.
+  function showTooltip(trigger, options) {
+    for (var i = 0; i < open.length; i++) {
+      if (open[i].kind === "tooltip" && open[i].trigger === trigger) {
+        open[i].destroy();
+        return null;
+      }
+    }
+    var o = merge(TOOLTIP, options);
+    var userClose = o.onClose;
+    var instance = new Instance("tooltip", trigger, o);
+    // Its listeners go with it: the next show is a new instance.
+    o.onClose = function (data) {
+      instance.listeners.forEach(function (fn) {
+        fn();
+      });
+      instance.listeners = [];
+      if (userClose) {
+        userClose(data);
+      }
+    };
+    instance.setupListeners();
+    return instance.show();
+  }
+
   Discourse.float = {
     PLACEMENTS: PLACEMENTS,
     headerOffset: headerOffset,
@@ -717,6 +748,7 @@
     attach: attach,
     menu: menu,
     tooltip: tooltip,
+    showTooltip: showTooltip,
     close: function (identifier) {
       open.slice().forEach(function (instance) {
         if (instance.options.identifier === identifier) {
