@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 1, 'cat', now() - interval '1 day', now() - interval '1 day'), (2, 1, 'dog', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO directory_columns (id, name, enabled, position, type, user_field_id) VALUES (40, NULL, true, 10, 1, 1)",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'cat', now(), now())"
+  ],
+  "requests": [
+    {"method": "DELETE", "path": "/admin/config/user_fields/1.json"},
+    {"method": "DELETE", "path": "/admin/config/user_fields/999.json"},
+    {"method": "GET", "path": "/admin/config/user_fields.json"}
+  ]
+}

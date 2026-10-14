@@ -1220,13 +1220,11 @@ impl Site<'_> {
 
     /// UserFieldSerializer over `UserField.order(:position)`.
     async fn user_fields(&mut self) -> Result<Value, SiteError> {
-        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM user_fields")
-            .fetch_one(&mut *self.conn)
-            .await?;
-        if count > 0 {
-            return Err(Unsupported("user_fields (UserFieldSerializer)").into());
+        let mut out = Vec::new();
+        for f in crate::user_fields::all(&mut *self.conn).await? {
+            out.push(crate::user_fields::serialize(&mut *self.conn, &f).await?);
         }
-        Ok(json!([]))
+        Ok(Value::Array(out))
     }
 
     /// `Discourse.enabled_auth_providers`: none unless a builtin provider is

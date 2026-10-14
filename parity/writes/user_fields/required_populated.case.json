@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Company', 'Where you work', 0, true, true, false, false, 1, 1, now(), now())",
+    "INSERT INTO user_required_fields_versions (id, created_at, updated_at) VALUES (1, now(), now()), (2, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'Acme', now(), now())"
+  ],
+  "keep_headers": ["Location"],
+  "requests": [
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html"}}
+  ],
+  "ignore": ["/responses/0/body"]
+}

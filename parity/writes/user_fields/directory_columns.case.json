@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, true, 2, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 2, 'rust', now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'red', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/directory-columns.json"},
+    {"method": "GET", "path": "/edit-directory-columns.json"},
+    {"method": "PUT", "path": "/edit-directory-columns.json", "params": {"directory_columns": {"0": {"id": "1", "enabled": "false", "position": "1"}, "1": {"id": "2", "enabled": "true", "position": "12"}, "2": {"id": "{{responses.1.body.directory_columns.9.id}}", "enabled": "true", "position": "2"}, "3": {"id": "3", "enabled": "true", "position": "3"}}}},
+    {"method": "GET", "path": "/directory-columns.json"},
+    {"method": "PUT", "path": "/edit-directory-columns.json", "params": {"directory_columns": {"0": {"id": "1", "enabled": "false", "position": "1"}}}},
+    {"method": "GET", "path": "/directory-columns"},
+    {"method": "GET", "path": "/edit-directory-columns.json"}
+  ]
+}

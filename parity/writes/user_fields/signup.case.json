@@ -1,0 +1,14 @@
+{
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, true, 1, 2, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, false, 2, 0, now(), now()), (3, 'Pet', 'Your pet', 2, true, false, false, false, 3, 0, now(), now()), (4, '', 'Accept', 1, true, false, false, false, 4, 0, now(), now())",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 2, 'rust', now(), now()), (2, 2, 'ruby', now(), now()), (3, 3, 'cat', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/session/hp.json"},
+    {"method": "POST", "path": "/u.json", "params": {"name": "No Color", "email": "no.color@example.com", "password": "a-long-enough-pass-phrase", "username": "nocolor", "password_confirmation": "{{responses.0.body.value}}", "challenge": "{{responses.0.body.challenge|reverse}}", "user_fields": {"2": ["rust"]}}},
+    {"method": "POST", "path": "/u.json", "params": {"name": "New Person", "email": "new.person@example.com", "password": "a-long-enough-pass-phrase", "username": "newperson", "password_confirmation": "{{responses.0.body.value}}", "challenge": "{{responses.0.body.challenge|reverse}}", "user_fields": {"1": "Bright red", "2": ["ruby", "go", "rust"], "3": "dog", "4": "false"}}}
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

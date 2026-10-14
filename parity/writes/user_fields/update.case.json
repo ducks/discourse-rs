@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day'), (2, 'Color', 'Your color', 0, true, false, true, 2, 0, now() - interval '1 day', now() - interval '1 day'), (3, 'Team', 'Your team', 0, true, true, true, 3, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 1, 'cat', now() - interval '1 day', now() - interval '1 day'), (2, 1, 'dog', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO directory_columns (id, name, enabled, position, type, user_field_id) VALUES (40, NULL, true, 10, 1, 1), (41, NULL, true, 11, 1, 2)"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/config/user_fields/1.json", "params": {"user_field": {"name": "Animal", "options": ["bird", "dog", "bird"], "show_on_profile": false}}},
+    {"method": "PUT", "path": "/admin/config/user_fields/2.json", "params": {"user_field": {"description": "Pick a <i>color</i>", "requirement": "for_all_users", "show_on_user_card": true}}},
+    {"method": "PUT", "path": "/admin/config/user_fields/3.json", "params": {"user_field": {"description": "", "options": ["a"]}}},
+    {"method": "PUT", "path": "/admin/config/user_fields/3.json", "params": {"user_field": {"position": 9}}},
+    {"method": "GET", "path": "/admin/config/user_fields.json"}
+  ]
+}

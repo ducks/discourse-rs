@@ -946,6 +946,7 @@ pub async fn create_user(
             locale: locale.as_deref(),
             timezone: timezone.as_deref(),
             ip: &ip,
+            user_fields: p.get("user_fields"),
         },
     )
     .await?;

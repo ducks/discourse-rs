@@ -676,13 +676,11 @@ pub async fn serialize(
                 .collect::<Vec<_>>()
         ),
     );
-    let latest_required: Option<i32> =
-        sqlx::query_scalar("SELECT MAX(id) FROM user_required_fields_versions")
-            .fetch_one(&mut *conn)
-            .await?;
+    // The id is a bigint.
+    let latest_required = crate::user_fields::current_required_version(&mut *conn).await?;
     out.insert(
         "needs_required_fields_check".into(),
-        json!(row.required_fields_version.unwrap_or(0) < latest_required.unwrap_or(0)),
+        json!(i64::from(row.required_fields_version.unwrap_or(0)) < latest_required),
     );
     let second_factor: bool = sqlx::query_scalar(
         "SELECT (NOT $2::bool AND $3::bool) AND (EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND method = 1 AND enabled) \

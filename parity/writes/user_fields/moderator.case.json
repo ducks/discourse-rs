@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 3",
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/config/user_fields.json"},
+    {"method": "GET", "path": "/admin/config/user-fields.json"},
+    {"method": "GET", "path": "/admin/config/user-fields/1.json"},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "X", "description": "Y", "field_type": "text"}}},
+    {"method": "PUT", "path": "/admin/config/user_fields/1.json", "params": {"user_field": {"name": "X"}}},
+    {"method": "DELETE", "path": "/admin/config/user_fields/1.json"}
+  ]
+}

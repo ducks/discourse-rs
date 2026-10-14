@@ -89,6 +89,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
             }
         }
         "process_email" => process_email(state, &job.args).await,
+        "index_user_fields_for_search" => index_user_fields_for_search(state, &job.args).await,
         "Jobs::DiscourseTopicVoting::BackfillBadges" => {
             topic_voting_backfill_badges(state, &job.args).await
         }
@@ -257,6 +258,17 @@ async fn update_group_mentions(state: &AppState, args: &Value) -> Result<(), App
 
 /// Jobs::BulkGrantTrustLevel: each user (by id) recalculated from their
 /// previous trust level, or granted the level (TrustLevelGranter).
+/// Jobs::IndexUserFieldsForSearch
+async fn index_user_fields_for_search(state: &AppState, args: &Value) -> Result<(), AppError> {
+    // `"user_field_#{nil}"` matches no row.
+    let Some(id) = int_arg(args, "user_field_id")? else {
+        return Ok(());
+    };
+    let mut conn = state.pool.acquire().await?;
+    crate::user_fields::index_for_search(&mut conn, id).await?;
+    Ok(())
+}
+
 async fn bulk_grant_trust_level(state: &AppState, args: &Value) -> Result<(), AppError> {
     let user_ids: Vec<i32> = args["user_ids"]
         .as_array()

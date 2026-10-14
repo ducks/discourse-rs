@@ -27,6 +27,20 @@ pub fn config() -> pg_bus::Config {
     }
 }
 
+/// `Discourse.request_refresh!` without user ids: every client reloads on
+/// its next navigation.
+pub async fn request_refresh(bus: &pg_bus::Bus, conn: &mut PgConnection) -> Result<(), AppError> {
+    bus.publish(conn, "/global/asset-version", &json!("clobber"), None)
+        .await?;
+    Ok(())
+}
+
+/// `Site.clear_anon_cache!` (AnonCacheInvalidator's callbacks).
+pub async fn clear_anon_cache(bus: &pg_bus::Bus, conn: &mut PgConnection) -> Result<(), AppError> {
+    bus.publish(conn, "/site_json", &json!(""), None).await?;
+    Ok(())
+}
+
 pub fn user_tag(user_id: i32) -> String {
     format!("user:{user_id}")
 }

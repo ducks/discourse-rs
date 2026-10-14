@@ -69,9 +69,6 @@ pub async fn index(
     let Ok(limit) = int_param(&p, "limit", PAGE_SIZE, PAGE_SIZE) else {
         return Ok(super::search::invalid_parameters(&state, "limit"));
     };
-    if p.contains_key("user_field_ids") {
-        return Err(crate::Unsupported("user fields in the user directory").into());
-    }
     let s = |k: &str| params::string(&p, k);
     let query = Query {
         period: period.clone(),
@@ -84,6 +81,12 @@ pub async fn index(
         username: s("username"),
         page,
         limit,
+        user_field_ids: match p.get("user_field_ids") {
+            None | Some(Value::Null) => None,
+            Some(v) => Some(params::scalar(v).ok_or(Unsupported(
+                "user_field_ids that isn't a string (NoMethodError)",
+            ))?),
+        },
     };
     let urls = Urls {
         config: &state.config,
@@ -184,18 +187,34 @@ pub async fn page(
         return Ok(axum::response::Redirect::to(&format!("{base_path}/")).into_response());
     }
     // /directory-columns.json: the enabled columns by position.
-    let rows: Vec<(String, i32, Option<String>)> = sqlx::query_as(
-        "SELECT name, type, icon FROM directory_columns WHERE enabled ORDER BY position",
+    // DirectoryColumnSerializer's name: the column's, else its user field's.
+    type ColumnRow = (Option<String>, i32, Option<String>, Option<i32>);
+    let rows: Vec<ColumnRow> = sqlx::query_as(
+        "SELECT COALESCE(dc.name, uf.name), dc.type, dc.icon, dc.user_field_id \
+         FROM directory_columns dc LEFT JOIN user_fields uf ON uf.id = dc.user_field_id \
+         WHERE dc.enabled ORDER BY dc.position",
     )
     .fetch_all(&mut *conn)
     .await?;
-    if rows.iter().any(|(_, kind, _)| *kind != 0) {
-        return Err(Unsupported("user field and plugin columns in the user directory").into());
+    if rows.iter().any(|(_, kind, _, _)| *kind == 2) {
+        return Err(Unsupported("plugin columns in the user directory").into());
     }
     let columns: Vec<crate::directory_view::Column> = rows
         .into_iter()
-        .map(|(name, _, icon)| crate::directory_view::Column { name, icon })
+        .map(
+            |(name, kind, icon, user_field_id)| crate::directory_view::Column {
+                name: name.unwrap_or_default(),
+                icon,
+                user_field_id: user_field_id.filter(|_| kind == 1),
+            },
+        )
         .collect();
+    // The controller's user_field_ids: the user field columns' ids.
+    let user_field_ids = columns
+        .iter()
+        .filter_map(|c| c.user_field_id.map(|id| id.to_string()))
+        .collect::<Vec<_>>()
+        .join("|");
     let groups = group_options(&mut conn, &guardian).await?;
     let s = |k: &str| params::string(&p, k).filter(|v| !v.is_empty());
     // The controller's defaults; the route's first column orders.
@@ -254,6 +273,7 @@ pub async fn page(
             username: None,
             page: 0,
             limit: PAGE_SIZE,
+            user_field_ids: Some(user_field_ids.clone()).filter(|ids| !ids.is_empty()),
         };
         crate::directory::index(&mut conn, &settings, &urls, &guardian, &query)
             .await?
@@ -270,6 +290,9 @@ pub async fn page(
         if let Some(v) = s(key) {
             more.push((key.into(), v));
         }
+    }
+    if !user_field_ids.is_empty() {
+        more.push(("user_field_ids".into(), user_field_ids.clone()));
     }
     let load_more = format!("{base_path}/directory_items.json?{}", to_query(&mut more));
     let last_updated_at = last_updated_at

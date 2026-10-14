@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "Favorite color", "description": "Your favorite color", "field_type": "text", "editable": true, "show_on_profile": true, "show_on_user_card": false, "show_on_signup": true, "searchable": true, "requirement": "optional", "position": 7}}},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "Pet", "description": "Your pet", "field_type": "dropdown", "editable": "true", "show_on_profile": "false", "show_on_user_card": "true", "requirement": "on_signup", "options": ["cat", "dog", "cat", "fish"]}}},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "", "description": "I accept the <a href=\"https://example.com/terms\" target=\"_blank\">terms</a> and <b>rules</b>", "field_type": "confirm", "requirement": "optional"}}},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "Langs", "description": "Languages", "field_type": "multiselect", "options": ["rust", "ruby"]}}},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "No description", "field_type": "text"}}},
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"field_type": "text", "description": ""}}},
+    {"method": "GET", "path": "/admin/config/user_fields.json"},
+    {"method": "GET", "path": "/admin/config/user-fields.json"},
+    {"method": "GET", "path": "/admin/config/user-fields/{{responses.1.body.user_field.id}}.json"},
+    {"method": "GET", "path": "/admin/config/user_fields/{{responses.0.body.user_field.id}}.json"},
+    {"method": "GET", "path": "/admin/config/user-fields/999.json"},
+    {"method": "GET", "path": "/admin/config/user-fields/{{responses.0.body.user_field.id}}/edit.json"},
+    {"method": "GET", "path": "/admin/config/user-fields/new.json"}
+  ]
+}

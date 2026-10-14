@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, true, 2, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'red', now(), now()), (4, 'user_field_1', 'blue', now(), now()), (5, 'user_field_1', 'green', now(), now()), (1, 'user_field_1', 'amber', now(), now()), (3, 'user_field_2', 'rust', now(), now()), (3, 'user_field_2', 'ruby', now(), now()), (4, 'user_field_2', 'go', now(), now()), (1, 'user_field_2', 'c', now(), now()), (2, 'user_field_2', 'zig', now(), now()), (5, 'user_field_2', 'lua', now(), now()), (4, 'user_field_3', 'hidden', now(), now()), (3, 'other_field', 'x', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "user_field_ids": "1|2|3|99"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "order": "Color", "user_field_ids": "1"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "order": "Color", "asc": "true"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "order": "Secret"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "order": "Langs", "asc": "true", "user_field_ids": "2"}}
+  ]
+}

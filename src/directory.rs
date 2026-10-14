@@ -313,6 +313,8 @@ pub struct Query {
     pub username: Option<String>,
     pub page: i64,
     pub limit: i64,
+    /// `params[:user_field_ids]`, `|`-separated.
+    pub user_field_ids: Option<String>,
 }
 
 /// Refusals the controller turns into errors.
@@ -434,13 +436,26 @@ pub async fn index(
         .bind(order)
         .fetch_optional(&mut *conn)
         .await?;
-        if field.is_some() {
-            return Err(Unsupported("ordering the user directory by a user field").into());
+        match field {
+            // order_by_user_field: a row per value (a multiselect's user
+            // comes once per value, and counts as many), users without one
+            // last. Rails orders no further (equal rows come as the plan
+            // reads them); di.id keeps them stable here.
+            Some(id) => (
+                format!(
+                    "LEFT OUTER JOIN user_custom_fields ON user_custom_fields.user_id = di.user_id \
+                     AND user_custom_fields.name = 'user_field_{id}'"
+                ),
+                format!(
+                    "user_custom_fields.name = 'user_field_{id}' ASC, \
+                     user_custom_fields.value {direction}, di.id ASC"
+                ),
+            ),
+            None => (
+                String::new(),
+                format!("di.{} {direction}, di.id ASC", AUTOMATIC_COLUMNS[0]),
+            ),
         }
-        (
-            String::new(),
-            format!("di.{} {direction}, di.id ASC", AUTOMATIC_COLUMNS[0]),
-        )
     };
     let filter = filters.join(" AND ");
     let total: i64 = sqlx::query_scalar(&format!(
@@ -477,9 +492,24 @@ pub async fn index(
             }
         }
     }
+    let field_map = match &q.user_field_ids {
+        Some(ids) => Some(user_field_map(conn, guardian, ids).await?),
+        None => None,
+    };
     let mut items = Vec::new();
     for (id, _) in &ids {
-        items.push(serialize(conn, settings, urls, &active, *id).await?);
+        items.push(
+            serialize(
+                conn,
+                settings,
+                urls,
+                guardian,
+                &active,
+                field_map.as_ref(),
+                *id,
+            )
+            .await?,
+        );
     }
     let last_updated_at = match crate::owned_schema::cached_get(conn, &format!("directory_{ptype}"))
         .await?
@@ -502,14 +532,79 @@ async fn active_column_names(conn: &mut PgConnection) -> Result<Vec<String>, App
     )
 }
 
+/// The controller's `user_custom_field_map` and `searchable_fields`.
+pub struct FieldMap {
+    /// `user_field_<id>` to the id, for the ids asked for that the viewer
+    /// may see.
+    by_name: HashMap<String, i32>,
+    searchable: Vec<i32>,
+}
+
+/// `params[:user_field_ids].split("|").map(&:to_i) & allowed_field_ids`
+async fn user_field_map(
+    conn: &mut PgConnection,
+    guardian: &Guardian,
+    ids: &str,
+) -> Result<FieldMap, AppError> {
+    let allowed: Vec<i32> = sqlx::query_scalar(if guardian.is_staff() {
+        "SELECT id FROM user_fields"
+    } else {
+        "SELECT id FROM user_fields WHERE show_on_profile OR show_on_user_card"
+    })
+    .fetch_all(&mut *conn)
+    .await?;
+    let by_name = ids
+        .split('|')
+        .map(|s| crate::ruby::to_i(s) as i32)
+        .filter(|id| allowed.contains(id))
+        .map(|id| (format!("user_field_{id}"), id))
+        .collect();
+    let searchable = sqlx::query_scalar("SELECT id FROM user_fields WHERE searchable")
+        .fetch_all(&mut *conn)
+        .await?;
+    Ok(FieldMap {
+        by_name,
+        searchable,
+    })
+}
+
+/// DirectoryItemSerializer::UserSerializer#user_fields: the user's
+/// custom fields in the map, folded by field into their values.
+async fn user_fields_json(
+    conn: &mut PgConnection,
+    map: &FieldMap,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    let rows: Vec<(String, Option<String>)> =
+        sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 ORDER BY id")
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?;
+    let mut out = Map::new();
+    for (name, value) in rows {
+        let Some(id) = map.by_name.get(&name) else {
+            continue;
+        };
+        let entry = out
+            .entry(id.to_string())
+            .or_insert_with(|| json!({ "value": [], "searchable": map.searchable.contains(id) }));
+        if let Some(values) = entry["value"].as_array_mut() {
+            values.push(json!(value));
+        }
+    }
+    Ok(Value::Object(out))
+}
+
 /// DirectoryItemSerializer: the user (UserNameSerializer with
-/// UserPrimaryGroupMixin), the id, the active columns, and time_read for
-/// the all-time period.
+/// UserPrimaryGroupMixin, and the user fields asked for), the id, the
+/// active columns, and time_read for the all-time period.
 async fn serialize(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     urls: &Urls<'_>,
+    guardian: &Guardian,
     active: &[String],
+    field_map: Option<&FieldMap>,
     item_id: i32,
 ) -> Result<Value, AppError> {
     if settings.get("enable_user_status")?.truthy() {
@@ -567,6 +662,19 @@ async fn serialize(
         u.insert("moderator".into(), json!(true));
     }
     u.insert("trust_level".into(), json!(trust_level));
+    // include_user_fields?: a map asked for, public_can_see_profiles? and
+    // not restrict_user_fields?(user).
+    if let Some(map) = field_map.filter(|m| !m.by_name.is_empty()) {
+        let target = crate::users::User::find_by_id(&mut *conn, user_id)
+            .await?
+            .ok_or(Unsupported("a directory item without its user"))?;
+        if !target.restrict_fields_for(settings, guardian)? {
+            u.insert(
+                "user_fields".into(),
+                user_fields_json(&mut *conn, map, user_id).await?,
+            );
+        }
+    }
     let mut out = Map::new();
     out.insert("id".into(), json!(user_id));
     for column in active {

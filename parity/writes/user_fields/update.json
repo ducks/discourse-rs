@@ -1,0 +1,450 @@
+{
+  "name": "update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/user_fields/1.json",
+      "params": {
+        "user_field": {
+          "name": "Animal",
+          "options": [
+            "bird",
+            "dog",
+            "bird"
+          ],
+          "show_on_profile": false
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/user_fields/2.json",
+      "params": {
+        "user_field": {
+          "description": "Pick a <i>color</i>",
+          "requirement": "for_all_users",
+          "show_on_user_card": true
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/user_fields/3.json",
+      "params": {
+        "user_field": {
+          "description": "",
+          "options": [
+            "a"
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/user_fields/3.json",
+      "params": {
+        "user_field": {
+          "position": 9
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/user_fields.json"
+    }
+  ],
+  "started_at": "2026-10-14T12:02:05.467343",
+  "transaction_started_at": "2026-10-14T12:02:02.905549",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "user_field": {
+          "id": 1,
+          "name": "Animal",
+          "description": "Your pet",
+          "field_type": "dropdown",
+          "editable": true,
+          "required": false,
+          "requirement": "optional",
+          "show_on_profile": false,
+          "show_on_user_card": false,
+          "show_on_signup": true,
+          "searchable": false,
+          "position": 1,
+          "options": [
+            "bird",
+            "dog"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "user_field": {
+          "id": 2,
+          "name": "Color",
+          "description": "Pick a <i>color</i>",
+          "field_type": "text",
+          "editable": true,
+          "required": true,
+          "requirement": "for_all_users",
+          "show_on_profile": false,
+          "show_on_user_card": true,
+          "show_on_signup": true,
+          "searchable": false,
+          "position": 2
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Description can't be blank"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "user_field": {
+          "id": 3,
+          "name": "Team",
+          "description": "Your team",
+          "field_type": "text",
+          "editable": true,
+          "required": false,
+          "requirement": "optional",
+          "show_on_profile": true,
+          "show_on_user_card": true,
+          "show_on_signup": true,
+          "searchable": false,
+          "position": 9
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "user_fields": [
+          {
+            "id": 1,
+            "name": "Animal",
+            "description": "Your pet",
+            "field_type": "dropdown",
+            "editable": true,
+            "required": false,
+            "requirement": "optional",
+            "show_on_profile": false,
+            "show_on_user_card": false,
+            "show_on_signup": true,
+            "searchable": false,
+            "position": 1,
+            "options": [
+              "bird",
+              "dog"
+            ]
+          },
+          {
+            "id": 2,
+            "name": "Color",
+            "description": "Pick a <i>color</i>",
+            "field_type": "text",
+            "editable": true,
+            "required": true,
+            "requirement": "for_all_users",
+            "show_on_profile": false,
+            "show_on_user_card": true,
+            "show_on_signup": true,
+            "searchable": false,
+            "position": 2
+          },
+          {
+            "id": 3,
+            "name": "Team",
+            "description": "Your team",
+            "field_type": "text",
+            "editable": true,
+            "required": false,
+            "requirement": "optional",
+            "show_on_profile": true,
+            "show_on_user_card": true,
+            "show_on_signup": true,
+            "searchable": false,
+            "position": 9
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "directory_columns": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 40,
+          "icon": null,
+          "name": null,
+          "type": 1,
+          "enabled": true,
+          "position": 10,
+          "created_at": "2026-10-14T12:02:02.905549",
+          "user_field_id": 1,
+          "automatic_position": null
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jhX3fa4FbTrdT2FuBinw8MpPjac=",
+            "created_at": "2026-10-14T12:02:04.185778",
+            "rotated_at": "2026-10-14T12:02:04.183755",
+            "updated_at": "2026-10-14T12:02:04.185778",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jhX3fa4FbTrdT2FuBinw8MpPjac=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T12:02:05.502641",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jhX3fa4FbTrdT2FuBinw8MpPjac=",
+            "created_at": "2026-10-14T12:02:04.185778",
+            "rotated_at": "2026-10-14T12:02:04.183755",
+            "updated_at": "2026-10-14T12:02:04.185778",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jhX3fa4FbTrdT2FuBinw8MpPjac=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_field_options": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "value": "cat",
+            "created_at": "2026-10-13T12:02:02.905549",
+            "updated_at": "2026-10-13T12:02:02.905549",
+            "user_field_id": 1
+          },
+          "after": {
+            "id": 1,
+            "value": "bird",
+            "created_at": "2026-10-14T12:02:05.534553",
+            "updated_at": "2026-10-14T12:02:05.534553",
+            "user_field_id": 1
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "value": "dog",
+            "created_at": "2026-10-13T12:02:02.905549",
+            "updated_at": "2026-10-13T12:02:02.905549",
+            "user_field_id": 1
+          },
+          "after": {
+            "id": 2,
+            "value": "dog",
+            "created_at": "2026-10-14T12:02:05.569805",
+            "updated_at": "2026-10-14T12:02:05.569805",
+            "user_field_id": 1
+          }
+        }
+      ]
+    },
+    "user_fields": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Pet",
+            "editable": true,
+            "position": 1,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-13T12:02:02.905549",
+            "description": "Your pet",
+            "requirement": 0,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 2,
+            "show_on_profile": true,
+            "show_on_user_card": false
+          },
+          "after": {
+            "id": 1,
+            "name": "Animal",
+            "editable": true,
+            "position": 1,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-14T12:02:05.531427",
+            "description": "Your pet",
+            "requirement": 0,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 2,
+            "show_on_profile": false,
+            "show_on_user_card": false
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "name": "Color",
+            "editable": true,
+            "position": 2,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-13T12:02:02.905549",
+            "description": "Your color",
+            "requirement": 0,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 0,
+            "show_on_profile": false,
+            "show_on_user_card": true
+          },
+          "after": {
+            "id": 2,
+            "name": "Color",
+            "editable": true,
+            "position": 2,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-14T12:02:05.687882",
+            "description": "Pick a <i>color</i>",
+            "requirement": 1,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 0,
+            "show_on_profile": false,
+            "show_on_user_card": true
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "name": "Team",
+            "editable": true,
+            "position": 3,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-13T12:02:02.905549",
+            "description": "Your team",
+            "requirement": 0,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 0,
+            "show_on_profile": true,
+            "show_on_user_card": true
+          },
+          "after": {
+            "id": 3,
+            "name": "Team",
+            "editable": true,
+            "position": 9,
+            "required": true,
+            "created_at": "2026-10-13T12:02:02.905549",
+            "field_type": null,
+            "searchable": false,
+            "updated_at": "2026-10-14T12:02:05.782696",
+            "description": "Your team",
+            "requirement": 0,
+            "external_name": null,
+            "external_type": null,
+            "show_on_signup": true,
+            "field_type_enum": 0,
+            "show_on_profile": true,
+            "show_on_user_card": true
+          }
+        }
+      ]
+    },
+    "user_required_fields_versions": {
+      "inserted": [
+        {
+          "id": 1,
+          "created_at": "2026-10-14T12:02:05.691663",
+          "updated_at": "2026-10-14T12:02:05.691663"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "index_user_fields_for_search",
+      {
+        "user_field_id": 1
+      }
+    ],
+    [
+      "index_user_fields_for_search",
+      {
+        "user_field_id": 2
+      }
+    ],
+    [
+      "index_user_fields_for_search",
+      {
+        "user_field_id": 3
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_required_fields_versions": 1
+  },
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day'), (2, 'Color', 'Your color', 0, true, false, true, 2, 0, now() - interval '1 day', now() - interval '1 day'), (3, 'Team', 'Your team', 0, true, true, true, 3, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 1, 'cat', now() - interval '1 day', now() - interval '1 day'), (2, 1, 'dog', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO directory_columns (id, name, enabled, position, type, user_field_id) VALUES (40, NULL, true, 10, 1, 1), (41, NULL, true, 11, 1, 2)"
+  ],
+  "recorded_from": {
+    "case": "cdbba73b50d57c00e2fcbb9acb5a6a2c2658cef76ea09f6e9a66fe199bae2fb7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

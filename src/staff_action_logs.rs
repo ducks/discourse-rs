@@ -47,6 +47,54 @@ pub fn action_id(name: &str) -> Option<i32> {
     ENUMS.actions.get(name).copied()
 }
 
+/// `UserHistory::MAX_CONTEXT_LENGTH`
+const MAX_CONTEXT_LENGTH: usize = 50_000;
+
+/// `StaffActionLogger#truncate`
+fn truncate(s: &str) -> String {
+    if s.chars().count() > MAX_CONTEXT_LENGTH {
+        // slice(..MAX): MAX + 1 characters.
+        format!(
+            "{}...",
+            s.chars().take(MAX_CONTEXT_LENGTH + 1).collect::<String>()
+        )
+    } else {
+        s.to_string()
+    }
+}
+
+/// `StaffActionLogger#log_custom(custom_type, details)`: the details as
+/// `key: value` lines (each value's `to_s`, truncated), previous_value and
+/// new_value (base attributes) as columns. custom_staff is admin only.
+pub async fn log_custom(
+    conn: &mut PgConnection,
+    acting_user_id: i32,
+    custom_type: &str,
+    details: &[(&str, String)],
+    previous_value: Option<&str>,
+    new_value: Option<&str>,
+) -> Result<(), sqlx::Error> {
+    let details = details
+        .iter()
+        .map(|(k, v)| format!("{k}: {}", truncate(v)))
+        .collect::<Vec<_>>()
+        .join("\n");
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, custom_type, details, previous_value, \
+                                     new_value, admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, TRUE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(action_id("custom_staff"))
+    .bind(acting_user_id)
+    .bind(custom_type)
+    .bind(details)
+    .bind(previous_value)
+    .bind(new_value)
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
 /// `UserHistory.staff_action_ids`: the actions `only_staff_actions` keeps.
 pub fn staff_action_ids() -> Vec<i32> {
     ENUMS

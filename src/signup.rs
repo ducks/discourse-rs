@@ -169,6 +169,8 @@ pub struct Signup<'a> {
     pub locale: Option<&'a str>,
     pub timezone: Option<&'a str>,
     pub ip: &'a str,
+    /// `params[:user_fields]`
+    pub user_fields: Option<&'a Value>,
 }
 
 fn fail_with(i18n: &I18n, key: &str) -> Created {
@@ -225,12 +227,18 @@ pub async fn create(
     {
         return Err(Unsupported("approval at signup").into());
     }
-    let user_fields: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_fields)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if user_fields {
-        return Err(Unsupported("user fields at signup").into());
-    }
+    // Handle custom fields: each field's cleaned value, a blank required
+    // one failing the signup.
+    let given = match s.user_fields {
+        None | Some(Value::Null) => None,
+        Some(Value::Object(m)) => Some(m),
+        Some(Value::String(v)) if v.is_empty() => None,
+        Some(_) => return Err(Unsupported("user_fields that isn't a hash (TypeError)").into()),
+    };
+    let custom_fields = match crate::user_fields::signup_values(&mut *conn, given).await? {
+        Ok(values) => values,
+        Err(()) => return Ok(fail_with(i18n, "login.missing_user_field")),
+    };
     if !settings.get("enable_local_logins")?.truthy() {
         return Err(Unsupported("signup with local logins off (403)").into());
     }
@@ -394,8 +402,12 @@ pub async fn create(
     ensure_in_trust_level_group(&mut *conn, user_id, trust_level).await?;
     default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
     default_sidebar_links(&mut *conn, settings, user_id).await?;
-    // after_save: refresh_avatar (the avatar row and its gravatar job),
-    // then the search index.
+    // after_save: save_custom_fields (HasCustomFields, included first),
+    // refresh_avatar (the avatar row and its gravatar job), then the
+    // search index.
+    for (key, value) in &custom_fields {
+        crate::user_fields::save_custom_field(&mut *conn, user_id, key, value).await?;
+    }
     let avatar_id: i32 = sqlx::query_scalar(
         "INSERT INTO user_avatars (user_id, created_at, updated_at) VALUES ($1, clock_timestamp(), clock_timestamp()) \
          RETURNING id",

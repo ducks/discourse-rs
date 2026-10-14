@@ -102,6 +102,8 @@ const AUTO_TRACK_CATEGORY: i32 = 8;
 
 /// `UserHistory.actions[:change_name]`
 const CHANGE_NAME: i32 = 48;
+/// `UserHistory.actions[:filled_in_required_fields]`
+const FILLED_IN_REQUIRED_FIELDS: i32 = 109;
 
 /// `UserUpdater::CATEGORY_IDS`
 const CATEGORY_IDS: [(&str, i32); 5] = [
@@ -211,7 +213,6 @@ const OPTION_ATTR: &[(&str, Kind)] = &[
 
 /// What the update refuses outright, by param.
 const REFUSED: &[(&str, &str)] = &[
-    ("user_fields", "updating user fields"),
     ("custom_fields", "updating custom fields"),
     ("external_ids", "updating external ids"),
     (
@@ -271,13 +272,16 @@ fn valid_url(website: &str) -> bool {
     http_host(website).is_some_and(|h| h.contains('.'))
 }
 
-/// `UserUpdater#update(attributes)`: whether it saved.
+/// `UserUpdater#update(attributes)`: whether it saved. `custom_fields`
+/// is `attributes[:custom_fields]` as the controller builds it from
+/// `user_fields` (None when that param wasn't given).
 pub async fn update(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     actor: &Guardian,
     user: &Target,
     attrs: &Map<String, Value>,
+    custom_fields: Option<&[(String, Value)]>,
 ) -> Result<bool, AppError> {
     let s = ctx.settings;
     for (key, what) in REFUSED {
@@ -407,6 +411,10 @@ pub async fn update(
         )
         .await?;
     }
+    // after_save :save_custom_fields
+    for (key, value) in custom_fields.into_iter().flatten() {
+        crate::user_fields::save_custom_field(&mut *conn, user.id, key, value).await?;
+    }
     user_after_save(&mut *conn, s, user, name.as_deref()).await?;
 
     let new_name = name.clone().unwrap_or_default();
@@ -437,6 +445,18 @@ pub async fn update(
         } else {
             crate::notification_schedule::destroy_scheduled_timings(&mut *conn, user.id).await?;
         }
+    }
+    if custom_fields.is_some_and(|c| !c.is_empty())
+        && crate::user_fields::needs_required_fields_check(&mut *conn, user.id).await?
+    {
+        sqlx::query(
+            "INSERT INTO user_histories (action, acting_user_id, admin_only, created_at, updated_at) \
+             VALUES ($1, $2, FALSE, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(FILLED_IN_REQUIRED_FIELDS)
+        .bind(user.id)
+        .execute(&mut *conn)
+        .await?;
     }
     Ok(true)
 }

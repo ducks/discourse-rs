@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'red', now(), now()), (4, 'user_field_3', 'hidden', now(), now()), (5, 'user_field_3', 'alpha', now(), now()), (1, 'user_field_3', 'zeta', now(), now()), (3, 'user_field_3', 'beta', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "user_field_ids": "1|3"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "order": "Secret", "asc": "1", "user_field_ids": "3"}}
+  ]
+}
