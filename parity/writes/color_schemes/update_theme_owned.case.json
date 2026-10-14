@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/color_schemes/3.json", "params": {"color_scheme": {"name": "Royal"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/3.json", "params": {"color_scheme": {"name": "Regal"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/3.json", "params": {"color_scheme": {"base_scheme_id": "-2"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/3.json", "params": {"color_scheme": {"colors": [{"name": "primary", "hex": "123456"}]}}},
+    {"method": "PUT", "path": "/admin/color_schemes/3.json", "params": {"color_scheme": {"colors": [{"name": "secondary", "hex": "fefefe"}]}}},
+    {"method": "GET", "path": "/admin/config/colors/3.json"},
+    {"method": "DELETE", "path": "/admin/color_schemes/3.json"}
+  ]
+}

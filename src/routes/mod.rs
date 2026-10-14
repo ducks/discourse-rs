@@ -60,6 +60,7 @@ pub(crate) use topics::not_found_response;
 mod category_notifications;
 mod chat;
 mod chat_pages;
+mod color_schemes;
 mod impersonate;
 mod onebox;
 mod polls;
@@ -1176,6 +1177,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
         )
+        .route(
+            "/admin/color_schemes",
+            get(color_schemes::index).post(color_schemes::create),
+        )
+        .route(
+            "/admin/color_schemes.json",
+            get(color_schemes::index).post(color_schemes::create),
+        )
+        .route(
+            "/admin/color_schemes/{id}",
+            put(color_schemes::update).delete(color_schemes::destroy),
+        )
+        .route("/admin/config/colors/{id}", get(color_schemes::show))
         .route("/admin/customize/site_texts", get(site_texts::index))
         .route("/admin/customize/site_texts.json", get(site_texts::index))
         .route(

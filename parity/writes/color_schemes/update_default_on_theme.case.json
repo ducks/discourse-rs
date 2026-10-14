@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/color_schemes/14.json", "params": {"color_scheme": {"default_light_on_theme": "true"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/13.json", "params": {"color_scheme": {"default_dark_on_theme": "false"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/16.json", "params": {"color_scheme": {"default_dark_on_theme": "true", "user_selectable": "true"}}},
+    {"method": "PUT", "path": "/admin/color_schemes/17.json", "params": {"color_scheme": {"user_selectable": "false"}}}
+  ]
+}

@@ -1,0 +1,720 @@
+{
+  "name": "update_theme_owned",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/color_schemes/3.json",
+      "params": {
+        "color_scheme": {
+          "name": "Royal"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/color_schemes/3.json",
+      "params": {
+        "color_scheme": {
+          "name": "Regal"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/color_schemes/3.json",
+      "params": {
+        "color_scheme": {
+          "base_scheme_id": "-2"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/color_schemes/3.json",
+      "params": {
+        "color_scheme": {
+          "colors": [
+            {
+              "name": "primary",
+              "hex": "123456"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/color_schemes/3.json",
+      "params": {
+        "color_scheme": {
+          "colors": [
+            {
+              "name": "secondary",
+              "hex": "fefefe"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/colors/3.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/color_schemes/3.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:10:09.766226",
+  "transaction_started_at": "2026-10-14T15:10:07.693763",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 3,
+        "name": "Royal",
+        "is_base": null,
+        "base_scheme_id": null,
+        "theme_id": -2,
+        "theme_name": "Horizon",
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": false,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "c7e3ff",
+            "default_hex": "c7e3ff",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "d6ebff",
+            "default_hex": "d6ebff",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "ffff4d",
+            "default_hex": "ffff4d",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "c80001",
+            "default_hex": "c80001",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "090",
+            "default_hex": "090",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary-med-or-tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 3,
+        "name": "Royal",
+        "is_base": null,
+        "base_scheme_id": 19,
+        "theme_id": -2,
+        "theme_name": "Horizon",
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": false,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "123456",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "c7e3ff",
+            "default_hex": "c7e3ff",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "d6ebff",
+            "default_hex": "d6ebff",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "ffff4d",
+            "default_hex": "ffff4d",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "c80001",
+            "default_hex": "c80001",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "090",
+            "default_hex": "090",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary-med-or-tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 3,
+        "name": "Royal",
+        "is_base": null,
+        "base_scheme_id": 19,
+        "theme_id": -2,
+        "theme_name": "Horizon",
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": false,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "123456",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "fefefe",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "c7e3ff",
+            "default_hex": "c7e3ff",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "d6ebff",
+            "default_hex": "d6ebff",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "ffff4d",
+            "default_hex": "ffff4d",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "c80001",
+            "default_hex": "c80001",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "090",
+            "default_hex": "090",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary-med-or-tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 3,
+        "name": "Royal",
+        "is_base": null,
+        "base_scheme_id": 19,
+        "theme_id": -2,
+        "theme_name": "Horizon",
+        "user_selectable": false,
+        "is_builtin_default": null,
+        "is_dark": false,
+        "colors": [
+          {
+            "name": "primary",
+            "hex": "123456",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "secondary",
+            "hex": "fefefe",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": false
+          },
+          {
+            "name": "quaternary",
+            "hex": "e45735",
+            "default_hex": "e45735",
+            "is_advanced": false
+          },
+          {
+            "name": "header_background",
+            "hex": "ffffff",
+            "default_hex": "ffffff",
+            "is_advanced": false
+          },
+          {
+            "name": "header_primary",
+            "hex": "1a1a1a",
+            "default_hex": "1a1a1a",
+            "is_advanced": false
+          },
+          {
+            "name": "selected",
+            "hex": "c7e3ff",
+            "default_hex": "c7e3ff",
+            "is_advanced": false
+          },
+          {
+            "name": "hover",
+            "hex": "d6ebff",
+            "default_hex": "d6ebff",
+            "is_advanced": false
+          },
+          {
+            "name": "highlight",
+            "hex": "ffff4d",
+            "default_hex": "ffff4d",
+            "is_advanced": false
+          },
+          {
+            "name": "danger",
+            "hex": "c80001",
+            "default_hex": "c80001",
+            "is_advanced": false
+          },
+          {
+            "name": "success",
+            "hex": "090",
+            "default_hex": "090",
+            "is_advanced": false
+          },
+          {
+            "name": "love",
+            "hex": "fa6c8d",
+            "default_hex": "fa6c8d",
+            "is_advanced": false
+          },
+          {
+            "name": "tertiary-med-or-tertiary",
+            "hex": "1f7bc1",
+            "default_hex": "1f7bc1",
+            "is_advanced": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "color_scheme_colors": {
+      "inserted": [
+        {
+          "id": 325,
+          "hex": "1a1a1a",
+          "name": "primary",
+          "created_at": "2026-10-14T15:10:10.097773",
+          "updated_at": "2026-10-14T15:10:10.097773",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 326,
+          "hex": "ffffff",
+          "name": "secondary",
+          "created_at": "2026-10-14T15:10:10.100616",
+          "updated_at": "2026-10-14T15:10:10.100616",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 327,
+          "hex": "1f7bc1",
+          "name": "tertiary",
+          "created_at": "2026-10-14T15:10:10.105172",
+          "updated_at": "2026-10-14T15:10:10.105172",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 328,
+          "hex": "e45735",
+          "name": "quaternary",
+          "created_at": "2026-10-14T15:10:10.108413",
+          "updated_at": "2026-10-14T15:10:10.108413",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 329,
+          "hex": "ffffff",
+          "name": "header_background",
+          "created_at": "2026-10-14T15:10:10.112076",
+          "updated_at": "2026-10-14T15:10:10.112076",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 330,
+          "hex": "1a1a1a",
+          "name": "header_primary",
+          "created_at": "2026-10-14T15:10:10.115688",
+          "updated_at": "2026-10-14T15:10:10.115688",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 331,
+          "hex": "ffff4d",
+          "name": "highlight",
+          "created_at": "2026-10-14T15:10:10.119065",
+          "updated_at": "2026-10-14T15:10:10.119065",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 332,
+          "hex": "c7e3ff",
+          "name": "selected",
+          "created_at": "2026-10-14T15:10:10.122077",
+          "updated_at": "2026-10-14T15:10:10.122077",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 333,
+          "hex": "d6ebff",
+          "name": "hover",
+          "created_at": "2026-10-14T15:10:10.124624",
+          "updated_at": "2026-10-14T15:10:10.124624",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 334,
+          "hex": "c80001",
+          "name": "danger",
+          "created_at": "2026-10-14T15:10:10.127985",
+          "updated_at": "2026-10-14T15:10:10.127985",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 335,
+          "hex": "090",
+          "name": "success",
+          "created_at": "2026-10-14T15:10:10.133051",
+          "updated_at": "2026-10-14T15:10:10.133051",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 336,
+          "hex": "fa6c8d",
+          "name": "love",
+          "created_at": "2026-10-14T15:10:10.139116",
+          "updated_at": "2026-10-14T15:10:10.139116",
+          "color_scheme_id": 19
+        },
+        {
+          "id": 337,
+          "hex": "1f7bc1",
+          "name": "tertiary-med-or-tertiary",
+          "created_at": "2026-10-14T15:10:10.143088",
+          "updated_at": "2026-10-14T15:10:10.143088",
+          "color_scheme_id": 19
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 27,
+            "hex": "1a1a1a",
+            "name": "primary",
+            "created_at": "2026-07-25T05:58:18.097623",
+            "updated_at": "2026-07-25T05:58:18.097623",
+            "color_scheme_id": 3
+          },
+          "after": {
+            "id": 27,
+            "hex": "123456",
+            "name": "primary",
+            "created_at": "2026-07-25T05:58:18.097623",
+            "updated_at": "2026-10-14T15:10:10.159373",
+            "color_scheme_id": 3
+          }
+        },
+        {
+          "before": {
+            "id": 28,
+            "hex": "ffffff",
+            "name": "secondary",
+            "created_at": "2026-07-25T05:58:18.098641",
+            "updated_at": "2026-07-25T05:58:18.098641",
+            "color_scheme_id": 3
+          },
+          "after": {
+            "id": 28,
+            "hex": "fefefe",
+            "name": "secondary",
+            "created_at": "2026-07-25T05:58:18.098641",
+            "updated_at": "2026-10-14T15:10:10.531411",
+            "color_scheme_id": 3
+          }
+        }
+      ]
+    },
+    "color_schemes": {
+      "inserted": [
+        {
+          "id": 19,
+          "name": "Royal",
+          "version": 1,
+          "theme_id": -2,
+          "created_at": "2026-10-14T15:10:10.094605",
+          "updated_at": "2026-10-14T15:10:10.094605",
+          "via_wizard": false,
+          "remote_copy": true,
+          "base_scheme_id": null,
+          "user_selectable": false
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "Royal",
+            "version": 1,
+            "theme_id": -2,
+            "created_at": "2026-07-25T05:58:18.096407",
+            "updated_at": "2026-07-25T05:58:18.096407",
+            "via_wizard": false,
+            "remote_copy": false,
+            "base_scheme_id": null,
+            "user_selectable": false
+          },
+          "after": {
+            "id": 3,
+            "name": "Royal",
+            "version": 4,
+            "theme_id": -2,
+            "created_at": "2026-07-25T05:58:18.096407",
+            "updated_at": "2026-10-14T15:10:10.53527",
+            "via_wizard": false,
+            "remote_copy": false,
+            "base_scheme_id": 19,
+            "user_selectable": false
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "created_at": "2026-10-14T15:10:08.898874",
+            "rotated_at": "2026-10-14T15:10:08.897556",
+            "updated_at": "2026-10-14T15:10:08.898874",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T15:10:09.773115",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "created_at": "2026-10-14T15:10:08.898874",
+            "rotated_at": "2026-10-14T15:10:08.897556",
+            "updated_at": "2026-10-14T15:10:08.898874",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "color_scheme_colors": 325,
+    "color_schemes": 19
+  },
+  "recorded_from": {
+    "case": "81e79a2109cbb4984038b7fd6d275889df1c51f403cc21ae5faa4492fba2c6f2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

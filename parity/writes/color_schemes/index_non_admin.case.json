@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/admin/color_schemes.json"},
+    {"method": "POST", "path": "/admin/color_schemes.json", "params": {"color_scheme": {"name": "Mine"}}},
+    {"method": "GET", "path": "/admin/config/colors/13.json"}
+  ]
+}

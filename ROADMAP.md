@@ -486,7 +486,14 @@ then by what running a forum needs (milestone 6). Briefs:
     bodies cooked without the notification view), digests and
     unsubscribe pages no longer refused. Refused: other locales,
     MessageFormat (`_MF`) keys, POST reseed, the Ember admin page),
-    90b. `feat/color-schemes` M, 90c. `feat/sidebar-defaults` M, 90d.
+    90b. ~~`feat/color-schemes`~~ (done) M (Admin::ColorSchemesController's
+    index with the base palettes, create, update through
+    ColorSchemeRevisor with diverge_from_remote for theme-owned schemes,
+    the default theme's light and dark scheme, destroy; ActiveRecord's
+    "colors is invalid" counts; /admin/config/colors/:id; schemes based
+    on a DB scheme (remote copies) resolved; site.json's
+    user_color_schemes. Left for 90d: /admin/config/colors, whose extras
+    carry ThemeSerializer), 90c. `feat/sidebar-defaults` M, 90d.
     `feat/themes` L,
     91. `feat/backups` L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:

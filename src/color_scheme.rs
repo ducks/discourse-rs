@@ -523,9 +523,101 @@ pub struct ColorScheme {
     pub user_selectable: bool,
     /// `color_scheme_colors` ordered by id.
     pub colors: Vec<(String, String)>,
+    /// The colors of the DB scheme base_scheme_id names (a remote copy
+    /// too), when it is positive and exists.
+    pub base_scheme_colors: Option<Vec<(String, String)>>,
+    /// One of `ColorScheme.base_color_schemes`: unsaved, its colors
+    /// without a scheme to read defaults from.
+    pub is_base: bool,
+    pub is_builtin_default: Option<bool>,
 }
 
 impl ColorScheme {
+    /// `ColorScheme.base_color_schemes`: Light (the scss colors) and the
+    /// built-in palettes, named from the locale.
+    pub fn base_color_schemes(i18n: &crate::i18n::I18n) -> Vec<ColorScheme> {
+        let light = NAMES_TO_ID_MAP
+            .iter()
+            .find(|(n, _)| *n == LIGHT_PALETTE_NAME)
+            .map_or(-1, |(_, id)| *id);
+        let mut list = vec![(LIGHT_PALETTE_NAME, light, BASE_COLORS_ORDERED.clone())];
+        for (name, colors) in BUILT_IN_SCHEMES {
+            let id = NAMES_TO_ID_MAP
+                .iter()
+                .find(|(n, _)| n == name)
+                .map_or(0, |(_, id)| *id);
+            list.push((
+                name,
+                id,
+                colors
+                    .iter()
+                    .map(|(n, h)| (n.to_string(), h.to_string()))
+                    .collect(),
+            ));
+        }
+        list.into_iter()
+            .map(|(name, id, colors)| {
+                let key = format!("color_schemes.{}", name.to_lowercase().replace(' ', "_"));
+                ColorScheme {
+                    id,
+                    name: i18n.t(&key).unwrap_or(name).to_string(),
+                    base_scheme_id: Some(id),
+                    theme_id: None,
+                    theme_name: None,
+                    user_selectable: false,
+                    colors,
+                    base_scheme_colors: None,
+                    is_base: true,
+                    is_builtin_default: Some(id == light),
+                }
+            })
+            .collect()
+    }
+
+    /// Every scheme but remote copies, by id (`ColorScheme.order(:id)`).
+    pub async fn all(conn: &mut PgConnection) -> Result<Vec<ColorScheme>, sqlx::Error> {
+        let ids: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM color_schemes WHERE NOT remote_copy ORDER BY id")
+                .fetch_all(&mut *conn)
+                .await?;
+        let mut out = Vec::with_capacity(ids.len());
+        for id in ids {
+            if let Some(scheme) = Self::find(conn, id).await? {
+                out.push(scheme);
+            }
+        }
+        Ok(out)
+    }
+
+    /// ColorSchemeSelectableSerializer: the scheme's own colors (by id),
+    /// not the resolved ones.
+    pub fn serialize_selectable(&self) -> Result<serde_json::Value, crate::Unsupported> {
+        let base = self.base_colors()?;
+        let colors: Vec<serde_json::Value> = self
+            .colors
+            .iter()
+            .map(|(name, hex)| {
+                let default_hex = match self.base_scheme_id {
+                    None => Some(hex.clone()),
+                    Some(_) => base.iter().find(|(n, _)| n == name).map(|(_, h)| h.clone()),
+                };
+                serde_json::json!({
+                    "name": name,
+                    "hex": hex,
+                    "default_hex": default_hex,
+                    "is_advanced": !BASE_COLORS.contains_key(name),
+                })
+            })
+            .collect();
+        Ok(serde_json::json!({
+            "id": self.id,
+            "name": self.name,
+            "is_dark": self.is_dark()?,
+            "theme_id": self.theme_id,
+            "colors": colors,
+        }))
+    }
+
     /// `ColorScheme.find_by_id` (ignoring remote copies) with its colors.
     pub async fn find(
         conn: &mut PgConnection,
@@ -563,8 +655,32 @@ impl ColorScheme {
             "SELECT name, hex FROM color_scheme_colors WHERE color_scheme_id = $1 ORDER BY id",
         )
         .bind(id)
-        .fetch_all(conn)
+        .fetch_all(&mut *conn)
         .await?;
+        // belongs_to :base_scheme, unscoped: remote copies included.
+        let base_scheme_colors = match base_scheme_id {
+            Some(base) if base > 0 => {
+                let exists: bool =
+                    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM color_schemes WHERE id = $1)")
+                        .bind(base)
+                        .fetch_one(&mut *conn)
+                        .await?;
+                if exists {
+                    Some(
+                        sqlx::query_as(
+                            "SELECT name, hex FROM color_scheme_colors WHERE color_scheme_id = $1 \
+                             ORDER BY id",
+                        )
+                        .bind(base)
+                        .fetch_all(&mut *conn)
+                        .await?,
+                    )
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        };
         Ok(Some(ColorScheme {
             id,
             name,
@@ -573,6 +689,9 @@ impl ColorScheme {
             theme_name,
             user_selectable,
             colors,
+            base_scheme_colors,
+            is_base: false,
+            is_builtin_default: None,
         }))
     }
 
@@ -599,13 +718,16 @@ impl ColorScheme {
                     .collect());
             }
         }
-        if base_id > 0 {
-            return Err(crate::Unsupported(
-                "color schemes based on another DB scheme",
-            ));
+        // The DB scheme's colors (a later name wins, as reduce leaves it);
+        // nothing for the Light palette, an unknown id or a missing scheme.
+        let mut colors: Vec<(String, String)> = Vec::new();
+        for (name, hex) in self.base_scheme_colors.iter().flatten() {
+            match colors.iter_mut().find(|(n, _)| n == name) {
+                Some(entry) => entry.1 = hex.clone(),
+                None => colors.push((name.clone(), hex.clone())),
+            }
         }
-        // The Light palette, or an unknown negative id: base_scheme is nil.
-        Ok(Vec::new())
+        Ok(colors)
     }
 
     /// `ColorScheme#resolved_colors`: scss base, then the base palette
@@ -684,17 +806,21 @@ impl ColorScheme {
         let colors: Vec<serde_json::Value> = ordered
             .into_iter()
             .map(|(name, default)| {
-                let hex = self
+                let own = self
                     .colors
                     .iter()
                     .find(|(n, _)| n == name)
-                    .map(|(_, h)| h.clone())
-                    .unwrap_or_else(|| default.clone());
-                let default_hex = if self.base_scheme_id.is_none() {
-                    Some(hex.clone())
-                } else {
-                    base_hex(name)
+                    .map(|(_, h)| h.clone());
+                // A base scheme's own colors belong to no saved scheme:
+                // their default is their hex.
+                let default_hex = match &own {
+                    Some(h) if self.is_base => Some(h.clone()),
+                    _ if self.base_scheme_id.is_none() => {
+                        Some(own.clone().unwrap_or_else(|| default.clone()))
+                    }
+                    _ => base_hex(name),
                 };
+                let hex = own.unwrap_or_else(|| default.clone());
                 serde_json::json!({
                     "name": name,
                     "hex": hex,
@@ -707,12 +833,12 @@ impl ColorScheme {
         Ok(serde_json::json!({
             "id": self.id,
             "name": self.name,
-            "is_base": null,
+            "is_base": self.is_base.then_some(true),
             "base_scheme_id": self.base_scheme_id,
             "theme_id": self.theme_id,
             "theme_name": self.theme_name,
             "user_selectable": self.user_selectable,
-            "is_builtin_default": null,
+            "is_builtin_default": self.is_builtin_default,
             "is_dark": self.is_dark()?,
             "colors": colors,
         }))
