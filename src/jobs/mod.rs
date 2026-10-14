@@ -9,6 +9,7 @@
 //! ported fails at once with the reason kept on the row.
 
 pub mod accounts;
+pub mod badges;
 pub mod bookmark_reminders;
 pub mod cleanup;
 pub mod consistency;
@@ -203,6 +204,19 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::badge_granter::PROCESS_BADGE_BACKLOG,
         Duration::from_secs(60),
     ),
+    (badges::BADGE_GRANT, Duration::from_secs(24 * 3600)),
+    (
+        badges::ENSURE_BADGES_CONSISTENCY,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        badges::GRANT_ANNIVERSARY_BADGES,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        badges::GRANT_NEW_USER_OF_THE_MONTH_BADGES,
+        Duration::from_secs(24 * 3600),
+    ),
     (bookmark_reminders::JOB, Duration::from_secs(300)),
     (housekeeping::UNSILENCE_USERS, Duration::from_secs(15 * 60)),
     (
@@ -383,6 +397,12 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         topic_timers::ENQUEUER => topic_timers::enqueue_pending(state).await,
         crate::badge_granter::PROCESS_BADGE_BACKLOG => {
             crate::badge_granter::process_badge_backlog(state).await
+        }
+        badges::BADGE_GRANT => badges::badge_grant(state).await,
+        badges::ENSURE_BADGES_CONSISTENCY => badges::ensure_badges_consistency(state).await,
+        badges::GRANT_ANNIVERSARY_BADGES => badges::grant_anniversary_badges(state).await,
+        badges::GRANT_NEW_USER_OF_THE_MONTH_BADGES => {
+            badges::grant_new_user_of_the_month_badges(state).await
         }
         housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
         housekeeping::PURGE_EXPIRED_IGNORED_USERS => {

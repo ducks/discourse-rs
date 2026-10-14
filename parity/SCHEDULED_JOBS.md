@@ -57,6 +57,7 @@ Classes:
 | create_recent_post_search_indexes | 1d (CREATE INDEX CONCURRENTLY can't be recorded in a transaction) | search/recent_index_small_site, tests/jobs.rs |
 | topic_timer_enqueuer (and close_topic, open_topic, bump_topic, delete_topic, delete_replies, clear_slow_mode) | 1m (publish_topic_to_category refused: TopicPublisher) | topic_timers/job_* |
 | process_badge_backlog | 1m (a producer the port misses is invisible until a backlog case covers it) | badges/backlog_* |
+| badge_grant (each badge a backfill_badge job), ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | 1d (the scheduler never passes the anniversary job a start_date) | badges/job_* |
 
 ## Ready, in porting order
 
@@ -67,7 +68,6 @@ the features below (ROADMAP.md's queue has them).
 
 | Jobs | Needs |
 |---|---|
-| badge_grant, ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | badges |
 | ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
 | enqueue_digest_emails | digest emails |

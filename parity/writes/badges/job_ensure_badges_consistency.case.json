@@ -1,0 +1,23 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE user_badges SET featured_rank = NULL WHERE id IN (17, 18)",
+    "UPDATE user_stats SET distinct_badge_count = 9 WHERE user_id = 4",
+    "UPDATE users SET title = 'Regular' WHERE id = 4",
+    "UPDATE user_profiles SET granted_title_badge_id = 3 WHERE user_id = 4"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_badges_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_badges_consistency"
+  ]
+}

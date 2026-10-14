@@ -1,7 +1,10 @@
-//! `BadgeGranter.backfill(badge, post_ids:/user_ids:)`: a SQL badge's
-//! query run for some posts or users (or all of them), granting what it
-//! returns that isn't granted yet, with a granted_badge notification each
-//! and the badge's grant count reset.
+//! BadgeGranter: `grant` and `revoke` of one badge for one user;
+//! `backfill(badge, post_ids:/user_ids:)`, a SQL badge's query run for
+//! some posts or users (or all of them, revoking what it no longer
+//! returns when the badge auto revokes), granting what it returns that
+//! isn't granted yet, with a granted_badge notification each and the
+//! badge's grant count reset; the badge queue the triggers fill and the
+//! backlog job drains; and the scheduled badge jobs.
 //!
 //! Badge queries take mini_sql's named parameters (`:backfill`,
 //! `:post_ids`, `:user_ids`, `:id`, `:multiple_grant`), which are bound
@@ -97,15 +100,6 @@ impl Badge {
         .await
     }
 
-    /// Every enabled badge, by id.
-    pub async fn all_enabled(conn: &mut PgConnection) -> Result<Vec<Badge>, sqlx::Error> {
-        sqlx::query_as(&format!(
-            "SELECT {BADGE_COLUMNS} FROM badges WHERE enabled ORDER BY id"
-        ))
-        .fetch_all(conn)
-        .await
-    }
-
     /// `Badge.i18n_key(name)`: `badges.<name downcased, spaces to _>.name`.
     pub fn translation_key(&self) -> String {
         format!("badges.{}.name", self.name.to_lowercase().replace(' ', "_"))
@@ -128,6 +122,51 @@ impl Badge {
         self.id == WELCOME
             || (self.badge_grouping_id == GETTING_STARTED && self.id != NEW_USER_OF_THE_MONTH)
     }
+}
+
+/// What a backfill did: the users whose grants it revoked (the
+/// `revoked_callback`) and those it granted (the `granted_callback`).
+#[derive(Default)]
+pub struct Backfilled {
+    pub revoked: Vec<i32>,
+    pub granted: Vec<i32>,
+}
+
+/// `BadgeGranter.revoke_ungranted_titles!(user_ids)`, everyone's for
+/// None: an empty title (no updated_at) for users whose title came from a
+/// badge they no longer hold, then no granted title badge for users
+/// without a title.
+pub async fn revoke_ungranted_titles(
+    conn: &mut PgConnection,
+    user_ids: Option<&[i32]>,
+) -> Result<(), sqlx::Error> {
+    let (users, profiles) = match user_ids {
+        Some(_) => ("AND u.id = ANY($1)", "AND up.user_id = ANY($1)"),
+        None => ("AND $1::int[] IS NULL", "AND $1::int[] IS NULL"),
+    };
+    sqlx::query(&format!(
+        "UPDATE users u SET title = '' \
+         FROM user_profiles up \
+         WHERE u.title IS NOT NULL AND u.title <> '' AND up.user_id = u.id \
+           AND up.granted_title_badge_id IS NOT NULL \
+           AND NOT EXISTS (SELECT 1 FROM badges b \
+                           JOIN user_badges ub ON ub.user_id = u.id AND ub.badge_id = b.id \
+                           WHERE b.id = up.granted_title_badge_id AND b.allow_title AND b.enabled) \
+           {users}"
+    ))
+    .bind(user_ids)
+    .execute(&mut *conn)
+    .await?;
+    sqlx::query(&format!(
+        "UPDATE user_profiles up SET granted_title_badge_id = NULL \
+         FROM users u \
+         WHERE up.user_id = u.id AND (u.title IS NULL OR u.title = '') \
+           AND up.granted_title_badge_id IS NOT NULL {profiles}"
+    ))
+    .bind(user_ids)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
 }
 
 /// Which rows a backfill covers.
@@ -203,12 +242,12 @@ pub async fn backfill(
     i18n: &crate::i18n::I18n,
     badge: &Badge,
     scope: Option<Scope<'_>>,
-) -> Result<(), AppError> {
+) -> Result<Backfilled, AppError> {
     if !settings.get("enable_badges")?.truthy() || !badge.enabled {
-        return Ok(());
+        return Ok(Backfilled::default());
     }
     let Some(query) = badge.query.as_deref().filter(|q| !q.trim().is_empty()) else {
-        return Ok(());
+        return Ok(Backfilled::default());
     };
     let (mut post_ids, mut user_ids) = match scope {
         Some(Scope::Posts(ids)) => (Some(ids), None),
@@ -233,18 +272,39 @@ pub async fn backfill(
     };
     let post_id_field = if target_posts { "q.post_id" } else { "NULL" };
 
+    let mut out = Backfilled::default();
     if badge.auto_revoke && full_backfill {
-        return Err(Unsupported("full badge backfills with auto revoke").into());
+        // The system's grants the query no longer returns, deleted raw (no
+        // after_destroy: the notifications stay, the count waits for the
+        // reset below). multiple_grant is a cheat: only deleting here.
+        let sql = format!(
+            "DELETE FROM user_badges WHERE id IN ( \
+               SELECT ub.id FROM user_badges ub \
+               LEFT JOIN ({query}) q ON q.user_id = ub.user_id {post_clause} \
+               WHERE ub.badge_id = :id AND q.user_id IS NULL AND ub.granted_by_id = {SYSTEM_USER_ID}) \
+             RETURNING user_badges.user_id"
+        );
+        let sql = bind(
+            &sql,
+            &[
+                ("id", Param::Int(badge.id)),
+                ("post_ids", Param::Ints(&[-1])),
+                ("user_ids", Param::Ints(&[-2])),
+                ("backfill", Param::Bool(true)),
+                ("multiple_grant", Param::Bool(true)),
+            ],
+        );
+        out.revoked = sqlx::query_scalar(&sql).fetch_all(&mut *conn).await?;
     }
     // A delta needs the query to take it, else Rails logs and skips.
     if !full_backfill && !query.contains(":backfill") {
-        return Ok(());
+        return Ok(out);
     }
     if post_ids.is_some() && !query.contains(":post_ids") {
-        return Ok(());
+        return Ok(out);
     }
     if user_ids.is_some() && !query.contains(":user_ids") {
-        return Ok(());
+        return Ok(out);
     }
 
     let sql = format!(
@@ -324,7 +384,8 @@ pub async fn backfill(
     .bind(badge.id)
     .execute(&mut *conn)
     .await?;
-    Ok(())
+    out.granted = rows.iter().map(|r| r.user_id).collect();
+    Ok(out)
 }
 
 /// `BadgeGranter.send_notification`: the granted_badge notification in
@@ -787,7 +848,7 @@ pub async fn update_distinct_badge_count(
     let filter = if user_ids.is_some() {
         "AND user_stats.user_id = ANY($1)"
     } else {
-        ""
+        "AND $1::int[] IS NULL"
     };
     sqlx::query(&format!(
         "UPDATE user_stats SET distinct_badge_count = x.distinct_badge_count \
@@ -798,7 +859,7 @@ pub async fn update_distinct_badge_count(
          WHERE user_stats.user_id = x.user_id AND user_stats.distinct_badge_count <> x.distinct_badge_count \
            {filter}"
     ))
-    .bind(user_ids.unwrap_or(&[]))
+    .bind(user_ids)
     .execute(conn)
     .await?;
     Ok(())
@@ -815,7 +876,7 @@ pub async fn update_featured_ranks(
             "WHERE user_badges.user_id = ANY($1)",
         )
     } else {
-        ("", "")
+        ("AND $1::int[] IS NULL", "WHERE $1::int[] IS NULL")
     };
     sqlx::query(&format!(
         "WITH featured_tl_badge AS ( \
@@ -844,7 +905,7 @@ pub async fn update_featured_ranks(
          WHERE ranks.badge_id = user_badges.badge_id AND ranks.user_id = user_badges.user_id \
            AND featured_rank IS DISTINCT FROM rank_number"
     ))
-    .bind(user_ids.unwrap_or(&[]))
+    .bind(user_ids)
     .execute(conn)
     .await?;
     Ok(())
@@ -1006,7 +1067,7 @@ pub async fn process_queue(
         for badge in Badge::with_trigger(&mut tx, trigger.id()).await? {
             let mut savepoint = tx.begin().await?;
             match backfill(&mut savepoint, bus, settings, i18n, &badge, Some(scope)).await {
-                Ok(()) => savepoint.commit().await?,
+                Ok(_) => savepoint.commit().await?,
                 Err(e) if e.is_unsupported() => return Err(e),
                 Err(e) => {
                     savepoint.rollback().await?;

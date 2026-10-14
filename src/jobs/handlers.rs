@@ -21,6 +21,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
+        super::badges::BACKFILL_BADGE => super::badges::backfill_badge(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
         "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
         "group_pm_alert" => group_pm_alert(state, &job.args).await,
