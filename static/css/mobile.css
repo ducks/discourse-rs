@@ -3171,12 +3171,9 @@
   }
 }
 
-/* new-user.scss:233 */
-@media (width < 40rem) {
-  .user-content {
-    margin-top: 1em;
-  }
-}
+/* new-user.scss:233's `.user-content { margin-top: 1em }` is left out:
+   user.scss's `.user-content { margin-top: 2em }` follows it in
+   common.css and wins at every width. */
 
 /* new-user.scss:240 */
 @media (width < 40rem) {

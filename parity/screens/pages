@@ -86,3 +86,9 @@
 /groups as=user1
 /groups as=admin
 /g/trust_level_1 as=admin mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+
+# The badges pages (more in parity/screens/badges-pages). Grant dates are
+# drawn in the browser's zone there.
+/badges
+/badges/5/welcome mask=.granted-on
+/u/user1/badges

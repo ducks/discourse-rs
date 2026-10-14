@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE users SET name = 'Fixture <b>&amp; ''quote''' WHERE id = 3"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/badges/5/welcome.rss"},
+    {"method": "GET", "path": "/badges/111/x.rss"}
+  ]
+}

@@ -42,6 +42,9 @@ pub enum Active {
     Users,
     /// The groups directory: the More section's Groups link.
     Groups,
+    /// The badges pages (badges.index, badges.show): the More section's
+    /// Badges link.
+    Badges,
 }
 
 impl Active {
@@ -61,6 +64,7 @@ impl Active {
             Active::About => "about".into(),
             Active::Users => "users".into(),
             Active::Groups => "groups".into(),
+            Active::Badges => "badges".into(),
         }
     }
 
@@ -81,6 +85,7 @@ impl Active {
                 "about" => Active::About,
                 "users" => Active::Users,
                 "groups" => Active::Groups,
+                "badges" => Active::Badges,
                 _ => Active::None,
             },
         }
@@ -780,6 +785,7 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
             "about" => *cx.active == Active::About,
             "users" => *cx.active == Active::Users,
             "groups" => *cx.active == Active::Groups,
+            "badges" => *cx.active == Active::Badges,
             _ => false,
         },
         ..Default::default()

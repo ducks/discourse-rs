@@ -1,0 +1,46 @@
+{
+  "name": "read_badge_rss",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/badges/5/welcome.rss"
+    },
+    {
+      "method": "GET",
+      "path": "/badges/100/certified.rss"
+    },
+    {
+      "method": "GET",
+      "path": "/badges/1.rss"
+    }
+  ],
+  "started_at": "2026-10-14T11:08:52.302321",
+  "transaction_started_at": "2026-10-14T11:08:50.64374",
+  "responses": [
+    {
+      "status": 200,
+      "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\" xmlns:discourse=\"http://www.discourse.org/\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n  <channel>\n    <title>Welcome badge on Discourse</title>\n    <link>http://localhost:3048/badges/5/welcome</link>\n    <description><![CDATA[This badge is granted when you receive your first like on a post. Congratulations, you’ve posted something that your fellow community members found interesting, cool, or useful!\n]]></description>\n      <atom:link href=\"http://localhost:3048/badges/5/welcome.rss\" rel=\"self\" type=\"application/rss+xml\" />\n        <item>\n          <title><![CDATA[@user1 User1]]></title>\n          <discourse:grantedAt>Thu, 01 Oct 2026 15:39:52 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/5/welcome?username=user1</guid>\n        </item>\n        <item>\n          <title><![CDATA[@user0 User0]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 07:28:30 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/5/welcome?username=user0</guid>\n        </item>\n  </channel>\n</rss>\n"
+    },
+    {
+      "status": 200,
+      "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\" xmlns:discourse=\"http://www.discourse.org/\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n  <channel>\n    <title>Certified badge on Discourse</title>\n    <link>http://localhost:3048/badges/100/certified</link>\n    <description><![CDATA[This badge is granted upon successful completion of the interactive new user tutorial. You’ve taken the initiative to learn the basic tools of discussion, and now you&#39;re certified!\n]]></description>\n  </channel>\n</rss>\n"
+    },
+    {
+      "status": 200,
+      "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\" xmlns:discourse=\"http://www.discourse.org/\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n  <channel>\n    <title>Basic badge on Discourse</title>\n    <link>http://localhost:3048/badges/1/basic</link>\n    <description><![CDATA[This badge is granted when you reach trust level 1. Thanks for sticking around and reading a few topics to learn what our community is about. New user restrictions have been lifted; you’ve been granted all essential community abilities, such as personal messaging, flagging, wiki editing, and the ability to post multiple images and links.\n]]></description>\n      <atom:link href=\"http://localhost:3048/badges/1/basic.rss\" rel=\"self\" type=\"application/rss+xml\" />\n        <item>\n          <title><![CDATA[@user3 User3]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 06:20:02 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/1/basic?username=user3</guid>\n        </item>\n        <item>\n          <title><![CDATA[@user2 User2]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 06:20:02 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/1/basic?username=user2</guid>\n        </item>\n        <item>\n          <title><![CDATA[@user1 User1]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 06:20:02 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/1/basic?username=user1</guid>\n        </item>\n        <item>\n          <title><![CDATA[@user0 User0]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 06:20:02 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/1/basic?username=user0</guid>\n        </item>\n        <item>\n          <title><![CDATA[@admin Admin]]></title>\n          <discourse:grantedAt>Wed, 30 Sep 2026 06:20:02 +0000</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[@system system]]></discourse:grantedBy>\n          <guid>http://localhost:3048/badges/1/basic?username=admin</guid>\n        </item>\n  </channel>\n</rss>\n"
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40"
+  ],
+  "recorded_from": {
+    "case": "bd829e0c1afbf73dc1cd1619a2dafb2ede2712221fdc972b0515052c0e8dfc1b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

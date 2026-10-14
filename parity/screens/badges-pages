@@ -1,0 +1,12 @@
+# The badges pages (feat/badges-pages):
+#   scripts/parity-screenshots --pages parity/screens/badges-pages <our-url>
+# Grant dates are drawn in the browser's zone there and in UTC here: masked.
+/badges
+/badges as=user1
+/badges/5/welcome mask=.granted-on
+/badges/5/welcome as=user1 mask=.granted-on
+/badges/1/basic mask=.granted-on
+/badges/5/welcome?username=user1 mask=.granted-on
+/u/user1/badges
+/u/user1/badges as=user1
+/u/admin/badges as=user0

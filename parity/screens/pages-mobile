@@ -15,3 +15,8 @@
 /categories as=user1
 /c/general/4 as=user1
 /t/parity-fixture-replies-and-posters/35 as=user1 wait=4000
+
+# The badges pages
+/badges
+/badges/5/welcome mask=.granted-on
+/u/user1/badges
