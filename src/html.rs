@@ -249,12 +249,46 @@ pub struct Chrome {
     /// passes it to the full-page search (Header#toggleSearchMenu): a
     /// query string, empty on pages without one.
     pub search_context: String,
+    /// The same context for the search menu (search-menu.js): its type
+    /// and id, empty without one.
+    pub search_context_type: String,
+    pub search_context_id: String,
+    /// The search menu's strings, as JSON for its script's data attribute.
+    pub search_menu_strings: String,
+    /// The page shows the welcome banner, whose search hides the header's
+    /// button while it is in view (Icons#showSearchButton).
+    pub welcome_banner: bool,
+    /// A route of ALL_PAGES_EXCLUDED_ROUTES (the full-page search, login,
+    /// signup, ...): no header search button.
+    pub hide_search_button: bool,
     /// The mobile view's full-page chat: the header's logo gives way to
     /// chat's (ChatHeader: back to the forum, the Chat heading).
     pub chat_header: String,
     /// The chat channel route's back button indicator in the mobile view
     /// (plugins::chat::view).
     pub chat_back_indicator: String,
+}
+
+/// The search menu's strings (search-menu.js), by the name it reads them
+/// with, from their js.search.* keys.
+fn search_menu_strings(i18n: &I18n) -> String {
+    let strings: serde_json::Map<String, Value> = [
+        "title",
+        "clear_search",
+        "open_advanced",
+        "in_this_topic",
+        "in_this_topic_tooltip",
+        "in_messages",
+        "in_messages_tooltip",
+    ]
+    .iter()
+    .map(|key| {
+        let full = format!("js.search.{key}");
+        let text = i18n.t(&full).unwrap_or(key);
+        ((*key).to_string(), Value::String(text.to_string()))
+    })
+    .collect();
+    Value::Object(strings).to_string()
 }
 
 /// The client strings local-dates.js shows, by their js.* key.
@@ -378,6 +412,8 @@ impl Chrome {
             enc(kind),
             enc(id)
         );
+        self.search_context_type = kind.to_string();
+        self.search_context_id = id.to_string();
     }
 
     /// Adds a parameter for the page's live updates.
@@ -491,6 +527,7 @@ impl Site {
                 crate::site_icons::site_url(&mut *conn, &urls, "mobile_logo").await?;
         }
         self.chrome.can_search = guardian.can_search(settings)?;
+        self.chrome.search_menu_strings = search_menu_strings(&state.i18n);
         // build-category-route sets the category's searchContext.
         if let crate::sidebar::Active::Category(id) = &active {
             self.chrome.set_search_context("category", &id.to_string());

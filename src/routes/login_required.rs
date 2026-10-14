@@ -236,6 +236,8 @@ pub async fn login_page(
         crate::sidebar::Active::None,
     )
     .await?;
+    // The login route is one of ALL_PAGES_EXCLUDED_ROUTES.
+    site.chrome.hide_search_button = true;
     let welcome = state
         .i18n
         .t_with(

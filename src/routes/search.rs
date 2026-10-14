@@ -39,13 +39,20 @@ pub struct ShowParams {
 
 #[derive(Deserialize, Default)]
 pub struct QueryParams {
-    term: Option<String>,
-    type_filter: Option<String>,
-    search_for_id: Option<String>,
-    restrict_to_archetype: Option<String>,
-    search_context: Option<String>,
-    context: Option<String>,
-    context_id: Option<String>,
+    pub term: Option<String>,
+    pub type_filter: Option<String>,
+    pub search_for_id: Option<String>,
+    pub restrict_to_archetype: Option<String>,
+    pub search_context: Option<String>,
+    /// `search_context[type]` and `search_context[id]`, as the client's
+    /// searchForTerm sends them.
+    #[serde(rename = "search_context[type]")]
+    pub context_type: Option<String>,
+    #[serde(rename = "search_context[id]")]
+    pub context_id_nested: Option<String>,
+    pub context: Option<String>,
+    pub context_id: Option<String>,
+    pub skip_context: Option<String>,
 }
 
 /// `Discourse::InvalidParameters` as JSON.
@@ -394,6 +401,7 @@ async fn show_response(
         user_agent,
         session_id,
         log: true,
+        topic_context: None,
     };
     let doc = run(&state, &guardian, &args).await?;
     let noindex = [("x-robots-tag", "noindex")];
@@ -505,21 +513,36 @@ pub async fn query(
     headers: HeaderMap,
     Peer(peer): Peer,
 ) -> Result<Response, AppError> {
-    if let Some(refused) = ensure_can_search(&state, &guardian, &headers, None).await? {
-        return Ok(refused);
+    Ok(
+        match run_query(&state, &guardian, &params, &headers, peer).await? {
+            Ok(doc) => ([("x-robots-tag", "noindex")], Json(doc)).into_response(),
+            Err(refused) => refused,
+        },
+    )
+}
+
+/// SearchController#query up to its serialized result, or the response
+/// that refuses it: what /search/query answers and the header's search
+/// menu renders (crate::search_menu_view).
+pub(crate) async fn run_query(
+    state: &AppState,
+    guardian: &Guardian,
+    params: &QueryParams,
+    headers: &HeaderMap,
+    peer: Option<SocketAddr>,
+) -> Result<Result<Value, Response>, AppError> {
+    if let Some(refused) = ensure_can_search(state, guardian, headers, None).await? {
+        return Ok(Err(refused));
     }
     let Some(term) = params.term.clone().filter(|t| !t.trim().is_empty()) else {
-        return Ok((
+        return Ok(Err((
             StatusCode::BAD_REQUEST,
             Json(json!({"errors": ["param is missing or the value is empty or invalid: term"]})),
         )
-            .into_response());
+            .into_response()));
     };
     if term.contains('\0') {
-        return Ok(invalid_parameters(&state, "string contains null byte"));
-    }
-    if params.search_context.is_some() || params.context.is_some() || params.context_id.is_some() {
-        return Err(Unsupported("search contexts (user, topic, category, tag)").into());
+        return Ok(Err(invalid_parameters(state, "string contains null byte")));
     }
     if params
         .search_for_id
@@ -528,6 +551,10 @@ pub async fn query(
     {
         return Err(Unsupported("search_for_id (topic id and URL lookup)").into());
     }
+    let topic_context = match lookup_search_context(state, guardian, params).await? {
+        Ok(context) => context,
+        Err(refused) => return Ok(Err(refused)),
+    };
     if params
         .restrict_to_archetype
         .as_deref()
@@ -542,13 +569,13 @@ pub async fn query(
         Some("user") => Some(TypeFilter::User),
         Some("tags") => Some(TypeFilter::Tags),
         Some("exclude_topics") => Some(TypeFilter::ExcludeTopics),
-        Some("private_messages") => return Ok(invalid_access(&state)),
+        Some("private_messages") => return Ok(Err(invalid_access(state))),
         Some("all_topics") => return Err(Unsupported("type_filter=all_topics").into()),
-        Some(_) => return Ok(invalid_access(&state)),
+        Some(_) => return Ok(Err(invalid_access(state))),
     };
-    let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
-    if let Some(refused) = rate_limit_search(&state, &guardian, &ip_address).await? {
-        return Ok(refused);
+    let (ip_address, user_agent, session_id) = request_context(headers, peer)?;
+    if let Some(refused) = rate_limit_search(state, guardian, &ip_address).await? {
+        return Ok(Err(refused));
     }
     let args = SearchArgs {
         term,
@@ -560,9 +587,78 @@ pub async fn query(
         user_agent,
         session_id,
         log: true,
+        topic_context,
     };
-    let doc = run(&state, &guardian, &args).await?;
-    Ok(([("x-robots-tag", "noindex")], Json(doc)).into_response())
+    Ok(Ok(run(state, guardian, &args).await?))
+}
+
+/// SearchController#lookup_search_context: `search_context[type]` and
+/// `[id]`, or `context` and `context_id`, unless `skip_context=true`. A
+/// topic is the one context ported; a missing or unseen one is invalid
+/// access, an unknown type or a blank id invalid parameters.
+async fn lookup_search_context(
+    state: &AppState,
+    guardian: &Guardian,
+    params: &QueryParams,
+) -> Result<Result<Option<crate::search::TopicContext>, Response>, AppError> {
+    if params.skip_context.as_deref() == Some("true") {
+        return Ok(Ok(None));
+    }
+    let (kind, id) = if params.context_type.is_some() || params.context_id_nested.is_some() {
+        (
+            params.context_type.clone(),
+            params.context_id_nested.clone(),
+        )
+    } else if params.search_context.is_some() {
+        // A plain string where Rails reads a hash (its TypeError).
+        return Err(Unsupported("search_context given as a string").into());
+    } else if let (Some(kind), Some(id)) = (&params.context, &params.context_id) {
+        (Some(kind.clone()), Some(id.clone()))
+    } else {
+        return Ok(Ok(None));
+    };
+    let kind = kind.unwrap_or_default();
+    if !["user", "topic", "category", "private_messages", "tag"].contains(&kind.as_str()) {
+        return Ok(Err(invalid_parameters(state, "search_context")));
+    }
+    let id = id.unwrap_or_default();
+    if id.trim().is_empty() {
+        return Ok(Err(invalid_parameters(state, "search_context")));
+    }
+    if kind != "topic" {
+        return Err(Unsupported("search contexts (user, category, tag, private messages)").into());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // `to_i`: the leading digits, 0 without any.
+    let digits: String = id
+        .trim_start()
+        .chars()
+        .enumerate()
+        .take_while(|(i, c)| c.is_ascii_digit() || (*i == 0 && (*c == '-' || *c == '+')))
+        .map(|(_, c)| c)
+        .collect();
+    let topic_id: i32 = digits.parse().unwrap_or(0);
+    let archetype: Option<String> =
+        sqlx::query_scalar("SELECT archetype FROM topics WHERE id = $1 AND deleted_at IS NULL")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(archetype) = archetype else {
+        return Ok(Err(invalid_access(state)));
+    };
+    if guardian
+        .can_see_topic_ids(&mut conn, &settings, &[topic_id])
+        .await?
+        .is_empty()
+    {
+        return Ok(Err(invalid_access(state)));
+    }
+    Ok(Ok(Some(crate::search::TopicContext {
+        id: topic_id,
+        private_message: archetype == "private_message",
+    })))
 }
 
 #[derive(Template)]
@@ -629,6 +725,8 @@ async fn search_page(
     drop(cx);
     // The template's bodyClass.
     site.chrome.body_classes.push_str(" search-page");
+    // ALL_PAGES_EXCLUDED_ROUTES: full-page-search.
+    site.chrome.hide_search_button = true;
     Ok(SearchPage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -643,4 +741,108 @@ async fn search_page(
         too_short,
         clear_label,
     })
+}
+
+/// `to_i`: the leading integer, 0 without one.
+fn ruby_to_i(s: &str) -> i64 {
+    let s = s.trim_start();
+    let (sign, rest) = match s.strip_prefix('-') {
+        Some(rest) => (-1, rest),
+        None => (1, s.strip_prefix('+').unwrap_or(s)),
+    };
+    let digits: String = rest.chars().take_while(char::is_ascii_digit).collect();
+    digits.parse::<i64>().map(|n| sign * n).unwrap_or(0)
+}
+
+/// POST /search/click: SearchController#click, the result a search log's
+/// searcher followed (the member's own log, or an anonymous one from
+/// their IP).
+pub async fn click(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+    Peer(peer): Peer,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let form: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !super::session::csrf_ok(&state, &headers, &form, uri.path(), "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    let get = |name: &str| {
+        form.iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.clone())
+            .filter(|v| !v.is_empty())
+    };
+    let mut values = Vec::new();
+    for name in ["search_log_id", "search_result_type", "search_result_id"] {
+        match get(name) {
+            Some(v) => values.push(v),
+            None => {
+                return Ok((
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({"errors": [format!(
+                        "param is missing or the value is empty or invalid: {name}"
+                    )]})),
+                )
+                    .into_response());
+            }
+        }
+    }
+    // SearchLog.search_result_types
+    let result_type = match values[1].to_lowercase().as_str() {
+        "topic" => Some(1),
+        "user" => Some(2),
+        "category" => Some(3),
+        "tag" => Some(4),
+        _ => None,
+    };
+    if let Some(result_type) = result_type {
+        let mut conn = state.pool.acquire().await?;
+        let result_id: Option<i64> = if result_type == 4 {
+            sqlx::query_scalar::<_, i32>(
+                "SELECT id FROM tags WHERE lower(name) = lower($1) LIMIT 1",
+            )
+            .bind(&values[2])
+            .fetch_optional(&mut *conn)
+            .await?
+            .map(i64::from)
+        } else {
+            Some(ruby_to_i(&values[2]))
+        };
+        let log_id = ruby_to_i(&values[0]);
+        match guardian.user_id() {
+            Some(user_id) => {
+                sqlx::query(
+                    "UPDATE search_logs SET search_result_type = $3, search_result_id = $4 \
+                     WHERE id = $1 AND user_id = $2",
+                )
+                .bind(log_id)
+                .bind(user_id)
+                .bind(result_type)
+                .bind(result_id)
+                .execute(&mut *conn)
+                .await?;
+            }
+            None => {
+                let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+                sqlx::query(
+                    "UPDATE search_logs SET search_result_type = $3, search_result_id = $4 \
+                     WHERE id = $1 AND ip_address = $2::inet",
+                )
+                .bind(log_id)
+                .bind(ip)
+                .bind(result_type)
+                .bind(result_id)
+                .execute(&mut *conn)
+                .await?;
+            }
+        }
+    }
+    Ok(Json(json!({"success": "OK"})).into_response())
 }

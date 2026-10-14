@@ -545,6 +545,22 @@ with the viewport, guessing from the user agent without it
     chat footer. Left: the footer's DMs, search, starred and threads
     routes, the channel list options menu (desktop's too), swipe and long
     press on a row, the list's empty states (refused)
+101. ~~`feat/header-search-menu`~~ (done) M: the desktop header's search
+    button (not while the welcome banner's field is in view, nor on the
+    full-page search and login) and the search menu it opens
+    (search-menu.gjs) as a drop-down, and the welcome banner's results
+    panel: the random quick tip, recent searches (UsersController
+    #recent_searches and #reset_recent_searches), the page's context
+    items, the assistant's `#` (Category.search and the tags
+    /tags/filter/search finds), `@` (user search with organizeResults)
+    and `in:`/`status:`/`order:` suggestions, results by type as you type
+    and topics on Enter, more, the "in this topic" context (Search with a
+    topic as search_context, its posts highlighted on the page), clicks
+    logged (SearchController#click), arrows, Escape, a click outside, "/"
+    and Ctrl+Alt+F, search-menu.scss. Left: searching what the assistant
+    suggests (the search refuses advanced filters, `#`, `@`), the private
+    messages inbox, user, category and tag contexts of /search/query
+    (refused), groups with a flair among the results (refused)
 
 [mobile-layout]
 

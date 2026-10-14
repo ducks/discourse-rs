@@ -1,0 +1,350 @@
+{
+  "name": "recent_searches",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/recent-searches.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/recent-searches",
+      "headers": {
+        "Accept": "application/json"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/recent-searches.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/recent-searches.json"
+    }
+  ],
+  "started_at": "2026-10-14T19:09:17.05168",
+  "transaction_started_at": "2026-10-14T19:09:16.002388",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "recent_searches": [
+          "fixture",
+          "reply",
+          "four",
+          "three",
+          "two"
+        ],
+        "recent_searches_detailed": [
+          {
+            "term": "fixture",
+            "at": "2026-10-03T10:00:00Z"
+          },
+          {
+            "term": "reply",
+            "at": "2026-10-02T10:00:00Z"
+          },
+          {
+            "term": "four",
+            "at": "2026-09-04T10:00:00Z"
+          },
+          {
+            "term": "three",
+            "at": "2026-09-03T10:00:00Z"
+          },
+          {
+            "term": "two",
+            "at": "2026-09-02T10:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "recent_searches": [
+          "fixture",
+          "reply",
+          "four",
+          "three",
+          "two"
+        ],
+        "recent_searches_detailed": [
+          {
+            "term": "fixture",
+            "at": "2026-10-03T10:00:00Z"
+          },
+          {
+            "term": "reply",
+            "at": "2026-10-02T10:00:00Z"
+          },
+          {
+            "term": "four",
+            "at": "2026-09-04T10:00:00Z"
+          },
+          {
+            "term": "three",
+            "at": "2026-09-03T10:00:00Z"
+          },
+          {
+            "term": "two",
+            "at": "2026-09-02T10:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "recent_searches": [],
+        "recent_searches_detailed": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 233,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "G3P9HSqy/LIAS8iiXlvY0kXsdBE=",
+            "created_at": "2026-10-14T19:09:16.421274",
+            "rotated_at": "2026-10-14T19:09:16.420196",
+            "updated_at": "2026-10-14T19:09:16.421274",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "G3P9HSqy/LIAS8iiXlvY0kXsdBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 233,
+            "seen_at": "2026-10-14T19:09:17.060376",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "G3P9HSqy/LIAS8iiXlvY0kXsdBE=",
+            "created_at": "2026-10-14T19:09:16.421274",
+            "rotated_at": "2026-10-14T19:09:16.420196",
+            "updated_at": "2026-10-14T19:09:16.421274",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "G3P9HSqy/LIAS8iiXlvY0kXsdBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_options": {
+      "inserted": [
+        {
+          "user_id": 3,
+          "timezone": null,
+          "theme_ids": [],
+          "chat_sound": null,
+          "email_level": 1,
+          "homepage_id": null,
+          "seen_popups": null,
+          "chat_enabled": true,
+          "enable_defer": false,
+          "hide_profile": false,
+          "email_digests": true,
+          "hide_presence": false,
+          "send_shortcut": 0,
+          "text_size_key": 0,
+          "text_size_seq": 0,
+          "theme_key_seq": 0,
+          "dark_scheme_id": null,
+          "enable_quoting": true,
+          "color_scheme_id": null,
+          "dynamic_favicon": false,
+          "composition_mode": 1,
+          "default_calendar": 0,
+          "notify_on_solved": true,
+          "ai_ask_ai_default": true,
+          "email_in_reply_to": false,
+          "mailing_list_mode": false,
+          "auto_image_caption": false,
+          "chat_send_shortcut": 0,
+          "enable_smart_lists": true,
+          "skip_new_user_tips": false,
+          "chat_email_frequency": 1,
+          "digest_after_minutes": 10080,
+          "email_messages_level": 0,
+          "interface_color_mode": 1,
+          "title_count_mode_key": 0,
+          "understood_languages": [],
+          "ai_search_discoveries": true,
+          "show_original_content": false,
+          "allow_private_messages": true,
+          "chat_channel_list_sort": 0,
+          "chat_new_message_sound": false,
+          "email_previous_replies": 2,
+          "include_tl0_in_digests": false,
+          "notify_on_linked_posts": true,
+          "oldest_search_log_date": "2026-10-14T19:09:16.108542",
+          "policy_email_frequency": 0,
+          "automatically_translate": true,
+          "enable_allowed_pm_users": false,
+          "push_notification_level": 1,
+          "chat_channel_list_filter": 0,
+          "chat_quick_reaction_type": 0,
+          "discourse_rewind_enabled": true,
+          "event_reminder_preference": 0,
+          "external_links_in_new_tab": false,
+          "hide_profile_and_presence": false,
+          "last_redirected_to_top_at": null,
+          "show_thread_title_prompts": true,
+          "automatically_unpin_topics": true,
+          "chat_announce_new_messages": true,
+          "chat_channel_list_sort_dms": 2,
+          "chat_separate_sidebar_mode": 0,
+          "new_topic_duration_minutes": -1,
+          "chat_quick_reactions_custom": null,
+          "ignore_channel_wide_mention": null,
+          "like_notification_frequency": 1,
+          "mailing_list_mode_frequency": 1,
+          "chat_channel_list_filter_dms": 0,
+          "only_chat_push_notifications": null,
+          "auto_track_topics_after_msecs": 300000,
+          "discourse_rewind_dismissed_at": null,
+          "sidebar_link_to_filtered_list": false,
+          "watched_precedence_over_muted": false,
+          "chat_channel_list_sort_starred": 0,
+          "enable_markdown_monospace_font": true,
+          "bookmark_auto_delete_preference": 3,
+          "discourse_rewind_share_publicly": false,
+          "dismissed_dm_retention_reminder": null,
+          "hidden_composer_toolbar_buttons": [],
+          "sidebar_show_count_of_new_items": false,
+          "chat_channel_list_filter_starred": 0,
+          "chat_header_indicator_preference": 0,
+          "notification_level_when_assigned": 3,
+          "notification_level_when_replying": 2,
+          "dismissed_channel_retention_reminder": null,
+          "enable_upcoming_change_available_notifications": true
+        }
+      ],
+      "deleted": [
+        {
+          "user_id": 3,
+          "timezone": null,
+          "theme_ids": [],
+          "chat_sound": null,
+          "email_level": 1,
+          "homepage_id": null,
+          "seen_popups": null,
+          "chat_enabled": true,
+          "enable_defer": false,
+          "hide_profile": false,
+          "email_digests": true,
+          "hide_presence": false,
+          "send_shortcut": 0,
+          "text_size_key": 0,
+          "text_size_seq": 0,
+          "theme_key_seq": 0,
+          "dark_scheme_id": null,
+          "enable_quoting": true,
+          "color_scheme_id": null,
+          "dynamic_favicon": false,
+          "composition_mode": 1,
+          "default_calendar": 0,
+          "notify_on_solved": true,
+          "ai_ask_ai_default": true,
+          "email_in_reply_to": false,
+          "mailing_list_mode": false,
+          "auto_image_caption": false,
+          "chat_send_shortcut": 0,
+          "enable_smart_lists": true,
+          "skip_new_user_tips": false,
+          "chat_email_frequency": 1,
+          "digest_after_minutes": 10080,
+          "email_messages_level": 0,
+          "interface_color_mode": 1,
+          "title_count_mode_key": 0,
+          "understood_languages": [],
+          "ai_search_discoveries": true,
+          "show_original_content": false,
+          "allow_private_messages": true,
+          "chat_channel_list_sort": 0,
+          "chat_new_message_sound": false,
+          "email_previous_replies": 2,
+          "include_tl0_in_digests": false,
+          "notify_on_linked_posts": true,
+          "oldest_search_log_date": null,
+          "policy_email_frequency": 0,
+          "automatically_translate": true,
+          "enable_allowed_pm_users": false,
+          "push_notification_level": 1,
+          "chat_channel_list_filter": 0,
+          "chat_quick_reaction_type": 0,
+          "discourse_rewind_enabled": true,
+          "event_reminder_preference": 0,
+          "external_links_in_new_tab": false,
+          "hide_profile_and_presence": false,
+          "last_redirected_to_top_at": null,
+          "show_thread_title_prompts": true,
+          "automatically_unpin_topics": true,
+          "chat_announce_new_messages": true,
+          "chat_channel_list_sort_dms": 2,
+          "chat_separate_sidebar_mode": 0,
+          "new_topic_duration_minutes": -1,
+          "chat_quick_reactions_custom": null,
+          "ignore_channel_wide_mention": null,
+          "like_notification_frequency": 1,
+          "mailing_list_mode_frequency": 1,
+          "chat_channel_list_filter_dms": 0,
+          "only_chat_push_notifications": null,
+          "auto_track_topics_after_msecs": 300000,
+          "discourse_rewind_dismissed_at": null,
+          "sidebar_link_to_filtered_list": false,
+          "watched_precedence_over_muted": false,
+          "chat_channel_list_sort_starred": 0,
+          "enable_markdown_monospace_font": true,
+          "bookmark_auto_delete_preference": 3,
+          "discourse_rewind_share_publicly": false,
+          "dismissed_dm_retention_reminder": null,
+          "hidden_composer_toolbar_buttons": [],
+          "sidebar_show_count_of_new_items": false,
+          "chat_channel_list_filter_starred": 0,
+          "chat_header_indicator_preference": 0,
+          "notification_level_when_assigned": 3,
+          "notification_level_when_replying": 2,
+          "dismissed_channel_retention_reminder": null,
+          "enable_upcoming_change_available_notifications": true
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "log_search_queries": true
+  },
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, ip_address, search_type, created_at) VALUES ('fixture', 3, '127.0.0.1', 1, '2026-10-01 10:00:00'), ('reply', 3, '127.0.0.1', 1, '2026-10-02 10:00:00'), ('fixture', 3, '127.0.0.1', 2, '2026-10-03 10:00:00'), ('one', 3, '127.0.0.1', 1, '2026-09-01 10:00:00'), ('two', 3, '127.0.0.1', 1, '2026-09-02 10:00:00'), ('three', 3, '127.0.0.1', 1, '2026-09-03 10:00:00'), ('four', 3, '127.0.0.1', 1, '2026-09-04 10:00:00'), ('other', 2, '127.0.0.1', 1, '2026-10-05 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "8f0e5e7840f3efb69a536dda1fc173826e9f8126d12f06e724d70db0dce67e17",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -43,6 +43,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/directory.css"),
     include_str!("../static/css/groups.css"),
     include_str!("../static/css/search.css"),
+    include_str!("../static/css/search-menu.css"),
     include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
@@ -245,6 +246,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "search-page.js",
         JS,
         include_str!("../static/js/search-page.js"),
+    ),
+    (
+        "search-menu.js",
+        JS,
+        include_str!("../static/js/search-menu.js"),
     ),
     ("composer.js", JS, include_str!("../static/js/composer.js")),
     (

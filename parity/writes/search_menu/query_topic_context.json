@@ -1,0 +1,686 @@
+{
+  "name": "query_topic_context",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=re&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=%22user1%20also%22%20x&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=user0&context=topic&context_id=35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&context=topic&context_id=35&skip_context=true"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&search_context%5Btype%5D=nonsense&search_context%5Bid%5D=35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D="
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&search_context%5Btype%5D=topic&search_context%5Bid%5D=999999"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply&type_filter=exclude_topics&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
+    }
+  ],
+  "started_at": "2026-10-14T19:09:13.975032",
+  "transaction_started_at": "2026-10-14T19:09:10.749749",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          },
+          {
+            "id": 37,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-09-30T07:28:29.179Z",
+            "like_count": 0,
+            "blurb": "Reply two from user2, also long enough to pass the minimum length check.",
+            "post_number": 3,
+            "topic_id": 35
+          },
+          {
+            "id": 38,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.251Z",
+            "like_count": 0,
+            "blurb": "Reply three from admin, also long enough to pass the minimum length check.",
+            "post_number": 4,
+            "topic_id": 35
+          },
+          {
+            "id": 52,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "like_count": 0,
+            "blurb": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "post_number": 5,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "reply",
+          "search_log_id": 131,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            36,
+            37,
+            38,
+            52
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          },
+          {
+            "id": 37,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-09-30T07:28:29.179Z",
+            "like_count": 0,
+            "blurb": "Reply two from user2, also long enough to pass the minimum length check.",
+            "post_number": 3,
+            "topic_id": 35
+          },
+          {
+            "id": 38,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.251Z",
+            "like_count": 0,
+            "blurb": "Reply three from admin, also long enough to pass the minimum length check.",
+            "post_number": 4,
+            "topic_id": 35
+          },
+          {
+            "id": 52,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "like_count": 0,
+            "blurb": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "post_number": 5,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "re",
+          "search_log_id": 132,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            36,
+            37,
+            38,
+            52
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "\"user1 also\" x",
+          "search_log_id": 133,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 52,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "like_count": 0,
+            "blurb": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "post_number": 5,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "user0",
+          "search_log_id": 134,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            52
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 6,
+            "name": "system",
+            "username": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "created_at": "2026-07-25T05:58:28.405Z",
+            "like_count": 0,
+            "blurb": "...ing, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a...",
+            "post_number": 1,
+            "topic_id": 5
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Welcome to Discourse! :wave:",
+            "id": 5,
+            "title": "Welcome to Discourse! :wave:",
+            "slug": "welcome-to-discourse",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-07-25T05:58:28.320Z",
+            "last_posted_at": "2026-07-25T05:58:28.405Z",
+            "bumped": true,
+            "bumped_at": "2026-07-25T05:58:28.405Z",
+            "archetype": "regular",
+            "unseen": false,
+            "pinned": true,
+            "unpinned": null,
+            "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "unicode_title": "Welcome to Discourse! 👋",
+            "tags": [],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "reply",
+          "search_log_id": 135,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            6
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: search_context"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: search_context"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "reply",
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "search_logs": {
+      "inserted": [
+        {
+          "id": 131,
+          "term": "reply",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-14T19:09:14.022876",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 132,
+          "term": "re",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-14T19:09:14.11731",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 133,
+          "term": "\"user1 also\" x",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-14T19:09:14.179243",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 134,
+          "term": "user0",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-14T19:09:14.262205",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 135,
+          "term": "reply",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-14T19:09:14.322184",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 233,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "B3KUDZCPB3zb8InwXYXoi6zXIzc=",
+            "created_at": "2026-10-14T19:09:12.112903",
+            "rotated_at": "2026-10-14T19:09:12.106405",
+            "updated_at": "2026-10-14T19:09:12.112903",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "B3KUDZCPB3zb8InwXYXoi6zXIzc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 233,
+            "seen_at": "2026-10-14T19:09:13.987601",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "B3KUDZCPB3zb8InwXYXoi6zXIzc=",
+            "created_at": "2026-10-14T19:09:12.112903",
+            "rotated_at": "2026-10-14T19:09:12.106405",
+            "updated_at": "2026-10-14T19:09:12.112903",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "B3KUDZCPB3zb8InwXYXoi6zXIzc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "search_logs": 131
+  },
+  "settings": {
+    "log_search_queries": true
+  },
+  "recorded_from": {
+    "case": "277a9b7c8297ef8581a47859af88d5f942464c96c3a4a2ef2f55663d0367c92b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

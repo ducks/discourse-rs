@@ -388,6 +388,7 @@ pub async fn search_log_term(
         user_agent: None,
         session_id: None,
         log: false,
+        topic_context: None,
     };
     let mut search = crate::search::Search {
         conn: &mut conn,

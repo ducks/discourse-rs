@@ -46,9 +46,11 @@ mod post_destroy;
 mod posts;
 mod presence;
 mod read_tracking;
+mod recent_searches;
 mod review;
 mod robots;
 mod search;
+mod search_menu;
 mod uploads;
 pub(crate) use search::{invalid_access, invalid_access_at};
 pub(crate) use session::{csrf_ok, viewer_state};
@@ -135,6 +137,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/bus/poll", get(bus::poll))
         .route("/live", get(live::page))
         .route("/user-menu", get(user_menu::show))
+        .route("/search-menu", get(search_menu::show))
         .route("/user-card/{username}", get(user_card::show))
         .route("/live/post/{id}", get(live::post))
         .route(
@@ -457,6 +460,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(archive_message::move_to_inbox),
         )
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
+        .route(
+            "/u/recent-searches",
+            get(recent_searches::show).delete(recent_searches::reset),
+        )
+        .route(
+            "/u/recent-searches.json",
+            get(recent_searches::show).delete(recent_searches::reset),
+        )
         .route("/u/search/users", get(user_search::search_users))
         .route("/u/search/users.json", get(user_search::search_users))
         .route(
@@ -1417,6 +1428,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/search.json", cached!(get(search::show_json)))
         .route("/search/query", cached!(get(search::query)))
         .route("/search/query.json", cached!(get(search::query)))
+        .route("/search/click", post(search::click))
         .route("/tag/{*path}", cached!(get(tags::show)))
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))
@@ -1658,6 +1670,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))
+        .route("/assets/search-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
         .route("/assets/js/onpopstate-handler.js", get(asset))
