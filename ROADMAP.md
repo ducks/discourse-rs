@@ -585,31 +585,6 @@ then by what running a forum needs (milestone 6). Briefs:
     Refused: backups that need migrations (no db:migrate), db:seed and
     recompiling theme fields (logged as Rails logs those failures), S3
     stores and S3 upload remaps)
-100. `feat/message-bus` L, after 90g (MessageBus on pg-bus, so clients
-    that speak Rails' protocol work against the port: bots and
-    integrations on message-bus-client, apps acting through user API
-    keys). Three branches, done together:
-    100a. pg-bus (its own repo, released with `make release`) M:
-    per-channel ids as MessageBus numbers them (1, 2, 3... per channel),
-    derived rather than stored, so publishing takes no lock: a message's
-    id is its ordinal in the channel in commit order plus what trim has
-    removed from that channel (a per-channel trimmed count trim keeps);
-    `last_id(channel)` and "after id N" as counts over the existing
-    (channel, xid, id) index; and `client:<id>` audience tags for
-    MessageBus's client_ids,
-    100b. discourse-rs S: the pg-bus bump; the real values in the JSON
-    fields that carry them (topic view's `message_bus_last_id`, chat's
-    `channel_message_bus_last_id` and `message_bus_last_ids`, user
-    search, `notification_channel_position`...), their parity ignores
-    dropped; chat's web hook counting of backlog rows and backup logs
-    sent to every admin tab replaced by the per-channel ids and client
-    tags,
-    100c. discourse-rs L: `/message-bus/:client_id/poll` with Rails'
-    semantics (long-poll and chunked streaming, `__seq`, status messages
-    for channels asked from -1, backlog replay by per-channel id, user,
-    group and client filtering, its headers), measured against the
-    reference's own poll responses. The port's /bus/events and /bus/poll
-    (global positions, its own pages) stay as they are
 
 [phase-8]
 
@@ -703,8 +678,8 @@ with the viewport, guessing from the user agent without it
 
 Open in phases 9 and 10 (2026-10-14): 89 items, 120-208. By size: 24 S,
 46 M, 19 L. Phase 9: 68 (22 S, 36 M, 10 L); phase 10: 21 (2 S, 10 M,
-9 L). Not counted here: the open items above (90f, 90g, 92b, 100) and
-101-119.
+9 L). Not counted here: the open items above (90f, 90g, 92b), 100 (in
+Phase 10, after 192) and 101-119.
 
 The refusals of merged items, grouped by feature and ordered by how
 often a real site meets them (reading and posting first, then
@@ -1288,6 +1263,33 @@ route table has been made, so this list may be short.
     sites (reviewable_user.rs:52), inviting to restricted categories
     (topic_guardian.rs:519), invalidating invites on password reset
     (routes/accounts.rs:662)
+100. `feat/message-bus` L, after 192, moved down from Phase 8: a
+    compatibility layer, not a gap in the port's own pages, which get
+    live updates over pg-bus's /bus already (MessageBus on pg-bus, so
+    clients that speak Rails' protocol work against the port: bots and
+    integrations on message-bus-client, apps acting through user API
+    keys). Three branches, done together:
+    100a. pg-bus (its own repo, released with `make release`) M:
+    per-channel ids as MessageBus numbers them (1, 2, 3... per channel),
+    derived rather than stored, so publishing takes no lock: a message's
+    id is its ordinal in the channel in commit order plus what trim has
+    removed from that channel (a per-channel trimmed count trim keeps);
+    `last_id(channel)` and "after id N" as counts over the existing
+    (channel, xid, id) index; and `client:<id>` audience tags for
+    MessageBus's client_ids,
+    100b. discourse-rs S: the pg-bus bump; the real values in the JSON
+    fields that carry them (topic view's `message_bus_last_id`, chat's
+    `channel_message_bus_last_id` and `message_bus_last_ids`, user
+    search, `notification_channel_position`...), their parity ignores
+    dropped; chat's web hook counting of backlog rows and backup logs
+    sent to every admin tab replaced by the per-channel ids and client
+    tags,
+    100c. discourse-rs L: `/message-bus/:client_id/poll` with Rails'
+    semantics (long-poll and chunked streaming, `__seq`, status messages
+    for channels asked from -1, backlog replay by per-channel id, user,
+    group and client filtering, its headers), measured against the
+    reference's own poll responses. The port's /bus/events and /bus/poll
+    (global positions, its own pages) stay as they are
 193. `feat/user-pages-rest` M: the user pages the port renders as the
     summary or refuses: preferences (every tab), notifications,
     /u/:username/badges and /activity/topics (97, ListController#topics_by),
