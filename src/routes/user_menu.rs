@@ -49,8 +49,14 @@ pub async fn show(
     if settings.get("show_user_menu_avatars")?.truthy() {
         return Err(Unsupported("show_user_menu_avatars (the items' avatars)").into());
     }
-    let current_user =
-        crate::current_user::serialize(&mut conn, &state, &settings, session).await?;
+    let current_user = crate::current_user::serialize(
+        &mut conn,
+        &state,
+        &settings,
+        &session.user,
+        session.token.authenticated_with_oauth.unwrap_or(false),
+    )
+    .await?;
     let can_chat = crate::plugins::chat::enabled(&settings)?
         && crate::plugins::chat::can_chat(&mut conn, &settings, &guardian).await?
         && crate::plugins::chat::options(&mut conn, user.id)

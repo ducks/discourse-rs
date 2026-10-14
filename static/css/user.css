@@ -591,8 +591,6 @@ a#user-nav-skip-link:visited {
 
 /* new-user.scss's narrow `.user-content { margin-top: 1em }` precedes
    user.scss's rule above in common.css, so it never applies. */
-/* new-user.scss's (width < 40rem) .user-content margin is overridden by
-   user.scss's, later in Discourse's bundle: left out. */
 
 /* user-info.scss */
 .user-info {

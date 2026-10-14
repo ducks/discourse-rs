@@ -3167,8 +3167,6 @@
 /* new-user.scss:233's `.user-content { margin-top: 1em }` is left out:
    user.scss's `.user-content { margin-top: 2em }` follows it in
    common.css and wins at every width. */
-/* new-user.scss:233 (.user-content { margin-top: 1em }) is left out: in
-   Discourse's bundle user.scss:93 comes after it and keeps 2em. */
 
 /* new-user.scss:240 */
 @media (width < 40rem) {
