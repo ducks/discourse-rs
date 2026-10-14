@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "keep_headers": ["Discourse-Readonly"],
+  "requests": [
+    {"method": "PUT", "path": "/admin/backups/readonly.json", "params": {"enable": "true"}},
+    {"method": "POST", "path": "/bookmarks.json", "params": {"bookmarkable_id": 37, "bookmarkable_type": "Post"}},
+    {"method": "GET", "path": "/drafts.json"},
+    {"method": "PUT", "path": "/admin/backups/readonly.json", "params": {"enable": "false"}},
+    {"method": "GET", "path": "/drafts.json"},
+    {"method": "POST", "path": "/bookmarks.json", "params": {"bookmarkable_id": 37, "bookmarkable_type": "Post"}}
+  ]
+}

@@ -1247,6 +1247,13 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             .await
             .unwrap_or_else(|e| panic!("setup {sql}: {e}"));
     }
+    // `readonly`: read-only mode's keys, set as the recorder sets them.
+    for key in case["readonly"].as_array().into_iter().flatten() {
+        let mut conn = db.pool.acquire().await.unwrap();
+        discourse_rs::readonly::set_key(&mut conn, key.as_str().unwrap())
+            .await
+            .unwrap();
+    }
     // The recorder drops what the login and setup enqueued (ENQUEUED.clear),
     // such as a staff login's suspicious_login.
     sqlx::query("DELETE FROM discourse_rs.jobs")

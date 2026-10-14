@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "readonly": ["readonly_mode:user"],
+  "requests": [
+    {"method": "GET", "path": "/search.json?q=welcome"},
+    {"method": "GET", "path": "/search/query.json?term=welcome&type_filter=topic"}
+  ]
+}

@@ -425,6 +425,14 @@ pub fn is_scheduled(name: &str) -> bool {
 
 /// Runs one of the SCHEDULED jobs now.
 pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError> {
+    // Jobs::Scheduled#perform: skipped while the site is read only (no
+    // core job sets perform_when_readonly).
+    {
+        let mut conn = state.pool.acquire().await?;
+        if crate::readonly::mode(&mut conn).await?.site_readonly() {
+            return Ok(());
+        }
+    }
     match name {
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,

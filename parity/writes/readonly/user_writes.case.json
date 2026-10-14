@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "readonly": ["readonly_mode:user"],
+  "keep_headers": ["Discourse-Readonly"],
+  "requests": [
+    {"method": "POST", "path": "/bookmarks.json", "params": {"bookmarkable_id": 37, "bookmarkable_type": "Post"}},
+    {"method": "POST", "path": "/posts.json", "params": {"raw": "A reply written while the site is read only", "topic_id": 35}},
+    {"method": "POST", "path": "/post_actions.json", "params": {"id": 37, "post_action_type_id": 2}},
+    {"method": "PUT", "path": "/notifications/mark-read.json"},
+    {"method": "POST", "path": "/topics/timings.json", "params": {"topic_id": 35, "topic_time": 1000, "timings": {"1": 1000}}},
+    {"method": "POST", "path": "/drafts.json", "params": {"draft_key": "new_topic", "data": "{\"reply\":\"draft text\",\"action\":\"createTopic\"}", "sequence": 0}},
+    {"method": "DELETE", "path": "/session/user1.json"},
+    {"method": "GET", "path": "/drafts.json"}
+  ]
+}

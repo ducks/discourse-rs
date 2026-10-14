@@ -803,7 +803,8 @@ async fn own_profile_lists_auth_tokens_with_the_current_one_active() {
 }
 
 /// The session layer has nothing to do for a request without the `_t`
-/// cookie; a pool that can't connect proves it doesn't try.
+/// cookie; a pool that can't connect proves it doesn't try. (A static
+/// asset: controllers' requests read the read-only keys.)
 #[tokio::test]
 async fn requests_without_a_token_cookie_do_not_touch_the_pool() {
     let pool = sqlx::postgres::PgPoolOptions::new()
@@ -816,15 +817,14 @@ async fn requests_without_a_token_cookie_do_not_touch_the_pool() {
         common::state_with_bus_on(db.pool.clone(), pool, config(RailsEnv::Test, &[])).await;
 
     let mut client = Client::new(app_state.clone());
-    let reply = client.get("/srv/status").await;
+    let reply = client.get("/assets/page.js").await;
     assert_eq!(reply.status, StatusCode::OK);
-    assert_eq!(reply.body, "ok");
     assert!(reply.set_cookies().is_empty());
 
     // With the cookie the layer has a token to look up, and needs the pool.
     let mut client = Client::new(app_state);
     client.cookies.push(("_t".into(), "0".repeat(32)));
-    let reply = client.get("/srv/status").await;
+    let reply = client.get("/assets/page.js").await;
     assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
 }
 

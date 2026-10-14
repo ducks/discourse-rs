@@ -436,8 +436,12 @@ impl Search<'_> {
         let original_term = after_advanced.replace('\\', "\\\\");
 
         let mut results = Results::default();
+        // log_query?: not while the site is read only.
         if self.settings.get("log_search_queries")?.truthy()
             && args.type_filter != Some(TypeFilter::ExcludeTopics)
+            && !crate::readonly::mode(&mut *self.conn)
+                .await?
+                .site_readonly()
         {
             results.search_log_id = self.log(&clean, args).await?;
         }

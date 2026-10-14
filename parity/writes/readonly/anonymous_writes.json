@@ -1,0 +1,93 @@
+{
+  "name": "anonymous_writes",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "raw": "An anonymous reply",
+        "topic_id": 35
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/forgot_password.json",
+      "params": {
+        "login": "user1@example.com"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "New Person",
+        "email": "new.person@example.com",
+        "username": "newperson",
+        "password": "a long password 1234"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:23:02.380496",
+  "transaction_started_at": "2026-10-14T04:23:00.367487",
+  "responses": [
+    {
+      "status": 503,
+      "body": {
+        "errors": [
+          "The site is in read only mode. Interactions are disabled."
+        ],
+        "error_type": "read_only"
+      }
+    },
+    {
+      "status": 503,
+      "body": {
+        "errors": [
+          "The site is in read only mode. Interactions are disabled."
+        ],
+        "error_type": "read_only"
+      }
+    },
+    {
+      "status": 503,
+      "body": {
+        "errors": [
+          "The site is in read only mode. Interactions are disabled."
+        ],
+        "error_type": "read_only"
+      }
+    },
+    {
+      "status": 503,
+      "body": {
+        "errors": [
+          "The site is in read only mode. Interactions are disabled."
+        ],
+        "error_type": "read_only"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "readonly": [
+    "readonly_mode:user"
+  ],
+  "keep_headers": [
+    "Discourse-Readonly"
+  ],
+  "recorded_from": {
+    "case": "a0b670a2f6d4c21f0728e8a2b43f7169df85f9b4b927bc56fbb66f7dd1cf45e8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

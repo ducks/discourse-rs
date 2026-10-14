@@ -181,6 +181,9 @@
           <script src="{{ crate::assets::url(base_path, "sidebar.js") }}"></script>
           {%- endif %}
           <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
+            {%- if !chrome.global_notice.is_empty() %}
+            <div class="container" id="main-container">{{ chrome.global_notice|safe }}</div>
+            {%- endif %}
             {% block content %}{% endblock %}
           </div>
           {%- if chrome.powered_by %}

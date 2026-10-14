@@ -42,6 +42,7 @@ pub async fn email_login(
     headers: HeaderMap,
     super::search::Peer(peer): super::search::Peer,
     uri: Uri,
+    mode: Option<axum::Extension<crate::readonly::Mode>>,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &body);
@@ -109,6 +110,9 @@ pub async fn email_login(
         .is_err()
     {
         return Ok(slow_down());
+    }
+    if mode.is_some_and(|m| m.0.staff_writes_only) && user.as_ref().is_some_and(|u| !u.staff) {
+        return Err(crate::readonly::ReadOnly.into());
     }
     let user_presence = user.as_ref().is_some_and(|u| !u.staged);
     if let Some(user) = user.filter(|u| !u.staged) {
@@ -184,6 +188,7 @@ pub async fn forgot_password(
     headers: HeaderMap,
     super::search::Peer(peer): super::search::Peer,
     uri: Uri,
+    mode: Option<axum::Extension<crate::readonly::Mode>>,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &body);
@@ -240,6 +245,9 @@ pub async fn forgot_password(
         accounts::find_by_username_or_email(&mut tx, &login).await?
     }
     .filter(|u| !u.staged);
+    if mode.is_some_and(|m| m.0.staff_writes_only) && user.as_ref().is_some_and(|u| !u.staff) {
+        return Err(crate::readonly::ReadOnly.into());
+    }
     // enqueue_password_reset_for_user's limit for a user found, the
     // login's for one not.
     let limiter = match &user {
@@ -345,6 +353,7 @@ pub async fn redeem_password_reset_code(
     headers: HeaderMap,
     super::search::Peer(peer): super::search::Peer,
     uri: Uri,
+    mode: Option<axum::Extension<crate::readonly::Mode>>,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &body);
@@ -428,20 +437,26 @@ pub async fn redeem_password_reset_code(
         .execute(&mut *tx)
         .await?;
     // fetch_user: the real user the code was sent to.
-    let user: Option<(i32, Option<String>)> = sqlx::query_as(
-        "SELECT u.id, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) \
+    let user: Option<(i32, Option<String>, bool)> = sqlx::query_as(
+        "SELECT u.id, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1), \
+                u.admin OR u.moderator \
          FROM users u WHERE u.id = $1 AND u.id > 0 AND NOT u.staged",
     )
     .bind(user_id.map(|v| v as i32))
     .fetch_optional(&mut *tx)
     .await?;
-    let Some((uid, Some(email))) = user.filter(|(_, e)| {
+    let Some((uid, Some(email), staff)) = user.filter(|(_, e, _)| {
         e.as_deref()
             .is_some_and(|e| e.eq_ignore_ascii_case(&code_email))
     }) else {
         tx.commit().await?;
         return Ok(invalid());
     };
+    // policy :can_write: `!Discourse.staff_writes_only_mode? || user.staff?`.
+    if mode.is_some_and(|m| m.0.staff_writes_only) && !staff {
+        tx.commit().await?;
+        return Err(crate::readonly::ReadOnly.into());
+    }
     let consumed = sqlx::query(
         "UPDATE email_login_codes SET consumed_at = clock_timestamp() WHERE id = $1 AND consumed_at IS NULL",
     )
@@ -482,6 +497,7 @@ pub async fn password_reset_update(
     headers: HeaderMap,
     super::search::Peer(peer): super::search::Peer,
     uri: Uri,
+    mode: Option<axum::Extension<crate::readonly::Mode>>,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let token = token.strip_suffix(".json").unwrap_or(&token).to_string();
@@ -540,6 +556,18 @@ pub async fn password_reset_update(
         tx.commit().await?;
         return Err(crate::Unsupported("password reset with an unknown or used token").into());
     };
+    // `raise Discourse::ReadOnly if @staff_writes_only_mode && !@user&.staff?`,
+    // the token's confirmation kept.
+    if mode.is_some_and(|m| m.0.staff_writes_only) {
+        let staff: bool = sqlx::query_scalar("SELECT admin OR moderator FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        if !staff {
+            tx.commit().await?;
+            return Err(crate::readonly::ReadOnly.into());
+        }
+    }
     let second_factors: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled) \
          OR EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled)",

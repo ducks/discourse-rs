@@ -27,7 +27,7 @@ const NO_STORE: &str = "no-store, must-revalidate, private, max-age=0";
 
 /// `verify_authenticity_token` for a non-GET request: the session's token
 /// against `X-CSRF-Token` or the `authenticity_token` field.
-pub(super) fn csrf_ok(
+pub(crate) fn csrf_ok(
     state: &AppState,
     headers: &HeaderMap,
     form: &[(String, String)],
@@ -77,7 +77,7 @@ fn is_xhr_or_json(headers: &HeaderMap, path: &str) -> bool {
 }
 
 /// `check_xhr`'s RenderEmpty: the empty HTML template.
-fn render_empty() -> Response {
+pub(super) fn render_empty() -> Response {
     ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], "").into_response()
 }
 
@@ -186,7 +186,7 @@ pub(super) fn anonymous_csrf(
 /// The page shell's viewer block for a logged-in guardian: the username
 /// and a masked CSRF token from the `_forum_session` (created when
 /// absent, which sets the cookie).
-pub(super) fn viewer_state(
+pub(crate) fn viewer_state(
     state: &AppState,
     headers: &HeaderMap,
     settings: &SiteSettings,
@@ -239,6 +239,7 @@ pub async fn create(
     headers: HeaderMap,
     Peer(peer): Peer,
     uri: axum::http::Uri,
+    mode: Option<axum::Extension<crate::readonly::Mode>>,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let form = parse_form(&headers, &body);
@@ -313,6 +314,12 @@ pub async fn create(
         .fetch_optional(&mut *conn)
         .await?
     };
+    // `raise Discourse::ReadOnly if @staff_writes_only_mode && !user&.staff?`
+    if mode.is_some_and(|m| m.0.staff_writes_only)
+        && !user.as_ref().is_some_and(|u| u.admin || u.moderator)
+    {
+        return Err(crate::readonly::ReadOnly.into());
+    }
     // rate_limit_second_factor!(user), with a token sent: per IP, and per
     // username when the login found one.
     if param(&form, "second_factor_token").is_some_and(|t| !t.trim().is_empty()) {

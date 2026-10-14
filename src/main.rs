@@ -28,6 +28,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .init();
 
     let config = Config::from_env()?;
+    discourse_rs::readonly::force_from_globals(&config.globals);
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
     tracing::info!(settings = site_setting_defs.len(), env = ?config.rails_env, "loaded site setting definitions");

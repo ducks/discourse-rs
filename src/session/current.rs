@@ -364,7 +364,7 @@ pub async fn layer(
             }
         };
         let cleared = match (guardian.user_id(), ClearNotifications::from(&headers)) {
-            (Some(user_id), Some(clear)) => {
+            (Some(user_id), Some(clear)) if !crate::readonly::mode(&mut conn).await?.readonly => {
                 let settings =
                     SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
                         .await?;
@@ -389,7 +389,7 @@ pub async fn layer(
     }
     // A request without the cookie has no session to resolve, rotate or
     // clear, so it never touches the pool here.
-    let (incoming, settings) = if cookie(&headers, TOKEN_COOKIE).is_some() {
+    let (incoming, settings, mode) = if cookie(&headers, TOKEN_COOKIE).is_some() {
         let mut conn = state.pool.acquire().await?;
         let settings =
             SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -409,14 +409,18 @@ pub async fn layer(
             );
             return Ok(response);
         };
-        (incoming, Some(settings))
+        // check_readonly_mode, for the filters around the action: no
+        // notifications cleared, no session refreshed while read only, no
+        // last seen in Postgres failover (can_write?).
+        let mode = crate::readonly::mode(&mut conn).await?;
+        (incoming, Some(settings), mode)
     } else {
         let anonymous = Incoming {
             had_token_cookie: false,
             session: None,
             guardian: crate::guardian::Guardian::anonymous(),
         };
-        (anonymous, None)
+        (anonymous, None, crate::readonly::Mode::default())
     };
     // A connection only when the request names notifications to clear.
     let cleared = match (
@@ -424,7 +428,7 @@ pub async fn layer(
         incoming.guardian.user_id(),
         ClearNotifications::from(&headers),
     ) {
-        (Some(settings), Some(user_id), Some(clear)) => {
+        (Some(settings), Some(user_id), Some(clear)) if !mode.readonly => {
             let mut conn = state.pool.acquire().await?;
             clear.run(&state, &mut conn, settings, user_id).await?
         }
@@ -434,6 +438,7 @@ pub async fn layer(
     // user is looked up: before the action, which then sees what it did
     // (chat's auto-join on a first sight).
     if let (Some(settings), Some(session)) = (&settings, &incoming.session)
+        && !mode.postgres
         && should_update_last_seen(&headers, &method)
     {
         let mut conn = state.pool.acquire().await?;
@@ -458,6 +463,10 @@ pub async fn layer(
     let Some(settings) = settings else {
         return Ok(response);
     };
+    // perform_refresh_session: `unless @readonly_mode`.
+    if mode.readonly {
+        return Ok(response);
+    }
     // A handler that logged in or out owns the cookie for this response.
     if response.headers().contains_key(header::SET_COOKIE)
         && response
@@ -506,8 +515,8 @@ const DELETE_CN_COOKIE: &str = "cn=; path=/; max-age=0; expires=Thu, 01 Jan 1970
 
 /// ApplicationController#clear_notifications, a before_action for every
 /// signed-in request: the ids in the Discourse-Clear-Notifications header
-/// and the `cn` cookie are marked read and the counts republished. (Read-only
-/// mode is not ported.) Most requests name none, and take no connection.
+/// and the `cn` cookie are marked read and the counts republished, unless
+/// the site is read only. Most requests name none, and take no connection.
 struct ClearNotifications {
     ids: Vec<i64>,
     /// From the cookie, which the response then deletes.

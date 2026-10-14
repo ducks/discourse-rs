@@ -125,7 +125,9 @@ def clear_redis_state
   # summary-new-users: the digest's new users count, kept a day.
   # directory_*: when the reference's own scheduler last refreshed the
   # user directory (DirectoryItem.last_updated_at, DirectoryRefresh).
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:*].each do |pattern|
+  # readonly_mode*: read-only mode's keys (a case's `readonly`, or the
+  # admin toggle), which would refuse every later case's writes.
+  %w[readonly_mode* postgres:last_readonlyunique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -281,6 +283,10 @@ cases.each do |c|
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
     reset_plugin_caches if c["setup"]
+    # `readonly`: read-only mode's Redis keys set for the case's requests
+    # (readonly_mode:user, readonly_mode:staff_writes_only, ...), as
+    # Discourse.enable_readonly_mode sets them, less the TTL keep-alive.
+    (c["readonly"] || []).each { |key| Discourse.redis.set(key, 1) }
     # `rate_limits`: the limiter on for the case's requests and jobs only
     # (after the login and setup, which would count otherwise).
     RateLimiter.enable if c["rate_limits"]
@@ -355,6 +361,7 @@ cases.each do |c|
     record[:next_ids] = first_ids.slice(*record[:changes].select { |_, c| c[:inserted].any? }.keys)
     record[:settings] = c["settings"] if c["settings"]
     record[:setup] = c["setup"] if c["setup"]
+    record[:readonly] = c["readonly"] if c["readonly"]
     record[:enqueue] = c["enqueue"] if c["enqueue"]
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]

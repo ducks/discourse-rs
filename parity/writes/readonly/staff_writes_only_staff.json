@@ -1,0 +1,171 @@
+{
+  "name": "staff_writes_only_staff",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/drafts.json"
+    }
+  ],
+  "started_at": "2026-10-14T04:23:21.274919",
+  "transaction_started_at": "2026-10-14T04:23:18.119397",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "id": 8
+      },
+      "headers": {
+        "Discourse-Readonly": "true"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "drafts": []
+      },
+      "headers": {
+        "Discourse-Readonly": "true"
+      }
+    }
+  ],
+  "changes": {
+    "bookmarks": {
+      "inserted": [
+        {
+          "id": 8,
+          "name": null,
+          "pinned": null,
+          "user_id": 1,
+          "created_at": "2026-10-14T04:23:21.314491",
+          "updated_at": "2026-10-14T04:23:21.314491",
+          "reminder_at": null,
+          "bookmarkable_id": 37,
+          "reminder_set_at": "2026-10-14T04:23:21.300251",
+          "bookmarkable_type": "Post",
+          "reminder_last_sent_at": null,
+          "auto_delete_preference": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 38,
+            "liked": false,
+            "posted": true,
+            "user_id": 1,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.275782",
+            "last_visited_at": "2026-09-30T07:28:29.276347",
+            "first_visited_at": "2026-09-30T07:28:29.276347",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 4,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.284363"
+          },
+          "after": {
+            "id": 38,
+            "liked": false,
+            "posted": true,
+            "user_id": 1,
+            "topic_id": 35,
+            "bookmarked": true,
+            "last_posted_at": "2026-09-30T07:28:29.275782",
+            "last_visited_at": "2026-09-30T07:28:29.276347",
+            "first_visited_at": "2026-09-30T07:28:29.276347",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 4,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.284363"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HPi9GYH0Qx7V9OL0yWDW1Sh4x5M=",
+            "created_at": "2026-10-14T04:23:19.068529",
+            "rotated_at": "2026-10-14T04:23:19.066366",
+            "updated_at": "2026-10-14T04:23:19.068529",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HPi9GYH0Qx7V9OL0yWDW1Sh4x5M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T04:23:21.284647",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HPi9GYH0Qx7V9OL0yWDW1Sh4x5M=",
+            "created_at": "2026-10-14T04:23:19.068529",
+            "rotated_at": "2026-10-14T04:23:19.066366",
+            "updated_at": "2026-10-14T04:23:19.068529",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HPi9GYH0Qx7V9OL0yWDW1Sh4x5M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 37,
+        "input": "bookmark"
+      }
+    ]
+  ],
+  "next_ids": {
+    "bookmarks": 8
+  },
+  "readonly": [
+    "readonly_mode:staff_writes_only"
+  ],
+  "keep_headers": [
+    "Discourse-Readonly"
+  ],
+  "recorded_from": {
+    "case": "ee6c00faccd15a84d9de69016f708f59a1dc2cc7de5774d43a5e5e52c3128c73",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

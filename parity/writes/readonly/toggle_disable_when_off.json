@@ -1,0 +1,131 @@
+{
+  "name": "toggle_disable_when_off",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/backups/readonly.json",
+      "params": {
+        "enable": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/readonly",
+      "params": {
+        "enable": "anything"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:23:38.655676",
+  "transaction_started_at": "2026-10-14T04:23:34.81134",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jBn7Ds1dEJ2fyh4j72KsGLdbrUA=",
+            "created_at": "2026-10-14T04:23:36.344153",
+            "rotated_at": "2026-10-14T04:23:36.341634",
+            "updated_at": "2026-10-14T04:23:36.344153",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jBn7Ds1dEJ2fyh4j72KsGLdbrUA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T04:23:38.671756",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jBn7Ds1dEJ2fyh4j72KsGLdbrUA=",
+            "created_at": "2026-10-14T04:23:36.344153",
+            "rotated_at": "2026-10-14T04:23:36.341634",
+            "updated_at": "2026-10-14T04:23:36.344153",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jBn7Ds1dEJ2fyh4j72KsGLdbrUA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 44,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "f",
+          "admin_only": true,
+          "created_at": "2026-10-14T04:23:38.694039",
+          "ip_address": null,
+          "updated_at": "2026-10-14T04:23:38.694039",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "t",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 44,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "f",
+          "admin_only": true,
+          "created_at": "2026-10-14T04:23:38.744393",
+          "ip_address": null,
+          "updated_at": "2026-10-14T04:23:38.744393",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "t",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "d07404466b21bcd3948845b9aa5b2e65a1a566719e8981ab034916c02bb198e3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
