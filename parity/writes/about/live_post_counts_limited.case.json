@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/about/live_post_counts.json"
+    },
+    {
+      "method": "GET",
+      "path": "/about/live_post_counts.json"
+    }
+  ]
+}

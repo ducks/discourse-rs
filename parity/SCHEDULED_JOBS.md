@@ -28,6 +28,7 @@ Classes:
 | top_refresh_today, top_refresh_older | 1h, 1d | scheduled/top_refresh_* |
 | update_topic_hot_scores | 10m | scheduled/hot_scores* |
 | category_stats | 1d | scheduled/category_stats* |
+| about_stats | 30m | about/* (its cache, read by about.json) |
 | Chat::PeriodicalUpdates | 15m | scheduled/chat_periodical_updates* |
 | Chat::AutoJoinUsers | 1h | scheduled/chat_auto_* |
 | Chat::DeleteOldMessages | daily (from the worker's start; Rails: midnight) | scheduled/chat_delete_old_messages* |
@@ -70,7 +71,7 @@ the features below (ROADMAP.md's queue has them).
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
 | enqueue_digest_emails | digest emails |
 | directory_refresh | the user directory |
-| about_stats | the /about page |
+
 | purge_unactivated, clean_up_inactive_users, clean_up_unused_staged_users | deleting users (UserDestroyer) |
 | pending_queued_posts_reminder, pending_users_reminder, enqueue_suspect_users | queued posts, user review |
 | fix_user_usernames_and_groups_names_clash | username changes |

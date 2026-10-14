@@ -190,7 +190,10 @@ Bugs or silent gaps in what is merged, small and independent.
 67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
 69. `feat/email-unsubscribe` M, 70. `feat/digest-email` L,
     71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
-73. `feat/about-stats` S/M, 74. `feat/directory` M
+73. ~~`feat/about-stats`~~ (done) S/M (about.json with Stat.api_stats and
+    their cache, the about_stats job, live_post_counts. Left: the about
+    page's HTML; category moderators, banner image, localized settings
+    and visitor stats are refused), 74. `feat/directory` M
 75. `feat/review-reject-queued-post` M,
     76. `feat/user-destroyer-delete-posts` M
 77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,

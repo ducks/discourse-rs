@@ -359,3 +359,17 @@ pub async fn document(
     about.insert("category_moderators".into(), json!([]));
     Ok(json!({ "users": users, "about": about }))
 }
+
+/// Jobs::AboutStats, every 30 minutes.
+pub const JOB: &str = "about_stats";
+
+/// `About.refresh_stats`: computed again and cached.
+pub async fn refresh(state: &crate::AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let stats = Value::Object(api_stats(&mut conn, &settings).await?);
+    crate::owned_schema::cached_setex(&mut conn, STATS_CACHE_KEY, STATS_TTL, &stats.to_string())
+        .await?;
+    Ok(())
+}
