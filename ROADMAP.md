@@ -159,7 +159,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 6: badges and topic timers
 
-56. ~~`feat/badge-grant`~~ (done) M, 57. `feat/badge-queue` M (Rails' queue is
+56. ~~`feat/badge-grant`~~ (done) M, 57. ~~`feat/badge-queue`~~ (done) M (Rails' queue is
     Redis: the harness cannot see a missed enqueue, so each enqueue
     site gets a backlog case), 58. `feat/badge-jobs` M,
     59. `feat/badges-read` M

@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-13T23:45:43.669637",
-  "transaction_started_at": "2026-10-13T23:45:42.805845",
+  "started_at": "2026-10-14T00:25:01.867176",
+  "transaction_started_at": "2026-10-14T00:24:59.286321",
   "responses": [
     {
       "status": 200,
@@ -58,7 +58,7 @@
         ],
         "user_badge": {
           "id": 20,
-          "granted_at": "2026-10-13T23:45:43.690Z",
+          "granted_at": "2026-10-14T00:25:01.890Z",
           "grouping_position": 10,
           "is_favorite": null,
           "can_favorite": false,
@@ -135,29 +135,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "TF+4G/0mNpmfdNlQCZkZxsC3KJw=",
-            "created_at": "2026-10-13T23:45:43.159612",
-            "rotated_at": "2026-10-13T23:45:43.15868",
-            "updated_at": "2026-10-13T23:45:43.159612",
+            "auth_token": "dHPiioMKbqAFSe3OwiRKe1EJ2nY=",
+            "created_at": "2026-10-14T00:24:59.745683",
+            "rotated_at": "2026-10-14T00:24:59.743256",
+            "updated_at": "2026-10-14T00:24:59.745683",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "TF+4G/0mNpmfdNlQCZkZxsC3KJw=",
+            "prev_auth_token": "dHPiioMKbqAFSe3OwiRKe1EJ2nY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-10-13T23:45:43.678187",
+            "seen_at": "2026-10-14T00:25:01.876151",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "TF+4G/0mNpmfdNlQCZkZxsC3KJw=",
-            "created_at": "2026-10-13T23:45:43.159612",
-            "rotated_at": "2026-10-13T23:45:43.15868",
-            "updated_at": "2026-10-13T23:45:43.159612",
+            "auth_token": "dHPiioMKbqAFSe3OwiRKe1EJ2nY=",
+            "created_at": "2026-10-14T00:24:59.745683",
+            "rotated_at": "2026-10-14T00:24:59.743256",
+            "updated_at": "2026-10-14T00:24:59.745683",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "TF+4G/0mNpmfdNlQCZkZxsC3KJw=",
+            "prev_auth_token": "dHPiioMKbqAFSe3OwiRKe1EJ2nY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -173,8 +173,8 @@
           "post_id": null,
           "user_id": 3,
           "badge_id": 100,
-          "created_at": "2026-10-13T23:45:43.692778",
-          "granted_at": "2026-10-13T23:45:43.690341",
+          "created_at": "2026-10-14T00:25:01.894048",
+          "granted_at": "2026-10-14T00:25:01.890999",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": 1,
@@ -282,9 +282,9 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-13T23:45:43.703385",
+          "created_at": "2026-10-14T00:25:01.908618",
           "ip_address": null,
-          "updated_at": "2026-10-13T23:45:43.703385",
+          "updated_at": "2026-10-14T00:25:01.908618",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -363,10 +363,13 @@
     "user_histories": 74
   },
   "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
     "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
   ],
   "recorded_from": {
-    "case": "2f14379a231d59062158730677e9b8ad23aa56225b9ea35467851d8c670424d5",
+    "case": "7c878b71012964de94392c5cc74e1c49100ad7da8fb725a3ce8df005ae7caa36",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

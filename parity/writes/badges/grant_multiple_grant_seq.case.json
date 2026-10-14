@@ -1,6 +1,9 @@
 {
   "user": "admin",
   "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
     "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
     "UPDATE badges SET multiple_grant = TRUE WHERE id = 100",
     "INSERT INTO user_badges (badge_id, user_id, granted_at, granted_by_id, seq, created_at) VALUES (100, 3, now() - interval '1 day', 1, 0, now() - interval '1 day')"

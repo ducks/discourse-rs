@@ -1,0 +1,558 @@
+{
+  "name": "backlog_wiki_edit",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "A wiki edit by someone else, long enough for the wiki editor badge."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:24:14.364016",
+  "transaction_started_at": "2026-10-14T00:24:12.129645",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "post": {
+          "id": 36,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "cooked": "<p>A wiki edit by someone else, long enough for the wiki editor badge.</p>",
+          "post_number": 2,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-10-14T00:24:14.484Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 15.2,
+          "yours": false,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters",
+          "display_username": "User1",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 2,
+          "can_edit": true,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": false,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": false,
+          "raw": "A wiki edit by someone else, long enough for the wiki editor badge.",
+          "actions_summary": [
+            {
+              "id": 2,
+              "count": 1,
+              "can_act": true
+            },
+            {
+              "id": 6,
+              "can_act": true
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 3,
+          "draft_sequence": 1,
+          "hidden": false,
+          "trust_level": 2,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": true,
+          "notice": {
+            "type": "new_user"
+          },
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "reactions": [
+            {
+              "id": "heart",
+              "type": "emoji",
+              "count": 1
+            }
+          ],
+          "current_user_reaction": null,
+          "reaction_users_count": 1,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null
+        }
+      }
+    }
+  ],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 48,
+            "icon": "far-pen-to-square",
+            "name": "Wiki Editor",
+            "query": "SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.36439",
+            "show_posts": false,
+            "updated_at": "2026-07-25T05:58:07.36439",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 48,
+            "icon": "far-pen-to-square",
+            "name": "Wiki Editor",
+            "query": "SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.36439",
+            "show_posts": false,
+            "updated_at": "2026-10-14T00:24:14.688054",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 4,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"badge_id\":48,\"badge_name\":\"Wiki Editor\",\"badge_slug\":\"wiki-editor\",\"badge_title\":false,\"username\":\"user2\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": null,
+          "created_at": "2026-10-14T00:24:14.67215",
+          "updated_at": "2026-10-14T00:24:14.67215",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 36,
+          "user_id": 4,
+          "created_at": "2026-10-14T00:24:14.496865",
+          "updated_at": "2026-10-14T00:24:14.496865",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- A wiki edit by someone else, long enough for the wiki editor badge.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>A wiki edit by someone else, long enough for the wiki editor badge.</p>\"\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "A wiki edit by someone else, long enough for the wiki editor badge.",
+            "search_data": "'badg':20 'edit':10 'editor':19 'els':13 'enough':15 'fixtur':2A 'general':6B 'guid':7C 'long':14 'pariti':1A 'poster':5A 'repli':3A 'someon':12 'wiki':9,18",
+            "private_message": false
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "raw": "Reply one from user1, also long enough to pass the minimum length check.",
+            "wiki": true,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:29.079363",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:29.079439",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:29.079439",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 3,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:29.094067",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/36@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 36,
+            "raw": "A wiki edit by someone else, long enough for the wiki editor badge.",
+            "wiki": true,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>A wiki edit by someone else, long enough for the wiki editor badge.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 2,
+            "baked_at": "2026-10-14T00:24:14.483913",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:29.079439",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T00:24:14.484189",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 4,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-14T00:24:14.401692",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/36@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y1ZlwiBE2PMnkc8JHW6mTmWvBuE=",
+            "created_at": "2026-10-14T00:24:12.943152",
+            "rotated_at": "2026-10-14T00:24:12.941437",
+            "updated_at": "2026-10-14T00:24:12.943152",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Y1ZlwiBE2PMnkc8JHW6mTmWvBuE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T00:24:14.374388",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y1ZlwiBE2PMnkc8JHW6mTmWvBuE=",
+            "created_at": "2026-10-14T00:24:12.943152",
+            "rotated_at": "2026-10-14T00:24:12.941437",
+            "updated_at": "2026-10-14T00:24:12.943152",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Y1ZlwiBE2PMnkc8JHW6mTmWvBuE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 20,
+          "seq": 0,
+          "post_id": 36,
+          "user_id": 4,
+          "badge_id": 48,
+          "created_at": "2026-10-14T00:24:12.129645",
+          "granted_at": "2026-10-14T00:24:14.496865",
+          "is_favorite": null,
+          "featured_rank": null,
+          "granted_by_id": -1,
+          "notification_id": 53
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": 1,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_post_revision",
+      {
+        "user_ids": [
+          3
+        ],
+        "post_revision_id": 1
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 36,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 36,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 36
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "notifications": 53,
+    "post_revisions": 1,
+    "user_badges": 20
+  },
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
+    "UPDATE posts SET wiki = TRUE WHERE id = 36"
+  ],
+  "enqueue": [
+    [
+      "process_badge_backlog",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "pull_hotlinked_images",
+      {
+        "post_id": 36
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "f135f26813a51f43f3aab2fd26d385ea28f27b08f96e30aff698afcffe78a654",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

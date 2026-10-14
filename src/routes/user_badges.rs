@@ -1,6 +1,7 @@
 //! UserBadgesController's writes: POST /user_badges (grant), DELETE
 //! /user_badges/:id (revoke) and PUT /user_badges/:id/toggle_favorite;
-//! and UsersController#badge_title, PUT /u/:username/preferences/badge_title.
+//! and UsersController#badge_title, PUT /u/:username/preferences/badge_title,
+//! and #read_faq, POST /u/read-faq (which queues the user's badges).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -387,6 +388,41 @@ pub async fn toggle_favorite(
     badge_granter::update_featured_ranks(&mut tx, Some(&[user_id])).await?;
     tx.commit().await?;
     Ok(StatusCode::NO_CONTENT.into_response())
+}
+
+/// POST /u/:username: only /u/read-faq is a POST route.
+pub async fn post_user(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(username): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if username != "read-faq" && username != "read-faq.json" {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    // UsersController#read_faq: the user's stat saved (its after_save
+    // queues the user's badges).
+    if let Some(user_id) = guardian.user_id() {
+        let mut tx = state.pool.begin().await?;
+        let settings =
+            SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+        sqlx::query(
+            "UPDATE user_stats SET read_faq = clock_timestamp() - interval '1 second' \
+             WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?;
+        badge_granter::queue_user_change(&mut tx, &settings, user_id).await?;
+        tx.commit().await?;
+    }
+    Ok(Json(json!({"success": "OK"})).into_response())
 }
 
 /// PUT /u/:username/*rest: only preferences/badge_title has a PUT.

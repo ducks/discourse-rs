@@ -214,6 +214,14 @@ pub async fn flag(
         {
             return Ok(Outcome::RateLimited(refused));
         }
+        // A new post action's badges, queued (related_post_id is NULL).
+        crate::badge_granter::queue(
+            &mut tx,
+            ctx.settings,
+            crate::badge_granter::Trigger::PostAction,
+            &[post.id],
+        )
+        .await?;
     }
     // after_save
     update_counters(&mut tx, &types, post.id, req.type_id).await?;

@@ -116,7 +116,9 @@ def clear_redis_state
   # unique-pm-post: the duplicate check's key for posts in messages.
   # grpmsg, last_notified_reviewable_id: what GroupMessage and the
   # reviewables reminder remember having sent.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id].each do |pattern|
+  # badge_queue: BadgeGranter's queue, which a backlog case would drain
+  # with earlier cases' payloads in it.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id badge_queue].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.

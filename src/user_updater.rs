@@ -485,6 +485,8 @@ pub(crate) async fn after_save(
     if active_admin && s.get("has_login_hint")?.truthy() {
         return Err(Unsupported("clearing the login hint").into());
     }
+    // badge_grant
+    crate::badge_granter::queue_user_change(conn, s, user_id).await?;
     // refresh_avatar
     let attempted: Option<bool> = sqlx::query_scalar(
         "SELECT last_gravatar_download_attempt IS NOT NULL FROM user_avatars WHERE user_id = $1",

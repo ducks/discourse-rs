@@ -279,6 +279,16 @@ pub(crate) async fn create(
     {
         return Ok(Outcome::RateLimited(refused));
     }
+    // A new post action's badges, queued (related_post_id is NULL).
+    if revived.is_none() {
+        crate::badge_granter::queue(
+            &mut *tx,
+            ctx.settings,
+            crate::badge_granter::Trigger::PostAction,
+            &[post.id],
+        )
+        .await?;
+    }
     // GivenDailyLike.increment_for
     let updated = sqlx::query(&format!(
         "UPDATE given_daily_likes SET likes_given = likes_given + 1 WHERE user_id = $1 AND given_date = {TODAY}"
