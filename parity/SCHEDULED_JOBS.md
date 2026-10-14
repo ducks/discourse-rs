@@ -63,6 +63,7 @@ Classes:
 | topic_timer_enqueuer (and close_topic, open_topic, bump_topic, delete_topic, delete_replies, clear_slow_mode) | 1m (publish_topic_to_category refused: TopicPublisher) | topic_timers/job_* |
 | process_badge_backlog | 1m (a producer the port misses is invisible until a backlog case covers it) | badges/backlog_* |
 | badge_grant (each badge a backfill_badge job), ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | 1d (the scheduler never passes the anniversary job a start_date) | badges/job_* |
+| fix_user_usernames_and_groups_names_clash | 1w (UsernameChanger inline, no staff log) | scheduled/username_group_clash* |
 
 ## Ready, in porting order
 
@@ -75,7 +76,6 @@ the features below (ROADMAP.md's queue has them).
 |---|---|
 | ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | pending_queued_posts_reminder, pending_users_reminder, enqueue_suspect_users | queued posts, user review |
-| fix_user_usernames_and_groups_names_clash | username changes |
 | aggregate_web_hooks_events, cleanup_redelivering_web_hook_events, redeliver_web_hook_events, purge_old_web_hook_events, purge_old_web_hook_events_daily_aggregate | web hooks |
 | clean_up_unused_user_api_keys, clean_up_user_api_keys_max_life, clean_up_unused_registered_user_api_key_clients | user API keys |
 | clear_expired_impersonations | impersonation |

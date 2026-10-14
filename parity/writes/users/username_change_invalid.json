@@ -1,0 +1,134 @@
+{
+  "name": "username_change_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "bad name"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "ab"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "user..one"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "user1.png"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "password"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:47:13.901998",
+  "transaction_started_at": "2026-10-14T02:47:11.535777",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username must only include numbers, letters, dashes, dots, and underscores"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username must be at least 3 characters"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username must not contain a sequence of 2 or more special chars (.-_)"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username must not end with a confusing suffix like .json or .png etc."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username is the same as your password."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zL4LRcBcu/LnDVw+I0swoY/fmtI=",
+            "created_at": "2026-10-14T02:47:12.510959",
+            "rotated_at": "2026-10-14T02:47:12.509913",
+            "updated_at": "2026-10-14T02:47:12.510959",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zL4LRcBcu/LnDVw+I0swoY/fmtI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:47:13.91454",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zL4LRcBcu/LnDVw+I0swoY/fmtI=",
+            "created_at": "2026-10-14T02:47:12.510959",
+            "rotated_at": "2026-10-14T02:47:12.509913",
+            "updated_at": "2026-10-14T02:47:12.510959",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zL4LRcBcu/LnDVw+I0swoY/fmtI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "51784270951eab2a9ad43738e6f7f4a317fa7942992282a69735d42f8aa0370f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

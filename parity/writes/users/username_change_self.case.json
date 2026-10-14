@@ -1,0 +1,21 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '1 day' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user2/preferences/username.json",
+      "params": {
+        "new_username": "user2b"
+      }
+    }
+  ],
+  "run_jobs": [
+    "update_username"
+  ],
+  "settings": {
+    "external_system_avatars_url": "https://avatars.example.com/v4/letter/{first_letter}/{color}/{size}.png"
+  }
+}

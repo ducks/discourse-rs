@@ -1,0 +1,4 @@
+{
+  "user": "admin",
+  "requests": [{"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "bad name"}}, {"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "ab"}}, {"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "user..one"}}, {"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "user1.png"}}, {"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "password"}}]
+}

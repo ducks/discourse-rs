@@ -329,7 +329,11 @@ fn context(pairs: Vec<(&str, serde_json::Value)>) -> serde_json::Value {
 
 /// `PrettyText.avatar_img(template, size)`: the size's pixels, the URL at
 /// the avatar size twice as large (as the server renders for 2x).
-fn avatar_img(settings: &SiteSettings, template: &str, size: &str) -> Result<String, AppError> {
+pub(crate) fn avatar_img(
+    settings: &SiteSettings,
+    template: &str,
+    size: &str,
+) -> Result<String, AppError> {
     let px: i64 = match size {
         "tiny" | "small" => 24,
         "medium" | "large" => 48,

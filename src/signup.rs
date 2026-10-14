@@ -50,6 +50,17 @@ const CLASHING_ROUTES: [&str; 23] = [
 
 /// `User.reserved_username?` or a clash with a route.
 pub fn reserved_username(settings: &SiteSettings, username: &str) -> Result<bool, AppError> {
+    Ok(reserved_by_settings(settings, username)? || clashing_with_existing_route(username)?)
+}
+
+/// `UsernameValidator.clashing_with_existing_route?`
+pub fn clashing_with_existing_route(username: &str) -> Result<bool, AppError> {
+    let lower = accounts::normalize_username(username)?;
+    Ok(CLASHING_ROUTES.contains(&lower.as_str()))
+}
+
+/// `User.reserved_username?`: the here mention or a reserved pattern.
+pub fn reserved_by_settings(settings: &SiteSettings, username: &str) -> Result<bool, AppError> {
     let lower = accounts::normalize_username(username)?;
     if settings.get("here_mention")?.to_s() == lower {
         return Ok(true);
@@ -66,11 +77,11 @@ pub fn reserved_username(settings: &SiteSettings, username: &str) -> Result<bool
             return Ok(true);
         }
     }
-    Ok(CLASHING_ROUTES.contains(&lower.as_str()))
+    Ok(false)
 }
 
 /// `UsernameValidator#valid_format?` for ASCII usernames: the first error.
-fn username_format_error(
+pub(crate) fn username_format_error(
     settings: &SiteSettings,
     i18n: &I18n,
     username: &str,

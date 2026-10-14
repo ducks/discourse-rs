@@ -438,6 +438,9 @@ pub async fn put_user_tail(
         "preferences/badge_title" | "preferences/badge_title.json" => {
             badge_title(state, guardian, username, headers, uri, body).await
         }
+        "preferences/username" | "preferences/username.json" => {
+            super::user_update::username(state.0, guardian.0, username, headers, uri, body).await
+        }
         _ => Ok(super::topics::not_found_response(&state.0)),
     }
 }

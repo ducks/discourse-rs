@@ -227,7 +227,9 @@ Bugs or silent gaps in what is merged, small and independent.
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
     with queued and reviewed posts landed with 75; block_urls on onebox
     engines)
-77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,
+77. ~~`feat/username-changer`~~ (done) L (non-ASCII usernames and a
+    category description a rewritten definition would change are
+    refused), 78. `feat/user-anonymizer` M,
     79. `feat/user-merger` L
 
 [users-digests-dnd]
