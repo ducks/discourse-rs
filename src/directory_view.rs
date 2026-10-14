@@ -13,10 +13,63 @@ use crate::topic_list_view::{ListContext, escape, icon, t, t_count, t_with};
 /// `site.periods` (TopTopic.periods), in the period chooser's order.
 pub const PERIODS: [&str; 6] = ["all", "yearly", "quarterly", "monthly", "weekly", "daily"];
 
-/// An enabled automatic directory column (`/directory-columns.json`).
+/// An enabled directory column (`/directory-columns.json`): an automatic
+/// one, or a user field's (named after the field).
 pub struct Column {
     pub name: String,
     pub icon: Option<String>,
+    pub user_field_id: Option<i32>,
+}
+
+/// `encodeURIComponent`, as Ember's router writes a query param.
+fn encode_uri_component(s: &str) -> String {
+    let mut out = String::new();
+    for b in s.bytes() {
+        if b.is_ascii_alphanumeric() || b"-_.!~*'()".contains(&b) {
+            out.push(b as char);
+        } else {
+            out.push_str(&format!("%{b:02X}"));
+        }
+    }
+    out
+}
+
+/// DirectoryItemUserFieldValue: the item's values for the field (split on
+/// commas, dashes as spaces), linked to the directory filtered by each
+/// when the field is searchable, else written as one list; `-` without.
+fn user_field_value(cx: &ListContext, item: &Value, field_id: i32) -> String {
+    let data = &item["user"]["user_fields"][field_id.to_string()];
+    let joined = match &data["value"] {
+        Value::Array(values) if !values.is_empty() => values
+            .iter()
+            .map(|v| {
+                v.as_str()
+                    .map(str::to_string)
+                    .unwrap_or_else(|| v.to_string())
+            })
+            .collect::<Vec<_>>()
+            .join(","),
+        _ => return "-".into(),
+    };
+    let values: Vec<String> = joined
+        .split(',')
+        .map(|v| v.replace('-', " ").trim().to_string())
+        .collect();
+    if data["searchable"].as_bool() == Some(true) {
+        values
+            .iter()
+            .map(|v| {
+                format!(
+                    "<a class=\"directory-value-list-item\" href=\"{}/u?name={}\">{}</a>",
+                    cx.base_path,
+                    encode_uri_component(v),
+                    escape(v)
+                )
+            })
+            .collect()
+    } else {
+        escape(&values.join(","))
+    }
 }
 
 /// The users route's model and the controller's query params.
@@ -165,14 +218,25 @@ fn header_label(cx: &ListContext, field: &str) -> String {
 }
 
 /// DTableHeaderToggle
-fn header_toggle(cx: &ListContext, d: &Directory, field: &str, icon_name: Option<&str>) -> String {
+/// (`translated`: a user field's column, labelled with the field's name.)
+fn header_toggle(
+    cx: &ListContext,
+    d: &Directory,
+    field: &str,
+    icon_name: Option<&str>,
+    translated: bool,
+) -> String {
     let current = d.order == field;
     let (aria_sort, pressed, chevron) = match (current, d.asc) {
         (true, true) => ("ascending", "mixed", Some("chevron-up")),
         (true, false) => ("descending", "true", Some("chevron-down")),
         _ => ("none", "false", None),
     };
-    let label = header_label(cx, field);
+    let label = if translated {
+        field.to_string()
+    } else {
+        header_label(cx, field)
+    };
     let mut criteria = String::new();
     if icon_name == Some("heart") {
         criteria.push_str(&t_count(cx, "likes_lowercase", 2, &[]));
@@ -182,15 +246,16 @@ fn header_toggle(cx: &ListContext, d: &Directory, field: &str, icon_name: Option
     // A click sorts by the field, descending, or by the current field the
     // other way round (toggleProperties).
     let next_asc = current && !d.asc;
+    let field_attr = escape(field);
     format!(
-        "<div aria-sort=\"{aria_sort}\" class=\"directory-table__column-header sortable\" role=\"columnheader\" data-order=\"{field}\"{}><div aria-label=\"{}\" aria-pressed=\"{pressed}\" class=\"header-contents\" id=\"table-header-toggle-{}\" role=\"button\" tabindex=\"0\"><span class=\"text\">{}{}{}</span></div></div>",
+        "<div aria-sort=\"{aria_sort}\" class=\"directory-table__column-header sortable\" role=\"columnheader\" data-order=\"{field_attr}\"{}><div aria-label=\"{}\" aria-pressed=\"{pressed}\" class=\"header-contents\" id=\"table-header-toggle-{}\" role=\"button\" tabindex=\"0\"><span class=\"text\">{}{}{}</span></div></div>",
         if next_asc { " data-asc=\"true\"" } else { "" },
         escape(&t_with(
             cx,
             "directory.sort.label",
             &[("criteria", &criteria)]
         )),
-        field.split_whitespace().collect::<String>(),
+        escape(&field.split_whitespace().collect::<String>()),
         icon_name
             .map(|i| format!("{} ", icon(i, None)))
             .unwrap_or_default(),
@@ -215,6 +280,14 @@ pub fn row(cx: &ListContext, d: &Directory, item: &Value) -> String {
         crate::user_info_view::user_info(cx, &item["user"], Some(3))
     );
     for c in d.columns {
+        if let Some(field_id) = c.user_field_id {
+            out.push_str(&format!(
+                "<div class=\"directory-table__cell--user-field\" role=\"cell\"><span class=\"directory-table__label\"><span>{}</span></span> <span class=\"directory-table__value--user-field\">{}</span></div>",
+                escape(&c.name),
+                user_field_value(cx, item, field_id)
+            ));
+            continue;
+        }
         let count = item[&c.name].as_i64().unwrap_or(0);
         out.push_str(&format!(
             "<div class=\"directory-table__cell\" role=\"cell\"><span class=\"directory-table__label\"><span>{}{}</span></span> <span class=\"directory-table__value\">{}</span></div>",
@@ -265,6 +338,7 @@ fn client_config(cx: &ListContext, d: &Directory) -> Value {
         "columns": d.columns.iter().map(|c| json!({
             "name": c.name,
             "icon": c.icon,
+            "userFieldId": c.user_field_id,
             "label": json!({
                 "one": cell_label(cx, &c.name, 1),
                 "other": cell_label(cx, &c.name, 2),
@@ -353,9 +427,15 @@ pub fn render(cx: &ListContext, d: &Directory) -> String {
         out.push_str(&format!(
             "<div class=\"horizontal-scroll-sync__container directory-table-container\"><div class=\"horizontal-scroll-sync__top-scroll\"><div class=\"horizontal-scroll-sync__fake-content\"></div></div><div class=\"horizontal-scroll-sync__content\"><div class=\"directory-table\" role=\"table\" style=\"grid-template-columns: minmax(15em, 3fr) repeat({count}, minmax(max-content, 1fr));\"><div class=\"directory-table__header\">"
         ));
-        out.push_str(&header_toggle(cx, d, "username", None));
+        out.push_str(&header_toggle(cx, d, "username", None, false));
         for c in d.columns {
-            out.push_str(&header_toggle(cx, d, &c.name, c.icon.as_deref()));
+            out.push_str(&header_toggle(
+                cx,
+                d,
+                &c.name,
+                c.icon.as_deref(),
+                c.user_field_id.is_some(),
+            ));
         }
         if d.period == "all" {
             out.push_str(&format!(

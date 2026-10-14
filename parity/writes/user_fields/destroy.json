@@ -1,0 +1,157 @@
+{
+  "name": "destroy",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/config/user_fields/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/config/user_fields/999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/user_fields.json"
+    }
+  ],
+  "started_at": "2026-10-14T12:01:55.915853",
+  "transaction_started_at": "2026-10-14T12:01:53.94533",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "user_fields": []
+      }
+    }
+  ],
+  "changes": {
+    "directory_columns": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 40,
+          "icon": null,
+          "name": null,
+          "type": 1,
+          "enabled": true,
+          "position": 10,
+          "created_at": "2026-10-14T12:01:53.94533",
+          "user_field_id": 1,
+          "automatic_position": null
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RpIpz1MpNkmo7hZSJHANf/fd+PI=",
+            "created_at": "2026-10-14T12:01:54.365922",
+            "rotated_at": "2026-10-14T12:01:54.364773",
+            "updated_at": "2026-10-14T12:01:54.365922",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RpIpz1MpNkmo7hZSJHANf/fd+PI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T12:01:55.926924",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RpIpz1MpNkmo7hZSJHANf/fd+PI=",
+            "created_at": "2026-10-14T12:01:54.365922",
+            "rotated_at": "2026-10-14T12:01:54.364773",
+            "updated_at": "2026-10-14T12:01:54.365922",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RpIpz1MpNkmo7hZSJHANf/fd+PI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_field_options": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "value": "cat",
+          "created_at": "2026-10-13T12:01:53.94533",
+          "updated_at": "2026-10-13T12:01:53.94533",
+          "user_field_id": 1
+        },
+        {
+          "id": 2,
+          "value": "dog",
+          "created_at": "2026-10-13T12:01:53.94533",
+          "updated_at": "2026-10-13T12:01:53.94533",
+          "user_field_id": 1
+        }
+      ],
+      "updated": []
+    },
+    "user_fields": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "name": "Pet",
+          "editable": true,
+          "position": 1,
+          "required": true,
+          "created_at": "2026-10-13T12:01:53.94533",
+          "field_type": null,
+          "searchable": false,
+          "updated_at": "2026-10-13T12:01:53.94533",
+          "description": "Your pet",
+          "requirement": 0,
+          "external_name": null,
+          "external_type": null,
+          "show_on_signup": true,
+          "field_type_enum": 2,
+          "show_on_profile": true,
+          "show_on_user_card": false
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 1, 'cat', now() - interval '1 day', now() - interval '1 day'), (2, 1, 'dog', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO directory_columns (id, name, enabled, position, type, user_field_id) VALUES (40, NULL, true, 10, 1, 1)",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'cat', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "f51f8ca452821c05d5ffb31230a6e95f0220f72452d59cc678d5d33435ec7a30",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

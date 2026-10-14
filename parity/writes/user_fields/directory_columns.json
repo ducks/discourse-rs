@@ -1,0 +1,750 @@
+{
+  "name": "directory_columns",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory-columns.json"
+    },
+    {
+      "method": "GET",
+      "path": "/edit-directory-columns.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/edit-directory-columns.json",
+      "params": {
+        "directory_columns": {
+          "0": {
+            "id": "1",
+            "enabled": "false",
+            "position": "1"
+          },
+          "1": {
+            "id": "2",
+            "enabled": "true",
+            "position": "12"
+          },
+          "2": {
+            "id": "{{responses.1.body.directory_columns.9.id}}",
+            "enabled": "true",
+            "position": "2"
+          },
+          "3": {
+            "id": "3",
+            "enabled": "true",
+            "position": "3"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory-columns.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/edit-directory-columns.json",
+      "params": {
+        "directory_columns": {
+          "0": {
+            "id": "1",
+            "enabled": "false",
+            "position": "1"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory-columns"
+    },
+    {
+      "method": "GET",
+      "path": "/edit-directory-columns.json"
+    }
+  ],
+  "started_at": "2026-10-14T12:31:04.503534",
+  "transaction_started_at": "2026-10-14T12:30:58.614274",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "directory_columns": [
+          {
+            "id": 1,
+            "name": "likes_received",
+            "type": "automatic",
+            "position": 1,
+            "icon": "heart",
+            "user_field_id": null
+          },
+          {
+            "id": 2,
+            "name": "likes_given",
+            "type": "automatic",
+            "position": 2,
+            "icon": "heart",
+            "user_field_id": null
+          },
+          {
+            "id": 3,
+            "name": "topic_count",
+            "type": "automatic",
+            "position": 3,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 4,
+            "name": "post_count",
+            "type": "automatic",
+            "position": 4,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 5,
+            "name": "topics_entered",
+            "type": "automatic",
+            "position": 5,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 6,
+            "name": "posts_read",
+            "type": "automatic",
+            "position": 6,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 7,
+            "name": "days_visited",
+            "type": "automatic",
+            "position": 7,
+            "icon": null,
+            "user_field_id": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "directory_columns": [
+          {
+            "id": 1,
+            "name": "likes_received",
+            "type": "automatic",
+            "position": 1,
+            "icon": "heart",
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 1,
+            "user_field": null
+          },
+          {
+            "id": 2,
+            "name": "likes_given",
+            "type": "automatic",
+            "position": 2,
+            "icon": "heart",
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 2,
+            "user_field": null
+          },
+          {
+            "id": 3,
+            "name": "topic_count",
+            "type": "automatic",
+            "position": 3,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 3,
+            "user_field": null
+          },
+          {
+            "id": 4,
+            "name": "post_count",
+            "type": "automatic",
+            "position": 4,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 4,
+            "user_field": null
+          },
+          {
+            "id": 5,
+            "name": "topics_entered",
+            "type": "automatic",
+            "position": 5,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 5,
+            "user_field": null
+          },
+          {
+            "id": 6,
+            "name": "posts_read",
+            "type": "automatic",
+            "position": 6,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 6,
+            "user_field": null
+          },
+          {
+            "id": 7,
+            "name": "days_visited",
+            "type": "automatic",
+            "position": 7,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 7,
+            "user_field": null
+          },
+          {
+            "id": 34,
+            "name": "gamification_score",
+            "type": "plugin",
+            "position": 8,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": null
+          },
+          {
+            "id": 35,
+            "name": "solutions",
+            "type": "plugin",
+            "position": 9,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": null
+          },
+          {
+            "id": 36,
+            "name": "Color",
+            "type": "user_field",
+            "position": 10,
+            "icon": null,
+            "user_field_id": 1,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": {
+              "id": 1,
+              "name": "Color",
+              "description": "Your color",
+              "field_type": "text",
+              "editable": true,
+              "required": false,
+              "requirement": "optional",
+              "show_on_profile": true,
+              "show_on_user_card": false,
+              "show_on_signup": true,
+              "searchable": false,
+              "position": 1
+            }
+          },
+          {
+            "id": 37,
+            "name": "Langs",
+            "type": "user_field",
+            "position": 11,
+            "icon": null,
+            "user_field_id": 2,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": {
+              "id": 2,
+              "name": "Langs",
+              "description": "Languages",
+              "field_type": "multiselect",
+              "editable": true,
+              "required": false,
+              "requirement": "optional",
+              "show_on_profile": false,
+              "show_on_user_card": true,
+              "show_on_signup": true,
+              "searchable": true,
+              "position": 2,
+              "options": [
+                "rust"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "directory_columns": [
+          {
+            "id": 36,
+            "name": "Color",
+            "type": "user_field",
+            "position": 2,
+            "icon": null,
+            "user_field_id": 1
+          },
+          {
+            "id": 3,
+            "name": "topic_count",
+            "type": "automatic",
+            "position": 3,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 4,
+            "name": "post_count",
+            "type": "automatic",
+            "position": 4,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 5,
+            "name": "topics_entered",
+            "type": "automatic",
+            "position": 5,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 6,
+            "name": "posts_read",
+            "type": "automatic",
+            "position": 6,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 7,
+            "name": "days_visited",
+            "type": "automatic",
+            "position": 7,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 2,
+            "name": "likes_given",
+            "type": "automatic",
+            "position": 12,
+            "icon": "heart",
+            "user_field_id": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Must have at least one column enabled"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "directory_columns": [
+          {
+            "id": 36,
+            "name": "Color",
+            "type": "user_field",
+            "position": 2,
+            "icon": null,
+            "user_field_id": 1
+          },
+          {
+            "id": 3,
+            "name": "topic_count",
+            "type": "automatic",
+            "position": 3,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 4,
+            "name": "post_count",
+            "type": "automatic",
+            "position": 4,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 5,
+            "name": "topics_entered",
+            "type": "automatic",
+            "position": 5,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 6,
+            "name": "posts_read",
+            "type": "automatic",
+            "position": 6,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 7,
+            "name": "days_visited",
+            "type": "automatic",
+            "position": 7,
+            "icon": null,
+            "user_field_id": null
+          },
+          {
+            "id": 2,
+            "name": "likes_given",
+            "type": "automatic",
+            "position": 12,
+            "icon": "heart",
+            "user_field_id": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "directory_columns": [
+          {
+            "id": 3,
+            "name": "topic_count",
+            "type": "automatic",
+            "position": 3,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 3,
+            "user_field": null
+          },
+          {
+            "id": 4,
+            "name": "post_count",
+            "type": "automatic",
+            "position": 4,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 4,
+            "user_field": null
+          },
+          {
+            "id": 5,
+            "name": "topics_entered",
+            "type": "automatic",
+            "position": 5,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 5,
+            "user_field": null
+          },
+          {
+            "id": 6,
+            "name": "posts_read",
+            "type": "automatic",
+            "position": 6,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 6,
+            "user_field": null
+          },
+          {
+            "id": 7,
+            "name": "days_visited",
+            "type": "automatic",
+            "position": 7,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 7,
+            "user_field": null
+          },
+          {
+            "id": 34,
+            "name": "gamification_score",
+            "type": "plugin",
+            "position": 8,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": null
+          },
+          {
+            "id": 35,
+            "name": "solutions",
+            "type": "plugin",
+            "position": 9,
+            "icon": null,
+            "user_field_id": null,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": null
+          },
+          {
+            "id": 37,
+            "name": "Langs",
+            "type": "user_field",
+            "position": 11,
+            "icon": null,
+            "user_field_id": 2,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": {
+              "id": 2,
+              "name": "Langs",
+              "description": "Languages",
+              "field_type": "multiselect",
+              "editable": true,
+              "required": false,
+              "requirement": "optional",
+              "show_on_profile": false,
+              "show_on_user_card": true,
+              "show_on_signup": true,
+              "searchable": true,
+              "position": 2,
+              "options": [
+                "rust"
+              ]
+            }
+          },
+          {
+            "id": 1,
+            "name": "likes_received",
+            "type": "automatic",
+            "position": 1,
+            "icon": "heart",
+            "user_field_id": null,
+            "enabled": false,
+            "automatic_position": 1,
+            "user_field": null
+          },
+          {
+            "id": 2,
+            "name": "likes_given",
+            "type": "automatic",
+            "position": 12,
+            "icon": "heart",
+            "user_field_id": null,
+            "enabled": true,
+            "automatic_position": 2,
+            "user_field": null
+          },
+          {
+            "id": 36,
+            "name": "Color",
+            "type": "user_field",
+            "position": 2,
+            "icon": null,
+            "user_field_id": 1,
+            "enabled": true,
+            "automatic_position": null,
+            "user_field": {
+              "id": 1,
+              "name": "Color",
+              "description": "Your color",
+              "field_type": "text",
+              "editable": true,
+              "required": false,
+              "requirement": "optional",
+              "show_on_profile": true,
+              "show_on_user_card": false,
+              "show_on_signup": true,
+              "searchable": false,
+              "position": 1
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "directory_columns": {
+      "inserted": [
+        {
+          "id": 37,
+          "icon": null,
+          "name": null,
+          "type": 1,
+          "enabled": false,
+          "position": 11,
+          "created_at": "2026-10-14T12:30:58.614274",
+          "user_field_id": 2,
+          "automatic_position": null
+        },
+        {
+          "id": 36,
+          "icon": null,
+          "name": null,
+          "type": 1,
+          "enabled": true,
+          "position": 2,
+          "created_at": "2026-10-14T12:30:58.614274",
+          "user_field_id": 1,
+          "automatic_position": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "icon": "heart",
+            "name": "likes_received",
+            "type": 0,
+            "enabled": true,
+            "position": 1,
+            "created_at": "2026-07-25T05:58:07.717123",
+            "user_field_id": null,
+            "automatic_position": 1
+          },
+          "after": {
+            "id": 1,
+            "icon": "heart",
+            "name": "likes_received",
+            "type": 0,
+            "enabled": false,
+            "position": 1,
+            "created_at": "2026-07-25T05:58:07.717123",
+            "user_field_id": null,
+            "automatic_position": 1
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "icon": "heart",
+            "name": "likes_given",
+            "type": 0,
+            "enabled": true,
+            "position": 2,
+            "created_at": "2026-07-25T05:58:07.720527",
+            "user_field_id": null,
+            "automatic_position": 2
+          },
+          "after": {
+            "id": 2,
+            "icon": "heart",
+            "name": "likes_given",
+            "type": 0,
+            "enabled": true,
+            "position": 12,
+            "created_at": "2026-07-25T05:58:07.720527",
+            "user_field_id": null,
+            "automatic_position": 2
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ywF+NkgAhJFygDCpYwgmI1JgcIc=",
+            "created_at": "2026-10-14T12:31:01.528113",
+            "rotated_at": "2026-10-14T12:31:01.514006",
+            "updated_at": "2026-10-14T12:31:01.528113",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ywF+NkgAhJFygDCpYwgmI1JgcIc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T12:31:04.516764",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ywF+NkgAhJFygDCpYwgmI1JgcIc=",
+            "created_at": "2026-10-14T12:31:01.528113",
+            "rotated_at": "2026-10-14T12:31:01.514006",
+            "updated_at": "2026-10-14T12:31:01.528113",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ywF+NkgAhJFygDCpYwgmI1JgcIc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "{\"name\":\"likes_received\",\"enabled\":\"true\"}{\"name\":\"likes_given\",\"position\":\"2\"}{\"name\":\"\",\"enabled\":\"false\",\"position\":\"10\"}",
+          "admin_only": true,
+          "created_at": "2026-10-14T12:31:04.802257",
+          "ip_address": null,
+          "updated_at": "2026-10-14T12:31:04.802257",
+          "category_id": null,
+          "custom_type": "update_directory_columns",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"name\":\"likes_received\",\"enabled\":\"false\"}{\"name\":\"likes_given\",\"position\":\"12\"}{\"name\":\"\",\"enabled\":\"true\",\"position\":\"2\"}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "directory_columns": 36,
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, true, 2, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 2, 'rust', now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'red', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "ad13c433d5a7d24c9c40f9c422c1d17756a5ad85c915d36dbf35e654c226ddbb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

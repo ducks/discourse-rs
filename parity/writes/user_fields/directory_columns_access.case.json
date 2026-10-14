@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/directory-columns.json"},
+    {"method": "GET", "path": "/edit-directory-columns.json"},
+    {"method": "PUT", "path": "/edit-directory-columns.json", "params": {"directory_columns": {"0": {"id": "1", "enabled": "false", "position": "1"}}}}
+  ]
+}

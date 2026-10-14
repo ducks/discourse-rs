@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, true, 1, 2, now(), now()), (2, 'Pet', 'Your pet', 2, true, true, false, false, 2, 0, now(), now()), (3, 'Langs', 'Languages', 3, true, false, true, false, 3, 0, now(), now()), (4, 'Locked', 'Set by staff', 0, false, true, false, false, 4, 0, now(), now()), (5, '', 'Accept', 1, true, false, false, false, 5, 0, now(), now())",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 2, 'cat', now(), now()), (2, 2, 'dog', now(), now()), (3, 3, 'a', now(), now()), (4, 3, 'b', now(), now()), (5, 3, 'c', now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'red', now(), now()), (3, 'user_field_3', 'c', now(), now()), (3, 'user_field_4', 'locked', now(), now())"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/u/user1.json", "params": {"user_fields": {"1": "blue", "2": "bird", "3": ["b", "zz", "a"], "4": "changed", "5": "true"}}},
+    {"method": "PUT", "path": "/u/user1.json", "params": {"user_fields": {"1": ""}}},
+    {"method": "PUT", "path": "/u/user1.json", "params": {"user_fields": {"2": "dog", "3": [], "5": "false"}}},
+    {"method": "PUT", "path": "/u/user1.json", "params": {"user_fields": {"1": "Blue sky", "99": "nothing"}, "name": "User One"}},
+    {"method": "GET", "path": "/u/user1.json"}
+  ]
+}

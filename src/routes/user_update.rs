@@ -122,7 +122,39 @@ pub async fn update(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    if !user_updater::update(&mut tx, &ctx, &guardian, &target, &attrs).await? {
+    // `params[:user_fields].present?`: the values, into custom_fields.
+    let custom_fields = match attrs.remove("user_fields") {
+        None | Some(Value::Null) => None,
+        Some(Value::Object(given)) if given.is_empty() => None,
+        Some(Value::String(s)) if crate::ruby::is_blank(&s) => None,
+        Some(Value::Object(given)) => {
+            match crate::user_fields::update_values(&mut tx, &given, guardian.is_staff(), target.id)
+                .await?
+            {
+                Ok(values) => Some(values),
+                Err(()) => {
+                    let message = state.i18n.t("login.missing_user_field").unwrap_or("");
+                    return Ok(errors(
+                        StatusCode::UNPROCESSABLE_ENTITY,
+                        message.to_string(),
+                    ));
+                }
+            }
+        }
+        Some(_) => {
+            return Err(crate::Unsupported("user_fields that isn't a hash (NoMethodError)").into());
+        }
+    };
+    if !user_updater::update(
+        &mut tx,
+        &ctx,
+        &guardian,
+        &target,
+        &attrs,
+        custom_fields.as_deref(),
+    )
+    .await?
+    {
         // json_result's render_json_error(user): no errors on the user,
         // its profile or options, so the generic one. What the updater
         // wrote before failing stays.

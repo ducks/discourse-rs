@@ -1,0 +1,10 @@
+{
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, show_on_signup, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, true, false, 2, 2, now() - interval '1 day', now() - interval '1 day'), (2, 'Color', 'Your <b>color</b>', 0, false, false, true, false, true, 1, 0, now() - interval '1 day', now() - interval '1 day'), (3, '', 'Accept', 1, true, false, false, true, false, 3, 1, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_field_options (id, user_field_id, value, created_at, updated_at) VALUES (1, 1, 'dog', now() - interval '1 day', now() - interval '1 day'), (2, 1, 'cat', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/site.json"}
+  ],
+  "ignore": ["/responses/0/body/markdown_additional_options", "/responses/0/body/hashtag_configurations", "/responses/0/body/hashtag_icons", "/responses/0/body/access_control", "/responses/0/body/categories/*/custom_fields", "/responses/0/body/valid_flag_applies_to_types", "/responses/0/body/admin_config_login_routes", "/responses/0/body/permanent_upcoming_change_names", "/responses/0/body/topic_admin_button_workflows", "/responses/0/body/post_button_workflows", "/responses/0/body/users_on_holiday"]
+}

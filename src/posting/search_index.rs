@@ -206,8 +206,8 @@ pub async fn index_tag(
 const USER_INDEX_VERSION: i32 = 3;
 
 /// `SearchIndexer.update_users_index`: username (A) and name (B),
-/// lowercased, under the "simple" stemmer. Searchable user fields (C) are
-/// not ported.
+/// lowercased, and the searchable user fields' values (C), under the
+/// "simple" stemmer.
 pub async fn index_user(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -216,15 +216,29 @@ pub async fn index_user(
     name: Option<&str>,
 ) -> Result<(), AppError> {
     check_unported(settings)?;
-    let searchable: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_fields WHERE searchable)")
-            .fetch_one(&mut *conn)
-            .await?;
-    if searchable {
-        return Err(Unsupported("indexing searchable user fields").into());
-    }
+    // `user_custom_fields.searchable.map(&:value).join(" ")`
+    let custom_fields: Vec<Option<String>> = sqlx::query_scalar(
+        "SELECT user_custom_fields.value FROM user_custom_fields \
+         INNER JOIN user_fields ON user_fields.id = REPLACE(user_custom_fields.name, 'user_field_', '')::INTEGER \
+         WHERE user_custom_fields.user_id = $1 AND user_fields.searchable = TRUE \
+           AND user_custom_fields.name ~ '^user_field_\\d+$' \
+         ORDER BY user_custom_fields.id",
+    )
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let custom_fields = custom_fields
+        .into_iter()
+        .map(Option::unwrap_or_default)
+        .collect::<Vec<_>>()
+        .join(" ");
     let name = name.map(str::to_lowercase).unwrap_or_default();
-    let weights = [Some(username_lower), Some(name.as_str()), Some(""), None];
+    let weights = [
+        Some(username_lower),
+        Some(name.as_str()),
+        Some(custom_fields.as_str()),
+        None,
+    ];
     let (search_data, prepared) = tsvector(conn, settings, Some("simple"), &weights).await?;
     let raw_data = prepared
         .iter()

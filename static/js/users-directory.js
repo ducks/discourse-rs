@@ -148,6 +148,37 @@
     );
   }
 
+  // directory_view::user_field_value (DirectoryItemUserFieldValue)
+  function userFieldValue(item, fieldId) {
+    var fields = (item.user && item.user.user_fields) || {};
+    var data = fields[fieldId];
+    if (!data || !data.value || data.value.length === 0) {
+      return "-";
+    }
+    var values = data.value
+      .toString()
+      .split(",")
+      .map(function (v) {
+        return v.replace(/-/g, " ").trim();
+      });
+    if (data.searchable) {
+      return values
+        .map(function (v) {
+          return (
+            '<a class="directory-value-list-item" href="' +
+            config.basePath +
+            "/u?name=" +
+            encodeURIComponent(v) +
+            '">' +
+            escape(v) +
+            "</a>"
+          );
+        })
+        .join("");
+    }
+    return escape(values.join(","));
+  }
+
   // directory_view::row
   function row(item) {
     var me = config.meId != null && item.user && item.user.id === config.meId;
@@ -158,6 +189,15 @@
       userInfo(item.user || {}) +
       "</div>";
     config.columns.forEach(function (column) {
+      if (column.userFieldId != null) {
+        html +=
+          '<div class="directory-table__cell--user-field" role="cell"><span class="directory-table__label"><span>' +
+          escape(column.name) +
+          '</span></span> <span class="directory-table__value--user-field">' +
+          userFieldValue(item, column.userFieldId) +
+          "</span></div>";
+        return;
+      }
       var count = item[column.name] || 0;
       html +=
         '<div class="directory-table__cell" role="cell"><span class="directory-table__label"><span>' +

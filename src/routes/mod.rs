@@ -7,6 +7,7 @@ mod admin_emoji;
 mod admin_groups;
 mod admin_logs;
 mod admin_site_settings;
+mod admin_user_fields;
 mod admin_users;
 mod admin_watched_words;
 mod archive_message;
@@ -17,6 +18,7 @@ mod bookmarks;
 mod bus;
 pub(crate) mod composer;
 mod directory;
+mod directory_columns;
 mod do_not_disturb;
 mod drafts;
 mod email;
@@ -53,6 +55,7 @@ mod impersonate;
 mod onebox;
 mod polls;
 mod reactions;
+mod required_fields;
 mod session;
 mod session_2fa;
 mod site;
@@ -599,6 +602,48 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/config/emoji/settings", get(admin_emoji::page))
         .route("/admin/config/emoji/import", get(admin_emoji::page))
         .route("/admin/config/emoji/{id}", delete(admin_emoji::destroy))
+        .route(
+            "/admin/config/user_fields",
+            get(admin_user_fields::index).post(admin_user_fields::create),
+        )
+        .route(
+            "/admin/config/user_fields.json",
+            get(admin_user_fields::index).post(admin_user_fields::create),
+        )
+        .route(
+            "/admin/config/user_fields/{id}",
+            get(admin_user_fields::show)
+                .put(admin_user_fields::update)
+                .delete(admin_user_fields::destroy),
+        )
+        .route(
+            "/admin/config/user_fields/{id}/edit",
+            get(admin_user_fields::edit),
+        )
+        .route(
+            "/admin/config/user_fields/{id}/edit.json",
+            get(admin_user_fields::edit),
+        )
+        .route(
+            "/admin/config/user-fields",
+            get(admin_user_fields::index_alias),
+        )
+        .route(
+            "/admin/config/user-fields.json",
+            get(admin_user_fields::index_alias),
+        )
+        .route(
+            "/admin/config/user-fields/{id}",
+            get(admin_user_fields::show),
+        )
+        .route(
+            "/admin/config/user-fields/{id}/edit",
+            get(admin_user_fields::edit),
+        )
+        .route(
+            "/admin/config/user-fields/{id}/edit.json",
+            get(admin_user_fields::edit),
+        )
         .route("/site/emoji", get(admin_emoji::site_emoji))
         .route("/site/emoji.json", get(admin_emoji::site_emoji))
         .route(
@@ -1265,6 +1310,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/g/{name}/permissions.json", get(groups::permissions))
         .route("/directory_items", cached!(get(directory::index)))
         .route("/directory_items.json", cached!(get(directory::index)))
+        .route("/directory-columns", get(directory_columns::index))
+        .route("/directory-columns.json", get(directory_columns::index))
+        .route(
+            "/edit-directory-columns",
+            get(directory_columns::edit_index).put(directory_columns::edit_update),
+        )
+        .route(
+            "/edit-directory-columns.json",
+            get(directory_columns::edit_index).put(directory_columns::edit_update),
+        )
         .route("/about/live_post_counts", get(about::live_post_counts))
         .route("/about/live_post_counts.json", get(about::live_post_counts))
         .route("/assets/site.css", get(asset))
@@ -1350,6 +1405,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
     }
     router
         .nest_service("/images", images)
+        // redirect_to_profile_if_required, after the login checks.
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            required_fields::gate,
+        ))
         // Only for routed requests, as Rails' before_action only runs once a
         // route matched: an unknown path (a browser's /favicon.ico) is a 404,
         // not a redirect to the login page that overwrites destination_url.

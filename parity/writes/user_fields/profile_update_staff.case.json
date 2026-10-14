@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Company', 'Where you work', 0, false, true, false, false, 1, 1, now(), now())",
+    "INSERT INTO user_required_fields_versions (id, created_at, updated_at) VALUES (1, now(), now())"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/u/user2.json", "params": {"user_fields": {"1": ""}}},
+    {"method": "PUT", "path": "/u/user2.json", "params": {"user_fields": {"1": "Acme"}}},
+    {"method": "PUT", "path": "/u/admin.json", "params": {"user_fields": {"1": "Discourse"}}}
+  ]
+}

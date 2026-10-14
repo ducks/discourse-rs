@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, requirement, created_at, updated_at) VALUES (1, 'Pet', 'Your pet', 2, true, true, false, 1, 0, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/config/user_fields.json"},
+    {"method": "GET", "path": "/admin/config/user-fields.json"},
+    {"method": "DELETE", "path": "/admin/config/user_fields/1.json"}
+  ]
+}

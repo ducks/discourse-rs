@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/user_fields.json", "params": {"user_field": {"name": "Company", "description": "Where you work", "field_type": "text", "requirement": "for_all_users", "show_on_profile": true}}},
+    {"method": "GET", "path": "/u/admin.json"}
+  ]
+}

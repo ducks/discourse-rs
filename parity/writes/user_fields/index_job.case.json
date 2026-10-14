@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (3, 'user_field_1', 'Crimson', now(), now()), (4, 'user_field_1', 'Teal', now(), now())"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/config/user_fields/1.json", "params": {"user_field": {"searchable": true}}}
+  ],
+  "run_jobs": [
+    "index_user_fields_for_search"
+  ]
+}
