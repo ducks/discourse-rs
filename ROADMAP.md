@@ -164,7 +164,11 @@ Bugs or silent gaps in what is merged, small and independent.
     (FinalDestination: SSRF guard with DNS pinning, redirects, the https
     domain cache; RetrieveTitle; other sites' inline titles. Pages in
     charsets other than UTF-8 are refused; block oneboxes of other sites
-    wait on the engines), 53. `feat/onebox-engines-nofetch` M,
+    wait on the engines), 53. ~~`feat/onebox-engines-nofetch`~~ (done) M
+    (FinalDestination#resolve, the matcher with all 69 engines, the
+    media, Twitch, Youku, Typeform, Google Meet and Calendar engines,
+    Preview with the Sanitize port, external_onebox with its caches,
+    strategies and error previews; engines that fetch stay refused),
     54. `feat/onebox-generic` L, 55. `feat/onebox-engines-api` L
 
 [client-infra]
