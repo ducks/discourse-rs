@@ -1,0 +1,13 @@
+{
+  "enqueue": [
+    [
+      "directory_refresh",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "directory_refresh"
+  ],
+  "requests": [],
+  "include_tables": []
+}

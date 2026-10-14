@@ -1,0 +1,39 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json"
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "bogus"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "page": "11"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "page": "x"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "limit": "51"
+      }
+    }
+  ]
+}

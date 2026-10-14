@@ -239,6 +239,7 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     (list_stats::CATEGORY_STATS, Duration::from_secs(24 * 3600)),
     (crate::about::JOB, Duration::from_secs(30 * 60)),
+    (crate::directory::JOB, Duration::from_secs(3600)),
     (
         crate::plugins::chat::scheduled::PERIODICAL_UPDATES,
         Duration::from_secs(15 * 60),
@@ -427,6 +428,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         list_stats::UPDATE_TOPIC_HOT_SCORES => list_stats::update_topic_hot_scores(state).await,
         list_stats::CATEGORY_STATS => list_stats::category_stats(state).await,
         crate::about::JOB => crate::about::refresh(state).await,
+        crate::directory::JOB => crate::directory::refresh_job(state).await,
         crate::plugins::chat::scheduled::PERIODICAL_UPDATES => {
             crate::plugins::chat::scheduled::periodical_updates(state).await
         }

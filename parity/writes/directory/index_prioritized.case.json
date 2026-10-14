@@ -1,0 +1,15 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "limit": "1",
+        "order": "post_count",
+        "asc": "true"
+      }
+    }
+  ],
+  "user": "user1"
+}
