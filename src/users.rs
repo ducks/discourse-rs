@@ -1051,7 +1051,7 @@ impl Users<'_> {
                 self.base_path,
                 &badge,
                 false,
-                false,
+                None,
             )?);
             if !side.badge_type_ids.contains(&badge.badge_type_id) {
                 side.badge_type_ids.push(badge.badge_type_id);

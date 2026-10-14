@@ -1216,23 +1216,12 @@ pub async fn primary_group(
             t.flair_group_id
         };
         if title != t.title {
-            // check_if_title_is_badged_granted
-            let title_badges: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id \
-                 WHERE ub.user_id = $1 AND b.allow_title)",
+            crate::badge_granter::check_if_title_is_badged_granted(
+                &mut tx,
+                &state.i18n,
+                user_id,
+                title.as_deref(),
             )
-            .bind(user_id)
-            .fetch_one(&mut *tx)
-            .await?;
-            if title_badges {
-                return Err(crate::Unsupported("titles granted by badges").into());
-            }
-            sqlx::query(
-                "UPDATE user_profiles SET granted_title_badge_id = NULL \
-                 WHERE user_id = $1 AND granted_title_badge_id IS NOT NULL",
-            )
-            .bind(user_id)
-            .execute(&mut *tx)
             .await?;
         }
         sqlx::query(

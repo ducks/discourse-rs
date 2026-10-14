@@ -1,0 +1,146 @@
+{
+  "name": "read_user_badges_index_username",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user_badges.json?badge_id=11&username=user1"
+    }
+  ],
+  "started_at": "2026-10-14T01:14:10.857663",
+  "transaction_started_at": "2026-10-14T01:14:09.794717",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badges": [
+          {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+            "slug": "first-like",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "users": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "trust_level": 2
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1
+          }
+        ],
+        "user_badge_info": {
+          "grant_count": 1,
+          "username": "user1",
+          "user_badges": [
+            {
+              "id": 15,
+              "granted_at": "2026-09-30T07:28:30.313Z",
+              "created_at": "2026-09-30T07:28:37.785Z",
+              "post_id": 46,
+              "post_number": 1,
+              "badge_id": 11,
+              "user_id": 3,
+              "granted_by_id": -1,
+              "topic_id": 41
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HGXAMnYto/+eX+nj4NbaFhXCpW0=",
+            "created_at": "2026-10-14T01:14:10.184271",
+            "rotated_at": "2026-10-14T01:14:10.183219",
+            "updated_at": "2026-10-14T01:14:10.184271",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HGXAMnYto/+eX+nj4NbaFhXCpW0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T01:14:11.837922",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HGXAMnYto/+eX+nj4NbaFhXCpW0=",
+            "created_at": "2026-10-14T01:14:10.184271",
+            "rotated_at": "2026-10-14T01:14:10.183219",
+            "updated_at": "2026-10-14T01:14:10.184271",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HGXAMnYto/+eX+nj4NbaFhXCpW0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "b2a43450e19410148e59d93f121e46630bf080db6102b2a23283ba595aa89571",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
