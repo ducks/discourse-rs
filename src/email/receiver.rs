@@ -847,6 +847,11 @@ async fn process_internal(
         crate::posting::create::Outcome::InvalidParameter(_) => {
             Err(Unsupported("posts by email with invalid parameters").into())
         }
+        // The review queue refuses mail before it gets here.
+        crate::posting::create::Outcome::InvalidRaw(_)
+        | crate::posting::create::Outcome::Enqueued(_) => {
+            Err(Unsupported("posts by email for the review queue").into())
+        }
         // Email::Processor re-enqueues the mail (retry_on_rate_limit) or
         // raises.
         crate::posting::create::Outcome::RateLimited(_) => {

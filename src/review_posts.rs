@@ -594,6 +594,10 @@ async fn approve(
             | "typing_duration_msecs"
             | "composer_open_duration_msecs"
             | "reply_to_post_number" => {}
+            // discourse-poll's: on approved_post the created post's polls
+            // are extracted (validate_polls(true)), refused below when
+            // there are any.
+            "is_poll" => {}
             "tags" if value.as_array().is_none_or(Vec::is_empty) => {}
             _ if value.is_null() => {}
             _ => {
@@ -610,6 +614,9 @@ async fn approve(
         .and_then(Value::as_str)
         .ok_or(Unsupported("a queued post without its raw"))?
         .to_string();
+    if payload.get("is_poll") == Some(&Value::Bool(true)) && raw.contains("[poll") {
+        return Err(Unsupported("approving a queued post with polls").into());
+    }
     if author.silenced() {
         return Err(Unsupported("unsilencing the author of an approved post").into());
     }
@@ -782,13 +789,24 @@ async fn update_pending_posts(
     ctx: &Ctx<'_>,
     author: &Author,
 ) -> Result<(), AppError> {
+    update_pending_posts_count(conn, ctx, author.id, &author.username_lower).await
+}
+
+/// `UserStat#update_pending_posts` by the user's id and lowercased name
+/// (`ReviewableQueuedPost#compute_user_stats`).
+pub(crate) async fn update_pending_posts_count(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    username_lower: &str,
+) -> Result<(), AppError> {
     let count: Option<i32> = sqlx::query_scalar(
         "UPDATE user_stats SET pending_posts_count = \
            (SELECT COUNT(*) FROM reviewables WHERE type = 'ReviewableQueuedPost' AND status = $2 \
               AND target_created_by_id = $1)::int \
          WHERE user_id = $1 RETURNING pending_posts_count",
     )
-    .bind(author.id)
+    .bind(user_id)
     .bind(PENDING)
     .fetch_optional(&mut *conn)
     .await?;
@@ -798,10 +816,10 @@ async fn update_pending_posts(
     ctx.bus
         .publish(
             &mut *conn,
-            &format!("/u/{}/counters", author.username_lower),
+            &format!("/u/{username_lower}/counters"),
             &json!({ "pending_posts_count": count }),
             Some(&[
-                crate::bus::user_tag(author.id),
+                crate::bus::user_tag(user_id),
                 crate::bus::group_tag(STAFF_GROUP),
             ]),
         )

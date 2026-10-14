@@ -298,7 +298,7 @@ pub async fn add_score(
 
 /// `topic.update(reviewable_score: ...)`: a validated save (see
 /// `topic_save::reassigned_slug`), written when anything changed.
-async fn update_topic_reviewable_score(
+pub(crate) async fn update_topic_reviewable_score(
     conn: &mut PgConnection,
     s: &SiteSettings,
     topic_id: i32,

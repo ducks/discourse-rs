@@ -584,8 +584,16 @@ async fn message_rate_limiter(
                 .t("chat.errors.rate_limit_exceeded")
                 .unwrap_or_default()
                 .to_string();
-            crate::user_penalties::silencer_silence(&state.pool, &ctx, -1, user.id, until, &reason)
-                .await?;
+            crate::user_penalties::silencer_silence(
+                &state.pool,
+                &ctx,
+                -1,
+                user.id,
+                until,
+                &reason,
+                None,
+            )
+            .await?;
         }
     }
     if let Err(refused) = limiter

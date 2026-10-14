@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE category_settings SET reply_posting_review_mode = 3 WHERE category_id = 4",
+    "INSERT INTO category_posting_review_groups (category_id, group_id, post_type, created_at, updated_at) VALUES (4, 12, 1, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that waits in the review queue before anyone else can read it.",
+        "typing_duration_msecs": 4000
+      }
+    }
+  ]
+}

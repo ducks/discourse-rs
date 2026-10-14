@@ -1,0 +1,17 @@
+{
+  "user": "user3",
+  "settings": {
+    "auto_silence_first_post_regex": "cheap pills"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Buy CHEAP PILLS here, a first post that matches the silence regex.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

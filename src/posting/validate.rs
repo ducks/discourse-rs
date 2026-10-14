@@ -26,53 +26,82 @@ pub async fn refuse_watched_words(conn: &mut PgConnection) -> Result<(), AppErro
     Ok(())
 }
 
-/// Refuses what this slice doesn't write: watched words (block, censor,
-/// require approval, tag), and anything `post_needs_approval?` would send
-/// to the review queue.
-pub async fn refuse_unported(
+/// Why `NewPostManager.post_needs_approval?` sends a post to the review
+/// queue: the needs_approval score's reason.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Reason {
+    PostCount,
+    Group,
+    NewTopicsUnlessAllowedGroups,
+    FastTyper,
+    AutoSilenceRegex,
+    Category,
+    ContainsMedia,
+}
+
+impl Reason {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Reason::PostCount => "post_count",
+            Reason::Group => "group",
+            Reason::NewTopicsUnlessAllowedGroups => "new_topics_unless_allowed_groups",
+            Reason::FastTyper => "fast_typer",
+            Reason::AutoSilenceRegex => "auto_silence_regex",
+            Reason::Category => "category",
+            Reason::ContainsMedia => "contains_media",
+        }
+    }
+}
+
+/// What the review queue reads of a new post (NewPostManager's args).
+pub struct ApprovalArgs<'a> {
+    pub raw: &'a str,
+    /// `args[:title]`, as sent.
+    pub title: Option<&'a str>,
+    /// `args[:topic_id]`: a reply's topic.
+    pub topic_id: Option<i32>,
+    /// `args[:category]`: a new topic's category, when given.
+    pub category_id: Option<i32>,
+    pub typing_duration_msecs: i64,
+    pub first_post_checks: bool,
+}
+
+/// `NewPostManager.post_needs_approval?` for a post that isn't a message
+/// (messages are never queued), with what `default_handler` silences the
+/// author for once it is queued.
+#[derive(Debug, Default)]
+pub struct Approval {
+    pub reason: Option<Reason>,
+    /// `is_fast_typer?`
+    pub fast_typer: bool,
+    /// `matches_auto_silence_regex?` (watched silence words are refused
+    /// with the other watched words).
+    pub auto_silence: bool,
+}
+
+/// Refuses what isn't ported: staged and trust level 0 authors.
+pub async fn post_needs_approval(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
-    new_topic: bool,
-    category_id: Option<i32>,
-    typing_duration_msecs: i64,
-    first_post_checks: bool,
-) -> Result<(), AppError> {
+    args: &ApprovalArgs<'_>,
+) -> Result<Approval, AppError> {
     let s = ctx.settings;
     let user = guardian.user().ok_or(Unsupported("posting anonymously"))?;
-    refuse_watched_words(&mut *conn).await?;
+    // exempt_user?
     if guardian.is_staff() {
-        return Ok(());
+        return Ok(Approval::default());
     }
-    if user.staged {
-        return Err(Unsupported("posting as a staged user").into());
-    }
-    if user.trust_level < 1 {
-        // New users: the review queue's post count, link/media/mention
-        // limits, host spam and sockpuppet checks.
-        return Err(Unsupported("posting as a new user (trust level 0)").into());
-    }
+    refuse_unported_author(guardian)?;
     let (post_count, topic_count): (i32, i32) =
         sqlx::query_as("SELECT post_count, topic_count FROM user_stats WHERE user_id = $1")
             .bind(user.id)
             .fetch_optional(&mut *conn)
             .await?
             .unwrap_or((0, 0));
-    if user.trust_level <= 1
-        && i64::from(post_count + topic_count) < s.get("approve_post_count")?.to_i()
-    {
-        return Err(Unsupported("the review queue (approve_post_count)").into());
-    }
-    if !guardian.in_setting_groups(s, "approve_unless_allowed_groups")? {
-        return Err(Unsupported("the review queue (approve_unless_allowed_groups)").into());
-    }
-    if new_topic && !guardian.in_setting_groups(s, "approve_new_topics_unless_allowed_groups")? {
-        return Err(
-            Unsupported("the review queue (approve_new_topics_unless_allowed_groups)").into(),
-        );
-    }
-    let first_post = first_post_checks && post_count == 0 && topic_count == 0;
-    if first_post {
+    // is_first_post?
+    let first_post = args.first_post_checks && post_count == 0 && topic_count == 0;
+    let fast_typer = first_post && {
         let threshold = match s.get("fast_typing_threshold")?.to_s().as_str() {
             "disabled" => 0,
             "low" => 1000,
@@ -80,30 +109,168 @@ pub async fn refuse_unported(
             "high" => 5000,
             _ => return Err(Unsupported("unknown fast_typing_threshold").into()),
         };
-        if typing_duration_msecs < threshold
+        args.typing_duration_msecs < threshold
             && s.get("auto_silence_fast_typers_on_first_post")?.truthy()
             && i64::from(user.trust_level)
                 <= s.get("auto_silence_fast_typers_max_trust_level")?.to_i()
-        {
-            return Err(Unsupported("the review queue (fast typers)").into());
-        }
-        if s.get("auto_silence_first_post_regex")?.presence().is_some() {
-            return Err(Unsupported("auto_silence_first_post_regex").into());
-        }
+    };
+    let auto_silence = first_post && matches_auto_silence_regex(s, args)?;
+    let reason = if user.trust_level <= 1
+        && i64::from(post_count + topic_count) < s.get("approve_post_count")?.to_i()
+    {
+        Some(Reason::PostCount)
+    } else if !guardian.in_setting_groups(s, "approve_unless_allowed_groups")? {
+        Some(Reason::Group)
+    } else if args.title.is_some_and(|t| !t.trim().is_empty())
+        && !guardian.in_setting_groups(s, "approve_new_topics_unless_allowed_groups")?
+    {
+        Some(Reason::NewTopicsUnlessAllowedGroups)
+    } else if fast_typer {
+        Some(Reason::FastTyper)
+    } else if auto_silence {
+        Some(Reason::AutoSilenceRegex)
+    } else if needs_approval_in_its_category(&mut *conn, s, guardian, args).await? {
+        Some(Reason::Category)
+    } else if !guardian.in_setting_groups(s, "skip_review_media_groups")?
+        && contains_embedded_media(ctx, args).await?
+    {
+        Some(Reason::ContainsMedia)
+    } else {
+        None
+    };
+    Ok(Approval {
+        reason,
+        fast_typer,
+        auto_silence,
+    })
+}
+
+/// Authors whose posts aren't ported: staged users, and new users (the
+/// link/media/mention limits, host spam and sockpuppet checks).
+pub fn refuse_unported_author(guardian: &Guardian) -> Result<(), AppError> {
+    let user = guardian.user().ok_or(Unsupported("posting anonymously"))?;
+    if guardian.is_staff() {
+        return Ok(());
     }
-    if let Some(category_id) = category_id {
-        let review: Option<(i32, i32)> = sqlx::query_as(
-            "SELECT topic_posting_review_mode, reply_posting_review_mode FROM category_settings \
-             WHERE category_id = $1",
-        )
-        .bind(category_id)
-        .fetch_optional(&mut *conn)
-        .await?;
-        if review.is_some_and(|(t, r)| t != 0 || r != 0) {
-            return Err(Unsupported("category posting review modes").into());
-        }
+    if user.staged {
+        return Err(Unsupported("posting as a staged user").into());
+    }
+    if user.trust_level < 1 {
+        return Err(Unsupported("posting as a new user (trust level 0)").into());
     }
     Ok(())
+}
+
+/// `matches_auto_silence_regex?` (on a first post): the setting as a
+/// case-insensitive Ruby regexp over the title and raw. A pattern the
+/// port's regexp engine can't compile is refused, not guessed at.
+fn matches_auto_silence_regex(
+    s: &crate::site_settings::SiteSettings,
+    args: &ApprovalArgs<'_>,
+) -> Result<bool, AppError> {
+    let pattern = s.get("auto_silence_first_post_regex")?.to_s();
+    if pattern.trim().is_empty() {
+        return Ok(false);
+    }
+    let regex = fancy_regex::Regex::new(&format!("(?i){pattern}"))
+        .map_err(|_| Unsupported("an auto_silence_first_post_regex the port can't compile"))?;
+    let text = format!("{} {}", args.title.unwrap_or(""), args.raw);
+    regex
+        .is_match(&text)
+        .map_err(|_| Unsupported("auto_silence_first_post_regex backtracking limit").into())
+}
+
+/// `post_needs_approval_in_its_category?`: the reply's topic's category
+/// reviews replies, or the new topic's category reviews topics, for this
+/// user. Category group moderators (who skip it) are refused.
+async fn needs_approval_in_its_category(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    guardian: &Guardian,
+    args: &ApprovalArgs<'_>,
+) -> Result<bool, AppError> {
+    let (category_id, post_type) = if let Some(topic_id) = args.topic_id {
+        let category: Option<Option<i32>> =
+            sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+                .bind(topic_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        match category.flatten() {
+            Some(id) => (id, REVIEW_REPLY),
+            None => return Ok(false),
+        }
+    } else if let Some(id) = args.category_id {
+        (id, REVIEW_TOPIC)
+    } else {
+        return Ok(false);
+    };
+    let required = posting_review_required(&mut *conn, guardian, category_id, post_type).await?;
+    if required && s.get("enable_category_group_moderation")?.truthy() {
+        return Err(Unsupported("category posting review with category group moderation").into());
+    }
+    Ok(required)
+}
+
+/// `CategoryPostingReviewGroup.post_types`
+pub const REVIEW_TOPIC: i32 = 0;
+pub const REVIEW_REPLY: i32 = 1;
+
+/// `CategoryGuardian#posting_review_required?(category, :topic | :reply)`
+pub async fn posting_review_required(
+    conn: &mut PgConnection,
+    guardian: &Guardian,
+    category_id: i32,
+    post_type: i32,
+) -> Result<bool, AppError> {
+    let column = if post_type == REVIEW_TOPIC {
+        "topic_posting_review_mode"
+    } else {
+        "reply_posting_review_mode"
+    };
+    let mode: Option<i32> = sqlx::query_scalar(&format!(
+        "SELECT {column} FROM category_settings WHERE category_id = $1"
+    ))
+    .bind(category_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let mode = mode.unwrap_or(0);
+    if mode != 2 && mode != 3 {
+        return Ok(mode == 1);
+    }
+    // CategoryPostingReviewGroup.user_in_group?: everyone, or one of the
+    // user's groups.
+    let mut groups = vec![crate::guardian::auto_groups::EVERYONE as i32];
+    groups.extend(guardian.group_ids().iter().map(|g| *g as i32));
+    let in_group: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM category_posting_review_groups \
+         WHERE category_id = $1 AND post_type = $2 AND group_id = ANY($3))",
+    )
+    .bind(category_id)
+    .bind(post_type)
+    .bind(&groups)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(if mode == 2 { !in_group } else { in_group })
+}
+
+/// `contains_embedded_media?(args)`: the raw, cooked as `Post.new(raw:,
+/// topic_id:)` would, embeds media (PostAnalyzer#embedded_media_count).
+async fn contains_embedded_media(ctx: &Ctx<'_>, args: &ApprovalArgs<'_>) -> Result<bool, AppError> {
+    let cooked = crate::pretty_text::cook(
+        ctx.host,
+        args.raw,
+        &crate::pretty_text::MarkdownOptions {
+            topic_id: args.topic_id.map(i64::from),
+            post_id: None,
+            user_id: None,
+            force_quote_link: false,
+            omit_nofollow: false,
+            chat: false,
+        },
+    )
+    .await?;
+    let base_path = ctx.config.globals.relative_url_root().to_string();
+    Ok(analyze(&cooked, &base_path)?.embedded_media > 0)
 }
 
 /// PostAnalyzer over a cooked post, after PostStripper.
@@ -262,11 +429,27 @@ pub async fn validate_post(
     post: &PostInput<'_>,
     analysis: &Analysis,
 ) -> Result<Vec<String>, AppError> {
+    let raw = raw_errors(&mut *conn, ctx, acting, post).await?;
+    if !raw.is_empty() {
+        return Ok(raw
+            .iter()
+            .map(|m| ctx.full_message("activerecord.attributes.post.raw", m))
+            .collect());
+    }
+    base_errors(conn, ctx, acting, post, analysis).await
+}
+
+/// PostValidator's `errors[:raw]`: post_body_validator (stripped_length,
+/// raw_quality) and unique_post_validator, as messages without the
+/// attribute. The other validators only run once these pass.
+pub async fn raw_errors(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    post: &PostInput<'_>,
+) -> Result<Vec<String>, AppError> {
     let s = ctx.settings;
     let mut errors = Vec::new();
-    let acting_user = acting
-        .user()
-        .ok_or(Unsupported("validating without a user"))?;
 
     // post_body_validator: stripped_length then raw_quality.
     let max = s.get("max_post_length")?.to_i();
@@ -279,10 +462,7 @@ pub async fn validate_post(
     };
     let raw_chars = post.raw.chars().count() as i64;
     if post.raw.trim().is_empty() && min > 0 {
-        errors.push(ctx.full_message(
-            "activerecord.attributes.post.raw",
-            &ctx.t("errors.messages.blank"),
-        ));
+        errors.push(ctx.t("errors.messages.blank"));
     } else if raw_chars > max {
         let form = if max == 1 { "one" } else { "other" };
         let message = ctx
@@ -295,12 +475,12 @@ pub async fn validate_post(
                 ],
             )
             .unwrap_or_default();
-        errors.push(ctx.full_message("activerecord.attributes.post.raw", &message));
+        errors.push(message);
     } else {
         let strip_uploads = s.get("prevent_uploads_only_posts")?.truthy();
         if (sanitized_length(post.raw, strip_uploads) as i64) < min {
             let message = ctx.t_count("errors.messages.too_short", min);
-            errors.push(ctx.full_message("activerecord.attributes.post.raw", &message));
+            errors.push(message);
         }
     }
     // TextSentinel.body_sentinel
@@ -326,7 +506,7 @@ pub async fn validate_post(
         skip_word_length: false,
     };
     if !sentinel.valid() {
-        errors.push(ctx.full_message("activerecord.attributes.post.raw", &ctx.t("is_invalid")));
+        errors.push(ctx.t("is_invalid"));
     }
 
     // unique_post_validator: Rails keeps the key in Redis for
@@ -347,15 +527,26 @@ pub async fn validate_post(
         .fetch_one(&mut *conn)
         .await?;
         if dupe {
-            errors.push(ctx.full_message(
-                "activerecord.attributes.post.raw",
-                &ctx.t("just_posted_that"),
-            ));
+            errors.push(ctx.t("just_posted_that"));
         }
     }
-    if !errors.is_empty() {
-        return Ok(errors);
-    }
+    Ok(errors)
+}
+
+/// PostValidator's other validators, once `raw_errors` found none:
+/// `errors.full_messages` (all on base).
+pub async fn base_errors(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    post: &PostInput<'_>,
+    analysis: &Analysis,
+) -> Result<Vec<String>, AppError> {
+    let s = ctx.settings;
+    let mut errors = Vec::new();
+    let acting_user = acting
+        .user()
+        .ok_or(Unsupported("validating without a user"))?;
 
     // max_mention_validator (trusted or PM; new users are refused).
     if !acting.is_staff() {

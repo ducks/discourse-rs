@@ -1,0 +1,18 @@
+{
+  "user": "user3",
+  "settings": {
+    "auto_silence_fast_typers_max_trust_level": 4,
+    "notify_mods_when_user_silenced": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A first post typed far too fast for a human to have written it.",
+        "typing_duration_msecs": 100
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "settings": {
+    "approve_new_topics_unless_allowed_groups": "1|2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic without a category for the queue",
+        "raw": "The first post of a topic that waits in the review queue for staff."
+      }
+    }
+  ]
+}

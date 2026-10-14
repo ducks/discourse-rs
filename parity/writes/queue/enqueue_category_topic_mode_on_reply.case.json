@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE category_settings SET topic_posting_review_mode = 1 WHERE category_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that waits in the review queue before anyone else can read it.",
+        "typing_duration_msecs": 4000
+      }
+    }
+  ]
+}

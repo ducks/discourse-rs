@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "settings": {
+    "skip_review_media_groups": "1|2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply with an embedded image:\n\n![a picture](https://example.com/picture.png)"
+      }
+    }
+  ]
+}

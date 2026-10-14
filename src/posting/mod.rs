@@ -5,6 +5,7 @@
 //! tests/writes.rs compares.
 
 pub mod create;
+pub mod enqueue;
 pub mod group_messages;
 pub mod limits;
 pub mod links;

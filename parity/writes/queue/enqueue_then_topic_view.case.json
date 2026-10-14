@@ -1,0 +1,23 @@
+{
+  "user": "user0",
+  "settings": {
+    "approve_post_count": 5
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that waits in the review queue before anyone else can read it.",
+        "typing_duration_msecs": 4000,
+        "composer_open_duration_msecs": 12000,
+        "reply_to_post_number": 1
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/35.json"
+    }
+  ]
+}
