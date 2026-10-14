@@ -984,15 +984,16 @@ async fn onebox(
         .unwrap_or_else(|| format!("<a href='{normalized}'>{normalized}</a>")))
 }
 
-/// `InlineOneboxer.lookup(url, user_id:, category_id:)` for a link of the
-/// site: a topic's title (with the post it points to); another site's
-/// refused, since its title is fetched.
+/// `InlineOneboxer.lookup(url, user_id:, category_id:)`: none when it
+/// gives nil (a topic the viewer can't see, a host inline oneboxes may not
+/// reach), else the onebox's title: a topic's (with the post it points
+/// to), or another page's, crawled.
 async fn inline_title(
     conn: &mut PgConnection,
     site: &Site<'_>,
     url: &str,
     opts: &Opts,
-) -> Result<Option<String>, AppError> {
+) -> Result<Option<Option<String>>, AppError> {
     let hostname = site.urls.current_hostname()?;
     let route = route_for(url, &hostname, site.base_path)?;
     match route {
@@ -1037,22 +1038,119 @@ async fn inline_title(
                 };
                 title = format!("{title} - {}", suffix.unwrap_or_default());
             }
-            Ok(Some(title))
+            Ok(Some(Some(censored(conn, title).await?)))
         }
         // No handler: InlineOneboxer goes on as for another site's link,
         // whose title it crawls.
-        Some(_) => Err(Unsupported("inline oneboxes of the site's pages other than topics").into()),
-        None => {
-            let has_host = url.contains("://");
-            if !has_host {
-                return Ok(None);
-            }
-            Err(
-                Unsupported("inline oneboxes of other sites (titles fetched from the network)")
-                    .into(),
-            )
-        }
+        Some(_) | None => crawled_title(conn, site, url).await,
     }
+}
+
+/// `Oneboxer.onebox_locale`
+fn onebox_locale(settings: &SiteSettings) -> Result<String, AppError> {
+    let locale = settings.get("onebox_locale")?.to_s().to_string();
+    Ok(if locale.trim().is_empty() {
+        settings.get("default_locale")?.to_s().to_string()
+    } else {
+        locale
+    })
+}
+
+/// InlineOneboxer.lookup for a link that isn't one of the site's topics:
+/// its cached title, else the page's (RetrieveTitle.crawl) when inline
+/// oneboxes may reach its domain, cached a day (a minute when blank).
+async fn crawled_title(
+    conn: &mut PgConnection,
+    site: &Site<'_>,
+    url: &str,
+) -> Result<Option<Option<String>>, AppError> {
+    let s = site.settings;
+    let locale = onebox_locale(s)?;
+    let key = format!("inline_onebox:{locale}:{url}");
+    if let Some(cached) = crate::owned_schema::cached_get(conn, &key).await? {
+        return Ok(Some(
+            serde_json::from_str::<Option<String>>(&cached).unwrap_or(None),
+        ));
+    }
+    let always = s.get("enable_inline_onebox_on_all_domains")?.truthy();
+    let allowed: Vec<String> = s
+        .get("allowed_inline_onebox_domains")?
+        .to_s()
+        .split('|')
+        .map(str::to_string)
+        .collect();
+    let Some(uri) = crate::final_destination::Uri::parse(url) else {
+        return Ok(None);
+    };
+    if !always && !allowed.contains(&uri.host) {
+        return Ok(None);
+    }
+    let fetcher = crate::final_destination::Fetcher {
+        settings: s,
+        urls: Urls {
+            config: site.urls.config,
+            settings: s,
+        },
+    };
+    if fetcher.blocked_domain(&uri.host)? {
+        return Ok(None);
+    }
+    // Oneboxer.inline_data_for: the GitHub and Google Meet engines give
+    // titles of their own.
+    if uri.host == "github.com" || uri.host == "meet.google.com" {
+        return Err(Unsupported(
+            "inline oneboxes of GitHub and Google Meet links (onebox engines)",
+        )
+        .into());
+    }
+    let block_redirects = s.get("block_onebox_on_redirect")?.truthy();
+    let accept_language = if locale == "en" {
+        "en;q=0.9, *;q=0.5".to_string()
+    } else {
+        format!("{};q=0.9, en;q=0.8, *;q=0.5", locale.replace('_', "-"))
+    };
+    let mut headers = vec![("Accept-Language".to_string(), accept_language)];
+    let agent = s.get("inline_onebox_user_agent")?.to_s().to_string();
+    if !agent.trim().is_empty() {
+        headers.push(("User-Agent".into(), agent));
+    }
+    let title = crate::retrieve_title::crawl(
+        conn,
+        &fetcher,
+        url,
+        if block_redirects { 0 } else { 5 },
+        block_redirects,
+        headers,
+    )
+    .await?
+    .filter(|t| t.chars().count() >= 2)
+    // onebox_for
+    .map(|t| crate::emoji::gsub_emoji_to_unicode(&t));
+    let title = match title {
+        Some(t) if !t.trim().is_empty() => Some(censored(conn, t).await?),
+        t => t,
+    };
+    let ttl = if title.as_deref().is_none_or(str::is_empty) {
+        60
+    } else {
+        86_400
+    };
+    crate::owned_schema::cached_setex(conn, &key, ttl, &serde_json::to_string(&title)?).await?;
+    Ok(Some(title))
+}
+
+/// `WordWatcher.censor_text`, which onebox_for runs on a title: refused
+/// while there are words to censor.
+async fn censored(conn: &mut PgConnection, title: String) -> Result<String, AppError> {
+    // WatchedWord.actions: censor 2.
+    let censor: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 2)")
+            .fetch_one(&mut *conn)
+            .await?;
+    if censor {
+        return Err(Unsupported("censored watched words in inline onebox titles").into());
+    }
+    Ok(title)
 }
 
 /// What the post processor would refuse to onebox, refused before the post
@@ -1067,25 +1165,21 @@ pub fn refuse_unported(
         if !url.is_ascii() || url.chars().any(char::is_whitespace) {
             return Err(Unsupported("onebox URLs that need encoding"));
         }
-        match route_for(url, hostname, base_path)? {
-            None if *inline && !url.contains("://") => {}
-            None if *inline => {
+        if *inline {
+            // A topic's title, or a page's crawled (RetrieveTitle), except
+            // where an onebox engine gives the title.
+            let host = crate::final_destination::Uri::parse(url).map(|u| u.host);
+            if matches!(host.as_deref(), Some("github.com" | "meet.google.com")) {
                 return Err(Unsupported(
-                    "inline oneboxes of other sites (titles fetched from the network)",
+                    "inline oneboxes of GitHub and Google Meet links (onebox engines)",
                 ));
             }
-            None => {
-                return Err(Unsupported(
-                    "oneboxes of other sites (fetched from the network)",
-                ));
-            }
-            Some(Route::Topic { .. }) => {}
-            Some(_) if *inline => {
-                return Err(Unsupported(
-                    "inline oneboxes of the site's pages other than topics",
-                ));
-            }
-            Some(_) => {}
+            continue;
+        }
+        if route_for(url, hostname, base_path)?.is_none() {
+            return Err(Unsupported(
+                "oneboxes of other sites (fetched from the network)",
+            ));
         }
     }
     Ok(())
@@ -1277,29 +1371,16 @@ pub async fn preview(
 }
 
 /// `InlineOneboxer.lookup(url, user_id:, category_id:, topic_id:)`:
-/// `{url, title}` for a topic of the site the viewer may see.
+/// `{url, title}`, none where it gives nil.
 pub async fn inline_lookup(
     conn: &mut PgConnection,
     site: &Site<'_>,
     url: &str,
     opts: &Opts,
 ) -> Result<Option<serde_json::Value>, AppError> {
-    let hostname = site.urls.current_hostname()?;
-    // No host and no route: lookup returns nil before any title.
-    if !url.contains("://") && recognize(url.split(['?', '#']).next().unwrap_or(url)).is_none() {
-        return Ok(None);
-    }
-    let title = inline_title(conn, site, url, opts).await?;
-    // A topic it can't see gives nothing at all; a link without a host,
-    // a title of nil.
-    let topic = matches!(
-        route_for(url, &hostname, site.base_path)?,
-        Some(Route::Topic { .. })
-    );
-    Ok(match (topic, title) {
-        (true, None) => None,
-        (_, title) => Some(serde_json::json!({ "url": url, "title": title })),
-    })
+    Ok(inline_title(conn, site, url, opts)
+        .await?
+        .map(|title| serde_json::json!({ "url": url, "title": title })))
 }
 
 /// What one marked link becomes.
@@ -1407,7 +1488,7 @@ pub async fn post_process(
         } else {
             inlines.push(url.clone());
             outcomes.push(Some(Outcome::Inline(
-                inline_title(conn, site, &url, opts).await?,
+                inline_title(conn, site, &url, opts).await?.flatten(),
             )));
         }
     }

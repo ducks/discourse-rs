@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_inline_onebox_on_all_domains": true,
+    "allowed_internal_hosts": "",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Not reachable</title>"
+    }
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled"
+        ]
+      }
+    }
+  ]
+}

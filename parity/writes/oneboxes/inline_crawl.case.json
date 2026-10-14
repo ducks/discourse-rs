@@ -1,0 +1,103 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_inline_onebox_on_all_domains": true,
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><head><title>\n  A   remote\n  page </title></head><body>hi</body></html>"
+    },
+    "/og": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><head><meta property=\"og:title\" content=\"Open graph title\"></head></html>"
+    },
+    "/untitled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><body><p>nothing</p></body></html>"
+    },
+    "/short": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>A</title>"
+    },
+    "/emoji": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>Hello :smile: there</title>"
+    },
+    "/moved": {
+      "status": 301,
+      "headers": {
+        "Location": "http://fixtures.localhost:8099/titled"
+      },
+      "body": ""
+    },
+    "/plain": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/plain"
+      },
+      "body": "<title>Plain text</title>"
+    },
+    "/query?a=1": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<title>With a query</title>"
+    }
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled",
+          "http://fixtures.localhost:8099/og",
+          "http://fixtures.localhost:8099/untitled",
+          "http://fixtures.localhost:8099/short",
+          "http://fixtures.localhost:8099/emoji"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/moved",
+          "http://fixtures.localhost:8099/missing",
+          "http://fixtures.localhost:8099/plain",
+          "http://fixtures.localhost:8099/query?a=1",
+          "http://fixtures.localhost/titled"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://fixtures.localhost:8099/titled"
+        ]
+      }
+    }
+  ]
+}

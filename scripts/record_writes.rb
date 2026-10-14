@@ -14,6 +14,7 @@
 # rows a case inserts get the ids discourse-rs will give them.
 require "json"
 require "fileutils"
+require "socket"
 
 cases_file, out, files_dir = ARGV
 abort "usage: record_writes.rb <cases json array> <dir> [files-dir]" if cases_file.blank? || out.blank?
@@ -116,9 +117,12 @@ def clear_redis_state
   # unique-pm-post: the duplicate check's key for posts in messages.
   # grpmsg, last_notified_reviewable_id: what GroupMessage and the
   # reviewables reminder remember having sent.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id].each do |pattern|
+  # _CACHE:inline_onebox: crawled titles (InlineOneboxer), kept a day.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
+  # FinalDestination's https domains, outside the namespace.
+  Discourse.redis.without_namespace.keys("HTTPS_DOMAIN_*").each { |k| Discourse.redis.without_namespace.del(k) }
   # Presence lives in Redis too, members and cached configs alike.
   PresenceChannel.clear_all!
   # MessageBus backlogs: responses carry channels' last ids (chat's
@@ -211,6 +215,35 @@ DB.define_singleton_method(:transaction_open?) do
   ActiveRecord::Base.connection.current_transaction != PINNED.last
 end
 
+# `remote`: the other site's pages a case fetches (inline onebox titles),
+# on http://fixtures.localhost:8099 (loopback here, as on the host the
+# replay runs on): request targets and what each answers, `{status,
+# headers, body}`; anything else is a 404. tests/writes.rs serves the same.
+REMOTE = {}
+if cases.any? { |c| c["remote"] }
+  # "::" takes IPv4 too.
+  server = TCPServer.new("::", 8099)
+  Thread.new do
+    loop do
+      Thread.new(server.accept) do |s|
+        head = +""
+        head << s.readpartial(4096) until head.include?("\r\n\r\n")
+        method, target = head.lines.first.to_s.split(" ")
+        page = REMOTE[target] || {}
+        body = page["body"].to_s
+        s.write "HTTP/1.1 #{page["status"] || 404} X\r\nConnection: close\r\nContent-Length: #{body.bytesize}\r\n"
+        (page["headers"] || {}).each { |k, v| s.write "#{k}: #{v}\r\n" }
+        s.write "\r\n"
+        s.write body if method != "HEAD"
+      rescue EOFError, IOError, SystemCallError
+        nil
+      ensure
+        s.close
+      end
+    end
+  end
+end
+
 cases.each do |c|
   ENQUEUED.clear
   pool.pin_connection!(true)
@@ -228,6 +261,7 @@ cases.each do |c|
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
+    REMOTE.replace(c["remote"] || {})
     # `files`: fixture files stored at upload urls, for rows the setup
     # inserts (they are not rolled back: removed after the case).
     (c["files"] || {}).each do |url, name|
@@ -315,6 +349,7 @@ cases.each do |c|
     record[:unordered] = c["unordered"] if c["unordered"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
     record[:files] = c["files"] if c["files"]
+    record[:remote] = c["remote"] if c["remote"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
