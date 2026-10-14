@@ -1,0 +1,109 @@
+{
+  "name": "destroy_bulk_refused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "user_ids": [
+          "5",
+          "1"
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "user_ids": [
+          "9999"
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "block_ip_and_email": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:04:21.043293",
+  "transaction_started_at": "2026-10-14T01:04:20.027551",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "One or more users cannot be deleted either because they're an admin, have too many posts or have a very old post."
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "User ids is too short (minimum is 1 character)"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2nEvbY+bpZZ0W63RW8XIkDTYsLo=",
+            "created_at": "2026-10-14T01:04:20.45639",
+            "rotated_at": "2026-10-14T01:04:20.454805",
+            "updated_at": "2026-10-14T01:04:20.45639",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2nEvbY+bpZZ0W63RW8XIkDTYsLo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T01:04:21.051289",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2nEvbY+bpZZ0W63RW8XIkDTYsLo=",
+            "created_at": "2026-10-14T01:04:20.45639",
+            "rotated_at": "2026-10-14T01:04:20.454805",
+            "updated_at": "2026-10-14T01:04:20.45639",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2nEvbY+bpZZ0W63RW8XIkDTYsLo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d8aa6809dc63628a8633a2b5e0c447c6265726a737598cc20df2e511bba45833",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

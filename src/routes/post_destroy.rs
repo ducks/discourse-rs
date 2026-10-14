@@ -119,6 +119,8 @@ pub async fn destroy_post(
         &access,
         &Request {
             context: context.as_deref(),
+            reviewable_id: None,
+            deferred: None,
         },
     )
     .await?;
@@ -216,6 +218,8 @@ pub async fn destroy_topic(
         id_of(&id),
         &Request {
             context: Some(&context),
+            reviewable_id: None,
+            deferred: None,
         },
     )
     .await?;

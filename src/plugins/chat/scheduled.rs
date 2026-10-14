@@ -265,6 +265,28 @@ pub async fn delete_old_messages(state: &AppState) -> Result<(), AppError> {
     Ok(())
 }
 
+/// `Jobs::Chat::DeleteUserMessages`: every message of a deleted user
+/// (trashed ones too) destroyed in batches of 200, whether or not chat
+/// is enabled.
+pub async fn delete_user_messages(state: &AppState, user_id: i32) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    loop {
+        let ids: Vec<i64> = sqlx::query_scalar(
+            "SELECT id FROM chat_messages WHERE user_id = $1 ORDER BY id LIMIT 200",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        if ids.is_empty() {
+            return Ok(());
+        }
+        let mut tx = state.pool.begin().await?;
+        destroy_batch(&mut tx, &state.bus, &s, &ids).await?;
+        tx.commit().await?;
+    }
+}
+
 /// `Chat::MessageDestroyer#destroy_in_batches` for one batch: the
 /// messages destroyed with what depends on them, the channels' last
 /// message and their members' last read reset past them, their flags

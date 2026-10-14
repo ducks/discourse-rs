@@ -154,22 +154,12 @@ async fn cleanup_acls_for_deleted(state: &AppState, args: &Value) -> Result<(), 
     Ok(())
 }
 
-/// Jobs::Chat::DeleteUserMessages: Chat::MessageDestroyer over every
-/// message of the user, deleted ones too. Nothing to do for a user
-/// without messages; the destroy itself is not ported.
+/// Jobs::Chat::DeleteUserMessages
 async fn chat_delete_user_messages(state: &AppState, args: &Value) -> Result<(), AppError> {
     let Some(user_id) = int_arg(args, "user_id")? else {
         return Ok(());
     };
-    let any: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM chat_messages WHERE user_id = $1)")
-            .bind(user_id)
-            .fetch_one(&state.pool)
-            .await?;
-    if any {
-        return Err(Unsupported("deleting a user's chat messages (Chat::MessageDestroyer)").into());
-    }
-    Ok(())
+    crate::plugins::chat::scheduled::delete_user_messages(state, user_id).await
 }
 
 /// Jobs::DiscourseTopicVoting::VoteRelease

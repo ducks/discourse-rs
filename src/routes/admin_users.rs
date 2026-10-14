@@ -408,6 +408,247 @@ pub async fn destroy(
     }
 }
 
+/// DELETE /admin/users/destroy-bulk(.json): Admin::UsersController
+/// #destroy_bulk (User::BulkDestroy), for staff: 1 to 100 users, each
+/// deletable, deleted in the order given with their posts, the progress
+/// published to the actor (/bulk-user-delete).
+pub async fn destroy_bulk(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let failed = |status: StatusCode, errors: Option<Vec<String>>| {
+        let mut body = json!({ "failed": "FAILED" });
+        if let Some(errors) = errors {
+            body["errors"] = json!(errors);
+        }
+        (status, Json(body)).into_response()
+    };
+    // attribute :user_ids, :array, compact_blank: true
+    let ids: Vec<String> = match p.get("user_ids") {
+        Some(Value::Array(items)) => items
+            .iter()
+            .filter_map(params::scalar)
+            .filter(|s| !s.trim().is_empty())
+            .collect(),
+        Some(Value::Object(_)) => {
+            return Err(crate::Unsupported("destroy-bulk user_ids as a hash").into());
+        }
+        Some(v) => params::scalar(v)
+            .filter(|s| !s.trim().is_empty())
+            .into_iter()
+            .collect(),
+        None => Vec::new(),
+    };
+    if ids.is_empty() || ids.len() > 100 {
+        let message = if ids.is_empty() {
+            "User ids is too short (minimum is 1 character)"
+        } else {
+            "User ids is too long (maximum is 100 characters)"
+        };
+        return Ok(failed(StatusCode::BAD_REQUEST, Some(vec![message.into()])));
+    }
+    let ids: Vec<i32> = ids
+        .iter()
+        .filter_map(|s| i32::try_from(crate::ruby::to_i(s)).ok())
+        .collect();
+    let block = crate::ruby::cast_boolean(
+        p.get("block_ip_and_email")
+            .and_then(params::scalar)
+            .as_deref(),
+    )
+    .unwrap_or(false);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // The users in the order of the ids given.
+    let users: Vec<(i32, String, Option<String>)> = sqlx::query_as(
+        "SELECT id, username, host(ip_address) FROM users WHERE id = ANY($1) \
+         ORDER BY array_position($1, id)",
+    )
+    .bind(&ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    if users.is_empty() {
+        return Ok(failed(StatusCode::NOT_FOUND, None));
+    }
+    for (id, ..) in &users {
+        let deletable = crate::guardian::DeletableUser::load(&mut conn, *id)
+            .await?
+            .ok_or(crate::Unsupported("a user gone while deleting in bulk"))?;
+        if !guardian
+            .can_delete_user(&mut conn, &settings, &deletable)
+            .await?
+        {
+            let message = state.i18n.t("user.cannot_bulk_delete").unwrap_or_default();
+            return Ok(failed(StatusCode::FORBIDDEN, Some(vec![message.into()])));
+        }
+    }
+    let actor = guardian
+        .user()
+        .ok_or(crate::Unsupported("deleting users anonymously"))?
+        .clone();
+    let actor_ip: Option<String> =
+        sqlx::query_scalar("SELECT host(ip_address) FROM users WHERE id = $1")
+            .bind(actor.id)
+            .fetch_one(&mut *conn)
+            .await?;
+    drop(conn);
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let context = ctx.t("staff_action_logs.bulk_user_delete");
+    let total = users.len();
+    for (position, (id, username, ip)) in users.iter().enumerate() {
+        let opts = crate::user_destroyer::Options {
+            delete_posts: true,
+            prepare_for_destroy: true,
+            context: Some(context.clone()),
+            block_ip: block && actor_ip != *ip,
+            block_email: block,
+            ..Default::default()
+        };
+        let mut tx = state.pool.begin().await?;
+        let outcome = crate::user_destroyer::destroy(&mut tx, &ctx, &guardian, *id, &opts).await?;
+        let result = if outcome == crate::user_destroyer::Outcome::Destroyed {
+            json!({ "success": true })
+        } else {
+            // UserDestroyer raised (InvalidAccess): reported, the rest go on.
+            json!({ "failed": true, "error": "Discourse::InvalidAccess" })
+        };
+        let mut data = json!({ "position": position + 1, "username": username, "total": total });
+        if let (Some(data), Some(result)) = (data.as_object_mut(), result.as_object()) {
+            data.extend(result.clone());
+        }
+        state
+            .bus
+            .publish(
+                &mut tx,
+                "/bulk-user-delete",
+                &data,
+                Some(&[crate::bus::user_tag(actor.id)]),
+            )
+            .await?;
+        tx.commit().await?;
+    }
+    Ok(Json(json!({ "deleted": true })).into_response())
+}
+
+/// DELETE /admin/users/delete-others-with-same-ip(.json):
+/// Admin::UsersController#delete_other_accounts_with_same_ip, for staff:
+/// up to 50 other users on the user's last (or, with ip_type
+/// registration, registration) IP, highest trust level first, deleted as
+/// spammers with their posts, emails, links and IPs blocked.
+pub async fn delete_others_with_same_ip(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // params.require(:user_id)
+    let Some(user_id) = p
+        .get("user_id")
+        .and_then(params::scalar)
+        .filter(|s| !s.is_empty())
+    else {
+        return Ok(super::accounts::param_missing("user_id"));
+    };
+    let column = match p.get("ip_type").and_then(params::scalar).as_deref() {
+        None | Some("") | Some("last") => "ip_address",
+        Some("registration") => "registration_ip_address",
+        // SAME_IP_ADDRESS_COLUMNS.fetch raises KeyError.
+        Some(_) => return Err(crate::Unsupported("an unknown ip_type (KeyError)").into()),
+    };
+    let target_id = i32::try_from(crate::ruby::to_i(&user_id)).unwrap_or(0);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let target: Option<(String, Option<String>)> = sqlx::query_as(&format!(
+        "SELECT username, host({column}) FROM users WHERE id = $1"
+    ))
+    .bind(target_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((target_username, ip)) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    // find_users(50): same IP (none without one), the user excluded,
+    // ordered by trust level.
+    let ids: Vec<i32> = match &ip {
+        Some(ip) => {
+            sqlx::query_scalar(
+                "SELECT id FROM users WHERE (ip_address = $1::inet OR registration_ip_address = $1::inet) \
+                   AND id <> $2 ORDER BY trust_level DESC NULLS LAST, id LIMIT 50",
+            )
+            .bind(ip)
+            .bind(target_id)
+            .fetch_all(&mut *conn)
+            .await?
+        }
+        None => Vec::new(),
+    };
+    let context = match &ip {
+        Some(ip) if crate::admin_users::can_see_ip(&settings, &guardian)? => state.i18n.t_with(
+            "user.destroy_reasons.same_ip_address",
+            &[("ip_address", ip)],
+        ),
+        _ => state.i18n.t_with(
+            "user.destroy_reasons.same_ip_address_user",
+            &[("username", &target_username)],
+        ),
+    }
+    .unwrap_or_default();
+    drop(conn);
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let opts = crate::user_destroyer::Options {
+        delete_posts: true,
+        block_email: true,
+        block_urls: true,
+        block_ip: true,
+        delete_as_spammer: true,
+        context: Some(context),
+        ..Default::default()
+    };
+    for id in ids {
+        let mut tx = state.pool.begin().await?;
+        match crate::user_destroyer::destroy(&mut tx, &ctx, &guardian, id, &opts).await? {
+            crate::user_destroyer::Outcome::Destroyed => tx.commit().await?,
+            // InvalidAccess, the users before it deleted.
+            _ => return Ok(super::search::invalid_access(&state)),
+        }
+    }
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
 /// Which role a route grants or revokes.
 #[derive(Clone, Copy)]
 enum RoleChange {

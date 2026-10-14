@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "user_ids": ["5", "1"]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "user_ids": ["9999"]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/destroy-bulk.json",
+      "params": {
+        "block_ip_and_email": "true"
+      }
+    }
+  ]
+}

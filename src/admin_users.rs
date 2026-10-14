@@ -608,7 +608,7 @@ fn format_penalty_reason(details: Option<&Option<String>>) -> Result<Value, AppE
 }
 
 /// `can_see_ip?`
-fn can_see_ip(settings: &SiteSettings, guardian: &Guardian) -> Result<bool, AppError> {
+pub(crate) fn can_see_ip(settings: &SiteSettings, guardian: &Guardian) -> Result<bool, AppError> {
     Ok(guardian.is_admin()
         || (guardian.is_moderator() && settings.get("moderators_view_ips")?.truthy()))
 }

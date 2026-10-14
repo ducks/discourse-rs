@@ -199,7 +199,8 @@ Bugs or silent gaps in what is merged, small and independent.
     page's HTML; category moderators, banner image, localized settings
     and visitor stats are refused), 74. `feat/directory` M
 75. `feat/review-reject-queued-post` M,
-    76. `feat/user-destroyer-delete-posts` M
+    76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
+    with queued and reviewed posts waits on 75; block_urls on onebox engines)
 77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,
     79. `feat/user-merger` L
 

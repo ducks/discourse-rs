@@ -6,9 +6,14 @@
 //! own account (DELETE /u/:username), the review queue and the cleanup
 //! jobs.
 //!
-//! Refused until ported: deleting the user's posts with them
-//! (`delete_posts` on a user with posts, and what it brings:
-//! `delete_as_spammer`'s agreeing with flags, `block_urls`), associated
+//! With `delete_posts` the user's posts go through PostDestroyer on the
+//! same transaction (its after-commit jobs held for the commit), with
+//! `delete_as_spammer` their pending flags agreed first.
+//!
+//! Refused until ported: `delete_as_spammer` on pending ReviewablePost or
+//! ReviewableQueuedPost reviews, `block_urls` on a user with external
+//! links (Oneboxer's engine check), a category definition post of the
+//! user's, posts PostDestroyer refuses (a pending flag, embeds), associated
 //! groups that put the user in groups, MCP authorizations, active
 //! `user_destroyed` web hooks, and the unported plugins' rows.
 
@@ -157,8 +162,11 @@ pub async fn destroy(
 
     if opts.delete_posts {
         crate::plugins::user_content_deleting(conn, user_id).await?;
-        // agree_with_flags, block_external_urls and delete_posts: refused
-        // in refuse_unported when they would act.
+        if opts.delete_as_spammer {
+            agree_with_flags(conn, ctx, &actor_user, user_id).await?;
+        }
+        // block_external_urls: refused in refuse_unported when it would act.
+        delete_posts(conn, ctx, actor, user_id, opts, &mut after_commit).await?;
     }
 
     resolve_reviewables_targeting(conn, ctx, user_id).await?;
@@ -288,8 +296,15 @@ pub async fn destroy(
         )
         .await?;
 
+    // A record saved more than once in the transaction (a category) runs
+    // its commit callbacks once.
+    let mut seen: Vec<(&str, serde_json::Value)> = Vec::new();
     for (job, args) in after_commit {
-        crate::jobs::enqueue(&mut *conn, job, args).await?;
+        if seen.iter().any(|(n, a)| *n == job && *a == args) {
+            continue;
+        }
+        crate::jobs::enqueue(&mut *conn, job, args.clone()).await?;
+        seen.push((job, args));
     }
 
     // The account's own reviewable, unless it is the one deleting it.
@@ -313,6 +328,102 @@ pub async fn destroy(
     Ok(Outcome::Destroyed)
 }
 
+/// `agree_with_flags` (delete_as_spammer): every pending flag review of
+/// the user's posts agreed and kept by the actor. Their other pending
+/// post reviews (rejected and deleted, queued posts rejected) are refused
+/// in refuse_unported.
+async fn agree_with_flags(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    actor: &crate::session::current::SessionUser,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let posts: Vec<Option<i32>> = sqlx::query_scalar(
+        "SELECT target_id FROM reviewables WHERE type = 'ReviewableFlaggedPost' \
+           AND target_created_by_id = $1 AND status = $2 ORDER BY id",
+    )
+    .bind(user_id)
+    .bind(PENDING)
+    .fetch_all(&mut *conn)
+    .await?;
+    for post_id in posts {
+        let post_id = post_id.ok_or(Unsupported("a flag review without its post"))?;
+        crate::review::agree_with_flags(&mut *conn, ctx, actor.id, &actor.username, post_id)
+            .await?;
+    }
+    Ok(())
+}
+
+/// `delete_posts`: each live post of the user, in id order, destroyed by
+/// the actor when staff, else by system ("User was destroyed"); a topic
+/// whose first post went loses its owner.
+async fn delete_posts(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    actor: &Guardian,
+    user_id: i32,
+    opts: &Options,
+    after_commit: &mut Vec<(&'static str, serde_json::Value)>,
+) -> Result<(), AppError> {
+    let posts: Vec<(i32, i32, i32, bool)> = sqlx::query_as(
+        "SELECT p.id, p.topic_id, p.post_number, \
+                EXISTS (SELECT 1 FROM topics t WHERE t.id = p.topic_id AND t.deleted_at IS NULL) \
+         FROM posts p WHERE p.user_id = $1 AND p.deleted_at IS NULL ORDER BY p.id",
+    )
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    if posts.is_empty() {
+        return Ok(());
+    }
+    let category_topic: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM posts p JOIN categories c ON c.topic_id = p.topic_id \
+                        WHERE p.user_id = $1 AND p.deleted_at IS NULL AND p.post_number = 1)",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if category_topic {
+        return Err(
+            Unsupported("giving a deleted user's category definition post to system").into(),
+        );
+    }
+    let system_guardian;
+    let destroyer = if actor.is_staff() {
+        actor
+    } else {
+        let system = crate::session::current::SessionUser::load(&mut *conn, SYSTEM_USER_ID)
+            .await?
+            .ok_or(Unsupported("a site without its system user"))?;
+        system_guardian = Guardian::for_user(&mut *conn, &system).await?;
+        &system_guardian
+    };
+    let context = ctx.t("staff_action_logs.user_associated_posts_deleted");
+    let deferred = crate::post_destroyer::Deferred::default();
+    let req = crate::post_destroyer::Request {
+        context: Some(&context),
+        reviewable_id: opts.reviewable_id,
+        deferred: Some(&deferred),
+    };
+    for (post_id, topic_id, post_number, live_topic) in posts {
+        crate::post_destroyer::destroy_by_staff_in(&mut *conn, ctx, destroyer, post_id, &req)
+            .await?;
+        // `post.topic` (read live, before the destroy) of a first post.
+        if live_topic && post_number == 1 {
+            sqlx::query("UPDATE topics SET user_id = NULL WHERE id = $1")
+                .bind(topic_id)
+                .execute(&mut *conn)
+                .await?;
+        }
+    }
+    after_commit.extend(
+        deferred
+            .into_inner()
+            .unwrap_or_else(std::sync::PoisonError::into_inner),
+    );
+    Ok(())
+}
+
 /// What the destroy would do here that is not ported.
 async fn refuse_unported(
     conn: &mut PgConnection,
@@ -320,20 +431,20 @@ async fn refuse_unported(
     opts: &Options,
 ) -> Result<(), AppError> {
     if opts.delete_posts {
-        let (posts, flagged, links): (bool, bool, bool) = sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM posts WHERE user_id = $1 AND deleted_at IS NULL), \
-                    EXISTS (SELECT 1 FROM reviewables WHERE target_created_by_id = $1 \
-                            AND type IN ('ReviewableFlaggedPost', 'ReviewablePost', 'ReviewableQueuedPost')), \
+        // Pending reviewables are the ones offering the actions
+        // agree_with_flags performs.
+        let (flagged, links): (bool, bool) = sqlx::query_as(
+            "SELECT EXISTS (SELECT 1 FROM reviewables WHERE target_created_by_id = $1 AND status = 0 \
+                            AND type IN ('ReviewablePost', 'ReviewableQueuedPost')), \
                     EXISTS (SELECT 1 FROM topic_links WHERE user_id = $1 AND NOT internal)",
         )
         .bind(user_id)
         .fetch_one(&mut *conn)
         .await?;
-        if posts {
-            return Err(Unsupported("deleting a user's posts with them (delete_posts)").into());
-        }
         if opts.delete_as_spammer && flagged {
-            return Err(Unsupported("agreeing with the flags on a deleted spammer's posts").into());
+            return Err(
+                Unsupported("rejecting a deleted spammer's queued or reviewed posts").into(),
+            );
         }
         if opts.block_urls && links {
             return Err(Unsupported("blocking a deleted user's links (block_urls)").into());

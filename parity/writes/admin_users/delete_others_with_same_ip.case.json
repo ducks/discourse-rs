@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "setup": [
+    "DELETE FROM user_badges WHERE user_id = 2 AND badge_id = 40"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/delete-others-with-same-ip.json",
+      "params": {
+        "user_id": "3"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/delete-others-with-same-ip.json",
+      "params": {}
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/delete-others-with-same-ip.json",
+      "params": {
+        "user_id": "9999"
+      }
+    }
+  ]
+}
