@@ -19,6 +19,8 @@ pub const SPAWN_BACKUP_RESTORE: &str = "spawn_backup_restore";
 pub const CREATE_BACKUP: &str = "create_backup";
 /// Jobs::ScheduleBackup
 pub const SCHEDULE_BACKUP: &str = "schedule_backup";
+/// Jobs::DropBackupSchema
+pub const DROP_BACKUP_SCHEMA: &str = "drop_backup_schema";
 
 /// `Discourse::SYSTEM_USER_ID`
 const SYSTEM_USER_ID: i32 = -1;
@@ -163,7 +165,20 @@ pub async fn spawn_backup_restore(state: &AppState, args: &Value) -> Result<(), 
             });
             Ok(())
         }
-        Some("restore") => Err(crate::Unsupported("restoring a backup").into()),
+        Some("restore") => {
+            let options = super::restorer::Options {
+                filename: opts["filename"].as_str().map(str::to_string),
+                client_id: opts["client_id"].as_str().map(str::to_string),
+                disable_emails: opts["disable_emails"].as_bool().unwrap_or(true),
+            };
+            let state = state.clone();
+            tokio::spawn(async move {
+                if let Err(e) = super::restorer::run(&state, user_id, options).await {
+                    tracing::error!("restore: {e}");
+                }
+            });
+            Ok(())
+        }
         other => Err(std::io::Error::other(format!(
             "Unknown argument: {}",
             other.unwrap_or_default()

@@ -1,0 +1,11 @@
+{
+  "enqueue": [
+    [
+      "drop_backup_schema"
+    ]
+  ],
+  "run_jobs": [
+    "drop_backup_schema"
+  ],
+  "requests": []
+}

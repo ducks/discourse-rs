@@ -1,0 +1,79 @@
+{
+  "name": "rollback_nothing",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback"
+    }
+  ],
+  "started_at": "2026-10-14T16:15:42.01722",
+  "transaction_started_at": "2026-10-14T16:15:40.499375",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PnyBMIQL0u+j75Iy1u2W6sEYdGo=",
+            "created_at": "2026-10-14T16:15:41.07199",
+            "rotated_at": "2026-10-14T16:15:41.07114",
+            "updated_at": "2026-10-14T16:15:41.07199",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "PnyBMIQL0u+j75Iy1u2W6sEYdGo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T16:15:42.026267",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PnyBMIQL0u+j75Iy1u2W6sEYdGo=",
+            "created_at": "2026-10-14T16:15:41.07199",
+            "rotated_at": "2026-10-14T16:15:41.07114",
+            "updated_at": "2026-10-14T16:15:41.07199",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "PnyBMIQL0u+j75Iy1u2W6sEYdGo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7ae0cebe89a015c8fca4c56a8ee0df6990a5821ff5d1330b4c777fd6d0e05fc7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

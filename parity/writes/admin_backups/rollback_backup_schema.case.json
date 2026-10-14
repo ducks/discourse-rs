@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "setup": [
+    "CREATE SCHEMA backup",
+    "CREATE TABLE backup.user_profiles (LIKE public.user_profiles INCLUDING ALL)",
+    "INSERT INTO backup.user_profiles SELECT * FROM public.user_profiles",
+    "UPDATE backup.user_profiles SET location = 'Restored' WHERE user_id = 1"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    }
+  ]
+}

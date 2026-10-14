@@ -1,0 +1,79 @@
+{
+  "name": "rollback_running",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback.json"
+    }
+  ],
+  "started_at": "2026-10-14T16:15:43.900569",
+  "transaction_started_at": "2026-10-14T16:15:42.457096",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "message": "An operation is currently running. Can't start a new job right now."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "y1mM0Hl5C3MOETFzqUvdUXR5xIY=",
+            "created_at": "2026-10-14T16:15:43.043631",
+            "rotated_at": "2026-10-14T16:15:43.041968",
+            "updated_at": "2026-10-14T16:15:43.043631",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "y1mM0Hl5C3MOETFzqUvdUXR5xIY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T16:15:43.909571",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "y1mM0Hl5C3MOETFzqUvdUXR5xIY=",
+            "created_at": "2026-10-14T16:15:43.043631",
+            "rotated_at": "2026-10-14T16:15:43.041968",
+            "updated_at": "2026-10-14T16:15:43.043631",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "y1mM0Hl5C3MOETFzqUvdUXR5xIY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "CREATE SCHEMA backup",
+    "CREATE TABLE backup.user_profiles (LIKE public.user_profiles INCLUDING ALL)",
+    "INSERT INTO backup.user_profiles SELECT * FROM public.user_profiles",
+    "UPDATE backup.user_profiles SET location = 'Restored' WHERE user_id = 1"
+  ],
+  "redis": {
+    "backup_restore_operation_is_running": "1"
+  },
+  "recorded_from": {
+    "case": "b76e95feaf1a8ca3a7c254d4092d350020eb4fd0b3313a4964b765402c8166bd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

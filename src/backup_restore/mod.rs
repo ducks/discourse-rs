@@ -5,6 +5,7 @@
 
 pub mod creator;
 pub mod jobs;
+pub mod restorer;
 pub mod store;
 
 use serde_json::{Value, json};

@@ -436,6 +436,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::backup_restore::jobs::SCHEDULE_BACKUP,
         Duration::from_secs(24 * 3600),
     ),
+    (
+        crate::backup_restore::jobs::DROP_BACKUP_SCHEMA,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -564,8 +568,21 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         crate::backup_restore::jobs::SCHEDULE_BACKUP => {
             crate::backup_restore::jobs::schedule_backup(state).await
         }
+        crate::backup_restore::jobs::DROP_BACKUP_SCHEMA => {
+            crate::backup_restore::restorer::drop_backup_schema(state).await
+        }
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
+}
+
+/// `Sidekiq.paused?`: SidekiqPauser's key is set.
+async fn paused(pool: &PgPool) -> bool {
+    let Ok(mut conn) = pool.acquire().await else {
+        return false;
+    };
+    crate::owned_schema::cached_get(&mut conn, crate::backup_restore::restorer::PAUSED_KEY)
+        .await
+        .is_ok_and(|v| v.is_some())
 }
 
 /// A worker: drains the queue, then polls once a second, until `stop`
@@ -574,6 +591,14 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) 
     tokio::pin!(stop);
     let mut last_run: Vec<Option<std::time::Instant>> = vec![None; SCHEDULED.len()];
     loop {
+        // Sidekiq.pause! (a backup restore): no job, scheduled or not.
+        if paused(&state.pool).await {
+            tokio::select! {
+                _ = &mut stop => return,
+                _ = tokio::time::sleep(Duration::from_secs(1)) => {}
+            }
+            continue;
+        }
         if let Err(e) = drain(&state).await {
             tracing::error!("job queue: {e}");
         }
