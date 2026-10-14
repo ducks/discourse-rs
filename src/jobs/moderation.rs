@@ -226,7 +226,34 @@ pub async fn auto_queue_handler(state: &AppState) -> Result<(), AppError> {
             "ReviewableQueuedPost" => {
                 return Err(Unsupported("rejecting queued posts").into());
             }
-            "ReviewableUser" => return Err(Unsupported("deleting users").into()),
+            "ReviewableUser" => {
+                // reviewable.perform(Discourse.system_user, :delete_user)
+                let mut tx = state.pool.begin().await?;
+                let system = crate::session::current::SessionUser::load(&mut tx, -1)
+                    .await?
+                    .ok_or(Unsupported("a site without its system user"))?;
+                let guardian = crate::guardian::Guardian::for_user(&mut tx, &system).await?;
+                let args = crate::reviewable_user::DeleteArgs {
+                    block: false,
+                    reject_reason: None,
+                    send_email: false,
+                    version: None,
+                };
+                match crate::reviewable_user::perform_delete_user(
+                    &mut tx, &ctx, &guardian, id, &args,
+                )
+                .await?
+                {
+                    crate::reviewable_user::DeleteOutcome::Done { .. } => tx.commit().await?,
+                    // A reviewable no longer pending (Reviewable::InvalidAction).
+                    _ => {
+                        return Err(Unsupported(
+                            "auto-handling an account review that is no longer pending",
+                        )
+                        .into());
+                    }
+                }
+            }
             _ => {}
         }
     }

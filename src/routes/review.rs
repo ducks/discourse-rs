@@ -80,8 +80,21 @@ pub async fn perform(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    let outcome =
-        review::perform(&mut tx, &ctx, &guardian, reviewable_id, &action_id, version).await?;
+    // ReviewableUser.additional_args
+    let extra = review::ExtraArgs {
+        reject_reason: p.get("reject_reason").and_then(params::scalar),
+        send_email: p.get("send_email").and_then(params::scalar).as_deref() != Some("false"),
+    };
+    let outcome = review::perform(
+        &mut tx,
+        &ctx,
+        &guardian,
+        reviewable_id,
+        &action_id,
+        version,
+        &extra,
+    )
+    .await?;
     Ok(match outcome {
         Outcome::Done(result) => {
             tx.commit().await?;
@@ -90,6 +103,14 @@ pub async fn perform(
         Outcome::NotFound => super::topics::not_found_response(&state),
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
+        Outcome::NotFoundMessage(key) => {
+            let text = state.i18n.t(key).unwrap_or(key);
+            (
+                StatusCode::NOT_FOUND,
+                Json(json!({ "errors": [text], "error_type": "not_found" })),
+            )
+                .into_response()
+        }
     })
 }
 

@@ -1,0 +1,228 @@
+{
+  "name": "perform_delete_user_has_posts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9302/perform/delete_user",
+      "params": {
+        "version": 0
+      }
+    }
+  ],
+  "started_at": "2026-10-14T00:27:53.241887",
+  "transaction_started_at": "2026-10-14T00:27:49.956169",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reviewable_perform_result": {
+          "success": true,
+          "remove_reviewable_ids": [
+            9302
+          ],
+          "version": 1,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 2,
+          "created_at": "2026-10-14T00:27:53.307884",
+          "updated_at": "2026-10-14T00:27:53.307884",
+          "created_by_id": 1,
+          "reviewable_id": 9302,
+          "reviewable_history_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_scores": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9302,
+            "score": 6,
+            "reason": "must_approve_users",
+            "status": 0,
+            "context": null,
+            "user_id": -1,
+            "created_at": "2026-10-13T00:27:49.956169",
+            "updated_at": "2026-10-13T00:27:49.956169",
+            "reviewed_at": null,
+            "meta_topic_id": null,
+            "reviewable_id": 9302,
+            "reviewed_by_id": null,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 9
+          },
+          "after": {
+            "id": 9302,
+            "score": 6,
+            "reason": "must_approve_users",
+            "status": 2,
+            "context": null,
+            "user_id": -1,
+            "created_at": "2026-10-13T00:27:49.956169",
+            "updated_at": "2026-10-13T00:27:49.956169",
+            "reviewed_at": "2026-10-14T00:27:53.313489",
+            "meta_topic_id": null,
+            "reviewable_id": 9302,
+            "reviewed_by_id": 1,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 9
+          }
+        }
+      ]
+    },
+    "reviewables": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9302,
+            "type": "ReviewableUser",
+            "score": 6,
+            "status": 0,
+            "payload": {
+              "bio": null,
+              "name": "User1",
+              "email": "user1@example.com",
+              "website": null,
+              "username": "user1",
+              "avatar_url": null,
+              "avatar_upload_id": null
+            },
+            "version": 0,
+            "topic_id": null,
+            "target_id": 3,
+            "created_at": "2026-10-13T00:27:49.956169",
+            "updated_at": "2026-10-13T00:27:49.956169",
+            "category_id": null,
+            "target_type": "User",
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-13T00:27:49.956169",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": true,
+            "potentially_illegal": false,
+            "target_created_by_id": null,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          },
+          "after": {
+            "id": 9302,
+            "type": "ReviewableUser",
+            "score": 6,
+            "status": 2,
+            "payload": {
+              "bio": null,
+              "name": "User1",
+              "email": "user1@example.com",
+              "website": null,
+              "username": "user1",
+              "avatar_url": null,
+              "avatar_upload_id": null
+            },
+            "version": 1,
+            "topic_id": null,
+            "target_id": 3,
+            "created_at": "2026-10-13T00:27:49.956169",
+            "updated_at": "2026-10-14T00:27:53.303545",
+            "category_id": null,
+            "target_type": "User",
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-13T00:27:49.956169",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": true,
+            "potentially_illegal": false,
+            "target_created_by_id": null,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jbr844U7im2B7hTAf5yM+R/ySvE=",
+            "created_at": "2026-10-14T00:27:51.67938",
+            "rotated_at": "2026-10-14T00:27:51.676589",
+            "updated_at": "2026-10-14T00:27:51.67938",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jbr844U7im2B7hTAf5yM+R/ySvE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T00:27:53.251172",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jbr844U7im2B7hTAf5yM+R/ySvE=",
+            "created_at": "2026-10-14T00:27:51.67938",
+            "rotated_at": "2026-10-14T00:27:51.676589",
+            "updated_at": "2026-10-14T00:27:51.67938",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jbr844U7im2B7hTAf5yM+R/ySvE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 9302,
+        "performing_username": "admin",
+        "updated_reviewable_ids": [
+          9302
+        ]
+      }
+    ]
+  ],
+  "next_ids": {
+    "reviewable_histories": 1
+  },
+  "setup": [
+    "UPDATE users SET approved = FALSE WHERE id = 3",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, score, potential_spam, target_id, target_type, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9302, 'ReviewableUser', 'core', 0, -1, TRUE, 6, TRUE, 3, 'User', '{\"username\":\"user1\",\"name\":\"User1\",\"email\":\"user1@example.com\",\"bio\":null,\"website\":null,\"avatar_upload_id\":null,\"avatar_url\":null}', 0, now() - interval '1 day', TRUE, FALSE, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9302, 9302, -1, 9, 0, 6, 0, 0, 'must_approve_users', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "recorded_from": {
+    "case": "8f88697dbdb48e4f36538613e06425028c86f16357aa9ce25e54f04911daa191",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

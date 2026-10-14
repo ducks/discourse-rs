@@ -56,6 +56,16 @@ pub enum Outcome {
     Forbidden,
     /// `Reviewable::UpdateConflict`
     Conflict,
+    /// `Discourse::NotFound` with a message: a handled account review
+    /// whose user is gone.
+    NotFoundMessage(&'static str),
+}
+
+/// The type's `additional_args` from the request (ReviewableUser's).
+pub struct ExtraArgs {
+    pub reject_reason: Option<String>,
+    /// `params[:send_email] != "false"`
+    pub send_email: bool,
 }
 
 /// The perform method an action id runs, given whether the post is
@@ -144,6 +154,7 @@ pub async fn perform(
     reviewable_id: i64,
     action_id: &str,
     version: i64,
+    extra: &ExtraArgs,
 ) -> Result<Outcome, AppError> {
     let s = ctx.settings;
     let Some(user) = guardian.user() else {
@@ -172,6 +183,9 @@ pub async fn perform(
     // claim_error?
     if s.get("reviewable_claiming")?.to_s() != "disabled" && reviewable.topic_id.is_some() {
         return Err(Unsupported("reviewable claiming").into());
+    }
+    if reviewable.kind == "ReviewableUser" {
+        return perform_user(conn, ctx, guardian, &reviewable, action_id, version, extra).await;
     }
     if reviewable.kind != "ReviewableFlaggedPost" {
         return Err(Unsupported("reviewable types other than flagged posts").into());
@@ -216,6 +230,98 @@ pub async fn perform(
             "unseen_reviewable_count": unseen,
         }
     })))
+}
+
+/// `ReviewableUser#perform` from the review queue: deleting the user
+/// (`delete_user`, `delete_user_block`). Approving, removing the avatar,
+/// scrubbing and the suspect user penalties are not ported here.
+async fn perform_user(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    reviewable: &Reviewable,
+    action_id: &str,
+    version: i64,
+    extra: &ExtraArgs,
+) -> Result<Outcome, AppError> {
+    let block = match action_id {
+        "delete_user" => false,
+        "delete_user_block" => true,
+        "approve_user" | "remove_avatar" | "scrub" | "silence_user" | "suspend_user" => {
+            return Err(Unsupported("review actions on users other than deleting them").into());
+        }
+        _ => {
+            // InvalidAction, or NotFound once handled and the user gone.
+            let user_gone = match reviewable.target_id {
+                Some(id) => {
+                    !sqlx::query_scalar::<_, bool>(
+                        "SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)",
+                    )
+                    .bind(id)
+                    .fetch_one(&mut *conn)
+                    .await?
+                }
+                None => true,
+            };
+            return Ok(if reviewable.status != PENDING && user_gone {
+                Outcome::NotFoundMessage("reviewables.already_handled_and_user_not_exist")
+            } else {
+                Outcome::Forbidden
+            });
+        }
+    };
+    let args = crate::reviewable_user::DeleteArgs {
+        block,
+        reject_reason: extra.reject_reason.clone(),
+        send_email: extra.send_email,
+        version: Some(version),
+    };
+    use crate::reviewable_user::DeleteOutcome;
+    let (version, resolved) = match crate::reviewable_user::perform_delete_user(
+        conn,
+        ctx,
+        guardian,
+        reviewable.id,
+        &args,
+    )
+    .await?
+    {
+        DeleteOutcome::Done { version, resolved } => (version, resolved),
+        DeleteOutcome::InvalidAction => return Ok(Outcome::Forbidden),
+        DeleteOutcome::AlreadyHandled => {
+            return Ok(Outcome::NotFoundMessage(
+                "reviewables.already_handled_and_user_not_exist",
+            ));
+        }
+        DeleteOutcome::Conflict => return Ok(Outcome::Conflict),
+    };
+    let user = guardian
+        .user()
+        .ok_or(Unsupported("reviewing anonymously"))?;
+    let (count, unseen) = reviewables::staff_counts(
+        &mut *conn,
+        ctx.settings,
+        user.id,
+        user.admin,
+        user.moderator,
+    )
+    .await?;
+    let mut result = serde_json::Map::new();
+    result.insert("success".into(), json!(true));
+    result.insert("remove_reviewable_ids".into(), json!([reviewable.id]));
+    if !resolved.is_empty() {
+        let updates: serde_json::Map<String, Value> = resolved
+            .iter()
+            .map(|(id, status)| (id.to_string(), json!({ "status": status })))
+            .collect();
+        result.insert("reviewable_updates".into(), Value::Object(updates));
+    }
+    result.insert("version".into(), json!(version));
+    result.insert("reviewable_count".into(), json!(count));
+    result.insert("unseen_reviewable_count".into(), json!(unseen));
+    Ok(Outcome::Done(
+        json!({ "reviewable_perform_result": result }),
+    ))
 }
 
 /// `Reviewable#perform(performed_by, action)` for a pending flagged post
