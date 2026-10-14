@@ -105,11 +105,13 @@ build:
 # `make db-test` once, and again after vendoring a new schema.
 test:
 	cargo nextest run --workspace
+	scripts/drop-stale-test-dbs
 
 # The comparisons against recorded Rails output (.config/nextest.toml),
 # left out of `make test`: the slow part of the suite. CI runs both.
 parity-test:
 	cargo nextest run --profile parity
+	scripts/drop-stale-test-dbs
 
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:
@@ -153,6 +155,7 @@ db-load:
 
 db-test:
 	scripts/db-load --force $(TEST_DB)
+	scripts/drop-stale-test-dbs
 
 parity:
 	@test -n "$(RAILS_URL)" || { echo "set RAILS_URL, e.g. make parity RAILS_URL=http://127.0.0.1:3000"; exit 2; }

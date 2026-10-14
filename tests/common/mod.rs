@@ -161,11 +161,18 @@ impl Drop for TestDb {
                 .expect("building cleanup runtime")
                 .block_on(async move {
                     let mut conn = PgConnection::connect_with(&admin).await?;
-                    conn.execute(
-                        format!(r#"DROP DATABASE IF EXISTS "{name}" WITH (FORCE)"#).as_str(),
-                    )
-                    .await?;
-                    Ok::<_, sqlx::Error>(())
+                    // The drop waits for every backend on the server to
+                    // answer a barrier, seconds while other tests run. The
+                    // test doesn't need the answer: once the statement is
+                    // sent, Postgres finishes it after the client is gone
+                    // (it only notices on its next write). A drop cut short
+                    // is swept by scripts/drop-stale-test-dbs.
+                    let sql = format!(r#"DROP DATABASE IF EXISTS "{name}" WITH (FORCE)"#);
+                    let drop = conn.execute(sql.as_str());
+                    match tokio::time::timeout(std::time::Duration::from_millis(200), drop).await {
+                        Ok(result) => result.map(|_| ()),
+                        Err(_) => Ok(()),
+                    }
                 })
         };
         let join = move || std::thread::spawn(cleanup).join();
