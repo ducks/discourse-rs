@@ -254,7 +254,14 @@ impl Client {
                 self.cookies.push((name.to_string(), v.to_string()));
             }
         }
+        let zipped = response
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .is_some_and(|v| v.as_bytes().starts_with(b"application/zip"));
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        if zipped {
+            return (status, zip_entries(&bytes));
+        }
         let text = String::from_utf8_lossy(&bytes).into_owned();
         (
             status,
@@ -293,6 +300,35 @@ impl Client {
         let (status, reply) = self.send(Method::POST, "/session.json", Some(&body)).await;
         assert_eq!(status, 200, "login as {username}: {reply}");
     }
+}
+
+/// A zip response as the recorder keeps it: `{"zip": [{name, size,
+/// sha256, text (a CSV's)}]}` by name.
+fn zip_entries(bytes: &[u8]) -> Value {
+    use sha2::Digest;
+    use std::io::Read;
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+    let mut entries = Vec::new();
+    for i in 0..archive.len() {
+        let mut entry = archive.by_index(i).unwrap();
+        if entry.is_dir() {
+            continue;
+        }
+        let name = entry.name().to_string();
+        let mut data = Vec::new();
+        entry.read_to_end(&mut data).unwrap();
+        let mut item = serde_json::json!({
+            "name": name,
+            "size": data.len(),
+            "sha256": format!("{:x}", sha2::Sha256::digest(&data)),
+        });
+        if name.ends_with(".csv") {
+            item["text"] = Value::String(String::from_utf8_lossy(&data).into_owned());
+        }
+        entries.push(item);
+    }
+    entries.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
+    serde_json::json!({ "zip": entries })
 }
 
 /// A `{"fixture": name}` param: a file from parity/writes/files, sent as

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/emoji.json", "params": {"name": "same_one", "file": {"fixture": "animated.gif"}}},
+    {"method": "POST", "path": "/admin/config/emoji.json", "params": {"name": "change_group", "group": "old", "file": {"fixture": "animated.gif"}}},
+    {"method": "POST", "path": "/admin/config/emoji.json", "params": {"name": "keep_group", "group": "old", "file": {"fixture": "animated.gif"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"file": {"fixture": "emoji_import.zip"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_confirm.json", "params": {"token": "{{responses.3.body.token}}", "resolutions": {"keep_group": "keep"}}},
+    {"method": "GET", "path": "/admin/config/emoji.json"}
+  ],
+  "ignore": ["/responses/3/body/token"]
+}

@@ -108,6 +108,28 @@ async fn log(
     Ok(())
 }
 
+/// StaffActionLogger#log_custom_emoji_create: the group in the details
+/// when there is one.
+pub async fn log_create(
+    conn: &mut PgConnection,
+    admin_id: i32,
+    name: &str,
+    group: Option<&str>,
+) -> Result<(), AppError> {
+    let details = group
+        .filter(|g| !crate::ruby::is_blank(g))
+        .map(|g| format!("Group: {g}"));
+    log(
+        conn,
+        admin_id,
+        "custom_emoji_create",
+        None,
+        Some(name),
+        details.as_deref(),
+    )
+    .await
+}
+
 /// What CustomEmoji::Create's transaction ends with.
 pub enum Created {
     Emoji(Value),
@@ -173,18 +195,7 @@ pub async fn create(
     .bind(id)
     .execute(&mut *conn)
     .await?;
-    let details = group
-        .filter(|g| !crate::ruby::is_blank(g))
-        .map(|g| format!("Group: {g}"));
-    log(
-        conn,
-        admin_id,
-        "custom_emoji_create",
-        None,
-        Some(name),
-        details.as_deref(),
-    )
-    .await?;
+    log_create(conn, admin_id, name, group).await?;
     let url: String = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
         .bind(upload_id)
         .fetch_one(&mut *conn)

@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"file": {"fixture": "emoji_import_no_manifest.zip"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"file": {"fixture": "emoji_import_empty.zip"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"file": {"fixture": "emoji_import_malformed.zip"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"other": "x"}},
+    {"method": "POST", "path": "/admin/config/emoji/import_confirm.json", "params": {"token": "0123456789abcdef0123456789abcdef"}},
+    {"method": "POST", "path": "/admin/config/emoji/import_confirm.json", "params": {"token": ""}}
+  ]
+}
