@@ -761,11 +761,59 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
     }
     // WordWatcher flags (watched words) for non-staff authors.
     if !post.author_staff_or_staged && !bool_arg(args, "bypass_bump") {
-        let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-            .fetch_one(&mut *conn)
-            .await?;
-        if watched {
-            return Err(Unsupported("watched words in process_post").into());
+        use crate::word_watcher as ww;
+        let flag = ww::compiled_for_action(&mut conn, &s, ww::FLAG).await?;
+        let mut text = post.raw.clone();
+        if post.post_number == 1 {
+            let title: String = sqlx::query_scalar("SELECT title FROM topics WHERE id = $1")
+                .bind(post.topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+            text.push(' ');
+            text.push_str(&title);
+        }
+        let words = ww::matches(&text, &flag, true)?;
+        if !words.is_empty() {
+            // PostActionCreator.create(Discourse.system_user, post,
+            // :inappropriate, reason: :watched_word, context: words).
+            drop(conn);
+            let system =
+                crate::session::current::SessionUser::load(&mut *state.pool.acquire().await?, -1)
+                    .await?
+                    .ok_or(Unsupported("a site without its system user"))?;
+            let guardian =
+                crate::guardian::Guardian::for_user(&mut *state.pool.acquire().await?, &system)
+                    .await?;
+            let types =
+                crate::post_actions::ActionTypes::load(&mut *state.pool.acquire().await?).await?;
+            let type_id = types
+                .types
+                .iter()
+                .find(|(k, _)| k == "inappropriate")
+                .map(|(_, id)| *id)
+                .ok_or(Unsupported("a site without the inappropriate flag"))?;
+            let host = crate::pretty_text::Host::from_state(state);
+            let ctx = crate::posting::Ctx {
+                host: &host,
+                settings: &s,
+                config: &state.config,
+                i18n: &state.i18n,
+                bus: &state.bus,
+            };
+            let request = crate::flags::FlagRequest {
+                type_id,
+                take_action: false,
+                queue_for_review: false,
+                message: None,
+                reason: Some("watched_word"),
+                context: Some(words.join(",")),
+            };
+            match crate::flags::flag(&state.pool, &ctx, &guardian, post_id, &request).await? {
+                crate::likes::Outcome::Done => {}
+                _ => {
+                    return Err(Unsupported("a watched word flag PostActionCreator refuses").into());
+                }
+            }
         }
     }
     Ok(())

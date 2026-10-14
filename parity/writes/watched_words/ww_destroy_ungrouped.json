@@ -1,0 +1,123 @@
+{
+  "name": "ww_destroy_ungrouped",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/watched_words/903.json"
+    }
+  ],
+  "started_at": "2026-10-14T06:47:47.725966",
+  "transaction_started_at": "2026-10-14T06:47:44.990212",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rohz8p+rCpSZRIHyywcej3yOVFk=",
+            "created_at": "2026-10-14T06:47:45.613937",
+            "rotated_at": "2026-10-14T06:47:45.555536",
+            "updated_at": "2026-10-14T06:47:45.613937",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "rohz8p+rCpSZRIHyywcej3yOVFk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:47.736473",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rohz8p+rCpSZRIHyywcej3yOVFk=",
+            "created_at": "2026-10-14T06:47:45.613937",
+            "rotated_at": "2026-10-14T06:47:45.555536",
+            "updated_at": "2026-10-14T06:47:45.613937",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "rohz8p+rCpSZRIHyywcej3yOVFk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 98,
+          "context": "replace",
+          "details": "cat → dog",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:47.749298",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:47.749298",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 903,
+          "html": false,
+          "word": "cat",
+          "action": 5,
+          "created_at": "2026-10-14T06:47:44.990212",
+          "updated_at": "2026-10-14T06:47:44.990212",
+          "replacement": "dog",
+          "case_sensitive": false,
+          "watched_word_group_id": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'shout', 2, NULL, TRUE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (903, 'cat', 5, 'dog', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (904, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (906, 'howto', 6, 'guide', FALSE, FALSE, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "78446dbe9d8f8466dde9c9f97ba3d31a110bf48e8c1b773eb6f7017525e1ac3c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (931, 'spam', 1, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (932, 'scam', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "This title is spam for sure",
+        "raw": "A body that is fine and long enough to pass the length checks.",
+        "category": 4,
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

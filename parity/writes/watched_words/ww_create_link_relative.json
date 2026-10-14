@@ -1,0 +1,172 @@
+{
+  "name": "ww_create_link_relative",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "faq"
+        ],
+        "action_key": "link",
+        "replacement": "faq"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T06:47:31.589202",
+  "transaction_started_at": "2026-10-14T06:47:29.420621",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 1,
+            "word": "faq",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(faq)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "http://localhost:3051/faq",
+            "action": "link",
+            "case_sensitive": false,
+            "watched_word_group_id": 1
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [],
+          "censor": [],
+          "require_approval": [],
+          "flag": [],
+          "link": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(faq)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "replace": [],
+          "tag": [],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "G/5mT9LCqSYJYzLqJ+4NAZFCZP0=",
+            "created_at": "2026-10-14T06:47:30.476614",
+            "rotated_at": "2026-10-14T06:47:30.472752",
+            "updated_at": "2026-10-14T06:47:30.476614",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "G/5mT9LCqSYJYzLqJ+4NAZFCZP0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:31.597704",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "G/5mT9LCqSYJYzLqJ+4NAZFCZP0=",
+            "created_at": "2026-10-14T06:47:30.476614",
+            "rotated_at": "2026-10-14T06:47:30.472752",
+            "updated_at": "2026-10-14T06:47:30.476614",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "G/5mT9LCqSYJYzLqJ+4NAZFCZP0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 105,
+          "context": "link",
+          "details": "link → faq",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:31.645533",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:31.645533",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_word_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 8,
+          "created_at": "2026-10-14T06:47:31.629725",
+          "updated_at": "2026-10-14T06:47:31.629725"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": false,
+          "word": "faq",
+          "action": 8,
+          "created_at": "2026-10-14T06:47:31.619334",
+          "updated_at": "2026-10-14T06:47:31.637894",
+          "replacement": "http://localhost:3051/faq",
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "watched_word_groups": 1,
+    "watched_words": 1
+  },
+  "recorded_from": {
+    "case": "7520a4b10737e510135aee6066ae174c2b7f7c1bda8adb7938947e6edb407fb1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

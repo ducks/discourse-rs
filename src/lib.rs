@@ -136,6 +136,8 @@ pub mod user_search;
 pub mod user_updater;
 pub mod username_changer;
 pub mod users;
+pub mod watched_words;
+pub mod word_watcher;
 
 use std::sync::Arc;
 

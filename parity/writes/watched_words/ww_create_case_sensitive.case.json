@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "  (?-mix:Loud**)  "
+        ],
+        "action_key": "block",
+        "case_sensitive": true
+      }
+    }
+  ]
+}

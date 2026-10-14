@@ -103,12 +103,6 @@ pub async fn revise(
     if post.post_type != super::post_types::REGULAR {
         return Err(Unsupported("editing posts other than regular ones").into());
     }
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words").into());
-    }
     let category_definition: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
             .bind(post.topic_id)

@@ -441,7 +441,7 @@ async fn compute(
         };
         let final_url = uri.to_s();
         let regexes = origins_to_regexes(&allowed_iframe_origins(s)?);
-        let result = match oneboxed(&final_url, resolution.content_type.as_deref(), &regexes) {
+        let mut result = match oneboxed(&final_url, resolution.content_type.as_deref(), &regexes) {
             None => Onebox::default(),
             Some(engine) => {
                 let hostname = site.urls.current_hostname()?;
@@ -466,8 +466,11 @@ async fn compute(
             }
         };
         // WordWatcher.censor
-        if !result.onebox.is_empty() || !result.preview.is_empty() {
-            super::refuse_censored(conn).await?;
+        {
+            use crate::word_watcher as ww;
+            let censor = ww::compiled_for_action(&mut *conn, s, ww::CENSOR).await?;
+            result.onebox = ww::censor_html(&result.onebox, &censor)?;
+            result.preview = ww::censor_html(&result.preview, &censor)?;
         }
         if strategy != "default" {
             crate::owned_schema::cached_setex(

@@ -1,0 +1,79 @@
+{
+  "name": "chat_blocked",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "this is spam in chat",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:05:56.961777",
+  "transaction_started_at": "2026-10-14T07:05:52.854177",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, you can't post the word 'spam'; it's not allowed."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VVdSxkE2p07LjiaTPl7tStx9vP8=",
+            "created_at": "2026-10-14T07:05:54.943197",
+            "rotated_at": "2026-10-14T07:05:54.934659",
+            "updated_at": "2026-10-14T07:05:54.943197",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "VVdSxkE2p07LjiaTPl7tStx9vP8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T07:05:57.005197",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VVdSxkE2p07LjiaTPl7tStx9vP8=",
+            "created_at": "2026-10-14T07:05:54.943197",
+            "rotated_at": "2026-10-14T07:05:54.934659",
+            "updated_at": "2026-10-14T07:05:54.943197",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "VVdSxkE2p07LjiaTPl7tStx9vP8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (931, 'spam', 1, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (932, 'scam', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "5aef5402e020375cadb8aaa0d05a35dfc04bd53b20fb70a4dbedd3cc6581ec69",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

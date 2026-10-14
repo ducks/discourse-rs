@@ -1023,23 +1023,27 @@ impl Site<'_> {
         }
     }
 
-    /// WordWatcher regexps for an action: None when there are no words.
-    /// Building the regexps isn't ported, so present words are refused.
+    /// WordWatcher's regexps for an action: `serialized_regexps_for_action`
+    /// for censor (`censored_regexp`), `regexps_for_action` for replace and
+    /// link; None when there are no words.
     async fn watched_words(&mut self, action: &str) -> Result<Option<Value>, SiteError> {
-        let action_id = match action {
-            "censor" => 2,
-            "replace" => 5,
-            "link" => 8,
-            _ => return Err(Unsupported("watched word action").into()),
+        let s = self.settings;
+        let (id, serialized) = match action {
+            "censor" => (crate::word_watcher::CENSOR, true),
+            "replace" => (crate::word_watcher::REPLACE, false),
+            _ => (crate::word_watcher::LINK, false),
         };
-        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM watched_words WHERE action = $1")
-            .bind(action_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-        if count > 0 {
-            return Err(Unsupported("watched words (WordWatcher regexps)").into());
+        if !crate::word_watcher::exists(&mut *self.conn, id).await? {
+            return Ok(None);
         }
-        Ok(None)
+        let words = crate::word_watcher::words_for_action(&mut *self.conn, s, id).await?;
+        Ok(if serialized {
+            Some(crate::word_watcher::serialize(
+                &crate::word_watcher::compile(&words),
+            ))
+        } else {
+            crate::word_watcher::regexps(&words).map(Value::Object)
+        })
     }
 
     /// `HashtagAutocompleteService.contexts_with_ordered_types`, core data

@@ -232,16 +232,12 @@ impl Context<'_> {
 
         // model :message_instance: cooked, then the model's validations.
         let cooked = super::cook::cook(host, &message, user.id, &user.username).await?;
-        if !sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 1)",
-        )
-        .fetch_one(&mut *self.conn)
-        .await?
-        {
-            // WatchedWordsValidator has nothing to block.
+        // WatchedWordsValidator, unless the author is a bot.
+        let blocked = if user.id > 0 {
+            crate::word_watcher::block_error(&mut *self.conn, settings, self.i18n, &message).await?
         } else {
-            return Err(Unsupported("watched words that block chat messages").into());
-        }
+            None
+        };
         let now = crate::clock::now_naive();
         let created_at = params
             .client_created_at
@@ -250,7 +246,7 @@ impl Context<'_> {
             .map(|c| c.naive_utc())
             .filter(|c| (now - *c).num_seconds().abs() <= 60)
             .unwrap_or(now);
-        let mut model_errors = Vec::new();
+        let mut model_errors: Vec<String> = blocked.into_iter().collect();
         // Chat::DuplicateMessageValidator
         let duplicate: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \

@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (951, 'casino', 7, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Visit my casino today, but this is not a first post at all.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

@@ -344,18 +344,18 @@ impl Context<'_> {
         // update_excerpt
         let excerpt = super::messages::build_excerpt_for(&new_message, &cooked)?;
         // save_message: the model's validations.
-        if sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 1)",
-        )
-        .fetch_one(&mut *self.conn)
-        .await?
-        {
-            return Err(Unsupported("watched words that block chat messages").into());
-        }
         let now = crate::clock::now_naive();
         let mut model_errors = Vec::new();
         if cooked.chars().count() > 20_000 {
             model_errors.push("Cooked is too long (maximum is 20000 characters)".to_string());
+        }
+        // WatchedWordsValidator, unless the author is a bot.
+        if author_id > 0
+            && let Some(blocked) =
+                crate::word_watcher::block_error(&mut *self.conn, settings, self.i18n, &new_message)
+                    .await?
+        {
+            model_errors.push(blocked);
         }
         let message_changed = old.message.as_deref() != Some(new_message.as_str());
         if message_changed {

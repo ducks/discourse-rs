@@ -300,13 +300,31 @@ pub async fn create(
         || reply_topic
             .as_ref()
             .is_some_and(|t| t.archetype == "private_message");
+    // TopicCreator tags a new topic by its tag words.
+    if args.topic_id.is_none() {
+        let text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
+        if crate::word_watcher::tag_word_matches(&mut conn, s, &text).await? {
+            return Err(Unsupported("watched words that tag topics").into());
+        }
+    }
     if args.reviewed_queued_post {
-        validate::refuse_watched_words(&mut conn).await?;
         if user.staged {
             return Err(Unsupported("approving a staged user's queued post").into());
         }
     } else {
-        validate::refuse_watched_words(&mut conn).await?;
+        // NewPostManager#perform: blocked words in "#{title} #{raw}", for
+        // everyone but staff, before any handler.
+        if !guardian.is_staff() {
+            let text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
+            if let Some(message) =
+                crate::word_watcher::block_error(&mut conn, s, ctx.i18n, &text).await?
+            {
+                return Ok(Outcome::Refused {
+                    action: "created_post",
+                    errors: vec![message],
+                });
+            }
+        }
         validate::refuse_unported_author(guardian)?;
         // NewPostManager#perform: messages are never queued; anything else
         // post_needs_approval? finds a reason for goes to the queue.

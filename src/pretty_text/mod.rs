@@ -192,14 +192,7 @@ pub async fn options(
     if !settings.get("emoji_deny_list")?.is_blank() {
         return Err(Unsupported("emoji_deny_list in cooking").into());
     }
-    // WatchedWord.actions: censor 2, replace 5, link 8.
-    let watched_words: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action IN (2, 5, 8))")
-            .fetch_one(&mut *conn)
-            .await?;
-    if watched_words {
-        return Err(Unsupported("watched words in cooking").into());
-    }
+    let watched = watched_words(&mut *conn, settings).await?;
     let tagging = settings.get("tagging_enabled")?.truthy();
 
     let mut out = Map::new();
@@ -229,9 +222,9 @@ pub async fn options(
     out.insert("customEmoji".into(), json!({}));
     out.insert("customEmojiTranslation".into(), json!({}));
     out.insert("emojiDenyList".into(), Value::Null);
-    out.insert("censoredRegexp".into(), json!([]));
-    out.insert("watchedWordsReplace".into(), Value::Null);
-    out.insert("watchedWordsLink".into(), Value::Null);
+    out.insert("censoredRegexp".into(), watched.censored_json);
+    out.insert("watchedWordsReplace".into(), watched.replace_json);
+    out.insert("watchedWordsLink".into(), watched.link_json);
     out.insert("additionalOptions".into(), json!({}));
     out.insert(
         "avatar_sizes".into(),
@@ -288,6 +281,11 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     render_settings.topic_id = opts.topic_id;
     render_settings.post_id = opts.post_id;
     render_settings.force_quote_link = opts.force_quote_link;
+    // censored and watched-words are among chat's features too.
+    let watched = watched_words(&mut conn, &settings).await?;
+    render_settings.censored = watched.censored;
+    render_settings.watched_replace = watched.replace;
+    render_settings.watched_link = watched.link;
     if opts.chat {
         chat_render_settings(&mut render_settings);
     }
@@ -370,6 +368,68 @@ pub async fn cook(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<Stri
         opts.omit_nofollow,
     )
     .await
+}
+
+/// The watched words cooking reads (`censoredRegexp`, `watchedWordsReplace`,
+/// `watchedWordsLink`), as options JSON and as the renderer takes them.
+pub struct WatchedWords {
+    pub censored_json: Value,
+    pub replace_json: Value,
+    pub link_json: Value,
+    pub censored: Vec<render::watched_words::Censored>,
+    pub replace: Vec<render::watched_words::WatchedWord>,
+    pub link: Vec<render::watched_words::WatchedWord>,
+}
+
+pub async fn watched_words(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+) -> Result<WatchedWords, CookError> {
+    use crate::word_watcher as ww;
+    let to_err = CookError::App;
+    let mut out = WatchedWords {
+        censored_json: json!([]),
+        replace_json: Value::Null,
+        link_json: Value::Null,
+        censored: Vec::new(),
+        replace: Vec::new(),
+        link: Vec::new(),
+    };
+    let censor = ww::words_for_action(conn, settings, ww::CENSOR)
+        .await
+        .map_err(to_err)?;
+    let compiled = ww::compile(&censor);
+    out.censored_json = ww::serialize(&compiled);
+    out.censored = compiled
+        .into_iter()
+        .map(|c| render::watched_words::Censored {
+            regexp: c.source,
+            case_sensitive: c.case_sensitive,
+        })
+        .collect();
+    for action in [ww::REPLACE, ww::LINK] {
+        let words = ww::words_for_action(conn, settings, action)
+            .await
+            .map_err(to_err)?;
+        let json = ww::regexps(&words).map_or(Value::Null, Value::Object);
+        let list: Vec<render::watched_words::WatchedWord> = words
+            .iter()
+            .map(|w| render::watched_words::WatchedWord {
+                regexp: ww::word_to_regexp(&w.word, true),
+                replacement: w.replacement.clone().unwrap_or_default(),
+                case_sensitive: w.case_sensitive,
+                html: w.html,
+            })
+            .collect();
+        if action == ww::REPLACE {
+            out.replace_json = json;
+            out.replace = list;
+        } else {
+            out.link_json = json;
+            out.link = list;
+        }
+    }
+    Ok(out)
 }
 
 /// `RenderSettings` from the site settings: what PrettyText.buildOptions
@@ -465,6 +525,9 @@ pub fn render_settings(
         force_quote_link: false,
         post_id: None,
         chat: false,
+        censored: Vec::new(),
+        watched_replace: Vec::new(),
+        watched_link: Vec::new(),
     }
     .compiled()?)
 }

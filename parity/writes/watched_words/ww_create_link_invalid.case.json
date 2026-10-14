@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "faq"
+        ],
+        "action_key": "link",
+        "replacement": "https://exa mple.com"
+      }
+    }
+  ]
+}

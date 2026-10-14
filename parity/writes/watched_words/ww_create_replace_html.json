@@ -1,0 +1,174 @@
+{
+  "name": "ww_create_replace_html",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "kitty"
+        ],
+        "action_key": "replace",
+        "replacement": "<b>cat</b>",
+        "html": true
+      }
+    }
+  ],
+  "started_at": "2026-10-14T06:47:37.456062",
+  "transaction_started_at": "2026-10-14T06:47:35.459807",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 1,
+            "word": "kitty",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitty)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "<b>cat</b>",
+            "action": "replace",
+            "case_sensitive": false,
+            "watched_word_group_id": 1,
+            "html": true
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [],
+          "censor": [],
+          "require_approval": [],
+          "flag": [],
+          "link": [],
+          "replace": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitty)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "tag": [],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "created_at": "2026-10-14T06:47:36.433844",
+            "rotated_at": "2026-10-14T06:47:36.431154",
+            "updated_at": "2026-10-14T06:47:36.433844",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:37.461664",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "created_at": "2026-10-14T06:47:36.433844",
+            "rotated_at": "2026-10-14T06:47:36.431154",
+            "updated_at": "2026-10-14T06:47:36.433844",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 105,
+          "context": "replace",
+          "details": "replace → kitty",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:37.487163",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:37.487163",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_word_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 5,
+          "created_at": "2026-10-14T06:47:37.479067",
+          "updated_at": "2026-10-14T06:47:37.479067"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": true,
+          "word": "kitty",
+          "action": 5,
+          "created_at": "2026-10-14T06:47:37.473785",
+          "updated_at": "2026-10-14T06:47:37.48338",
+          "replacement": "<b>cat</b>",
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "watched_word_groups": 1,
+    "watched_words": 1
+  },
+  "recorded_from": {
+    "case": "be17d7742ae4d8b2d357a19b9e76841abb03442bf43935db4d5af0b0bb82c97e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

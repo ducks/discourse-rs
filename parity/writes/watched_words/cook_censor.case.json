@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'heck*', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'Shout', 2, NULL, TRUE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "This bad reply says BAD and heckin and Shout but shout, notbad, `bad code`, [a bad link](https://example.com/bad), **bad** and bad_thing.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

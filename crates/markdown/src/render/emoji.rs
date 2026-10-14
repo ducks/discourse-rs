@@ -216,9 +216,15 @@ enum Piece {
 
 /// `applyEmoji`: the text split around the emoji in it, or None when it
 /// has none.
-fn apply(content: &str, settings: &RenderSettings) -> Option<Vec<Piece>> {
+fn apply(content: &str, settings: &RenderSettings) -> Result<Option<Vec<Piece>>, &'static str> {
     let replaced = replace_unicode(content);
-    let units: Vec<u16> = replaced.encode_utf16().collect();
+    // The watched replace words, kept only when an emoji follows.
+    let quirked = if settings.watched_replace.is_empty() {
+        replaced.clone()
+    } else {
+        super::watched_words::emoji_replace(&replaced, &settings.watched_replace)?
+    };
+    let units: Vec<u16> = quirked.encode_utf16().collect();
     let mut result: Option<Vec<Piece>> = None;
     let mut start = 0;
     let mut end = units.len();
@@ -255,8 +261,8 @@ fn apply(content: &str, settings: &RenderSettings) -> Option<Vec<Piece>> {
         Some(pieces) => pieces,
         // The unicode replacer may have changed the text (a stripped
         // variation selector) without leaving an emoji.
-        None if replaced != content => return Some(vec![Piece::Text(replaced)]),
-        None => return None,
+        None if replaced != content => return Ok(Some(vec![Piece::Text(replaced)])),
+        None => return Ok(None),
     };
     if end < units.len() {
         pieces.push(Piece::Text(slice(&units, end, units.len())));
@@ -285,23 +291,24 @@ fn apply(content: &str, settings: &RenderSettings) -> Option<Vec<Piece>> {
             }
         }
     }
-    Some(pieces)
+    Ok(Some(pieces))
 }
 
 /// The `emoji` core rule: textReplace over every text outside an autolink.
-pub fn run(root: &mut Node, settings: &RenderSettings) {
+pub fn run(root: &mut Node, settings: &RenderSettings) -> Result<(), &'static str> {
     if !settings.emoji {
-        return;
+        return Ok(());
     }
-    fn visit(node: &mut Node, settings: &RenderSettings) {
+    fn visit(node: &mut Node, settings: &RenderSettings) -> Result<(), &'static str> {
         if super::linkify::is_auto_link(node) {
-            return;
+            return Ok(());
         }
         let mut i = 0;
         while i < node.children.len() {
-            let replaced = node.children[i]
-                .cast::<Text>()
-                .and_then(|text| apply(&text.content, settings));
+            let replaced = match node.children[i].cast::<Text>() {
+                Some(text) => apply(&text.content, settings)?,
+                None => None,
+            };
             match replaced {
                 Some(pieces) => {
                     let nodes: Vec<Node> = pieces
@@ -316,13 +323,14 @@ pub fn run(root: &mut Node, settings: &RenderSettings) {
                     i += count;
                 }
                 None => {
-                    visit(&mut node.children[i], settings);
+                    visit(&mut node.children[i], settings)?;
                     i += 1;
                 }
             }
         }
+        Ok(())
     }
-    visit(root, settings);
+    visit(root, settings)
 }
 
 pub fn allow(list: &mut AllowList) {

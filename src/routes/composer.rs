@@ -41,6 +41,10 @@ pub async fn markdown_settings(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     match crate::pretty_text::render_settings(&settings, &state.i18n, &state.config) {
         Ok(mut render) => {
+            let watched = crate::pretty_text::watched_words(&mut conn, &settings).await?;
+            render.censored = watched.censored;
+            render.watched_replace = watched.replace;
+            render.watched_link = watched.link;
             if params.get("chat").map(String::as_str) == Some("1") {
                 crate::pretty_text::chat_render_settings(&mut render);
             }
