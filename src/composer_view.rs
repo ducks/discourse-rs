@@ -284,6 +284,10 @@ pub fn render(
         escape(&t(list, "composer.edit_conflict")),
         escape(&t(list, "post.cancel_composer.confirm")),
         escape(&t(list, "post.cancel_composer.confirm_edit")),
+    ) + &format!(
+        " data-label-hide-toolbar=\"{}\" data-label-show-toolbar=\"{}\"",
+        escape(&t(list, "composer.hide_toolbar")),
+        escape(&t(list, "composer.show_toolbar")),
     );
     let draft_status = format!(
         "<div id=\"draft-status\" hidden><span class=\"draft-error\" title=\"\">{}</span></div>",
@@ -333,6 +337,29 @@ pub fn render(
         ),
         None => (String::new(), String::new(), String::new()),
     };
+    // The save and discard buttons: the mobile view's discard is an icon
+    // (cancelIcon: the trash can, composer.js swaps in an xmark for an
+    // edit), with its plugin outlets' spans and the upload button.
+    let mobile = crate::mobile::mobile_view();
+    let discard = escape(&t(list, "composer.discard"));
+    let save_or_cancel = if mobile {
+        format!(
+            "<span></span><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn no-text btn-icon discard-button btn-transparent\" title=\"{discard}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button><span></span></div><span></span>{}",
+            icon("trash-can", None),
+            match upload {
+                Some(upload) => format!(
+                    "<a aria-label=\"{}\" class=\"btn btn-default no-text mobile-file-upload\" id=\"mobile-file-upload\">{}</a>",
+                    escape(&t(list, "composer.upload_title")),
+                    icon(upload.icon, None)
+                ),
+                None => String::new(),
+            }
+        )
+    } else {
+        format!(
+            "<div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>"
+        )
+    };
     let preview_data = match preview {
         Some((wasm, settings, max_oneboxes)) => format!(
             " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-max-oneboxes=\"{max_oneboxes}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
@@ -344,7 +371,7 @@ pub fn render(
         None => String::new(),
     };
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\"><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -375,12 +402,18 @@ pub fn render(
         escape(&t(list, "composer.paste_code_text")),
         escape(&t(list, "composer.list_item")),
         escape(&t(list, "composer.resize")),
-        preview_toggle.clone()
-            + &control(
-                "toggle-fullscreen",
-                "discourse-expand",
-                "composer.enter_fullscreen",
-            ),
+        // ComposerToggles: the mobile view hides and shows the toolbar
+        // instead of previewing or going fullscreen.
+        if mobile {
+            control("toggle-toolbar", "bars", "composer.hide_toolbar")
+        } else {
+            preview_toggle.clone()
+                + &control(
+                    "toggle-fullscreen",
+                    "discourse-expand",
+                    "composer.enter_fullscreen",
+                )
+        },
         control("toggler toggle-minimize", "minus", "composer.collapse"),
         control(
             "toggler toggle-save-and-close",
@@ -390,7 +423,7 @@ pub fn render(
         toolbar(list, upload),
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
-        discard = escape(&t(list, "composer.discard")),
+        save_or_cancel = save_or_cancel,
     )
 }
 
