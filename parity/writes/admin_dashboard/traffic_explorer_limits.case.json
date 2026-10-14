@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "settings": {"site_traffic_explorer_event_limit": "3", "improved_crawler_detection": "true"},
+  "setup": [
+    "INSERT INTO browser_pageview_events (url, normalized_url, ip_address, user_agent, session_id, user_id, normalized_referrer, country_code, asn, browser, normalized_language, score, created_at) VALUES ('http://localhost:3000/t/topic/35', '/t/topic/35', '1.2.3.4', 'Mozilla', 's1', 3, 'google.com/search', 'US', 15169, 1, 'en', NULL, now() - interval '1 day'), ('http://localhost:3000/latest', '/latest', '1.2.3.4', 'Mozilla', 's1', 3, 'localhost/t/topic/35', 'US', 15169, 1, 'en', 90, now() - interval '1 day' + interval '1 minute'), ('http://localhost:3000/t/other/36', '/t/other/36', '5.6.7.8', 'Mozilla', 's2', NULL, NULL, 'DE', 3320, 4, 'de', 80, now() - interval '2 days'), ('http://localhost:3000/', '/', '9.9.9.9', 'Mozilla', 's3', NULL, 'news.ycombinator.com', NULL, NULL, NULL, NULL, NULL, now() - interval '2 days' + interval '5 minutes'), ('http://localhost:3000/c/general/4', '/c/general/4', '10.0.0.1', 'Mozilla', 's4', 4, 'localhost:3000/latest', NULL, NULL, 3, 'fr-CA', 55, now() - interval '3 days')",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, created_at, updated_at) VALUES ('s1', 50, now(), now()), ('s2', 5, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-06-01&end_date=2026-10-14&traffic_type%5B%5D=likely_crawler"},
+    {"method": "GET", "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D=logged_in"}
+  ]
+}

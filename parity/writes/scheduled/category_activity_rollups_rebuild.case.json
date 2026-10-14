@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET created_at = now() - interval '1 day' WHERE id = 38",
+    "UPDATE posts SET created_at = now() - interval '1 day' WHERE topic_id = 38",
+    "INSERT INTO topic_view_stats (topic_id, viewed_at, anonymous_views, logged_in_views) VALUES (35, '2026-09-30', 3, 4), (38, now()::date, 10, 0)",
+    "INSERT INTO category_activity_daily_rollups (date, category_id, topics, posts, page_views, likely_crawler_page_views) VALUES ('2026-07-01', 4, 1, 1, 1, 0)"
+  ],
+  "requests": [],
+  "enqueue": [["rebuild_category_activity_daily_rollups", {}]],
+  "run_jobs": ["rebuild_category_activity_daily_rollups"],
+  "unordered": {"category_activity_daily_rollups": ["id"]}
+}

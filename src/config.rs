@@ -28,6 +28,9 @@ pub struct Config {
     /// DISCOURSE_RS_RATE_LIMITS is "off"; the writes replay turns it off
     /// unless a case asks for it, as Rails' recorder does.
     pub rate_limits: bool,
+    /// Middleware::RequestTracker's logging and beacons, which Rails loads
+    /// outside development or with TRACK_REQUESTS.
+    pub track_requests: bool,
 }
 
 /// The CDN `UserAvatarsController#show_proxy_letter` proxies.
@@ -193,6 +196,7 @@ impl Config {
                 .to_string(),
             globals,
             rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
+            track_requests: rails_env != RailsEnv::Development || var("TRACK_REQUESTS").is_some(),
         })
     }
 }

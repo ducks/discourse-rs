@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO web_crawler_requests (date, user_agent, count) VALUES ((now() - interval '40 days')::date, 'OldBot', 100), ((now() - interval '31 days')::date, 'OldishBot', 5), ((now() - interval '29 days')::date, 'RecentBot', 5), ((now() - interval '1 day')::date, 'Googlebot', 30), (now()::date, 'Bingbot', 20)",
+    "INSERT INTO web_crawler_requests (date, user_agent, count) SELECT (now() - interval '1 day')::date, 'Bot' || g, g FROM generate_series(1, 205) g"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_crawler_stats", {}]],
+  "run_jobs": ["clean_up_crawler_stats"]
+}

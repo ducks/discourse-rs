@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO browser_pageview_events (id, url, ip_address, referrer, user_agent, session_id, topic_id, user_id, created_at) VALUES (9001, '/t/35', '10.0.0.1', NULL, 'Mozilla/5.0', 's1', 35, NULL, now() - interval '100 days'), (9002, '/latest', '10.0.0.1', NULL, 'Mozilla/5.0', 's1', NULL, NULL, now() - interval '80 days'), (9003, '/latest', '10.0.0.2', NULL, 'Mozilla/5.0', 's2', NULL, 2, now() - interval '1 day')",
+    "INSERT INTO browser_pageview_event_scores (event_id, automation_ua_score) VALUES (9001, 3), (9003, 1)",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, created_at, updated_at) VALUES ('s1', 5, now() - interval '100 days', now() - interval '100 days'), ('s2', 7, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_browser_pageview_events", {}]],
+  "run_jobs": ["clean_up_browser_pageview_events"]
+}

@@ -6,8 +6,12 @@
 //! Rails only loads the tracker outside development, and skips private and
 //! loopback addresses, so none of this can be recorded from the dev
 //! reference: tests/request_tracker.rs pins it to lib/middleware.
-//! The message bus is mounted ahead of the tracker in Rails; /message-bus
-//! and the port's /bus stay outside it here too.
+//! /message-bus stays outside the limits, and the port's /bus outside the
+//! tracker altogether.
+//!
+//! Where Rails loads the tracker (`track_requests`), it also answers the
+//! pageview and engagement beacons and logs every request
+//! (request_tracking).
 
 use std::net::IpAddr;
 
@@ -18,8 +22,9 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 
 use crate::rate_limiter::RateLimiter;
+use crate::request_tracking as tracking;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState};
+use crate::{AppError, AppState, Unsupported};
 
 /// `UserAuthToken::ROTATE_TIME_MINS`
 const ROTATE_TIME_MINS: i64 = 10;
@@ -284,33 +289,39 @@ async fn crawler_limit(
     }
 }
 
-/// The tracker as a layer, outside everything but tracing.
-pub async fn layer(
-    State(state): State<AppState>,
-    mut request: Request,
-    next: Next,
-) -> Result<Response, AppError> {
-    let path = request.uri().path().to_string();
-    // RateLimiter.disabled?, and the bus mounted ahead of the tracker.
-    if !state.config.rate_limits || path.starts_with("/message-bus/") || path.starts_with("/bus/") {
-        return Ok(next.run(request).await);
+/// The limits' verdict: a refusal to send, or the limiters to settle
+/// once the app has answered.
+enum Checked {
+    Refused(Response),
+    Proceed(Option<(RateLimiter, RateLimiter, RateLimiter)>),
+}
+
+/// `rate_limit(request, cookie)`, then `check_crawler_limits` for a
+/// request without the auth cookie.
+async fn check_limits(
+    state: &AppState,
+    request: &mut Request,
+    path: &str,
+) -> Result<Checked, AppError> {
+    // RateLimiter.disabled?, and the bus mounted ahead of the limits.
+    if !state.config.rate_limits || path.starts_with("/message-bus/") {
+        return Ok(Checked::Proceed(None));
     }
-    let limits = Limits::from_state(&state);
+    let limits = Limits::from_state(state);
     let peer = request
         .extensions()
         .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|c| c.0);
     let ip = crate::remote_ip::request_ip(request.headers(), peer);
-    let cookie = auth_cookie(&state, &request);
+    let cookie = auth_cookie(state, request);
 
-    // rate_limit(request, cookie)
     let mut counted: Option<(RateLimiter, RateLimiter, RateLimiter)> = None;
     if (limits.warn || limits.block)
         && (limits.on_private || !private_ip(&ip))
-        && !skipped(&state, &ip)
+        && !skipped(state, &ip)
     {
         let hostname = std::env::var("HOSTNAME").unwrap_or_default();
-        let (key, code, global) = active_limiter(&limits, cookie.as_ref(), &path, &ip, &hostname);
+        let (key, code, global) = active_limiter(&limits, cookie.as_ref(), path, &ip, &hostname);
         let limiter10 = limiter(
             &state.rate_limits,
             format!("global_limit_10_{key}"),
@@ -345,7 +356,11 @@ pub async fn layer(
             if limits.block {
                 let refused = assets10.exceeded_now(&state.pool).await?;
                 let code = refused.error_code.unwrap_or_default();
-                return Ok(blocked(refused.available_in, &code, username));
+                return Ok(Checked::Refused(blocked(
+                    refused.available_in,
+                    &code,
+                    username,
+                )));
             }
         }
         for (secs, l) in [(10, &limiter10), (60, &limiter60)] {
@@ -355,7 +370,11 @@ pub async fn layer(
                 }
                 if limits.block {
                     let code = refused.error_code.unwrap_or_default();
-                    return Ok(blocked(refused.available_in, &code, username));
+                    return Ok(Checked::Refused(blocked(
+                        refused.available_in,
+                        &code,
+                        username,
+                    )));
                 }
                 break;
             }
@@ -371,20 +390,189 @@ pub async fn layer(
             .headers()
             .get(header::USER_AGENT)
             .map(|v| String::from_utf8_lossy(v.as_bytes()).to_lowercase());
-        if let Some(refused) = crawler_limit(&state, user_agent).await? {
-            return Ok(refused);
+        if let Some(refused) = crawler_limit(state, user_agent).await? {
+            return Ok(Checked::Refused(refused));
         }
     }
+    Ok(Checked::Proceed(counted))
+}
 
+/// The app's answer, and the asset request's limits settled (`ensure`):
+/// an asset request counts against the asset budget only.
+async fn run_app(
+    state: &AppState,
+    request: Request,
+    next: Next,
+    path: &str,
+    counted: Option<(RateLimiter, RateLimiter, RateLimiter)>,
+) -> Result<Response, AppError> {
     let response: Response<Body> = next.run(request).await;
-    // ensure: an asset request counts against the asset budget only.
     if let Some((limiter10, limiter60, assets10)) = counted
-        && asset_path(&path)
+        && asset_path(path)
     {
         limiter10.rollback(&state.pool, true).await?;
         limiter60.rollback(&state.pool, true).await?;
         let _ = assets10.performed(&state.pool, true).await?;
     }
+    Ok(response)
+}
+
+/// An empty answer from the tracker itself.
+fn bare(status: StatusCode) -> Response {
+    let mut response = Response::new(Body::empty());
+    *response.status_mut() = status;
+    response
+}
+
+/// `same_origin_request?` against `Discourse.base_url_no_prefix`.
+async fn same_origin(state: &AppState, headers: &axum::http::HeaderMap) -> Result<bool, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    drop(conn);
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    Ok(tracking::same_origin(headers, &urls.base_url_no_prefix()?))
+}
+
+/// The largest beacon body read.
+const BEACON_BODY_LIMIT: usize = 1 << 20;
+
+/// The tracker as a layer, outside everything but tracing: the limits,
+/// then (where Rails loads the tracker) the beacons answered and every
+/// request logged.
+pub async fn layer(
+    State(state): State<AppState>,
+    mut request: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    let path = request.uri().path().to_string();
+    // The port's own bus stays outside the tracker.
+    if path.starts_with("/bus/") {
+        return Ok(next.run(request).await);
+    }
+    if !state.config.track_requests {
+        return match check_limits(&state, &mut request, &path).await? {
+            Checked::Refused(response) => Ok(response),
+            Checked::Proceed(counted) => run_app(&state, request, next, &path, counted).await,
+        };
+    }
+
+    // MethodProfiler's SQL and Redis counts behind these headers.
+    if state.config.globals.get("enable_performance_http_headers") == Some("true") {
+        return Err(Unsupported("enable_performance_http_headers (SQL and Redis timings)").into());
+    }
+    let started = std::time::Instant::now();
+    let method = request.method().clone();
+    let query = request.uri().query().map(str::to_string);
+    let headers = request.headers().clone();
+    let peer = request
+        .extensions()
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+        .map(|c| c.0);
+    let base = state.config.globals.relative_url_root().to_string();
+    let parts = tracking::RequestParts {
+        method: &method,
+        path: &path,
+        query: query.as_deref(),
+        headers: &headers,
+        base_path: &base,
+    };
+    // The beacons' JSON bodies, read before anything else does.
+    let body = if parts.is_beacon() || parts.is_engagement() {
+        let (head, body) = request.into_parts();
+        let bytes = axum::body::to_bytes(body, BEACON_BODY_LIMIT).await?;
+        request = Request::from_parts(head, Body::from(bytes.clone()));
+        bytes
+    } else {
+        axum::body::Bytes::new()
+    };
+    if parts.is_beacon() {
+        // Rails reads the beacon before the limits, and fails there.
+        tracking::extract_view_tracking(&parts, 200, None, &body)?;
+    }
+
+    let mut skip = false;
+    let mut tracked = tracking::Tracked::default();
+    let mut response = match check_limits(&state, &mut request, &path).await? {
+        Checked::Refused(response) => response,
+        Checked::Proceed(counted) => {
+            if parts.is_beacon() {
+                if same_origin(&state, &headers).await? {
+                    bare(StatusCode::NO_CONTENT)
+                } else {
+                    skip = true;
+                    bare(StatusCode::FORBIDDEN)
+                }
+            } else if parts.is_pageview() {
+                bare(StatusCode::NO_CONTENT)
+            } else if parts.is_engagement() {
+                skip = true;
+                if same_origin(&state, &headers).await? {
+                    tracking::track_session_engagement(&state, &body);
+                    bare(StatusCode::NO_CONTENT)
+                } else {
+                    bare(StatusCode::FORBIDDEN)
+                }
+            } else {
+                let (response, marked) =
+                    tracking::scope(run_app(&state, request, next, &path, counted)).await;
+                tracked = marked;
+                let mut response = response?;
+                let runtime = format!("{:.6}", started.elapsed().as_secs_f64());
+                if let Ok(v) = HeaderValue::from_str(&runtime) {
+                    response.headers_mut().insert("X-Runtime", v);
+                }
+                if tracked.bad_token {
+                    response
+                        .headers_mut()
+                        .insert("Discourse-Logged-Out", HeaderValue::from_static("1"));
+                }
+                response
+            }
+        }
+    };
+
+    if skip {
+        return Ok(response);
+    }
+    // log_request_info: get_data, whose failure (a spoofed address) only
+    // skips the logging.
+    let status = response.status().as_u16();
+    let content_type = response
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned());
+    let view = match tracking::extract_view_tracking(&parts, status, content_type.as_deref(), &body)
+    {
+        Ok(view) => view,
+        Err(e) => {
+            tracing::warn!("RequestTracker.get_data failed: {e}");
+            return Ok(response);
+        }
+    };
+    let remote_ip = match crate::remote_ip::remote_ip(&headers, peer) {
+        Ok(ip) => ip,
+        Err(e) => {
+            tracing::warn!("RequestTracker.get_data failed: {e}");
+            return Ok(response);
+        }
+    };
+    let cookie = tracking::find_auth_cookie(&state, &headers);
+    let data = tracking::RequestData::new(&parts, view, status, cookie, &tracked, &remote_ip);
+    if data.view.track_view {
+        response
+            .headers_mut()
+            .insert("X-Discourse-TrackView", HeaderValue::from_static("1"));
+    }
+    if data.view.browser_page_view {
+        response
+            .headers_mut()
+            .insert("X-Discourse-BrowserPageView", HeaderValue::from_static("1"));
+    }
+    tracking::log_later(&state, data);
     Ok(response)
 }
 

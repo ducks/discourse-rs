@@ -1,0 +1,986 @@
+{
+  "name": "traffic_explorer",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D=anonymous&traffic_type%5B%5D=logged_in%2Clikely_crawler&referrer%5B%5D=google.com%2Fsearch&country%5B%5D=us&network%5B%5D=AS15169&browser%5B%5D=chrome&language%5B%5D=en_US&top_url%5B%5D=https%3A%2F%2Flocalhost%2Ft%2Ftopic%2F35%3Fx%3D1&ip%5B%5D=1.2.3.4"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=&language%5B%5D=&entry_url%5B%5D=%2Fabout"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=de&network%5B%5D=AS3320&traffic_type%5B%5D=anonymous"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-01-01&end_date=2026-10-14&browser%5B%5D=unknown&ip%5B%5D=2001:0db8::1"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-14&end_date=2026-10-07"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D=bogus"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&browser=chrome"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&network%5B%5D=15169"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&ip%5B%5D=nope"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=usa"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&top_url%5B%5D=ftp%3A%2F%2Fx%2Fy"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=%20"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=nope&end_date=2026-10-14"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&referrer%5B%5D=007&top_url%5B%5D=010&language%5B%5D=0x10&ip%5B%5D=1.2.3.4%2F24&ip%5B%5D=1.2.3.0"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&traffic_type%5B%5D="
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/site-traffic-explorer.json?start_date=2026-10-07&end_date=2026-10-14&country%5B%5D=%C3%9F"
+    }
+  ],
+  "started_at": "2026-10-14T17:27:12.383597",
+  "transaction_started_at": "2026-10-14T17:27:08.872111",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 7,
+          "bounce_rate": 67,
+          "logged_in_share": 43,
+          "distinct_sessions": 6,
+          "average_session_duration_seconds": 11.66666666666667
+        },
+        "series": [
+          {
+            "date": "2026-10-11",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 0,
+            "logged_in_human_pageviews": 1
+          },
+          {
+            "date": "2026-10-12",
+            "pageviews": 2,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 2,
+            "logged_in_human_pageviews": 0
+          },
+          {
+            "date": "2026-10-13",
+            "pageviews": 3,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 1,
+            "logged_in_human_pageviews": 2
+          },
+          {
+            "date": "2026-10-14",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 1,
+            "logged_in_human_pageviews": 0
+          }
+        ],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [
+            {
+              "value": "unknown",
+              "label": "Unknown browser",
+              "pageviews": 2
+            },
+            {
+              "value": "chrome",
+              "label": "Google Chrome",
+              "pageviews": 2
+            },
+            {
+              "value": "safari",
+              "label": "Safari",
+              "pageviews": 2
+            },
+            {
+              "value": "firefox",
+              "label": "Firefox",
+              "pageviews": 1
+            }
+          ],
+          "networks": [
+            {
+              "value": "AS15169",
+              "label": "AS15169",
+              "pageviews": 3
+            },
+            {
+              "value": "AS3320",
+              "label": "AS3320",
+              "pageviews": 1
+            }
+          ],
+          "top_urls": [
+            {
+              "value": "/t/topic/35",
+              "label": "/t/topic/35",
+              "pageviews": 2
+            },
+            {
+              "value": "/",
+              "label": "/",
+              "pageviews": 1
+            },
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            },
+            {
+              "value": "/c/general/4",
+              "label": "/c/general/4",
+              "pageviews": 1
+            },
+            {
+              "value": "/latest",
+              "label": "/latest",
+              "pageviews": 1
+            },
+            {
+              "value": "/t/other/36",
+              "label": "/t/other/36",
+              "pageviews": 1
+            }
+          ],
+          "countries": [
+            {
+              "value": "US",
+              "label": "US",
+              "pageviews": 3
+            },
+            {
+              "value": "CA",
+              "label": "CA",
+              "pageviews": 1
+            },
+            {
+              "value": "DE",
+              "label": "DE",
+              "pageviews": 1
+            }
+          ],
+          "languages": [
+            {
+              "value": "en",
+              "label": "en",
+              "pageviews": 3
+            },
+            {
+              "value": "",
+              "label": "Unknown",
+              "pageviews": 2
+            },
+            {
+              "value": "de",
+              "label": "de",
+              "pageviews": 1
+            },
+            {
+              "value": "fr-CA",
+              "label": "fr-CA",
+              "pageviews": 1
+            }
+          ],
+          "referrers": [
+            {
+              "value": "",
+              "label": "Direct / unknown",
+              "pageviews": 2
+            },
+            {
+              "value": "google.com/search",
+              "label": "google.com/search",
+              "pageviews": 2
+            },
+            {
+              "value": "localhost:3000/latest",
+              "label": "localhost:3000/latest",
+              "pageviews": 1
+            },
+            {
+              "value": "news.ycombinator.com",
+              "label": "news.ycombinator.com",
+              "pageviews": 1
+            }
+          ],
+          "entry_urls": [
+            {
+              "value": "/t/topic/35",
+              "label": "/t/topic/35",
+              "pageviews": 2
+            },
+            {
+              "value": "/",
+              "label": "/",
+              "pageviews": 1
+            },
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            },
+            {
+              "value": "/c/general/4",
+              "label": "/c/general/4",
+              "pageviews": 1
+            },
+            {
+              "value": "/t/other/36",
+              "label": "/t/other/36",
+              "pageviews": 1
+            }
+          ],
+          "ip_addresses": [
+            {
+              "value": "1.2.3.4",
+              "label": "1.2.3.4",
+              "pageviews": 2
+            },
+            {
+              "value": "10.0.0.1",
+              "label": "10.0.0.1",
+              "pageviews": 1
+            },
+            {
+              "value": "1.2.3.5",
+              "label": "1.2.3.5",
+              "pageviews": 1
+            },
+            {
+              "value": "2001:db8::1",
+              "label": "2001:db8::1",
+              "pageviews": 1
+            },
+            {
+              "value": "5.6.7.8",
+              "label": "5.6.7.8",
+              "pageviews": 1
+            },
+            {
+              "value": "9.9.9.9",
+              "label": "9.9.9.9",
+              "pageviews": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 1,
+          "bounce_rate": 0,
+          "logged_in_share": 100,
+          "distinct_sessions": 1,
+          "average_session_duration_seconds": 50.0
+        },
+        "series": [
+          {
+            "date": "2026-10-13",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 0,
+            "logged_in_human_pageviews": 1
+          }
+        ],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [
+            {
+              "value": "chrome",
+              "label": "Google Chrome",
+              "pageviews": 1
+            }
+          ],
+          "networks": [
+            {
+              "value": "AS15169",
+              "label": "AS15169",
+              "pageviews": 1
+            }
+          ],
+          "top_urls": [
+            {
+              "value": "/t/topic/35",
+              "label": "/t/topic/35",
+              "pageviews": 1
+            }
+          ],
+          "countries": [
+            {
+              "value": "US",
+              "label": "US",
+              "pageviews": 1
+            }
+          ],
+          "languages": [
+            {
+              "value": "en",
+              "label": "en",
+              "pageviews": 1
+            }
+          ],
+          "referrers": [
+            {
+              "value": "google.com/search",
+              "label": "google.com/search",
+              "pageviews": 1
+            }
+          ],
+          "entry_urls": [
+            {
+              "value": "/t/topic/35",
+              "label": "/t/topic/35",
+              "pageviews": 1
+            }
+          ],
+          "ip_addresses": [
+            {
+              "value": "1.2.3.4",
+              "label": "1.2.3.4",
+              "pageviews": 1
+            }
+          ]
+        },
+        "active_filters": [
+          {
+            "key": "traffic_type",
+            "value": "anonymous",
+            "label": "Anonymous"
+          },
+          {
+            "key": "traffic_type",
+            "value": "logged_in",
+            "label": "Logged in"
+          },
+          {
+            "key": "traffic_type",
+            "value": "likely_crawler",
+            "label": "Likely crawlers"
+          },
+          {
+            "key": "top_url",
+            "value": "/t/topic/35",
+            "label": "/t/topic/35"
+          },
+          {
+            "key": "referrer",
+            "value": "google.com/search",
+            "label": "google.com/search"
+          },
+          {
+            "key": "country",
+            "value": "US",
+            "label": "US"
+          },
+          {
+            "key": "network",
+            "value": "AS15169",
+            "label": "AS15169"
+          },
+          {
+            "key": "browser",
+            "value": "chrome",
+            "label": "Google Chrome"
+          },
+          {
+            "key": "language",
+            "value": "en",
+            "label": "en"
+          },
+          {
+            "key": "ip",
+            "value": "1.2.3.4",
+            "label": "1.2.3.4"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 1,
+          "bounce_rate": 100,
+          "logged_in_share": 0,
+          "distinct_sessions": 1,
+          "average_session_duration_seconds": 0.0
+        },
+        "series": [
+          {
+            "date": "2026-10-14",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 1,
+            "logged_in_human_pageviews": 0
+          }
+        ],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [
+            {
+              "value": "unknown",
+              "label": "Unknown browser",
+              "pageviews": 1
+            }
+          ],
+          "networks": [],
+          "top_urls": [
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            }
+          ],
+          "countries": [
+            {
+              "value": "CA",
+              "label": "CA",
+              "pageviews": 1
+            }
+          ],
+          "languages": [
+            {
+              "value": "",
+              "label": "Unknown",
+              "pageviews": 1
+            }
+          ],
+          "referrers": [
+            {
+              "value": "",
+              "label": "Direct / unknown",
+              "pageviews": 1
+            }
+          ],
+          "entry_urls": [
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            }
+          ],
+          "ip_addresses": [
+            {
+              "value": "2001:db8::1",
+              "label": "2001:db8::1",
+              "pageviews": 1
+            }
+          ]
+        },
+        "active_filters": [
+          {
+            "key": "entry_url",
+            "value": "/about",
+            "label": "/about"
+          },
+          {
+            "key": "referrer",
+            "value": "",
+            "label": "Direct / unknown"
+          },
+          {
+            "key": "language",
+            "value": "",
+            "label": "Unknown"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 1,
+          "bounce_rate": 100,
+          "logged_in_share": 0,
+          "distinct_sessions": 1,
+          "average_session_duration_seconds": 5.0
+        },
+        "series": [
+          {
+            "date": "2026-10-12",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 1,
+            "logged_in_human_pageviews": 0
+          }
+        ],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [
+            {
+              "value": "firefox",
+              "label": "Firefox",
+              "pageviews": 1
+            }
+          ],
+          "networks": [
+            {
+              "value": "AS3320",
+              "label": "AS3320",
+              "pageviews": 1
+            }
+          ],
+          "top_urls": [
+            {
+              "value": "/t/other/36",
+              "label": "/t/other/36",
+              "pageviews": 1
+            }
+          ],
+          "countries": [
+            {
+              "value": "DE",
+              "label": "DE",
+              "pageviews": 1
+            }
+          ],
+          "languages": [
+            {
+              "value": "de",
+              "label": "de",
+              "pageviews": 1
+            }
+          ],
+          "referrers": [
+            {
+              "value": "",
+              "label": "Direct / unknown",
+              "pageviews": 1
+            }
+          ],
+          "entry_urls": [
+            {
+              "value": "/t/other/36",
+              "label": "/t/other/36",
+              "pageviews": 1
+            }
+          ],
+          "ip_addresses": [
+            {
+              "value": "5.6.7.8",
+              "label": "5.6.7.8",
+              "pageviews": 1
+            }
+          ]
+        },
+        "active_filters": [
+          {
+            "key": "traffic_type",
+            "value": "anonymous",
+            "label": "Anonymous"
+          },
+          {
+            "key": "country",
+            "value": "DE",
+            "label": "DE"
+          },
+          {
+            "key": "network",
+            "value": "AS3320",
+            "label": "AS3320"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": {
+          "reason": "retention",
+          "available_start_date": "2026-07-14"
+        },
+        "summary": {
+          "pageviews": 1,
+          "bounce_rate": 100,
+          "logged_in_share": 0,
+          "distinct_sessions": 1,
+          "average_session_duration_seconds": 0.0
+        },
+        "series": [
+          {
+            "date": "2026-10-14",
+            "pageviews": 1,
+            "likely_crawler_pageviews": 0,
+            "anonymous_human_pageviews": 1,
+            "logged_in_human_pageviews": 0
+          }
+        ],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [
+            {
+              "value": "unknown",
+              "label": "Unknown browser",
+              "pageviews": 1
+            }
+          ],
+          "networks": [],
+          "top_urls": [
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            }
+          ],
+          "countries": [
+            {
+              "value": "CA",
+              "label": "CA",
+              "pageviews": 1
+            }
+          ],
+          "languages": [
+            {
+              "value": "",
+              "label": "Unknown",
+              "pageviews": 1
+            }
+          ],
+          "referrers": [
+            {
+              "value": "",
+              "label": "Direct / unknown",
+              "pageviews": 1
+            }
+          ],
+          "entry_urls": [
+            {
+              "value": "/about",
+              "label": "/about",
+              "pageviews": 1
+            }
+          ],
+          "ip_addresses": [
+            {
+              "value": "2001:db8::1",
+              "label": "2001:db8::1",
+              "pageviews": 1
+            }
+          ]
+        },
+        "active_filters": [
+          {
+            "key": "browser",
+            "value": "unknown",
+            "label": "Unknown browser"
+          },
+          {
+            "key": "ip",
+            "value": "2001:db8::1",
+            "label": "2001:db8::1"
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: traffic_type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: browser"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: network"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: ip"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: country"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: top_url"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: referrer"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 0,
+          "bounce_rate": 0,
+          "logged_in_share": 0,
+          "distinct_sessions": 0,
+          "average_session_duration_seconds": 0
+        },
+        "series": [],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [],
+          "networks": [],
+          "top_urls": [],
+          "countries": [],
+          "languages": [],
+          "referrers": [],
+          "entry_urls": [],
+          "ip_addresses": []
+        },
+        "active_filters": [
+          {
+            "key": "top_url",
+            "value": "/8",
+            "label": "/8"
+          },
+          {
+            "key": "referrer",
+            "value": "7",
+            "label": "7"
+          },
+          {
+            "key": "language",
+            "value": "",
+            "label": "Unknown"
+          },
+          {
+            "key": "ip",
+            "value": "1.2.3.0",
+            "label": "1.2.3.0"
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: traffic_type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "partial_data": null,
+        "summary": {
+          "pageviews": 0,
+          "bounce_rate": 0,
+          "logged_in_share": 0,
+          "distinct_sessions": 0,
+          "average_session_duration_seconds": 0
+        },
+        "series": [],
+        "series_colors": {
+          "logged_in_human_pageviews": "#4B3CE0",
+          "anonymous_human_pageviews": "#9C8DEC",
+          "likely_crawler_pageviews": "#B3AAC9"
+        },
+        "dimensions": {
+          "browsers": [],
+          "networks": [],
+          "top_urls": [],
+          "countries": [],
+          "languages": [],
+          "referrers": [],
+          "entry_urls": [],
+          "ip_addresses": []
+        },
+        "active_filters": [
+          {
+            "key": "country",
+            "value": "SS",
+            "label": "SS"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "I3hQ4OqpnfUleZ+TorhOgk8zgoQ=",
+            "created_at": "2026-10-14T17:27:10.667936",
+            "rotated_at": "2026-10-14T17:27:10.661013",
+            "updated_at": "2026-10-14T17:27:10.667936",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "I3hQ4OqpnfUleZ+TorhOgk8zgoQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T17:27:12.396876",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "I3hQ4OqpnfUleZ+TorhOgk8zgoQ=",
+            "created_at": "2026-10-14T17:27:10.667936",
+            "rotated_at": "2026-10-14T17:27:10.661013",
+            "updated_at": "2026-10-14T17:27:10.667936",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "I3hQ4OqpnfUleZ+TorhOgk8zgoQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO browser_pageview_events (url, normalized_url, ip_address, user_agent, session_id, user_id, normalized_referrer, country_code, asn, browser, normalized_language, score, created_at) VALUES ('http://localhost:3000/t/topic/35', '/t/topic/35', '1.2.3.4', 'Mozilla', 's1', 3, 'google.com/search', 'US', 15169, 1, 'en', NULL, now() - interval '1 day'), ('http://localhost:3000/latest', '/latest', '1.2.3.4', 'Mozilla', 's1', 3, 'localhost/t/topic/35', 'US', 15169, 1, 'en', NULL, now() - interval '1 day' + interval '1 minute'), ('http://localhost:3000/t/other/36', '/t/other/36', '5.6.7.8', 'Mozilla', 's2', NULL, NULL, 'DE', 3320, 4, 'de', 80, now() - interval '2 days'), ('http://localhost:3000/', '/', '9.9.9.9', 'Mozilla', 's3', NULL, 'news.ycombinator.com', NULL, NULL, NULL, NULL, NULL, now() - interval '2 days' + interval '5 minutes'), ('http://localhost:3000/c/general/4', '/c/general/4', '10.0.0.1', 'Mozilla', 's4', 4, 'localhost:3000/latest', NULL, NULL, 3, 'fr-CA', NULL, now() - interval '3 days'), ('http://localhost:3000/t/topic/35', '/t/topic/35', '1.2.3.5', 'Mozilla', 's5', NULL, 'google.com/search', 'US', 15169, 3, 'en', NULL, now() - interval '1 day' + interval '2 minutes'), ('http://localhost:3000/old', '/old', '1.2.3.4', 'Mozilla', 's7', NULL, NULL, NULL, NULL, 1, 'en', NULL, now() - interval '100 days'), ('http://localhost:3000/about', '/about', '2001:db8::1', 'Mozilla', 's6', NULL, '', 'CA', NULL, 0, '', NULL, now() - interval '1 hour')",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, created_at, updated_at) VALUES ('s1', 50, now(), now()), ('s2', 5, now(), now()), ('s4', 12, now(), now()), ('s5', 3, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "e8b21b91095cc346c9960df95432022d2448fbdd831c6100f17a7f94ae62df05",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

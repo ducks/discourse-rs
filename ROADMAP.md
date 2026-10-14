@@ -437,7 +437,8 @@ then by what running a forum needs (milestone 6). Briefs:
     nesting left after compiling, and selectors past tags, classes, ids
     and the descendant and child combinators in the email CSS, the
     admin's Ember pages; the incoming email details stay with #87; the
-    preview and send digest landed with #72), 89. `feat/admin-dashboard` L: reports, problem checks, admin notices,
+    preview and send digest landed with #72)
+89. ~~`feat/admin-dashboard`~~ (done) L: reports, problem checks, admin notices,
     the pageview jobs. Split:
     89a. ~~`feat/admin-problem-checks`~~ (done) M (the 35 core checks
     answering about the port itself, their trackers and notices with
@@ -461,7 +462,17 @@ then by what running a forum needs (milestone 6). Briefs:
     warm_dashboard_reports. Refused: discourse-solved's support section,
     data explorer's report source, what's new and toggle-feature (the
     upcoming changes list), the traffic explorer until 89d),
-    89d. `feat/pageview-tracking` L
+    89d. ~~`feat/pageview-tracking`~~ (done) L (the rollup and pageview
+    housekeeping jobs; RequestTracker's logging where Rails loads it
+    (outside development, or TRACK_REQUESTS): application_requests and
+    web_crawler_requests counts flushed each minute, X-Discourse-TrackView,
+    X-Runtime and Discourse-Logged-Out, the /srv/pv, /pageview and /srv/se
+    beacons with their same-origin check, browser pageview events (queued
+    while Postgres is read only, flush_browser_pageview_events), session
+    engagement, topic views from browser page views (TopicViewItem.add);
+    the site traffic explorer. Refused: CrawlerScorer, MaxMind countries
+    and networks (none configured, as without one in Rails), IDNA hosts,
+    enable_performance_http_headers' SQL and Redis timings)
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,
     91. `feat/backups` L (creating, listing, downloading, restoring

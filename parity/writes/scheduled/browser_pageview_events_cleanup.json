@@ -1,0 +1,98 @@
+{
+  "name": "browser_pageview_events_cleanup",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:28:08.649488",
+  "transaction_started_at": "2026-10-14T16:28:06.389175",
+  "responses": [],
+  "changes": {
+    "browser_pageview_event_scores": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "event_id": 9001,
+          "churn_score": 0,
+          "referrer_score": 0,
+          "velocity_score": 0,
+          "known_asn_score": 0,
+          "rapid_nav_score": 0,
+          "engagement_score": 0,
+          "ip_rotation_score": 0,
+          "automation_ua_score": 3,
+          "stale_browser_score": 0,
+          "datacenter_asn_score": 0,
+          "single_request_no_referrer_score": 0
+        }
+      ],
+      "updated": []
+    },
+    "browser_pageview_events": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9001,
+          "asn": null,
+          "url": "/t/35",
+          "score": null,
+          "source": 2,
+          "browser": null,
+          "user_id": null,
+          "language": null,
+          "referrer": null,
+          "topic_id": 35,
+          "created_at": "2026-07-06T16:28:06.389175",
+          "ip_address": "10.0.0.1",
+          "session_id": "s1",
+          "user_agent": "Mozilla/5.0",
+          "country_code": null,
+          "normalized_url": null,
+          "normalized_language": null,
+          "normalized_referrer": null,
+          "normalized_url_version": null,
+          "normalized_referrer_version": null
+        }
+      ],
+      "updated": []
+    },
+    "browser_pageview_session_engagements": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "created_at": "2026-07-06T16:28:06.389175",
+          "key_events": 0,
+          "session_id": "s1",
+          "updated_at": "2026-07-06T16:28:06.389175",
+          "click_events": 0,
+          "touch_events": 0,
+          "scroll_events": 0,
+          "engaged_seconds": 5,
+          "mouse_move_events": 0,
+          "back_forward_events": 0,
+          "time_to_first_interaction_ms": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO browser_pageview_events (id, url, ip_address, referrer, user_agent, session_id, topic_id, user_id, created_at) VALUES (9001, '/t/35', '10.0.0.1', NULL, 'Mozilla/5.0', 's1', 35, NULL, now() - interval '100 days'), (9002, '/latest', '10.0.0.1', NULL, 'Mozilla/5.0', 's1', NULL, NULL, now() - interval '80 days'), (9003, '/latest', '10.0.0.2', NULL, 'Mozilla/5.0', 's2', NULL, 2, now() - interval '1 day')",
+    "INSERT INTO browser_pageview_event_scores (event_id, automation_ua_score) VALUES (9001, 3), (9003, 1)",
+    "INSERT INTO browser_pageview_session_engagements (session_id, engaged_seconds, created_at, updated_at) VALUES ('s1', 5, now() - interval '100 days', now() - interval '100 days'), ('s2', 7, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_browser_pageview_events",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e1e8558052c2d345bee1e777571ef9aa775f3f7b39a6a2e8192625a3fb63e9e8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

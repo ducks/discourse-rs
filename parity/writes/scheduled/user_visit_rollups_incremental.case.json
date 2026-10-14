@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM user_visit_daily_rollups",
+    "INSERT INTO user_visit_daily_rollups (date, dau, mau) VALUES ((now() - interval '5 days')::date, 7, 7), ((now() - interval '1 day')::date, 9, 9)",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (2, (now() - interval '3 days')::date, 3, false, 60), (3, (now() - interval '1 day')::date, 1, true, 30), (4, now()::date, 0, false, 10)"
+  ],
+  "requests": [],
+  "enqueue": [["maintain_user_visit_daily_rollups", {}]],
+  "run_jobs": ["maintain_user_visit_daily_rollups"]
+}

@@ -178,6 +178,9 @@ pub async fn resolve(
     };
     let max_age = settings.get("maximum_session_age")?.to_i();
     let Some(unhashed) = find_auth_token(keys, raw, max_age) else {
+        if headers.contains_key("discourse-logged-in") {
+            crate::request_tracking::mark_bad_token();
+        }
         return Ok(Some(anonymous(true)));
     };
     let limiter = crate::rate_limiter::RateLimiter::new(
@@ -216,6 +219,7 @@ pub async fn resolve(
     };
     // No user for the token: BAD_TOKEN, and the attempt counted.
     let Some((token, user)) = found else {
+        crate::request_tracking::mark_bad_token();
         if limiter.performed(&state.pool, enabled).await?.is_err() {
             return Ok(None);
         }
@@ -351,6 +355,10 @@ pub async fn layer(
     {
         return Err(crate::Unsupported("API keys in request parameters").into());
     }
+    // BAD_TOKEN: a client that thinks it is signed in, without a cookie.
+    if cookie(&headers, TOKEN_COOKIE).is_none() && headers.contains_key("discourse-logged-in") {
+        crate::request_tracking::mark_bad_token();
+    }
     let user_api_key = headers
         .get(super::user_api_key::HEADER_USER_API_KEY)
         .and_then(|v| v.to_str().ok())
@@ -445,6 +453,7 @@ pub async fn layer(
         };
         let guardian = match refused_key {
             Err(user) if user_api_key.is_some() => {
+                crate::request_tracking::mark_api(true, user.id);
                 // should_update_last_seen?: an API request only with
                 // Discourse-Present: true.
                 if !mode.postgres
@@ -488,6 +497,7 @@ pub async fn layer(
                 for l in counted.map(|c| c.0).unwrap_or_default() {
                     l.rollback(&state.pool, true).await?;
                 }
+                crate::request_tracking::mark_api(false, user.id);
                 crate::guardian::Guardian::for_user(&mut conn, &user).await?
             }
             Ok(_) if path.starts_with("/admin/") => {

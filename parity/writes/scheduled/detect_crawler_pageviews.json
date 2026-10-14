@@ -1,0 +1,26 @@
+{
+  "name": "detect_crawler_pageviews",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:28:27.519267",
+  "transaction_started_at": "2026-10-14T16:28:26.125612",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO browser_pageview_events (id, url, ip_address, user_agent, session_id, created_at) VALUES (9001, '/latest', '10.0.0.1', 'curl/8.0', 's1', now() - interval '50 minutes')"
+  ],
+  "enqueue": [
+    [
+      "detect_crawler_pageviews",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "f36511414a0f441ad43a49ec847795ef211ced1109249b079ae1c678cc344ddd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
