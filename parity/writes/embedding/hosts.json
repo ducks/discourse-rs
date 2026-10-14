@@ -1,0 +1,554 @@
+{
+  "name": "hosts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/embedding.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/embeddable_hosts.json",
+      "params": {
+        "embeddable_host": {
+          "host": "https://Example.com/some/path",
+          "allowed_paths": "/blog/.*",
+          "category_id": 4,
+          "user": "user1",
+          "tags": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/embeddable_hosts.json",
+      "params": {
+        "embeddable_host": {
+          "host": "other.example.org:8080",
+          "allowed_paths": "",
+          "category_id": "",
+          "user": "",
+          "tags": []
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/embeddable_hosts.json",
+      "params": {
+        "embeddable_host": {
+          "host": "not a host",
+          "category_id": 4
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/embeddable_hosts.json",
+      "params": {
+        "embeddable_host": {
+          "host": "bad-paths.com",
+          "allowed_paths": "(",
+          "category_id": 999,
+          "user": "nobody"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/embeddable_hosts.json",
+      "params": {
+        "embeddable_host": {
+          "host": "dev.localhost",
+          "category_id": 4
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/embeddable_hosts/{{responses.1.body.embeddable_host.id}}.json",
+      "params": {
+        "embeddable_host": {
+          "host": "example.com",
+          "allowed_paths": "/news/.*",
+          "category_id": 1,
+          "user": "",
+          "tags": [
+            2
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/embeddable_hosts/{{responses.2.body.embeddable_host.id}}.json",
+      "params": {
+        "embeddable_host": {
+          "host": "127.0.0.1:3000",
+          "category_id": 4,
+          "user": "user2",
+          "tags": ""
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/embedding.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/embeddable_hosts/{{responses.2.body.embeddable_host.id}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/embedding/new.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:30:01.269898",
+  "transaction_started_at": "2026-10-14T13:29:59.854796",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "embeddable_hosts": [],
+        "embedding": {
+          "id": "default",
+          "fields": [
+            "embed_by_username",
+            "embed_post_limit",
+            "embed_title_scrubber",
+            "embed_truncate",
+            "embed_unlisted",
+            "allowed_embed_selectors",
+            "blocked_embed_selectors",
+            "allowed_embed_classnames"
+          ],
+          "base_url": "http://localhost:3048",
+          "embed_by_username": "",
+          "embed_post_limit": 100,
+          "embed_title_scrubber": "",
+          "embed_truncate": true,
+          "embed_unlisted": false,
+          "allowed_embed_selectors": "",
+          "blocked_embed_selectors": "",
+          "allowed_embed_classnames": "emoji",
+          "embeddable_host_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_host": {
+          "id": 1,
+          "host": "Example.com",
+          "allowed_paths": "/blog/.*",
+          "class_name": null,
+          "category_id": 4,
+          "tags": [
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            },
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            }
+          ],
+          "user": "user1"
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_host": {
+          "id": 2,
+          "host": "other.example.org:8080",
+          "allowed_paths": "",
+          "class_name": null,
+          "category_id": -1,
+          "tags": [],
+          "user": null
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Host is invalid"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Allowed paths is invalid"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_host": {
+          "id": 3,
+          "host": "dev.localhost",
+          "allowed_paths": null,
+          "class_name": null,
+          "category_id": 4,
+          "tags": [],
+          "user": null
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_host": {
+          "id": 1,
+          "host": "example.com",
+          "allowed_paths": "/news/.*",
+          "class_name": null,
+          "category_id": 1,
+          "tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            }
+          ],
+          "user": null
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_host": {
+          "id": 2,
+          "host": "127.0.0.1:3000",
+          "allowed_paths": null,
+          "class_name": null,
+          "category_id": 4,
+          "tags": [],
+          "user": "user2"
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_hosts": [
+          {
+            "id": 2,
+            "host": "127.0.0.1:3000",
+            "allowed_paths": null,
+            "class_name": null,
+            "category_id": 4,
+            "tags": [],
+            "user": "user2"
+          },
+          {
+            "id": 3,
+            "host": "dev.localhost",
+            "allowed_paths": null,
+            "class_name": null,
+            "category_id": 4,
+            "tags": [],
+            "user": null
+          },
+          {
+            "id": 1,
+            "host": "example.com",
+            "allowed_paths": "/news/.*",
+            "class_name": null,
+            "category_id": 1,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "user": null
+          }
+        ],
+        "embedding": {
+          "id": "default",
+          "fields": [
+            "embed_by_username",
+            "embed_post_limit",
+            "embed_title_scrubber",
+            "embed_truncate",
+            "embed_unlisted",
+            "allowed_embed_selectors",
+            "blocked_embed_selectors",
+            "allowed_embed_classnames"
+          ],
+          "base_url": "http://localhost:3048",
+          "embed_by_username": "",
+          "embed_post_limit": 100,
+          "embed_title_scrubber": "",
+          "embed_truncate": true,
+          "embed_unlisted": false,
+          "allowed_embed_selectors": "",
+          "blocked_embed_selectors": "",
+          "allowed_embed_classnames": "emoji",
+          "embeddable_host_ids": [
+            2,
+            3,
+            1
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "embeddable_host_tags": {
+      "inserted": [
+        {
+          "id": 2,
+          "tag_id": 2,
+          "created_at": "2026-10-14T13:30:01.467784",
+          "updated_at": "2026-10-14T13:30:01.467784",
+          "embeddable_host_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "embeddable_hosts": {
+      "inserted": [
+        {
+          "id": 3,
+          "host": "dev.localhost",
+          "user_id": null,
+          "class_name": null,
+          "created_at": "2026-10-14T13:30:01.724492",
+          "updated_at": "2026-10-14T13:30:01.724492",
+          "category_id": 4,
+          "allowed_paths": null
+        },
+        {
+          "id": 1,
+          "host": "example.com",
+          "user_id": null,
+          "class_name": null,
+          "created_at": "2026-10-14T13:30:01.401749",
+          "updated_at": "2026-10-14T13:30:01.781124",
+          "category_id": 1,
+          "allowed_paths": "/news/.*"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dyj55VkMZryfq6k+TkmmHpNT2wE=",
+            "created_at": "2026-10-14T13:30:00.438539",
+            "rotated_at": "2026-10-14T13:30:00.437564",
+            "updated_at": "2026-10-14T13:30:00.438539",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "dyj55VkMZryfq6k+TkmmHpNT2wE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T13:30:01.278808",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dyj55VkMZryfq6k+TkmmHpNT2wE=",
+            "created_at": "2026-10-14T13:30:00.438539",
+            "rotated_at": "2026-10-14T13:30:00.437564",
+            "updated_at": "2026-10-14T13:30:00.438539",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "dyj55VkMZryfq6k+TkmmHpNT2wE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 73,
+          "context": "host: Example.com",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.477494",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.477494",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 73,
+          "context": "host: other.example.org:8080",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.612769",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.612769",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 73,
+          "context": "host: dev.localhost",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.731009",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.731009",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 74,
+          "context": "host: example.com",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "allowed_paths: /news/.*, category_id: 1, host: example.com, user_id: ",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.792712",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.792712",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "allowed_paths: /blog/.*, category_id: 4, host: Example.com, user_id: 3",
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 74,
+          "context": "host: 127.0.0.1:3000",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "allowed_paths: , category_id: 4, host: 127.0.0.1:3000, user_id: 4",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.853523",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.853523",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "allowed_paths: , category_id: -1, host: other.example.org:8080, user_id: ",
+          "target_user_id": null
+        },
+        {
+          "id": 79,
+          "email": null,
+          "action": 75,
+          "context": "host: 127.0.0.1:3000",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T13:30:01.92673",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:30:01.92673",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "embeddable_host_tags": 1,
+    "embeddable_hosts": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "6b0e02334475a16f2ea6a5da60d385688a18f4a63f0af11d44508a1bc4e5e44b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

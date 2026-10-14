@@ -1,0 +1,47 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "posts_and_topics",
+          "embed_by_username": "user1",
+          "embed_post_limit": "25",
+          "embed_title_scrubber": " - My Blog$",
+          "embed_truncate": "false",
+          "embed_unlisted": "true",
+          "allowed_embed_selectors": "ignored"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "crawlers",
+          "allowed_embed_selectors": "article",
+          "blocked_embed_selectors": ".ad, .footer"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "posts_and_topics",
+          "embed_by_username": "nobody",
+          "embed_post_limit": "",
+          "embed_truncate": true
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/embedding.json"
+    }
+  ]
+}

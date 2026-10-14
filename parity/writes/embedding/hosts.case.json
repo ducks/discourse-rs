@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/embedding.json"},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "https://Example.com/some/path", "allowed_paths": "/blog/.*", "category_id": 4, "user": "user1", "tags": [1, 2]}}},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "other.example.org:8080", "allowed_paths": "", "category_id": "", "user": "", "tags": []}}},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "not a host", "category_id": 4}}},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "bad-paths.com", "allowed_paths": "(", "category_id": 999, "user": "nobody"}}},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "dev.localhost", "category_id": 4}}},
+    {"method": "PUT", "path": "/admin/embeddable_hosts/{{responses.1.body.embeddable_host.id}}.json", "params": {"embeddable_host": {"host": "example.com", "allowed_paths": "/news/.*", "category_id": 1, "user": "", "tags": [2]}}},
+    {"method": "PUT", "path": "/admin/embeddable_hosts/{{responses.2.body.embeddable_host.id}}.json", "params": {"embeddable_host": {"host": "127.0.0.1:3000", "category_id": 4, "user": "user2", "tags": ""}}},
+    {"method": "GET", "path": "/admin/customize/embedding.json"},
+    {"method": "DELETE", "path": "/admin/embeddable_hosts/{{responses.2.body.embeddable_host.id}}.json"},
+    {"method": "GET", "path": "/admin/customize/embedding/new.json"}
+  ]
+}

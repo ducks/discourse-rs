@@ -323,6 +323,83 @@ pub async fn set_and_log(
     Ok(())
 }
 
+/// `SiteSetting.set(name, value)` (`add_override!`, no staff log) for the
+/// plain types: `to_db_value`'s cast and validation, the override saved,
+/// client settings published when the value changed. Err(message) for
+/// the InvalidParameters an invalid value raises.
+pub async fn set(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    defs: &Definitions,
+    i18n: &crate::i18n::I18n,
+    name: &str,
+    raw: &serde_json::Value,
+) -> Result<Result<Value, String>, AppError> {
+    let def = defs
+        .get(name)
+        .ok_or(Unsupported("setting an unknown site setting"))?;
+    let text = || match raw {
+        serde_json::Value::String(s) => Ok(s.clone()),
+        serde_json::Value::Number(n) => Ok(n.to_string()),
+        serde_json::Value::Bool(b) => Ok(b.to_string()),
+        serde_json::Value::Null => Ok(String::new()),
+        _ => Err(Unsupported("a site setting value that is a list or hash")),
+    };
+    let value = match def.data_type {
+        DataType::Bool => Value::Bool(matches!(raw, serde_json::Value::Bool(true)) || {
+            let t = text()?;
+            t == "t" || t == "true"
+        }),
+        DataType::Integer => match raw {
+            serde_json::Value::Number(n) if n.is_i64() => Value::Int(n.as_i64().unwrap_or(0)),
+            _ => Value::Int(crate::ruby::to_i(&text()?)),
+        },
+        DataType::String | DataType::Username => Value::Str(text()?),
+        _ => return Err(Unsupported("SiteSetting.set for this setting type").into()),
+    };
+    if def.data_type == DataType::Username {
+        let username = value.to_s();
+        if !crate::ruby::is_blank(&username) {
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE username = $1)")
+                    .bind(&username)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            if !exists {
+                let message = i18n
+                    .t("site_settings.errors.invalid_username")
+                    .unwrap_or("There's no user with that username.");
+                return Ok(Err(format!("{name}: {message}")));
+            }
+        }
+    } else if let Some(message) = invalid(def, &value, i18n)? {
+        return Ok(Err(format!("{name}: {message}")));
+    }
+    let stored = stored_value(def, &value)?;
+    let db_value = match &stored {
+        Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
+        other => other.to_s(),
+    };
+    save_override(&mut *conn, def, &db_value).await?;
+    let previous = settings.get(name)?;
+    if def.client && *previous != stored {
+        let published = match &stored {
+            Value::Bool(b) => serde_json::json!(b),
+            Value::Int(i) => serde_json::json!(i),
+            other => serde_json::json!(other.to_s()),
+        };
+        bus.publish(
+            &mut *conn,
+            "/client_settings",
+            &serde_json::json!({ "name": name, "value": published, "scoped_to": null }),
+            None,
+        )
+        .await?;
+    }
+    Ok(Ok(stored))
+}
+
 /// `DbProvider#save`: a new row (even holding the default), else the
 /// value and type when either changed; an unchanged row is not written.
 async fn save_override(

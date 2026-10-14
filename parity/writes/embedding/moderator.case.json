@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET moderator = true WHERE id = 3"],
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/embedding.json"},
+    {"method": "PUT", "path": "/admin/customize/embedding.json", "params": {"embedding": {"type": "crawlers"}}},
+    {"method": "POST", "path": "/admin/embeddable_hosts.json", "params": {"embeddable_host": {"host": "example.com"}}}
+  ]
+}

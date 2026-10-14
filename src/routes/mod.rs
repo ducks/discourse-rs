@@ -3,6 +3,7 @@ mod accounts;
 mod admin_api_keys;
 mod admin_badges;
 mod admin_email;
+mod admin_embedding;
 mod admin_emoji;
 mod admin_flags;
 mod admin_groups;
@@ -649,6 +650,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/config/flags/{flag_id}/reorder/{direction}",
             put(admin_flags::reorder),
+        )
+        .route(
+            "/admin/customize/embedding",
+            get(admin_embedding::show).put(admin_embedding::update),
+        )
+        .route(
+            "/admin/customize/embedding.json",
+            get(admin_embedding::show).put(admin_embedding::update),
+        )
+        .route(
+            "/admin/customize/embedding/{id}",
+            get(admin_embedding::edit),
+        )
+        .route(
+            "/admin/embeddable_hosts",
+            post(admin_embedding::create),
+        )
+        .route(
+            "/admin/embeddable_hosts.json",
+            post(admin_embedding::create),
+        )
+        .route(
+            "/admin/embeddable_hosts/{id}",
+            put(admin_embedding::update_host).delete(admin_embedding::destroy_host),
         )
         .route("/site/emoji", get(admin_emoji::site_emoji))
         .route("/site/emoji.json", get(admin_emoji::site_emoji))

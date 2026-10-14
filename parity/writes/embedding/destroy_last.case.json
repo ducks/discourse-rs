@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO embeddable_hosts (id, host, category_id, allowed_paths, user_id, created_at, updated_at) VALUES (5, 'blog.example.com', 4, NULL, NULL, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO embeddable_host_tags (embeddable_host_id, tag_id, created_at, updated_at) VALUES (5, 1, now(), now())",
+    "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) VALUES ('embed_post_limit', 3, '30', now(), now()), ('allowed_embed_classnames', 1, 'x', now(), now())"
+  ],
+  "requests": [
+    {"method": "DELETE", "path": "/admin/embeddable_hosts/5.json"},
+    {"method": "GET", "path": "/admin/customize/embedding.json"}
+  ]
+}
