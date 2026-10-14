@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use super::search::Peer;
 use crate::html::Chrome;
 use crate::html::Crawler;
+use crate::messages_view::Route as MessagesRoute;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
@@ -53,6 +54,46 @@ enum Action {
     /// The HTML of a user stream route (`/activity`, `/activity/replies`
     /// ...): users#show, drawn as that tab.
     Activity(ActivityFilter),
+    /// The HTML of a messages route (`/messages`, `/messages/sent`,
+    /// `/messages/group/:name/new` ...): users#show, drawn with the list
+    /// the route loads; the group name for a group's.
+    Messages(MessagesRoute, Option<String>),
+}
+
+/// `/u/:username/messages(/...)` as a page: the route and its group.
+fn messages_route(rest: &str) -> Result<Option<(MessagesRoute, Option<String>)>, Unsupported> {
+    let Some(tail) = rest.strip_prefix("messages") else {
+        return Ok(None);
+    };
+    let tail = tail.trim_end_matches('/');
+    let route = match tail {
+        "" => MessagesRoute::Inbox,
+        "/sent" => MessagesRoute::Sent,
+        "/new" => MessagesRoute::New,
+        "/unread" => MessagesRoute::Unread,
+        "/archive" => MessagesRoute::Archive,
+        "/warnings" => MessagesRoute::Warnings,
+        t if t == "/tags" || t.starts_with("/tags/") => {
+            return Err(Unsupported("the messages' tags pages"));
+        }
+        t => {
+            let Some(group) = t.strip_prefix("/group/") else {
+                return Ok(None);
+            };
+            let (name, route) = match group.split_once('/') {
+                None => (group, MessagesRoute::GroupInbox),
+                Some((name, "new")) => (name, MessagesRoute::GroupNew),
+                Some((name, "unread")) => (name, MessagesRoute::GroupUnread),
+                Some((name, "archive")) => (name, MessagesRoute::GroupArchive),
+                Some(_) => return Ok(None),
+            };
+            if name.is_empty() {
+                return Ok(None);
+            }
+            return Ok(Some((route, Some(name.to_string()))));
+        }
+    };
+    Ok(Some((route, None)))
 }
 
 /// Where `/u/:username(/...)` goes.
@@ -78,6 +119,13 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
         Some(r) => (r, true),
         None => (rest, json),
     };
+    if !json && let Some((route, group)) = messages_route(rest)? {
+        return Ok(Routed::Profile(
+            username,
+            Action::Messages(route, group),
+            json,
+        ));
+    }
     let action = match rest {
         "summary" => Action::Summary,
         "badges" | "notifications" | "messages" | "private-messages" | "deleted-posts" => {
@@ -147,6 +195,21 @@ pub async fn show_with_tail(
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (username, action, json) = match route(&username, Some(&rest))? {
+        Routed::Profile(username, Action::Messages(route, group), _) => {
+            return messages_page(
+                state,
+                incoming,
+                MessagesTarget {
+                    username,
+                    route,
+                    group,
+                },
+                headers,
+                peer,
+                uri,
+            )
+            .await;
+        }
         Routed::Profile(username, action, json) => (username, action, json),
         Routed::PostsFeed(username) => {
             return posts_feed(&state, &incoming.guardian, &username).await;
@@ -245,6 +308,8 @@ async fn respond(
             }
             users.summary(&user).await?
         }
+        // show_with_tail sends these to messages_page.
+        Action::Messages(..) => return Err(Unsupported("a messages page without its route").into()),
     };
     if json {
         return Ok((noindex, Json(doc)).into_response());
@@ -252,13 +317,13 @@ async fn respond(
     // The HTML profile draws on the show document, the summary and the
     // public activity stream.
     let show_doc = match action {
-        Action::Show | Action::Activity(_) => doc,
+        Action::Show | Action::Activity(_) | Action::Messages(..) => doc,
         Action::Summary => users.show(&user).await?,
     };
     // user/index: one's own profile opens the activity stream, others
     // view_user_route.
     let filter = match action {
-        Action::Summary => None,
+        Action::Summary | Action::Messages(..) => None,
         Action::Activity(filter) => Some(filter),
         Action::Show if guardian.is_me(user.id) => Some(ActivityFilter::All),
         Action::Show => match settings.get("view_user_route")?.to_s().as_str() {
@@ -440,6 +505,427 @@ async fn respond(
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
+/// A messages page's user, route and group.
+struct MessagesTarget {
+    username: String,
+    route: MessagesRoute,
+    group: Option<String>,
+}
+
+/// The HTML of `/u/:username/messages(/...)`: the profile (users#show) with
+/// the route's list (ListController#private_messages*, the JSON route's
+/// own document) under the messages navigation, the counts from the
+/// viewer's PrivateMessageTopicTrackingState. A list the viewer may not
+/// read leaves Ember's exception page (403) or not-found page (404) in
+/// the profile's place, as does a group the user is not in.
+async fn messages_page(
+    state: AppState,
+    incoming: crate::session::current::Incoming,
+    target: MessagesTarget,
+    headers: HeaderMap,
+    peer: Option<std::net::SocketAddr>,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    use crate::messages_view::{InboxRow, Messages};
+    use crate::pm_tracking_state::{Inbox, Kind, lookup_count};
+
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    let guardian = incoming.guardian.clone();
+    let auth_token: Option<String> = incoming
+        .session
+        .as_ref()
+        .map(|s| s.token.auth_token.clone());
+    let MessagesTarget {
+        username,
+        route,
+        group,
+    } = target;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let noindex = [("x-robots-tag", "noindex")];
+    if settings.get("hide_user_profiles_from_public")?.truthy() {
+        return Ok((noindex, invalid_access(&state)).into_response());
+    }
+    let Some(user) = User::find_active(&mut conn, &username).await? else {
+        return Ok((noindex, super::topics::not_found_response(&state)).into_response());
+    };
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let mut users = Users {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        base_path,
+        auth_token: auth_token.as_deref(),
+    };
+    let show_doc = users.show(&user).await?;
+    if !guardian.is_me(user.id) {
+        let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+        users.track_view(&user, &ip).await?;
+    }
+    let viewing_self = guardian.is_me(user.id);
+    let username_lower = user.username.to_lowercase();
+    let user_path = format!(
+        "{base_path}/u/{}",
+        crate::topic_list_view::escape(&username_lower)
+    );
+    // The profile user's visible groups (users#show), and those with
+    // messages (groupsWithMessages).
+    let profile_groups: Vec<Value> = show_doc["user"]["groups"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    // userPrivateMessages.group's model: the group among them by name.
+    let group = match &group {
+        Some(name) => {
+            let found = profile_groups
+                .iter()
+                .find(|g| g["name"].as_str().map(str::to_lowercase) == Some(name.to_lowercase()));
+            match found {
+                Some(g) => Some(g.clone()),
+                None if viewing_self => None,
+                None => {
+                    return Err(Unsupported(
+                        "another user's inbox of a group they are not in (Ember fails to load it)",
+                    )
+                    .into());
+                }
+            }
+        }
+        None => None,
+    };
+    // An unknown group: exception-unknown, the not-found page.
+    let missing_group = route.is_group() && group.is_none();
+    let group_name = group
+        .as_ref()
+        .and_then(|g| g["name"].as_str())
+        .map(str::to_string);
+    let list_doc = if missing_group {
+        None
+    } else {
+        use crate::pm_lists::{GroupView, PmList};
+        let list = match route {
+            MessagesRoute::Inbox => PmList::Inbox,
+            MessagesRoute::Sent => PmList::Sent,
+            MessagesRoute::New => PmList::New,
+            MessagesRoute::Unread => PmList::Unread,
+            MessagesRoute::Archive => PmList::Archive,
+            MessagesRoute::Warnings => PmList::Warnings,
+            group_route => PmList::Group {
+                id: group
+                    .as_ref()
+                    .and_then(|g| g["id"].as_i64())
+                    .ok_or(Unsupported("a group without an id"))? as i32,
+                name: group_name.clone().unwrap_or_default(),
+                view: match group_route {
+                    MessagesRoute::GroupNew => GroupView::New,
+                    MessagesRoute::GroupUnread => GroupView::Unread,
+                    MessagesRoute::GroupArchive => GroupView::Archive,
+                    _ => GroupView::Inbox,
+                },
+            },
+        };
+        Some(
+            super::messages::list_doc(
+                &state,
+                &guardian,
+                &username_lower,
+                list,
+                &super::list::ListParams::default(),
+            )
+            .await?,
+        )
+    };
+    // The JSON the route asked for, as the exception page names it.
+    let request_url = {
+        let filter = match route {
+            MessagesRoute::Inbox => "private-messages".to_string(),
+            MessagesRoute::Sent => "private-messages-sent".to_string(),
+            MessagesRoute::New => "private-messages-new".to_string(),
+            MessagesRoute::Unread => "private-messages-unread".to_string(),
+            MessagesRoute::Archive => "private-messages-archive".to_string(),
+            MessagesRoute::Warnings => "private-messages-warnings".to_string(),
+            _ => "private-messages-group".to_string(),
+        };
+        let mut url = format!("{base_path}/topics/{filter}/{username_lower}");
+        if let Some(name) = &group_name {
+            url.push('/');
+            url.push_str(name);
+            if let Some(f) = route.filter().filter(|f| *f != "inbox") {
+                url.push('/');
+                url.push_str(f);
+            }
+        }
+        url.push_str(".json");
+        url
+    };
+
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
+    // My messages is current on one's own messages routes (its model is
+    // the current user), not on an error page.
+    let active = if viewing_self && matches!(list_doc, Some(Ok(_))) {
+        crate::sidebar::Active::MyMessages
+    } else {
+        crate::sidebar::Active::None
+    };
+    site.load_chrome(&mut conn, &state, &settings, &guardian, active)
+        .await?;
+    site.bus_position = bus_position;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let render = |page: ProfilePage| -> Result<Response, AppError> {
+        let response = (
+            noindex,
+            Html(page.render().map_err(crate::html::HtmlError::from)?),
+        )
+            .into_response();
+        Ok(crate::html::with_viewer_headers(response, &vs))
+    };
+    // The page without the profile: Ember's exception or not-found page.
+    let bare = |site: crate::html::Site, page_title: String, main: String| ProfilePage {
+        site_title: site.site_title,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler: Crawler::default(),
+        page_title,
+        main,
+    };
+    let list = match list_doc {
+        None => {
+            let page = crate::not_found_page::NotFound {
+                forbidden: false,
+                custom_message: None,
+                slug: "",
+                guardian: &guardian,
+            };
+            let html =
+                crate::not_found_page::build(&mut conn, &settings, &state.i18n, &urls, &page)
+                    .await?;
+            return render(bare(
+                site,
+                String::new(),
+                format!("<div class=\"container\">{html}</div>"),
+            ));
+        }
+        Some(Ok(doc)) => doc,
+        Some(Err(response)) => {
+            let status = response.status().as_u16();
+            if status == 404 {
+                let page = crate::not_found_page::NotFound {
+                    forbidden: false,
+                    custom_message: None,
+                    slug: "",
+                    guardian: &guardian,
+                };
+                let html =
+                    crate::not_found_page::build(&mut conn, &settings, &state.i18n, &urls, &page)
+                        .await?;
+                return render(bare(
+                    site,
+                    String::new(),
+                    format!("<div class=\"container\">{html}</div>"),
+                ));
+            }
+            let main = crate::messages_view::exception(&cx, status, &request_url);
+            return render(bare(site, format!("Profile - {}", user.username), main));
+        }
+    };
+    // tagsForUser: a tag on a message links to the user's tagged messages.
+    let tagged = list["topic_list"]["topics"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .any(|t| t["tags"].as_array().is_some_and(|tags| !tags.is_empty()));
+    if tagged {
+        return Err(
+            Unsupported("tags on a messages list (links to the messages' tags pages)").into(),
+        );
+    }
+
+    // The viewer's pmTopicTrackingState, their visible groups, and whether
+    // counts or dots show.
+    let states = crate::pm_tracking_state::report(&mut conn, &settings, &guardian).await?;
+    let viewer_groups: Vec<(i32, String)> =
+        crate::pm_tracking_state::viewer_groups(&mut conn, &guardian)
+            .await?
+            .into_iter()
+            .map(|(id, name, _)| (id, name))
+            .collect();
+    let show_count = match guardian.user_id() {
+        Some(id) => sqlx::query_scalar::<_, bool>(
+            "SELECT COALESCE(sidebar_show_count_of_new_items, false) FROM user_options WHERE user_id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .unwrap_or(false),
+        None => false,
+    };
+    let count = |kind: Kind, inbox: Inbox| lookup_count(&states, &viewer_groups, kind, inbox);
+    let inbox_total =
+        |inbox: fn() -> Inbox<'static>| count(Kind::New, inbox()) + count(Kind::Unread, inbox());
+    let row_name = |name: &str, total: i64| {
+        let name = crate::topic_list_view::escape(name);
+        if total > 0 && show_count {
+            format!("{name}&nbsp;({total})")
+        } else {
+            name
+        }
+    };
+    let mut dropdown = Vec::new();
+    let user_total = inbox_total(|| Inbox::User);
+    dropdown.push(InboxRow {
+        href: format!("{user_path}/messages"),
+        name_html: row_name(
+            &crate::topic_list_view::t(&cx, "user.messages.inbox"),
+            user_total,
+        ),
+        icon: None,
+        show_unread_icon: user_total > 0 && !show_count,
+    });
+    for g in &profile_groups {
+        if g["has_messages"] != true {
+            continue;
+        }
+        let name = g["name"].as_str().unwrap_or_default();
+        let total = count(Kind::New, Inbox::Group(name)) + count(Kind::Unread, Inbox::Group(name));
+        dropdown.push(InboxRow {
+            href: format!(
+                "{user_path}/messages/group/{}",
+                crate::topic_list_view::escape(name)
+            ),
+            name_html: row_name(name, total),
+            icon: Some("inbox"),
+            show_unread_icon: total > 0 && !show_count,
+        });
+    }
+    if guardian.can_tag_pms(&settings)? {
+        dropdown.push(InboxRow {
+            href: format!("{user_path}/messages/tags"),
+            name_html: crate::topic_list_view::escape(&crate::topic_list_view::t(
+                &cx,
+                "user.messages.tags",
+            )),
+            icon: Some("tags"),
+            show_unread_icon: false,
+        });
+    }
+    let inbox = match &group_name {
+        Some(name) => Inbox::Group(name),
+        None => Inbox::User,
+    };
+    let (new_count, unread_count) = match inbox {
+        Inbox::User => (
+            count(Kind::New, Inbox::User),
+            count(Kind::Unread, Inbox::User),
+        ),
+        Inbox::Group(name) => (
+            count(Kind::New, Inbox::Group(name)),
+            count(Kind::Unread, Inbox::Group(name)),
+        ),
+    };
+    // group.group_user: the profile user's membership (users#show
+    // group_users).
+    let group_level = group.as_ref().and_then(|g| {
+        show_doc["user"]["group_users"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|gu| gu["group_id"] == g["id"])
+            .and_then(|gu| gu["notification_level"].as_i64())
+    });
+    let can_send_private_messages =
+        guardian.is_authenticated() && guardian.can_send_private_messages(&settings)?;
+    let unified_new = guardian
+        .upcoming_change_enabled(&mut conn, &settings, "enable_unified_new")
+        .await?;
+    let messages = Messages {
+        user_path: &user_path,
+        route,
+        group: group_name.as_deref().map(|name| (name, group_level)),
+        viewing_self,
+        viewer_admin: guardian.is_admin(),
+        show_new_pm: viewing_self && can_send_private_messages,
+        can_send_private_messages,
+        can_manage_topic: site
+            .viewer
+            .as_ref()
+            .is_some_and(crate::html::Viewer::can_manage_topic),
+        unified_new,
+        new_count,
+        unread_count,
+        dropdown,
+        current_url: uri.path(),
+        list: &list,
+    };
+    let content = crate::messages_view::render(&cx, &messages);
+    let tab = Tab::Messages(content);
+    let mut page = profile_page(
+        &mut conn,
+        site,
+        &state.i18n,
+        &guardian,
+        &user,
+        &show_doc,
+        &tab,
+        &settings,
+    )
+    .await?;
+    page.chrome.body_classes.push_str(" user-messages-page");
+    // titleToken: the list's, then the messages', then the user's.
+    let t = |key: &str| crate::topic_list_view::t(&cx, key);
+    let list_title = match (&group_name, route.filter()) {
+        (Some(name), filter) => {
+            let mut chars = name.chars();
+            let mut title: String = chars
+                .next()
+                .map(|c| c.to_uppercase().chain(chars).collect())
+                .unwrap_or_default();
+            if let Some(f) = filter.filter(|f| *f != "inbox") {
+                title.push(' ');
+                title.push_str(&t(&format!("user.messages.{f}")));
+            }
+            title
+        }
+        (None, Some(f)) => t(&format!("user.messages.{f}")),
+        // I18n's missing translation for `user.messages.null`.
+        (None, None) => "[en.user.messages.null]".to_string(),
+    };
+    page.page_title = format!(
+        "{list_title} - {} - {}",
+        t("user.private_messages"),
+        user.username
+    );
+    let avatar = show_doc["user"]["avatar_template"]
+        .as_str()
+        .map(|t| urls.absolute(&t.replace("{size}", "45")))
+        .transpose()?;
+    let mut crawler =
+        crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
+    crawler.description = settings.get("site_description")?.to_s();
+    page.crawler = crawler;
+    render(page)
+}
+
 /// GET /user_actions.json
 pub async fn actions(
     State(state): State<AppState>,
@@ -536,7 +1022,8 @@ pub struct ProfilePage {
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
     pub chrome: Chrome,
-    pub username: String,
+    /// The title before the site's ("Profile - <username>"), empty for none.
+    pub page_title: String,
     /// The `.user-main` container (crate::user_profile_view).
     pub main: String,
 }
@@ -584,6 +1071,7 @@ async fn profile_page(
             &mut *conn, settings, guardian,
         )
         .await?,
+        can_invite_to_forum: guardian.can_invite_to_forum(settings)?,
     };
     let profile_settings = crate::user_profile_view::ProfileSettings {
         enable_badges: settings.get("enable_badges")?.truthy(),
@@ -602,7 +1090,7 @@ async fn profile_page(
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),
-        username: user.username.clone(),
+        page_title: format!("Profile - {}", user.username),
         main,
     })
 }

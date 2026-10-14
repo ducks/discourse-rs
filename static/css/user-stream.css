@@ -30,6 +30,61 @@
   text-overflow: unset;
 }
 
+/* new-user.scss: the messages pages' inboxes dropdown and controls */
+.new-user-wrapper .user-navigation-secondary .messages-dropdown-trigger {
+  box-sizing: border-box;
+}
+@media (width >= 40rem) {
+  .new-user-wrapper .user-navigation-secondary .messages-dropdown-trigger {
+    max-width: clamp(100px, 20vw, 200px);
+  }
+}
+.new-user-wrapper .user-navigation-secondary .messages-dropdown-trigger .d-button-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.new-user-wrapper .user-navigation-secondary .category-breadcrumb {
+  width: auto;
+  margin: calc(var(--nav-space) / 2) 0;
+}
+@media (width < 80rem) {
+  .new-user-wrapper .user-navigation-secondary .category-breadcrumb {
+    font-size: var(--font-down-1);
+  }
+}
+.new-user-wrapper .user-navigation-secondary .category-breadcrumb > li {
+  margin: 0;
+}
+.new-user-wrapper .user-navigation-secondary .navigation-controls {
+  margin: calc(var(--nav-space) / 2) 0;
+  flex-wrap: nowrap;
+}
+@media (width < 80rem) {
+  .new-user-wrapper .user-navigation-secondary .navigation-controls {
+    font-size: var(--font-down-1);
+  }
+}
+
+/* new-user.scss: %unread-icon on the messages pages */
+.user-messages-page .messages-dropdown-trigger .d-icon-d-unread,
+.user-messages-page .messages-dropdown-content .dropdown-menu__item .d-icon-d-unread {
+  font-size: var(--font-down-4);
+  margin: 0 0.375rem;
+  color: var(--token-color-background-accent-subtle);
+}
+.user-messages-page .messages-dropdown-trigger .btn:hover .d-icon-d-unread,
+.user-messages-page .messages-dropdown-content .dropdown-menu__item .btn:hover .d-icon-d-unread {
+  color: var(--tertiary);
+}
+.user-messages-page .messages-dropdown-trigger .d-icon-angle-down {
+  margin-right: 0;
+}
+.user-messages-page .messages-dropdown-content .dropdown-menu__item .btn.is-selected {
+  background: var(--d-selected);
+  color: var(--d-selected-text-color);
+}
+
 .new-user-wrapper .empty-state {
   margin: 1em 0;
 }

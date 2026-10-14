@@ -28,6 +28,9 @@ ICONS=(
   clock-rotate-left
   clock
   arrow-rotate-left
+  arrows-rotate
+  user-plus
+  tags
   tag
   keyboard
   users

@@ -77,9 +77,33 @@ async fn respond(
     list: PmList,
     params: &ListParams,
 ) -> Result<Response, AppError> {
+    Ok(
+        match list_doc(&state, &guardian, username, list, params).await? {
+            Ok(json) => (
+                StatusCode::OK,
+                [(header::CACHE_CONTROL, "no-cache, no-store")],
+                Json(json),
+            )
+                .into_response(),
+            Err(response) => response,
+        },
+    )
+}
+
+/// The list's document, or the error response Rails answers with (the
+/// messages pages draw both).
+pub(crate) async fn list_doc(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    username: &str,
+    list: PmList,
+    params: &ListParams,
+) -> Result<Result<serde_json::Value, Response>, AppError> {
+    let state = state.clone();
+    let guardian = guardian.clone();
     // ensure_logged_in
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state));
+        return Ok(Err(super::login_required::not_logged_in(&state)));
     }
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -92,7 +116,7 @@ async fn respond(
             .await?;
     let owner = match target {
         Some((id, active)) if active || guardian.is_staff() => id,
-        _ => return Ok(super::topics::not_found_response(&state)),
+        _ => return Ok(Err(super::topics::not_found_response(&state))),
     };
     let me = guardian.is_me(owner);
     // The access check per action.
@@ -100,22 +124,22 @@ async fn respond(
         PmList::Inbox | PmList::Sent | PmList::Archive => {
             // can_see_private_messages?
             if !me && !guardian.is_admin() {
-                return Ok(super::search::invalid_access(&state));
+                return Ok(Err(super::search::invalid_access(&state)));
             }
         }
         PmList::Unread | PmList::New => {
             if !me {
-                return Ok(super::topics::not_found_response(&state));
+                return Ok(Err(super::topics::not_found_response(&state)));
             }
         }
         PmList::Warnings => {
             if !me && !guardian.is_staff() {
-                return Ok(super::search::invalid_access(&state));
+                return Ok(Err(super::search::invalid_access(&state)));
             }
         }
         PmList::Group { id, view, .. } => {
             if matches!(view, GroupView::New | GroupView::Unread) && !me {
-                return Ok(super::topics::not_found_response(&state));
+                return Ok(Err(super::topics::not_found_response(&state)));
             }
             // can_see_group_messages?
             let moderators = crate::guardian::auto_groups::MODERATORS as i32;
@@ -130,13 +154,17 @@ async fn respond(
                     .fetch_one(&mut *conn)
                     .await?);
             if !allowed {
-                return Ok(super::topics::not_found_response(&state));
+                return Ok(Err(super::topics::not_found_response(&state)));
             }
         }
     }
     let mut options = match build_options(params, &settings)? {
         Ok(o) => o,
-        Err(message) => return Ok(super::list::invalid_list_params(&state, &message, true)),
+        Err(message) => {
+            return Ok(Err(super::list::invalid_list_params(
+                &state, &message, true,
+            )));
+        }
     };
     options.no_definitions = false;
     if params.period.is_some() {
@@ -189,10 +217,5 @@ async fn respond(
     }
     .serialize(&topics)
     .await?;
-    Ok((
-        StatusCode::OK,
-        [(header::CACHE_CONTROL, "no-cache, no-store")],
-        Json(json),
-    )
-        .into_response())
+    Ok(Ok(json))
 }

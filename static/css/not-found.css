@@ -162,3 +162,33 @@ html:has(.not-found-container) {
 .not-found-topic a:not(.badge-category__wrapper) {
   flex-basis: 100%;
 }
+
+/* exception.scss: Ember's error page (templates/exception.gjs) */
+.error-page {
+  text-align: center;
+  padding-top: 2em;
+}
+.error-page .face {
+  font-size: 4.286em;
+}
+.error-page .reason {
+  font-size: var(--font-up-4);
+}
+.error-page .url {
+  font-style: italic;
+  font-size: var(--font-down-1);
+}
+.error-page .desc {
+  margin-top: 16px;
+}
+.error-page .desc .d-icon-circle-check {
+  color: var(--success);
+}
+.error-page .buttons {
+  align-items: center;
+  display: inline-flex;
+  margin-top: 15px;
+}
+.error-page .buttons button {
+  margin: 0 20px;
+}

@@ -327,7 +327,13 @@ pub async fn sidebar_inputs(
 ) -> Result<(serde_json::Value, Option<crate::sidebar::Member>), crate::AppError> {
     let member = match (guardian.logged_in(), tracking) {
         (Some(user), Some(tracking)) => {
-            Some(crate::current_user::sidebar_member(&mut *conn, settings, user, tracking).await?)
+            let mut member =
+                crate::current_user::sidebar_member(&mut *conn, settings, user, tracking).await?;
+            if member.can_send_private_messages {
+                member.pm_count =
+                    crate::pm_tracking_state::inbox_count(&mut *conn, settings, guardian).await?;
+            }
+            Some(member)
         }
         _ => None,
     };

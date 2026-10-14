@@ -102,9 +102,13 @@ Bugs or silent gaps in what is merged, small and independent.
 28. ~~`feat/pm-archive`~~ (done) S, 29. ~~`feat/pm-small-actions`~~ (done) M,
     30. ~~`feat/pm-likes`~~ (done) S, 31. ~~`feat/pm-destroy`~~ (done) M,
     32. ~~`feat/pm-invite`~~ (done) M, 33. ~~`feat/pm-invite-group`~~ (done) S
-33b. `feat/messages-pages` M: the HTML of /u/:username/messages (inbox,
-    sent, new, unread, archive, group inboxes); the port draws the user's
-    activity page there today (screenshots, 2026-10-13)
+33b. ~~`feat/messages-pages`~~ (done) M: the HTML of /u/:username/messages
+    (inbox, sent, new, unread, archive, warnings, group inboxes), the
+    inboxes dropdown and counts from PrivateMessageTopicTrackingState.report
+    (also the sidebar's My messages dot), Ember's exception page for a
+    list's 403. Left: the messages' tags pages (refused), changing a
+    group's notification level (the trigger only), the dismiss and bulk
+    select buttons' actions
 33c. `feat/topic-view-group-messages` S: a group message's topic page
     refuses its suggested messages (messages_for_groups_or_user), a 500
 33d. ~~`perf/rate-limiter-storage`~~ (done) S/M: every public request performs two

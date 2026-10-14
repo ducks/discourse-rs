@@ -665,24 +665,7 @@ pub async fn serialize(
             .bind(uid)
             .fetch_all(&mut *conn)
             .await?;
-    let visibility = if user.admin {
-        String::new()
-    } else if user.moderator {
-        " AND (groups.visibility_level IN (0,1,2,3) OR groups.id IN (SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 AND gu.owner WHERE g.visibility_level = 4))".to_string()
-    } else {
-        " AND groups.id IN (SELECT id FROM groups WHERE visibility_level IN (0,1) \
-           UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 WHERE g.visibility_level = 2 \
-           UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 AND gu.owner WHERE g.visibility_level IN (3,4))".to_string()
-    };
-    let groups: Vec<(i32, String, bool)> = sqlx::query_as(&format!(
-        "SELECT groups.id, groups.name, groups.has_messages FROM groups \
-         INNER JOIN group_users ON groups.id = group_users.group_id \
-         WHERE group_users.user_id = $1 AND groups.id > 0 AND groups.id NOT IN (4, 5){visibility} \
-         ORDER BY groups.name ASC"
-    ))
-    .bind(uid)
-    .fetch_all(&mut *conn)
-    .await?;
+    let groups = visible_groups(&mut *conn, uid, user.admin, user.moderator).await?;
     out.insert(
         "groups".into(),
         json!(
@@ -1008,6 +991,7 @@ pub async fn sidebar_member(
         unified_new: tracking.unified_new,
         link_to_filtered_list,
         tracking,
+        pm_count: 0,
         fields,
     })
 }
@@ -1294,6 +1278,34 @@ async fn user_option(
 /// `can_send_private_messages`
 pub fn can_send_private_messages(g: &UserGuardian<'_>) -> Result<bool, AppError> {
     Ok(g.user.id <= 0 || g.in_setting_groups("personal_message_enabled_groups")?)
+}
+
+/// CurrentUserSerializer#groups (`object.visible_groups`): the user's
+/// groups they may see, by name, as id, name and has_messages.
+pub async fn visible_groups(
+    conn: &mut PgConnection,
+    uid: i32,
+    admin: bool,
+    moderator: bool,
+) -> Result<Vec<(i32, String, bool)>, sqlx::Error> {
+    let visibility = if admin {
+        String::new()
+    } else if moderator {
+        " AND (groups.visibility_level IN (0,1,2,3) OR groups.id IN (SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 AND gu.owner WHERE g.visibility_level = 4))".to_string()
+    } else {
+        " AND groups.id IN (SELECT id FROM groups WHERE visibility_level IN (0,1) \
+           UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 WHERE g.visibility_level = 2 \
+           UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $1 AND gu.owner WHERE g.visibility_level IN (3,4))".to_string()
+    };
+    sqlx::query_as(&format!(
+        "SELECT groups.id, groups.name, groups.has_messages FROM groups \
+         INNER JOIN group_users ON groups.id = group_users.group_id \
+         WHERE group_users.user_id = $1 AND groups.id > 0 AND groups.id NOT IN (4, 5){visibility} \
+         ORDER BY groups.name ASC"
+    ))
+    .bind(uid)
+    .fetch_all(conn)
+    .await
 }
 
 /// `can_invite_to_forum`
