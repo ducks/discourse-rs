@@ -18,7 +18,20 @@
     trackingTrigger = null;
   });
 
+  // In the mobile view the menu is a bottom sheet (DMenu's
+  // modalForMobile, float.js) with the levels' list.
+  var sheet = null;
+
+  function mobileView() {
+    return document.documentElement.classList.contains("mobile-view") && window.Discourse && Discourse.float;
+  }
+
   function closeTrackingMenu() {
+    if (sheet) {
+      var open = sheet;
+      sheet = null;
+      open.close();
+    }
     if (!trackingTrigger) {
       return;
     }
@@ -30,6 +43,23 @@
   }
 
   function openTrackingMenu(trigger) {
+    if (mobileView()) {
+      var list = trackingMenu.querySelector("ul.dropdown-menu");
+      if (list) {
+        var content = list.cloneNode(true);
+        sheet = Discourse.float.menu(trigger, {
+          identifier: "notifications-tracking",
+          modalForMobile: true,
+          content: content,
+        });
+        if (window.htmx) {
+          window.htmx.process(content);
+        }
+        trigger.setAttribute("aria-expanded", "true");
+        trackingTrigger = trigger;
+        return;
+      }
+    }
     if (trackingMenu.parentElement !== document.body) {
       document.body.appendChild(trackingMenu);
     }

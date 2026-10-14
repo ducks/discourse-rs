@@ -59,6 +59,7 @@ mod solved;
 mod srv;
 mod stylesheets;
 mod tags;
+mod topic_excerpts;
 mod topic_notifications;
 mod topic_status;
 mod topic_timer;
@@ -415,6 +416,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/status", put(topic_status::status))
         // TopicsController#timer; {slug} holds the topic id.
         .route("/t/{slug}/timer", post(topic_timer::timer))
+        .route("/t/{slug}/excerpts", get(topic_excerpts::excerpts))
+        .route("/t/{slug}/excerpts.json", get(topic_excerpts::excerpts))
         .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))

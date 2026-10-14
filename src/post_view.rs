@@ -43,6 +43,10 @@ pub struct PostSettings {
     /// TopicProgress#hugeNumberOfPosts: from this many posts on, the
     /// progress bar shows the reader's post alone.
     pub short_progress_text_threshold: i64,
+    /// `tagging_enabled` and `topic_featured_link_enabled`: the fullscreen
+    /// timeline's title block.
+    pub tagging_enabled: bool,
+    pub topic_featured_link_enabled: bool,
     /// `post_menu`: the menu's buttons, in order.
     pub post_menu: Vec<String>,
     /// `post_menu_hidden_items`: the buttons behind show more.
@@ -103,6 +107,8 @@ impl PostSettings {
             )?,
             show_bottom_topic_map: flag("show_bottom_topic_map")?,
             short_progress_text_threshold: settings.get("short_progress_text_threshold")?.to_i(),
+            tagging_enabled: settings.get("tagging_enabled")?.truthy(),
+            topic_featured_link_enabled: settings.get("topic_featured_link_enabled")?.truthy(),
             post_menu: list("post_menu")?,
             post_menu_hidden_items: list("post_menu_hidden_items")?,
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
@@ -1696,8 +1702,28 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
     // TopicNavigation#renderTimeline: never in the mobile view, which has
     // the progress bar.
     if crate::mobile::mobile_view() {
-        return topic_progress(cx, &stream, view);
+        return topic_progress(cx, &stream, view, &url);
     }
+    format!(
+        "<div class=\"with-timeline topic-navigation\">{}{}</div>",
+        no_answer(cx, view),
+        timeline_container(cx, view, &url, &stream, false)
+    )
+}
+
+/// TopicTimeline's container: docked beside the posts on desktop, or
+/// (`fullscreen`) the mobile view's, which the progress bar expands into,
+/// with the topic's title, tags, category and the post's excerpt above it
+/// and the jump to post button below.
+fn timeline_container(
+    cx: &PostContext,
+    view: &Value,
+    url: &str,
+    stream: &[i64],
+    fullscreen: bool,
+) -> String {
+    let url = url.to_string();
+    let stream = stream.to_vec();
     let total = stream.len().max(1);
     let start = date(&view["created_at"])
         .map(|at| timeline_date(cx, at))
@@ -1736,20 +1762,31 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         })
         .unwrap_or_default();
     let mut footer = String::new();
-    if cx.viewer.is_some() && cx.topic.can_create_post {
+    if fullscreen {
+        // The jump to post prompt's button (its modal isn't ported).
+        let jump = escape(&t(cx.list, "topic.progress.jump_prompt"));
         footer.push_str(&format!(
-            "<button class=\"btn no-text btn-icon btn-default create reply-to-post\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
-            escape(&t(cx.list, "topic.reply.help")),
-            icon("reply", None)
+            "<button class=\"btn timeline-open-jump-to-post-prompt-btn jump-to-post\" title=\"{}\" type=\"button\"><span class=\"d-button-label\">{jump}</span></button>",
+            escape(&t(cx.list, "topic.progress.jump_prompt_long"))
         ));
-    }
-    if cx.viewer.is_some() {
-        footer.push_str(&notifications_button(cx, view, false));
-    }
-    let controls = if cx.viewer.is_some() {
-        "<div class=\"timeline-controls\"></div>"
     } else {
-        ""
+        if cx.viewer.is_some() && cx.topic.can_create_post {
+            footer.push_str(&format!(
+                "<button class=\"btn no-text btn-icon btn-default create reply-to-post\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                escape(&t(cx.list, "topic.reply.help")),
+                icon("reply", None)
+            ));
+        }
+        if cx.viewer.is_some() {
+            footer.push_str(&notifications_button(cx, view, false));
+        }
+    }
+    let controls = if cx.viewer.is_some() && !fullscreen {
+        "<div class=\"timeline-controls\"></div>".to_string()
+    } else if fullscreen {
+        fullscreen_title(cx, view, &url)
+    } else {
+        String::new()
     };
     let stream_json = serde_json::to_string(&stream).unwrap_or_default();
     // The lookup with each entry's date label, for the script.
@@ -1765,9 +1802,29 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         })
         .collect();
     let lookup_json = serde_json::to_string(&labels).unwrap_or_default();
+    let replies = escape(&t_with(
+        cx.list,
+        "topic.timeline.replies_short",
+        &[("current", "1"), ("total", &total.to_string())],
+    ));
+    // The scroller: the fullscreen timeline draws its content before the
+    // handle, and swipes rather than drags.
+    let scroller = if fullscreen {
+        format!(
+            "<div class=\"timeline-scroller\" style=\"height: 50px\" data-pointer-drag=\"none\"><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{replies}</div>{ago}</div><div class=\"timeline-handle\"></div></div>"
+        )
+    } else {
+        format!(
+            "<div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{replies}</div>{ago}</div></div>"
+        )
+    };
     format!(
-        "<div class=\"with-timeline topic-navigation\">{}<div class=\"timeline-container\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div><div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{}</div>{ago}</div></div><div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div></div>",
-        no_answer(cx, view),
+        "<div class=\"timeline-container{}\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div>{scroller}<div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div>",
+        if fullscreen {
+            " timeline-fullscreen"
+        } else {
+            ""
+        },
         escape(&url),
         view["chunk_size"].as_i64().unwrap_or(20),
         escape(&stream_json),
@@ -1776,30 +1833,81 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         escape(&url),
         escape(&t(cx.list, "topic_entrance.jump_top_button_title")),
         escape(&start),
-        escape(&t_with(
-            cx.list,
-            "topic.timeline.replies_short",
-            &[("current", "1"), ("total", &total.to_string())]
-        )),
         escape(&url),
         view["highest_post_number"].as_i64().unwrap_or(1),
     )
 }
 
+/// The fullscreen timeline's title block: the topic's title, its tags (in
+/// topic-header-extra, there while featured links are on), its category
+/// and the excerpt of the post at the scroller, which topic.js fills from
+/// /t/:id/excerpts.
+fn fullscreen_title(cx: &PostContext, view: &Value, url: &str) -> String {
+    let l = cx.list;
+    let mut out = format!(
+        "<div class=\"title\"><h2><a class=\"fancy-title\" href=\"{}/1\">{}</a></h2>",
+        escape(url),
+        crate::topic_list_view::emoji_unescape(
+            view["fancy_title"].as_str().unwrap_or_default(),
+            &l.settings.emojis,
+            l.base_path
+        )
+    );
+    let has_tags =
+        cx.settings.tagging_enabled && view["tags"].as_array().is_some_and(|t| !t.is_empty());
+    if cx.settings.topic_featured_link_enabled || has_tags {
+        out.push_str("<div class=\"topic-header-extra\">");
+        if has_tags {
+            out.push_str(&format!(
+                "<div class=\"list-tags\">{}</div>",
+                crate::topic_list_view::tags_html(l, view, "", &[])
+            ));
+        }
+        out.push_str("</div>");
+    }
+    if view["archetype"] != "private_message"
+        && let Some(category) = view["category_id"]
+            .as_i64()
+            .and_then(|id| l.categories.get(&id))
+    {
+        out.push_str("<div class=\"topic-category\">");
+        if let Some(parent) = category.parent_id.and_then(|id| l.categories.get(&id)) {
+            out.push_str(&crate::topic_list_view::category_badge(l, parent));
+        }
+        out.push_str(&crate::topic_list_view::category_badge(l, category));
+        out.push_str("</div>");
+    }
+    out.push_str("</div>");
+    out
+}
+
 /// TopicProgress: the reader's post and the topic's count, its bar
-/// filled as far as they have scrolled (topic.js keeps both current).
-/// The expanded timeline it opens is not ported.
-fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value) -> String {
+/// filled as far as they have scrolled (topic.js keeps both current, and
+/// shows the back button while the reader is above their last read post:
+/// showBackButton). A tap expands it into the fullscreen timeline, from
+/// the template beside it.
+fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> String {
     let title = escape(&t(cx.list, "topic.progress.title"));
     // hugeNumberOfPosts: the count and its slash are hidden.
     let huge = i64::try_from(stream.len()).unwrap_or(i64::MAX)
         >= cx.settings.short_progress_text_threshold;
     let hidden = if huge { " class=\"hidden\"" } else { "" };
+    let back = match (
+        view["last_read_post_id"].as_i64(),
+        view["last_read_post_number"].as_i64(),
+    ) {
+        (Some(id), Some(number)) => format!(
+            " data-last-read-id=\"{id}\" data-last-read-number=\"{number}\" data-back-label=\"{}\"",
+            escape(&t(cx.list, "topic.timeline.back"))
+        ),
+        _ => String::new(),
+    };
     format!(
-        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\"><nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div></div>",
+        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\"><nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"{back}><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div><template class=\"topic-timeline-fullscreen\">{}</template></div>",
         no_answer(cx, view),
         escape(&serde_json::to_string(stream).unwrap_or_default()),
-        stream.len()
+        stream.len(),
+        timeline_container(cx, view, url, stream, true)
     )
 }
 
@@ -1857,8 +1965,11 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         escape(&label)
     ));
     let private_message = view["archetype"] == "private_message";
+    // Flag and Mark unread: inline on desktop, in the mobile view the
+    // dropdown buttons (`dropdown: () => site.mobileView`).
+    let mut dropdown = Vec::new();
     if view["details"]["can_flag_topic"] == true && !private_message {
-        actions.push_str(&footer_button(
+        dropdown.push(footer_button(
             cx,
             "flag",
             "flag-topic",
@@ -1867,8 +1978,8 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             "topic.flag_topic.help",
         ));
     }
-    actions.push_str(
-        &footer_button(
+    dropdown.push(
+        footer_button(
             cx,
             "defer",
             "defer-topic",
@@ -1887,6 +1998,43 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             1,
         ),
     );
+    let mobile = crate::mobile::mobile_view();
+    // showNotificationsButton: PMs only for those who can send them.
+    let show_notifications = !private_message || cx.can_send_pms;
+    if !mobile {
+        for button in &dropdown {
+            actions.push_str(button);
+        }
+    } else {
+        if dropdown.len() == 1 {
+            // loneDropdownButton
+            actions.push_str(&dropdown[0]);
+        } else {
+            // A DMenu (modalForMobile) whose DDropdownMenu lists them,
+            // without btn-default (topic.js opens it).
+            let items: String = dropdown
+                .iter()
+                .map(|b| {
+                    format!(
+                        "<li class=\"dropdown-menu__item\">{}</li>",
+                        b.replacen(
+                            "btn btn-icon-text btn-default topic-footer-button",
+                            "btn btn-icon-text topic-footer-button",
+                            1
+                        )
+                    )
+                })
+                .collect();
+            actions.push_str(&format!(
+                "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger topic-footer-mobile-dropdown-trigger topic-footer-button btn-default\" data-identifier=\"topic-footer-mobile-dropdown\" data-trigger=\"\" type=\"button\">{}</button><template class=\"topic-footer-mobile-dropdown-menu\"><ul class=\"dropdown-menu\">{items}</ul></template>",
+                icon("ellipsis-vertical", None)
+            ));
+        }
+        // TopicNotificationsButton without its reason (appendReason false).
+        if show_notifications {
+            actions.push_str(&mobile_notifications_button(cx, view));
+        }
+    }
     let reply = if cx.topic.can_create_post {
         format!(
             "<button class=\"btn btn-icon-text btn-primary create topic-footer-button\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{reply_label}</span></button>",
@@ -1896,8 +2044,7 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     } else {
         String::new()
     };
-    // showNotificationsButton: PMs only for those who can send them.
-    let notifications = if !private_message || cx.can_send_pms {
+    let notifications = if show_notifications && !mobile {
         notifications_button(cx, view, true).replacen(
             "class=\"topic-notifications-button\"",
             "class=\"topic-notifications-button notifications-button-footer\"",
@@ -2001,6 +2148,21 @@ fn footer_button(
 /// notifications_menu. The reason's stale and mailing list mode variants
 /// are not ported.
 fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> String {
+    notifications_button_with(cx, view, expanded, expanded)
+}
+
+/// TopicNotificationsButton as the mobile view's footer has it: the full
+/// title without the caret (showCaret is desktop only) or the reason.
+fn mobile_notifications_button(cx: &PostContext, view: &Value) -> String {
+    notifications_button_with(cx, view, true, false)
+}
+
+fn notifications_button_with(
+    cx: &PostContext,
+    view: &Value,
+    full_title: bool,
+    expanded: bool,
+) -> String {
     let l = cx.list;
     let details = &view["details"];
     let level = details["notification_level"].as_i64().unwrap_or(1);
@@ -2019,16 +2181,25 @@ fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> Strin
     let tooltip = t_with(l, "notifications_tracking.tooltip", &[("level", &title)]);
     let mut trigger = format!(
         "<button class=\"btn btn-default {} fk-d-menu__trigger notifications-tracking-trigger btn-default btn-icon notifications-tracking-trigger-btn topic-notifications-tracking\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"notifications-tracking\" data-trigger=\"\" data-level-id=\"{level}\" data-level-name=\"{key}\" type=\"button\">{}",
-        if expanded { "btn-icon-text" } else { "no-text" },
+        if full_title {
+            "btn-icon-text"
+        } else {
+            "no-text"
+        },
         escape(&tooltip),
         d_icon(&format!("d-{key}"), None)
     );
-    if expanded {
+    if full_title {
+        // The template's whitespace leaves a space after the title.
         trigger.push_str(&format!(
-            // The template's whitespace leaves a space after the title.
-            "<span class=\"d-button-label\">{} </span>{}",
-            escape(&title),
-            icon("angle-down", Some("notifications-tracking-btn__caret"))
+            "<span class=\"d-button-label\">{} </span>",
+            escape(&title)
+        ));
+    }
+    if expanded {
+        trigger.push_str(&icon(
+            "angle-down",
+            Some("notifications-tracking-btn__caret"),
         ));
     }
     trigger.push_str("</button>");
@@ -2215,6 +2386,8 @@ mod tests {
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
             short_progress_text_threshold: 10000,
+            tagging_enabled: true,
+            topic_featured_link_enabled: true,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
                 .split('|')
                 .map(str::to_string)
@@ -2390,6 +2563,8 @@ mod tests {
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
             short_progress_text_threshold: 10000,
+            tagging_enabled: true,
+            topic_featured_link_enabled: true,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
                 .split('|')
                 .map(str::to_string)

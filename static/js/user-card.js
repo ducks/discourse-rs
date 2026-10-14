@@ -72,13 +72,73 @@
     }
     var closing = card;
     card = null;
+    if (closing.onScroll) {
+      window.removeEventListener("scroll", closing.onScroll);
+    }
+    var veil = document.querySelector(".card-cloak");
+    if (veil) {
+      veil.classList.remove("--visible");
+    }
     if (closing.menu) {
       closing.menu.destroy();
     }
   }
 
-  // _positionCard(): the desktop menu's options.
+  function mobileView() {
+    return document.documentElement.classList.contains("mobile-view");
+  }
+
+  // CardContainer's cloak in the mobile view, behind the card.
+  function cloak() {
+    var el = document.querySelector(".card-cloak");
+    if (!el && mobileView()) {
+      var outlet = document.getElementById("main-outlet");
+      if (outlet) {
+        el = document.createElement("div");
+        el.className = "card-cloak";
+        outlet.appendChild(el);
+      }
+    }
+    return el;
+  }
+
+  // _positionCard(): the desktop menu's options; in the mobile view the
+  // card is fixed across the top of the screen over the cloak, and the
+  // page's scroll closes it (_bindMobileScroll).
   function position(state) {
+    if (mobileView()) {
+      var veil = cloak();
+      if (veil) {
+        veil.classList.add("--visible");
+      }
+      state.menu = Discourse.float.menu(state.target, {
+        content: state.element,
+        strategy: "fixed",
+        identifier: "usercard",
+        computePosition: function (content) {
+          content.style.left = "10px";
+          content.style.right = "10px";
+          content.style.top = 10 + AVATAR_OVERFLOW_SIZE + "px";
+        },
+      });
+      var lastScroll = 0;
+      state.onScroll = function () {
+        // throttle(this, this._close, 1000)
+        var now = Date.now();
+        if (now - lastScroll >= 1000) {
+          lastScroll = now;
+          setTimeout(close, 0);
+        }
+      };
+      window.addEventListener("scroll", state.onScroll, { passive: true });
+      setTimeout(function () {
+        if (card === state) {
+          state.element.setAttribute("tabindex", "-1");
+          state.element.focus({ preventScroll: true });
+        }
+      }, 350);
+      return;
+    }
     var headerOffset = Discourse.float.headerOffset();
     state.menu = Discourse.float.menu(state.target, {
       content: state.element,

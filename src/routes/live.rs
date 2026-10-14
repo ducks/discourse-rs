@@ -181,6 +181,7 @@ pub async fn page(
         lists,
         since,
         nav: params.nav.filter(|_| user_id.is_some()),
+        mobile: crate::mobile::mobile_view(),
         sidebar: params
             .sidebar
             .filter(|_| user_id.is_some())
@@ -238,6 +239,9 @@ struct Live {
     since: Option<NaiveDateTime>,
     /// The nav pill and sidebar a member's counts are kept on.
     nav: Option<String>,
+    /// The page was rendered in the mobile view, whose nav is one trigger
+    /// with its items in a sheet (crate::mobile, decided at connect time).
+    mobile: bool,
     sidebar: Option<crate::sidebar::Active>,
     /// The page chat's chrome is kept current on, and the bus channels that
     /// change it.
@@ -702,14 +706,50 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
     }
     let base_path = live.state.config.globals.relative_url_root();
     if let Some(nav) = &live.nav {
+        // The labels as the page's view counts them.
+        let items = crate::mobile::scope(live.mobile, async {
+            crate::html::nav_items(
+                &live.state.i18n,
+                &live.settings,
+                base_path,
+                nav,
+                tracking.as_ref(),
+            )
+        })
+        .await?;
+        if live.mobile {
+            // The mobile nav's trigger shows the active item's label, and
+            // its sheet opens from the template beside it.
+            use crate::topic_list_view::escape;
+            let label = items
+                .iter()
+                .find(|i| i.active)
+                .map(|i| escape(&i.label))
+                .unwrap_or_default();
+            out.push_str(&format!(
+                r#"<span hx-swap-oob="innerHTML:#navigation-bar .list-control-toggle-link__text">{label}</span>"#
+            ));
+            let mut list = String::new();
+            for item in &items {
+                list.push_str(&format!(
+                    r#"<li class="{}{}{} nav-item_{}" title="{}"><a{} class="{}" href="{}">{}</a></li>"#,
+                    if item.active { "active " } else { "" },
+                    if item.has_icon { "has-icon " } else { "" },
+                    escape(&item.name),
+                    escape(&item.name),
+                    escape(&item.title),
+                    if item.active { r#" aria-current="page""# } else { "" },
+                    if item.active { "active" } else { "" },
+                    escape(&item.href),
+                    escape(&item.label)
+                ));
+            }
+            out.push_str(&format!(
+                r#"<template class="list-control-toggle-link-menu" hx-swap-oob="outerHTML:#navigation-bar template.list-control-toggle-link-menu"><ul class="dropdown-menu">{list}<li class="dropdown-menu__item"></li></ul></template>"#
+            ));
+        }
         // The pills' labels: only new and unread count.
-        for item in crate::html::nav_items(
-            &live.state.i18n,
-            &live.settings,
-            base_path,
-            nav,
-            tracking.as_ref(),
-        )? {
+        for item in items.into_iter().filter(|_| !live.mobile) {
             if item.name == "new" || item.name == "unread" {
                 out.push_str(&format!(
                     r#"<a hx-swap-oob="innerHTML:#navigation-bar > li.nav-item_{} > a">{}</a>"#,

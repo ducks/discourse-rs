@@ -88,6 +88,35 @@
     };
   });
 
+  // The mobile view's footer "..." (the topic-footer-mobile-dropdown
+  // DMenu): its buttons, from the template beside it, in a bottom sheet
+  // that a click on one closes (DDropdownMenu).
+  var footerSheet = null;
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(".topic-footer-mobile-dropdown-trigger");
+    if (!trigger || !window.Discourse || !Discourse.float) {
+      return;
+    }
+    if (footerSheet && footerSheet.expanded) {
+      footerSheet.close();
+      return;
+    }
+    var template = trigger.parentElement.querySelector("template.topic-footer-mobile-dropdown-menu");
+    if (!template) {
+      return;
+    }
+    var content = template.content.cloneNode(true).firstElementChild;
+    footerSheet = Discourse.float.menu(trigger, {
+      identifier: "topic-footer-mobile-dropdown",
+      modalForMobile: true,
+      content: content,
+    });
+    var sheet = footerSheet;
+    content.addEventListener("click", function () {
+      sheet.close();
+    });
+  });
+
   document.addEventListener("click", function (event) {
     // Mark unread (deferTopic): stop timing the page, unread its last
     // post, then go home (or to the message's inbox).
@@ -172,6 +201,184 @@
     if (!container) {
       return;
     }
+    return setupTimeline(container, false);
+  });
+
+  // The mobile view's fullscreen timeline (TopicNavigation's
+  // topicProgressExpanded): a tap on the progress bar swaps it in, its
+  // scroller showing the excerpt of the post it is on (PostStream#excerpt,
+  // /t/:id/excerpts); a tap outside it, or on a post in it, swaps the
+  // progress bar back after its slide out.
+  var expanded = null;
+  var excerpts = {};
+  function collapse(delay) {
+    if (!expanded) {
+      return;
+    }
+    var state = expanded;
+    expanded = null;
+    state.container.classList.remove("show");
+    setTimeout(function () {
+      state.cleanup();
+      state.container.replaceWith(state.wrapper);
+      state.nav.classList.remove("topic-progress-expanded", "with-timeline");
+      state.nav.classList.add("with-topic-progress");
+    }, delay == null ? 500 : delay);
+  }
+
+  function showExcerpt(container, stream, index) {
+    var postId = stream[index - 1];
+    var title = container.querySelector(".title");
+    if (!title || !postId) {
+      return;
+    }
+    function fill(info) {
+      if (!info || !container.isConnected) {
+        return;
+      }
+      var html = "";
+      if (info.username) {
+        html = "<span class='username'>" + info.username + ":</span> ";
+      }
+      if (!info.excerpt) {
+        return;
+      }
+      var div = title.querySelector(".post-excerpt");
+      if (!div) {
+        div = document.createElement("div");
+        div.className = "post-excerpt";
+        title.appendChild(div);
+      }
+      div.innerHTML = html + info.excerpt;
+    }
+    if (excerpts[postId]) {
+      fill(excerpts[postId]);
+      return;
+    }
+    var ids = stream.slice(Math.max(index - 1 - 20, 0), index - 1 + 20).filter(function (id) {
+      return !excerpts[id];
+    });
+    var topicId = container.dataset.topicUrl.split("/").pop();
+    var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+    var query = ids
+      .map(function (id) {
+        return "post_ids%5B%5D=" + id;
+      })
+      .join("&");
+    fetch(base + "/t/" + topicId + "/excerpts.json?" + query, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : [];
+      })
+      .then(function (list) {
+        list.forEach(function (obj) {
+          excerpts[obj.post_id] = obj;
+        });
+        fill(excerpts[postId]);
+      })
+      .catch(function () {});
+  }
+
+  document.addEventListener("click", function (event) {
+    var progress = event.target.closest("#topic-progress");
+    if (progress && !expanded) {
+      var nav = progress.closest(".topic-navigation");
+      var template = nav && nav.querySelector("template.topic-timeline-fullscreen");
+      if (!template) {
+        return;
+      }
+      var wrapper = document.getElementById("topic-progress-wrapper");
+      var container = template.content.firstElementChild.cloneNode(true);
+      nav.classList.remove("with-topic-progress");
+      nav.classList.add("topic-progress-expanded", "with-timeline");
+      wrapper.replaceWith(container);
+      expanded = {
+        nav: nav,
+        wrapper: wrapper,
+        container: container,
+        cleanup: setupTimeline(container, true),
+      };
+      window.requestAnimationFrame(function () {
+        container.classList.add("show");
+      });
+      return;
+    }
+    if (expanded) {
+      if (!event.target.closest(".timeline-fullscreen")) {
+        collapse();
+      } else if (event.target.closest(".timeline-scrollarea, .fancy-title, .start-date, .now-date")) {
+        // topic:jump-to-post
+        collapse();
+      }
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      collapse();
+    }
+  });
+
+  // TopicProgress#showBackButton and goBack: while the reader is above
+  // their last read post, a button back down to it.
+  Discourse.onPage(function () {
+    var nav = document.getElementById("topic-progress");
+    if (!nav || !nav.dataset.lastReadId) {
+      return;
+    }
+    var stream = JSON.parse(nav.dataset.stream);
+    var readPos = stream.indexOf(parseInt(nav.dataset.lastReadId, 10));
+    function update() {
+      var wrapper = document.getElementById("topic-progress-wrapper");
+      if (!wrapper) {
+        return;
+      }
+      var current = parseInt(nav.querySelector(".nums span").textContent, 10) || 1;
+      var show = readPos >= 0 && readPos < stream.length - 1 && readPos > current;
+      var existing = wrapper.querySelector(".progress-back-container");
+      if (show && !existing) {
+        var holder = document.createElement("div");
+        holder.className = "progress-back-container";
+        holder.innerHTML =
+          '<button class="btn btn-icon-text btn-primary btn-small progress-back" type="button"><svg class="fa d-icon d-icon-arrow-down svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#arrow-down"></use></svg><span class="d-button-label"></span></button>';
+        holder.querySelector(".d-button-label").textContent = nav.dataset.backLabel;
+        holder.querySelector("button").addEventListener("click", function () {
+          var number = nav.dataset.lastReadNumber;
+          var post = document.querySelector('#posts article[data-post-number="' + number + '"]');
+          if (post) {
+            window.scrollTo({ top: post.getBoundingClientRect().top + window.scrollY - headerHeight() });
+          } else {
+            var timeline = document.querySelector("template.topic-timeline-fullscreen");
+            var url = timeline ? timeline.content.firstElementChild.dataset.topicUrl : location.pathname;
+            location.href = url + "/" + number;
+          }
+        });
+        wrapper.insertBefore(holder, nav);
+      } else if (!show && existing) {
+        existing.remove();
+      }
+    }
+    var pending = false;
+    function onScroll() {
+      if (pending) {
+        return;
+      }
+      pending = true;
+      window.requestAnimationFrame(function () {
+        pending = false;
+        update();
+      });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    update();
+    return function () {
+      window.removeEventListener("scroll", onScroll);
+    };
+  });
+
+  function setupTimeline(container, fullscreen) {
     var stream = JSON.parse(container.dataset.stream);
     var lookup = JSON.parse(container.dataset.lookup);
     var total = Math.max(stream.length, 1);
@@ -211,6 +418,9 @@
       paddings[0].style.height = before + "px";
       paddings[1].style.height = height - before - SCROLLER + "px";
       current = clamp(clamp(Math.floor(total * percent), 0, total) + 1, 1, total);
+      if (fullscreen) {
+        showExcerpt(container, stream, current);
+      }
       replies.textContent = container.dataset.repliesFormat
         .replace("%{current}", current)
         .replace("%{total}", total);
@@ -261,7 +471,9 @@
         if (percent !== null) {
           render(percent);
         }
-        dock();
+        if (!fullscreen) {
+          dock();
+        }
       });
     }
 
@@ -308,5 +520,5 @@
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", resize);
     };
-  });
+  }
 })();

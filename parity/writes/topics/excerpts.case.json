@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "requests": [
+    { "method": "GET", "path": "/t/35/excerpts.json?post_ids%5B%5D=35&post_ids%5B%5D=36&post_ids%5B%5D=37&post_ids%5B%5D=38&post_ids%5B%5D=52&post_ids%5B%5D=40" },
+    { "method": "GET", "path": "/t/35/excerpts.json" },
+    { "method": "GET", "path": "/t/35/excerpts.json?post_ids=35" },
+    { "method": "GET", "path": "/t/42/excerpts.json?post_ids%5B%5D=49" },
+    { "method": "GET", "path": "/t/999999/excerpts.json?post_ids%5B%5D=1" }
+  ],
+  "unordered_responses": ["/responses/0/body"]
+}
