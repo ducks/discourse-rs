@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE categories SET auto_close_hours = 48 WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply in a category that closes topics on its own."
+      }
+    }
+  ]
+}

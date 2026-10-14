@@ -172,16 +172,12 @@ async fn regular_topic_plan(
 ) -> Result<TopicPlan, AppError> {
     let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
     let category_id = category_id.unwrap_or(uncategorized);
-    let (auto_close_hours, slow_mode, all_topics_wiki): (Option<f64>, Option<i32>, bool) =
-        sqlx::query_as(
-            "SELECT auto_close_hours, default_slow_mode_seconds, all_topics_wiki FROM categories WHERE id = $1",
-        )
-        .bind(category_id)
-        .fetch_one(&mut *conn)
-        .await?;
-    if auto_close_hours.is_some() {
-        return Err(Unsupported("categories that auto-close topics").into());
-    }
+    let (slow_mode, all_topics_wiki): (Option<i32>, bool) = sqlx::query_as(
+        "SELECT default_slow_mode_seconds, all_topics_wiki FROM categories WHERE id = $1",
+    )
+    .bind(category_id)
+    .fetch_one(&mut *conn)
+    .await?;
     Ok(TopicPlan {
         title,
         category_id: Some(category_id),
@@ -1274,6 +1270,15 @@ async fn create_topic(
     .bind(if pm { "private_message" } else { "regular" })
     .bind(pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")))
     .fetch_one(&mut *conn)
+    .await?;
+    // before_save on create: the category's auto close, saved with the
+    // topic (topic_timers <<).
+    crate::topic_timer::inherit_auto_close_from_category(
+        &mut *conn,
+        ctx,
+        topic_id,
+        crate::topic_timer::types::CLOSE,
+    )
     .await?;
     // Topic's after_create: its limits, before the other callbacks.
     if let Err(refused) = performed

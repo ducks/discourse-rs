@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE categories SET auto_close_hours = 48 WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic that closes two days after it starts",
+        "raw": "A topic in a category that closes its topics on its own after a while.",
+        "category": 4
+      }
+    }
+  ]
+}

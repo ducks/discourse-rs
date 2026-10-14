@@ -195,8 +195,10 @@ async fn close_topic(
         timer.user_id,
         Status::Autoclosed,
         true,
-        None,
-        silent,
+        &topic_status::StatusOpts {
+            silent,
+            ..Default::default()
+        },
     )
     .await?;
     reload_topic(conn, ctx, topic_id).await
@@ -241,8 +243,7 @@ async fn open_topic(conn: &mut PgConnection, ctx: &Ctx<'_>, timer: &Timer) -> Re
             timer.user_id,
             Status::Autoclosed,
             false,
-            None,
-            false,
+            &Default::default(),
         )
         .await?;
     }

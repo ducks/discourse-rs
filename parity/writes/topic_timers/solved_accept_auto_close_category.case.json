@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'solved_topics_auto_close_hours', '6', now(), now())"
+  ],
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "37"
+      }
+    }
+  ]
+}

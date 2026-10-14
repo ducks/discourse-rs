@@ -107,7 +107,17 @@ async fn run(
             .into_response());
     };
     let outcome = match kind {
-        Kind::Accept => answers::accept(&mut tx, &state.bus, &settings, &guardian, post_id).await?,
+        Kind::Accept => {
+            let host = crate::pretty_text::Host::from_state(&state);
+            let ctx = crate::posting::Ctx {
+                host: &host,
+                settings: &settings,
+                config: &state.config,
+                i18n: &state.i18n,
+                bus: &state.bus,
+            };
+            answers::accept(&mut tx, &ctx, &guardian, post_id).await?
+        }
         Kind::Unaccept => {
             answers::unaccept(&mut tx, &state.bus, &settings, &guardian, post_id).await?
         }

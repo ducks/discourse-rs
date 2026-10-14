@@ -340,6 +340,9 @@ pub async fn add_with_message(
             .execute(&mut *conn)
             .await?;
     }
+    if !raw.is_empty() {
+        index_message(&mut *conn, ctx, topic_id, post_id, &cooked, private_message).await?;
+    }
     // add_moderator_post
     sqlx::query(
         "UPDATE topics SET moderator_posts_count = moderator_posts_count + 1 WHERE id = $1",
@@ -348,4 +351,52 @@ pub async fn add_with_message(
     .execute(&mut *conn)
     .await?;
     Ok(post_id)
+}
+
+/// Post#index_search (after commit) for a small action with a message.
+async fn index_message(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    post_id: i32,
+    cooked: &str,
+    private_message: bool,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let (title, category_name, tags): (String, Option<String>, Option<String>) = sqlx::query_as(
+        "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), \
+           (SELECT string_agg(name, ' ') FROM (SELECT g.name FROM topic_tags tt JOIN tags g ON g.id = tt.tag_id \
+              WHERE tt.topic_id = t.id \
+            UNION ALL SELECT x.name FROM tags x WHERE x.target_tag_id IN \
+              (SELECT tag_id FROM topic_tags WHERE topic_id = t.id)) n) \
+         FROM topics t WHERE t.id = $1",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let urls = crate::url::Urls {
+        config: ctx.config,
+        settings: s,
+    };
+    let base_path = ctx.config.globals.relative_url_root().to_string();
+    super::search_index::index_post(
+        conn,
+        s,
+        &super::search_index::BaseUrls {
+            base_path: &base_path,
+            base_url_no_prefix: urls.base_url_no_prefix()?,
+            store: crate::file_store::FileStore::for_site(urls.config, s)?,
+        },
+        &super::search_index::PostIndex {
+            post_id,
+            topic_id,
+            is_first_post: false,
+            topic_title: &title,
+            category_name: category_name.as_deref(),
+            tag_names: tags.as_deref(),
+            cooked,
+            private_message,
+        },
+    )
+    .await
 }

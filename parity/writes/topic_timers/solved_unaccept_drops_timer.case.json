@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() + interval '1 day', 8, -1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 35, TRUE, 1440, NULL)",
+    "INSERT INTO discourse_solved_solved_topics (topic_id, topic_timer_id, created_at, updated_at) VALUES (35, 9601, now(), now())",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 36, 2, now(), now() FROM discourse_solved_solved_topics WHERE topic_id = 35"
+  ],
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ]
+}

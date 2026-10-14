@@ -14,5 +14,8 @@
   "run_jobs": [
     "close_topic"
   ],
-  "requests": []
+  "requests": [],
+  "ignore": [
+    "/changes/post_search_data"
+  ]
 }
