@@ -1325,7 +1325,31 @@ pub(crate) async fn profile_page(
         reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
         solved: crate::plugins::solved::enabled(settings)?,
     };
-    let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
+    let mut main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
+    // The notification level dropdown's ignore opens the ignore duration
+    // modal (static/js/prefs-choosers.js), which the page's strings feed.
+    if main.contains("user-notifications-dropdown")
+        && !main.contains("prefs-choosers-strings")
+        && let Some(me) = guardian.user()
+    {
+        let timezone: Option<String> =
+            sqlx::query_scalar("SELECT timezone FROM user_options WHERE user_id = $1")
+                .bind(me.id)
+                .fetch_optional(&mut *conn)
+                .await?
+                .flatten();
+        let base = cx.base_path;
+        main.push_str(&crate::preferences_view::users::choosers_strings(
+            &cx,
+            settings,
+            &me.username,
+            timezone.as_deref(),
+            (
+                &crate::assets::url(base, "moment.min.js"),
+                &crate::assets::url(base, "moment-timezone-with-data-10-year-range.min.js"),
+            ),
+        )?);
+    }
     Ok(ProfilePage {
         site_title: site.site_title,
         viewer: site.viewer,

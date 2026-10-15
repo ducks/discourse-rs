@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_emails (user_id, email, normalized_email, \"primary\", created_at, updated_at) VALUES (3, 'user1-alt@example.com', 'user1-alt@example.com', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 'user1-third@example.com', 'user1-third@example.com', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, change_state, created_at, updated_at) VALUES (3, NULL, 'user1-pending@example.com', 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1/preferences/primary-email.json", "params": { "email": "user1@example.com" } },
+    { "method": "PUT", "path": "/u/user1/preferences/primary-email.json", "params": { "email": "nobody@example.com" } },
+    { "method": "PUT", "path": "/u/user1/preferences/primary-email.json", "params": { "email": "user1-alt@example.com" } },
+    { "method": "DELETE", "path": "/u/user1/preferences/email.json", "params": { "email": "user1-pending@example.com" } },
+    { "method": "DELETE", "path": "/u/user1/preferences/email.json", "params": { "email": "user1-third@example.com" } },
+    { "method": "DELETE", "path": "/u/user1/preferences/email.json", "params": { "email": "user1-alt@example.com" } }
+  ]
+}

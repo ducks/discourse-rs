@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "PUT", "path": "/u/user2/notification_level.json", "params": { "notification_level": "ignore", "expiring_at": "2027-01-04 08:00+00:00", "acting_user_id": 3 } },
+    { "method": "PUT", "path": "/u/user0/notification_level.json", "params": { "notification_level": "mute", "acting_user_id": 3 } },
+    { "method": "PUT", "path": "/u/user2/notification_level.json", "params": { "notification_level": "normal", "expiring_at": "", "acting_user_id": 3 } },
+    { "method": "PUT", "path": "/u/user2/notification_level.json", "params": { "notification_level": "mute", "acting_user_id": 9999 } }
+  ],
+  "include_tables": ["muted_users", "ignored_users"]
+}

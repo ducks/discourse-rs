@@ -327,33 +327,63 @@ pub fn refused_tail(method: &str, rest: &str) -> Option<&'static str> {
             "picking an avatar (131)"
         }
         ("DELETE", "preferences/user_image") => "removing a profile image (131)",
-        ("PUT", "preferences/email") => "changing the email (193d)",
-        ("POST", "preferences/email") => "adding an alternate email (193d)",
-        ("DELETE", "preferences/email") => "removing an alternate email (193d)",
-        ("PUT", "preferences/primary-email") => "making an alternate email primary (193d)",
         ("POST", "preferences/revoke-account") => "revoking an associated account (191)",
         ("POST", "preferences/revoke-auth-token") => "logging out a device (193e)",
         _ => return None,
     })
 }
 
-/// POST and DELETE /u/:username/*rest: the preference endpoints other
-/// items port, refused; no other route.
+/// POST and DELETE /u/:username/*rest: the email endpoints, the
+/// preference endpoints other items port refused; no other route.
 pub async fn post_tail(
     State(state): State<AppState>,
-    Path((_, rest)): Path<(String, String)>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((username, rest)): Path<(String, String)>,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: axum::body::Bytes,
 ) -> Result<Response, AppError> {
-    match refused_tail("POST", &rest) {
-        Some(what) => Err(Unsupported(what).into()),
-        None => Ok(super::topics::not_found_response(&state)),
-    }
+    tail(
+        "POST", state, guardian, username, rest, headers, peer, uri, body,
+    )
+    .await
 }
 
 pub async fn delete_tail(
     State(state): State<AppState>,
-    Path((_, rest)): Path<(String, String)>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((username, rest)): Path<(String, String)>,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: axum::body::Bytes,
 ) -> Result<Response, AppError> {
-    match refused_tail("DELETE", &rest) {
+    tail(
+        "DELETE", state, guardian, username, rest, headers, peer, uri, body,
+    )
+    .await
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn tail(
+    method: &str,
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    username: String,
+    rest: String,
+    headers: HeaderMap,
+    peer: Option<std::net::SocketAddr>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    if let Some(endpoint) = super::users_email::Endpoint::from_tail(method, &rest) {
+        return super::users_email::handle(
+            state, guardian, username, endpoint, headers, peer, uri, body,
+        )
+        .await;
+    }
+    match refused_tail(method, &rest) {
         Some(what) => Err(Unsupported(what).into()),
         None => Ok(super::topics::not_found_response(&state)),
     }
@@ -472,13 +502,16 @@ pub async fn page(
         Route::Tab(tab) => tab,
     };
     let item = match tab {
-        PrefTab::Account | PrefTab::Profile | PrefTab::Notifications | PrefTab::Interface => None,
-        PrefTab::Emails
+        PrefTab::Account
+        | PrefTab::Profile
+        | PrefTab::Notifications
+        | PrefTab::Interface
+        | PrefTab::Emails
         | PrefTab::Email
         | PrefTab::Tracking
         | PrefTab::Users
         | PrefTab::NavigationMenu
-        | PrefTab::Tags => Some("193d"),
+        | PrefTab::Tags => None,
         PrefTab::Security
         | PrefTab::Apps
         | PrefTab::CalendarSubscriptions
@@ -640,7 +673,64 @@ pub async fn page(
                 user_tips: site_doc["user_tips"] == true,
             },
         )?,
+        PrefTab::Emails => view::emails::render(&p, &view::emails::Emails { chat_enabled })?,
+        PrefTab::Email => {
+            let new = crate::params::parse_query(uri.query().unwrap_or_default())
+                .get("new")
+                .and_then(crate::params::scalar)
+                .is_some_and(|v| !v.is_empty());
+            (
+                view::email::render(&p, new, guardian.is_admin()),
+                serde_json::Map::new(),
+            )
+        }
+        PrefTab::Tracking => {
+            // Category.list: the viewer's site categories, with their
+            // topic counts for the rows.
+            let allowed = guardian.allowed_category_ids(&mut conn, &settings).await?;
+            let rows: Vec<(i32, i32)> =
+                sqlx::query_as("SELECT id, topic_count FROM categories WHERE id = ANY($1)")
+                    .bind(&allowed)
+                    .fetch_all(&mut *conn)
+                    .await?;
+            let chooser: Vec<crate::composer_view::ChooserCategory> = rows
+                .into_iter()
+                .map(|(id, topic_count)| crate::composer_view::ChooserCategory {
+                    id: i64::from(id),
+                    topic_count: i64::from(topic_count),
+                    description_text: None,
+                    minimum_required_tags: 0,
+                })
+                .collect();
+            view::tracking::render(
+                &p,
+                &view::tracking::SiteCategories { allowed: &chooser },
+                guardian.is_admin(),
+            )?
+        }
+        PrefTab::Tags => view::tracking::render_tags(&p)?,
+        PrefTab::Users => view::users::render(&p)?,
+        PrefTab::NavigationMenu => view::navigation_menu::render(&p),
         _ => unreachable!("refused above"),
+    };
+    // The choosers' strings, where there are choosers.
+    let content = if matches!(tab, PrefTab::Tracking | PrefTab::Tags | PrefTab::Users) {
+        let moment = (
+            crate::assets::url(&base_path, "moment.min.js"),
+            crate::assets::url(&base_path, "moment-timezone-with-data-10-year-range.min.js"),
+        );
+        format!(
+            "{content}{}",
+            view::users::choosers_strings(
+                &cx,
+                &settings,
+                current_user["username"].as_str().unwrap_or_default(),
+                current_user["user_option"]["timezone"].as_str(),
+                (&moment.0, &moment.1),
+            )?
+        )
+    } else {
+        content
     };
     let chat_tab = chat_enabled && (u["can_chat"] == true || guardian.is_admin());
     let main = view::shell(&p, tab, chat_tab, &view::form_attrs(&p, &attrs), &content);
@@ -670,13 +760,27 @@ pub async fn page(
     )
     .await?;
     page.chrome.body_classes.push_str(" user-preferences-page");
+    if tab == PrefTab::Tracking {
+        page.chrome
+            .body_classes
+            .push_str(" user-preferences-tracking-page");
+    }
     // Preferences#titleToken over the user route's username.
-    page.page_title = format!(
-        "{} - {} - {}",
-        crate::topic_list_view::t(&cx, tab.title_key()),
-        crate::topic_list_view::t(&cx, "user.preferences.title"),
-        user.username
-    );
+    // The email and tags controllers have no subpageTitle.
+    page.page_title = if matches!(tab, PrefTab::Email | PrefTab::Tags) {
+        format!(
+            "{} - {}",
+            crate::topic_list_view::t(&cx, "user.preferences.title"),
+            user.username
+        )
+    } else {
+        format!(
+            "{} - {} - {}",
+            crate::topic_list_view::t(&cx, tab.title_key()),
+            crate::topic_list_view::t(&cx, "user.preferences.title"),
+            user.username
+        )
+    };
     let avatar = u["avatar_template"]
         .as_str()
         .map(|t| urls.absolute(&t.replace("{size}", "45")))

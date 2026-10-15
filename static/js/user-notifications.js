@@ -1,7 +1,7 @@
 // UserNotificationsDropdown on a user's profile: its rows float under it
 // as select-kit's do, and picking one sets the viewer's notification level
-// for that user (PUT /u/:username/notification_level): normal or muted.
-// Ignoring asks for a duration (IgnoreDurationModal), which isn't ported.
+// for that user (PUT /u/:username/notification_level): normal or muted;
+// ignoring asks for a duration first (prefs-choosers.js' IgnoreDurationModal).
 (function () {
   "use strict";
 
@@ -68,6 +68,30 @@
     true
   );
 
+  function markSelected(chooser, row) {
+    var value = row.dataset.value;
+    chooser.querySelectorAll(".select-kit-row").forEach(function (r) {
+      var selected = r === row;
+      r.classList.toggle("is-selected", selected);
+      r.classList.toggle("is-highlighted", selected);
+      r.setAttribute("aria-checked", selected ? "true" : "false");
+    });
+    var name = row.dataset.name;
+    var summary = chooser.querySelector("summary");
+    summary.dataset.name = name;
+    summary.dataset.value = value;
+    var choice = chooser.querySelector(".select-kit-selected-name");
+    choice.dataset.name = name;
+    choice.dataset.value = value;
+    choice.title = name;
+    choice.querySelector(".name").textContent = name;
+    var rowIcon = row.querySelector(".icons .d-icon");
+    var headerIcon = choice.querySelector(".d-icon");
+    if (rowIcon && headerIcon) {
+      headerIcon.outerHTML = rowIcon.outerHTML;
+    }
+  }
+
   document.addEventListener("click", function (event) {
     var row = event.target.closest(".user-notifications-dropdown .select-kit-row");
     document.querySelectorAll(".user-notifications-dropdown[open]").forEach(function (chooser) {
@@ -79,12 +103,20 @@
       return;
     }
     var value = row.dataset.value;
-    if (!LEVELS[value]) {
-      showError("Not ported yet: ignoring a user (the ignore duration modal).");
-      return;
-    }
     var chooser = row.closest(".user-notifications-dropdown");
     var username = decodeURIComponent(location.pathname.split("/u/")[1].split("/")[0]);
+    // changeToIgnored: IgnoreDurationModal for this user; onChange sets
+    // the dropdown's value at once.
+    if (value === "changeToIgnored") {
+      markSelected(chooser, row);
+      if (Discourse.ignoreDurationModal) {
+        Discourse.ignoreDurationModal(username, null);
+      }
+      return;
+    }
+    if (!LEVELS[value]) {
+      return;
+    }
     var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
     var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
     fetch(base + "/u/" + encodeURIComponent(username) + "/notification_level.json", {
@@ -105,26 +137,7 @@
         });
       })
       .then(function () {
-        chooser.querySelectorAll(".select-kit-row").forEach(function (r) {
-          var selected = r === row;
-          r.classList.toggle("is-selected", selected);
-          r.classList.toggle("is-highlighted", selected);
-          r.setAttribute("aria-checked", selected ? "true" : "false");
-        });
-        var name = row.dataset.name;
-        var summary = chooser.querySelector("summary");
-        summary.dataset.name = name;
-        summary.dataset.value = value;
-        var choice = chooser.querySelector(".select-kit-selected-name");
-        choice.dataset.name = name;
-        choice.dataset.value = value;
-        choice.title = name;
-        choice.querySelector(".name").textContent = name;
-        var rowIcon = row.querySelector(".icons .d-icon");
-        var headerIcon = choice.querySelector(".d-icon");
-        if (rowIcon && headerIcon) {
-          headerIcon.outerHTML = rowIcon.outerHTML;
-        }
+        markSelected(chooser, row);
       })
       .catch(function (e) {
         showError(e.message);

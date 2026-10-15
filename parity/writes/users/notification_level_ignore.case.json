@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET trust_level = 2 WHERE id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (12, 3, '2026-10-05 10:00:00', '2026-10-05 10:00:00') ON CONFLICT DO NOTHING",
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (3, 4, '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user2/notification_level.json", "params": { "notification_level": "ignore", "expiring_at": "2030-01-01T00:00:00.000Z" } },
+    { "method": "PUT", "path": "/u/user2/notification_level.json", "params": { "notification_level": "ignore", "expiring_at": "2031-06-01T12:30:00.000Z" } },
+    { "method": "PUT", "path": "/u/user0/notification_level.json", "params": { "notification_level": "ignore", "expiring_at": "2027-01-04 08:00-08:00", "acting_user_id": 3 } },
+    { "method": "PUT", "path": "/u/admin/notification_level.json", "params": { "notification_level": "ignore", "expiring_at": "2030-01-01T00:00:00.000Z" } }
+  ],
+  "include_tables": ["muted_users", "ignored_users"]
+}

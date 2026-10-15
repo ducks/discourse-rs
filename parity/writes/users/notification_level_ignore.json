@@ -1,0 +1,166 @@
+{
+  "name": "notification_level_ignore",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user2/notification_level.json",
+      "params": {
+        "notification_level": "ignore",
+        "expiring_at": "2030-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user2/notification_level.json",
+      "params": {
+        "notification_level": "ignore",
+        "expiring_at": "2031-06-01T12:30:00.000Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user0/notification_level.json",
+      "params": {
+        "notification_level": "ignore",
+        "expiring_at": "2027-01-04 08:00-08:00",
+        "acting_user_id": 3
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/admin/notification_level.json",
+      "params": {
+        "notification_level": "ignore",
+        "expiring_at": "2030-01-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:21:59.426652",
+  "transaction_started_at": "2026-10-15T14:21:58.03242",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, you can't ignore that user."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "ignored_users": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "created_at": "2026-10-15T14:21:59.452372",
+          "updated_at": "2026-10-15T14:21:59.479091",
+          "expiring_at": "2031-06-01T12:30:00",
+          "summarized_at": null,
+          "ignored_user_id": 4
+        },
+        {
+          "id": 2,
+          "user_id": 3,
+          "created_at": "2026-10-15T14:21:59.504892",
+          "updated_at": "2026-10-15T14:21:59.504892",
+          "expiring_at": "2027-01-04T16:00:00",
+          "summarized_at": null,
+          "ignored_user_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "muted_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "muted_user_id": 4
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 194,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "O7+vkWcO5apTMXPGZ7xE7P8B1do=",
+            "created_at": "2026-10-15T14:21:58.579239",
+            "rotated_at": "2026-10-15T14:21:58.578328",
+            "updated_at": "2026-10-15T14:21:58.579239",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "O7+vkWcO5apTMXPGZ7xE7P8B1do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 194,
+            "seen_at": "2026-10-15T14:21:59.434343",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "O7+vkWcO5apTMXPGZ7xE7P8B1do=",
+            "created_at": "2026-10-15T14:21:58.579239",
+            "rotated_at": "2026-10-15T14:21:58.578328",
+            "updated_at": "2026-10-15T14:21:58.579239",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "O7+vkWcO5apTMXPGZ7xE7P8B1do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "ignored_users": 1
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 2 WHERE id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (12, 3, '2026-10-05 10:00:00', '2026-10-05 10:00:00') ON CONFLICT DO NOTHING",
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (3, 4, '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "include_tables": [
+    "muted_users",
+    "ignored_users"
+  ],
+  "recorded_from": {
+    "case": "387e035d8c9df2fc02287ddcb514a1704ce5f5f43f4e5dcf24c58400e697cae0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

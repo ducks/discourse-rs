@@ -1,0 +1,102 @@
+{
+  "name": "email_confirm_other_user",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/confirm-new-email/known-token-193d.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/confirm-new-email/known-token-193d.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-new-email/nope.json"
+    }
+  ],
+  "started_at": "2026-10-15T13:57:13.658622",
+  "transaction_started_at": "2026-10-15T13:57:10.67444",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 190,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q5u75OvHoOXG08WlwaCdhnkhYas=",
+            "created_at": "2026-10-15T13:57:12.102019",
+            "rotated_at": "2026-10-15T13:57:12.099684",
+            "updated_at": "2026-10-15T13:57:12.102019",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "q5u75OvHoOXG08WlwaCdhnkhYas=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 190,
+            "seen_at": "2026-10-15T13:57:13.689195",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q5u75OvHoOXG08WlwaCdhnkhYas=",
+            "created_at": "2026-10-15T13:57:12.102019",
+            "rotated_at": "2026-10-15T13:57:12.099684",
+            "updated_at": "2026-10-15T13:57:12.102019",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "q5u75OvHoOXG08WlwaCdhnkhYas=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, token_hash, scope, expired, confirmed, created_at, updated_at) VALUES (9601, 3, 'user1-new@example.com', 'c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9', 4, FALSE, FALSE, now(), now())",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, new_email_token_id, change_state, created_at, updated_at) VALUES (3, 'user1@example.com', 'user1-new@example.com', 9601, 2, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "b4d914608aadf78c659f5a62afb126469ba78f5749b6ec7fc52f2ef6b55272c2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

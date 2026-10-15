@@ -21,6 +21,29 @@ pub fn template_for(email_type: &str, has_password: bool) -> Option<&'static str
         "email_login" => "user_notifications.email_login",
         "forgot_password" if has_password => "user_notifications.forgot_password",
         "forgot_password" => "user_notifications.set_password",
+        "confirm_old_email" => "user_notifications.confirm_old_email",
+        "confirm_old_email_add" => "user_notifications.confirm_old_email_add",
+        "confirm_new_email" => "user_notifications.confirm_new_email",
+        _ => return None,
+    })
+}
+
+/// The account emails without a token and the argument their template
+/// takes from the job: (type, template, job argument, template argument).
+pub fn plain_template(email_type: &str) -> Option<(&'static str, &'static str, &'static str)> {
+    Some(match email_type {
+        "notify_old_email" => (
+            "user_notifications.notify_old_email",
+            "new_email",
+            "new_email",
+        ),
+        "notify_old_email_add" => (
+            "user_notifications.notify_old_email_add",
+            "new_email",
+            "new_email",
+        ),
+        // account_exists' template names the user's own email.
+        "account_exists" => ("user_notifications.account_exists", "", "email"),
         _ => return None,
     })
 }
@@ -32,6 +55,19 @@ pub async fn build(
     template: &str,
     user_id: i32,
     email_token: &str,
+) -> Result<Built, AppError> {
+    build_with(conn, ctx, template, user_id, "email_token", email_token).await
+}
+
+/// `build_email(user.email, template:, locale:, <arg>:, recipient_user:)`;
+/// an empty `value` names the user's email.
+pub async fn build_with(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    template: &str,
+    user_id: i32,
+    arg: &str,
+    value: &str,
 ) -> Result<Built, AppError> {
     let s = ctx.settings;
     let (email, username, locale): (Option<String>, String, Option<String>) = sqlx::query_as(
@@ -50,14 +86,12 @@ pub async fn build(
         return Err(Unsupported("account emails in a user's own locale").into());
     }
     let to = email.ok_or(Unsupported("a recipient without an email"))?;
+    let value = if value.is_empty() { to.as_str() } else { value };
     build_template(
         ctx,
         template,
         &to,
-        &[
-            ("email_token", email_token),
-            ("recipient_username", &username),
-        ],
+        &[(arg, value), ("recipient_username", &username)],
         Some(user_id),
     )
     .await

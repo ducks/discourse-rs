@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tag_users (user_id, tag_id, notification_level, created_at, updated_at) SELECT 3, id, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00' FROM tags WHERE name = 'howto'"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "watched_tags": "Guide,missing",
+        "muted_tags": "howto",
+        "tracked_tags": "",
+        "watching_first_post_tags": ""
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "watched_tags": ""
+      }
+    }
+  ]
+}

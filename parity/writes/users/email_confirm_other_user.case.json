@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, token_hash, scope, expired, confirmed, created_at, updated_at) VALUES (9601, 3, 'user1-new@example.com', 'c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9', 4, FALSE, FALSE, now(), now())",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, new_email_token_id, change_state, created_at, updated_at) VALUES (3, 'user1@example.com', 'user1-new@example.com', 9601, 2, now(), now())"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/u/confirm-new-email/known-token-193d.json" },
+    { "method": "PUT", "path": "/u/confirm-new-email/known-token-193d.json" },
+    { "method": "GET", "path": "/u/confirm-new-email/nope.json" }
+  ]
+}

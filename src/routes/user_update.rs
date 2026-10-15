@@ -214,8 +214,8 @@ fn errors(status: StatusCode, message: String) -> Response {
 }
 
 /// PUT /u/:username/notification_level(.json): UsersController
-/// #notification_level, the user notifications dropdown's normal and mute;
-/// the ignore level (IgnoreDurationModal's) is refused.
+/// #notification_level: normal, mute, and ignore until a time
+/// (IgnoreDurationModal's).
 pub async fn notification_level(
     state: AppState,
     guardian: crate::guardian::Guardian,
@@ -263,7 +263,15 @@ pub async fn notification_level(
             if !guardian.is_staff() {
                 return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, t("error")));
             }
-            return Err(crate::Unsupported("notification_level for another acting user").into());
+            // User.find(params[:acting_user_id]): staff act for someone.
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+                    .bind(id)
+                    .fetch_one(&mut *tx)
+                    .await?;
+            if !exists {
+                return Ok(super::topics::not_found_response(&state));
+            }
         }
         acting = id;
     }
@@ -271,7 +279,54 @@ pub async fn notification_level(
     let level = params::string(&p, "notification_level").unwrap_or_default();
     match level.as_str() {
         "ignore" => {
-            return Err(crate::Unsupported("the ignore notification level").into());
+            // guardian.ensure_can_ignore_user!
+            if !(guardian.can_ignore_users(&settings)? && target_id != me.id && !target_staff) {
+                return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, t("ignore_error")));
+            }
+            // Time.parse(params[:expiring_at]): what IgnoreDurationModal
+            // sends is ISO 8601.
+            let raw = params::string(&p, "expiring_at").unwrap_or_default();
+            // FutureDateInputSelector's FORMAT ("YYYY-MM-DD HH:mmZ") or ISO 8601.
+            let expiring_at = chrono::DateTime::parse_from_str(raw.trim(), "%Y-%m-%d %H:%M%:z")
+                .or_else(|_| chrono::DateTime::parse_from_rfc3339(raw.trim()))
+                .map(|d| d.naive_utc())
+                .or_else(|_| chrono::NaiveDateTime::parse_from_str(raw.trim(), "%Y-%m-%d %H:%M:%S"))
+                .map_err(|_| {
+                    crate::Unsupported("an expiring_at Time.parse reads but ISO 8601 does not")
+                })?;
+            sqlx::query("DELETE FROM muted_users WHERE user_id = $1 AND muted_user_id = $2")
+                .bind(acting)
+                .bind(target_id)
+                .execute(&mut *tx)
+                .await?;
+            let existing: Option<i32> = sqlx::query_scalar(
+                "SELECT id::int FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2 ORDER BY id LIMIT 1",
+            )
+            .bind(acting)
+            .bind(target_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+            if let Some(id) = existing {
+                // update: only a change is saved.
+                sqlx::query(
+                    "UPDATE ignored_users SET expiring_at = $2, updated_at = now() \
+                     WHERE id = $1 AND expiring_at IS DISTINCT FROM $2",
+                )
+                .bind(id)
+                .bind(expiring_at)
+                .execute(&mut *tx)
+                .await?;
+            } else {
+                sqlx::query(
+                    "INSERT INTO ignored_users (user_id, ignored_user_id, expiring_at, created_at, updated_at) \
+                     VALUES ($1, $2, $3, now(), now())",
+                )
+                .bind(acting)
+                .bind(target_id)
+                .bind(expiring_at)
+                .execute(&mut *tx)
+                .await?;
+            }
         }
         "mute" => {
             // guardian.ensure_can_mute_user!

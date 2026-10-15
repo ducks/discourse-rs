@@ -1,0 +1,42 @@
+/*
+ * The emails, email, tracking, tags and users preferences tabs: their
+ * rules in the reference's compiled stylesheet (base/user.scss's
+ * tracking and ignore rules, the category selector's and the future date
+ * input's, a rule a line) that the port's sheets lacked. After
+ * admin-kit.css, whose multi-select width user.scss's rules follow.
+ */
+.btn-primary[disabled], .btn-primary.disabled { cursor: not-allowed; }
+.btn-primary[disabled]:not(.is-loading), .btn-primary.disabled:not(.is-loading) { opacity: 0.4; }
+.btn-primary[disabled]:hover, .btn-primary.disabled:hover { color: var(--d-button-primary-text-color); background: var(--d-button-primary-bg-color); border: var(--d-button-primary-border); }
+a.cancel { margin-left: var(--space-5); line-height: normal; color: var(--primary-high); transition: var(--d-button-transition); }
+a.cancel:hover { color: var(--danger); }
+.tip { display: inline-block; }
+.tip.good { color: var(--success); }
+.new-user-wrapper .solo-preference { grid-column: 1 / -1; }
+.select-kit.category-selector .category-row, .select-kit.multiple-categories-selector .category-row, .select-kit-box.category-selector .category-row, .select-kit-box.multiple-categories-selector .category-row { max-width: 100%; }
+.select-kit.category-selector .category-row .category-status, .select-kit.multiple-categories-selector .category-row .category-status, .select-kit-box.category-selector .category-row .category-status, .select-kit-box.multiple-categories-selector .category-row .category-status { gap: 0px 0.5em; }
+.select-kit.category-selector .category-row .topic-count, .select-kit.multiple-categories-selector .category-row .topic-count, .select-kit-box.category-selector .category-row .topic-count, .select-kit-box.multiple-categories-selector .category-row .topic-count { margin-left: 0.25em; }
+.select-kit.category-selector .selected-choice-category:hover .badge-category, .select-kit.category-selector .selected-choice-category:focus .badge-category, .select-kit.multiple-categories-selector .selected-choice-category:hover .badge-category, .select-kit.multiple-categories-selector .selected-choice-category:focus .badge-category, .select-kit-box.category-selector .selected-choice-category:hover .badge-category, .select-kit-box.category-selector .selected-choice-category:focus .badge-category, .select-kit-box.multiple-categories-selector .selected-choice-category:hover .badge-category, .select-kit-box.multiple-categories-selector .selected-choice-category:focus .badge-category { color: var(--d-button-default-text-color--hover); }
+label > .d-icon { align-self: center; margin-right: 4px; }
+.user-preferences-tracking-page .user-preferences .form-vertical { width: 100%; }
+.user-preferences__tracking-topics-wrapper { margin-bottom: 3em; }
+.user-preferences__tracking-topics-wrapper .control-label { margin-bottom: 1em; }
+.user-preferences__tracking-categories-tags-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); gap: 2em; }
+.user-preferences__tracking-categories-tags-wrapper .control-group { width: 100%; min-width: 16em; }
+.tag-chooser { width: 100%; max-width: 100%; }
+.user-preferences .category-selector, .user-preferences .tag-chooser, .user-preferences textarea, .user-preferences input.user-selector, .user-preferences .user-chooser { width: 100%; }
+.user-preferences .tracking-controls { margin-top: 24px; }
+.user-preferences .tracking-controls label { align-items: center; display: inline-block; }
+.user-preferences .tracking-controls label .d-icon { margin-right: 3px; }
+.user-preferences .tracking-controls .show-tracking { float: right; }
+.user-ignore .btn-icon-text { margin-top: 0.5em; }
+.ignored-list { overflow: auto; max-height: 150px; display: flex; flex-wrap: wrap; align-items: center; background-color: var(--secondary); min-height: 30px; box-sizing: border-box; }
+.select-kit.combobox.future-date-input-selector { min-width: 50%; }
+.select-kit.combobox.future-date-input-selector .future-date-input-selector-datetime { color: var(--primary-medium); margin-left: auto; white-space: nowrap; }
+.select-kit.combobox.future-date-input-selector .future-date-input-selector-icons { margin-right: 5px; }
+.select-kit.combobox.future-date-input-selector .future-date-input-selector-row .future-date-input-selector-icons { color: var(--primary-medium); }
+.ignore-duration-with-username-modal .future-date-input { margin-top: 1em; }
+.tip.bad { color: var(--danger); }
+.ignored-user-list-item { border: 1px solid var(--primary-medium); padding: 0px; display: flex; align-items: center; margin-right: 10px; }
+.ignored-user-name { padding-left: 10px; padding-right: 10px; }
+.control-instructions { color: var(--primary-medium); font-size: .875rem; }

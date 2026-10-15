@@ -1,0 +1,314 @@
+{
+  "name": "email_change",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "  User1-New@Example.com "
+      }
+    }
+  ],
+  "started_at": "2026-10-15T13:56:56.067676",
+  "transaction_started_at": "2026-10-15T13:56:52.975201",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "email_change_requests": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "new_email": "user1-new@example.com",
+          "old_email": "user1@example.com",
+          "created_at": "2026-10-15T13:56:56.142763",
+          "updated_at": "2026-10-15T13:56:56.142763",
+          "change_state": 2,
+          "new_email_token_id": 13,
+          "old_email_token_id": null,
+          "requested_by_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 3,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-15T13:56:56.234826",
+          "email_type": "confirm_new_email",
+          "message_id": "4751ae31-d92a-49b1-82a5-3cf0ed73677b@localhost",
+          "to_address": "user1-new@example.com",
+          "updated_at": "2026-10-15T13:56:56.234826",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "user1-new@example.com",
+          "scope": 4,
+          "expired": false,
+          "user_id": 3,
+          "confirmed": false,
+          "created_at": "2026-10-15T13:56:56.13583",
+          "token_hash": "44ead95091a68aeb234da9a9881ff7e68e3ff115c53e79dcce3188f9975642ba",
+          "updated_at": "2026-10-15T13:56:56.13583"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 190,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FED8gmXe5Qz7wGojNVIVRAmC5YE=",
+            "created_at": "2026-10-15T13:56:54.201613",
+            "rotated_at": "2026-10-15T13:56:54.195505",
+            "updated_at": "2026-10-15T13:56:54.201613",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "FED8gmXe5Qz7wGojNVIVRAmC5YE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 190,
+            "seen_at": "2026-10-15T13:56:56.081804",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FED8gmXe5Qz7wGojNVIVRAmC5YE=",
+            "created_at": "2026-10-15T13:56:54.201613",
+            "rotated_at": "2026-10-15T13:56:54.195505",
+            "updated_at": "2026-10-15T13:56:54.201613",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "FED8gmXe5Qz7wGojNVIVRAmC5YE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 88,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-15T13:56:56.123589",
+          "ip_address": null,
+          "updated_at": "2026-10-15T13:56:56.123589",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 3,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": "2026-10-15T13:56:52.975201",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "critical_user_email",
+      {
+        "to_address": "user1-new@example.com",
+        "type": "confirm_new_email",
+        "user_id": 3,
+        "email_token": "6ea41a12a8c08d1caeba41942f9f07a4"
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_change_requests": 1,
+    "email_logs": 1,
+    "email_tokens": 13,
+    "user_histories": 74
+  },
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user1-new@example.com"
+        ],
+        [
+          "Message-ID",
+          "<4751ae31-d92a-49b1-82a5-3cf0ed73677b@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Confirm your new email address"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ad0dba8378e7_15cf3f28491b8"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Confirm your new email address for Discourse by clicking on the following link:\n\nhttp://localhost:3048/u/confirm-new-email/6ea41a12a8c08d1caeba41942f9f07a4\n\nIf you did not request this change, please contact a [site admin](http://localhost:3048/about).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Confirm your new email address for Discourse by clicking on the following link:</p>\n<p><a href=\"http://localhost:3048/u/confirm-new-email/6ea41a12a8c08d1caeba41942f9f07a4\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3048/u/confirm-new-email/6ea41a12a8c08d1caeba41942f9f07a4</a></p>\n<p>If you did not request this change, please contact a <a href=\"http://localhost:3048/about\" style=\"text-decoration:none;font-weight:bold;color:#006699\">site admin</a>.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "44fdfbe3de8e75482c8821367812ad3353f011a94e8e353962ed511479a81a48",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

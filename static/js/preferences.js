@@ -286,6 +286,11 @@
       deleteAccount(event.target.closest(".delete-account-button"));
       return;
     }
+    var resend = event.target.closest(".pref-email .resend-email-confirmation");
+    if (resend) {
+      resendConfirmation(resend);
+      return;
+    }
     if (event.target.closest(".pref-email .check-email")) {
       checkEmail(event.target.closest(".pref-email"));
       return;
@@ -334,6 +339,23 @@
   }
 
   function controlValue(el) {
+    // A multi-select (prefs-choosers.js): User#save's categories as ids,
+    // an empty list as [-1]; users and tags comma-joined.
+    if (el.dataset.chooser) {
+      var items = JSON.parse(el.dataset.items || "[]");
+      if (el.dataset.chooser === "category") {
+        return items.length
+          ? items.map(function (i) {
+              return parseInt(i[0], 10);
+            })
+          : [-1];
+      }
+      return items
+        .map(function (i) {
+          return i[1];
+        })
+        .join(",");
+    }
     if (el.tagName === "DETAILS") {
       return comboValue(el);
     }
@@ -731,11 +753,54 @@
   function emailAction(chooser, action) {
     if (action === "updateEmail") {
       window.location.href = chooser.dataset.emailHref;
-    } else if (action === "setPrimaryEmail") {
-      unported("making an alternate email primary (193d)");
     } else {
-      unported("removing an alternate email (193d)");
+      var email = chooser.closest(".row.email").querySelector(".email-first").textContent;
+      var username = form().dataset.username;
+      var request =
+        action === "setPrimaryEmail"
+          ? ajax("PUT", "/u/" + encodeURIComponent(username) + "/preferences/primary-email.json", { email: email })
+          : ajax("DELETE", "/u/" + encodeURIComponent(username) + "/preferences/email.json", { email: email });
+      request
+        .then(redrawEmails)
+        .catch(action === "setPrimaryEmail" ? popupAjaxError : function () {});
     }
+  }
+
+  // The model's emails changed: the list drawn again from the page.
+  function redrawEmails() {
+    return fetch(location.href, { credentials: "same-origin" })
+      .then(function (r) {
+        return r.text();
+      })
+      .then(function (html) {
+        var fresh = new DOMParser().parseFromString(html, "text/html").querySelector(".pref-email .emails");
+        var current = document.querySelector(".pref-email .emails");
+        if (fresh && current) {
+          current.replaceWith(document.adoptNode(fresh));
+        }
+      });
+  }
+
+  // resendConfirmationEmail: User#addEmail again.
+  function resendConfirmation(button) {
+    var group = button.closest(".pref-email");
+    var l = {};
+    try {
+      l = JSON.parse(group.dataset.labels || "{}");
+    } catch (e) {
+      l = {};
+    }
+    var email = button.closest(".row.email").querySelector(".email-first").textContent;
+    var label = document.createElement("span");
+    label.textContent = l.resending;
+    button.replaceWith(label);
+    ajax("POST", "/u/" + encodeURIComponent(form().dataset.username) + "/preferences/email", { email: email })
+      .then(function () {
+        label.textContent = l.resent;
+      })
+      .catch(function () {
+        label.replaceWith(button);
+      });
   }
 
   // admin.users.check_email: the addresses, as the list shows them.
@@ -1041,6 +1106,133 @@
     });
     xhr.send(body);
   });
+
+  // EmailController: the address validated as it is typed, then changed
+  // (users_email#update) or added (#create).
+  var EMAIL_RE =
+    /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+
+  function emailPage() {
+    return document.querySelector(".solo-preference[data-email-labels]");
+  }
+
+  function emailLabels(page) {
+    try {
+      return JSON.parse(page.dataset.emailLabels);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function syncEmail(page) {
+    var l = emailLabels(page);
+    var input = page.querySelector("#change-email");
+    var value = input.value;
+    var invalid = !EMAIL_RE.test(value);
+    var unchanged = value.toLowerCase().trim() === page.dataset.emailOld;
+    var button = page.querySelector(".save-button .btn-primary");
+    button.disabled = page.dataset.saving === "true" || value === "" || unchanged || invalid;
+    var tip = page.querySelector(".tip");
+    var failed = invalid && (page.dataset.emailOld !== "" || value !== "");
+    tip.className = "tip " + (failed ? "bad" : "good");
+    tip.innerHTML = failed ? l.x_icon + " " + escape(l.invalid) : "";
+  }
+
+  function saveEmail(page) {
+    var l = emailLabels(page);
+    var input = page.querySelector("#change-email");
+    var button = page.querySelector(".save-button .btn-primary");
+    page.dataset.saving = "true";
+    button.disabled = true;
+    button.querySelector(".d-button-label").textContent = l.saving;
+    var username = form().dataset.username;
+    ajax(
+      page.dataset.emailNew === "true" ? "POST" : "PUT",
+      "/u/" + encodeURIComponent(username) + "/preferences/email",
+      { email: input.value }
+    )
+      .then(function () {
+        page.innerHTML =
+          '<div class="alert alert-success">' +
+          escape(l.success) +
+          '</div><a class="success-back" href="' +
+          escape(base() + "/u/" + encodeURIComponent(username) + "/preferences/account") +
+          '">' +
+          l.back_icon +
+          " " +
+          escape(l.back) +
+          "</a>";
+      })
+      .catch(function (e) {
+        page.dataset.saving = "false";
+        button.querySelector(".d-button-label").textContent = l.save;
+        var alert = page.querySelector(".alert-error");
+        if (!alert) {
+          alert = document.createElement("div");
+          alert.className = "alert alert-error";
+          page.insertBefore(alert, page.querySelector(".control-group"));
+        }
+        alert.textContent = (e.json && e.json.errors && e.json.errors[0]) || l.error;
+        syncEmail(page);
+      });
+  }
+
+  document.addEventListener("input", function (event) {
+    var page = emailPage();
+    if (page && event.target.id === "change-email") {
+      syncEmail(page);
+    }
+  });
+  document.addEventListener("click", function (event) {
+    var page = emailPage();
+    var button = event.target.closest(".solo-preference .save-button .btn-primary");
+    if (page && button) {
+      event.preventDefault();
+      if (!button.disabled) {
+        saveEmail(page);
+      }
+    }
+  });
+  document.addEventListener("submit", function (event) {
+    var page = emailPage();
+    if (page && page.contains(event.target)) {
+      event.preventDefault();
+      var button = page.querySelector(".save-button .btn-primary");
+      if (button && !button.disabled) {
+        saveEmail(page);
+      }
+    }
+  });
+
+  // What the templates show while a control is checked or has a value
+  // (data-show-pref, data-show-value), and disable while one is checked
+  // (data-disabled-by).
+  function syncShown() {
+    var f = form();
+    if (!f) {
+      return;
+    }
+    var value = function (key) {
+      var control = f.querySelector('[data-pref="' + key + '"]');
+      return control ? controlValue(control) : null;
+    };
+    f.querySelectorAll("[data-show-pref]").forEach(function (el) {
+      var v = value(el.dataset.showPref);
+      var shown = el.dataset.showValue !== undefined ? String(v) === el.dataset.showValue : !!v;
+      if (el.dataset.showAlso) {
+        shown = shown && !!value(el.dataset.showAlso);
+      }
+      el.style.display = shown ? "" : "none";
+    });
+    f.querySelectorAll("[data-disabled-by]").forEach(function (el) {
+      el.disabled = !!value(el.dataset.disabledBy);
+    });
+    f.querySelectorAll("[data-disabled-unless]").forEach(function (el) {
+      el.disabled = !value(el.dataset.disabledUnless);
+    });
+  }
+  document.addEventListener("change", syncShown);
+  document.addEventListener("prefs-change", syncShown);
 
   Discourse.onPage(function () {
     pushSetup();

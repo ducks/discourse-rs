@@ -127,6 +127,15 @@
     wrapper.dataset.overflowBound = "true";
     if (wrapper.classList.contains("horizontal-overflow-nav__controls")) {
       revealActive(scroller);
+      // The pills' widths change once the web font is in; Ember's reveal
+      // runs after the app boots, when it already is.
+      if (document.fonts && document.fonts.status !== "loaded") {
+        document.fonts.ready.then(function () {
+          if (wrapper.dataset.overflowBound) {
+            revealActive(scroller);
+          }
+        });
+      }
     }
     var refresh = function () {
       update(wrapper, scroller);
