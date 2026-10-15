@@ -1536,21 +1536,34 @@ route table has been made, so this list may be short.
     and moving posts to a message: the whisper left behind, the mover and
     the posts' authors allowed in, participants, the new message's
     notification levels, a copied first post as a message reply), 188i.
-    `feat/topic-edits-rest` M (what 188a-188h still refuse: title and
-    category on posts#update (the composer's
-    first-post edit, routes/posts.rs); shared drafts on PUT /t
-    (routes/topic_update.rs); experimental_topic_category_change_
-    notification, og image regeneration, review_every_post on topic
-    edits (revise_topic.rs); a merge of a topic with votes (topic
-    voting's TopicMerger), a copied first post's polls, reactions and
-    flags, the split's topic rate limits, trashing a merged topic's
-    embed (post_mover.rs); a published page's topic converted
-    (topic_converter.rs); a group's message inbox in pm-reset-new and
-    bulk archiving, filter=unread over a message inbox, bulk deleting
-    one's own topics or as a non-staff user, the nested view toggle
-    while nested replies are on (routes/topics_bulk.rs,
-    topics_bulk.rs); a category definition's description changing on a
-    title edit needs CategorySerializer (190))
+    `feat/topic-edits-rest` L (what 188a-188h still refuse, with the tag
+    edits on existing topics folded in from 189; split by dependency, each
+    branch stacked on the one before): 188i1.
+    `feat/topic-edits-composer` M (title and category on posts#update,
+    routes/posts.rs; the composer's first-post edit with its title and
+    category, sending PUT /t then PUT /posts as Ember does, the
+    original_title edit conflict), 188i2. `feat/topic-edits-tags` L
+    (PostRevisor's tags field on PUT /t and posts#update through 189's
+    `tagging::tag_topic`, `apply` and `after_tags_saved`; PUT
+    /t/:id/tags; the edit composer's tags and original_tags; NotifyTagChange
+    and the tag change whisper; the drafts tag edit conflict (drafts.rs);
+    tags on a split's new topic (post_mover.rs); the bulk tag operations
+    (topics_bulk.rs); moving tagged topics under tag groups or category
+    tags (revise_topic.rs)), 188i3. `feat/topic-edits-revise-rest` M
+    (shared drafts on PUT /t, routes/topic_update.rs;
+    experimental_topic_category_change_notification, og image
+    regeneration, review_every_post on topic edits, revise_topic.rs),
+    188i4. `feat/topic-edits-move-rest` M (a merge of a topic with votes
+    (topic voting's TopicMerger), a copied first post's polls, reactions
+    and flags, the split's topic rate limits, trashing a merged topic's
+    embed, post_mover.rs), 188i5. `feat/topic-edits-bulk-rest` M (a
+    published page's topic converted, topic_converter.rs; a group's
+    message inbox in pm-reset-new and bulk archiving, filter=unread over
+    a message inbox, bulk deleting one's own topics or as a non-staff
+    user, the nested view toggle while nested replies are on,
+    routes/topics_bulk.rs, topics_bulk.rs). Stays refused: a category
+    definition's description changing on a title edit needs
+    CategorySerializer (190)
 189. `feat/tags-writes` L: tags on topics (posts#create and update
     refuse them, routes/posts.rs; PUT /t, routes/topic_update.rs; a
     split's new topic, post_mover.rs; the bulk tag operations,
