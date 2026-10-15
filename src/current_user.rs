@@ -27,6 +27,7 @@ pub struct UserGuardian<'a> {
     /// `@secure_category_ids ||=`, shared with the request's Guardian when
     /// built from it.
     secure_category_ids: std::sync::Arc<std::sync::OnceLock<Vec<i32>>>,
+    setting_groups: crate::guardian::SettingGroups,
 }
 
 impl<'a> UserGuardian<'a> {
@@ -52,6 +53,7 @@ impl<'a> UserGuardian<'a> {
             group_ids,
             silenced,
             secure_category_ids: Default::default(),
+            setting_groups: Default::default(),
         })
     }
 
@@ -67,6 +69,7 @@ impl<'a> UserGuardian<'a> {
             group_ids: guardian.group_ids.iter().map(|id| *id as i32).collect(),
             silenced: guardian.silenced,
             secure_category_ids: guardian.secure_category_ids.clone(),
+            setting_groups: guardian.setting_groups.clone(),
         }
     }
 
@@ -178,12 +181,7 @@ impl<'a> UserGuardian<'a> {
         if !enabled {
             return Ok(false);
         }
-        let groups: Option<Option<String>> =
-            sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
-                .bind(name)
-                .fetch_optional(&mut *conn)
-                .await?;
-        match groups.flatten() {
+        match self.setting_groups.get(conn, name).await? {
             Some(list) => {
                 let ids: Vec<i32> = list
                     .split('|')
