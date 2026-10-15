@@ -1191,10 +1191,14 @@ generate_theme_screenshot_thumbnails (171).
     min_vote_count, `with:images`, `filetypes:`, `before:`, `after:`
     (Search.word_to_date in UTC; they search every post, not only the
     recent ones), `locale:`
-    143e. `feat/search-advanced-order` S: `order:` latest, oldest,
-    latest_topic, oldest_topic, views, likes, read, topic voting's
-    votes, the `l` and `r` aliases; solved's
-    prioritize_solved_topics_in_search in the relevance sort
+    143e. ~~`feat/search-advanced-order`~~ (done) S: `order:` latest,
+    oldest, latest_topic, oldest_topic, views, likes (not aggregated,
+    as in Rails), read, topic voting's votes, the `l` and `r` aliases,
+    in:title's bumped order, a topic's search in the term's order;
+    search_default_sort_order (taken from 144: it is only the default
+    order); solved's prioritize_solved_topics_in_search in the
+    relevance sort; the full page no longer draws like counts, which
+    Ember's SearchResultEntry never gets the flag for
     143f. `feat/search-advanced-messages` M: personal messages: `in:`
     messages, personal, personal-direct and all-pms, group_messages:,
     personal_messages:, type_filter=private_messages and its context,
@@ -1216,8 +1220,8 @@ generate_theme_screenshot_thumbnails (171).
 144. `feat/search-settings` M: search_ignore_accents (unaccent) and CJK
     tokenization, searching and indexing (search/mod.rs:542,555,559;
     posting/search_index.rs:267,275), use_pg_headlines_for_excerpt,
-    search_ranking_weights, search_prefer_recent_posts, a default sort
-    other than relevance (search/mod.rs:545,548,551,565), blurbs from old
+    search_ranking_weights, search_prefer_recent_posts
+    (search/mod.rs:545,548,551; the default sort order went to 143e), blurbs from old
     post_search_data rows (:1027,1034), human_only search logs
     (search_logs.rs:60), the index_category_for_search job
 145. `feat/post-alert-rest` M: group and @here mentions

@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": ["UPDATE topics SET views = id * 10 WHERE id >= 34"],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20r"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aread"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aviews"}
+  ]
+}

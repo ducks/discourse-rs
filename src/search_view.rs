@@ -439,15 +439,8 @@ pub fn entry(cx: &ListContext, v: &SearchView, post: &Value, topic: &Value) -> S
         out.push_str(&format!(" <span>{blurb}</span>"));
     }
     out.push_str("</div>");
-    // showLikeCount: an order:likes search.
-    if v.q.contains("order:likes")
-        && let Some(likes) = post["like_count"].as_i64().filter(|n| *n > 0)
-    {
-        out.push_str(&format!(
-            "<span class=\"like-count\"><span class=\"value\">{likes}</span>{}</span>",
-            icon("heart", None)
-        ));
-    }
+    // No like count: SearchResultEntry reads a showLikeCount nobody passes
+    // it, so an order:likes search draws none.
     out.push_str("</div></div>");
     out
 }

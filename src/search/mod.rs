@@ -497,14 +497,6 @@ impl Search<'_> {
         if s.get("content_localization_enabled")?.truthy() {
             return Err(Unsupported("content_localization_enabled").into());
         }
-        if s.get("search_default_sort_order")?.to_i() != 0 {
-            return Err(Unsupported("search_default_sort_order other than relevance").into());
-        }
-        if s.get("solved_enabled")?.truthy()
-            && s.get("prioritize_solved_topics_in_search")?.truthy()
-        {
-            return Err(Unsupported("prioritize_solved_topics_in_search").into());
-        }
         // GroupedSearchResultSerializer#extra's categories.
         if self.guardian.can_lazy_load_categories(s)? {
             return Err(Unsupported("search results for lazy-loaded categories (extra)").into());

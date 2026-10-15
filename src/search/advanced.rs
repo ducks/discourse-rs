@@ -352,8 +352,19 @@ pub fn process(
             return Err(Unsupported(reason).into());
         }
     }
-    if adv.order.is_some() {
-        return Err(Unsupported("advanced search orders (order:, l, r)").into());
+    // search_default_sort_order (SearchSortOrderSiteSetting) when the term
+    // names no order.
+    if adv.order.is_none() {
+        adv.order = match settings.get("search_default_sort_order")?.to_i() {
+            0 => None,
+            1 => Some("latest".into()),
+            2 => Some("likes".into()),
+            3 => Some("views".into()),
+            4 => Some("latest_topic".into()),
+            _ => {
+                return Err(Unsupported("a search_default_sort_order Rails doesn't define").into());
+            }
+        };
     }
     adv.term = kept.join(" ");
     Ok(adv)
