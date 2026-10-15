@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO tags (name, target_tag_id, created_at, updated_at) VALUES ('how-to', 1, now(), now())",
+    "INSERT INTO tag_groups (name, created_at, updated_at) VALUES ('Docs Group', now(), now())",
+    "INSERT INTO tag_group_memberships (tag_group_id, tag_id, created_at, updated_at) SELECT id, 2, now(), now() FROM tag_groups WHERE name = 'Docs Group'"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=%23how-to"},
+    {"method": "GET", "path": "/search/query.json?term=%23docs-group"},
+    {"method": "GET", "path": "/search/query.json?term=%23staff"},
+    {"method": "GET", "path": "/search/query.json?term=%23%3Dstaff"},
+    {"method": "GET", "path": "/search/query.json?term=%23uncategorized"}
+  ]
+}

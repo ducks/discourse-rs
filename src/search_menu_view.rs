@@ -562,6 +562,10 @@ impl Menu<'_> {
                         out.push_str(&self.assistant_item(&Item {
                             type_class: "user",
                             search_all_topics: true,
+                            slug: Some(format!(
+                                "@{}",
+                                user["username"].as_str().unwrap_or_default()
+                            )),
                             keyword: Some("@"),
                             user: Some(user),
                             ..Default::default()
@@ -598,6 +602,12 @@ impl Menu<'_> {
         with_in_label: bool,
     ) -> String {
         let mut out = String::from("<ul class=\"search-menu-assistant\">\n");
+        // Assistant#prefix: what the slug has before its `#`.
+        let prefix = slug
+            .map(|s| s.split('#').next().unwrap_or("").trim())
+            .filter(|p| !p.is_empty())
+            .map(|p| format!("{p} "))
+            .unwrap_or_default();
         for category in categories {
             out.push_str(&self.assistant_item(&Item {
                 type_class: "category",
@@ -606,7 +616,7 @@ impl Menu<'_> {
                 search_all_topics: true,
                 keyword: Some("#"),
                 with_in_label,
-                slug: slug.map(str::to_string),
+                slug: Some(format!("{prefix}{}", self.full_slug(category))),
                 ..Default::default()
             }));
         }
@@ -617,6 +627,7 @@ impl Menu<'_> {
                 search_all_topics: true,
                 keyword: Some("#"),
                 with_in_label,
+                slug: Some(format!("{prefix}#{tag}")),
                 ..Default::default()
             }));
         }

@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "requests": [
+    {"method": "GET", "path": "/search.json?q=%23general"},
+    {"method": "GET", "path": "/search.json?q=%23general&page=2"},
+    {"method": "GET", "path": "/search.json?q=replies%20%23general"},
+    {"method": "GET", "path": "/search.json?q=%23site-feedback"},
+    {"method": "GET", "path": "/search.json?q=%23guide"}
+  ]
+}

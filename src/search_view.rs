@@ -414,8 +414,12 @@ pub fn entry(cx: &ListContext, v: &SearchView, post: &Value, topic: &Value) -> S
         out.push_str(&tags_html(cx, topic, s(&topic["title"]), &[]));
     }
     out.push_str("<span></span></div></div>");
-    // The blurb.
-    let blurb = s(&post["blurb"]);
+    // The blurb, with its emoji codes drawn (translateResults).
+    let blurb = crate::topic_list_view::emoji_unescape(
+        s(&post["blurb"]),
+        &cx.settings.emojis,
+        cx.base_path,
+    );
     out.push_str("<div class=\"blurb container\"><span class=\"date\">");
     if let Some(at) = date(&post["created_at"]) {
         out.push_str(&format!(

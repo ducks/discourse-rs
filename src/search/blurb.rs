@@ -36,7 +36,23 @@ fn quoted_phrase(term: &str) -> Option<String> {
 /// either side, "..." marking cut ends, the middle stripped.
 fn excerpt(text: &str, phrase: &str, radius: usize) -> Option<String> {
     if phrase.is_empty() {
-        return None;
+        // The empty phrase matches at the start: `text.split("", 2)` puts
+        // the first character before it and the rest after.
+        let chars: Vec<char> = text.chars().collect();
+        let Some((first, rest)) = chars.split_first() else {
+            return Some(String::new());
+        };
+        let prefix = if radius < 1 { OMISSION } else { "" };
+        let postfix = if rest.len() > radius { OMISSION } else { "" };
+        let head = if radius < 1 {
+            String::new()
+        } else {
+            first.to_string()
+        };
+        let tail: String = rest.iter().take(radius).collect();
+        let affix = format!("{head}{tail}");
+        let affix = affix.trim_matches(|c: char| c.is_ascii_whitespace() || c == '\0');
+        return Some(format!("{prefix}{affix}{postfix}"));
     }
     let re = regex::RegexBuilder::new(&regex::escape(phrase))
         .case_insensitive(true)
