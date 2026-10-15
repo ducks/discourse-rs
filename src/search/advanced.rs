@@ -286,6 +286,25 @@ pub struct Advanced {
     pub all_posts: bool,
     /// `include:unlisted`, for those who can see unlisted topics.
     pub include_invisible: bool,
+    /// `@search_pms`: in:messages, in:personal, in:personal-direct,
+    /// group_messages:, a found personal_messages: user.
+    pub search_pms: bool,
+    /// `@search_all_pms`: in:all-pms.
+    pub search_all_pms: bool,
+    /// `@search_all_topics`: in:all.
+    pub search_all_topics: bool,
+    /// The keywords that set the search context, in word order (the last
+    /// one that finds its topic or user wins).
+    pub context_keywords: Vec<ContextKeyword>,
+}
+
+/// A keyword naming the search context.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ContextKeyword {
+    /// `topic:N`, for N above 1.
+    Topic(i64),
+    /// `personal_messages:username`
+    PersonalMessages(String),
 }
 
 /// Parses the term. Filters and keywords not ported yet are refused.
@@ -342,14 +361,27 @@ pub fn process(
                     adv.include_invisible = true;
                 }
             }
-            Some(_) => return Err(Unsupported(unported_keyword(&word)).into()),
+            Some(Keyword::Topic) => {
+                let id: i64 = crate::ruby::to_i(&word["topic:".len()..]);
+                if id > 1 {
+                    adv.context_keywords.push(ContextKeyword::Topic(id));
+                }
+            }
+            Some(Keyword::All) => adv.search_all_topics = true,
+            Some(
+                Keyword::Personal
+                | Keyword::Messages
+                | Keyword::PersonalDirect
+                | Keyword::GroupMessages,
+            ) => adv.search_pms = true,
+            Some(Keyword::AllPms) => adv.search_all_pms = true,
+            Some(Keyword::PersonalMessages) => {
+                let name = word.split_once(':').map_or("", |(_, n)| n);
+                adv.context_keywords
+                    .push(ContextKeyword::PersonalMessages(name.to_string()));
+            }
             None if found => {}
             None => kept.push(word),
-        }
-    }
-    for (filter, _) in &adv.filters {
-        if let Some(reason) = unported_filter(*filter) {
-            return Err(Unsupported(reason).into());
         }
     }
     // search_default_sort_order (SearchSortOrderSiteSetting) when the term
@@ -368,21 +400,6 @@ pub fn process(
     }
     adv.term = kept.join(" ");
     Ok(adv)
-}
-
-fn unported_keyword(_word: &str) -> &'static str {
-    "advanced search keywords (topic:, in:all, in:personal, in:messages, \
-     in:personal-direct, in:all-pms, group_messages:, personal_messages:)"
-}
-
-/// The filters not ported yet, and why.
-fn unported_filter(filter: Filter) -> Option<&'static str> {
-    match filter {
-        Filter::PersonalDirect | Filter::AllPms | Filter::GroupMessages => {
-            Some("personal message searches (in:personal-direct, in:all-pms, group_messages:)")
-        }
-        _ => None,
-    }
 }
 
 #[cfg(test)]

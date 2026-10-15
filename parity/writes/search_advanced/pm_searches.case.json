@@ -1,0 +1,34 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (name, has_messages, created_at, updated_at, visibility_level, members_visibility_level) VALUES ('pmgroup', TRUE, now(), now(), 0, 0)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) SELECT id, 3, now(), now() FROM groups WHERE name = 'pmgroup'",
+    "INSERT INTO topic_allowed_groups (group_id, topic_id) SELECT id, 43 FROM groups WHERE name = 'pmgroup'"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=in%3Amessages"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20in%3Amessages"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20in%3Apersonal"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Apersonal-direct"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20in%3Aall-pms"},
+    {"method": "GET", "path": "/search/query.json?term=group_messages%3Apmgroup"},
+    {"method": "GET", "path": "/search/query.json?term=group_messages%3Anope"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20personal_messages%3Auser1"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20personal_messages%3Auser0"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20personal_messages%3Anobody"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20in%3Aall"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aall%20order%3Alatest"},
+    {"method": "GET", "path": "/search/query.json?term=parity&type_filter=private_messages"},
+    {"method": "GET", "path": "/search/query.json?term=parity&type_filter=all_topics"},
+    {"method": "GET", "path": "/search/query.json?term=parity&search_context%5Btype%5D=private_messages&search_context%5Bid%5D=user1"},
+    {"method": "GET", "path": "/search/query.json?term=parity&search_context%5Btype%5D=private_messages&search_context%5Bid%5D=user0"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=user&search_context%5Bid%5D=User0"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=user&search_context%5Bid%5D=nobody"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20topic%3A35"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20topic%3A43"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20topic%3A1"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20topic%3A44%20in%3Amessages"},
+    {"method": "GET", "path": "/search.json?q=parity%20in%3Amessages"},
+    {"method": "GET", "path": "/search.json?q=fixture%20in%3Aall"}
+  ]
+}

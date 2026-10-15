@@ -16,6 +16,7 @@ use std::time::{Duration, Instant};
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
+use unicode_normalization::UnicodeNormalization;
 
 use crate::Unsupported;
 use crate::avatar::{self, AvatarError};
@@ -44,11 +45,14 @@ pub enum SearchError {
     Categories(CategoriesError),
     TopicList(TopicListError),
     Avatar(AvatarError),
+    /// `Discourse::InvalidAccess`
+    InvalidAccess,
 }
 
 impl std::fmt::Display for SearchError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            SearchError::InvalidAccess => write!(f, "invalid access"),
             SearchError::Db(e) => write!(f, "database: {e}"),
             SearchError::Setting(e) => e.fmt(f),
             SearchError::Unsupported(e) => e.fmt(f),
@@ -115,6 +119,8 @@ pub enum TypeFilter {
     User,
     Tags,
     ExcludeTopics,
+    PrivateMessages,
+    AllTopics,
 }
 
 /// The `Search.new` options the controllers pass.
@@ -132,13 +138,32 @@ pub struct SearchArgs {
     /// A `search_type` was given: `log_query?` may log it (search_logs#term
     /// passes none).
     pub log: bool,
-    /// A topic as the `search_context` (the search menu's "in this
-    /// topic"): its posts matching the term, in post order.
-    pub topic_context: Option<TopicContext>,
+    /// The `search_context` the controller found.
+    pub context: Option<SearchContext>,
+}
+
+/// `@search_context`
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SearchContext {
+    /// A topic (the search menu's "in this topic"): its posts matching the
+    /// term, in post order.
+    Topic(TopicContext),
+    /// A user: their posts, or with private messages, their messages.
+    User(i32),
+}
+
+impl SearchContext {
+    /// The record's id, whatever its kind.
+    pub fn id(&self) -> i32 {
+        match self {
+            SearchContext::Topic(t) => t.id,
+            SearchContext::User(id) => *id,
+        }
+    }
 }
 
 /// A topic the search is scoped to (`Topic === @search_context`).
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TopicContext {
     pub id: i32,
     pub private_message: bool,
@@ -311,7 +336,51 @@ impl Search<'_> {
         self.check_unported()?;
         let clean = clean_term(&args.term);
         let adv = advanced::process(&clean, self.settings, self.guardian)?;
-        let topic_context = args.topic_context;
+        let mut context = args.context;
+        let mut search_pms = adv.search_pms;
+        for keyword in &adv.context_keywords {
+            match keyword {
+                advanced::ContextKeyword::Topic(id) => {
+                    if let Some(topic) = self.visible_topic(*id).await? {
+                        context = Some(SearchContext::Topic(topic));
+                    }
+                }
+                advanced::ContextKeyword::PersonalMessages(name) => {
+                    // User.find_by_username
+                    let user_id: Option<i32> = sqlx::query_scalar(
+                        "SELECT id FROM users WHERE username_lower = $1 LIMIT 1",
+                    )
+                    .bind(name.nfc().collect::<String>().to_lowercase())
+                    .fetch_optional(&mut *self.conn)
+                    .await?;
+                    if let Some(id) = user_id {
+                        search_pms = true;
+                        context = Some(SearchContext::User(id));
+                    }
+                }
+            }
+        }
+        let mut type_filter = args.type_filter;
+        if search_pms || adv.search_all_pms || type_filter == Some(TypeFilter::PrivateMessages) {
+            type_filter = Some(TypeFilter::PrivateMessages);
+            if context.is_none() {
+                context = self.guardian.user_id().map(SearchContext::User);
+            }
+            // can_see_private_messages?(@search_context.id)
+            let allowed = context.is_some_and(|c| {
+                self.guardian.is_admin() || self.guardian.user_id() == Some(c.id())
+            });
+            if !allowed {
+                return Err(SearchError::InvalidAccess);
+            }
+        }
+        if adv.search_all_topics && self.guardian.user_id().is_some() {
+            type_filter = Some(TypeFilter::AllTopics);
+        }
+        let topic_context = match context {
+            Some(SearchContext::Topic(t)) => Some(t),
+            _ => None,
+        };
         // prepare_data: squished (but in a topic), and URLs lose their
         // query string.
         let mut term = match topic_context {
@@ -358,7 +427,7 @@ impl Search<'_> {
             PER_FACET as i64 + 1
         };
         let per_filter = self.settings.get("search_page_size")?.to_i().max(1) as usize;
-        let offset = if args.full_page && args.type_filter.is_some() {
+        let offset = if args.full_page && type_filter.is_some() {
             (args.page - 1) * per_filter as i64
         } else {
             0
@@ -367,7 +436,8 @@ impl Search<'_> {
         let mut run = posts_query::Run {
             adv,
             term,
-            topic: topic_context,
+            context,
+            type_filter,
             category_filter_matched: false,
             limit,
             offset,
@@ -376,7 +446,7 @@ impl Search<'_> {
         // query Postgres rejects ends the search with what it found so far.
         match self
             .find_grouped_results(
-                args.type_filter,
+                type_filter,
                 &mut run,
                 original_term.as_deref(),
                 &mut results,
@@ -426,6 +496,33 @@ impl Search<'_> {
         ))
     }
 
+    /// `Topic.find_by(id:)` when the guardian can see it.
+    pub async fn visible_topic(&mut self, id: i64) -> Result<Option<TopicContext>, SearchError> {
+        let Ok(id) = i32::try_from(id) else {
+            return Ok(None);
+        };
+        let archetype: Option<String> =
+            sqlx::query_scalar("SELECT archetype FROM topics WHERE id = $1 AND deleted_at IS NULL")
+                .bind(id)
+                .fetch_optional(&mut *self.conn)
+                .await?;
+        let Some(archetype) = archetype else {
+            return Ok(None);
+        };
+        if self
+            .guardian
+            .can_see_topic_ids(&mut *self.conn, self.settings, &[id])
+            .await?
+            .is_empty()
+        {
+            return Ok(None);
+        }
+        Ok(Some(TopicContext {
+            id,
+            private_message: archetype == "private_message",
+        }))
+    }
+
     /// `find_grouped_results`
     async fn find_grouped_results(
         &mut self,
@@ -457,8 +554,23 @@ impl Search<'_> {
                 }
             }
             Some(TypeFilter::Topic) => self.topic_search(run, results).await?,
+            Some(TypeFilter::PrivateMessages) => {
+                if self.guardian.user_id().is_none() {
+                    return Err(SearchError::InvalidAccess);
+                }
+                self.aggregate_search(run, results).await?
+            }
+            Some(TypeFilter::AllTopics) => {
+                // private_posts_for_user(nil) raises in Rails.
+                if self.guardian.user_id().is_none() {
+                    return Err(
+                        Unsupported("type_filter=all_topics for an anonymous search").into(),
+                    );
+                }
+                self.aggregate_search(run, results).await?
+            }
             None => {
-                if present && run.topic.is_none() {
+                if present && run.context.is_none() {
                     self.user_search(&term, original_term.unwrap_or(""), results)
                         .await?;
                     self.category_search(&term, results).await?;

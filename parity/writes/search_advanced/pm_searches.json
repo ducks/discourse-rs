@@ -1,0 +1,3339 @@
+{
+  "name": "pm_searches",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=in%3Amessages"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20in%3Amessages"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20in%3Apersonal"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=in%3Apersonal-direct"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20in%3Aall-pms"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=group_messages%3Apmgroup"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=group_messages%3Anope"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20personal_messages%3Auser1"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20personal_messages%3Auser0"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20personal_messages%3Anobody"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20in%3Aall"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=in%3Aall%20order%3Alatest"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity&type_filter=private_messages"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity&type_filter=all_topics"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity&search_context%5Btype%5D=private_messages&search_context%5Bid%5D=user1"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity&search_context%5Btype%5D=private_messages&search_context%5Bid%5D=user0"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture&search_context%5Btype%5D=user&search_context%5Bid%5D=User0"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture&search_context%5Btype%5D=user&search_context%5Bid%5D=nobody"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply%20topic%3A35"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20topic%3A43"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20topic%3A1"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=parity%20topic%3A44%20in%3Amessages"
+    },
+    {
+      "method": "GET",
+      "path": "/search.json?q=parity%20in%3Amessages"
+    },
+    {
+      "method": "GET",
+      "path": "/search.json?q=fixture%20in%3Aall"
+    }
+  ],
+  "started_at": "2026-10-15T15:06:16.444112",
+  "transaction_started_at": "2026-10-15T15:06:15.516161",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "grouped_search_result": null
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity in:messages",
+          "search_log_id": 237,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity in:personal",
+          "search_log_id": 238,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "in:personal-direct",
+          "search_log_id": 239,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity in:all-pms",
+          "search_log_id": 240,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "group_messages:pmgroup",
+          "search_log_id": 241,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            50
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "group_messages:nope",
+          "search_log_id": 242,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity personal_messages:user1",
+          "search_log_id": 243,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 42,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.580Z",
+            "like_count": 0,
+            "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "post_number": 1,
+            "topic_id": 38
+          },
+          {
+            "id": 40,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.358Z",
+            "like_count": 0,
+            "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "post_number": 1,
+            "topic_id": 37
+          },
+          {
+            "id": 46,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "like_count": 1,
+            "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "post_number": 1,
+            "topic_id": 41
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 34,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: pinned and closed",
+            "id": 37,
+            "title": "Parity fixture: pinned and closed",
+            "slug": "parity-fixture-pinned-and-closed",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.325Z",
+            "last_posted_at": "2026-09-30T07:28:29.358Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.358Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": true,
+            "unpinned": null,
+            "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "visible": true,
+            "closed": true,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [],
+            "tags_descriptions": {},
+            "category_id": 2,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:30.067Z",
+            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": true,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              },
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity personal_messages:nobody",
+          "search_log_id": 244,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            42,
+            40,
+            46
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          },
+          {
+            "id": 42,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.580Z",
+            "like_count": 0,
+            "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "post_number": 1,
+            "topic_id": 38
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 34,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": true,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity in:all",
+          "search_log_id": 245,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            51,
+            50,
+            48,
+            42
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 52,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "like_count": 0,
+            "blurb": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "post_number": 5,
+            "topic_id": 35
+          },
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 49,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.295Z",
+            "like_count": 0,
+            "blurb": "A reply from user0 inside the private message, long enough too.",
+            "post_number": 2,
+            "topic_id": 42
+          },
+          {
+            "id": 46,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "like_count": 1,
+            "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "post_number": 1,
+            "topic_id": 41
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:30.067Z",
+            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": true,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              },
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": true,
+          "more_users": null,
+          "more_categories": null,
+          "term": "in:all order:latest",
+          "search_log_id": 246,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            52,
+            51,
+            50,
+            49,
+            46
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity",
+          "search_log_id": 247,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          },
+          {
+            "id": 42,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.580Z",
+            "like_count": 0,
+            "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "post_number": 1,
+            "topic_id": 38
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 34,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": true,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity",
+          "search_log_id": 247,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            51,
+            50,
+            48,
+            42
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity",
+          "search_log_id": 247,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 46,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "like_count": 1,
+            "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "post_number": 1,
+            "topic_id": 41
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:30.067Z",
+            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": true,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              },
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "fixture",
+          "search_log_id": 248,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            46
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          },
+          {
+            "id": 37,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-09-30T07:28:29.179Z",
+            "like_count": 0,
+            "blurb": "Reply two from user2, also long enough to pass the minimum length check.",
+            "post_number": 3,
+            "topic_id": 35
+          },
+          {
+            "id": 38,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.251Z",
+            "like_count": 0,
+            "blurb": "Reply three from admin, also long enough to pass the minimum length check.",
+            "post_number": 4,
+            "topic_id": 35
+          },
+          {
+            "id": 52,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "like_count": 0,
+            "blurb": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "post_number": 5,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "reply topic:35",
+          "search_log_id": 249,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            36,
+            37,
+            38,
+            52
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity topic:43",
+          "search_log_id": 250,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 42,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.580Z",
+            "like_count": 0,
+            "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "post_number": 1,
+            "topic_id": 38
+          },
+          {
+            "id": 40,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.358Z",
+            "like_count": 0,
+            "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "post_number": 1,
+            "topic_id": 37
+          },
+          {
+            "id": 46,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "like_count": 1,
+            "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "post_number": 1,
+            "topic_id": 41
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 34,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: pinned and closed",
+            "id": 37,
+            "title": "Parity fixture: pinned and closed",
+            "slug": "parity-fixture-pinned-and-closed",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.325Z",
+            "last_posted_at": "2026-09-30T07:28:29.358Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.358Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": true,
+            "unpinned": null,
+            "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "visible": true,
+            "closed": true,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [],
+            "tags_descriptions": {},
+            "category_id": 2,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:30.067Z",
+            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": true,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              },
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity topic:1",
+          "search_log_id": 251,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            42,
+            40,
+            46
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": false,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": false,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": false,
+            "last_read_post_number": 1,
+            "unread": 0,
+            "new_posts": 1,
+            "unread_posts": 1,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": true,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "parity in:messages",
+          "search_log_id": 252,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            51,
+            50,
+            48
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 35,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "like_count": 0,
+            "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "post_number": 1,
+            "topic_id": 35
+          },
+          {
+            "id": 51,
+            "name": "User2",
+            "username": "user2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "created_at": "2026-10-01T15:39:51.640Z",
+            "like_count": 0,
+            "blurb": "A private message from user2 to user1 that user1 archives.",
+            "post_number": 1,
+            "topic_id": 44
+          },
+          {
+            "id": 50,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-10-01T15:39:51.514Z",
+            "like_count": 0,
+            "blurb": "A private message from admin to two users, so the list shows three participants.",
+            "post_number": 1,
+            "topic_id": 43
+          },
+          {
+            "id": 48,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-10-01T15:39:51.142Z",
+            "like_count": 0,
+            "blurb": "A private message from user1 to user0, long enough to be a real post body.",
+            "post_number": 1,
+            "topic_id": 42
+          },
+          {
+            "id": 42,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.580Z",
+            "like_count": 0,
+            "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "post_number": 1,
+            "topic_id": 38
+          },
+          {
+            "id": 40,
+            "name": "Admin",
+            "username": "admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "created_at": "2026-09-30T07:28:29.358Z",
+            "like_count": 0,
+            "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "post_number": 1,
+            "topic_id": 37
+          },
+          {
+            "id": 46,
+            "name": "User0",
+            "username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "like_count": 1,
+            "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "post_number": 1,
+            "topic_id": 41
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": false,
+            "last_read_post_number": 2,
+            "unread": 0,
+            "new_posts": 3,
+            "unread_posts": 3,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 2,
+            "bookmarked": true,
+            "liked": false,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 44,
+            "title": "Parity fixture: PM user2 to user1, archived",
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.604Z",
+            "last_posted_at": "2026-10-01T15:39:51.640Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.640Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": false,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": false,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2,
+            "reply_count": 0,
+            "highest_post_number": 2,
+            "created_at": "2026-10-01T15:39:51.071Z",
+            "last_posted_at": "2026-10-01T15:39:51.295Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.295Z",
+            "archetype": "private_message",
+            "unseen": false,
+            "last_read_post_number": 1,
+            "unread": 0,
+            "new_posts": 1,
+            "unread_posts": 1,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": true,
+            "liked": false,
+            "category_id": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": false,
+            "last_read_post_number": 1,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 3,
+            "bookmarked": false,
+            "liked": false,
+            "tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 34,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: pinned and closed",
+            "id": 37,
+            "title": "Parity fixture: pinned and closed",
+            "slug": "parity-fixture-pinned-and-closed",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:29.325Z",
+            "last_posted_at": "2026-09-30T07:28:29.358Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.358Z",
+            "archetype": "regular",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": true,
+            "visible": true,
+            "closed": true,
+            "archived": false,
+            "notification_level": 1,
+            "bookmarked": true,
+            "liked": false,
+            "tags": [],
+            "tags_descriptions": {},
+            "category_id": 2,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: liked and archived",
+            "id": 41,
+            "title": "Parity fixture: liked and archived",
+            "slug": "parity-fixture-liked-and-archived",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "created_at": "2026-09-30T07:28:30.067Z",
+            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "archetype": "regular",
+            "unseen": true,
+            "last_read_post_number": null,
+            "unread": 0,
+            "new_posts": 0,
+            "unread_posts": 0,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": true,
+            "notification_level": 0,
+            "bookmarked": false,
+            "liked": false,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              },
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "fixture in:all",
+          "search_log_id": 253,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            35,
+            51,
+            50,
+            48,
+            42,
+            40,
+            46
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "search_logs": {
+      "inserted": [
+        {
+          "id": 236,
+          "term": "in:messages",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.461427",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 237,
+          "term": "parity in:messages",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.479457",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 238,
+          "term": "parity in:personal",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.616753",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 239,
+          "term": "in:personal-direct",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.654793",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 240,
+          "term": "parity in:all-pms",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.690876",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 241,
+          "term": "group_messages:pmgroup",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.726962",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 242,
+          "term": "group_messages:nope",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.760753",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 243,
+          "term": "parity personal_messages:user1",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.785067",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 244,
+          "term": "parity personal_messages:nobody",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.847759",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 245,
+          "term": "parity in:all",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.913395",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 246,
+          "term": "in:all order:latest",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:16.973384",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 247,
+          "term": "parity",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.120003",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 248,
+          "term": "fixture",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.167611",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 249,
+          "term": "reply topic:35",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.255818",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 250,
+          "term": "parity topic:43",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.3329",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 251,
+          "term": "parity topic:1",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.360992",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 252,
+          "term": "parity in:messages",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.435066",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 2,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 253,
+          "term": "fixture in:all",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:06:17.468609",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 2,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 333,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kSj5dPhA1ckZF+opl3ddPVjvG9U=",
+            "created_at": "2026-10-15T15:06:15.84341",
+            "rotated_at": "2026-10-15T15:06:15.842627",
+            "updated_at": "2026-10-15T15:06:15.84341",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kSj5dPhA1ckZF+opl3ddPVjvG9U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 333,
+            "seen_at": "2026-10-15T15:06:16.451429",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kSj5dPhA1ckZF+opl3ddPVjvG9U=",
+            "created_at": "2026-10-15T15:06:15.84341",
+            "rotated_at": "2026-10-15T15:06:15.842627",
+            "updated_at": "2026-10-15T15:06:15.84341",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kSj5dPhA1ckZF+opl3ddPVjvG9U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "search_logs": 236
+  },
+  "setup": [
+    "INSERT INTO groups (name, has_messages, created_at, updated_at, visibility_level, members_visibility_level) VALUES ('pmgroup', TRUE, now(), now(), 0, 0)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) SELECT id, 3, now(), now() FROM groups WHERE name = 'pmgroup'",
+    "INSERT INTO topic_allowed_groups (group_id, topic_id) SELECT id, 43 FROM groups WHERE name = 'pmgroup'"
+  ],
+  "recorded_from": {
+    "case": "3fc72dd6a7370832566506f9d2b4ed8842ccdea4f9468e8edaa508448a6a8bc6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

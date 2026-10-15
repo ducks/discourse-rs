@@ -206,11 +206,9 @@ async fn secures_and_ranks_results() {
     assert!(pos(35) < pos(40), "open before closed: {ids:?}");
     assert!(pos(40) < pos(46), "closed before archived: {ids:?}");
 
-    // Syntax not ported yet is refused rather than approximated.
-    for q in ["fixture%20personal_messages:user1"] {
-        let (status, _, _) = get(&db.pool, &format!("/search.json?q={q}")).await;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{q}");
-    }
+    // An anonymous search of someone's messages is invalid access.
+    let (status, _, _) = get(&db.pool, "/search.json?q=fixture%20personal_messages:user1").await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
 }
 
 #[tokio::test]
