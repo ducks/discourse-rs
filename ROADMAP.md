@@ -1520,7 +1520,7 @@ route table has been made, so this list may be short.
     notify_moved_posts; chronological order, freeze_original, messages
     with participants), 188e. ~~`feat/topic-edits-merge`~~ (done) S (POST
     /t/:id/merge-topic: every post through 188d's mover), 188f.
-    `feat/topic-edits-dismiss` M (PUT /topics/reset-new,
+    ~~`feat/topic-edits-dismiss`~~ (done) M (PUT /topics/reset-new,
     /topics/pm-reset-new and PUT /topics/bulk's dismiss_topics,
     dismiss_posts and destroy_post_timing, `filter=unread`), 188g.
     `feat/topic-edits-bulk` M (the rest of TopicsBulkAction: change

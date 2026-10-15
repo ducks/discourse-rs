@@ -1,0 +1,47 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "explode"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "group": "x"
+        }
+      }
+    }
+  ]
+}

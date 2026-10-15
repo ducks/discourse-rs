@@ -168,6 +168,7 @@ pub mod topic_timer;
 pub mod topic_tracking_report;
 pub mod topic_tracking_state;
 pub mod topic_view;
+pub mod topics_bulk;
 pub mod upload_references;
 pub mod uploads;
 pub mod url;
