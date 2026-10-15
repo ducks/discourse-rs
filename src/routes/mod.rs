@@ -98,6 +98,7 @@ mod user_activity;
 mod user_api_key_auth;
 mod user_api_key_device;
 mod user_api_keys;
+mod user_avatar_writes;
 mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
@@ -2176,6 +2177,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/letter_avatar/{username}/{size}/{version}",
             get(user_avatars::show_letter),
+        )
+        .route(
+            "/user_avatar/{hostname}/{username}/{size}/{version}",
+            get(user_avatars::show),
         )
         .route(
             "/assets/moment-locale/{name}",

@@ -180,6 +180,49 @@ pub async fn generate_topic_thumbnails(
     Ok(())
 }
 
+/// A thumbnail's failure as an AppError, an Unsupported kept as one.
+pub fn app_error(e: CookError) -> crate::AppError {
+    match e {
+        CookError::App(e) => e,
+        CookError::Unsupported(u) => u.into(),
+        other => crate::AppError::from(other),
+    }
+}
+
+/// `Upload#get_optimized_image(size, size)` for an avatar: the square
+/// thumbnail, made when missing.
+pub async fn get_optimized_image(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    store: &FileStore,
+    upload: &Upload,
+    size: i32,
+) -> Result<Option<Optimized>, crate::AppError> {
+    create_for(conn, settings, store, upload, size, size, false)
+        .await
+        .map_err(app_error)
+}
+
+/// `Jobs::CreateAvatarThumbnails`: the upload's optimized image at each
+/// of Discourse.avatar_sizes.
+pub async fn create_avatar_thumbnails(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    store: &FileStore,
+    upload_id: i32,
+) -> Result<(), crate::AppError> {
+    let Some(upload) = Upload::find(&mut *conn, upload_id).await? else {
+        return Ok(());
+    };
+    for size in crate::avatar::avatar_sizes(settings)? {
+        let size = i32::try_from(size).unwrap_or(i32::MAX);
+        create_for(&mut *conn, settings, store, &upload, size, size, false)
+            .await
+            .map_err(app_error)?;
+    }
+    Ok(())
+}
+
 /// `OptimizedImage.create_for(upload, width, height, crop:)`: the existing
 /// thumbnail of that size and extension, else one made from the stored
 /// original. None when it cannot be made (Rails logs and moves on).

@@ -524,6 +524,83 @@ pub struct Account {
     pub titles: Vec<String>,
     /// `currentUser.can_delete_account`
     pub viewer_can_delete_account: bool,
+    /// `currentUser.can_upload_avatar`
+    pub viewer_can_upload_avatar: bool,
+    /// The selectable_avatars setting's uploads, as the client setting
+    /// holds them (their urls).
+    pub selectable_avatars: Vec<String>,
+    /// `siteSettings.site_logo_small_url`
+    pub site_logo_small_url: Option<String>,
+}
+
+/// What the avatar selector modal (modal/avatar-selector.gjs) reads, for
+/// static/js/preferences.js to draw it: the user's templates and upload
+/// ids, what the viewer may choose and the strings.
+fn avatar_selector(p: &Prefs, a: &Account) -> Result<Value, AppError> {
+    let cx = p.cx;
+    let u = p.u;
+    let s = p.s;
+    // allowsImages(staff): an image type among the authorized extensions.
+    let mut extensions = s.get("authorized_extensions")?.to_s();
+    if p.viewer_staff {
+        extensions.push('|');
+        extensions.push_str(&s.get("authorized_extensions_for_staff")?.to_s());
+    }
+    let allows_images = extensions.split('|').any(|e| {
+        let e = e.trim().trim_start_matches('.').to_lowercase();
+        e == "*"
+            || matches!(
+                e.as_str(),
+                "png" | "jpg" | "jpeg" | "gif" | "svg" | "ico" | "heic" | "heif" | "webp" | "avif"
+            )
+    });
+    let allow_upload = a.viewer_can_upload_avatar && allows_images;
+    let gravatar_name = s.get("gravatar_name")?.to_s();
+    Ok(json!({
+        "username": u["username"],
+        "user": {
+            "id": u["id"],
+            "avatar_template": u["avatar_template"],
+            "system_avatar_template": u["system_avatar_template"],
+            "system_avatar_upload_id": u["system_avatar_upload_id"],
+            "gravatar_avatar_template": u["gravatar_avatar_template"],
+            "gravatar_avatar_upload_id": u["gravatar_avatar_upload_id"],
+            "custom_avatar_template": u["custom_avatar_template"],
+            "custom_avatar_upload_id": u["custom_avatar_upload_id"],
+            "use_logo_small_as_avatar": u["use_logo_small_as_avatar"],
+            "trust_level": u["trust_level"],
+            "admin": u["admin"],
+            "moderator": u["moderator"],
+            "email": u["email"],
+        },
+        "selectable_avatars_mode": s.get("selectable_avatars_mode")?.to_s(),
+        "selectable_avatars": a.selectable_avatars,
+        "site_logo_small_url": a.site_logo_small_url,
+        "allow_upload": allow_upload,
+        "allow_gravatar": allow_upload && s.get("gravatar_enabled")?.truthy(),
+        "labels": {
+            "title": t(cx, "user.change_avatar.title"),
+            "use_custom": t(cx, "user.change_avatar.use_custom"),
+            "logo_small": t(cx, "user.change_avatar.logo_small"),
+            "letter_based": t(cx, "user.change_avatar.letter_based"),
+            "gravatar": t_with(cx, "user.change_avatar.gravatar", &[
+                ("gravatarName", &gravatar_name),
+                ("gravatarBaseUrl", &s.get("gravatar_base_url")?.to_s()),
+                ("gravatarLoginUrl", &s.get("gravatar_login_url")?.to_s()),
+            ]),
+            "refresh_gravatar_title": t_with(cx, "user.change_avatar.refresh_gravatar_title", &[("gravatarName", &gravatar_name)]),
+            "gravatar_failed": t_with(cx, "user.change_avatar.gravatar_failed", &[("gravatarName", &gravatar_name)]),
+            "uploaded_avatar": t(cx, "user.change_avatar.uploaded_avatar"),
+            "uploaded_avatar_empty": t(cx, "user.change_avatar.uploaded_avatar_empty"),
+            "upload_title": t(cx, "user.change_avatar.upload_title"),
+            "image_is_not_a_square": t(cx, "user.change_avatar.image_is_not_a_square"),
+            "upload": t(cx, "upload"),
+            "uploading": t(cx, "uploading"),
+            "save": t(cx, "save"),
+            "cancel": t(cx, "cancel"),
+            "close": t(cx, "modal.close"),
+        },
+    }))
 }
 
 /// preferences/account.gjs
@@ -593,7 +670,10 @@ pub fn account(p: &Prefs, a: &Account) -> Result<(String, Map<String, Value>), A
                 "btn-default pad-left",
                 Some("pencil"),
                 None,
-                " id=\"edit-avatar\" data-unported=\"choosing an avatar (131)\""
+                &format!(
+                    " id=\"edit-avatar\" data-avatar-selector=\"{}\"",
+                    escape(&avatar_selector(p, a)?.to_string())
+                )
             ),
         ));
     }

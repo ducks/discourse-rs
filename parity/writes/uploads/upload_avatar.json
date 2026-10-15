@@ -1,0 +1,235 @@
+{
+  "name": "upload_avatar",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "avatar",
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:33:04.14169",
+  "transaction_started_at": "2026-10-15T14:33:02.872703",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//localhost:3049/uploads/default/original/1X/07bb55968f7e656394e938a39469e33a29a2d698.png",
+        "original_filename": "small.png",
+        "filesize": 28799,
+        "width": 288,
+        "height": 288,
+        "thumbnail_width": 288,
+        "thumbnail_height": 288,
+        "extension": "png",
+        "short_url": "upload://16oHF6nTSk1Dx0vxYTUA2GXYlG8.png",
+        "short_path": "/uploads/short-url/16oHF6nTSk1Dx0vxYTUA2GXYlG8.png",
+        "retain_hours": null,
+        "human_filesize": "28.1 KB",
+        "dominant_color": "35504F",
+        "thumbnail": null
+      }
+    }
+  ],
+  "changes": {
+    "optimized_images": {
+      "inserted": [
+        {
+          "id": 46,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_24x24.png",
+          "etag": null,
+          "sha1": "71a872160749fb8e1fb1c0c75e2ab846c69d5ec0",
+          "width": 24,
+          "height": 24,
+          "version": 2,
+          "filesize": 1329,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.159248",
+          "updated_at": "2026-10-15T14:33:05.16574"
+        },
+        {
+          "id": 47,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_48x48.png",
+          "etag": null,
+          "sha1": "9e5bfa23397f4896e1500b8f5dcdb10c03eb9609",
+          "width": 48,
+          "height": 48,
+          "version": 2,
+          "filesize": 2634,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.322944",
+          "updated_at": "2026-10-15T14:33:05.330082"
+        },
+        {
+          "id": 48,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_72x72.png",
+          "etag": null,
+          "sha1": "59598dc2b6eeaac3916dc1a4b1d52e74b495d6f4",
+          "width": 72,
+          "height": 72,
+          "version": 2,
+          "filesize": 3761,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.490889",
+          "updated_at": "2026-10-15T14:33:05.497089"
+        },
+        {
+          "id": 49,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_96x96.png",
+          "etag": null,
+          "sha1": "8a6fbe3e595bb8464daa1ae4931a89aad538e345",
+          "width": 96,
+          "height": 96,
+          "version": 2,
+          "filesize": 5554,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.682088",
+          "updated_at": "2026-10-15T14:33:05.687781"
+        },
+        {
+          "id": 50,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_144x144.png",
+          "etag": null,
+          "sha1": "c883ef803df0becf725c9d25991225c6295e0ce5",
+          "width": 144,
+          "height": 144,
+          "version": 2,
+          "filesize": 9746,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.956649",
+          "updated_at": "2026-10-15T14:33:05.962796"
+        },
+        {
+          "id": 51,
+          "url": "/uploads/default/optimized/1X/07bb55968f7e656394e938a39469e33a29a2d698_2_288x288.png",
+          "etag": null,
+          "sha1": "9e101334ae6766067bd65873b5ebc5a60d3c59d8",
+          "width": 288,
+          "height": 288,
+          "version": 2,
+          "filesize": 33260,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:06.496885",
+          "updated_at": "2026-10-15T14:33:06.503955"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/07bb55968f7e656394e938a39469e33a29a2d698.png",
+          "etag": null,
+          "sha1": "07bb55968f7e656394e938a39469e33a29a2d698",
+          "width": 288,
+          "height": 288,
+          "origin": null,
+          "secure": false,
+          "user_id": 5,
+          "animated": false,
+          "filesize": 28799,
+          "extension": "png",
+          "created_at": "2026-10-15T14:33:05.034192",
+          "updated_at": "2026-10-15T14:33:05.042792",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "35504F",
+          "thumbnail_width": 288,
+          "thumbnail_height": 288,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zNLoURmc3cFJLcBKW81jbzo+M/E=",
+            "created_at": "2026-10-15T14:33:03.43282",
+            "rotated_at": "2026-10-15T14:33:03.431718",
+            "updated_at": "2026-10-15T14:33:03.43282",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zNLoURmc3cFJLcBKW81jbzo+M/E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:33:04.158561",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zNLoURmc3cFJLcBKW81jbzo+M/E=",
+            "created_at": "2026-10-15T14:33:03.43282",
+            "rotated_at": "2026-10-15T14:33:03.431718",
+            "updated_at": "2026-10-15T14:33:03.43282",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zNLoURmc3cFJLcBKW81jbzo+M/E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 5,
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:05.057537"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "create_avatar_thumbnails",
+      {
+        "upload_id": 36
+      }
+    ]
+  ],
+  "next_ids": {
+    "optimized_images": 46,
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "1fc356b2ca92d940ee4bed9507722ac19667602a0358973bc960375f18c0a7df",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

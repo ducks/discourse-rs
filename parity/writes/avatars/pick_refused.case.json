@@ -1,0 +1,38 @@
+{
+  "user": "user1",
+  "settings": {
+    "gravatar_enabled": false
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "upload_id": "34", "type": "gravatar" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "upload_id": "34", "type": "banana" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "upload_id": "99999", "type": "custom" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "upload_id": "34", "type": "custom" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user2/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/nobody/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    }
+  ]
+}

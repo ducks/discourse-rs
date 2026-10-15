@@ -32,6 +32,9 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/fonts/")
         || path.starts_with("/highlight-js/")
         || path.starts_with("/letter_avatar_proxy/")
+        // UserAvatarsController#show and #show_letter
+        || path.starts_with("/letter_avatar/")
+        || (path.starts_with("/user_avatar/") && !path.contains("/refresh_gravatar"))
         || path.starts_with("/images/")
         || path.starts_with("/uploads/")
         // EmailController

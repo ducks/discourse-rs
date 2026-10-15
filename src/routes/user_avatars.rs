@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use axum::body::Body;
 use axum::extract::{Path, State};
-use axum::http::{HeaderValue, StatusCode, Uri, header};
+use axum::http::{HeaderMap, HeaderValue, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use sha1::{Digest, Sha1};
 
@@ -124,19 +124,183 @@ pub async fn show_letter(State(state): State<AppState>, uri: Uri) -> Result<Resp
     // A failed resize (an unsafe letter) leaves no file: File.ctime raises
     // and the request fails.
     let bytes = tokio::fs::read(&path).await?;
-    let ctime = {
-        use std::os::unix::fs::MetadataExt;
-        tokio::fs::metadata(&path).await?.ctime()
-    };
-    let modified = chrono::DateTime::from_timestamp(ctime, 0)
-        .unwrap_or_default()
-        .format("%a, %d %b %Y %H:%M:%S GMT")
-        .to_string();
     Ok(png_modified(
         bytes,
         "max-age=31556952, public, immutable",
-        HeaderValue::from_str(&modified)?,
+        HeaderValue::from_str(&ctime_httpdate(&path).await?)?,
     ))
+}
+
+/// `GET /user_avatar/:hostname/:username/:size/:version.png` (show): the
+/// user's avatar upload at that size, made on demand. One site, so any
+/// hostname is this one (`with_hostname(raise_on_missing: false)`).
+pub async fn show(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    // The route's constraints: hostname [\w.-]+, username
+    // RouteFormat.username, size \d+, the version a segment before `.png`.
+    let raw: Vec<&str> = uri.path().rsplitn(5, '/').collect();
+    let [file, size, username, hostname, _] = raw[..] else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let word = |s: &str, extra: &[u8]| {
+        !s.is_empty()
+            && s.bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_' || extra.contains(&b))
+    };
+    let version = file
+        .strip_suffix(".png")
+        .filter(|v| !v.is_empty() && !v.contains('.'));
+    let (true, true, true, Some(version)) = (
+        word(hostname, b".-"),
+        word(username, b"%.-"),
+        !size.is_empty() && size.bytes().all(|b| b.is_ascii_digit()),
+        version,
+    ) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let username = percent_decode(username);
+    let version = percent_decode(version);
+
+    let mut conn = state.pool.acquire().await?;
+    let user: Option<(String, Option<i32>)> = sqlx::query_as(
+        "SELECT username_lower, uploaded_avatar_id FROM users WHERE username_lower = $1",
+    )
+    .bind(username.to_lowercase())
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((username_lower, uploaded_avatar_id)) = user else {
+        return render_blank(&state).await;
+    };
+    // `upload_id, version = params[:version].split("_")`
+    let mut parts = version.split('_');
+    let upload_id = crate::ruby::to_i(parts.next().unwrap_or(""));
+    let version = parts.next().map_or(
+        i64::from(crate::optimized_images::VERSION),
+        crate::ruby::to_i,
+    );
+    if version > i64::from(crate::optimized_images::VERSION) || upload_id <= 0 {
+        return render_blank(&state).await;
+    }
+    let size = size.parse::<i64>().unwrap_or(i64::MAX);
+    if !(8..=1000).contains(&size) {
+        return render_blank(&state).await;
+    }
+    let (upload_id, size) = (i32::try_from(upload_id).unwrap_or(i32::MAX), size as i32);
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &settings)?;
+
+    let in_user_avatar: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM user_avatars a JOIN users u ON u.id = a.user_id \
+         WHERE u.username_lower = $1 AND (a.gravatar_upload_id = $2 OR a.custom_upload_id = $2))",
+    )
+    .bind(&username_lower)
+    .bind(upload_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let mut upload = if in_user_avatar {
+        crate::optimized_images::Upload::find(&mut conn, upload_id).await?
+    } else {
+        None
+    };
+    let uploaded_avatar = match uploaded_avatar_id {
+        Some(id) => crate::optimized_images::Upload::find(&mut conn, id).await?,
+        None => None,
+    };
+    if upload.is_none() && uploaded_avatar_id == Some(upload_id) {
+        upload = uploaded_avatar.clone();
+    }
+    let Some(upload) = upload else {
+        if let Some(current) = uploaded_avatar {
+            // UserAvatar.local_avatar_url for the current avatar.
+            let location = format!(
+                "{}/user_avatar/{hostname}/{}/{size}/{}_{}.png",
+                state.config.globals.relative_url_root(),
+                crate::avatar::encode_component(&username_lower),
+                current.id,
+                crate::optimized_images::VERSION
+            );
+            return Ok(found(&headers, &location));
+        }
+        return render_blank(&state).await;
+    };
+    // get_optimized_image: an SVG is served as it is.
+    let (url, attachment) = if upload.extension.as_deref() == Some("svg") {
+        (upload.url.clone(), true)
+    } else {
+        match crate::optimized_images::get_optimized_image(
+            &mut conn, &settings, &store, &upload, size,
+        )
+        .await?
+        {
+            Some(optimized) => (optimized.url, false),
+            None => return render_blank(&state).await,
+        }
+    };
+    let Some(path) = store.path_for(&url) else {
+        return render_blank(&state).await;
+    };
+    let bytes = match tokio::fs::read(&path).await {
+        Ok(bytes) => bytes,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return render_blank(&state).await,
+        Err(e) => return Err(e.into()),
+    };
+    let mut response = png_modified(
+        bytes,
+        "max-age=31556952, public, immutable",
+        HeaderValue::from_str(&ctime_httpdate(&path).await?)?,
+    );
+    if attachment {
+        // FileHelper.is_inline_safe? is false for SVG.
+        let headers = response.headers_mut();
+        headers.insert(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_static("sandbox;"),
+        );
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("image/svg+xml"),
+        );
+        headers.insert(
+            header::CONTENT_DISPOSITION,
+            HeaderValue::from_str(&format!(
+                "attachment; filename=\"{}\"",
+                path.file_name().unwrap_or_default().to_string_lossy()
+            ))?,
+        );
+    }
+    Ok(response)
+}
+
+/// `redirect_to` a site path: made absolute with the request's host.
+fn found(headers: &HeaderMap, location: &str) -> Response {
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    let mut response = (
+        StatusCode::FOUND,
+        [(header::LOCATION, format!("http://{host}{location}"))],
+    )
+        .into_response();
+    response.headers_mut().insert(
+        header::ACCESS_CONTROL_ALLOW_ORIGIN,
+        HeaderValue::from_static("*"),
+    );
+    response
+}
+
+/// `File.ctime(path).httpdate`
+async fn ctime_httpdate(path: &FsPath) -> std::io::Result<String> {
+    use std::os::unix::fs::MetadataExt;
+    let ctime = tokio::fs::metadata(path).await?.ctime();
+    Ok(chrono::DateTime::from_timestamp(ctime, 0)
+        .unwrap_or_default()
+        .format("%a, %d %b %Y %H:%M:%S GMT")
+        .to_string())
 }
 
 /// A path segment, percent-encoded so a decoded `/` or `..` stays inside

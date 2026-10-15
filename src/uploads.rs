@@ -5,7 +5,7 @@
 //! UploadCreator's steps (conversion to JPEG, re-encoding, orientation,
 //! optimization, downsizing) with the in-process tools of src/images.rs,
 //! which make Rails' decisions but not always its bytes. Refused: SVG
-//! cleaning, HEIF conversion, cropped upload types other than custom emoji.
+//! cleaning, HEIF conversion, cropping profile and card backgrounds.
 
 use std::path::Path;
 
@@ -179,6 +179,10 @@ struct ImageOpts {
     recompress_quality: u8,
     /// should_crop?: a custom emoji (not animated) is fitted in 100x100.
     crop_custom_emoji: bool,
+    /// should_crop? for an avatar: `OptimizedImage.resize` to the largest
+    /// of Discourse.avatar_sizes, animated or not, and the JPEG quality it
+    /// writes at (image_preview_jpg_quality).
+    crop_avatar: Option<(u32, u8)>,
     /// An admin asset type or a topic's OpenGraph image: never replaced
     /// by a JPEG (`replace_with_jpeg_if_sufficiently_smaller!`).
     keep_format: bool,
@@ -237,6 +241,15 @@ fn process_image(
         if opts.crop_custom_emoji && !info.animated {
             let cropped = images::downsize_to_fit(bytes, info.format, 100, 100)
                 .ok_or(ImageRefusal::OptimizeFailure)?;
+            *info = extract_image_info(&cropped, opts)?;
+            *bytes = cropped;
+        }
+        // crop! (avatar): the image filled into a square of the largest
+        // avatar size from its first frame; a failed resize leaves the
+        // file as it was.
+        if let Some((size, quality)) = opts.crop_avatar
+            && let Some(cropped) = images::thumbnail(bytes, info.format, size, size, false, quality)
+        {
             *info = extract_image_info(&cropped, opts)?;
             *bytes = cropped;
         }
@@ -346,13 +359,13 @@ pub async fn create(
     if up.bytes.is_empty() {
         return Ok(Outcome::Invalid(vec![t("upload.empty")]));
     }
-    if up.upload_type == "avatar" {
-        return Err(Unsupported("avatar uploads").into());
+    let detected = detect(up.bytes);
+    if up.upload_type == "avatar" && detected == Some(ImageType::Ico) {
+        return Ok(Outcome::Invalid(vec![t("upload.ico_as_avatar")]));
     }
     if s.get("secure_uploads")?.truthy() {
         return Err(Unsupported("secure uploads").into());
     }
-    let detected = detect(up.bytes);
     let is_image = !up.for_theme
         && (is_supported_image(up.filename)
             || detected.is_some_and(|d| is_supported_image(&format!("test.{}", d.name()))));
@@ -369,8 +382,10 @@ pub async fn create(
                 )]));
             }
         }
-        if TYPES_TO_CROP.contains(&up.upload_type) && up.upload_type != "custom_emoji" {
-            return Err(Unsupported("cropped upload types").into());
+        if TYPES_TO_CROP.contains(&up.upload_type)
+            && !matches!(up.upload_type, "custom_emoji" | "avatar")
+        {
+            return Err(Unsupported("cropping profile and card backgrounds (139)").into());
         }
         if !s.get("strip_image_metadata")?.truthy() {
             return Err(Unsupported("keeping image metadata (strip_image_metadata off)").into());
@@ -390,6 +405,16 @@ pub async fn create(
             png_to_jpg_quality: quality("png_to_jpg_quality")?,
             recompress_quality: quality("recompress_original_jpg_quality")?,
             crop_custom_emoji: up.upload_type == "custom_emoji",
+            crop_avatar: match up.upload_type {
+                "avatar" => Some((
+                    crate::avatar::avatar_sizes(s)?
+                        .into_iter()
+                        .max()
+                        .unwrap_or(0),
+                    quality("image_preview_jpg_quality")?,
+                )),
+                _ => None,
+            },
             keep_format: up.upload_type == "topic_og_image"
                 || ADMIN_ASSET_TYPES.contains(&up.upload_type),
         };
@@ -548,6 +573,14 @@ pub async fn create(
     .bind(&color)
     .execute(&mut *conn)
     .await?;
+    if image_type.is_some() && up.upload_type == "avatar" {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "create_avatar_thumbnails",
+            serde_json::json!({ "upload_id": id }),
+        )
+        .await?;
+    }
     sqlx::query(
         "INSERT INTO user_uploads (user_id, upload_id, created_at) \
          SELECT $1, $2, clock_timestamp() \
@@ -701,17 +734,44 @@ pub async fn serialize(
         Some(e) => format!("{base62}.{e}"),
         None => base62.clone(),
     };
-    let thumbnail: Option<i32> = sqlx::query_scalar(
-        "SELECT id FROM optimized_images WHERE upload_id = $1 AND width = $2 AND height = $3 LIMIT 1",
-    )
-    .bind(u.id)
-    .bind(u.thumbnail_width)
-    .bind(u.thumbnail_height)
-    .fetch_optional(&mut *conn)
-    .await?;
-    if thumbnail.is_some() {
-        return Err(Unsupported("serializing upload thumbnails").into());
+    // `has_one :thumbnail` (UploadThumbnailSerializer), when create_thumbnails
+    // is on and an optimized image of the thumbnail's size exists (an
+    // avatar's, made by create_avatar_thumbnails).
+    #[derive(sqlx::FromRow)]
+    struct Thumbnail {
+        id: i32,
+        upload_id: i32,
+        width: i32,
+        height: i32,
+        url: String,
+        extension: String,
+        filesize: Option<i32>,
     }
+    let thumbnail: Option<Thumbnail> = if s.get("create_thumbnails")?.truthy() {
+        sqlx::query_as(
+            "SELECT id, upload_id, width, height, url, extension, filesize FROM optimized_images \
+             WHERE upload_id = $1 AND width = $2 AND height = $3 ORDER BY id LIMIT 1",
+        )
+        .bind(u.id)
+        .bind(u.thumbnail_width)
+        .bind(u.thumbnail_height)
+        .fetch_optional(&mut *conn)
+        .await?
+    } else {
+        None
+    };
+    let thumbnail = match thumbnail {
+        Some(t) => json!({
+            "id": t.id,
+            "upload_id": t.upload_id,
+            "width": t.width,
+            "height": t.height,
+            "url": t.url,
+            "extension": t.extension,
+            "filesize": t.filesize,
+        }),
+        None => Value::Null,
+    };
     let short_path = match &ext {
         Some(e) => format!(
             "{}/uploads/short-url/{base62}.{e}",
@@ -737,7 +797,7 @@ pub async fn serialize(
         "retain_hours": u.retain_hours,
         "human_filesize": human_size(u.filesize),
         "dominant_color": u.dominant_color,
-        "thumbnail": Value::Null,
+        "thumbnail": thumbnail,
     }))
 }
 

@@ -1,0 +1,143 @@
+{
+  "name": "upload_avatar_gif_animated",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "avatar",
+        "file": {
+          "fixture": "animated.gif"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:33:08.366306",
+  "transaction_started_at": "2026-10-15T14:33:06.850945",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//localhost:3049/uploads/default/original/1X/21d8fa1ec73195a1b154a2be85f3efc5b45a8b09.gif",
+        "original_filename": "animated.gif",
+        "filesize": 443,
+        "width": 288,
+        "height": 288,
+        "thumbnail_width": 288,
+        "thumbnail_height": 288,
+        "extension": "gif",
+        "short_url": "upload://4PqCULRrZKo1TDMwRGwIbEudpe9.gif",
+        "short_path": "/uploads/short-url/4PqCULRrZKo1TDMwRGwIbEudpe9.gif",
+        "retain_hours": null,
+        "human_filesize": "443 Bytes",
+        "dominant_color": "FF0000",
+        "thumbnail": null
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/21d8fa1ec73195a1b154a2be85f3efc5b45a8b09.gif",
+          "etag": null,
+          "sha1": "21d8fa1ec73195a1b154a2be85f3efc5b45a8b09",
+          "width": 288,
+          "height": 288,
+          "origin": null,
+          "secure": false,
+          "user_id": 5,
+          "animated": false,
+          "filesize": 443,
+          "extension": "gif",
+          "created_at": "2026-10-15T14:33:08.59282",
+          "updated_at": "2026-10-15T14:33:08.601116",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "FF0000",
+          "thumbnail_width": 288,
+          "thumbnail_height": 288,
+          "original_filename": "animated.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7mnkQWm0ozhfs2myUAhvpkhHyr8=",
+            "created_at": "2026-10-15T14:33:07.360841",
+            "rotated_at": "2026-10-15T14:33:07.359878",
+            "updated_at": "2026-10-15T14:33:07.360841",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7mnkQWm0ozhfs2myUAhvpkhHyr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:33:08.381039",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7mnkQWm0ozhfs2myUAhvpkhHyr8=",
+            "created_at": "2026-10-15T14:33:07.360841",
+            "rotated_at": "2026-10-15T14:33:07.359878",
+            "updated_at": "2026-10-15T14:33:07.360841",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7mnkQWm0ozhfs2myUAhvpkhHyr8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 5,
+          "upload_id": 36,
+          "created_at": "2026-10-15T14:33:08.611487"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "create_avatar_thumbnails",
+      {
+        "upload_id": 36
+      }
+    ]
+  ],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "recorded_from": {
+    "case": "5b18c43dbef8e6c7c5b2686db848ff769cec4306b2225089c5849ecbc4c9e1f6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

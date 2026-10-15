@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/system/preferences/avatar/pick.json",
+      "params": { "upload_id": "34", "type": "gravatar" }
+    },
+    { "method": "GET", "path": "/u/system.json" },
+    {
+      "method": "PUT",
+      "path": "/u/discobot/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    },
+    { "method": "GET", "path": "/u/discobot.json" }
+  ]
+}

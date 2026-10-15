@@ -1,0 +1,13 @@
+{
+  "user": "user3",
+  "setup": [
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, version, created_at, updated_at) VALUES (9501, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '.png', 288, 288, 36, '/uploads/default/optimized/1X/aaaa_2_288x288.png', 100, 2, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": { "upload_type": "avatar", "file": { "fixture": "small.png" } }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "select_avatar_disabled",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/select.json",
+      "params": {
+        "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:33:02.625469",
+  "transaction_started_at": "2026-10-15T14:33:01.104213",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "w/2hfiFWk3PQ0h/DuO2K7LdkvAY=",
+            "created_at": "2026-10-15T14:33:01.748212",
+            "rotated_at": "2026-10-15T14:33:01.745944",
+            "updated_at": "2026-10-15T14:33:01.748212",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "w/2hfiFWk3PQ0h/DuO2K7LdkvAY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:33:02.632129",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "w/2hfiFWk3PQ0h/DuO2K7LdkvAY=",
+            "created_at": "2026-10-15T14:33:01.748212",
+            "rotated_at": "2026-10-15T14:33:01.745944",
+            "updated_at": "2026-10-15T14:33:01.748212",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "w/2hfiFWk3PQ0h/DuO2K7LdkvAY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "selectable_avatars": "34|35"
+  },
+  "recorded_from": {
+    "case": "b8549f3cba65e4c2b26145e85d234618ceec5a51fa24a4cf7c34c0b36c5cc47e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "name": "pick_not_allowed",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "upload_id": "34",
+        "type": "custom"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "type": "system"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:36:41.519236",
+  "transaction_started_at": "2026-10-15T14:36:38.682476",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CLeBd9n3AE7EGFIo/sZYV3CSKb0=",
+            "created_at": "2026-10-15T14:36:39.910115",
+            "rotated_at": "2026-10-15T14:36:39.908472",
+            "updated_at": "2026-10-15T14:36:39.910115",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CLeBd9n3AE7EGFIo/sZYV3CSKb0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:36:41.533572",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CLeBd9n3AE7EGFIo/sZYV3CSKb0=",
+            "created_at": "2026-10-15T14:36:39.910115",
+            "rotated_at": "2026-10-15T14:36:39.908472",
+            "updated_at": "2026-10-15T14:36:39.910115",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CLeBd9n3AE7EGFIo/sZYV3CSKb0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "uploaded_avatars_allowed_groups": "13"
+  },
+  "recorded_from": {
+    "case": "efddcc59e0c96037dcb95e54644c9e35439b51b745dc7748bf7ff8974dd96b32",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

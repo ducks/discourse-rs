@@ -323,10 +323,6 @@ pub async fn check_emails(
 pub fn refused_tail(method: &str, rest: &str) -> Option<&'static str> {
     let rest = rest.strip_suffix(".json").unwrap_or(rest);
     Some(match (method, rest) {
-        ("PUT", "preferences/avatar/pick" | "preferences/avatar/select") => {
-            "picking an avatar (131)"
-        }
-        ("DELETE", "preferences/user_image") => "removing a profile image (131)",
         ("POST", "preferences/revoke-account") => "revoking an associated account (191)",
         ("POST", "preferences/revoke-auth-token") => "logging out a device (193e)",
         _ => return None,
@@ -380,6 +376,17 @@ async fn tail(
     if let Some(endpoint) = super::users_email::Endpoint::from_tail(method, &rest) {
         return super::users_email::handle(
             state, guardian, username, endpoint, headers, peer, uri, body,
+        )
+        .await;
+    }
+    if method == "DELETE"
+        && matches!(
+            rest.as_str(),
+            "preferences/user_image" | "preferences/user_image.json"
+        )
+    {
+        return super::user_avatar_writes::destroy_user_image(
+            state, guardian, username, headers, uri, body,
         )
         .await;
     }
@@ -616,11 +623,30 @@ pub async fn page(
                 }
             }
             unique.sort();
+            // selectable_avatars as the client setting holds it: the
+            // uploads' urls, in the setting's order.
+            let mut selectable_avatars = Vec::new();
+            for id in settings.get("selectable_avatars")?.to_s().split('|') {
+                let id = i32::try_from(crate::ruby::to_i(id)).unwrap_or(0);
+                if let Some(url) =
+                    sqlx::query_scalar::<_, String>("SELECT url FROM uploads WHERE id = $1")
+                        .bind(id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                {
+                    selectable_avatars.push(url);
+                }
+            }
+            let site_logo_small_url =
+                crate::admin_users::logo_small_url(&mut conn, &settings).await?;
             view::account(
                 &p,
                 &view::Account {
                     titles: unique,
                     viewer_can_delete_account: current_user["can_delete_account"] == true,
+                    viewer_can_upload_avatar: current_user["can_upload_avatar"] == true,
+                    selectable_avatars,
+                    site_logo_small_url,
                 },
             )?
         }

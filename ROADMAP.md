@@ -1049,12 +1049,19 @@ generate_theme_screenshot_thumbnails (171).
     renaming or merging into the system user with the logo as its avatar
     (with the primary email the save normalizes again). The letter is
     rasterized without FreeType's light hinting (README, Pages)
-    131b. `feat/avatars-uploads` M: avatar uploads (the crop to 288, the
-    create_avatar_thumbnails job), `/user_avatar/:hostname/:username/
-    :size/:version.png` and its fallbacks, PUT
-    /u/:username/preferences/avatar/pick and /select, DELETE
-    preferences/user_image, the avatar selector modal in the
-    preferences account tab
+    131b. ~~`feat/avatars-uploads`~~ (done) M: avatar uploads (ICO
+    refused as Rails refuses it, the crop to the largest avatar size,
+    the create_avatar_thumbnails job), the upload serializer's
+    thumbnail, `/user_avatar/:hostname/:username/:size/:version.png`
+    (thumbnails made on demand, the redirect to the current avatar, the
+    blank avatar, SVGs as attachments), PUT
+    /u/:username/preferences/avatar/pick and /select (the system user's
+    use_site_small_logo_as_system_avatar turned off, the user's and
+    UserAvatar's upload references, user_updated, the quoted posts'
+    rebake), DELETE preferences/user_image, the avatar selector modal in
+    the preferences account tab (selectable avatars, the system, gravatar
+    and uploaded choices, AvatarUploader); the avatar routes skip
+    login_required as Rails' controller does
     131c. `feat/avatars-gravatar` M: UserAvatar#update_gravatar! and its
     job, POST /user_avatar/:username/refresh_gravatar, the after_save
     refresh_avatar paths that refuse gravatar downloads
@@ -1122,10 +1129,9 @@ generate_theme_screenshot_thumbnails (171).
     sizes and remove_full_quote_on_direct_reply
     (jobs/handlers.rs:749,752,797), enqueueing a suspended user's post or
     one with polls (posting/enqueue.rs:94,97)
-139. `feat/uploads-rest` M: image types Rails optimizes and crops
-    (uploads.rs:353,361), keeping metadata (:364), replacing a failed
-    upload (:430), upload thumbnails' serializer (:688), missing
-    extensions, outdated optimized images, SVG and AVIF thumbnails
+139. `feat/uploads-rest` M: image types Rails optimizes, cropping
+    profile and card backgrounds (uploads.rs:353,361), keeping metadata
+    (:364), replacing a failed upload (:430), missing extensions, outdated optimized images, SVG and AVIF thumbnails
     (optimized_images.rs:202,222,227), dominant colours with libvips and
     of AVIF, HEIC and JPEG XL (jobs/upload_jobs.rs:98,133), uploads not
     sent as multipart, site setting uploads, retain_hours, uploads from a
@@ -1792,7 +1798,7 @@ route table has been made, so this list may be short.
     on every page, the timezone a member without one saves on boot, the
     dialog service's yesNoConfirm and custom buttons. Refused, naming
     their items:
-    choosing an avatar and removing a profile image (131), the user
+    choosing an avatar and removing a profile image (done in 131b), the user
     status (130), associated accounts and revoking them (191), exporting
     one's data (200), featuring a topic (156), the email change page and
     the alternate emails' actions (193d, since done), logging out a

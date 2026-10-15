@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "settings": {
+    "auth_overrides_avatar": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    }
+  ]
+}

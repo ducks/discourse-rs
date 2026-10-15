@@ -1,0 +1,155 @@
+{
+  "name": "pick_refused",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "upload_id": "34",
+        "type": "gravatar"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "upload_id": "34",
+        "type": "banana"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "upload_id": "99999",
+        "type": "custom"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": {
+        "upload_id": "34",
+        "type": "custom"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user2/preferences/avatar/pick.json",
+      "params": {
+        "type": "system"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/nobody/preferences/avatar/pick.json",
+      "params": {
+        "type": "system"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:36:48.464042",
+  "transaction_started_at": "2026-10-15T14:36:45.68688",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, we can't find any avatar associated with that email address. Can you try uploading it again?"
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "43sS2tFBtZomNPsL2tyXSedb4fk=",
+            "created_at": "2026-10-15T14:36:46.704125",
+            "rotated_at": "2026-10-15T14:36:46.701943",
+            "updated_at": "2026-10-15T14:36:46.704125",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "43sS2tFBtZomNPsL2tyXSedb4fk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:36:48.478064",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "43sS2tFBtZomNPsL2tyXSedb4fk=",
+            "created_at": "2026-10-15T14:36:46.704125",
+            "rotated_at": "2026-10-15T14:36:46.701943",
+            "updated_at": "2026-10-15T14:36:46.704125",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "43sS2tFBtZomNPsL2tyXSedb4fk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "gravatar_enabled": false
+  },
+  "recorded_from": {
+    "case": "27efdf4daccab6bb15253e85c9faa91be1630f45071704de040f77654bf700be",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

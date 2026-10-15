@@ -205,6 +205,15 @@ impl FileStore {
         }
     }
 
+    /// `path_for(upload)`: where a relative url's file lives (it may not
+    /// exist), None for a url that is not the store's.
+    pub fn path_for(&self, url: &str) -> Option<std::path::PathBuf> {
+        match self {
+            FileStore::Local(s) => (url.starts_with('/') && !url.starts_with("//"))
+                .then(|| s.public_dir.join(url.trim_start_matches('/'))),
+        }
+    }
+
     /// The stored file of a url (`path_for`, then read): None when the url
     /// is not the store's or the file is missing.
     pub async fn read(&self, url: &str) -> std::io::Result<Option<Vec<u8>>> {

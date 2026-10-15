@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "uploaded_avatars_allowed_groups": "13"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "upload_id": "34", "type": "custom" }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    }
+  ]
+}

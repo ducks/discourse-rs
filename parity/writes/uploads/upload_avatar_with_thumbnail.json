@@ -1,0 +1,154 @@
+{
+  "name": "upload_avatar_with_thumbnail",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "avatar",
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T15:02:45.644567",
+  "transaction_started_at": "2026-10-15T15:02:42.716143",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//localhost:3049/uploads/default/original/1X/07bb55968f7e656394e938a39469e33a29a2d698.png",
+        "original_filename": "small.png",
+        "filesize": 28799,
+        "width": 288,
+        "height": 288,
+        "thumbnail_width": 288,
+        "thumbnail_height": 288,
+        "extension": "png",
+        "short_url": "upload://16oHF6nTSk1Dx0vxYTUA2GXYlG8.png",
+        "short_path": "/uploads/short-url/16oHF6nTSk1Dx0vxYTUA2GXYlG8.png",
+        "retain_hours": null,
+        "human_filesize": "28.1 KB",
+        "dominant_color": "35504F",
+        "thumbnail": {
+          "id": 9501,
+          "upload_id": 36,
+          "width": 288,
+          "height": 288,
+          "url": "/uploads/default/optimized/1X/aaaa_2_288x288.png",
+          "extension": ".png",
+          "filesize": 100
+        }
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/07bb55968f7e656394e938a39469e33a29a2d698.png",
+          "etag": null,
+          "sha1": "07bb55968f7e656394e938a39469e33a29a2d698",
+          "width": 288,
+          "height": 288,
+          "origin": null,
+          "secure": false,
+          "user_id": 5,
+          "animated": false,
+          "filesize": 28799,
+          "extension": "png",
+          "created_at": "2026-10-15T15:02:46.26532",
+          "updated_at": "2026-10-15T15:02:46.271279",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "35504F",
+          "thumbnail_width": 288,
+          "thumbnail_height": 288,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 111,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gOUCP58G/NFexRmxxB8j60YTdNM=",
+            "created_at": "2026-10-15T15:02:43.96581",
+            "rotated_at": "2026-10-15T15:02:43.960981",
+            "updated_at": "2026-10-15T15:02:43.96581",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gOUCP58G/NFexRmxxB8j60YTdNM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 111,
+            "seen_at": "2026-10-15T15:02:45.661659",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gOUCP58G/NFexRmxxB8j60YTdNM=",
+            "created_at": "2026-10-15T15:02:43.96581",
+            "rotated_at": "2026-10-15T15:02:43.960981",
+            "updated_at": "2026-10-15T15:02:43.96581",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gOUCP58G/NFexRmxxB8j60YTdNM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 5,
+          "upload_id": 36,
+          "created_at": "2026-10-15T15:02:46.279229"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "create_avatar_thumbnails",
+      {
+        "upload_id": 36
+      }
+    ]
+  ],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "setup": [
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, version, created_at, updated_at) VALUES (9501, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '.png', 288, 288, 36, '/uploads/default/optimized/1X/aaaa_2_288x288.png', 100, 2, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "1ddc43eb8cb7128ffa57c3e44842b949a786afc1d3fa60f12633413cb64e54f0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

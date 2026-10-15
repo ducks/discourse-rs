@@ -493,3 +493,84 @@ html.text-size-largest {
   margin: 0;
   padding: 0;
 }
+
+/* The avatar selector modal (modal/avatar-selector.gjs) and its
+   AvatarUploader, from base/user.scss as the reference compiles them. */
+.hidden-upload-field {
+  visibility: hidden;
+  position: absolute;
+  max-width: 100%;
+}
+.avatar-selector {
+  --label-max-width: 300px;
+}
+.avatar-selector__placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 45px;
+  height: 45px;
+  margin-inline-end: 0.75em;
+  border-radius: 50%;
+  background: var(--primary-low);
+  color: var(--primary-medium);
+}
+.avatar-selector .selectable-avatar[aria-current=true] {
+  outline: 2px solid var(--tertiary);
+  outline-offset: 2px;
+}
+.avatar-selector .avatar-choice {
+  display: grid;
+  grid-template-columns: 2em 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+}
+.avatar-selector .avatar-choice:not(:last-of-type) {
+  margin-bottom: 0.75em;
+}
+.avatar-selector .avatar-choice span {
+  word-break: break-word;
+}
+.avatar-selector .avatar-choice input[type=radio] {
+  margin-top: 0;
+}
+.avatar-selector .avatar-choice button {
+  margin-left: auto;
+}
+.avatar-selector .avatar-choice label a {
+  margin: 0;
+}
+.avatar-selector label.radio {
+  display: flex;
+  align-items: center;
+  max-width: var(--label-max-width);
+  margin: 0 0.5em 0 0;
+  padding: 0;
+}
+.avatar-selector label.radio .avatar {
+  flex: 0 0 auto;
+  margin: 0 0.75em 0 0;
+}
+.avatar-selector .error {
+  color: var(--danger);
+  margin: 0;
+  max-width: calc(var(--label-max-width) - 20px);
+  grid-column-start: 2;
+  grid-column-end: 3;
+}
+.selectable-avatars {
+  max-height: 350px;
+  margin-bottom: 1em;
+  text-align: justify;
+  overflow-y: auto;
+}
+.selectable-avatars .selectable-avatar {
+  margin: 5px;
+  display: inline-block;
+  position: relative;
+}
+.selectable-avatars .selectable-avatar .avatar {
+  cursor: pointer;
+  width: 60px;
+  height: 60px;
+}

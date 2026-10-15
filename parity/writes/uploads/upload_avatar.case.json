@@ -1,0 +1,11 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": { "upload_type": "avatar", "file": { "fixture": "small.png" } }
+    }
+  ],
+  "run_jobs": ["create_avatar_thumbnails"]
+}
