@@ -772,47 +772,49 @@ impl Site {
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
         self.chrome.text_size = settings.get("default_text_size")?.to_s();
-        if let Some(user) = guardian.user() {
-            let row: Option<(Option<String>, i32, i32)> = sqlx::query_as(
-                "SELECT timezone, text_size_key, text_size_seq FROM user_options WHERE user_id = $1",
-            )
-            .bind(user.id)
-            .fetch_optional(&mut *conn)
-            .await?;
-            if let Some((timezone, size_key, size_seq)) = row {
-                self.chrome.save_timezone = timezone.as_deref().is_none_or(str::is_empty);
-                // UserOption.text_sizes
-                let sizes = ["normal", "larger", "largest", "smaller", "smallest"];
-                if let Some(size) = usize::try_from(size_key).ok().and_then(|k| sizes.get(k)) {
-                    self.chrome.text_size = size.to_string();
-                }
-                let cookie = self
-                    .viewer
-                    .as_ref()
-                    .and_then(|v| v.text_size_cookie.as_deref())
-                    .and_then(|c| c.split_once('|'));
-                if let Some((size, seq)) = cookie
-                    && sizes.contains(&size)
-                    && crate::ruby::to_i(seq) >= i64::from(size_seq)
-                {
-                    self.chrome.text_size = size.to_string();
-                }
+        // The member's options the chrome reads: text size, local dates and
+        // the composer's.
+        let options: Option<ChromeOptions> = match guardian.user() {
+            Some(user) => {
+                sqlx::query_as(
+                    "SELECT timezone, text_size_key, text_size_seq, default_calendar, \
+                       composition_mode, hide_presence \
+                     FROM user_options WHERE user_id = $1",
+                )
+                .bind(user.id)
+                .fetch_optional(&mut *conn)
+                .await?
+            }
+            None => None,
+        };
+        if let Some(o) = &options {
+            self.chrome.save_timezone = o.timezone.as_deref().is_none_or(str::is_empty);
+            // UserOption.text_sizes
+            let sizes = ["normal", "larger", "largest", "smaller", "smallest"];
+            if let Some(size) = usize::try_from(o.text_size_key)
+                .ok()
+                .and_then(|k| sizes.get(k))
+            {
+                self.chrome.text_size = size.to_string();
+            }
+            let cookie = self
+                .viewer
+                .as_ref()
+                .and_then(|v| v.text_size_cookie.as_deref())
+                .and_then(|c| c.split_once('|'));
+            if let Some((size, seq)) = cookie
+                && sizes.contains(&size)
+                && crate::ruby::to_i(seq) >= i64::from(o.text_size_seq)
+            {
+                self.chrome.text_size = size.to_string();
             }
         }
         if crate::plugins::local_dates::enabled(settings)? {
-            let (default_calendar, user_timezone) = match guardian.user() {
-                Some(user) => {
-                    let row: Option<(Option<i32>, Option<String>)> = sqlx::query_as(
-                        "SELECT default_calendar, timezone FROM user_options WHERE user_id = $1",
-                    )
-                    .bind(user.id)
-                    .fetch_optional(&mut *conn)
-                    .await?;
-                    match row {
-                        Some((calendar, timezone)) => (calendar, timezone.unwrap_or_default()),
-                        None => (None, String::new()),
-                    }
-                }
+            let (default_calendar, user_timezone) = match &options {
+                Some(o) => (
+                    Some(o.default_calendar),
+                    o.timezone.clone().unwrap_or_default(),
+                ),
                 None => (None, String::new()),
             };
             // configureMoment's locale (crate::moment_locale), when it has
@@ -899,7 +901,9 @@ impl Site {
                     .await?;
             self.chrome.drafts_menu_trigger =
                 drafts_menu_trigger(&state.i18n, i64::from(draft_count.unwrap_or(0)));
-            self.chrome.composer = self.composer(&mut *conn, state, settings, guardian).await?;
+            self.chrome.composer = self
+                .composer(&mut *conn, state, settings, guardian, options.as_ref())
+                .await?;
         }
         self.chrome.body_classes = classes.join(" ");
         Ok(())
@@ -913,6 +917,7 @@ impl Site {
         state: &crate::AppState,
         settings: &SiteSettings,
         guardian: &crate::guardian::Guardian,
+        options: Option<&ChromeOptions>,
     ) -> Result<String, crate::AppError> {
         let mut allowed = guardian
             .topic_create_allowed_category_ids(&mut *conn, settings)
@@ -983,18 +988,10 @@ impl Site {
         let render_settings = format!("{}/assets/markdown-settings.json", self.base_path);
         // allowPreview: not for the rich editor (composition_mode 1).
         let (allow_preview, hide_presence) = match guardian.user_id() {
-            Some(uid) => {
-                let options: Option<(i32, bool)> = sqlx::query_as(
-                    "SELECT composition_mode, hide_presence FROM user_options WHERE user_id = $1",
-                )
-                .bind(uid)
-                .fetch_optional(&mut *conn)
-                .await?;
-                (
-                    options.map(|o| o.0) != Some(1),
-                    options.is_some_and(|o| o.1),
-                )
-            }
+            Some(_) => (
+                options.map(|o| o.composition_mode) != Some(1),
+                options.is_some_and(|o| o.hide_presence),
+            ),
             None => (false, false),
         };
         // discourse-presence: what the composer and the topic's footer show
@@ -1053,6 +1050,17 @@ impl Site {
             tag_chooser.as_ref(),
         ))
     }
+}
+
+/// The member's user_options columns the page chrome reads.
+#[derive(sqlx::FromRow)]
+struct ChromeOptions {
+    timezone: Option<String>,
+    text_size_key: i32,
+    text_size_seq: i32,
+    default_calendar: i32,
+    composition_mode: i32,
+    hide_presence: bool,
 }
 
 pub struct CategoryBadge {
