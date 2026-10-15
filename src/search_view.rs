@@ -110,6 +110,8 @@ pub struct SearchView<'a> {
     /// (id, name, slug; /tags/filter/search).
     pub categories: &'a [crate::topic_list_view::ListCategory],
     pub tags: &'a [(i32, String, Option<String>)],
+    /// The advanced filters' data (the default type).
+    pub advanced: Option<&'a crate::search_advanced_view::Panel>,
     pub page: i64,
     pub avatar_size: i64,
     /// `${location.protocol}//${location.host}${getURL("/")}`.
@@ -229,7 +231,11 @@ pub fn render(cx: &ListContext, v: &SearchView) -> String {
             ));
         }
         out.push_str("<div class=\"search-filters\">");
-        out.push_str(&advanced_filters(cx, v.expanded));
+        let count = v
+            .advanced
+            .map(|p| p.active_filter_count(&search_term))
+            .unwrap_or(0);
+        out.push_str(&advanced_filters(cx, v.expanded, count));
         out.push_str("</div>");
     }
     out.push_str("<div class=\"search-notice\"></div></div><div class=\"search-advanced\">");
@@ -322,6 +328,14 @@ pub fn render(cx: &ListContext, v: &SearchView) -> String {
         next.map(|p| format!(" data-next-page=\"{p}\""))
             .unwrap_or_default()
     ));
+    // What search-advanced.js draws the advanced filters from.
+    if default_type && let Some(panel) = v.advanced {
+        let data = panel.data(cx, panel.active_filter_count(&search_term), v.expanded);
+        out.push_str(&format!(
+            "<script type=\"application/json\" id=\"search-advanced-data\">{}</script>",
+            data.to_string().replace("</", "<\\/")
+        ));
+    }
     out
 }
 
@@ -334,17 +348,33 @@ pub fn footer(cx: &ListContext, v: &SearchView, has_results: bool, more: bool) -
             "<div class=\"no-results-container\"><h3>{}</h3>",
             escape(&t(cx, "search.no_results"))
         ));
-        // showSuggestion: canCreateTopic or not login_required. The
-        // member's "start a new topic" link needs the composer's
-        // createTopic, which the page doesn't open.
-        if !v.login_required {
-            out.push_str(&format!(
-                "<div class=\"no-results-suggestion\">{}{}</div>",
-                escape(&t(cx, "search.cant_find")),
+        // showSuggestion: canCreateTopic (a member whose search says
+        // can_create_topic; the link opens the composer, search-page.js)
+        // or not login_required.
+        let can_create = v.member
+            && v.doc
+                .is_some_and(|d| d["grouped_search_result"]["can_create_topic"] == true);
+        if can_create || !v.login_required {
+            let suggestion = if can_create {
+                format!(
+                    "<a href=\"\">{}</a> {}",
+                    escape(&t(cx, "search.start_new_topic")),
+                    if v.login_required {
+                        String::new()
+                    } else {
+                        escape(&t(cx, "search.or_search_google"))
+                    }
+                )
+            } else {
                 escape(&t(cx, "search.search_google"))
+            };
+            out.push_str(&format!(
+                "<div class=\"no-results-suggestion\">{} {suggestion}</div>",
+                escape(&t(cx, "search.cant_find")),
             ));
             out.push_str(&format!(
-                "<div class=\"google-search-form\"><form action=\"//google.com/search\" class=\"inline-form\" id=\"google-search\"><input aria-label=\"{}\" name=\"q\" type=\"text\" value=\"{}\"><input name=\"as_sitesearch\" type=\"hidden\" value=\"{}\"><button class=\"btn btn-primary\" type=\"submit\">{}</button></form></div>",
+                "<div class=\"google-search-form{}\"><form action=\"//google.com/search\" class=\"inline-form\" id=\"google-search\"><input aria-label=\"{}\" name=\"q\" type=\"text\" value=\"{}\"><input name=\"as_sitesearch\" type=\"hidden\" value=\"{}\"><button class=\"btn btn-primary\" type=\"submit\">{}</button></form></div>",
+                if v.login_required { " hidden" } else { "" },
                 escape(&t(cx, "search.search_google")),
                 escape(&clean_term(v.q, v.default_order).0),
                 escape(&v.site_url),
@@ -521,13 +551,20 @@ fn user_item(cx: &ListContext, v: &SearchView, user: &Value) -> String {
 
 /// SearchAdvancedOptions' toggle. The filters it opens are not ported:
 /// expanded, the toggle says so but the panel stays empty.
-fn advanced_filters(cx: &ListContext, expanded: bool) -> String {
+/// The toggle, with the count of filters the term uses
+/// (`submittedFilterCount`); search-advanced.js draws the panel.
+fn advanced_filters(cx: &ListContext, expanded: bool, count: usize) -> String {
     let title = t(cx, "search.advanced.title");
     // DButton translates its @ariaLabel again, which the translated title
     // is not a key of.
     format!(
-        "<div class=\"advanced-filters{}\"><button aria-expanded=\"{expanded}\" aria-label=\"[en.{title}]\" class=\"btn no-text advanced-filters__toggle btn-default\" type=\"button\">{title}{}</button></div>",
+        "<div class=\"advanced-filters{}\"><button aria-expanded=\"{expanded}\" aria-label=\"[en.{title}]\" class=\"btn no-text advanced-filters__toggle btn-default\" type=\"button\">{}{title}{}</button></div>",
         if expanded { " --is-expanded" } else { "" },
+        if count > 0 {
+            format!("<span class=\"badge-notification\">{count}</span>")
+        } else {
+            String::new()
+        },
         icon(
             if expanded {
                 "chevron-up"

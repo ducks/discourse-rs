@@ -3,4 +3,5 @@
 {% block content %}
 {{ body|safe }}
 <script src="{{ crate::assets::url(base_path, "search-page.js") }}" data-min-length="{{ min_length }}" data-too-short="{{ too_short }}" data-clear-label="{{ clear_label }}"></script>
+<script src="{{ crate::assets::url(base_path, "search-advanced.js") }}"></script>
 {% endblock %}

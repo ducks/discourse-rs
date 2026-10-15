@@ -563,7 +563,13 @@ async fn show_response(
         }
         _ => None,
     };
+    let panel = if search_type == crate::search_view::SearchType::TopicsPosts {
+        Some(advanced_panel(&state, &mut conn, &settings, &guardian).await?)
+    } else {
+        None
+    };
     let view = crate::search_view::SearchView {
+        advanced: panel.as_ref(),
         q: &term,
         search_type,
         expanded: params.expanded.as_deref() == Some("true"),
@@ -868,6 +874,97 @@ fn valid_search_term(term: &str, settings: &SiteSettings) -> Result<bool, AppErr
 }
 
 /// The full-page search as the client renders it (crate::search_view).
+/// The advanced filters' data: the site's categories by activity with
+/// their chooser rows (CategoryRow) and header labels, and the options
+/// the viewer and plugins bring.
+async fn advanced_panel(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<crate::search_advanced_view::Panel, AppError> {
+    use crate::search_advanced_view::{Panel, PanelCategory};
+    // categoriesByScope: Category.sortCategories with
+    // fixed_category_positions_on_create, else listByActivity.
+    if settings.get("fixed_category_positions_on_create")?.truthy() {
+        return Err(Unsupported(
+            "the search's category chooser with fixed_category_positions_on_create",
+        )
+        .into());
+    }
+    let all = crate::topic_list_view::categories(&mut *conn).await?;
+    let sorted =
+        super::search_menu::sorted_site_categories(state, &mut *conn, settings, guardian, &all)
+            .await?;
+    let ids: Vec<i32> = sorted.iter().map(|c| c.id as i32).collect();
+    let counts: Vec<(i32, i32)> =
+        sqlx::query_as("SELECT id, topic_count FROM categories WHERE id = ANY($1)")
+            .bind(&ids)
+            .fetch_all(&mut *conn)
+            .await?;
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: crate::clock::now(),
+        categories: &all,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let mut categories = Vec::with_capacity(sorted.len());
+    for category in &sorted {
+        let topic_count = counts
+            .iter()
+            .find(|(id, _)| i64::from(*id) == category.id)
+            .map_or(0, |(_, n)| i64::from(*n));
+        let chooser = crate::composer_view::ChooserCategory {
+            id: category.id,
+            topic_count,
+            description_text: None,
+            minimum_required_tags: 0,
+        };
+        let parent = category.parent_id.and_then(|id| all.get(&id));
+        // categoryBadgeHTML with its ancestors and hideParent.
+        let own = crate::composer_view::badge_span(&cx, category, "")
+            .replacen(" --has-parent", "", 1)
+            .replacen(
+                &format!(
+                    " data-parent-category-id=\"{}\"",
+                    category.parent_id.unwrap_or_default()
+                ),
+                "",
+                1,
+            );
+        let label = match parent {
+            Some(p) => format!("{}{own}", crate::composer_view::badge_span(&cx, p, "")),
+            None => own,
+        };
+        categories.push(PanelCategory {
+            id: category.id,
+            slug: category.slug.clone(),
+            parent_slug: parent.map(|p| p.slug.clone()),
+            name: category.name.clone(),
+            row: crate::composer_view::row(&cx, &chooser, category),
+            label,
+        });
+    }
+    Ok(Panel {
+        categories,
+        member: guardian.user().is_some(),
+        tagging: settings.get("tagging_enabled")?.truthy(),
+        solved: settings.get("solved_enabled")?.truthy(),
+        mobile: crate::mobile::mobile_view(),
+        current_username: guardian
+            .user()
+            .map(|u| u.username.clone())
+            .unwrap_or_default(),
+        max_tag_search_results: settings.get("max_tag_search_results")?.to_i(),
+        tag_style: settings.get("tag_style")?.to_s(),
+        tags_sort_alphabetically: settings.get("tags_sort_alphabetically")?.truthy(),
+    })
+}
+
 async fn search_page(
     state: &AppState,
     mut site: crate::html::Site,

@@ -297,3 +297,22 @@ async fn renders_a_results_page() {
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert!(body.contains("invalid_parameters"));
 }
+
+#[tokio::test]
+async fn counts_the_advanced_filters_in_use() {
+    let db = TestDb::new().await;
+    // A category, an `in:` filter and a status: three of the panel's filters.
+    let (status, _, html) = get(
+        &db.pool,
+        "/search?q=fixture%20%23general%20in:first%20status:open",
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"<span class="badge-notification">3</span>Advanced filters"#));
+    assert!(html.contains(r#"<script type="application/json" id="search-advanced-data">"#));
+    // No results for a visitor: the Google search, no new topic link.
+    let (_, _, html) = get(&db.pool, "/search?q=zzzzzz").await;
+    assert!(html.contains(
+        r#"<div class="no-results-suggestion">Can’t find what you’re looking for? Try searching with Google instead:</div>"#
+    ));
+}

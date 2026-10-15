@@ -53,7 +53,7 @@ pub fn chooser_order(
 
 /// A badge as a span (categoryBadgeHTML with link: false), with extra
 /// content inside the wrapper.
-fn badge_span(list: &ListContext, category: &ListCategory, inside: &str) -> String {
+pub(crate) fn badge_span(list: &ListContext, category: &ListCategory, inside: &str) -> String {
     let link = category_badge(list, category);
     let span = link.replacen("<a ", "<span ", 1);
     // Drop the link's href.

@@ -2258,6 +2258,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))
+        .route("/assets/search-advanced.js", get(asset))
         .route("/assets/search-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
