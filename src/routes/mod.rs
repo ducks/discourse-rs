@@ -101,6 +101,7 @@ mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
 pub(crate) mod user_menu;
+mod user_notifications;
 mod user_preferences;
 mod user_search;
 mod user_update;
@@ -2194,6 +2195,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-menu.js", get(asset))
         .route("/assets/user-notifications.js", get(asset))
         .route("/assets/preferences.js", get(asset))
+        .route("/assets/notifications-page.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))

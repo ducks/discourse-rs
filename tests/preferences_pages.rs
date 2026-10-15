@@ -299,6 +299,62 @@ async fn staff_edit_another_members_preferences() {
 }
 
 #[tokio::test]
+async fn the_notifications_page_lists_ones_notifications() {
+    let (_db, mut user1) = client("user1").await;
+    let page = user1.page("/u/user1/notifications").await;
+    assert_eq!(page.status, StatusCode::OK);
+    let html = page.html;
+    assert!(
+        html.contains("<title>All - Notifications - user1 - "),
+        "{html}"
+    );
+    assert!(html.contains("user-notifications-page"));
+    assert!(html.contains(
+        "<li aria-current=\"page\" class=\"user-nav__notifications\"><a class=\"active\" href=\"/u/user1/notifications\">"
+    ));
+    assert!(html.contains(
+        "<li aria-current=\"location\" class=\"user-nav__notifications-all\"><a class=\"active\" href=\"/u/user1/notifications\">"
+    ));
+    assert!(html.contains("dismiss-notifications"));
+    assert!(html.contains("notifications-filter"));
+    assert!(html.contains("<li class=\"notification unread granted-badge\""));
+    assert!(html.contains("<span class=\"relative-date\""));
+    // Read ones only.
+    let read = user1.page("/u/user1/notifications?filter=read").await.html;
+    assert!(!read.contains("class=\"notification unread"));
+    assert!(read.contains("class=\"notification read"));
+}
+
+#[tokio::test]
+async fn the_notifications_stream_tabs_draw_the_user_actions() {
+    let (_db, mut user1) = client("user1").await;
+    let html = user1.page("/u/user1/notifications/responses").await.html;
+    assert!(html.contains("<title>Responses - Notifications - user1 - "));
+    assert!(html.contains("class=\"post-list user-stream filter-6\""));
+    let likes = user1
+        .page("/u/user1/notifications/likes-received")
+        .await
+        .html;
+    assert!(likes.contains("filter-2"));
+    // A tab the app has no route for.
+    let unknown = user1.page("/u/user1/notifications/bogus").await;
+    assert!(unknown.html.contains("page-not-found"));
+}
+
+#[tokio::test]
+async fn another_members_notifications_go_to_the_404_route() {
+    let (_db, mut user2) = client("user2").await;
+    let page = user2.page("/u/user1/notifications").await;
+    assert_eq!(page.status, StatusCode::FOUND);
+    assert!(page.location.unwrap().ends_with("/404"));
+    let (_db, mut admin) = client("admin").await;
+    assert_eq!(
+        admin.page("/u/user1/notifications").await.status,
+        StatusCode::OK
+    );
+}
+
+#[tokio::test]
 async fn a_second_theme_is_refused() {
     let (db, mut user1) = client("user1").await;
     sqlx::query(

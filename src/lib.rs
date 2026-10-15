@@ -185,6 +185,7 @@ pub mod user_fields;
 pub mod user_info_view;
 pub mod user_menu_view;
 pub mod user_merger;
+pub mod user_notifications_view;
 pub mod user_penalties;
 pub mod user_private;
 pub mod user_profile_view;
