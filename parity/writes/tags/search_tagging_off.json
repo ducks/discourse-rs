@@ -1,0 +1,75 @@
+{
+  "name": "search_tagging_off",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=gu"
+    }
+  ],
+  "started_at": "2026-10-14T23:27:31.342458",
+  "transaction_started_at": "2026-10-14T23:27:28.77605",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 298,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kFsgzECUpxmH+YAwB5mtS7+9Mzs=",
+            "created_at": "2026-10-14T23:27:29.477876",
+            "rotated_at": "2026-10-14T23:27:29.476006",
+            "updated_at": "2026-10-14T23:27:29.477876",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kFsgzECUpxmH+YAwB5mtS7+9Mzs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 298,
+            "seen_at": "2026-10-14T23:27:31.354332",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kFsgzECUpxmH+YAwB5mtS7+9Mzs=",
+            "created_at": "2026-10-14T23:27:29.477876",
+            "rotated_at": "2026-10-14T23:27:29.476006",
+            "updated_at": "2026-10-14T23:27:29.477876",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kFsgzECUpxmH+YAwB5mtS7+9Mzs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": false
+  },
+  "recorded_from": {
+    "case": "179b43a8846a47e98494e557e1c6f7fcda4708997e3a8fba43c8d25805de8b01",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

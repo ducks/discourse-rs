@@ -1573,7 +1573,7 @@ route table has been made, so this list may be short.
     category_tag_stats; TagUser.auto_watch and auto_track; first post
     alerts to tag watchers (jobs/post_alert.rs:556, taken from 145);
     watched words that tag topics (posting/create.rs:312)), 189b.
-    `feat/tags-writes-chooser` M (GET /tags/filter/search, Tags::Search
+    ~~`feat/tags-writes-chooser`~~ (done) M (GET /tags/filter/search, Tags::Search
     with its required tag group and forbidden answers; the composer's
     mini-tag-chooser as Ember renders it on desktop and mobile, posting
     its tags), 189c. `feat/tags-writes-watched-words` S (the tag action

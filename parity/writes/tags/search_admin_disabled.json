@@ -1,0 +1,114 @@
+{
+  "name": "search_admin_disabled",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=&limit=5&filterForInput=true"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=h&limit=5&filterForInput=true"
+    }
+  ],
+  "started_at": "2026-10-14T23:27:14.797001",
+  "transaction_started_at": "2026-10-14T23:27:10.062726",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 298,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "T+JkCWEanpI4u+AW7m8Tge9ZjUk=",
+            "created_at": "2026-10-14T23:27:12.317707",
+            "rotated_at": "2026-10-14T23:27:12.308253",
+            "updated_at": "2026-10-14T23:27:12.317707",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "T+JkCWEanpI4u+AW7m8Tge9ZjUk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 298,
+            "seen_at": "2026-10-14T23:27:14.818547",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "T+JkCWEanpI4u+AW7m8Tge9ZjUk=",
+            "created_at": "2026-10-14T23:27:12.317707",
+            "rotated_at": "2026-10-14T23:27:12.308253",
+            "updated_at": "2026-10-14T23:27:12.317707",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "T+JkCWEanpI4u+AW7m8Tge9ZjUk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "display_personal_messages_tag_counts": true
+  },
+  "recorded_from": {
+    "case": "d8e63843bb465a74a7030fd7b70607c9e6843349d8bc99717e1083b3f08be73a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

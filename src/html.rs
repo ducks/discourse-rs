@@ -884,14 +884,21 @@ impl Site {
             let uncategorized = settings.get("uncategorized_category_id")?.to_i() as i32;
             allowed.retain(|id| *id != uncategorized);
         }
-        let rows: Vec<(i32, i32, Option<String>)> = sqlx::query_as(
-            "SELECT id, topic_count, description FROM categories WHERE id = ANY($1)",
+        // Category#minimumRequiredTags: with required tag groups, the
+        // larger of their counts' sum and the minimum; else the minimum.
+        let rows: Vec<(i32, i32, Option<String>, i64)> = sqlx::query_as(
+            "SELECT c.id, c.topic_count, c.description, \
+               CASE WHEN EXISTS (SELECT 1 FROM category_required_tag_groups r WHERE r.category_id = c.id) \
+                 THEN GREATEST((SELECT COALESCE(SUM(r.min_count), 0) FROM category_required_tag_groups r \
+                                WHERE r.category_id = c.id), COALESCE(c.minimum_required_tags, 0)) \
+                 ELSE GREATEST(COALESCE(c.minimum_required_tags, 0), 0) END::bigint \
+             FROM categories c WHERE c.id = ANY($1)",
         )
         .bind(&allowed)
         .fetch_all(&mut *conn)
         .await?;
         let mut chooser = Vec::with_capacity(rows.len());
-        for (id, topic_count, description) in rows {
+        for (id, topic_count, description, minimum_required_tags) in rows {
             chooser.push(crate::composer_view::ChooserCategory {
                 id: i64::from(id),
                 topic_count: i64::from(topic_count),
@@ -899,8 +906,25 @@ impl Site {
                 description_text: crate::categories::description_plain_text(
                     description.as_deref(),
                 )?,
+                minimum_required_tags,
             });
         }
+        // composer.canEditTags for a new topic: site.can_tag_topics.
+        let tag_chooser = if guardian.can_tag_topics(settings)? {
+            Some(crate::composer_view::TagChooser {
+                can_create: guardian.can_create_tag(settings)?,
+                staff: guardian.is_staff(),
+                max_tags_per_topic: settings.get("max_tags_per_topic")?.to_i(),
+                max_tag_search_results: settings.get("max_tag_search_results")?.to_i(),
+                max_tag_length: settings.get("max_tag_length")?.to_i(),
+                force_lowercase: settings.get("force_lowercase_tags")?.truthy(),
+                sort_alphabetically: settings.get("tags_sort_alphabetically")?.truthy(),
+                prioritize_recent: settings.get("prioritize_recently_used_tags")?.truthy(),
+                style: settings.get("tag_style")?.to_s(),
+            })
+        } else {
+            None
+        };
         let categories = crate::topic_list_view::categories(&mut *conn).await?;
         let list = crate::topic_list_view::ListContext {
             i18n: &state.i18n,
@@ -988,6 +1012,7 @@ impl Site {
             )
             .as_ref(),
             Some((&popup_options, &unported_popup)),
+            tag_chooser.as_ref(),
         ))
     }
 }

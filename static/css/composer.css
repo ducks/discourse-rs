@@ -1231,6 +1231,87 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
 #reply-control #reply-title:focus {
   box-shadow: none;
 }
+/* compose.scss:456 */
+#reply-control .category-input+.tags-input {
+  width: auto;
+  max-width: calc(50% - .25em);
+}
+/* compose.scss:461 */
+#reply-control .tags-input {
+  position: relative;
+  margin: 0 0 .5em 0;
+  flex-grow: 1;
+}
+@media(width < 40rem) {
+  #reply-control .tags-input {
+    width: 100%;
+    max-width: 50%;
+  }
+}
+/* compose.scss:471 */
+#reply-control .tags-input .mini-tag-chooser {
+  z-index: 700;
+  width: 100%;
+}
+/* select-kit.js: the body sits verticalOffset (3px) below the header. */
+#reply-control .tags-input .mini-tag-chooser.is-expanded .select-kit-body {
+  top: calc(100% + 3px);
+}
+/* compose.scss:475 */
+#reply-control .tags-input .mini-tag-chooser .select-kit-header {
+  color: var(--primary-high);
+}
+/* tag-chooser.scss:2 */
+.select-kit.tag-chooser,
+.select-kit.mini-tag-chooser,
+.select-kit.tag-drop {
+  border-radius: var(--d-input-border-radius);
+}
+/* tag-chooser.scss:7 */
+.select-kit.tag-chooser .select-kit-row,
+.select-kit.mini-tag-chooser .select-kit-row,
+.select-kit.tag-drop .select-kit-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+/* tag-chooser.scss:12 */
+.select-kit.tag-chooser .select-kit-row .discourse-tag-count,
+.select-kit.mini-tag-chooser .select-kit-row .discourse-tag-count,
+.select-kit.tag-drop .select-kit-row .discourse-tag-count {
+  margin-left: 5px;
+}
+/* tag-chooser.scss:16 */
+.select-kit.tag-chooser .select-kit-row .synonym-hint,
+.select-kit.mini-tag-chooser .select-kit-row .synonym-hint,
+.select-kit.tag-drop .select-kit-row .synonym-hint {
+  margin-left: .5em;
+  color: var(--primary-medium);
+}
+/* tag-chooser.scss:21 */
+.select-kit.tag-chooser .select-kit-row.disabled,
+.select-kit.mini-tag-chooser .select-kit-row.disabled,
+.select-kit.tag-drop .select-kit-row.disabled {
+  opacity: 1;
+}
+.select-kit.tag-chooser .select-kit-row.disabled .discourse-tag,
+.select-kit.mini-tag-chooser .select-kit-row.disabled .discourse-tag,
+.select-kit.tag-drop .select-kit-row.disabled .discourse-tag {
+  opacity: .5;
+}
+.select-kit.tag-chooser .select-kit-row.disabled .disabled-reason,
+.select-kit.mini-tag-chooser .select-kit-row.disabled .disabled-reason,
+.select-kit.tag-drop .select-kit-row.disabled .disabled-reason {
+  width: 100%;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  font-style: italic;
+}
+/* tagging.scss:65 */
+.discourse-tag-count {
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+}
 /* compose.scss:481 */
 #reply-control .wmd-controls {
   position: relative;

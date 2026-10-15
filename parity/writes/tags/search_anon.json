@@ -1,0 +1,70 @@
+{
+  "name": "search_anon",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=gu"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=&filterForInput=true&limit=5"
+    }
+  ],
+  "started_at": "2026-10-14T23:27:17.893557",
+  "transaction_started_at": "2026-10-14T23:27:15.50934",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "ddb2ea959f1426eccc835fc0be170aed2b9ffb2ce14a81b02b76ce0304052b8b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

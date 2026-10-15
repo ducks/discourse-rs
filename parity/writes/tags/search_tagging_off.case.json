@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "settings": {
+    "tagging_enabled": false
+  },
+  "requests": [
+    {"method": "GET", "path": "/tags/filter/search.json?q=gu"}
+  ]
+}

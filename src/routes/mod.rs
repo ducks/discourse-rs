@@ -79,6 +79,7 @@ mod sitemap;
 mod solved;
 mod srv;
 mod stylesheets;
+mod tag_search;
 mod tags;
 mod themes;
 mod topic_convert;
@@ -1860,6 +1861,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))
         .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
+        .route("/tags/filter/search", get(tag_search::search))
+        .route("/tags/filter/search.json", get(tag_search::search))
         .route("/categories", cached!(get(list::categories)))
         .route("/categories.json", cached!(get(list::categories_json)))
         .route("/emojis.json", get(emojis::index))

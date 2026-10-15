@@ -29,6 +29,32 @@ fn insert(target: &mut Map<String, Value>, key: &str, value: Value) {
         }
         return;
     }
+    // `name[][child]...`: a list of hashes, a new one whenever the last
+    // already has the child key.
+    if let Some(after) = rest.strip_prefix("[]")
+        && let Some(inner) = after.strip_prefix('[')
+        && let Some(close) = inner.find(']')
+    {
+        let child = &inner[..close];
+        let child_rest = &inner[close + 1..];
+        let list = target
+            .entry(name.to_string())
+            .or_insert_with(|| Value::Array(Vec::new()));
+        if !list.is_array() {
+            *list = Value::Array(Vec::new());
+        }
+        if let Value::Array(items) = list {
+            let reuse =
+                matches!(items.last(), Some(Value::Object(last)) if !last.contains_key(child));
+            if !reuse {
+                items.push(Value::Object(Map::new()));
+            }
+            if let Some(Value::Object(last)) = items.last_mut() {
+                insert(last, &format!("{child}{child_rest}"), value);
+            }
+        }
+        return;
+    }
     // `[child]rest`
     let Some(close) = rest.find(']') else {
         target.insert(key.to_string(), value);
@@ -111,5 +137,14 @@ mod tests {
         assert_eq!(p["post"]["edit_reason"], "why");
         assert_eq!(p["tags"], serde_json::json!(["a", "b"]));
         assert_eq!(integer(&p, "topic_id"), Some(3));
+    }
+
+    #[test]
+    fn lists_of_hashes_like_rack() {
+        let p = parse_query("tags[][id]=2&tags[][name]=guide&tags[][name]=new&tags[][id]=1");
+        assert_eq!(
+            p["tags"],
+            serde_json::json!([{"id": "2", "name": "guide"}, {"name": "new", "id": "1"}])
+        );
     }
 }
