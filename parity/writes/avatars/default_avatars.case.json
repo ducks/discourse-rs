@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "settings": {
+    "default_avatars": "https://example.com/a/{size}.png\nhttps://example.com/b/{size}.png\nhttps://example.com/c/{size}.png"
+  },
+  "requests": [
+    { "method": "GET", "path": "/u/user1.json" },
+    { "method": "GET", "path": "/u/user2.json" },
+    { "method": "GET", "path": "/u/user3.json" },
+    { "method": "GET", "path": "/latest.json" }
+  ]
+}

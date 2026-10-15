@@ -2174,6 +2174,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(user_avatars::show_proxy_letter),
         )
         .route(
+            "/letter_avatar/{username}/{size}/{version}",
+            get(user_avatars::show_letter),
+        )
+        .route(
             "/assets/moment-locale/{name}",
             get(crate::moment_locale::serve),
         )

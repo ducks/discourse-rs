@@ -870,6 +870,34 @@ async fn user_after_save(
     .await
 }
 
+/// `user.save!`'s autosave of the primary email its validation loads:
+/// UserEmail's before_validation normalizes it again, and a normalized
+/// form that changed (one that never was, like the system user's
+/// `no_email@`) is saved.
+pub(crate) async fn autosave_primary_email(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let email: Option<String> =
+        sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(email) = email else {
+        return Ok(());
+    };
+    let normalized = Some(crate::signup::normalize_email(&email)).filter(|n| !n.is_empty());
+    sqlx::query(
+        "UPDATE user_emails SET normalized_email = $2, updated_at = clock_timestamp() \
+         WHERE user_id = $1 AND \"primary\" AND normalized_email IS DISTINCT FROM $2",
+    )
+    .bind(user_id)
+    .bind(normalized)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 /// User's after_save callbacks on any save; `active_admin` for the login
 /// hint.
 pub(crate) async fn after_save(

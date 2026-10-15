@@ -512,6 +512,12 @@ fn unrandom(s: &str) -> String {
     static PORT: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"//localhost:\d{4}\b").unwrap());
     let s = PORT.replace_all(&s, "//localhost:<port>");
+    // LetterAvatar.version: Rails' hashes its ImageMagick and font list,
+    // the port's its renderer and font (src/letter_avatar.rs).
+    static LETTER_AVATAR: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(/letter_avatar/[^/]+/[^/]+/)5_[0-9a-f]{32}\.png").unwrap()
+    });
+    let s = LETTER_AVATAR.replace_all(&s, "${1}<version>.png");
     // EmailController's cache key for the unsubscribed page.
     static UNSUB: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"\bunsub_[0-9a-f]{32}\b").unwrap());

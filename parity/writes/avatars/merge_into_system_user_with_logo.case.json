@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/users/3/merge.json", "params": {"target_username": "system"}}
+  ],
+  "run_jobs": ["merge_user"]
+}

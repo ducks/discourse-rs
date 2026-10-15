@@ -1037,8 +1037,28 @@ generate_theme_screenshot_thumbnails (171).
     system_user_avatar_template (site.rs:479), renaming or merging the
     system user with the logo as its avatar (username_changer.rs:171;
     user_merger.rs:229), the update_gravatar and create_avatar_thumbnails
-    jobs. Needs: network fetches (gravatar), letter rendering equal to
-    the reference's
+    jobs. Split, stacked:
+    131a. ~~`feat/avatars-letter`~~ (done) S: LetterAvatar drawn in Rust
+    (`/letter_avatar/:username/:size/:version.png`, the cache paths and
+    the full-size-first resize, the blank avatar for another version, the
+    500 Rails gives a letter outside OptimizedImage's safe paths),
+    User.system_avatar_template with a blank external_system_avatars_url,
+    default_avatars (username_hash, split on newlines as Rails does),
+    restrict_letter_avatar_colors, the users serializer's
+    system_avatar_template, system_user_avatar_template on /site.json,
+    renaming or merging into the system user with the logo as its avatar
+    (with the primary email the save normalizes again). The letter is
+    rasterized without FreeType's light hinting (README, Pages)
+    131b. `feat/avatars-uploads` M: avatar uploads (the crop to 288, the
+    create_avatar_thumbnails job), `/user_avatar/:hostname/:username/
+    :size/:version.png` and its fallbacks, PUT
+    /u/:username/preferences/avatar/pick and /select, DELETE
+    preferences/user_image, the avatar selector modal in the
+    preferences account tab
+    131c. `feat/avatars-gravatar` M: UserAvatar#update_gravatar! and its
+    job, POST /user_avatar/:username/refresh_gravatar, the after_save
+    refresh_avatar paths that refuse gravatar downloads
+    (user_updater.rs), random selectable avatars at signup
 132. `feat/title-emoji` S: unicode emoji in titles (posting/text.rs:283,
     performEmojiEscape; posting/validate.rs:741), emoji in a quoted
     topic's title (crates/markdown), the emoji shortcut regex's
@@ -1969,7 +1989,7 @@ how often a backup trips them.
       status, featured topics, generated letter avatars (`/letter_avatar`,
       for sites that turn the proxy off). Bios and suspended and silenced
       users done; user status: 130; featured topics: 156; letter
-      avatars: 131
+      avatars done (131a)
 - [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
       rate limits, pg headlines. Rate limits done (21); the rest: 143, 144

@@ -199,6 +199,9 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         discourse_src: None,
         tmp_dir: "tmp".into(),
         letter_avatar_cdn: discourse_rs::config::LETTER_AVATAR_CDN.into(),
+        letter_avatar_font: std::env::var("LETTER_AVATAR_FONT")
+            .unwrap_or_else(|_| discourse_rs::letter_avatar::DEFAULT_FONT.into())
+            .into(),
         rate_limits: false,
         track_requests: false,
         globals: GlobalSettings::from_vars(globals.iter().copied()),

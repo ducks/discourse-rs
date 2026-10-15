@@ -1,7 +1,8 @@
-//! Port of UserAvatarsController#show_proxy_letter
-//! (app/controllers/user_avatars_controller.rb): the default
-//! external_system_avatars_url points here, and each letter avatar is
-//! fetched once from the avatar CDN and served from a disk cache after.
+//! Port of UserAvatarsController (app/controllers/user_avatars_controller.rb).
+//! show_proxy_letter: the default external_system_avatars_url points here,
+//! and each letter avatar is fetched once from the avatar CDN and served
+//! from a disk cache after. show_letter: the letter avatars drawn here
+//! (src/letter_avatar.rs) when that setting is blank.
 
 use std::path::{Path as FsPath, PathBuf};
 use std::sync::LazyLock;
@@ -9,11 +10,13 @@ use std::time::Duration;
 
 use axum::body::Body;
 use axum::extract::{Path, State};
-use axum::http::{HeaderValue, StatusCode, header};
+use axum::http::{HeaderValue, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use sha1::{Digest, Sha1};
 
+use crate::letter_avatar;
 use crate::site_settings::SiteSettings;
+use crate::upload_references::percent_decode;
 use crate::{AppError, AppState};
 
 /// `max_file_size`
@@ -81,6 +84,59 @@ pub async fn show_proxy_letter(
         Err(e) => return Err(e.into()),
     };
     Ok(png(bytes, "max-age=31556952, public, immutable"))
+}
+
+/// `GET /letter_avatar/:username/:size/:version.png`: the local letter
+/// avatar (`LetterAvatar.generate`), for sites whose
+/// external_system_avatars_url is blank; any other version is the blank
+/// avatar.
+pub async fn show_letter(State(state): State<AppState>, uri: Uri) -> Result<Response, AppError> {
+    // The route's constraints, on the raw segments: username is
+    // RouteFormat.username, size \d+, the version a segment before `.png`.
+    let raw: Vec<&str> = uri.path().rsplitn(4, '/').collect();
+    let [file, size, username, _] = raw[..] else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let username_ok = !username.is_empty()
+        && username
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'%' | b'_' | b'.' | b'-'));
+    let size_ok = !size.is_empty() && size.bytes().all(|b| b.is_ascii_digit());
+    let version = file
+        .strip_suffix(".png")
+        .filter(|v| !v.is_empty() && !v.contains('.'));
+    let (true, true, Some(version)) = (username_ok, size_ok, version) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if percent_decode(version) != letter_avatar::version(&state.config.letter_avatar_font) {
+        return render_blank(&state).await;
+    }
+    let username = percent_decode(username);
+    // `params[:size].to_i`: digits past a u32 are past FULLSIZE too.
+    let size = size.parse::<u32>().unwrap_or(u32::MAX);
+    let tmp_dir = state.config.tmp_dir.clone();
+    let font = state.config.letter_avatar_font.clone();
+    let path = tokio::task::spawn_blocking(move || {
+        letter_avatar::generate(&tmp_dir, &font, &username, size)
+    })
+    .await
+    .map_err(std::io::Error::other)??;
+    // A failed resize (an unsafe letter) leaves no file: File.ctime raises
+    // and the request fails.
+    let bytes = tokio::fs::read(&path).await?;
+    let ctime = {
+        use std::os::unix::fs::MetadataExt;
+        tokio::fs::metadata(&path).await?.ctime()
+    };
+    let modified = chrono::DateTime::from_timestamp(ctime, 0)
+        .unwrap_or_default()
+        .format("%a, %d %b %Y %H:%M:%S GMT")
+        .to_string();
+    Ok(png_modified(
+        bytes,
+        "max-age=31556952, public, immutable",
+        HeaderValue::from_str(&modified)?,
+    ))
 }
 
 /// A path segment, percent-encoded so a decoded `/` or `..` stays inside
@@ -172,6 +228,14 @@ async fn render_blank(state: &AppState) -> Result<Response, AppError> {
 
 /// send_file of a png, with `apply_cdn_headers`.
 fn png(bytes: Vec<u8>, cache_control: &'static str) -> Response {
+    png_modified(
+        bytes,
+        cache_control,
+        HeaderValue::from_static(LAST_MODIFIED),
+    )
+}
+
+fn png_modified(bytes: Vec<u8>, cache_control: &'static str, modified: HeaderValue) -> Response {
     let mut response = Response::new(Body::from(bytes));
     let headers = response.headers_mut();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("image/png"));
@@ -179,10 +243,7 @@ fn png(bytes: Vec<u8>, cache_control: &'static str) -> Response {
         header::CACHE_CONTROL,
         HeaderValue::from_static(cache_control),
     );
-    headers.insert(
-        header::LAST_MODIFIED,
-        HeaderValue::from_static(LAST_MODIFIED),
-    );
+    headers.insert(header::LAST_MODIFIED, modified);
     headers.insert(
         header::ACCESS_CONTROL_ALLOW_ORIGIN,
         HeaderValue::from_static("*"),

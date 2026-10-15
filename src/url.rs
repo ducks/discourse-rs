@@ -186,6 +186,7 @@ mod tests {
             discourse_src: None,
             tmp_dir: "tmp".into(),
             letter_avatar_cdn: crate::config::LETTER_AVATAR_CDN.into(),
+            letter_avatar_font: crate::letter_avatar::DEFAULT_FONT.into(),
             rate_limits: false,
             track_requests: false,
             globals: GlobalSettings::from_vars(globals.iter().copied()),

@@ -51,6 +51,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "builder", "tokio1", "tokio1-rustls-tls", "hostname"] }
 mail-parser = "0.11"
+# Letter avatars: the glyph outlines ImageMagick draws with FreeType.
+ab_glyph = "0.2"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
 fast_image_resize = { version = "6.1.0", features = ["image"] }
 oxipng = { version = "10.2.1", default-features = false }

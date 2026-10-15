@@ -72,6 +72,47 @@ pub fn avatar_template(
     class_avatar_template(urls, username, uploaded_avatar_id)
 }
 
+impl AvatarError {
+    /// As an AppError, an Unsupported kept recognizable as one.
+    pub fn into_app(self) -> crate::AppError {
+        match self {
+            AvatarError::Unsupported(u) => crate::AppError::from(u),
+            other => crate::AppError::from(other),
+        }
+    }
+}
+
+/// `User#avatar_template` for the user with this id (None when there is
+/// none), the site's small logo looked up for the system user.
+pub async fn template_for(
+    conn: &mut sqlx::PgConnection,
+    urls: &Urls<'_>,
+    user_id: i32,
+) -> Result<Option<String>, crate::AppError> {
+    let user: Option<(String, Option<i32>)> =
+        sqlx::query_as("SELECT username, uploaded_avatar_id FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((username, uploaded_avatar_id)) = user else {
+        return Ok(None);
+    };
+    let logo = if user_id == SYSTEM_USER_ID {
+        crate::admin_users::logo_small_url(&mut *conn, urls.settings).await?
+    } else {
+        None
+    };
+    avatar_template(
+        urls,
+        user_id,
+        &username,
+        uploaded_avatar_id,
+        logo.as_deref(),
+    )
+    .map(Some)
+    .map_err(AvatarError::into_app)
+}
+
 /// `User.avatar_template(username, upload_id)`, the class method: the
 /// uploaded avatar or the default template, with no system-user special
 /// case. BasicUserSerializer uses it for hash-wrapped users (participants).
@@ -102,51 +143,87 @@ fn uploaded_avatar_template(
     ))
 }
 
-/// `User.default_template(username)`: the letter avatar unless
-/// default_avatars is configured.
+/// `User.default_template(username)`: one of default_avatars (picked by
+/// the username's hash) when configured, else the system avatar.
 pub(crate) fn default_template(
     settings: &SiteSettings,
     urls: &Urls<'_>,
     username: &str,
 ) -> Result<String, AvatarError> {
-    if settings.get("default_avatars")?.presence().is_some() {
-        return Err(AvatarError::Unsupported(Unsupported(
-            "default_avatars setting",
-        )));
+    if let Some(list) = settings.get("default_avatars")?.presence() {
+        // split("\n") on a url_list (stored with "|"), as Rails does.
+        let mut choices: Vec<&str> = list.split('\n').collect();
+        while choices.last() == Some(&"") {
+            choices.pop();
+        }
+        if !choices.is_empty() {
+            let index = username_hash(username) % choices.len() as i64;
+            return Ok(choices[index as usize].to_string());
+        }
     }
-    if settings
-        .get("restrict_letter_avatar_colors")?
-        .presence()
-        .is_some()
-    {
-        return Err(AvatarError::Unsupported(Unsupported(
-            "restrict_letter_avatar_colors",
-        )));
-    }
-    // User.system_avatar_template
-    let normalized = username.to_lowercase();
-    let first_letter = normalized
-        .chars()
-        .next()
-        .map(|c| c.to_string())
-        .unwrap_or_default();
+    system_avatar_template(urls, username)
+}
+
+/// `User.username_hash`: Java's String#hashCode over the characters, in
+/// 32 bits, made positive.
+fn username_hash(username: &str) -> i64 {
+    let hash = username.chars().fold(0i32, |result, c| {
+        (result << 5).wrapping_sub(result).wrapping_add(c as i32)
+    });
+    i64::from(hash).abs()
+}
+
+/// `User.normalize_username`: NFC, then downcased.
+pub fn normalize_username(username: &str) -> String {
+    use unicode_normalization::UnicodeNormalization;
+    username.nfc().collect::<String>().to_lowercase()
+}
+
+/// `User.system_avatar_template(username)`: external_system_avatars_url
+/// filled in, or the local letter avatar when it is blank.
+pub fn system_avatar_template(urls: &Urls<'_>, username: &str) -> Result<String, AvatarError> {
+    let settings = urls.settings;
+    let normalized = normalize_username(username);
+    let base = urls.config.globals.relative_url_root();
     let Some(template) = settings.get("external_system_avatars_url")?.presence() else {
+        return Ok(format!(
+            "{base}/letter_avatar/{normalized}/{{size}}/{}.png",
+            letter_avatar::version(&urls.config.letter_avatar_font)
+        ));
+    };
+    let url = if template.starts_with("http://") || template.starts_with("https://") {
+        template
+    } else {
+        format!("{base}{template}")
+    };
+    let restricted = settings.get("restrict_letter_avatar_colors")?.presence();
+    let Some(color) = letter_avatar::color(&normalized, restricted.as_deref()) else {
         return Err(AvatarError::Unsupported(Unsupported(
-            "local letter avatars (LetterAvatar)",
+            "restrict_letter_avatar_colors entries that are not six characters (Rails raises)",
         )));
     };
-    let url = template
-        .replace("{color}", &letter_avatar::color(&normalized))
+    Ok(url
+        .replace("{color}", &color)
         .replace("{username}", &encode_component(username))
-        .replace("{first_letter}", &encode_component(&first_letter))
-        .replace("{hostname}", &urls.current_hostname()?);
-    Ok(
-        if url.starts_with("http://") || url.starts_with("https://") {
-            url
-        } else {
-            format!("{}{url}", urls.config.globals.relative_url_root())
-        },
-    )
+        .replace(
+            "{first_letter}",
+            &encode_component(first_grapheme(&normalized)),
+        )
+        .replace("{hostname}", &urls.current_hostname()?))
+}
+
+/// `grapheme_clusters.first` for a username: its first character and the
+/// combining marks after it (usernames hold letters, marks, digits and
+/// `._-` only).
+fn first_grapheme(s: &str) -> &str {
+    let mut chars = s.char_indices();
+    let Some(_) = chars.next() else {
+        return "";
+    };
+    let end = chars
+        .find(|(_, c)| !unicode_normalization::char::is_combining_mark(*c))
+        .map_or(s.len(), |(i, _)| i);
+    &s[..end]
 }
 
 /// `UrlHelper.encode_component` = Addressable::URI.encode_component with its

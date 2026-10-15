@@ -210,25 +210,19 @@ pub async fn merge(
             config: ctx.config,
             settings: s,
         };
+        let logo = if target == SYSTEM_USER_ID {
+            crate::admin_users::logo_small_url(&mut *conn, s).await?
+        } else {
+            None
+        };
         let avatar_template = crate::avatar::avatar_template(
             &urls,
             target,
             &target_user.username,
             target_user.uploaded_avatar_id,
-            None,
+            logo.as_deref(),
         )
-        .map_err(|e| match e {
-            crate::avatar::AvatarError::Unsupported(u) => AppError::from(u),
-            other => AppError::from(other),
-        })?;
-        if target == SYSTEM_USER_ID
-            && s.get("use_site_small_logo_as_system_avatar")?.truthy()
-            && s.get("logo_small")?.to_i() != 0
-        {
-            return Err(
-                Unsupported("merging into the system user with the site logo avatar").into(),
-            );
-        }
+        .map_err(crate::avatar::AvatarError::into_app)?;
         crate::username_changer::update_username(
             &mut *conn,
             ctx,

@@ -828,7 +828,7 @@ impl Users<'_> {
             }
         }
         if can_edit {
-            let system_avatar = avatar::class_avatar_template(self.urls, &user.username, None)?;
+            let system_avatar = avatar::system_avatar_template(self.urls, &user.username)?;
             self.private()
                 .private_block(user, &system_avatar, &avatar_keys, &mut u)
                 .await?;

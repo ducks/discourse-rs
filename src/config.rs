@@ -23,6 +23,10 @@ pub struct Config {
     /// Where `/letter_avatar_proxy` fetches from (LETTER_AVATAR_CDN), so
     /// tests can stand in for the CDN.
     pub letter_avatar_cdn: String,
+    /// The NimbusSans-Regular OpenType font local letter avatars are drawn
+    /// with (LETTER_AVATAR_FONT, default the path Debian's fonts-urw-base35
+    /// installs it at).
+    pub letter_avatar_font: std::path::PathBuf,
     pub globals: GlobalSettings,
     /// RateLimiter on (not `RateLimiter.disabled?`): on unless
     /// DISCOURSE_RS_RATE_LIMITS is "off"; the writes replay turns it off
@@ -190,6 +194,10 @@ impl Config {
                 .filter(|s| !s.is_empty())
                 .map(Into::into),
             tmp_dir: var("TMP_DIR").unwrap_or("tmp").into(),
+            letter_avatar_font: var("LETTER_AVATAR_FONT")
+                .filter(|s| !s.is_empty())
+                .unwrap_or(crate::letter_avatar::DEFAULT_FONT)
+                .into(),
             letter_avatar_cdn: var("LETTER_AVATAR_CDN")
                 .unwrap_or(LETTER_AVATAR_CDN)
                 .trim_end_matches('/')

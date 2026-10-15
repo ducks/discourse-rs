@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "settings": {
+    "restrict_letter_avatar_colors": "ff0000|00ff00|0000ff|abcdef"
+  },
+  "requests": [
+    { "method": "GET", "path": "/u/user1.json" },
+    { "method": "GET", "path": "/u/user2.json" },
+    { "method": "GET", "path": "/u/user3.json" },
+    { "method": "GET", "path": "/u/admin.json" }
+  ]
+}
