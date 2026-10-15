@@ -1199,13 +1199,18 @@ generate_theme_screenshot_thumbnails (171).
     order); solved's prioritize_solved_topics_in_search in the
     relevance sort; the full page no longer draws like counts, which
     Ember's SearchResultEntry never gets the flag for
-    143f. `feat/search-advanced-messages` M: personal messages: `in:`
-    messages, personal, personal-direct and all-pms, group_messages:,
-    personal_messages:, type_filter=private_messages and its context,
-    type_filter=all_topics and `in:all`, the `topic:` keyword
-    143g. `feat/search-advanced-context` M: the user, category and tag
-    contexts on /search/query and the full-page /search (a context in
-    the page's query), search_for_id, restrict_to_archetype, URLs in
+    143f. ~~`feat/search-advanced-messages`~~ (done) M: personal
+    messages: `in:` messages, personal, personal-direct and all-pms,
+    group_messages:, personal_messages:, type_filter=private_messages
+    and its context (the search menu in an inbox), type_filter=all_topics
+    and `in:all`, the `topic:` keyword, the user context on
+    /search/query; Discourse::InvalidAccess as /search/query's and
+    /search.json's 403. Refused: the full-page /search's HTML 403 page
+    for such a search, and type_filter=all_topics for an anonymous
+    search, which Rails fails on
+    143g. `feat/search-advanced-context` M: the category and tag
+    contexts on /search/query, every context on the full-page /search
+    (a context in the page's query), search_for_id, restrict_to_archetype, URLs in
     terms (query strings stripped)
     143h. `feat/search-advanced-rest` M: the full-page search's
     categories & tags type (Category.search, tags/filter/search), user

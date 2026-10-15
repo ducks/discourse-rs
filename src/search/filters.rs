@@ -305,6 +305,33 @@ impl Search<'_> {
         Ok(())
     }
 
+    /// `group_messages:` a messageable group's name (ILIKE) or id, among
+    /// the visible groups whose members are visible: its messages.
+    pub(super) async fn group_messages_filter(
+        &mut self,
+        q: &mut Query,
+        name: &str,
+    ) -> Result<(), SearchError> {
+        let visible = crate::groups::visible_groups_scope(self.guardian, "groups", false, false);
+        let members_visible = crate::groups::members_visible_groups_where(self.guardian, "groups");
+        let group_id: Option<i32> = sqlx::query_scalar(&format!(
+            "SELECT groups.id FROM groups WHERE ({visible}) AND ({members_visible}) \
+             AND (has_messages = TRUE) AND (name ilike $1 OR (id = $2 AND id > 0)) \
+             ORDER BY groups.name ASC, name ASC LIMIT 1"
+        ))
+        .bind(name)
+        .bind(crate::ruby::to_i(name))
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        match group_id {
+            Some(id) => q.and(format!(
+                "posts.topic_id IN (SELECT topic_id FROM topic_allowed_groups WHERE group_id = {id})"
+            )),
+            None => q.none(),
+        }
+        Ok(())
+    }
+
     /// `badge:` a badge's name (ILIKE) or id: the posts of its holders.
     pub(super) async fn badge_filter(
         &mut self,

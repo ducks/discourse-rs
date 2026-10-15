@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use crate::guardian::Guardian;
 use crate::html::Chrome;
 use crate::html::Crawler;
-use crate::search::{BLURB_LENGTH, Search, SearchArgs, TypeFilter};
+use crate::search::{BLURB_LENGTH, Search, SearchArgs, SearchContext, TypeFilter};
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
@@ -218,7 +218,13 @@ fn request_context(
     ))
 }
 
-async fn run(state: &AppState, guardian: &Guardian, args: &SearchArgs) -> Result<Value, AppError> {
+/// The search, or the `Discourse::InvalidAccess` it raises (a personal
+/// message search the viewer may not run).
+async fn run(
+    state: &AppState,
+    guardian: &Guardian,
+    args: &SearchArgs,
+) -> Result<Result<Value, Response>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -237,9 +243,11 @@ async fn run(state: &AppState, guardian: &Guardian, args: &SearchArgs) -> Result
         log_cache: &state.search_log_cache,
     };
     // Nil result -> {"grouped_search_result": null}
-    Ok(match search.execute(args).await? {
-        Some(doc) => doc,
-        None => json!({"grouped_search_result": null}),
+    Ok(match search.execute(args).await {
+        Ok(Some(doc)) => Ok(doc),
+        Ok(None) => Ok(json!({"grouped_search_result": null})),
+        Err(crate::search::SearchError::InvalidAccess) => Err(invalid_access(state)),
+        Err(e) => return Err(e.into()),
     })
 }
 
@@ -401,9 +409,18 @@ async fn show_response(
         user_agent,
         session_id,
         log: true,
-        topic_context: None,
+        context: None,
     };
-    let doc = run(&state, &guardian, &args).await?;
+    let doc = match run(&state, &guardian, &args).await? {
+        Ok(doc) => doc,
+        Err(refused) if json => return Ok(refused),
+        Err(_) => {
+            return Err(Unsupported(
+                "the full-page search's 403 page (a personal message search the viewer may not run)",
+            )
+            .into());
+        }
+    };
     let noindex = [("x-robots-tag", "noindex")];
     if json {
         return Ok((noindex, Json(doc)).into_response());
@@ -551,7 +568,7 @@ pub(crate) async fn run_query(
     {
         return Err(Unsupported("search_for_id (topic id and URL lookup)").into());
     }
-    let topic_context = match lookup_search_context(state, guardian, params).await? {
+    let looked_up = match lookup_search_context(state, guardian, params).await? {
         Ok(context) => context,
         Err(refused) => return Ok(Err(refused)),
     };
@@ -562,17 +579,24 @@ pub(crate) async fn run_query(
     {
         return Err(Unsupported("restrict_to_archetype").into());
     }
-    let type_filter = match params.type_filter.as_deref().filter(|t| !t.is_empty()) {
+    let mut type_filter = match params.type_filter.as_deref().filter(|t| !t.is_empty()) {
         None => None,
         Some("topic") => Some(TypeFilter::Topic),
         Some("category") => Some(TypeFilter::Category),
         Some("user") => Some(TypeFilter::User),
         Some("tags") => Some(TypeFilter::Tags),
         Some("exclude_topics") => Some(TypeFilter::ExcludeTopics),
-        Some("private_messages") => return Ok(Err(invalid_access(state))),
-        Some("all_topics") => return Err(Unsupported("type_filter=all_topics").into()),
+        Some("private_messages") => Some(TypeFilter::PrivateMessages),
+        Some("all_topics") => Some(TypeFilter::AllTopics),
         Some(_) => return Ok(Err(invalid_access(state))),
     };
+    // A private messages context brings its type filter.
+    let context = looked_up.map(|(context, forced)| {
+        if forced.is_some() {
+            type_filter = forced;
+        }
+        context
+    });
     let (ip_address, user_agent, session_id) = request_context(headers, peer)?;
     if let Some(refused) = rate_limit_search(state, guardian, &ip_address).await? {
         return Ok(Err(refused));
@@ -587,9 +611,9 @@ pub(crate) async fn run_query(
         user_agent,
         session_id,
         log: true,
-        topic_context,
+        context,
     };
-    Ok(Ok(run(state, guardian, &args).await?))
+    run(state, guardian, &args).await
 }
 
 /// SearchController#lookup_search_context: `search_context[type]` and
@@ -600,7 +624,7 @@ async fn lookup_search_context(
     state: &AppState,
     guardian: &Guardian,
     params: &QueryParams,
-) -> Result<Result<Option<crate::search::TopicContext>, Response>, AppError> {
+) -> Result<Result<Option<(SearchContext, Option<TypeFilter>)>, Response>, AppError> {
     if params.skip_context.as_deref() == Some("true") {
         return Ok(Ok(None));
     }
@@ -625,10 +649,23 @@ async fn lookup_search_context(
     if id.trim().is_empty() {
         return Ok(Err(invalid_parameters(state, "search_context")));
     }
-    if kind != "topic" {
-        return Err(Unsupported("search contexts (user, category, tag, private messages)").into());
-    }
     let mut conn = state.pool.acquire().await?;
+    if kind == "user" || kind == "private_messages" {
+        // A user by username; any user is visible (ensure_can_see!).
+        let user_id: Option<i32> =
+            sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1 LIMIT 1")
+                .bind(id.to_lowercase())
+                .fetch_optional(&mut *conn)
+                .await?;
+        let Some(user_id) = user_id else {
+            return Ok(Err(invalid_access(state)));
+        };
+        let type_filter = (kind == "private_messages").then_some(TypeFilter::PrivateMessages);
+        return Ok(Ok(Some((SearchContext::User(user_id), type_filter))));
+    }
+    if kind != "topic" {
+        return Err(Unsupported("search contexts (category, tag)").into());
+    }
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     // `to_i`: the leading digits, 0 without any.
@@ -655,10 +692,13 @@ async fn lookup_search_context(
     {
         return Ok(Err(invalid_access(state)));
     }
-    Ok(Ok(Some(crate::search::TopicContext {
-        id: topic_id,
-        private_message: archetype == "private_message",
-    })))
+    Ok(Ok(Some((
+        SearchContext::Topic(crate::search::TopicContext {
+            id: topic_id,
+            private_message: archetype == "private_message",
+        }),
+        None,
+    ))))
 }
 
 #[derive(Template)]

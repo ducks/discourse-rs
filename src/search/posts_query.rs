@@ -2,7 +2,10 @@
 //! topic searches over it (`topic_search`, `aggregate_search`).
 
 use super::advanced::{Advanced, Filter};
-use super::{PostHit, Results, Search, SearchError, TopicContext, ts_config, ts_query_value};
+use super::{
+    PostHit, Results, Search, SearchContext, SearchError, TopicContext, TypeFilter, ts_config,
+    ts_query_value,
+};
 use crate::Unsupported;
 use crate::user_search::quote;
 
@@ -11,11 +14,42 @@ pub(super) struct Run {
     pub adv: Advanced,
     /// `@term` after filter_short_terms; empty when only filters were given.
     pub term: String,
-    pub topic: Option<TopicContext>,
+    pub context: Option<SearchContext>,
+    /// The type filter after the term's keywords (private messages, all
+    /// topics).
+    pub type_filter: Option<TypeFilter>,
     /// `@category_filter_matched`
     pub category_filter_matched: bool,
     pub limit: i64,
     pub offset: i64,
+}
+
+impl Run {
+    fn topic(&self) -> Option<TopicContext> {
+        match self.context {
+            Some(SearchContext::Topic(t)) => Some(t),
+            _ => None,
+        }
+    }
+
+    /// posts_query's `type_filter`: what aggregate_search passes, nil
+    /// for a topic's search and in:all-posts.
+    fn pms(&self) -> bool {
+        self.type_filter == Some(TypeFilter::PrivateMessages)
+    }
+
+    fn all_topics(&self) -> bool {
+        self.type_filter == Some(TypeFilter::AllTopics)
+    }
+}
+
+/// `Topic::PRIVATE_MESSAGES_SQL_USER` and `_GROUP` for a user.
+fn private_posts_for_user(uid: i32) -> String {
+    format!(
+        "topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {uid}) \
+         OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
+           JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id)"
+    )
 }
 
 /// A query on posts as ActiveRecord accumulates it.
@@ -186,27 +220,35 @@ impl Search<'_> {
         q.joins.push(
             "INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id".into(),
         );
-        q.joins
-            .push("LEFT JOIN categories ON categories.id = topics.category_id".into());
-        let pm_topic = run.topic.is_some_and(|t| t.private_message);
+        let pms = run.pms();
+        if !pms {
+            q.joins
+                .push("LEFT JOIN categories ON categories.id = topics.category_id".into());
+        }
+        let pm_topic = run.topic().is_some_and(|t| t.private_message);
         let post_types = id_list(&self.guardian.visible_post_types(self.settings)?);
         q.and("posts.deleted_at IS NULL");
         q.and(format!("posts.post_type IN ({post_types})"));
         q.and("posts.hidden = FALSE");
-        let is_topic_search = run.topic.is_some();
+        let is_topic_search = run.topic().is_some();
         if !is_topic_search && !run.adv.include_invisible {
             q.and("topics.visible");
         }
-        if pm_topic {
+        if pms || pm_topic {
             q.and("topics.archetype = 'private_message' AND post_search_data.private_message");
             if !self.guardian.is_admin() {
-                let uid = self.guardian.user_id().unwrap_or(-1);
-                q.and(format!(
-                    "topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {uid}) \
-                     OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
-                       JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id)"
+                q.and(private_posts_for_user(
+                    self.guardian.user_id().unwrap_or(-1),
                 ));
             }
+        } else if run.all_topics() {
+            // `.or(private_posts)`: the common conditions stay outside.
+            q.and(format!(
+                "(topics.archetype <> 'private_message' AND NOT post_search_data.private_message) \
+                 OR (topics.archetype = 'private_message' AND post_search_data.private_message \
+                 AND ({}))",
+                private_posts_for_user(self.guardian.user_id().unwrap_or(-1))
+            ));
         } else {
             q.and("topics.archetype <> 'private_message' AND NOT post_search_data.private_message");
         }
@@ -244,11 +286,18 @@ impl Search<'_> {
 
         self.apply_filters(&mut q, run).await?;
 
-        match run.topic {
-            Some(topic) => {
+        match run.context {
+            Some(SearchContext::Topic(topic)) => {
                 q.and(format!("topics.id = {}", topic.id));
                 if run.adv.order.is_none() {
                     q.orders.push("posts.post_number ASC".into());
+                }
+            }
+            Some(SearchContext::User(id)) => {
+                if !pms {
+                    q.and(format!("posts.user_id = {id}"));
+                } else if self.guardian.is_admin() && !run.adv.search_all_pms {
+                    q.and(private_posts_for_user(id));
                 }
             }
             None => {
@@ -261,17 +310,19 @@ impl Search<'_> {
             }
         }
 
-        let secure_ids = self
-            .guardian
-            .secure_category_ids(&mut *self.conn, self.settings)
-            .await?;
-        if secure_ids.is_empty() {
-            q.and("(categories.id IS NULL) OR (NOT categories.read_restricted)");
-        } else {
-            q.and(format!(
-                "(categories.id IS NULL) OR (NOT categories.read_restricted) OR (categories.id IN ({}))",
-                id_list(&secure_ids)
-            ));
+        if !pms {
+            let secure_ids = self
+                .guardian
+                .secure_category_ids(&mut *self.conn, self.settings)
+                .await?;
+            if secure_ids.is_empty() {
+                q.and("(categories.id IS NULL) OR (NOT categories.read_restricted)");
+            } else {
+                q.and(format!(
+                    "(categories.id IS NULL) OR (NOT categories.read_restricted) OR (categories.id IN ({}))",
+                    id_list(&secure_ids)
+                ));
+            }
         }
 
         self.apply_order(&mut q, run, aggregate, !is_topic_search)?;
@@ -348,6 +399,11 @@ impl Search<'_> {
         run: &Run,
         aggregate: bool,
     ) -> Result<(), SearchError> {
+        // Private messages have no categories to weigh.
+        if run.pms() {
+            q.orders.push("topics.bumped_at DESC".into());
+            return Ok(());
+        }
         let config = ts_config(&self.settings.get("default_locale")?.to_s());
         let wrap = |expr: String| {
             if aggregate {
@@ -501,9 +557,25 @@ impl Search<'_> {
                     q.and("NOT (topics.archetype = 'private_message')");
                 }
                 Filter::Unsolved => self.unsolved_filter(q).await?,
+                Filter::PersonalDirect => {
+                    if let Some(uid) = self.guardian.user_id() {
+                        q.join("LEFT JOIN topic_allowed_groups tg ON posts.topic_id = tg.topic_id");
+                        q.and(format!(
+                            "tg.id IS NULL AND posts.topic_id IN (SELECT tau.topic_id \
+                             FROM topic_allowed_users tau JOIN topic_allowed_users tau2 \
+                             ON tau2.topic_id = tau.topic_id AND tau2.id != tau.id \
+                             WHERE tau.user_id = {uid} GROUP BY tau.topic_id HAVING COUNT(*) = 1)"
+                        ));
+                    }
+                }
+                Filter::AllPms => {
+                    if self.guardian.is_admin() {
+                        q.and("topics.archetype = 'private_message'");
+                    }
+                }
+                Filter::GroupMessages => self.group_messages_filter(q, &capture).await?,
                 Filter::Tags => self.tags_filter(q, &capture, true).await?,
                 Filter::NotTags => self.tags_filter(q, &capture, false).await?,
-                _ => return Err(Unsupported("an advanced search filter not ported").into()),
             }
         }
         Ok(())
@@ -695,7 +767,7 @@ impl Search<'_> {
         results: &mut Results,
     ) -> Result<(), SearchError> {
         let (limit, offset) = (run.limit, run.offset);
-        if let Some(topic) = run.topic {
+        if let Some(topic) = run.topic() {
             let q = self.posts_query(run, false).await?;
             let extra = format!(" AND (posts.topic_id = {})", topic.id);
             results.posts = self.eager_posts(&q, &extra, limit, offset).await?;
@@ -795,7 +867,7 @@ impl Search<'_> {
     /// create_recent_post_search_indexes), `aggregate_post_sql` splits at
     /// that post: topics matched by recent posts first, the older ones only
     /// when those fall short of the limit.
-    async fn aggregate_search(
+    pub(super) async fn aggregate_search(
         &mut self,
         run: &mut Run,
         results: &mut Results,
@@ -835,7 +907,9 @@ impl Search<'_> {
             .filters
             .iter()
             .any(|(f, _)| matches!(f, Filter::Before | Filter::After));
-        let min_id = if dated {
+        // aggregate_post_sql lists "private_message", a type filter that never
+        // occurs, so only all_topics (and the dated filters) skip the split.
+        let min_id = if dated || run.all_topics() {
             0
         } else {
             self.settings

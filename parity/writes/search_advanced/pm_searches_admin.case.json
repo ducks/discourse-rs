@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=parity%20in%3Aall-pms"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Amessages"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20personal_messages%3Auser1"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20personal_messages%3Auser1%20in%3Aall-pms"},
+    {"method": "GET", "path": "/search/query.json?term=parity&type_filter=private_messages"},
+    {"method": "GET", "path": "/search/query.json?term=parity&search_context%5Btype%5D=private_messages&search_context%5Bid%5D=user2"},
+    {"method": "GET", "path": "/search.json?q=parity%20in%3Aall-pms"}
+  ]
+}
