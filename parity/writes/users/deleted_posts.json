@@ -1,0 +1,184 @@
+{
+  "name": "deleted_posts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json?offset=1&limit=1"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json?limit=101"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/nobody-193f/deleted.json"
+    }
+  ],
+  "started_at": "2026-10-15T19:13:17.432181",
+  "transaction_started_at": "2026-10-15T19:13:12.256914",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
+          "id": 48,
+          "created_at": "2026-10-01T15:39:51.142Z",
+          "post_number": 1,
+          "post_id": 48,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "topic_id": 42,
+          "slug": "parity-fixture-pm-user1-to-user0",
+          "title": "Parity fixture: PM user1 to user0",
+          "category_id": null,
+          "hidden": false,
+          "moderator_action": false,
+          "deleted": true,
+          "deleted_at": "2026-10-15T17:13:12.256Z",
+          "deleted_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "reply_to_post_number": null,
+          "action_type": null
+        },
+        {
+          "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+          "id": 36,
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "post_number": 2,
+          "post_id": 36,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "topic_id": 35,
+          "slug": "parity-fixture-replies-and-posters",
+          "title": "Parity fixture: replies and posters",
+          "category_id": 4,
+          "hidden": false,
+          "moderator_action": false,
+          "deleted": true,
+          "deleted_at": "2026-10-15T17:13:12.256Z",
+          "deleted_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "reply_to_post_number": null,
+          "action_type": 5
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+          "id": 36,
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "post_number": 2,
+          "post_id": 36,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "topic_id": 35,
+          "slug": "parity-fixture-replies-and-posters",
+          "title": "Parity fixture: replies and posters",
+          "category_id": 4,
+          "hidden": false,
+          "moderator_action": false,
+          "deleted": true,
+          "deleted_at": "2026-10-15T17:13:12.256Z",
+          "deleted_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "reply_to_post_number": null,
+          "action_type": 5
+        }
+      ]
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: limit"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 249,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZPC68wqYWVJGEBC48WclnLFIki8=",
+            "created_at": "2026-10-15T19:13:14.515069",
+            "rotated_at": "2026-10-15T19:13:14.50561",
+            "updated_at": "2026-10-15T19:13:14.515069",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ZPC68wqYWVJGEBC48WclnLFIki8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 249,
+            "seen_at": "2026-10-15T19:13:17.452646",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZPC68wqYWVJGEBC48WclnLFIki8=",
+            "created_at": "2026-10-15T19:13:14.515069",
+            "rotated_at": "2026-10-15T19:13:14.50561",
+            "updated_at": "2026-10-15T19:13:14.515069",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ZPC68wqYWVJGEBC48WclnLFIki8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE posts SET deleted_at = now() - interval '2 hours', deleted_by_id = 1 WHERE id IN (36, 48)"
+  ],
+  "recorded_from": {
+    "case": "667cac2c07b8ba235e2969ef80627acc34917b4555730cd7b5a17f37886daa8e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -923,8 +923,8 @@ Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
 edits (188a-188i2 done; 188i3-188i5, the edge cases, wait), 189 tags
-writes (done), 193 the user pages (193a-193d done, 193e and 193f
-underway), 143 advanced search (done, 143a-143i), 131 avatars (done).
+writes (done), 193 the user pages (done, 193a-193f), 143 advanced
+search (done, 143a-143i), 131 avatars (done).
 Then 208 multisite, ahead of the other large items: its cost grows with
 every feature written against one AppState, and many forums in one
 process is the port's clearest win for self-hosting.
@@ -1769,7 +1769,8 @@ route table has been made, so this list may be short.
     addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
     sites (reviewable_user.rs:52), inviting to restricted categories
     (topic_guardian.rs:519), invalidating invites on password reset
-    (routes/accounts.rs:662)
+    (routes/accounts.rs:662), the profile's invites pages
+    (/u/:username/invited: routes/users.rs:173)
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a
     compatibility layer, not a gap in the port's own pages, which get
     live updates over pg-bus's /bus already (MessageBus on pg-bus, so
@@ -1797,7 +1798,7 @@ route table has been made, so this list may be short.
     group and client filtering, its headers), measured against the
     reference's own poll responses. The port's /bus/events and /bus/poll
     (global positions, its own pages) stay as they are
-193. `feat/user-pages-rest` L: the user pages the port renders as the
+193. ~~`feat/user-pages-rest`~~ (done) L: the user pages the port renders as the
     summary or refuses: preferences (every tab), notifications,
     /u/:username/badges and /activity/topics (97, ListController#topics_by),
     the drafts page, the other view_user_route values
@@ -1894,9 +1895,15 @@ route table has been made, so this list may be short.
     items: managing second factors and passkeys and confirming a session
     with a passkey (155), the ForgotPassword modal a reset code opens
     (196), the MCP authorizations list
-    193f. `feat/user-pages-rest-routes` S: the other view_user_route
-    values, /user-badges/:username's page, /topics/voted-by's page,
-    deleted-posts, invited (192)
+    193f. ~~`feat/user-pages-rest-routes`~~ (done) S: view_user_route's
+    other values (badges drawn in place as activity is, deletedPosts
+    going to its page, a route the app lacks falling back to the
+    summary), /user-badges/:username's and /topics/voted-by's pages
+    (Ember's not-found page, the app having no route), the deleted posts
+    page (user.deletedPosts with PostsController#deleted_posts, Ember's
+    exception page for one who isn't staff) and the profile's Admin
+    button for staff (displayTopLevelAdminButton). Refused, naming their
+    items: the invites pages (192), view_user_route profile-hidden
 194. `feat/review-pages` M: the review queue's page (routes/review.rs:187),
     the user menu's review tab (routes/user_menu.rs:88;
     notifications.rs:270, pending_reviewables), the staff topic and post

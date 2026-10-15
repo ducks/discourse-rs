@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET deleted_at = now() - interval '2 hours', deleted_by_id = 1 WHERE id IN (36, 48)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json?offset=1&limit=1"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json?limit=101"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/nobody-193f/deleted.json"
+    }
+  ]
+}

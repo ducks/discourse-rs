@@ -28,6 +28,7 @@ mod bookmarks;
 mod bus;
 mod change_owner;
 pub(crate) mod composer;
+mod deleted_posts;
 mod directory;
 mod directory_columns;
 mod do_not_disturb;
@@ -1886,6 +1887,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(posts::by_number),
         )
         .route("/raw/{topic_id}/{post_number}", get(posts::raw))
+        .route("/posts/{id}/deleted", get(deleted_posts::index))
+        .route("/posts/{id}/deleted.json", get(deleted_posts::index))
         .route("/posts/{id}/pending", get(user_activity::pending))
         .route("/posts/{id}/pending.json", get(user_activity::pending))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))

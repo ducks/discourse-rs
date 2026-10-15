@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET deleted_at = now() - interval '2 hours', deleted_by_id = 1 WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json"
+    }
+  ]
+}

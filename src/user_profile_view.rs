@@ -27,6 +27,9 @@ pub struct Viewer {
     pub can_direct_message: bool,
     /// `currentUser.can_invite_to_forum`, for the Invites tab.
     pub can_invite_to_forum: bool,
+    /// `displayTopLevelAdminButton`: staff, without the sidebar's user
+    /// navigation, on the desktop view.
+    pub admin_button: bool,
 }
 
 /// The routed tab and what it shows.
@@ -57,6 +60,9 @@ pub enum Tab<'a> {
     ActivityPage(&'a str, String),
     /// `user.badges`: the badges content (crate::badges_page), drawn.
     Badges(String),
+    /// `user.deletedPosts`: the deleted posts stream, drawn under no
+    /// current tab.
+    DeletedPosts(String),
     /// `preferences.*`: the preferences navigation and tab
     /// (crate::preferences_view), drawn.
     Preferences(String),
@@ -490,6 +496,16 @@ pub fn render(
             icon("angle-down", Some("angle-icon")),
         ));
     }
+    if viewer.admin_button {
+        out.push_str(&format!(
+            "<li><a class=\"btn btn-default user-admin\" href=\"{}/admin/users/{}/{}\">{}<span class=\"d-button-label\">{}</span></a></li>",
+            cx.base_path,
+            u["id"],
+            escape(&s(&u["username"]).to_lowercase()),
+            icon("wrench", None),
+            escape(cx.i18n.t("admin_js.admin.user.show_admin_profile").unwrap_or("Admin"))
+        ));
+    }
     // chat's user-profile-controls connector: ChatDirectMessageButton.
     if u["can_chat_user"] == true && !viewing_self && viewer.can_direct_message {
         out.push_str(&format!(
@@ -641,6 +657,7 @@ pub fn render(
             }
             Tab::Messages(content)
             | Tab::Badges(content)
+            | Tab::DeletedPosts(content)
             | Tab::Preferences(content)
             | Tab::Notifications(content) => out.push_str(content),
         }
@@ -997,6 +1014,32 @@ pub(crate) fn stream_parts(
     (empty, list)
 }
 
+/// user/posts.gjs for user.deletedPosts: the posts of
+/// PostsController#deleted_posts in a PostList with filter-deleted, and
+/// DLoadMore's sentinel.
+pub(crate) fn deleted_posts(cx: &ListContext, posts: &[Value]) -> String {
+    let mut out = String::from("<div><div class=\"post-list user-stream filter-deleted\">");
+    if posts.is_empty() {
+        out.push_str(&format!(
+            "<div class=\"post-list__empty-text\">{}</div>",
+            escape(&t(cx, "post_list.empty"))
+        ));
+    }
+    for post in posts {
+        out.push_str(&stream_item(
+            cx,
+            &StreamItem {
+                action: post,
+                children: Vec::new(),
+            },
+        ));
+    }
+    out.push_str(
+        "</div><div class=\"loading-container\"></div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div></div>",
+    );
+    out
+}
+
 /// A collapsed user action with its likes, stars, edits and bookmarks
 /// (UserAction#children), each the acting users' actions.
 struct StreamItem<'a> {
@@ -1116,6 +1159,30 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
             age_medium(cx, at, true)
         ));
     }
+    // The deleted posts' stream: who deleted it.
+    if let Some(by) = a["deleted_by"].as_object() {
+        let by_name = escape(
+            by.get("username")
+                .and_then(Value::as_str)
+                .unwrap_or_default(),
+        );
+        out.push_str(&format!(
+            "<span class=\"delete-info\"> {} {} </span>",
+            icon("trash-can", None),
+            avatar(
+                cx,
+                by.get("avatar_template")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default(),
+                24
+            )
+            .replacen(
+                "class=\"avatar\"",
+                &format!("class=\"avatar actor\" title=\"{by_name}\""),
+                1
+            )
+        ));
+    }
     out.push_str("</div></div>");
     if a["truncated"] == true {
         out.push_str(&format!(
@@ -1174,13 +1241,17 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
         out.push_str("</div>");
     }
     out.push_str(&format!(
-        "<div class=\"excerpt\"{} data-topic-id=\"{}\" data-user-id=\"{}\"><div class=\"cooked\">{}</div></div></div>",
+        "<div class=\"excerpt\"{} data-topic-id=\"{}\"{}><div class=\"cooked\">{}</div></div></div>",
         a["post_id"]
             .as_i64()
             .map(|id| format!(" data-post-id=\"{id}\""))
             .unwrap_or_default(),
         a["topic_id"].as_i64().unwrap_or(0),
-        a["user_id"].as_i64().unwrap_or(0),
+        // AdminUserActionSerializer has no user_id: no attribute.
+        a["user_id"]
+            .as_i64()
+            .map(|id| format!(" data-user-id=\"{id}\""))
+            .unwrap_or_default(),
         s(&a["excerpt"])
     ));
     out
