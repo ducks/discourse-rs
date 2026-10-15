@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=%40me"},
+    {"method": "GET", "path": "/search/query.json?term=%40user0"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Atrust_level_0"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Aadmins"},
+    {"method": "GET", "path": "/search.json?q=badge%3ABasic%25"}
+  ]
+}

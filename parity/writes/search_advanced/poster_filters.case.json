@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=%40user0"},
+    {"method": "GET", "path": "/search/query.json?term=%40USER0"},
+    {"method": "GET", "path": "/search/query.json?term=%40me"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20%40user1"},
+    {"method": "GET", "path": "/search/query.json?term=%40nobody"},
+    {"method": "GET", "path": "/search/query.json?term=%40system"},
+    {"method": "GET", "path": "/search/query.json?term=user%3Auser0"},
+    {"method": "GET", "path": "/search/query.json?term=user%3A2"},
+    {"method": "GET", "path": "/search/query.json?term=user%3A-1"},
+    {"method": "GET", "path": "/search/query.json?term=user%3ANobody"},
+    {"method": "GET", "path": "/search/query.json?term=created%3A%40user0"},
+    {"method": "GET", "path": "/search/query.json?term=created%3A%40Admin"},
+    {"method": "GET", "path": "/search/query.json?term=created%3A%40nobody"},
+    {"method": "GET", "path": "/search.json?q=%40user0"},
+    {"method": "GET", "path": "/search.json?q=fixture%20user%3Auser1"}
+  ]
+}

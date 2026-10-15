@@ -20,19 +20,19 @@ pub(super) struct Run {
 
 /// A query on posts as ActiveRecord accumulates it.
 #[derive(Default)]
-struct Query {
-    joins: Vec<String>,
-    wheres: Vec<String>,
-    orders: Vec<String>,
+pub(super) struct Query {
+    pub(super) joins: Vec<String>,
+    pub(super) wheres: Vec<String>,
+    pub(super) orders: Vec<String>,
 }
 
 impl Query {
-    fn and(&mut self, clause: impl Into<String>) {
+    pub(super) fn and(&mut self, clause: impl Into<String>) {
         self.wheres.push(clause.into());
     }
 
     /// `posts.none` and `where("1 = 0")`: nothing matches.
-    fn none(&mut self) {
+    pub(super) fn none(&mut self) {
         self.and("1 = 0");
     }
 
@@ -298,6 +298,11 @@ impl Search<'_> {
             match filter {
                 Filter::Category => self.category_filter(q, run, &capture).await?,
                 Filter::Hashtag => self.hashtag_filter(q, run, &capture).await?,
+                Filter::At => self.at_filter(q, &capture).await?,
+                Filter::User => self.user_filter(q, &capture).await?,
+                Filter::CreatedBy => self.created_by_filter(q, &capture).await?,
+                Filter::Group => self.group_filter(q, &capture).await?,
+                Filter::Badge => self.badge_filter(q, &capture).await?,
                 _ => return Err(Unsupported("an advanced search filter not ported").into()),
             }
         }

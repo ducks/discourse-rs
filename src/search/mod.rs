@@ -5,6 +5,7 @@
 
 pub mod advanced;
 pub mod blurb;
+mod filters;
 mod posts_query;
 
 use std::collections::HashMap;
