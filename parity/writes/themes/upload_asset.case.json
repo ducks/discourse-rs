@@ -1,0 +1,122 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "With assets",
+          "theme_fields": [
+            {
+              "name": "banner",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            },
+            {
+              "name": "header",
+              "target": "common",
+              "value": "<p>assets</p>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            },
+            {
+              "name": "banner",
+              "target": "common",
+              "type_id": "2",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "bad name!",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/themes/{{responses.2.body.theme.id}}/export"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Bad asset",
+          "theme_fields": [
+            {
+              "name": "bad name!",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ],
+  "unordered_responses": [
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields"
+  ]
+}

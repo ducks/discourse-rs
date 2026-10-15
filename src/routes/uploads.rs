@@ -247,6 +247,8 @@ pub async fn create(
         pasted: form.get("pasted") == Some("true"),
         for_private_message: form.get("for_private_message") == Some("true"),
         for_export: false,
+        for_theme: false,
+        skip_validations: false,
     };
     let outcome = uploads::create(
         &mut conn,

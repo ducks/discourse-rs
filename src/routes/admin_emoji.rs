@@ -151,6 +151,8 @@ pub async fn create(
             pasted: false,
             for_private_message: false,
             for_export: false,
+            for_theme: false,
+            skip_validations: false,
         },
     )
     .await?;

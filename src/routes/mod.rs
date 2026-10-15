@@ -1228,6 +1228,45 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(themes::index).post(themes::create),
         )
         .route(
+            "/admin/themes/import",
+            post(themes::import).layer(axum::extract::DefaultBodyLimit::max(
+                themes::BUNDLE_BODY_LIMIT,
+            )),
+        )
+        .route(
+            "/admin/themes/import.json",
+            post(themes::import).layer(axum::extract::DefaultBodyLimit::max(
+                themes::BUNDLE_BODY_LIMIT,
+            )),
+        )
+        .route(
+            "/admin/themes/upload_asset",
+            post(themes::upload_asset).layer(axum::extract::DefaultBodyLimit::max(
+                themes::BUNDLE_BODY_LIMIT,
+            )),
+        )
+        .route(
+            "/admin/themes/upload_asset.json",
+            post(themes::upload_asset).layer(axum::extract::DefaultBodyLimit::max(
+                themes::BUNDLE_BODY_LIMIT,
+            )),
+        )
+        .route(
+            "/admin/themes/generate_key_pair",
+            post(themes::generate_key_pair),
+        )
+        .route(
+            "/admin/themes/generate_key_pair.json",
+            post(themes::generate_key_pair),
+        )
+        .route("/admin/themes/{id}/source", put(themes::update_source))
+        .route("/admin/themes/{id}/source.json", put(themes::update_source))
+        .route("/admin/customize/themes/{id}/export", get(themes::export))
+        .route(
+            "/admin/customize/themes/{id}/export.json",
+            get(themes::export),
+        )
+        .route(
             "/admin/themes/bulk_destroy",
             axum::routing::delete(themes::bulk_destroy),
         )

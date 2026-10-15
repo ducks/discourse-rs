@@ -11,9 +11,13 @@
 //! dart-sass compile writes with the compile's temporary directory in its
 //! source map, a digest no two compiles share; a rebake of an unchanged
 //! scss field (a theme setting changed) writes a digest of its own and
-//! keeps the field's error. Refused: new or changed scss values (their
-//! compile errors), extra_js (ThemeJavascriptCompiler), inline scripts in
-//! html fields (AssetProcessor), uploads and svg sprites, migrations.
+//! keeps the field's error. Upload fields (theme_upload_var and
+//! screenshots) keep their upload referenced, a `.js` upload in the field's
+//! javascript cache and the `icons-sprite` upload in theme_svg_sprites.
+//! Refused: new or changed scss values (their compile errors), extra_js
+//! (ThemeJavascriptCompiler), inline scripts in html fields
+//! (AssetProcessor), migrations, svg sprites that are not plain well-formed
+//! XML (libxml2's error text).
 
 use serde_json::{Map, Value, json};
 use serde_yaml_ng::Value as Yaml;
@@ -44,6 +48,14 @@ const EXTRA_SCSS: i32 = 5;
 const EXTRA_JS: i32 = 6;
 const TESTS_JS: i32 = 7;
 const MIGRATIONS: i32 = 8;
+/// `ThemeField.types[:theme_upload_var]`, the one `theme_var_type_ids`.
+pub const UPLOAD_VAR: i32 = 2;
+/// `ThemeField.types[:theme_screenshot_upload_var]`
+pub const SCREENSHOT_UPLOAD_VAR: i32 = 7;
+/// `SvgSprite.theme_sprite_variable_name`
+const SPRITE_FIELD: &str = "icons-sprite";
+/// `SvgSprite::MAX_THEME_SPRITE_SIZE`
+const MAX_THEME_SPRITE_SIZE: usize = 1024 * 1024;
 
 /// What baking needs beside the connection.
 pub struct Env<'a> {
@@ -54,6 +66,8 @@ pub struct Env<'a> {
     pub compiler_version: String,
     /// `Discourse.current_hostname`, in the translation caches' urls.
     pub hostname: String,
+    /// `Discourse.store`, for the upload fields' contents.
+    pub store: crate::file_store::FileStore,
 }
 
 impl<'a> Env<'a> {
@@ -71,11 +85,30 @@ impl<'a> Env<'a> {
             "Theme.compiler_version without a baked theme field to read it from",
         ))?;
         let hostname = cx.urls.current_hostname()?;
+        let store = crate::file_store::FileStore::for_site(cx.urls.config, cx.settings)?;
         Ok(Env {
             cx,
             compiler_version,
             hostname,
+            store,
         })
+    }
+
+    /// `upload.content`: the stored file of an upload, None when the
+    /// upload or its file is gone.
+    async fn upload_content(
+        &self,
+        conn: &mut PgConnection,
+        upload_id: i32,
+    ) -> Result<Option<Vec<u8>>, AppError> {
+        let url: Option<String> = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+            .bind(upload_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+        match url {
+            Some(url) => Ok(self.store.read(&url).await?),
+            None => Ok(None),
+        }
     }
 }
 
@@ -123,6 +156,7 @@ pub enum FieldChange {
         name: String,
         type_id: i32,
         value: String,
+        upload_id: Option<i32>,
     },
     Update {
         id: i32,
@@ -130,6 +164,9 @@ pub enum FieldChange {
         name: String,
         type_id: i32,
         value: String,
+        upload_id: Option<i32>,
+        /// `will_save_change_to_upload_id?`
+        upload_changed: bool,
     },
     Destroy {
         id: i32,
@@ -155,6 +192,33 @@ impl FieldChange {
             | FieldChange::Destroy { name, .. } => name,
         }
     }
+
+    fn type_id(&self) -> i32 {
+        match self {
+            FieldChange::Insert { type_id, .. }
+            | FieldChange::Update { type_id, .. }
+            | FieldChange::Destroy { type_id, .. } => *type_id,
+        }
+    }
+
+    /// `(target_id, type_id, name)`: what identifies a theme's field.
+    pub fn key(&self) -> (i32, i32, String) {
+        (self.target_id(), self.type_id(), self.name().to_string())
+    }
+}
+
+/// `validate_theme_fields`: the errors of the fields a save writes, as
+/// ThemeField's validations word them (`theme_var_type_ids` names).
+pub fn field_errors(changes: &[FieldChange]) -> Vec<String> {
+    static NAME: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\A[a-zA-Z_][a-zA-Z0-9_-]*\z").expect("valid regex")
+    });
+    changes
+        .iter()
+        .filter(|c| !matches!(c, FieldChange::Destroy { .. }))
+        .filter(|c| c.type_id() == UPLOAD_VAR && !NAME.is_match(c.name()))
+        .map(|_| "Name is invalid".to_string())
+        .collect()
 }
 
 /// `ThemeField.guess_type`
@@ -173,13 +237,15 @@ fn guess_type(name: &str, target: &str) -> Option<i32> {
     }
 }
 
-/// `Theme#set_field`: the change the save will make, if any.
+/// `Theme#set_field`: the change the save will make, if any. Returns the
+/// key of the field it leaves (`set_field`'s return value), None when it
+/// leaves none.
 pub async fn set_field(
     conn: &mut PgConnection,
     theme_id: i32,
     input: &FieldInput,
     changes: &mut Vec<FieldChange>,
-) -> Result<(), AppError> {
+) -> Result<Option<(i32, i32, String)>, AppError> {
     let target_id = themes::TARGETS
         .iter()
         .find(|(_, n)| *n == input.target)
@@ -192,13 +258,10 @@ pub async fn set_field(
         None => guess_type(&input.name, &input.target)
             .ok_or(Unsupported("a theme field whose type cannot be guessed"))?,
     };
-    if input.upload_id.is_some() || matches!(type_id, 2 | 7) {
-        return Err(Unsupported("theme upload fields (uploads for themes)").into());
-    }
     let value = input.value.clone().unwrap_or_default();
-    let existing: Option<(i32, String)> = sqlx::query_as(
-        "SELECT id, value FROM theme_fields WHERE theme_id = $1 AND name = $2 AND target_id = $3 \
-         AND type_id = $4 LIMIT 1",
+    let existing: Option<(i32, String, Option<i32>)> = sqlx::query_as(
+        "SELECT id, value, upload_id FROM theme_fields WHERE theme_id = $1 AND name = $2 \
+         AND target_id = $3 AND type_id = $4 LIMIT 1",
     )
     .bind(theme_id)
     .bind(&input.name)
@@ -206,34 +269,51 @@ pub async fn set_field(
     .bind(type_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let change = match existing {
-        Some((id, _)) if crate::ruby::is_blank(&value) => Some(FieldChange::Destroy {
-            id,
-            target_id,
-            name: input.name.clone(),
-            type_id,
-        }),
-        Some((id, current)) if current != value => Some(FieldChange::Update {
-            id,
-            target_id,
-            name: input.name.clone(),
-            type_id,
-            value,
-        }),
-        Some(_) => None,
-        None if !crate::ruby::is_blank(&value) => Some(FieldChange::Insert {
-            target_id,
-            name: input.name.clone(),
-            type_id,
-            value,
-        }),
-        None => None,
+    let key = (target_id, type_id, input.name.clone());
+    let (change, kept) = match existing {
+        Some((id, _, _)) if crate::ruby::is_blank(&value) && input.upload_id.is_none() => (
+            Some(FieldChange::Destroy {
+                id,
+                target_id,
+                name: input.name.clone(),
+                type_id,
+            }),
+            true,
+        ),
+        Some((id, current, current_upload))
+            if current != value || current_upload != input.upload_id =>
+        {
+            (
+                Some(FieldChange::Update {
+                    id,
+                    target_id,
+                    name: input.name.clone(),
+                    type_id,
+                    value,
+                    upload_id: input.upload_id,
+                    upload_changed: current_upload != input.upload_id,
+                }),
+                true,
+            )
+        }
+        Some(_) => (None, true),
+        None if !crate::ruby::is_blank(&value) || input.upload_id.is_some() => (
+            Some(FieldChange::Insert {
+                target_id,
+                name: input.name.clone(),
+                type_id,
+                value,
+                upload_id: input.upload_id,
+            }),
+            true,
+        ),
+        None => (None, false),
     };
     if let Some(change) = change {
         refuse_unported(conn, theme_id, &change).await?;
         changes.push(change);
     }
-    Ok(())
+    Ok(kept.then_some(key))
 }
 
 /// The fields whose save the port cannot bake as Rails does.
@@ -347,43 +427,79 @@ pub async fn after_save(
 ) -> Result<(), AppError> {
     let extra_js_changed = changes.iter().any(|c| c.target_id() == EXTRA_JS);
     for change in changes {
-        match change {
+        let (field_id, upload_id, upload_changed) = match change {
             FieldChange::Insert {
                 target_id,
                 name,
                 type_id,
                 value,
+                upload_id,
             } => {
-                sqlx::query(
+                let id: i32 = sqlx::query_scalar(
                     "INSERT INTO theme_fields (theme_id, target_id, name, value, type_id, \
-                     created_at, updated_at) VALUES ($1, $2, $3, $4, $5, now(), now())",
+                     upload_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, now(), now()) \
+                     RETURNING id",
                 )
                 .bind(theme_id)
                 .bind(target_id)
                 .bind(name)
                 .bind(value)
                 .bind(type_id)
-                .execute(&mut *conn)
+                .bind(upload_id)
+                .fetch_one(&mut *conn)
                 .await?;
+                (id, *upload_id, upload_id.is_some())
             }
-            FieldChange::Update { id, value, .. } => {
-                // before_save: a changed value drops the baked one.
+            FieldChange::Update {
+                id,
+                value,
+                upload_id,
+                upload_changed,
+                ..
+            } => {
+                // before_save: a changed value or upload drops the baked one.
                 sqlx::query(
-                    "UPDATE theme_fields SET value = $2, value_baked = NULL, updated_at = now() \
-                     WHERE id = $1",
+                    "UPDATE theme_fields SET value = $2, upload_id = $3, value_baked = NULL, \
+                     updated_at = now() WHERE id = $1",
                 )
                 .bind(id)
                 .bind(value)
+                .bind(upload_id)
                 .execute(&mut *conn)
                 .await?;
+                (*id, *upload_id, *upload_changed)
             }
-            FieldChange::Destroy { id, .. } => {
+            FieldChange::Destroy {
+                id, type_id, name, ..
+            } => {
                 destroy_field(conn, *id).await?;
+                // after_destroy: the theme's sprite goes with its field.
+                if *type_id == UPLOAD_VAR && name == SPRITE_FIELD {
+                    sqlx::query("DELETE FROM theme_svg_sprites WHERE theme_id = $1")
+                        .bind(theme_id)
+                        .execute(&mut *conn)
+                        .await?;
+                }
                 continue;
             }
-        }
+        };
+        upload_callbacks(
+            conn,
+            env,
+            field_id,
+            change.type_id(),
+            upload_id,
+            upload_changed,
+        )
+        .await?;
         // after_save: dependent_fields invalidated.
         invalidate_dependents(conn, theme_id, change.target_id(), change.name()).await?;
+        if let Some(upload_id) = upload_id
+            && change.type_id() == UPLOAD_VAR
+            && change.name() == SPRITE_FIELD
+        {
+            upsert_svg_sprite(conn, env, theme_id, upload_id).await?;
+        }
     }
     // theme_modifier_set.save! (built for a new theme).
     sqlx::query(
@@ -463,6 +579,152 @@ async fn destroy_field(conn: &mut PgConnection, id: i32) -> Result<(), sqlx::Err
     Ok(())
 }
 
+/// ThemeField's save callbacks for its upload: before_save's javascript
+/// cache of a `.js` upload (saved with the field), then after_save's
+/// `UploadReference.ensure_exist!` for an upload field whose upload changed.
+async fn upload_callbacks(
+    conn: &mut PgConnection,
+    env: &Env<'_>,
+    field_id: i32,
+    type_id: i32,
+    upload_id: Option<i32>,
+    upload_changed: bool,
+) -> Result<(), AppError> {
+    if let Some(upload_id) = upload_id {
+        let extension: Option<Option<String>> =
+            sqlx::query_scalar("SELECT extension FROM uploads WHERE id = $1")
+                .bind(upload_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        if extension.flatten().as_deref() == Some("js") {
+            let cache: Option<i64> = sqlx::query_scalar(
+                "SELECT id FROM javascript_caches WHERE theme_field_id = $1 AND name IS NULL",
+            )
+            .bind(field_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if upload_changed || cache.is_none() {
+                let bytes = env
+                    .upload_content(conn, upload_id)
+                    .await?
+                    .ok_or(Unsupported(
+                        "a theme's javascript upload whose file is gone",
+                    ))?;
+                let content = String::from_utf8(bytes)
+                    .map_err(|_| Unsupported("a theme's javascript upload that is not UTF-8"))?;
+                let digest = javascript_digest(env, &content);
+                match cache {
+                    Some(id) => {
+                        sqlx::query(
+                            "UPDATE javascript_caches SET content = $2, digest = $3, \
+                             updated_at = now() WHERE id = $1 AND content IS DISTINCT FROM $2",
+                        )
+                        .bind(id)
+                        .bind(&content)
+                        .bind(&digest)
+                        .execute(&mut *conn)
+                        .await?;
+                    }
+                    None => {
+                        sqlx::query(
+                            "INSERT INTO javascript_caches (theme_field_id, content, digest, \
+                             created_at, updated_at) VALUES ($1, $2, $3, now(), now())",
+                        )
+                        .bind(field_id)
+                        .bind(&content)
+                        .bind(&digest)
+                        .execute(&mut *conn)
+                        .await?;
+                    }
+                }
+            }
+        }
+    }
+    if matches!(type_id, UPLOAD_VAR | SCREENSHOT_UPLOAD_VAR) && upload_changed {
+        crate::upload_references::ensure_exist(
+            conn,
+            "ThemeField",
+            i64::from(field_id),
+            upload_id.map(i64::from),
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `ThemeField#upsert_svg_sprite!`: the sprite's content kept per theme
+/// (none when its file can't be read or is over the limit).
+async fn upsert_svg_sprite(
+    conn: &mut PgConnection,
+    env: &Env<'_>,
+    theme_id: i32,
+    upload_id: i32,
+) -> Result<(), AppError> {
+    let Some(content) = env.upload_content(conn, upload_id).await? else {
+        return Ok(());
+    };
+    if content.len() > MAX_THEME_SPRITE_SIZE {
+        return Ok(());
+    }
+    // upsert: CURRENT_TIMESTAMP for both timestamps on insert, the
+    // updated one on conflict.
+    sqlx::query(
+        "INSERT INTO theme_svg_sprites (theme_id, upload_id, sprite, created_at, updated_at) \
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+         ON CONFLICT (theme_id) DO UPDATE SET upload_id = excluded.upload_id, \
+         sprite = excluded.sprite, updated_at = (CASE WHEN theme_svg_sprites.upload_id \
+         IS DISTINCT FROM excluded.upload_id OR theme_svg_sprites.sprite IS DISTINCT FROM \
+         excluded.sprite THEN CURRENT_TIMESTAMP ELSE theme_svg_sprites.updated_at END)",
+    )
+    .bind(theme_id)
+    .bind(upload_id)
+    .bind(&content)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `ThemeField#validate_svg_sprite_xml`: None when the sprite parses.
+async fn validate_svg_sprite(
+    conn: &mut PgConnection,
+    env: &Env<'_>,
+    name: &str,
+    upload_id: Option<i32>,
+) -> Result<Option<String>, AppError> {
+    let exists = match upload_id {
+        Some(id) => {
+            sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM uploads WHERE id = $1)")
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?
+        }
+        None => false,
+    };
+    let Some(upload_id) = upload_id.filter(|_| exists) else {
+        return Ok(Some(format!(
+            "Error with {name}: No upload found for the provided upload_id"
+        )));
+    };
+    let content = env
+        .upload_content(conn, upload_id)
+        .await?
+        .ok_or(Unsupported(
+            "a theme svg sprite whose file is gone (File.read's error text)",
+        ))?;
+    if content.len() > MAX_THEME_SPRITE_SIZE {
+        return Ok(Some(format!(
+            "Error with {name}: Icon sprite file is too large"
+        )));
+    }
+    if !crate::theme_import::well_formed_xml(&content) {
+        return Err(Unsupported(
+            "a theme svg sprite that is not plain well-formed XML (libxml2's error text)",
+        )
+        .into());
+    }
+    Ok(None)
+}
+
 #[derive(sqlx::FromRow)]
 struct BakeRow {
     theme_id: i32,
@@ -473,6 +735,7 @@ struct BakeRow {
     value_baked: Option<String>,
     compiler_version: String,
     error: Option<String>,
+    upload_id: Option<i32>,
 }
 
 /// `ThemeField#ensure_baked!`
@@ -482,8 +745,8 @@ pub async fn ensure_baked(
     field_id: i32,
 ) -> Result<(), AppError> {
     let Some(f): Option<BakeRow> = sqlx::query_as(
-        "SELECT theme_id, target_id, name, type_id, value, value_baked, compiler_version, error \
-         FROM theme_fields WHERE id = $1",
+        "SELECT theme_id, target_id, name, type_id, value, value_baked, compiler_version, error, \
+         upload_id FROM theme_fields WHERE id = $1",
     )
     .bind(field_id)
     .fetch_optional(&mut *conn)
@@ -534,9 +797,10 @@ pub async fn ensure_baked(
                 f.error.clone()
             };
             (Some("baked".into()), errors, cv)
-        } else if f.type_id == 2 && f.name == "icons-sprite" {
+        } else if f.type_id == UPLOAD_VAR && f.name == SPRITE_FIELD {
             // svg_sprite_field?: the sprite's XML validated from its upload.
-            return Err(Unsupported("theme svg sprites (uploads for themes)").into());
+            let error = validate_svg_sprite(conn, env, &f.name, f.upload_id).await?;
+            (Some("baked".into()), error, cv)
         } else if f.target_id == MIGRATIONS {
             (Some("baked".into()), f.error.clone(), cv)
         } else {
@@ -1116,8 +1380,8 @@ async fn refresh_setting_modifiers(
             Some("ARRAY") => {
                 let items: Vec<&str> = value.split('|').filter(|s| !s.is_empty()).collect();
                 sqlx::query(&format!(
-                    "UPDATE theme_modifier_sets SET {column} = $2 WHERE theme_id = $1 \
-                     AND {column} IS DISTINCT FROM $2"
+                    "UPDATE theme_modifier_sets SET {column} = $2::varchar[] WHERE theme_id = $1 \
+                     AND {column} IS DISTINCT FROM $2::varchar[]"
                 ))
                 .bind(theme_id)
                 .bind(&items)
@@ -1209,9 +1473,6 @@ pub async fn update_translation(
 /// detached). The default theme is never destroyed here (the services'
 /// policy).
 pub async fn destroy(conn: &mut PgConnection, theme: &Theme) -> Result<(), AppError> {
-    if theme.remote_theme_id.is_some() {
-        return Err(Unsupported("remote themes (RemoteThemeSerializer)").into());
-    }
     let id = theme.id;
     let fields: Vec<i32> =
         sqlx::query_scalar("SELECT id FROM theme_fields WHERE theme_id = $1 ORDER BY id")
@@ -1261,6 +1522,114 @@ pub async fn destroy(conn: &mut PgConnection, theme: &Theme) -> Result<(), AppEr
         .bind(id)
         .execute(&mut *conn)
         .await?;
+    Ok(())
+}
+
+/// Themes::ThemeSiteSettingManager for a themeable setting: the row
+/// written (to_db_value of the value, the default when there is none) and
+/// the change logged by `acting`. Returns the stored value, or the
+/// InvalidParameters message of a value the setting refuses.
+pub async fn set_theme_site_setting(
+    conn: &mut PgConnection,
+    defs: &crate::site_settings::Definitions,
+    theme: &Theme,
+    name: &str,
+    raw_value: Option<String>,
+    acting: i32,
+) -> Result<Result<Option<String>, String>, AppError> {
+    let def = defs.get(name).ok_or(Unsupported(
+        "a themeable setting missing from site_settings.yml",
+    ))?;
+    // to_db_value / to_rb_value for the setting's type, the default when
+    // nil.
+    let (data_type, db_value, rb_value): (i32, String, Value) = match def.data_type {
+        crate::site_settings::DataType::Bool => {
+            let default = def.default.truthy();
+            let value = match raw_value.as_deref() {
+                None => default,
+                Some(v) => matches!(v, "t" | "true"),
+            };
+            (5, if value { "t" } else { "f" }.into(), json!(value))
+        }
+        crate::site_settings::DataType::Enum => {
+            let default = def.default.to_s();
+            let value = raw_value.unwrap_or(default);
+            let valid = crate::setting_enums::recorded(name)
+                .and_then(|r| r.get("valid_values"))
+                .and_then(Value::as_array)
+                .is_some_and(|vs| vs.iter().any(|v| v["value"] == json!(value)));
+            if !valid {
+                return Ok(Err(format!("Invalid value `{value}` for `{name}`")));
+            }
+            (7, value.clone(), json!(value))
+        }
+        _ => return Err(Unsupported("themeable settings of other types").into()),
+    };
+    let existing: Option<(i32, i32, Option<String>)> = sqlx::query_as(
+        "SELECT id::int, data_type, value FROM theme_site_settings WHERE theme_id = $1 \
+         AND name = $2 LIMIT 1",
+    )
+    .bind(theme.id)
+    .bind(name)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let rb = |t: i32, v: Option<&str>| match crate::site_settings::DataType::from_id(t) {
+        Some(crate::site_settings::DataType::Bool) => json!(matches!(v, Some("t") | Some("true"))),
+        _ => json!(v),
+    };
+    let previous = existing.as_ref().map(|(_, t, v)| rb(*t, v.as_deref()));
+    let row_id: i32 =
+        match &existing {
+            Some((id, _, current)) => {
+                if current.as_deref() != Some(db_value.as_str()) {
+                    sqlx::query(
+                    "UPDATE theme_site_settings SET value = $2, updated_at = now() WHERE id = $1",
+                )
+                .bind(id)
+                .bind(&db_value)
+                .execute(&mut *conn)
+                .await?;
+                }
+                *id
+            }
+            None => sqlx::query_scalar(
+                "INSERT INTO theme_site_settings (theme_id, name, data_type, value, created_at, \
+                 updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING id::int",
+            )
+            .bind(theme.id)
+            .bind(name)
+            .bind(data_type)
+            .bind(&db_value)
+            .fetch_one(&mut *conn)
+            .await?,
+        };
+    log(
+        conn,
+        "change_theme_site_setting",
+        acting,
+        &format!("{}: {name}", theme.name),
+        None,
+        previous.as_ref().and_then(log_string),
+        log_string(&rb_value),
+    )
+    .await?;
+    let stored: Option<String> =
+        sqlx::query_scalar("SELECT value FROM theme_site_settings WHERE id = $1")
+            .bind(row_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    Ok(Ok(stored))
+}
+
+/// `belongs_to :remote_theme, dependent: :destroy`, once the destroyed
+/// theme is logged (its log still shows the remote theme it held).
+pub async fn destroy_remote_theme(conn: &mut PgConnection, theme: &Theme) -> Result<(), AppError> {
+    if let Some(remote) = theme.remote_theme_id {
+        sqlx::query("DELETE FROM remote_themes WHERE id = $1")
+            .bind(remote)
+            .execute(&mut *conn)
+            .await?;
+    }
     Ok(())
 }
 

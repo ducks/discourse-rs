@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_dark.zip"}}},
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_plain.gz"}}},
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_component.tar"}}},
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"bundle": {"fixture": "theme_component.tar"}, "theme_id": "4242"}},
+    {"method": "GET", "path": "/admin/themes/4242.json"},
+    {"method": "GET", "path": "/admin/customize/themes/{{responses.0.body.theme.id}}/export"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields"
+  ]
+}

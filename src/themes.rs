@@ -3,8 +3,10 @@
 //! settings, and ThemeSerializer with BasicThemeSerializer,
 //! ThemeIndexSerializer and ComponentIndexSerializer.
 //!
-//! Refused: theme settings of the list, upload, objects and icon types,
-//! and remote themes (their RemoteThemeSerializer).
+//! Remote themes show through RemoteThemeSerializer, and decide
+//! `supported?` from their minimum and maximum Discourse versions.
+//!
+//! Refused: theme settings of the list, upload, objects and icon types.
 
 use serde_json::{Map, Value, json};
 use serde_yaml_ng::Value as Yaml;
@@ -159,6 +161,18 @@ fn file_path(f: &Field, upload_filename: Option<&str>) -> Option<String> {
     }
 }
 
+/// `ThemeField#file_path` of a field, its upload's filename looked up.
+pub async fn field_file_path(
+    conn: &mut PgConnection,
+    f: &Field,
+) -> Result<Option<String>, sqlx::Error> {
+    let filename = match f.upload_id {
+        Some(id) => upload_url(conn, id).await?.map(|(_, name)| name),
+        None => None,
+    };
+    Ok(file_path(f, filename.as_deref()))
+}
+
 /// `I18n.available_locales` (LocaleSiteSetting.supported_locales).
 pub fn locale_available(name: &str) -> bool {
     crate::setting_enums::recorded("default_locale")
@@ -298,12 +312,265 @@ async fn related(
     Ok(Value::Array(out))
 }
 
-/// `remote_theme`: refused when there is one.
-fn remote_theme(t: &Theme) -> Result<Value, Unsupported> {
-    match t.remote_theme_id {
-        None => Ok(Value::Null),
-        Some(_) => Err(Unsupported("remote themes (RemoteThemeSerializer)")),
+/// A `remote_themes` row.
+#[derive(sqlx::FromRow, Clone, Debug)]
+pub struct RemoteTheme {
+    pub id: i32,
+    pub remote_url: String,
+    pub remote_version: Option<String>,
+    pub local_version: Option<String>,
+    pub commits_behind: Option<i32>,
+    pub branch: Option<String>,
+    pub local_compat_ref: Option<String>,
+    pub remote_compat_ref: Option<String>,
+    pub remote_updated_at: Option<chrono::NaiveDateTime>,
+    pub updated_at: chrono::NaiveDateTime,
+    pub last_error_text: Option<String>,
+    pub license_url: Option<String>,
+    pub about_url: Option<String>,
+    pub authors: Option<String>,
+    pub theme_version: Option<String>,
+    pub minimum_discourse_version: Option<String>,
+    pub maximum_discourse_version: Option<String>,
+    pub private_key: Option<String>,
+}
+
+impl RemoteTheme {
+    pub async fn find(
+        conn: &mut PgConnection,
+        id: Option<i32>,
+    ) -> Result<Option<RemoteTheme>, sqlx::Error> {
+        let Some(id) = id else {
+            return Ok(None);
+        };
+        sqlx::query_as(
+            "SELECT id, remote_url, remote_version, local_version, commits_behind, branch, \
+             local_compat_ref, remote_compat_ref, remote_updated_at, updated_at, last_error_text, \
+             license_url, about_url, authors, theme_version, minimum_discourse_version, \
+             maximum_discourse_version, private_key FROM remote_themes WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_optional(conn)
+        .await
     }
+
+    /// `is_git?`
+    pub fn is_git(&self) -> bool {
+        !crate::ruby::is_blank(&self.remote_url)
+    }
+
+    /// `github_repo_url`
+    fn github_repo_url(&self) -> Option<String> {
+        let url = crate::ruby::strip(&self.remote_url);
+        if url.starts_with("https://github.com/") || url.starts_with("http://github.com/") {
+            return Some(url.to_string());
+        }
+        url.strip_prefix("ssh://git@github.com:")
+            .map(|rest| format!("https://github.com/{rest}"))
+    }
+
+    /// `github_diff_link`
+    fn github_diff_link(&self) -> Option<String> {
+        let repo = self.github_repo_url().filter(|u| !u.is_empty())?;
+        if self.local_version == self.remote_version {
+            return None;
+        }
+        Some(format!(
+            "{}/compare/{}...{}",
+            repo.strip_suffix(".git").unwrap_or(&repo),
+            self.local_version.as_deref().unwrap_or(""),
+            self.remote_version.as_deref().unwrap_or("")
+        ))
+    }
+
+    /// RemoteThemeSerializer
+    pub fn serialize(&self) -> Value {
+        let mut out = Map::new();
+        out.insert("id".into(), json!(self.id));
+        out.insert("remote_url".into(), json!(self.remote_url));
+        out.insert("remote_version".into(), json!(self.remote_version));
+        out.insert("local_version".into(), json!(self.local_version));
+        out.insert("commits_behind".into(), json!(self.commits_behind));
+        out.insert("branch".into(), json!(self.branch));
+        out.insert("local_compat_ref".into(), json!(self.local_compat_ref));
+        out.insert("remote_compat_ref".into(), json!(self.remote_compat_ref));
+        out.insert(
+            "remote_updated_at".into(),
+            json!(self.remote_updated_at.map(json_time)),
+        );
+        out.insert("updated_at".into(), json!(json_time(self.updated_at)));
+        if let Some(link) = self.github_diff_link() {
+            out.insert("github_diff_link".into(), json!(link));
+        }
+        out.insert("last_error_text".into(), json!(self.last_error_text));
+        out.insert("is_git".into(), json!(self.is_git()));
+        let valid = |u: &Option<String>| u.clone().filter(|u| valid_url(u));
+        out.insert("license_url".into(), json!(valid(&self.license_url)));
+        out.insert("about_url".into(), json!(valid(&self.about_url)));
+        out.insert("authors".into(), json!(self.authors));
+        out.insert("theme_version".into(), json!(self.theme_version));
+        out.insert(
+            "minimum_discourse_version".into(),
+            json!(self.minimum_discourse_version),
+        );
+        out.insert(
+            "maximum_discourse_version".into(),
+            json!(self.maximum_discourse_version),
+        );
+        out.insert(
+            "has_private_key".into(),
+            json!(
+                self.private_key
+                    .as_deref()
+                    .is_some_and(|k| !crate::ruby::is_blank(k))
+            ),
+        );
+        Value::Object(out)
+    }
+}
+
+/// `UrlHelper.is_valid_url?`: an absolute path, an anchor, a mailto, or
+/// an http(s), ftp or ldap url with a host, that Ruby's URI parses.
+pub fn valid_url(url: &str) -> bool {
+    // URI::RFC3986_Parser: the characters a URI reference may hold.
+    let parses = url
+        .bytes()
+        .all(|b| b.is_ascii_alphanumeric() || b"-._~:/?#[]@!$&'()*+,;=%".contains(&b))
+        && url.matches('#').count() <= 1;
+    if !parses {
+        return false;
+    }
+    if url.starts_with('/') || url.starts_with('#') {
+        return true;
+    }
+    let scheme_end = url.find(':');
+    let Some(scheme) = scheme_end.map(|i| &url[..i]).filter(|s| {
+        s.chars().next().is_some_and(|c| c.is_ascii_alphabetic())
+            && s.chars()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
+    }) else {
+        return false;
+    };
+    let lower = scheme.to_ascii_lowercase();
+    if lower == "mailto" {
+        return true;
+    }
+    let rest = &url[scheme.len()..];
+    matches!(lower.as_str(), "http" | "https" | "ftp" | "ldap" | "ldaps")
+        && rest.starts_with("://")
+        && rest[3..].chars().next().is_some_and(|c| c != '/')
+}
+
+/// `Gem::Version.new(current) >= Gem::Version.new(needed)`, false when
+/// either is not a version (`VersionCompatibility.has_needed_version?`).
+pub fn has_needed_version(current: &str, needed: &str) -> bool {
+    match (gem_version(current), gem_version(needed)) {
+        (Some(a), Some(b)) => compare_gem_versions(&a, &b) != std::cmp::Ordering::Less,
+        _ => false,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum Segment {
+    Num(u64),
+    Str(String),
+}
+
+/// Gem::Version's canonical segments, None for a malformed version.
+fn gem_version(raw: &str) -> Option<Vec<Segment>> {
+    static PATTERN: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(
+            r"\A\s*([0-9]+(?:\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?)?\s*\z",
+        )
+        .expect("valid regex")
+    });
+    if !PATTERN.is_match(raw) {
+        return None;
+    }
+    let version = raw.trim().replace('-', ".pre.");
+    let version = if version.is_empty() {
+        "0".to_string()
+    } else {
+        version
+    };
+    static PART: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"[0-9]+|[a-zA-Z]+").expect("valid regex"));
+    let segments: Vec<Segment> = PART
+        .find_iter(&version)
+        .map(|m| match m.as_str().parse::<u64>() {
+            Ok(n) => Segment::Num(n),
+            Err(_) => Segment::Str(m.as_str().to_string()),
+        })
+        .collect();
+    // canonical_segments: trailing zeros dropped from the numeric part and
+    // from the rest.
+    let string_start = segments
+        .iter()
+        .position(|s| matches!(s, Segment::Str(_)))
+        .unwrap_or(segments.len());
+    let trim = |part: &[Segment]| -> Vec<Segment> {
+        let mut v = part.to_vec();
+        while v.last() == Some(&Segment::Num(0)) {
+            v.pop();
+        }
+        v
+    };
+    let mut canonical = trim(&segments[..string_start]);
+    canonical.extend(trim(&segments[string_start..]));
+    Some(canonical)
+}
+
+fn compare_gem_versions(a: &[Segment], b: &[Segment]) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    let len = a.len().max(b.len());
+    for i in 0..len {
+        let l = a.get(i).cloned().unwrap_or(Segment::Num(0));
+        let r = b.get(i).cloned().unwrap_or(Segment::Num(0));
+        if l == r {
+            continue;
+        }
+        return match (l, r) {
+            (Segment::Str(_), Segment::Num(_)) => Ordering::Less,
+            (Segment::Num(_), Segment::Str(_)) => Ordering::Greater,
+            (Segment::Num(x), Segment::Num(y)) => x.cmp(&y),
+            (Segment::Str(x), Segment::Str(y)) => x.cmp(&y),
+        };
+    }
+    Ordering::Equal
+}
+
+/// `Theme#supported?`: the running version within the remote theme's
+/// minimum and maximum.
+pub fn supported(remote: Option<&RemoteTheme>) -> bool {
+    let current = crate::schema::discourse_version();
+    let Some(remote) = remote else {
+        return true;
+    };
+    if let Some(min) = &remote.minimum_discourse_version
+        && !has_needed_version(current, min)
+    {
+        return false;
+    }
+    if let Some(max) = &remote.maximum_discourse_version
+        && !has_needed_version(max, current)
+    {
+        return false;
+    }
+    true
+}
+
+/// `supported?` of a theme row.
+pub async fn supported_theme(conn: &mut PgConnection, t: &Theme) -> Result<bool, sqlx::Error> {
+    Ok(supported(
+        RemoteTheme::find(conn, t.remote_theme_id).await?.as_ref(),
+    ))
+}
+
+/// `remote_theme` (RemoteThemeSerializer), null without one.
+async fn remote_theme(conn: &mut PgConnection, t: &Theme) -> Result<Value, sqlx::Error> {
+    Ok(RemoteTheme::find(conn, t.remote_theme_id)
+        .await?
+        .map_or(Value::Null, |r| r.serialize()))
 }
 
 /// `disabled_at` / `disabled_by`: the latest disable_theme_component log.
@@ -719,7 +986,7 @@ pub async fn serialize(
     if !errors.is_empty() {
         out.insert("errors".into(), json!(errors));
     }
-    out.insert("supported".into(), json!(true));
+    out.insert("supported".into(), json!(supported_theme(conn, t).await?));
     out.insert("enabled".into(), json!(t.enabled));
     let disabled = if t.component && !t.enabled {
         disabled_log(conn, t).await?
@@ -779,7 +1046,7 @@ pub async fn serialize(
         "parent_themes".into(),
         related(conn, cx, t.id, false).await?,
     );
-    out.insert("remote_theme".into(), remote_theme(t)?);
+    out.insert("remote_theme".into(), remote_theme(conn, t).await?);
     let translations: Vec<Value> = crate::site_texts::theme_translations(conn, t.id)
         .await?
         .into_iter()
@@ -808,13 +1075,13 @@ pub async fn index_json(
     );
     out.insert("remote_theme_id".into(), json!(t.remote_theme_id));
     out.insert("enabled".into(), json!(t.enabled));
-    out.insert("supported".into(), json!(true));
+    out.insert("supported".into(), json!(supported_theme(conn, t).await?));
     out.insert("system".into(), json!(t.system()));
     out.insert(
         "color_scheme".into(),
         color_scheme(conn, t.color_scheme_id).await?,
     );
-    out.insert("remote_theme".into(), remote_theme(t)?);
+    out.insert("remote_theme".into(), remote_theme(conn, t).await?);
     Ok(Value::Object(out))
 }
 
@@ -826,7 +1093,7 @@ pub async fn component_json(
 ) -> Result<Value, AppError> {
     let mut out = basic(conn, cx, t).await?;
     out.insert("remote_theme_id".into(), json!(t.remote_theme_id));
-    out.insert("supported".into(), json!(true));
+    out.insert("supported".into(), json!(supported_theme(conn, t).await?));
     out.insert("enabled".into(), json!(t.enabled));
     let disabled = if !t.enabled {
         disabled_log(conn, t).await?
@@ -848,6 +1115,6 @@ pub async fn component_json(
         "parent_themes".into(),
         related(conn, cx, t.id, false).await?,
     );
-    out.insert("remote_theme".into(), remote_theme(t)?);
+    out.insert("remote_theme".into(), remote_theme(conn, t).await?);
     Ok(Value::Object(out))
 }

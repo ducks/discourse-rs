@@ -769,7 +769,7 @@ impl ColorScheme {
 
     /// `ColorScheme#is_dark?`: nil without DB colors, else whether primary
     /// is brighter than secondary.
-    fn is_dark(&self) -> Result<Option<bool>, crate::Unsupported> {
+    pub fn is_dark(&self) -> Result<Option<bool>, crate::Unsupported> {
         if self.colors.is_empty() {
             return Ok(None);
         }
@@ -848,6 +848,110 @@ impl ColorScheme {
 /// `ColorScheme.base_colors` in file order, for merges that keep order.
 static BASE_COLORS_ORDERED: LazyLock<Vec<(String, String)>> =
     LazyLock::new(|| parse_base_colors_ordered(BASE_COLORS_SCSS));
+
+/// `ColorScheme.base.colors_hashes`: the base colors' names and hexes, in
+/// colors.scss's order.
+pub fn base_colors() -> &'static [(String, String)] {
+    &BASE_COLORS_ORDERED
+}
+
+/// `ColorScheme.color_transformation_variables`: the variables
+/// color_transformations.scss declares, in its order (as the reference at
+/// the vendored commit reads them; the file itself is not vendored).
+pub const COLOR_TRANSFORMATION_VARIABLES: [&str; 92] = [
+    "primary-very-low",
+    "primary-low",
+    "primary-low-mid",
+    "primary-medium",
+    "primary-high",
+    "primary-very-high",
+    "primary-50",
+    "primary-100",
+    "primary-200",
+    "primary-300",
+    "primary-400",
+    "primary-500",
+    "primary-600",
+    "primary-700",
+    "primary-800",
+    "primary-900",
+    "header_primary-low",
+    "header_primary-low-mid",
+    "header_primary-medium",
+    "header_primary-high",
+    "header_primary-very-high",
+    "secondary-low",
+    "secondary-medium",
+    "secondary-high",
+    "secondary-very-high",
+    "tertiary-very-low",
+    "tertiary-low",
+    "tertiary-medium",
+    "tertiary-high",
+    "tertiary-hover",
+    "tertiary-25",
+    "tertiary-50",
+    "tertiary-100",
+    "tertiary-200",
+    "tertiary-300",
+    "tertiary-400",
+    "tertiary-500",
+    "tertiary-600",
+    "tertiary-700",
+    "tertiary-800",
+    "tertiary-900",
+    "quaternary-low",
+    "highlight-bg",
+    "highlight-low",
+    "highlight-medium",
+    "highlight-high",
+    "danger-low",
+    "danger-low-mid",
+    "danger-medium",
+    "danger-hover",
+    "success-very-low",
+    "success-low",
+    "success-medium",
+    "success-hover",
+    "love-low",
+    "wiki",
+    "selected-hover",
+    "blend-primary-secondary-5",
+    "primary-med-or-secondary-med",
+    "primary-med-or-secondary-high",
+    "primary-high-or-secondary-low",
+    "primary-low-mid-or-secondary-high",
+    "primary-low-mid-or-secondary-low",
+    "primary-or-primary-low-mid",
+    "highlight-low-or-medium",
+    "tertiary-or-tertiary-low",
+    "tertiary-low-or-tertiary-high",
+    "tertiary-med-or-tertiary",
+    "secondary-or-primary",
+    "tertiary-or-white",
+    "facebook-or-white",
+    "twitter-or-white",
+    "hljs-attr",
+    "hljs-attribute",
+    "hljs-addition",
+    "inline-code-bg",
+    "hljs-bg",
+    "hljs-comment",
+    "hljs-deletion",
+    "hljs-keyword",
+    "hljs-title",
+    "hljs-name",
+    "hljs-punctuation",
+    "hljs-symbol",
+    "hljs-variable",
+    "hljs-string",
+    "shadow-opacity-modal",
+    "shadow-opacity-composer",
+    "shadow-opacity-menu-panel",
+    "shadow-opacity-card",
+    "shadow-opacity-dropdown",
+    "shadow-opacity-footer-nav",
+];
 
 fn parse_base_colors_ordered(scss: &str) -> Vec<(String, String)> {
     let mut colors: Vec<(String, String)> = Vec::new();

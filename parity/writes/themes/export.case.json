@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_fancy.zip"}}},
+    {"method": "GET", "path": "/admin/customize/themes/{{responses.0.body.theme.id}}/export"},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Plain Exported!", "component": "true", "theme_fields": [
+      {"name": "header", "target": "common", "value": "<p>plain</p>"},
+      {"name": "yaml", "target": "settings", "value": "flag: true\n"},
+      {"name": "en", "target": "translations", "value": "en:\n  x: y\n"},
+      {"name": "fake", "target": "tests_js", "value": "test();", "type_id": "6"}
+    ]}}},
+    {"method": "GET", "path": "/admin/customize/themes/{{responses.2.body.theme.id}}/export"},
+    {"method": "GET", "path": "/admin/customize/themes/999/export"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields"
+  ]
+}

@@ -1,0 +1,661 @@
+{
+  "name": "import_component",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_component.zip"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_component_v2.zip"
+        },
+        "theme_id": "{{responses.0.body.theme.id}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "bundle": {
+          "fixture": "theme_component.tar.gz"
+        },
+        "components": "none"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/components.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
+    }
+  ],
+  "started_at": "2026-10-14T21:13:49.467793",
+  "transaction_started_at": "2026-10-14T21:13:46.77773",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:13:49.529Z",
+          "updated_at": "2026-10-14T21:13:49.529Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:13:49.529Z",
+          "updated_at": "2026-10-14T21:13:49.529Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny two</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "footer",
+              "target": "desktop",
+              "value": "<p>Tiny footer</p>\n",
+              "type_id": 0,
+              "file_path": "desktop/footer.html"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component v2\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"theme_version\": \"2.0.0\"\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 2,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:13:50.303Z",
+          "updated_at": "2026-10-14T21:13:50.303Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  label: Tiny\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"about_url\": \"not a url\",\n  \"modifiers\": {\"serialize_topic_is_hot\": true}\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "label",
+              "value": "Tiny",
+              "default": "Tiny"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "has_more": false,
+        "components": [
+          {
+            "id": 1,
+            "name": "Tiny Component",
+            "description": null,
+            "created_at": "2026-10-14T21:13:49.529Z",
+            "updated_at": "2026-10-14T21:13:49.529Z",
+            "component": true,
+            "remote_theme_id": null,
+            "supported": true,
+            "enabled": true,
+            "user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "title": null
+            },
+            "parent_themes": [],
+            "remote_theme": null
+          },
+          {
+            "id": 2,
+            "name": "Tiny Component",
+            "description": null,
+            "created_at": "2026-10-14T21:13:50.303Z",
+            "updated_at": "2026-10-14T21:13:50.303Z",
+            "component": true,
+            "remote_theme_id": null,
+            "supported": true,
+            "enabled": true,
+            "user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "title": null
+            },
+            "parent_themes": [],
+            "remote_theme": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Tiny Component",
+          "description": null,
+          "created_at": "2026-10-14T21:13:49.529Z",
+          "updated_at": "2026-10-14T21:13:49.529Z",
+          "component": true,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": false,
+          "remote_theme_id": null,
+          "settings": [],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "common",
+              "value": "<div class=\"tiny\">Tiny two</div>\n",
+              "type_id": 0,
+              "file_path": "common/after_header.html"
+            },
+            {
+              "name": "footer",
+              "target": "desktop",
+              "value": "<p>Tiny footer</p>\n",
+              "type_id": 0,
+              "file_path": "desktop/footer.html"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{\n  \"name\": \"Tiny Component v2\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"theme_version\": \"2.0.0\"\n}\n",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "remote_themes": {
+      "inserted": [
+        {
+          "id": 36,
+          "branch": null,
+          "authors": "John Roe",
+          "about_url": "not a url",
+          "created_at": "2026-10-14T21:13:49.526474",
+          "remote_url": "",
+          "updated_at": "2026-10-14T21:13:49.526474",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        },
+        {
+          "id": 37,
+          "branch": null,
+          "authors": "John Roe",
+          "about_url": null,
+          "created_at": "2026-10-14T21:13:49.935268",
+          "remote_url": "",
+          "updated_at": "2026-10-14T21:13:49.935268",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": "2.0.0",
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        },
+        {
+          "id": 38,
+          "branch": null,
+          "authors": "John Roe",
+          "about_url": "not a url",
+          "created_at": "2026-10-14T21:13:50.299369",
+          "remote_url": "",
+          "updated_at": "2026-10-14T21:13:50.299369",
+          "license_url": null,
+          "private_key": null,
+          "local_version": null,
+          "theme_version": null,
+          "commits_behind": null,
+          "remote_version": null,
+          "last_error_text": null,
+          "local_compat_ref": null,
+          "remote_compat_ref": null,
+          "remote_updated_at": null,
+          "maximum_discourse_version": null,
+          "minimum_discourse_version": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 172,
+          "name": "footer",
+          "error": null,
+          "value": "<p>Tiny footer</p>\n",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 1,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:13:49.944582",
+          "updated_at": "2026-10-14T21:13:49.944582",
+          "value_baked": "<p>Tiny footer</p>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 169,
+          "name": "about",
+          "error": null,
+          "value": "{\n  \"name\": \"Tiny Component v2\",\n  \"component\": true,\n  \"authors\": \"John Roe\",\n  \"theme_version\": \"2.0.0\"\n}\n",
+          "type_id": 8,
+          "theme_id": 1,
+          "target_id": 9,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:13:49.546992",
+          "updated_at": "2026-10-14T21:13:49.948036",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 170,
+          "name": "after_header",
+          "error": null,
+          "value": "<div class=\"tiny\">Tiny two</div>\n",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:13:49.552374",
+          "updated_at": "2026-10-14T21:13:49.952304",
+          "value_baked": "<div class=\"tiny\">Tiny two</div>\n",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Tiny Component",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": true,
+          "created_at": "2026-10-14T21:13:49.5298",
+          "updated_at": "2026-10-14T21:13:49.5298",
+          "auto_update": false,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "M4Jmd+kmFdTczT3n0OVcADkpKRo=",
+            "created_at": "2026-10-14T21:13:47.524674",
+            "rotated_at": "2026-10-14T21:13:47.523274",
+            "updated_at": "2026-10-14T21:13:47.524674",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "M4Jmd+kmFdTczT3n0OVcADkpKRo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T21:13:49.480913",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "M4Jmd+kmFdTczT3n0OVcADkpKRo=",
+            "created_at": "2026-10-14T21:13:47.524674",
+            "rotated_at": "2026-10-14T21:13:47.523274",
+            "updated_at": "2026-10-14T21:13:47.524674",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "M4Jmd+kmFdTczT3n0OVcADkpKRo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T21:13:49.529Z\",\"updated_at\":\"2026-10-14T21:13:49.529Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"tiny\\\"\\u003eTiny\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/after_header.html\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  label: Tiny\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Tiny Component\\\",\\n  \\\"component\\\": true,\\n  \\\"authors\\\": \\\"John Roe\\\",\\n  \\\"about_url\\\": \\\"not a url\\\",\\n  \\\"modifiers\\\": {\\\"serialize_topic_is_hot\\\": true}\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"label\",\"value\":\"Tiny\",\"default\":\"Tiny\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:13:49.823097",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:13:49.823097",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T21:13:49.529Z\",\"updated_at\":\"2026-10-14T21:13:49.529Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"tiny\\\"\\u003eTiny two\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/after_header.html\"},{\"name\":\"footer\",\"target\":\"desktop\",\"value\":\"\\u003cp\\u003eTiny footer\\u003c/p\\u003e\\n\",\"type_id\":0,\"file_path\":\"desktop/footer.html\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Tiny Component v2\\\",\\n  \\\"component\\\": true,\\n  \\\"authors\\\": \\\"John Roe\\\",\\n  \\\"theme_version\\\": \\\"2.0.0\\\"\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:13:50.210391",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:13:50.210391",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": "{\"id\":2,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T21:13:50.303Z\",\"updated_at\":\"2026-10-14T21:13:50.303Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"tiny\\\"\\u003eTiny\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/after_header.html\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  label: Tiny\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Tiny Component\\\",\\n  \\\"component\\\": true,\\n  \\\"authors\\\": \\\"John Roe\\\",\\n  \\\"about_url\\\": \\\"not a url\\\",\\n  \\\"modifiers\\\": {\\\"serialize_topic_is_hot\\\": true}\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"label\",\"value\":\"Tiny\",\"default\":\"Tiny\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:13:50.601234",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:13:50.601234",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 5,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Tiny Component",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T21:13:50.747221",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:13:50.747221",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":2,\"name\":\"Tiny Component\",\"description\":null,\"created_at\":\"2026-10-14T21:13:50.303Z\",\"updated_at\":\"2026-10-14T21:13:50.303Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "remote_themes": 36,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "user_histories": 74
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "2d396c264fa77cab8e5a658d0471a1f963b8e6efbe326e2c92bbeb49b94f12c4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

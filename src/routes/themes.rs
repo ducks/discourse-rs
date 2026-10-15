@@ -1,16 +1,19 @@
 //! Admin::ThemesController (index, show, create, update, destroy,
-//! bulk_destroy, update_single_setting, get_translations, preview), the
+//! bulk_destroy, update_single_setting, get_translations, preview,
+//! import, export, upload_asset, generate_key_pair, update_source), the
 //! /admin/config customize, color palettes and welcome banner reads, and
 //! the theme site setting write (Themes::ThemeSiteSettingManager). JSON
-//! only. The saves themselves are crate::theme_writes.
+//! only. The saves themselves are crate::theme_writes, bundles
+//! crate::theme_import.
 //!
-//! Refused for now: importing and exporting themes, remote themes,
-//! uploads, other locales' translations (see ROADMAP 90f).
+//! Refused: what clones a git repository (remote imports, update checks
+//! and updates of git themes, source changes: network fetches), other
+//! locales' translations.
 
 use axum::Json;
 use axum::body::Bytes;
-use axum::extract::{Path, State};
-use axum::http::{HeaderMap, Uri};
+use axum::extract::{FromRequest, Multipart, Path, Request, State};
+use axum::http::{HeaderMap, Uri, header};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Map, Value, json};
 
@@ -465,104 +468,25 @@ pub async fn update_site_setting(
     let Some(theme) = Theme::find(&mut tx, id_of(&raw)).await? else {
         return Ok(super::topics::not_found_response(&state));
     };
-    let def = state.site_setting_defs.get(&name).ok_or(Unsupported(
-        "a themeable setting missing from site_settings.yml",
-    ))?;
-    // to_db_value / to_rb_value for the setting's type, the default when
-    // nil or equal to it.
     let raw_value = p.get("value").and_then(crate::params::scalar);
-    let (data_type, db_value, rb_value): (i32, String, Value) = match def.data_type {
-        crate::site_settings::DataType::Bool => {
-            let default = def.default.truthy();
-            let value = match raw_value.as_deref() {
-                None => default,
-                Some(v) => matches!(v, "t" | "true"),
-            };
-            (5, if value { "t" } else { "f" }.into(), json!(value))
-        }
-        crate::site_settings::DataType::Enum => {
-            let default = def.default.to_s();
-            let value = raw_value.unwrap_or(default);
-            let valid = crate::setting_enums::recorded(&name)
-                .and_then(|r| r.get("valid_values"))
-                .and_then(Value::as_array)
-                .is_some_and(|vs| vs.iter().any(|v| v["value"] == json!(value)));
-            if !valid {
-                return Ok(super::search::invalid_parameters(
-                    &state,
-                    &format!("Invalid value `{value}` for `{name}`"),
-                ));
-            }
-            (7, value.clone(), json!(value))
-        }
-        _ => return Err(Unsupported("themeable settings of other types").into()),
-    };
-    let existing: Option<(i32, i32, Option<String>)> = sqlx::query_as(
-        "SELECT id::int, data_type, value FROM theme_site_settings WHERE theme_id = $1 AND name = $2 LIMIT 1",
+    let stored = match theme_writes::set_theme_site_setting(
+        &mut tx,
+        &state.site_setting_defs,
+        &theme,
+        &name,
+        raw_value,
+        acting,
     )
-    .bind(theme.id)
-    .bind(&name)
-    .fetch_optional(&mut *tx)
-    .await?;
-    let rb = |t: i32, v: Option<&str>| match crate::site_settings::DataType::from_id(t) {
-        Some(crate::site_settings::DataType::Bool) => json!(matches!(v, Some("t") | Some("true"))),
-        _ => json!(v),
+    .await?
+    {
+        Ok(stored) => stored,
+        Err(message) => return Ok(super::search::invalid_parameters(&state, &message)),
     };
-    let previous = existing.as_ref().map(|(_, t, v)| rb(*t, v.as_deref()));
-    let row_id: i32 = match &existing {
-        Some((id, _, current)) => {
-            if current.as_deref() != Some(db_value.as_str()) {
-                sqlx::query("UPDATE theme_site_settings SET value = $2, updated_at = now() WHERE id = $1")
-                    .bind(id)
-                    .bind(&db_value)
-                    .execute(&mut *tx)
-                    .await?;
-            }
-            *id
-        }
-        None => {
-            sqlx::query_scalar(
-                "INSERT INTO theme_site_settings (theme_id, name, data_type, value, created_at, updated_at) \
-                 VALUES ($1, $2, $3, $4, now(), now()) RETURNING id::int",
-            )
-            .bind(theme.id)
-            .bind(&name)
-            .bind(data_type)
-            .bind(&db_value)
-            .fetch_one(&mut *tx)
-            .await?
-        }
-    };
-    let action = crate::staff_action_logs::action_id("change_theme_site_setting")
-        .ok_or(Unsupported("a staff action missing from enums.json"))?;
-    // A string column casts booleans to "t" and "f".
-    let as_log = |v: &Value| match v {
-        Value::Null => None,
-        Value::Bool(b) => Some(if *b { "t" } else { "f" }.to_string()),
-        Value::String(s) => Some(s.clone()),
-        other => Some(other.to_string()),
-    };
-    sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, \
-         admin_only, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, TRUE, now(), now())",
-    )
-    .bind(action)
-    .bind(acting)
-    .bind(format!("{}: {name}", theme.name))
-    .bind(previous.as_ref().and_then(as_log))
-    .bind(as_log(&rb_value))
-    .execute(&mut *tx)
-    .await?;
-    let stored: (Option<String>,) =
-        sqlx::query_as("SELECT value FROM theme_site_settings WHERE id = $1")
-            .bind(row_id)
-            .fetch_one(&mut *tx)
-            .await?;
     tx.commit().await?;
     Ok(Json(json!({
         "success": "OK",
         "name": name,
-        "value": stored.0,
+        "value": stored,
         "theme_id": theme.id,
     }))
     .into_response())
@@ -835,6 +759,12 @@ pub async fn create(
         return Ok(axum::http::StatusCode::NO_CONTENT.into_response());
     }
     let mut tx = state.pool.begin().await?;
+    // The fields are set on the unsaved theme (no row has its id yet).
+    let mut changes = Vec::new();
+    set_fields(&mut tx, i32::MIN, fields, &mut changes).await?;
+    if !theme_writes::field_errors(&changes).is_empty() {
+        return Ok(axum::http::StatusCode::NO_CONTENT.into_response());
+    }
     let (id, created_at, updated_at): (i32, chrono::NaiveDateTime, chrono::NaiveDateTime) =
         sqlx::query_as(
             "INSERT INTO themes (name, user_id, user_selectable, color_scheme_id, component, \
@@ -851,8 +781,6 @@ pub async fn create(
     new.id = id;
     new.created_at = created_at;
     new.updated_at = updated_at;
-    let mut changes = Vec::new();
-    set_fields(&mut tx, id, fields, &mut changes).await?;
     {
         fresh_ctx!(state, tx, settings, urls, cx);
         let env = theme_writes::Env::load(&mut tx, &cx).await?;
@@ -1036,9 +964,13 @@ pub async fn update(
     if before.system() && keys.iter().any(|k| !EDITABLE_SYSTEM_ATTRIBUTES.contains(k)) {
         return Ok(super::search::invalid_access(&state));
     }
-    if theme_param.contains_key("remote_check") || theme_param.contains_key("remote_update") {
-        return Err(Unsupported("remote theme updates").into());
-    }
+    // params[:theme][:remote_check] / [:remote_update]: truthy values.
+    let truthy = |k: &str| {
+        theme_param
+            .get(k)
+            .is_some_and(|v| !matches!(v, Value::Null | Value::Bool(false)))
+    };
+    let (remote_check, remote_update) = (truthy("remote_check"), truthy("remote_update"));
     let mut after = before.clone();
     if keys.contains(&"name") {
         after.name = crate::params::scalar(&get("name")).unwrap_or_default();
@@ -1070,9 +1002,15 @@ pub async fn update(
         )
         .await?;
     }
-    // set_fields: kept for the save.
+    // set_fields: kept for the save, refused in allowlist mode and for a
+    // git theme.
     let mut changes = Vec::new();
     if keys.contains(&"theme_fields") {
+        let remote = themes::RemoteTheme::find(&mut tx, before.remote_theme_id).await?;
+        if allowlist_mode(&state) || remote.is_some_and(|r| r.is_git()) {
+            tx.commit().await?;
+            return Ok(super::search::invalid_access(&state));
+        }
         set_fields(
             &mut tx,
             before.id,
@@ -1139,9 +1077,33 @@ pub async fn update(
             .execute(&mut *tx)
             .await?;
     }
+    // remote_check: RemoteTheme#update_remote_version, a no-op for a theme
+    // that isn't git; remote_update: update_from_remote, which fails on the
+    // empty url of one that isn't (its error kept on the remote theme).
+    if remote_check || remote_update {
+        let Some(remote) = themes::RemoteTheme::find(&mut tx, before.remote_theme_id).await? else {
+            return Err(std::io::Error::other("NoMethodError: remote_theme is nil").into());
+        };
+        if remote.is_git() {
+            return Err(Unsupported("checking or updating a git theme (a network fetch)").into());
+        }
+        if remote_update {
+            let error = crate::theme_import::git_import(&state.i18n, &remote.remote_url, None)?;
+            sqlx::query(
+                "UPDATE remote_themes SET last_error_text = $2, updated_at = now() WHERE id = $1",
+            )
+            .bind(remote.id)
+            .bind(&error.0)
+            .execute(&mut *tx)
+            .await?;
+            tx.commit().await?;
+            return Ok(json_error(&error.0));
+        }
+    }
     // @theme.save: the validations, then the row and after_save.
     let default_now = is_default(&mut tx, &state, before.id).await?;
-    let errors = component_errors(&state, &after, default_now);
+    let mut errors = component_errors(&state, &after, default_now);
+    errors.extend(theme_writes::field_errors(&changes));
     if !errors.is_empty() {
         tx.commit().await?;
         return Ok(json_error(&errors.join(", ")));
@@ -1231,6 +1193,7 @@ pub async fn destroy(
     theme_writes::destroy(&mut tx, &theme).await?;
     fresh_ctx!(state, tx, settings, urls, cx);
     theme_writes::log_theme_destroy(&mut tx, &cx, acting, &theme).await?;
+    theme_writes::destroy_remote_theme(&mut tx, &theme).await?;
     tx.commit().await?;
     Ok(axum::http::StatusCode::NO_CONTENT.into_response())
 }
@@ -1309,6 +1272,7 @@ pub async fn bulk_destroy(
     for theme in &list {
         let default = is_default(&mut tx, &state, theme.id).await?;
         theme_writes::destroy(&mut tx, theme).await?;
+        theme_writes::destroy_remote_theme(&mut tx, theme).await?;
         if default {
             set_default_theme(&mut tx, &state, -1).await?;
         }
@@ -1472,4 +1436,483 @@ pub async fn preview(
         [(axum::http::header::LOCATION, location)],
     )
         .into_response())
+}
+
+/// `Theme.allowed_remote_theme_ids` is set: `allowed_theme_repos`
+/// restricts the themes to its repositories (ban_in_allowlist_mode!).
+fn allowlist_mode(state: &AppState) -> bool {
+    state.config.globals.get("allowed_theme_repos").is_some()
+}
+
+/// `guardian.allowed_theme_repo_import?(repo)` for an admin.
+fn allowed_theme_repo(state: &AppState, repo: &str) -> bool {
+    match state.config.globals.get("allowed_theme_repos") {
+        Some(list) => list.split(',').map(crate::ruby::strip).any(|u| u == repo),
+        None => true,
+    }
+}
+
+/// A file part of a multipart request.
+struct FilePart {
+    name: String,
+    filename: String,
+    content_type: Option<String>,
+    bytes: Vec<u8>,
+}
+
+/// A request's params: the query and a JSON, form or multipart body,
+/// with a multipart body's files apart.
+struct FormParams {
+    params: Map<String, Value>,
+    files: Vec<FilePart>,
+}
+
+impl FormParams {
+    fn text(&self, key: &str) -> Option<String> {
+        self.params.get(key).and_then(crate::params::scalar)
+    }
+
+    fn file(&self, key: &str) -> Option<&FilePart> {
+        self.files.iter().find(|f| f.name == key)
+    }
+
+    fn pairs(&self) -> Vec<(String, String)> {
+        self.params
+            .iter()
+            .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+            .collect()
+    }
+}
+
+async fn read_params(state: &AppState, request: Request) -> Result<FormParams, AppError> {
+    let headers = request.headers().clone();
+    let query = request.uri().query().map(str::to_string);
+    let multipart = headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("multipart/form-data"));
+    if !multipart {
+        let body = Bytes::from_request(request, state)
+            .await
+            .map_err(|e| std::io::Error::other(e.body_text()))?;
+        return Ok(FormParams {
+            params: crate::params::parse(query.as_deref(), &headers, &body),
+            files: Vec::new(),
+        });
+    }
+    let mut out = FormParams {
+        params: crate::params::parse_query(query.as_deref().unwrap_or("")),
+        files: Vec::new(),
+    };
+    let mut parts = Multipart::from_request(request, state)
+        .await
+        .map_err(|e| std::io::Error::other(e.body_text()))?;
+    while let Some(field) = parts
+        .next_field()
+        .await
+        .map_err(|e| std::io::Error::other(e.body_text()))?
+    {
+        let name = field.name().unwrap_or_default().to_string();
+        match field.file_name().map(str::to_string) {
+            Some(filename) => {
+                let content_type = field.content_type().map(str::to_string);
+                let bytes = field
+                    .bytes()
+                    .await
+                    .map_err(|e| std::io::Error::other(e.body_text()))?;
+                out.params.remove(&name);
+                out.files.push(FilePart {
+                    name,
+                    filename,
+                    content_type,
+                    bytes: bytes.to_vec(),
+                });
+            }
+            None => {
+                let text = field
+                    .text()
+                    .await
+                    .map_err(|e| std::io::Error::other(e.body_text()))?;
+                out.files.retain(|f| f.name != name);
+                out.params.insert(name, Value::String(text));
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// `Admin::ThemesController::THEME_CONTENT_TYPES`
+const THEME_CONTENT_TYPES: [&str; 4] = [
+    "application/gzip",
+    "application/x-gzip",
+    "application/x-zip-compressed",
+    "application/zip",
+];
+
+/// The largest request body the import and asset uploads read.
+pub const BUNDLE_BODY_LIMIT: usize = 256 * 1024 * 1024;
+
+/// POST /admin/themes/import(.json): a remote theme (refused past its
+/// checks: cloning is a network fetch), its placeholder, or a bundle.
+pub async fn import(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    request: Request,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    let headers = request.headers().clone();
+    let path = request.uri().path().to_string();
+    let form = read_params(&state, request).await?;
+    if !super::session::csrf_ok(&state, &headers, &form.pairs(), &path, "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    let acting = guardian
+        .user_id()
+        .ok_or(Unsupported("an admin without a user"))?;
+    if let Some(remote) = form.text("remote") {
+        return import_remote(&state, &form, &remote, acting).await;
+    }
+    let theme_file = match (form.file("theme"), form.params.get("theme")) {
+        (Some(file), _) => Some(file),
+        // String#content_type
+        (None, Some(_)) => {
+            return Err(
+                std::io::Error::other("NoMethodError: content_type of a theme param").into(),
+            );
+        }
+        (None, None) => None,
+    };
+    let bundle = match (form.file("bundle"), form.params.get("bundle")) {
+        (Some(file), _) => Some(file),
+        (None, Some(_)) => {
+            return Err(std::io::Error::other("NoMethodError: path of a bundle param").into());
+        }
+        (None, None) => theme_file.filter(|f| {
+            f.content_type
+                .as_deref()
+                .is_some_and(|c| THEME_CONTENT_TYPES.contains(&c))
+        }),
+    };
+    let Some(bundle) = bundle else {
+        return Ok(json_error(&tr(
+            &state,
+            "themes.import_error.unknown_file_type",
+        )));
+    };
+    if allowlist_mode(&state) {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let mut tx = state.pool.begin().await?;
+    fresh_ctx!(state, tx, settings, urls, cx);
+    let uploader = crate::theme_import::Uploader {
+        cx: &cx,
+        staff: true,
+    };
+    let imported = crate::theme_import::update_zipped_theme(
+        &mut tx,
+        &uploader,
+        &crate::theme_import::ZipImport {
+            bytes: &bundle.bytes,
+            original_filename: &bundle.filename,
+            user_id: acting,
+            theme_id: form.text("theme_id"),
+            update_components: form.text("components"),
+        },
+    )
+    .await?;
+    let theme = match imported {
+        Ok(theme) => theme,
+        Err(error) => return Ok(json_error(&error.0)),
+    };
+    theme_writes::log_theme_change(&mut tx, &cx, acting, None, &theme).await?;
+    let body = themes::serialize(&mut tx, &cx, &theme, false).await?;
+    tx.commit().await?;
+    Ok((
+        axum::http::StatusCode::CREATED,
+        Json(json!({ "theme": body })),
+    )
+        .into_response())
+}
+
+/// The ssh key the import's `public_key` names (`ssh_key_<public key>`).
+async fn private_key_for(
+    conn: &mut sqlx::PgConnection,
+    public_key: &str,
+) -> Result<Option<String>, AppError> {
+    Ok(
+        crate::owned_schema::cached_get(conn, &format!("ssh_key_{public_key}"))
+            .await?
+            .filter(|k| !crate::ruby::is_blank(k)),
+    )
+}
+
+/// The remote branch of `import`.
+async fn import_remote(
+    state: &AppState,
+    form: &FormParams,
+    remote: &str,
+    acting: i32,
+) -> Result<Response, AppError> {
+    if remote.chars().count() > crate::theme_import::MAX_REMOTE_LENGTH {
+        let repo: String = remote
+            .chars()
+            .take(crate::theme_import::MAX_REMOTE_LENGTH + 1)
+            .collect();
+        let message = state
+            .i18n
+            .t_with("themes.import_error.not_allowed_theme", &[("repo", &repo)])
+            .unwrap_or_default();
+        return Ok(json_error(&message));
+    }
+    let stripped = crate::ruby::strip(remote);
+    if !allowed_theme_repo(state, stripped) {
+        let message = state
+            .i18n
+            .t_with(
+                "themes.import_error.not_allowed_theme",
+                &[("repo", stripped)],
+            )
+            .unwrap_or_default();
+        return Ok((
+            axum::http::StatusCode::FORBIDDEN,
+            Json(json!({ "errors": [message] })),
+        )
+            .into_response());
+    }
+    let branch = form.text("branch");
+    let public_key = form.text("public_key");
+    let mut tx = state.pool.begin().await?;
+    let private_key = match &public_key {
+        Some(key) => private_key_for(&mut tx, key).await?,
+        None => None,
+    };
+    if public_key
+        .as_deref()
+        .is_some_and(|k| !crate::ruby::is_blank(k))
+        && private_key.is_none()
+    {
+        return Ok(json_error(&tr(state, "themes.import_error.ssh_key_gone")));
+    }
+    if form.params.contains_key("placeholder") {
+        if private_key.is_none() {
+            return Ok(json_error(&tr(
+                state,
+                "themes.import_error.git_authentication",
+            )));
+        }
+    } else {
+        let error = crate::theme_import::git_import(&state.i18n, stripped, private_key.as_deref())?;
+        if !form.params.contains_key("force") {
+            return Ok(json_error(&error.0));
+        }
+    }
+    let theme = crate::theme_import::create_placeholder(
+        &mut tx,
+        remote,
+        branch.as_deref(),
+        private_key.as_deref(),
+        acting,
+    )
+    .await?;
+    fresh_ctx!(state, tx, settings, urls, cx);
+    let body = themes::serialize(&mut tx, &cx, &theme, false).await?;
+    tx.commit().await?;
+    Ok((
+        axum::http::StatusCode::CREATED,
+        Json(json!({ "theme": body })),
+    )
+        .into_response())
+}
+
+/// GET /admin/customize/themes/:id/export: the theme as a zip.
+pub async fn export(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    let mut conn = state.pool.acquire().await?;
+    let Some(theme) = Theme::find(&mut conn, id_of(&raw)).await? else {
+        return Ok(super::search::invalid_parameters(&state, "id"));
+    };
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &settings)?;
+    let (filename, bytes) = crate::theme_import::export(&mut conn, &store, &theme).await?;
+    Ok((
+        [
+            (header::CONTENT_TYPE, "application/zip".to_string()),
+            (
+                header::CONTENT_DISPOSITION,
+                format!("attachment; filename=\"{filename}\"; filename*=UTF-8''{filename}"),
+            ),
+        ],
+        bytes,
+    )
+        .into_response())
+}
+
+/// POST /admin/themes/upload_asset(.json): a file uploaded for themes.
+pub async fn upload_asset(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    request: Request,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    let headers = request.headers().clone();
+    let path = request.uri().path().to_string();
+    let form = read_params(&state, request).await?;
+    if !super::session::csrf_ok(&state, &headers, &form.pairs(), &path, "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    let acting = guardian
+        .user_id()
+        .ok_or(Unsupported("an admin without a user"))?;
+    if allowlist_mode(&state) {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let Some(file) = form.file("file") else {
+        return Err(std::io::Error::other("NoMethodError: path of a missing file").into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let outcome = crate::uploads::create(
+        &mut conn,
+        &settings,
+        &state.i18n,
+        &urls,
+        &crate::file_store::FileStore::for_site(&state.config, &settings)?,
+        &crate::uploads::NewUpload {
+            user_id: acting,
+            staff: true,
+            upload_type: "theme",
+            filename: &file.filename,
+            bytes: &file.bytes,
+            pasted: false,
+            for_private_message: false,
+            for_export: false,
+            for_theme: true,
+            skip_validations: false,
+        },
+    )
+    .await?;
+    match outcome {
+        crate::uploads::Outcome::Created(upload) => Ok((
+            axum::http::StatusCode::CREATED,
+            Json(json!({ "upload_id": upload["id"] })),
+        )
+            .into_response()),
+        crate::uploads::Outcome::Invalid(errors) => Ok((
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": errors })),
+        )
+            .into_response()),
+    }
+}
+
+/// POST /admin/themes/generate_key_pair(.json): an RSA key pair, the
+/// private key kept an hour under its public key for the import.
+pub async fn generate_key_pair(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    if let Err(r) = write_params(&state, &headers, &uri, &body, "POST") {
+        return Ok(*r);
+    }
+    let (public_key, private_key) =
+        tokio::task::spawn_blocking(crate::theme_import::generate_ssh_key)
+            .await
+            .map_err(std::io::Error::other)??;
+    let mut conn = state.pool.acquire().await?;
+    crate::owned_schema::cached_setex(
+        &mut conn,
+        &format!("ssh_key_{public_key}"),
+        3600,
+        &private_key,
+    )
+    .await?;
+    Ok(Json(json!({ "public_key": public_key })).into_response())
+}
+
+/// PUT /admin/themes/:id/source(.json): a git theme's remote url changed,
+/// refused once its checks pass (the update clones the repository).
+pub async fn update_source(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = match write_params(&state, &headers, &uri, &body, "PUT") {
+        Ok(p) => p,
+        Err(r) => return Ok(*r),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let Some(theme) = Theme::find(&mut conn, id_of(&raw)).await? else {
+        return Ok(super::search::invalid_parameters(&state, "id"));
+    };
+    let remote = themes::RemoteTheme::find(&mut conn, theme.remote_theme_id).await?;
+    if !remote.as_ref().is_some_and(themes::RemoteTheme::is_git) {
+        return Ok(super::search::invalid_parameters(&state, "remote_theme"));
+    }
+    let remote_url = p
+        .get("remote_url")
+        .and_then(crate::params::scalar)
+        .map(|u| crate::ruby::strip(&u).to_string())
+        .filter(|u| !u.is_empty());
+    let Some(remote_url) = remote_url else {
+        return Ok(super::search::invalid_parameters(&state, "remote_url"));
+    };
+    if remote_url.chars().count() > crate::theme_import::MAX_REMOTE_LENGTH {
+        let repo: String = remote_url.chars().take(101).collect();
+        let message = state
+            .i18n
+            .t_with("themes.import_error.not_allowed_theme", &[("repo", &repo)])
+            .unwrap_or_default();
+        return Ok(json_error(&message));
+    }
+    if !allowed_theme_repo(&state, &remote_url) {
+        let message = state
+            .i18n
+            .t_with(
+                "themes.import_error.not_allowed_theme",
+                &[("repo", &remote_url)],
+            )
+            .unwrap_or_default();
+        return Ok((
+            axum::http::StatusCode::FORBIDDEN,
+            Json(json!({ "errors": [message] })),
+        )
+            .into_response());
+    }
+    if let Some(public_key) = p
+        .get("public_key")
+        .and_then(crate::params::scalar)
+        .filter(|k| !crate::ruby::is_blank(k))
+        && private_key_for(&mut conn, &public_key).await?.is_none()
+    {
+        return Ok(json_error(&tr(&state, "themes.import_error.ssh_key_gone")));
+    }
+    Err(Unsupported("changing a git theme's source (update_from_remote clones it)").into())
 }

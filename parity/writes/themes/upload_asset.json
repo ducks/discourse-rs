@@ -1,0 +1,675 @@
+{
+  "name": "upload_asset",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "With assets",
+          "theme_fields": [
+            {
+              "name": "banner",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            },
+            {
+              "name": "header",
+              "target": "common",
+              "value": "<p>assets</p>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            },
+            {
+              "name": "banner",
+              "target": "common",
+              "type_id": "2",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "bad name!",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/themes/{{responses.2.body.theme.id}}/export"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Bad asset",
+          "theme_fields": [
+            {
+              "name": "bad name!",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.0.body.upload_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T21:44:49.017823",
+  "transaction_started_at": "2026-10-14T21:44:46.304408",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "upload_id": 36
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Original filename Sorry, the file you are trying to upload is not authorized (authorized extensions: wasm, jpg, jpeg, png, woff, woff2, svg, eot, ttf, otf, gif, webp, avif, js)."
+        ]
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "With assets",
+          "description": null,
+          "created_at": "2026-10-14T21:44:49.197Z",
+          "updated_at": "2026-10-14T21:44:49.197Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "header",
+              "target": "common",
+              "value": "<p>assets</p>",
+              "type_id": 0,
+              "file_path": "common/header.html"
+            },
+            {
+              "name": "banner",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/banner.png"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "With assets",
+          "description": null,
+          "created_at": "2026-10-14T21:44:49.197Z",
+          "updated_at": "2026-10-14T21:44:49.197Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "header",
+              "target": "common",
+              "value": "<p>assets</p>",
+              "type_id": 0,
+              "file_path": "common/header.html"
+            },
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name is invalid"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "With assets",
+          "description": null,
+          "created_at": "2026-10-14T21:44:49.197Z",
+          "updated_at": "2026-10-14T21:44:49.197Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "header",
+              "target": "common",
+              "value": "<p>assets</p>",
+              "type_id": 0,
+              "file_path": "common/header.html"
+            },
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "zip": [
+          {
+            "name": "about.json",
+            "size": 398,
+            "sha256": "ab722581fcb307f5d34f1857b23242340976a0cc50c33fca86b681a7e901c006"
+          },
+          {
+            "name": "assets/hero.png",
+            "size": 48867,
+            "sha256": "dbd52775ad1fce550671e433dc00c838f125a2216db8a8027e245d78211c2625"
+          },
+          {
+            "name": "common/header.html",
+            "size": 13,
+            "sha256": "6d50e182df34dfa8b2582d90fde2f2aec5d0fc20b00c8accd5f0db3219c5fb63"
+          }
+        ]
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 201,
+      "body": {
+        "upload_id": 36
+      }
+    }
+  ],
+  "changes": {
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 170,
+          "name": "header",
+          "error": null,
+          "value": "<p>assets</p>",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-14T21:44:49.217714",
+          "updated_at": "2026-10-14T21:44:49.217714",
+          "value_baked": "<p>assets</p>",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 171,
+          "name": "hero",
+          "error": null,
+          "value": "",
+          "type_id": 2,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": 36,
+          "created_at": "2026-10-14T21:44:49.642682",
+          "updated_at": "2026-10-14T21:44:49.642682",
+          "value_baked": null,
+          "compiler_version": "0"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "With assets",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T21:44:49.197417",
+          "updated_at": "2026-10-14T21:44:49.197417",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "upload_references": {
+      "inserted": [
+        {
+          "id": 37,
+          "target_id": 171,
+          "upload_id": 36,
+          "created_at": "2026-10-14T21:44:49.647804",
+          "updated_at": "2026-10-14T21:44:49.647858",
+          "target_type": "ThemeField"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "etag": null,
+          "sha1": "043b0aa221f492e60cda981a865188e2c0afe6e0",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": null,
+          "filesize": 48867,
+          "extension": "png",
+          "created_at": "2026-10-14T21:44:49.069436",
+          "updated_at": "2026-10-14T21:44:49.08231",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "created_at": "2026-10-14T21:44:46.96008",
+            "rotated_at": "2026-10-14T21:44:46.953452",
+            "updated_at": "2026-10-14T21:44:46.96008",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T21:44:49.030623",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "created_at": "2026-10-14T21:44:46.96008",
+            "rotated_at": "2026-10-14T21:44:46.953452",
+            "updated_at": "2026-10-14T21:44:46.96008",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "With assets",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"With assets\",\"description\":null,\"created_at\":\"2026-10-14T21:44:49.197Z\",\"updated_at\":\"2026-10-14T21:44:49.197Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"banner\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/banner.png\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:44:49.360971",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:44:49.360971",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "With assets",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"With assets\",\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T21:44:49.915649",
+          "ip_address": null,
+          "updated_at": "2026-10-14T21:44:49.915649",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"With assets\",\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"banner\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/banner.png\"}]}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T21:44:49.097298"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "upload_references": 36,
+    "uploads": 36,
+    "user_histories": 74,
+    "user_uploads": 36
+  },
+  "unordered_responses": [
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "2ef5997e5881ac0a61dc721095ca18679bbf8b838b5345e7111d251d2d79c9c4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
