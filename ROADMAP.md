@@ -1946,13 +1946,67 @@ route table has been made, so this list may be short.
     events as signed webhooks
 208. `feat/multisite` L, moved up to follow 131 (see "Next, in
     order"): several forums from one process, by hostname
-    (RailsMultisite). The site picked from the Host header per request
-    and per job; each site's own pool, pg-bus, anonymous cache, rate
-    limits, search log cache and site settings (today one AppState holds
-    one of each); request tracking's counts and event queue
-    (request_tracking.rs, process-wide statics today) kept per site;
-    scheduled jobs run for every site; multisite.yml's shape for the
-    config
+    (RailsMultisite). One AppState and Router per site, built by today's
+    startup, behind a service that picks the site per request, so the
+    handlers' `state.pool` and `state.bus` call sites do not change; one
+    job worker per site. The sweep, with every single-site assumption
+    classified and the Rails and rails_multisite conventions it follows:
+    docs/multisite.md. The queue, sessions, keys and pg-bus already live
+    in the site's database (owned_schema.rs, bus.rs), so jobs need no
+    site id; what remains is in-process state, the `default` db spelled
+    out, the hostname from DISCOURSE_HOSTNAME, and startup. Split by
+    dependency, each branch stacked on the one before and mergeable with
+    one site behaving exactly as now: 208a. `refactor/site-state` M (the
+    process-wide state that is a site's moved into AppState:
+    request_tracking.rs's COUNTS, FLUSHER and QUEUE, whose flusher today
+    writes every count into the first pool it saw; jobs/periodical.rs's
+    CALLS and NEXT_CATEGORY_ID; highlight_js.rs's version cache keyed by
+    site; the resolved site settings cache out of the shared Definitions
+    (site_settings.rs:331, whose fingerprint two fresh sites share), the
+    translation overrides out of the shared I18n (i18n.rs:37), the
+    last-seen gate out of Keys (session/current.rs:33); the rate limit
+    MemoryStore split into a process-wide store for the `GLOBAL::` per-IP
+    lists and a per-site one, with `load` taking the `GLOBAL::` lists
+    back (rate_limiter.rs:77, :312)), 208b. `feat/multisite-sites` L
+    (multisite.yml at DISCOURSE_MULTISITE_CONFIG_PATH in Rails' shape:
+    db key to database, host, port, username, password, pool,
+    host_names, `default` refused and kept for the env site; Config
+    split into the per-site part (database, host names, pool, db key)
+    and the process-wide rest; main.rs's startup per site (schema
+    verify, owned schema, pg-bus, the rate limit lists, the site icons
+    at boot, the worker with its scheduled jobs' first runs staggered,
+    the shutdown save and flush); the dispatcher: the Host header, `__ws`
+    on asset hostnames, the path's hostname on /highlight-js and
+    /user_avatar (routes/highlight_js.rs, routes/user_avatars.rs), 404
+    `not found` for an unknown host, /srv/status on `default`;
+    `Urls::current_hostname` from the site's first host name (url.rs:50)
+    and the rollups' host list from all of them (jobs/rollups.rs:172);
+    force_hostname in the host_names check and top referrers
+    (problem_checks.rs:345, reports/pageviews.rs:432). Sites besides
+    `default` are refused at startup until 208d), 208c.
+    `feat/multisite-paths` M (the site's db key for the `default`
+    spelled out in file_store.rs:15, upload_references.rs:21,
+    backup_restore/store.rs:13 with creator.rs's and restorer.rs's tmp
+    and upload paths, reports/pageviews.rs:505,523; the cookie key per
+    request host, the salt with the host appended as
+    RailsMultisite::CookieSalt does (session/cookie.rs:52), one key per
+    host name made at startup; scripts/restore-backup restoring into a
+    site's db key under a shared PUBLIC_DIR with the uploads remap),
+    208d. `feat/multisite-ops` M (the refusal lifted; the connection
+    budget: a site's `pool`, an idle timeout on every pool, a startup
+    warning when the sites' pools plus the rate limiter's 4 and pg-bus's
+    listener exceed `max_connections`; a site that fails to start logged
+    and skipped or fatal, decided here; deploy/'s env, Caddyfile, unit
+    and install for several hosts). No multisite reference instance
+    exists, so each branch is verified by two-site integration tests
+    (two cloned test databases, two AppStates, from 208b through the
+    dispatcher) asserting isolation: settings, translation overrides,
+    sessions and cookies, bus messages, anonymous cache, per-user and
+    per-IP rate limits, request counts, pageview queue, jobs and
+    scheduled state, upload and backup paths; paths, URLs and cookie
+    salts against the Rails source (file_store/base_store.rb,
+    backup_restore/local_backup_store.rb, lib/discourse.rb,
+    rails_multisite's connection_management.rb and cookie_salt.rb)
 
 ## Milestone 1: a hostable read-only mirror
 
