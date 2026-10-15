@@ -1,0 +1,329 @@
+{
+  "name": "notifications",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/2/notifications.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/2/notifications.json",
+      "params": {
+        "tag_notification": {
+          "notification_level": 3
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/tag/2/notifications.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/9601/notifications.json",
+      "params": {
+        "tag_notification": {
+          "notification_level": 2
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/2/notifications.json",
+      "params": {
+        "tag_notification": {
+          "notification_level": 0
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/tag/guide/notifications.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/guide/notifications.json",
+      "params": {
+        "tag_notification": {
+          "notification_level": 1
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:42:11.142291",
+  "transaction_started_at": "2026-10-14T23:42:08.965343",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tag_notification": {
+          "id": 2,
+          "name": "guide",
+          "notification_level": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "watched_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ],
+        "watching_first_post_tags": [],
+        "tracked_tags": [],
+        "muted_tags": [],
+        "regular_tags": []
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag_notification": {
+          "id": 2,
+          "name": "guide",
+          "notification_level": 3
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "watched_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ],
+        "watching_first_post_tags": [],
+        "tracked_tags": [
+          {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto"
+          }
+        ],
+        "muted_tags": [],
+        "regular_tags": []
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "watched_tags": [],
+        "watching_first_post_tags": [],
+        "tracked_tags": [
+          {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto"
+          }
+        ],
+        "muted_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ],
+        "regular_tags": []
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag_notification": {
+          "id": 2,
+          "name": "guide",
+          "notification_level": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "watched_tags": [],
+        "watching_first_post_tags": [],
+        "tracked_tags": [
+          {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto"
+          }
+        ],
+        "muted_tags": [],
+        "regular_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "tag_users": {
+      "inserted": [
+        {
+          "id": 2,
+          "tag_id": 1,
+          "user_id": 3,
+          "created_at": "2026-10-14T23:42:11.291791",
+          "updated_at": "2026-10-14T23:42:11.291791",
+          "notification_level": 2
+        },
+        {
+          "id": 1,
+          "tag_id": 2,
+          "user_id": 3,
+          "created_at": "2026-10-14T23:42:11.223488",
+          "updated_at": "2026-10-14T23:42:11.423774",
+          "notification_level": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "liked": false,
+            "posted": true,
+            "user_id": 3,
+            "topic_id": 35,
+            "bookmarked": true,
+            "last_posted_at": "2026-09-30T07:28:29.10764",
+            "last_visited_at": "2026-09-30T07:28:29.108382",
+            "first_visited_at": "2026-09-30T07:28:29.108382",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 2,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.122811"
+          },
+          "after": {
+            "id": 35,
+            "liked": false,
+            "posted": true,
+            "user_id": 3,
+            "topic_id": 35,
+            "bookmarked": true,
+            "last_posted_at": "2026-09-30T07:28:29.10764",
+            "last_visited_at": "2026-09-30T07:28:29.108382",
+            "first_visited_at": "2026-09-30T07:28:29.108382",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 2,
+            "notifications_reason_id": null,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.122811"
+          }
+        },
+        {
+          "before": {
+            "id": 46,
+            "liked": false,
+            "posted": false,
+            "user_id": 3,
+            "topic_id": 41,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": "2026-10-01T13:42:34.814468",
+            "first_visited_at": "2026-10-01T13:42:34.814468",
+            "cleared_pinned_at": null,
+            "notification_level": 1,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": null,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-10-01T13:48:11.542274"
+          },
+          "after": {
+            "id": 46,
+            "liked": false,
+            "posted": false,
+            "user_id": 3,
+            "topic_id": 41,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": "2026-10-01T13:42:34.814468",
+            "first_visited_at": "2026-10-01T13:42:34.814468",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": null,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-10-01T13:48:11.542274"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "4OornvR+loIAfvhpHtDGEpCsR8M=",
+            "created_at": "2026-10-14T23:42:09.503151",
+            "rotated_at": "2026-10-14T23:42:09.501176",
+            "updated_at": "2026-10-14T23:42:09.503151",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "4OornvR+loIAfvhpHtDGEpCsR8M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:42:11.152613",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "4OornvR+loIAfvhpHtDGEpCsR8M=",
+            "created_at": "2026-10-14T23:42:09.503151",
+            "rotated_at": "2026-10-14T23:42:09.501176",
+            "updated_at": "2026-10-14T23:42:09.503151",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "4OornvR+loIAfvhpHtDGEpCsR8M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "tag_users": 1
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted) VALUES (3, 41, 1, NULL, false) ON CONFLICT (user_id, topic_id) DO UPDATE SET notification_level = 1, notifications_reason_id = NULL"
+  ],
+  "recorded_from": {
+    "case": "27b492fa58de33fc19b51f21052c630ee9de8c597979801b0e83bc1dd3ee4643",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

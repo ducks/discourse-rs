@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/tags/bulk_create.json", "params": {"tag_names": ["New One", "howto", "", "a-name-far-longer-than-twenty", "!!!", "none", "new-one"]}},
+    {"method": "POST", "path": "/tags/bulk_create.json", "params": {"tag_names": "not-a-list"}},
+    {"method": "POST", "path": "/tags/bulk_create.json", "params": {}}
+  ]
+}

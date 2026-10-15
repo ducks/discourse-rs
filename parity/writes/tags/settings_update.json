@@ -1,0 +1,362 @@
+{
+  "name": "settings_update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/tag/1/settings.json",
+      "params": {
+        "tag_settings": {
+          "name": "How To Guides",
+          "description": "Step by *step*, see https://example.com/howto",
+          "removed_synonym_ids": [
+            9601
+          ],
+          "new_synonyms": [
+            {
+              "id": 9602
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/1/settings.json",
+      "params": {
+        "tag_settings": {
+          "slug": "custom-slug"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/tag/1/settings.json"
+    }
+  ],
+  "started_at": "2026-10-15T00:55:45.755913",
+  "transaction_started_at": "2026-10-15T00:55:40.624527",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "tag_settings": {
+          "id": 1,
+          "name": "how-to-guides",
+          "locale": null,
+          "slug": "how-to-guides",
+          "description": "Step by *step*, see https://example.com/howto",
+          "description_cooked": "<p>Step by <em>step</em>, see <a href=\"https://example.com/howto\" rel=\"noopener nofollow ugc\">https://example.com/howto</a></p>",
+          "synonyms": [
+            {
+              "id": 9602,
+              "name": "manual"
+            }
+          ],
+          "tag_group_names": [],
+          "tag_groups": [],
+          "category_restricted": false,
+          "can_edit": true,
+          "can_admin": true,
+          "category_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "tag_settings": {
+          "id": 1,
+          "name": "how-to-guides",
+          "locale": null,
+          "slug": "custom-slug",
+          "description": "Step by *step*, see https://example.com/howto",
+          "description_cooked": "<p>Step by <em>step</em>, see <a href=\"https://example.com/howto\" rel=\"noopener nofollow ugc\">https://example.com/howto</a></p>",
+          "synonyms": [
+            {
+              "id": 9602,
+              "name": "manual"
+            }
+          ],
+          "tag_group_names": [],
+          "tag_groups": [],
+          "category_restricted": false,
+          "can_edit": true,
+          "can_admin": true,
+          "category_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "tag_settings": {
+          "id": 1,
+          "name": "how-to-guides",
+          "locale": null,
+          "slug": "custom-slug",
+          "description": "Step by *step*, see https://example.com/howto",
+          "description_cooked": "<p>Step by <em>step</em>, see <a href=\"https://example.com/howto\" rel=\"noopener nofollow ugc\">https://example.com/howto</a></p>",
+          "synonyms": [
+            {
+              "id": 9602,
+              "name": "manual"
+            }
+          ],
+          "tag_group_names": [],
+          "tag_groups": [],
+          "category_restricted": false,
+          "can_edit": true,
+          "can_admin": true,
+          "category_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "tag_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "tag_id": 1,
+            "version": 3,
+            "raw_data": "howto",
+            "search_data": "'howto':1A"
+          },
+          "after": {
+            "locale": "en",
+            "tag_id": 1,
+            "version": 3,
+            "raw_data": "how-to-guides",
+            "search_data": "'guid':4A 'how-to-guid':1A"
+          }
+        }
+      ]
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9601,
+            "name": "how-to",
+            "slug": "how-to",
+            "locale": null,
+            "created_at": "2026-10-15T00:55:40.624527",
+            "updated_at": "2026-10-15T00:55:40.624527",
+            "description": null,
+            "target_tag_id": 1,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          },
+          "after": {
+            "id": 9601,
+            "name": "how-to",
+            "slug": "how-to",
+            "locale": null,
+            "created_at": "2026-10-15T00:55:40.624527",
+            "updated_at": "2026-10-15T00:55:40.624527",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          }
+        },
+        {
+          "before": {
+            "id": 9602,
+            "name": "manual",
+            "slug": "manual",
+            "locale": null,
+            "created_at": "2026-10-15T00:55:40.624527",
+            "updated_at": "2026-10-15T00:55:40.624527",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          },
+          "after": {
+            "id": 9602,
+            "name": "manual",
+            "slug": "manual",
+            "locale": null,
+            "created_at": "2026-10-15T00:55:40.624527",
+            "updated_at": "2026-10-15T00:55:40.624527",
+            "description": null,
+            "target_tag_id": 1,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          }
+        },
+        {
+          "before": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 1,
+            "name": "how-to-guides",
+            "slug": "custom-slug",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-10-15T00:55:47.975393",
+            "description": "Step by *step*, see https://example.com/howto",
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": "<p>Step by <em>step</em>, see <a href=\"https://example.com/howto\" rel=\"noopener nofollow ugc\">https://example.com/howto</a></p>",
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 312,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KRm7wg9Ws8w+rjisKkuSGlgvCEY=",
+            "created_at": "2026-10-15T00:55:43.226405",
+            "rotated_at": "2026-10-15T00:55:43.217554",
+            "updated_at": "2026-10-15T00:55:43.226405",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KRm7wg9Ws8w+rjisKkuSGlgvCEY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 312,
+            "seen_at": "2026-10-15T00:55:45.776041",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KRm7wg9Ws8w+rjisKkuSGlgvCEY=",
+            "created_at": "2026-10-15T00:55:43.226405",
+            "rotated_at": "2026-10-15T00:55:43.217554",
+            "updated_at": "2026-10-15T00:55:43.226405",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KRm7wg9Ws8w+rjisKkuSGlgvCEY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "how-to-guides",
+          "admin_only": true,
+          "created_at": "2026-10-15T00:55:47.870689",
+          "ip_address": null,
+          "updated_at": "2026-10-15T00:55:47.870689",
+          "category_id": null,
+          "custom_type": "renamed_tag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "howto",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 1,
+        "payload": "{\"id\":1,\"name\":\"how-to-guides\",\"slug\":\"how-to-guides\",\"topic_count\":2,\"staff\":false,\"description\":\"Step by *step*, see https://example.com/howto\",\"description_cooked\":\"\\u003cp\\u003eStep by \\u003cem\\u003estep\\u003c/em\\u003e, see \\u003ca href=\\\"https://example.com/howto\\\" rel=\\\"noopener nofollow ugc\\\"\\u003ehttps://example.com/howto\\u003c/a\\u003e\\u003c/p\\u003e\"}",
+        "web_hook_id": 9001,
+        "event_name": "tag_updated",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "remap_hashtag",
+      {
+        "remaps": [
+          {
+            "type": "tag",
+            "id": 1,
+            "old_ref": "howto"
+          }
+        ]
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 1,
+        "payload": "{\"id\":1,\"name\":\"how-to-guides\",\"slug\":\"custom-slug\",\"topic_count\":2,\"staff\":false,\"description\":\"Step by *step*, see https://example.com/howto\",\"description_cooked\":\"\\u003cp\\u003eStep by \\u003cem\\u003estep\\u003c/em\\u003e, see \\u003ca href=\\\"https://example.com/howto\\\" rel=\\\"noopener nofollow ugc\\\"\\u003ehttps://example.com/howto\\u003c/a\\u003e\\u003c/p\\u003e\"}",
+        "web_hook_id": 9001,
+        "event_name": "tag_updated",
+        "event_type": "tag"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_updated')",
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now()), (9602, 'manual', 'manual', NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "61898cdfec78939f05382970b0f08a238980de4272e6d72343874809d98a5ee6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

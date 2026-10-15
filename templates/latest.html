@@ -13,9 +13,10 @@
 </div>
 {% endif %}
 {% endif %}{% endif %}
-{% if let Some(t) = tag %}
+{% if let Some(t) = tag %}{% if nav.is_empty() %}
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
-{% endif %}
+{% endif %}{% endif %}
+{{ tag_info|safe }}
 {% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, self.bulk_select()) %}{% endif %}
 <div id="list-updates" class="list-updates"></div>
 <div class="container list-container --topic-list">
@@ -45,6 +46,7 @@
   {% endif %}
 </div>
 {% if !category_controls.is_empty() %}<script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>{% endif %}
+{% if !tag_info.is_empty() %}<script src="{{ crate::assets::url(base_path, "tag-info.js") }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}

@@ -79,6 +79,7 @@ mod sitemap;
 mod solved;
 mod srv;
 mod stylesheets;
+mod tag_admin;
 mod tag_search;
 mod tags;
 mod themes;
@@ -1831,7 +1832,31 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/search/query", cached!(get(search::query)))
         .route("/search/query.json", cached!(get(search::query)))
         .route("/search/click", post(search::click))
-        .route("/tag/{*path}", cached!(get(tags::show)))
+        .route(
+            "/tag/{*path}",
+            cached!(get(tags::show))
+                .put(tag_admin::put)
+                .delete(tag_admin::delete)
+                .post(tag_admin::post),
+        )
+        .route("/tags/list", get(tag_admin::list))
+        .route("/tags/list.json", get(tag_admin::list))
+        .route(
+            "/tags/personal_messages/{username}",
+            get(tag_admin::personal_messages),
+        )
+        .route("/tags/upload", post(tag_admin::upload))
+        .route("/tags/upload.json", post(tag_admin::upload))
+        .route("/tags/bulk_create", post(tag_admin::bulk_create))
+        .route("/tags/bulk_create.json", post(tag_admin::bulk_create))
+        .route(
+            "/tags/unused",
+            get(tag_admin::unused).delete(tag_admin::destroy_unused),
+        )
+        .route(
+            "/tags/unused.json",
+            get(tag_admin::unused).delete(tag_admin::destroy_unused),
+        )
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))
         .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
@@ -2046,6 +2071,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/htmx-ext-sse.js", get(asset))
         .route("/assets/page.js", get(asset))
         .route("/assets/hashtags.js", get(asset))
+        .route("/assets/tag-info.js", get(asset))
         .route("/assets/oneboxes.js", get(asset))
         .route("/assets/cooked.js", get(asset))
         .route("/assets/lightbox.js", get(asset))

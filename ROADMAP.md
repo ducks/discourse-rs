@@ -1525,12 +1525,17 @@ route table has been made, so this list may be short.
     its tags), 189c. ~~`feat/tags-writes-watched-words`~~ (done) S (the tag action
     in the admin's watched words: creating, listing and site.json
     (watched_words.rs:129,286; routes/admin_watched_words.rs:68)), 189d.
-    `feat/tags-writes-admin` L (TagsController: update and rename with
+    ~~`feat/tags-writes-admin`~~ (done) L (TagsController: update and rename with
     the renamed_tag log and hashtag remap, destroy, synonyms added and
     removed, upload CSV, bulk_create, the unused tags listed and deleted
     (jobs/cleanup.rs:340), info, settings and update_settings, list,
     personal_messages, and the notification level per tag (TagUser.change)
-    with the tag page's notifications menu), 189e.
+    with the tag page's notifications menu; also the tag page's
+    navigation, info panel and edit button, tag descriptions cooked
+    without oneboxes (jobs/periodical.rs:147); still refused: the tag
+    settings page /tag/:slug/:id/edit (Ember, with 90g), tag
+    localizations, and the remap_hashtag job it enqueues (HashtagRemapper,
+    jobs/handlers.rs' fallback)), 189e.
     `feat/tags-writes-groups` M (TagGroupsController: index, show,
     create, update, destroy and search, with their staff action logs,
     permissions, parent tag and one_per_topic)

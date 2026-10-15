@@ -1,0 +1,275 @@
+{
+  "name": "admin_destroy",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/tag/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tag/999.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:41:44.88921",
+  "transaction_started_at": "2026-10-14T23:41:40.134384",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "category_tag_stats": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "tag_id": 1,
+          "category_id": 34,
+          "topic_count": 1
+        },
+        {
+          "id": 3,
+          "tag_id": 1,
+          "category_id": 4,
+          "topic_count": 1
+        }
+      ],
+      "updated": []
+    },
+    "category_tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "tag_id": 1,
+          "created_at": "2026-10-14T23:41:40.134384",
+          "updated_at": "2026-10-14T23:41:40.134384",
+          "category_id": 4
+        }
+      ],
+      "updated": []
+    },
+    "tag_group_memberships": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "tag_id": 1,
+          "created_at": "2026-10-14T23:41:40.134384",
+          "updated_at": "2026-10-14T23:41:40.134384",
+          "tag_group_id": 9601
+        },
+        {
+          "id": 2,
+          "tag_id": 9601,
+          "created_at": "2026-10-14T23:41:40.134384",
+          "updated_at": "2026-10-14T23:41:40.134384",
+          "tag_group_id": 9601
+        }
+      ],
+      "updated": []
+    },
+    "tag_search_data": {
+      "inserted": [],
+      "deleted": [
+        {
+          "locale": "en",
+          "tag_id": 1,
+          "version": 3,
+          "raw_data": "howto",
+          "search_data": "'howto':1A"
+        }
+      ],
+      "updated": []
+    },
+    "tag_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "tag_id": 1,
+          "user_id": 3,
+          "created_at": "2026-10-14T23:41:40.134384",
+          "updated_at": "2026-10-14T23:41:40.134384",
+          "notification_level": 3
+        }
+      ],
+      "updated": []
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "locale": null,
+          "created_at": "2026-09-30T07:28:29.481344",
+          "updated_at": "2026-09-30T07:28:29.481344",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 2,
+          "description_cooked": null,
+          "public_topic_count": 2,
+          "description_cooked_version": 1
+        },
+        {
+          "id": 9601,
+          "name": "how-to",
+          "slug": "how-to",
+          "locale": null,
+          "created_at": "2026-10-14T23:41:40.134384",
+          "updated_at": "2026-10-14T23:41:40.134384",
+          "description": null,
+          "target_tag_id": 1,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        }
+      ],
+      "updated": []
+    },
+    "topic_tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "tag_id": 1,
+          "topic_id": 38,
+          "created_at": "2026-09-30T07:28:29.544832",
+          "updated_at": "2026-09-30T07:28:29.544832"
+        },
+        {
+          "id": 3,
+          "tag_id": 1,
+          "topic_id": 41,
+          "created_at": "2026-09-30T10:46:34.830383",
+          "updated_at": "2026-09-30T10:46:34.830383"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uHaOz0mXh5RBwUcvR3e77ofz6do=",
+            "created_at": "2026-10-14T23:41:42.185443",
+            "rotated_at": "2026-10-14T23:41:42.172714",
+            "updated_at": "2026-10-14T23:41:42.185443",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uHaOz0mXh5RBwUcvR3e77ofz6do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:41:44.912455",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uHaOz0mXh5RBwUcvR3e77ofz6do=",
+            "created_at": "2026-10-14T23:41:42.185443",
+            "rotated_at": "2026-10-14T23:41:42.172714",
+            "updated_at": "2026-10-14T23:41:42.185443",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uHaOz0mXh5RBwUcvR3e77ofz6do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": null,
+          "subject": "howto",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T23:41:45.286291",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:41:45.286291",
+          "category_id": null,
+          "custom_type": "deleted_tag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9601,
+        "payload": "{\"id\":9601,\"name\":\"how-to\",\"slug\":\"how-to\",\"topic_count\":0,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 1,
+        "payload": "{\"id\":1,\"name\":\"howto\",\"slug\":\"howto\",\"topic_count\":2,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_destroyed')",
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())",
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (1, 3, 3, now(), now())",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kinds', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now()), (9601, 9601, now(), now())",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (4, 1, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "fd86122fb13b1fc9d1741f20b57ee1ab88f1fed328208d5cd1e052034254741c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

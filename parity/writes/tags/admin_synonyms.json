@@ -1,0 +1,368 @@
+{
+  "name": "admin_synonyms",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/tag/2/synonyms.json",
+      "params": {
+        "tags": [
+          {
+            "id": 1,
+            "name": "howto"
+          },
+          {
+            "id": 9601,
+            "name": "manual"
+          },
+          {
+            "name": "Guide Book"
+          },
+          {
+            "id": 9602,
+            "name": "has-own"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/tag/2/synonyms/9601.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tag/2/synonyms/9602.json"
+    },
+    {
+      "method": "POST",
+      "path": "/tag/guide/synonyms.json",
+      "params": {
+        "synonyms": [
+          "legacy-syn"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:11:30.294996",
+  "transaction_started_at": "2026-10-15T01:11:26.236707",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "failed_tags": {
+          "has-own": "is not allowed while synonyms exist"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "category_tags": {
+      "inserted": [
+        {
+          "id": 2,
+          "tag_id": 1,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "category_id": 4
+        },
+        {
+          "id": 3,
+          "tag_id": 9601,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "category_id": 4
+        },
+        {
+          "id": 4,
+          "tag_id": 3,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "category_id": 4
+        },
+        {
+          "id": 5,
+          "tag_id": 4,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "category_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tag_group_memberships": {
+      "inserted": [
+        {
+          "id": 2,
+          "tag_id": 1,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "tag_group_id": 9601
+        },
+        {
+          "id": 3,
+          "tag_id": 9601,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "tag_group_id": 9601
+        },
+        {
+          "id": 4,
+          "tag_id": 3,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "tag_group_id": 9601
+        },
+        {
+          "id": 5,
+          "tag_id": 4,
+          "created_at": "2026-10-15T01:11:26.236707",
+          "updated_at": "2026-10-15T01:11:26.236707",
+          "tag_group_id": 9601
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tags": {
+      "inserted": [
+        {
+          "id": 3,
+          "name": "guide-book",
+          "slug": "guide-book",
+          "locale": null,
+          "created_at": "2026-10-15T01:11:30.356581",
+          "updated_at": "2026-10-15T01:11:30.356581",
+          "description": null,
+          "target_tag_id": 2,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 4,
+          "name": "legacy-syn",
+          "slug": "legacy-syn",
+          "locale": null,
+          "created_at": "2026-10-15T01:11:30.498369",
+          "updated_at": "2026-10-15T01:11:30.498369",
+          "description": null,
+          "target_tag_id": 2,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": 2,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": 1
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 3,
+            "description_cooked": null,
+            "public_topic_count": 3,
+            "description_cooked_version": 1
+          }
+        },
+        {
+          "before": {
+            "id": 9601,
+            "name": "manual",
+            "slug": "manual",
+            "locale": null,
+            "created_at": "2026-10-15T01:11:26.236707",
+            "updated_at": "2026-10-15T01:11:26.236707",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          },
+          "after": {
+            "id": 9601,
+            "name": "manual",
+            "slug": "manual",
+            "locale": null,
+            "created_at": "2026-10-15T01:11:26.236707",
+            "updated_at": "2026-10-15T01:11:30.418456",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 0,
+            "description_cooked": null,
+            "public_topic_count": 0,
+            "description_cooked_version": null
+          }
+        }
+      ]
+    },
+    "topic_tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 3,
+          "tag_id": 1,
+          "topic_id": 41,
+          "created_at": "2026-09-30T10:46:34.830383",
+          "updated_at": "2026-09-30T10:46:34.830383"
+        }
+      ],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "tag_id": 1,
+            "topic_id": 38,
+            "created_at": "2026-09-30T07:28:29.544832",
+            "updated_at": "2026-09-30T07:28:29.544832"
+          },
+          "after": {
+            "id": 1,
+            "tag_id": 2,
+            "topic_id": 38,
+            "created_at": "2026-09-30T07:28:29.544832",
+            "updated_at": "2026-09-30T07:28:29.544832"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 312,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pe4QMOLS7MtRkjG29A4wP1Fpfp0=",
+            "created_at": "2026-10-15T01:11:27.827731",
+            "rotated_at": "2026-10-15T01:11:27.819063",
+            "updated_at": "2026-10-15T01:11:27.827731",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pe4QMOLS7MtRkjG29A4wP1Fpfp0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 312,
+            "seen_at": "2026-10-15T01:11:30.314456",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pe4QMOLS7MtRkjG29A4wP1Fpfp0=",
+            "created_at": "2026-10-15T01:11:27.827731",
+            "rotated_at": "2026-10-15T01:11:27.819063",
+            "updated_at": "2026-10-15T01:11:27.827731",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pe4QMOLS7MtRkjG29A4wP1Fpfp0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "category_tags": 2,
+    "tag_group_memberships": 2,
+    "tags": 3
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, created_at, updated_at) VALUES (9601, 'manual', 'manual', now(), now()), (9602, 'has-own', 'has-own', now(), now()), (9603, 'own-syn', 'own-syn', now(), now())",
+    "UPDATE tags SET target_tag_id = 9602 WHERE id = 9603",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (4, 2, now(), now())",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kinds', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (2, 9601, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "62233744b600693e895a1ead40294cf54a6b5d46320c86545f9228c7d76f154b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

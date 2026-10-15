@@ -1,0 +1,120 @@
+{
+  "name": "info_member",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/1/info.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/2/info.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:42:05.046929",
+  "transaction_started_at": "2026-10-14T23:42:03.525729",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "tag_info": {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "topic_count": 2,
+          "staff": false,
+          "description": null,
+          "description_cooked": null,
+          "synonyms": [
+            {
+              "id": 9601,
+              "text": "how-to",
+              "name": "how-to",
+              "slug": "how-to",
+              "description": null,
+              "count": 0,
+              "pm_only": false,
+              "target_tag": null
+            }
+          ],
+          "category_restricted": true,
+          "category_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "tag_info": {
+          "id": 2,
+          "name": "guide",
+          "slug": "guide",
+          "topic_count": 2,
+          "staff": false,
+          "description": null,
+          "description_cooked": null,
+          "synonyms": [],
+          "category_restricted": false,
+          "category_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Kkvs4nOWVsBpI0LSbHVDBa6BpjA=",
+            "created_at": "2026-10-14T23:42:03.937835",
+            "rotated_at": "2026-10-14T23:42:03.936954",
+            "updated_at": "2026-10-14T23:42:03.937835",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Kkvs4nOWVsBpI0LSbHVDBa6BpjA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:42:05.056155",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Kkvs4nOWVsBpI0LSbHVDBa6BpjA=",
+            "created_at": "2026-10-14T23:42:03.937835",
+            "rotated_at": "2026-10-14T23:42:03.936954",
+            "updated_at": "2026-10-14T23:42:03.937835",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Kkvs4nOWVsBpI0LSbHVDBa6BpjA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (3, 1, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "28464a01b4d007d09e68da7cff2d4e2f191666f0a5e6a69db4f61a682f97599f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

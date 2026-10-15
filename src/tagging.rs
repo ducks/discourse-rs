@@ -1952,7 +1952,7 @@ pub(crate) async fn topic_tag_destroyed(
         .await?;
         return Ok(());
     }
-    let stat: Option<(i32, i32)> = sqlx::query_as(
+    let stat: Option<(i64, i32)> = sqlx::query_as(
         "SELECT id, topic_count FROM category_tag_stats \
          WHERE tag_id = $1 AND category_id IS NOT DISTINCT FROM $2 ORDER BY id LIMIT 1",
     )

@@ -231,7 +231,7 @@ impl<'a> SafeZip<'a> {
 
 /// Ruby's CSV.parse (default options, row separator detected): each row
 /// its fields, None for an unquoted empty one.
-fn parse_csv(text: &str) -> Result<Vec<Vec<Option<String>>>, ArchiveError> {
+pub(crate) fn parse_csv(text: &str) -> Result<Vec<Vec<Option<String>>>, ArchiveError> {
     let row_sep = match text.find(['\r', '\n']) {
         Some(i) if text[i..].starts_with("\r\n") => "\r\n",
         Some(i) if text[i..].starts_with('\r') => "\r",

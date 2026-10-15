@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "PUT", "path": "/tag/2.json", "params": {"tag": {"name": "mine-now"}}},
+    {"method": "DELETE", "path": "/tag/2.json"},
+    {"method": "POST", "path": "/tag/2/synonyms.json", "params": {"tags": [{"name": "manuals"}]}},
+    {"method": "GET", "path": "/tags/unused.json"},
+    {"method": "DELETE", "path": "/tags/unused.json"},
+    {"method": "POST", "path": "/tags/bulk_create.json", "params": {"tag_names": ["a-tag"]}},
+    {"method": "GET", "path": "/tag/2/settings.json"}
+  ]
+}

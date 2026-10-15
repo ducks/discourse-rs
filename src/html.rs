@@ -1041,6 +1041,8 @@ pub struct LatestPage {
     pub heading: Option<CategoryHeading>,
     /// Set on tag pages (list.erb's tag breadcrumb).
     pub tag: Option<TagHeading>,
+    /// A tag's page: the TagInfo panel its info button shows, hidden.
+    pub tag_info: String,
     /// The list kept live (`latest`, `new`, `unread`), empty for none.
     pub live_filter: String,
     /// When the page was rendered, in milliseconds (live updates count the
@@ -1149,6 +1151,81 @@ fn breadcrumb_drop(
          <span class=\"name\">{label}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details></li>",
         icon("angle-right", Some("angle-icon"))
     )
+}
+
+/// BreadCrumbs on a tag's list: the category drop, closed, then the tag
+/// drop with the tag selected.
+pub fn tag_breadcrumbs(i18n: &I18n, tag_name: &str, tag_id: i32) -> String {
+    use crate::topic_list_view::escape;
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    let categories = t("categories.categories_label");
+    let mut out = String::from(if crate::mobile::mobile_view() {
+        "<ol class=\"category-breadcrumb hidden\">"
+    } else {
+        "<ol class=\"category-breadcrumb\">"
+    });
+    out.push_str(&breadcrumb_drop(
+        i18n,
+        "category",
+        " category-breadcrumb__category-selector",
+        &categories,
+        &escape(&categories),
+        None,
+        None,
+    ));
+    out.push_str(&breadcrumb_drop(
+        i18n,
+        "tag",
+        &format!(" has-selection tag-{}", escape(&tag_name.to_lowercase())),
+        tag_name,
+        &escape(tag_name),
+        Some(i64::from(tag_id)),
+        None,
+    ));
+    out.push_str("</ol>");
+    out
+}
+
+/// The navigation pills on a tag's list: the top menu's filters under
+/// the tag (`/tag/:slug/:id/l/:filter`), categories to /categories.
+pub fn tag_nav_items(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    base_path: &str,
+    tag_url: &str,
+    tag_id: i32,
+    active: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+) -> Result<Vec<NavItem>, SettingError> {
+    Ok(nav_items(i18n, settings, base_path, active, tracking)?
+        .into_iter()
+        .map(|mut item| {
+            if item.name != "categories" {
+                item.href = format!("{tag_url}/l/{}", item.name);
+                // lookupCount within the tag.
+                let count = match tracking {
+                    Some(_) if item.name == "latest" && !crate::mobile::mobile_view() => 0,
+                    Some(t) => t.lookup_tag(&item.name, tag_id),
+                    None => 0,
+                };
+                if count > 0 {
+                    item.label = i18n
+                        .t_count(
+                            &format!("js.filters.{}.title_with_count", item.name),
+                            count,
+                            &[],
+                        )
+                        .unwrap_or(item.label);
+                } else {
+                    item.label = i18n
+                        .t(&format!("js.filters.{}.title", item.name))
+                        .map(str::to_string)
+                        .unwrap_or(item.label);
+                }
+            }
+            item
+        })
+        .collect())
 }
 
 /// BreadCrumbs on a category's list: a drop per level of the category's
@@ -1344,6 +1421,37 @@ pub fn category_notifications(
     category_id: i64,
     level: i64,
 ) -> String {
+    notifications_tracking(
+        i18n,
+        "category",
+        &format!("hx-post=\"{base_path}/category/{category_id}/notifications\""),
+        "notification_level",
+        level,
+    )
+}
+
+/// TagNotificationsTracking for a member: as the category's, each level
+/// saved to PUT /tag/:id/notifications.
+pub fn tag_notifications(i18n: &I18n, base_path: &str, tag_id: i32, level: i64) -> String {
+    notifications_tracking(
+        i18n,
+        "tag",
+        &format!("hx-put=\"{base_path}/tag/{tag_id}/notifications\""),
+        "tag_notification[notification_level]",
+        level,
+    )
+}
+
+/// The notifications tracking DMenu: `kind` is the trigger's class prefix
+/// (`category`, `tag`), `request` the levels' htmx request attribute and
+/// `param` the level's param name.
+fn notifications_tracking(
+    i18n: &I18n,
+    kind: &str,
+    request: &str,
+    param: &str,
+    level: i64,
+) -> String {
     use crate::post_view::d_icon;
     use crate::topic_list_view::escape;
     const LEVELS: [(i64, &str, &str); 5] = [
@@ -1354,7 +1462,8 @@ pub fn category_notifications(
         (0, "muted", "d-muted"),
     ];
     let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
-    let title = |key: &str| t(&format!("category.notifications.{key}.title"));
+    let scope = if kind == "tag" { "tagging" } else { "category" };
+    let title = |key: &str| t(&format!("{scope}.notifications.{key}.title"));
     let (_, key, icon_name) = LEVELS
         .iter()
         .find(|(l, _, _)| *l == level)
@@ -1366,13 +1475,12 @@ pub fn category_notifications(
             &[("level", &title(key))],
         )
         .unwrap_or_default();
-    let url = format!("{base_path}/category/{category_id}/notifications");
     let items: String = LEVELS
         .iter()
         .map(|(l, key, icon_name)| {
             format!(
                 "<li class=\"dropdown-menu__item\"><button class=\"btn no-text notifications-tracking-btn{}\" data-level-id=\"{l}\" \
-                 data-level-name=\"{key}\" data-title=\"{}\" data-tooltip=\"{}\" hx-post=\"{url}\" hx-vals='{{\"notification_level\": {l}}}' \
+                 data-level-name=\"{key}\" data-title=\"{}\" data-tooltip=\"{}\" {request} hx-vals='{{\"{param}\": {l}}}' \
                  hx-swap=\"none\" type=\"button\"><div class=\"notifications-tracking-btn__icons\">{}</div><div class=\"notifications-tracking-btn__texts\">\
                  <span class=\"notifications-tracking-btn__label\">{}</span><span class=\"notifications-tracking-btn__description\">{}</span></div></button></li>",
                 if *l == level { " -selected" } else { "" },
@@ -1382,13 +1490,13 @@ pub fn category_notifications(
                     .unwrap_or_default()),
                 d_icon(icon_name, None),
                 escape(&title(key)),
-                escape(&t(&format!("category.notifications.{key}.description"))),
+                escape(&t(&format!("{scope}.notifications.{key}.description"))),
             )
         })
         .collect();
     format!(
         "<button class=\"btn btn-default no-text fk-d-menu__trigger notifications-tracking-trigger btn-default btn-icon \
-         notifications-tracking-trigger-btn category-notifications-tracking\" title=\"{}\" aria-expanded=\"false\" \
+         notifications-tracking-trigger-btn {kind}-notifications-tracking\" title=\"{}\" aria-expanded=\"false\" \
          data-identifier=\"notifications-tracking\" data-trigger=\"\" data-level-id=\"{level}\" data-level-name=\"{key}\">{}</button>\
          <div class=\"fk-d-menu notifications-tracking-content -animated\" data-content=\"\" data-identifier=\"notifications-tracking\" \
          role=\"dialog\" data-strategy=\"absolute\" data-placement=\"bottom-end\" hidden><div class=\"fk-d-menu__inner-content\">\
@@ -1741,6 +1849,7 @@ pub async fn latest_page(
         rows,
         heading: None,
         tag: None,
+        tag_info: String::new(),
         live_filter: String::new(),
         live_since: String::new(),
         nav: Vec::new(),

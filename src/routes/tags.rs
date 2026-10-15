@@ -191,6 +191,24 @@ pub async fn show(
     uri: axum::http::Uri,
     requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
+    // info, notifications and settings (super::tag_admin)
+    if let Some(response) = super::tag_admin::get_sub(&state, &guardian, &path).await? {
+        return Ok(response);
+    }
+    // /tag/:slug/:id/edit(/:tab): Ember's tag settings page.
+    let segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+    let numeric = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit());
+    let edit_at = segments.iter().position(|s| *s == "edit");
+    let edit_page = match edit_at {
+        // /tag/:id/edit(/:tab)
+        Some(1) => numeric(segments[0]) && segments.len() <= 3,
+        // /tag/:slug/:id/edit(/:tab)
+        Some(2) => numeric(segments[1]) && segments.len() <= 4,
+        _ => false,
+    };
+    if edit_page {
+        return Err(Unsupported("the tag settings page (/tag/:slug/:id/edit)").into());
+    }
     let parsed = parse_path(&path, false)?;
     let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
     show_list(
@@ -507,6 +525,28 @@ async fn show_list(
             None => format!("{base_path}/tag/{tag_name}"),
         },
     });
+    // The tag's own page: its info and edit buttons, the TagInfo panel and
+    // a member's notification level in it.
+    if category.is_none()
+        && let Some(t) = &tag
+    {
+        let controls =
+            super::tag_admin::tag_page_controls(&mut conn, &state, &settings, &guardian, t).await?;
+        page.admin_controls = controls.buttons;
+        page.tag_info = controls.info;
+        page.category_controls = controls.notifications;
+        // The tag's navigation: its breadcrumbs and filter pills.
+        page.breadcrumbs = crate::html::tag_breadcrumbs(&state.i18n, &t.name, t.id);
+        page.nav = crate::html::tag_nav_items(
+            &state.i18n,
+            &settings,
+            &base_path,
+            &t.url(&base_path),
+            t.id,
+            kind.name(),
+            page.chrome.tracking.as_ref(),
+        )?;
+    }
     // canonical_url: the canonical tag route for this action; the title
     // and description meta from rss_by_tag and the tag's description.
     let urls = Urls {

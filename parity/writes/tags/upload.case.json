@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kinds', now(), now(), false)"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/tags/upload.json", "params": {"file": {"fixture": "tags.csv"}}},
+    {"method": "POST", "path": "/tags/upload.json", "params": {"file": {"fixture": "tags_too_long_row.csv"}}}
+  ]
+}

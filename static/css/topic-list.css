@@ -586,3 +586,51 @@
     display: none;
   }
 }
+
+/* _topic-list.scss:7, the discovery heading (a tag's TagInfo panel) */
+:root {
+  --discovery-heading-description-color: var(--primary-800);
+}
+.discovery-heading {
+  gap: 0 var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--content-border-color);
+  border-radius: var(--d-border-radius);
+}
+
+/* tagging.scss:357 */
+section.tag-info {
+  display: flex;
+  flex-direction: column;
+  color: var(--discovery-heading-description-color);
+  transition: opacity .15s ease-out;
+}
+section.tag-info[hidden] {
+  display: none;
+}
+section.tag-info .tag-name-wrapper {
+  display: flex;
+  font-size: var(--font-up-3);
+  align-items: baseline;
+}
+section.tag-info .tag-name-wrapper .discourse-tag,
+section.tag-info .tag-name-wrapper .discourse-tag:visited,
+section.tag-info .tag-name-wrapper .discourse-tag:hover {
+  color: var(--primary);
+  font-weight: bold;
+}
+section.tag-info .tag-description-wrapper {
+  display: flex;
+  font-size: var(--font-0);
+  line-height: var(--line-height-large);
+}
+section.tag-info .tag-associations .badge-category__wrapper {
+  font-size: var(--font-0);
+}
+section.tag-info p:last-child {
+  margin-bottom: 0;
+}
+#show-tag-info[aria-pressed="true"] .d-icon {
+  color: var(--tertiary);
+}

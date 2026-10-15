@@ -1,0 +1,252 @@
+{
+  "name": "admin_update_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {
+        "tag": {
+          "name": "howto"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {
+        "tag": {
+          "name": "none"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {
+        "tag": {
+          "id": 2,
+          "name": "other"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/999.json",
+      "params": {
+        "tag": {
+          "name": "other"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {
+        "tag": {
+          "name": "guide-renamed",
+          "description": "This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:41:55.126975",
+  "transaction_started_at": "2026-10-14T23:41:52.996169",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name is invalid"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Updating a tag name by `id` attribute is unsupported. Use the `name` attribute instead."
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag": {
+          "id": 2,
+          "name": "guide-renamed",
+          "slug": "guide-renamed",
+          "description": "This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long."
+        }
+      }
+    }
+  ],
+  "changes": {
+    "tag_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "tag_id": 2,
+            "version": 3,
+            "raw_data": "guide",
+            "search_data": "'guid':1A"
+          },
+          "after": {
+            "locale": "en",
+            "tag_id": 2,
+            "version": 3,
+            "raw_data": "guide-renamed",
+            "search_data": "'guid':2A 'guide-renam':1A 'renam':3A"
+          }
+        }
+      ]
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 2,
+            "name": "guide-renamed",
+            "slug": "guide-renamed",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-10-14T23:41:55.293021",
+            "description": "This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long.",
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": "<p>This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long.</p>",
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "o1dwEzq7t8j2lr7XVmN1gHwOegE=",
+            "created_at": "2026-10-14T23:41:53.793467",
+            "rotated_at": "2026-10-14T23:41:53.791443",
+            "updated_at": "2026-10-14T23:41:53.793467",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "o1dwEzq7t8j2lr7XVmN1gHwOegE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:41:55.1337",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "o1dwEzq7t8j2lr7XVmN1gHwOegE=",
+            "created_at": "2026-10-14T23:41:53.793467",
+            "rotated_at": "2026-10-14T23:41:53.791443",
+            "updated_at": "2026-10-14T23:41:53.793467",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "o1dwEzq7t8j2lr7XVmN1gHwOegE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "guide-renamed",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:41:55.308962",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:41:55.308962",
+          "category_id": null,
+          "custom_type": "renamed_tag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "guide",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "remap_hashtag",
+      {
+        "remaps": [
+          {
+            "type": "tag",
+            "id": 2,
+            "old_ref": "guide"
+          }
+        ]
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "b9b09e1da33655368844fb6ed59b8c42d5f7f9101b65ec14895b87ce195af203",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

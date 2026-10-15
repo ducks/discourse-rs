@@ -7,7 +7,7 @@ use serde_json::json;
 use sqlx::PgConnection;
 
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// `Jobs::CleanDismissedTopicUsers`, daily.
 pub const CLEAN_DISMISSED_TOPIC_USERS: &str = "clean_dismissed_topic_users";
@@ -324,65 +324,21 @@ pub async fn clean_up_tags(state: &AppState) -> Result<(), AppError> {
     .bind(format!("tags: {value}"))
     .execute(&mut *tx)
     .await?;
+    // destroy_all, each tag with its dependents (synonyms among them) and
+    // tag_destroyed hooks, in the table's order.
     let ids: Vec<i32> = tags.iter().map(|(id, _)| *id).collect();
-    // The dependents destroy_all takes with each tag. Topic tags on live
-    // topics would move counters (TopicTag's after_destroy), and synonyms
-    // are tags with dependents of their own.
-    let unported: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_tags tt JOIN topics t ON t.id = tt.topic_id \
-                        WHERE tt.tag_id = ANY($1) AND t.deleted_at IS NULL) \
-             OR EXISTS (SELECT 1 FROM tags WHERE target_tag_id = ANY($1))",
-    )
-    .bind(&ids)
-    .fetch_one(&mut *tx)
-    .await?;
-    if unported {
-        return Err(Unsupported("destroying unused tags with live topic tags or synonyms").into());
-    }
-    // HasDestroyedWebHook: each tag's payload before destroy_all takes it
-    // (in the table's order), its tag_destroyed hooks after.
-    let mut destroyed = Vec::new();
-    if crate::web_hooks::active(&mut tx, "tag_destroyed").await? {
-        let payloads = crate::web_hooks::Payloads {
-            settings: &s,
-            i18n: &state.i18n,
-            config: &state.config,
-        };
-        let ordered: Vec<i32> =
-            sqlx::query_scalar("SELECT id FROM tags WHERE id = ANY($1) ORDER BY ctid")
-                .bind(&ids)
-                .fetch_all(&mut *tx)
-                .await?;
-        for id in ordered {
-            destroyed.push((id, payloads.tag(&mut tx, id).await?));
-        }
-    }
-    for (table, column) in [
-        ("tag_users", "tag_id"),
-        ("topic_tags", "tag_id"),
-        ("category_tag_stats", "tag_id"),
-        ("category_tags", "tag_id"),
-    ] {
-        sqlx::query(&format!("DELETE FROM {table} WHERE {column} = ANY($1)"))
+    let ordered: Vec<i32> =
+        sqlx::query_scalar("SELECT id FROM tags WHERE id = ANY($1) ORDER BY ctid")
             .bind(&ids)
-            .execute(&mut *tx)
+            .fetch_all(&mut *tx)
             .await?;
-    }
-    sqlx::query(
-        "DELETE FROM sidebar_section_links WHERE linkable_type = 'Tag' AND linkable_id = ANY($1)",
-    )
-    .bind(&ids)
-    .execute(&mut *tx)
-    .await?;
-    sqlx::query("DELETE FROM tags WHERE id = ANY($1)")
-        .bind(&ids)
-        .execute(&mut *tx)
-        .await?;
-    for (id, payload) in destroyed {
-        let mut opts = serde_json::Map::new();
-        opts.insert("id".into(), json!(id));
-        opts.insert("payload".into(), json!(crate::web_hooks::to_json(&payload)));
-        crate::web_hooks::enqueue_hooks(&mut tx, "tag", "tag_destroyed", opts).await?;
+    let payloads = crate::web_hooks::Payloads {
+        settings: &s,
+        i18n: &state.i18n,
+        config: &state.config,
+    };
+    for id in ordered {
+        crate::tag_writes::destroy(&mut tx, &payloads, id).await?;
     }
     tx.commit().await?;
     Ok(())

@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_updated', 'tag_created', 'tag_destroyed')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {"tag": {"name": " Guides  Plus ", "description": "All the **guides** for https://example.com/page"}}
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/1.json",
+      "params": {"tag": {"description": ""}}
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/howto.json",
+      "params": {"tag": {"name": "HowTo"}}
+    }
+  ]
+}

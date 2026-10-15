@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/tag/2.json", "params": {"tag": {"name": "howto"}}},
+    {"method": "PUT", "path": "/tag/2.json", "params": {"tag": {"name": "none"}}},
+    {"method": "PUT", "path": "/tag/2.json", "params": {"tag": {"id": 2, "name": "other"}}},
+    {"method": "PUT", "path": "/tag/999.json", "params": {"tag": {"name": "other"}}},
+    {"method": "PUT", "path": "/tag/2.json", "params": {"tag": {"name": "guide-renamed", "description": "This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long."}}}
+  ]
+}

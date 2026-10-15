@@ -1,0 +1,327 @@
+{
+  "name": "list_and_unused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/list.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/list.json?filter=UN&offset=0"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/list.json?only_tags=guide,howto,syn-of-unused"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/list.json?exclude_tags=guide&offset=1"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/unused.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tags/unused.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/unused.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:42:08.387165",
+  "transaction_started_at": "2026-10-14T23:42:05.583669",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "list_tags": [
+          {
+            "id": 9603,
+            "name": "grouped",
+            "slug": "grouped",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "topic_count": 2,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "topic_count": 2,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 9601,
+            "name": "unused-one",
+            "slug": "unused-one",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 9602,
+            "name": "unused-two",
+            "slug": "unused-two",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          }
+        ],
+        "meta": {
+          "total_rows_list_tags": 5,
+          "load_more_list_tags": "/tags/list.json?offset=1"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "list_tags": [
+          {
+            "id": 9601,
+            "name": "unused-one",
+            "slug": "unused-one",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 9602,
+            "name": "unused-two",
+            "slug": "unused-two",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          }
+        ],
+        "meta": {
+          "total_rows_list_tags": 2,
+          "load_more_list_tags": "/tags/list.json?offset=1&filter=UN"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "list_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "topic_count": 2,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "topic_count": 2,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          },
+          {
+            "id": 9604,
+            "name": "syn-of-unused",
+            "slug": "syn-of-unused",
+            "topic_count": 0,
+            "staff": false,
+            "description": null,
+            "description_cooked": null
+          }
+        ],
+        "meta": {
+          "total_rows_list_tags": 3,
+          "load_more_list_tags": "/tags/list.json?offset=1&only_tags=guide%2Chowto%2Csyn-of-unused"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "list_tags": [],
+        "meta": {
+          "total_rows_list_tags": 4,
+          "load_more_list_tags": "/tags/list.json?offset=2&exclude_tags=guide"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tags": [
+          "unused-one",
+          "unused-two"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tags": []
+      }
+    }
+  ],
+  "changes": {
+    "tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "name": "unused-one",
+          "slug": "unused-one",
+          "locale": null,
+          "created_at": "2026-10-14T23:42:05.583669",
+          "updated_at": "2026-10-14T23:42:05.583669",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 9602,
+          "name": "unused-two",
+          "slug": "unused-two",
+          "locale": null,
+          "created_at": "2026-10-14T23:42:05.583669",
+          "updated_at": "2026-10-14T23:42:05.583669",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 9604,
+          "name": "syn-of-unused",
+          "slug": "syn-of-unused",
+          "locale": null,
+          "created_at": "2026-10-14T23:42:05.583669",
+          "updated_at": "2026-10-14T23:42:05.583669",
+          "description": null,
+          "target_tag_id": 9601,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kKHj/ueEgJCHO/9tfj9VF+e2ODA=",
+            "created_at": "2026-10-14T23:42:06.902693",
+            "rotated_at": "2026-10-14T23:42:06.899066",
+            "updated_at": "2026-10-14T23:42:06.902693",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kKHj/ueEgJCHO/9tfj9VF+e2ODA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:42:08.412791",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kKHj/ueEgJCHO/9tfj9VF+e2ODA=",
+            "created_at": "2026-10-14T23:42:06.902693",
+            "rotated_at": "2026-10-14T23:42:06.899066",
+            "updated_at": "2026-10-14T23:42:06.902693",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kKHj/ueEgJCHO/9tfj9VF+e2ODA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "tags: [\"unused-one\", \"unused-two\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T23:42:08.579265",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:42:08.579265",
+          "category_id": null,
+          "custom_type": "deleted_unused_tags",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, created_at, updated_at) VALUES (9601, 'unused-one', 'unused-one', now(), now()), (9602, 'unused-two', 'unused-two', now(), now()), (9603, 'grouped', 'grouped', now(), now())",
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9604, 'syn-of-unused', 'syn-of-unused', 9601, now(), now())",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kept', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (9603, 9601, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "5b9eca399c8f4fb9759bc438a8c942bac5c0a6524a082c385fd532059f052203",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
