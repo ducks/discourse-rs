@@ -1146,7 +1146,54 @@ generate_theme_screenshot_thumbnails (171).
     categories & tags type (:352, Category.search and
     tags/filter/search), URLs in terms (search/mod.rs:436), user search
     by groups among reviewers (user_search.rs:187), the directory's
-    search by name (directory.rs:343, UserSearch)
+    search by name (directory.rs:343, UserSearch). Split in the order the
+    search menu suggests (`#`, `@`, `in:`, `status:`, `order:`), stacked
+    branches `feat/search-advanced-<x>`; accents, CJK and the ranking
+    settings stay with 144:
+    143a. `feat/search-advanced-category` M: posts_query as Rails builds
+    it (Search#posts_query with apply_filters and apply_order: the
+    filters run over a term, or alone; the blank term's blurbs), the
+    tokenizer's filters and keywords recognized as registered (core's,
+    then the enabled plugins'), the `#` filter (`#slug`,
+    `#parent:child`, `#=slug` without subcategories, a tag or its
+    synonym's target, a tag group, the term put back otherwise) and
+    `category:`/`categories:` (lists, `=`, ids, names), which skip
+    categories_ignored once matched. Anything else stays refused
+    143b. `feat/search-advanced-user` S: `@user` and `@me`, `user:`,
+    `created:@`, `group:` (visible groups whose members are visible),
+    `badge:`
+    143c. `feat/search-advanced-in` M: `in:` over the viewer's posts and
+    topics: title (and `t`), first (and `f`), replies, pinned, wiki,
+    likes, bookmarks, posted, created/mine, watching, tracking, seen,
+    unseen, tagged, untagged, bots, humans, whispers, regular,
+    all-posts, `include:unlisted`; poll's `in:polls`; `tags:` and
+    `-tags:` (`+` for all, `,` for any, synonyms)
+    143d. `feat/search-advanced-status` S: `status:` open, closed,
+    public, archived, noreplies, single_user, solved's solved and
+    unsolved; posts_count, min_post_count, min_posts, max_posts,
+    min_views, max_views, topic voting's min_vote_count, `with:images`,
+    `filetypes:`, `before:`, `after:` (Search.word_to_date), `locale:`
+    143e. `feat/search-advanced-order` S: `order:` latest, oldest,
+    latest_topic, oldest_topic, views, likes, read, topic voting's
+    votes, the `l` and `r` aliases; solved's
+    prioritize_solved_topics_in_search in the relevance sort
+    143f. `feat/search-advanced-messages` M: personal messages: `in:`
+    messages, personal, personal-direct and all-pms, group_messages:,
+    personal_messages:, type_filter=private_messages and its context,
+    type_filter=all_topics and `in:all`, the `topic:` keyword
+    143g. `feat/search-advanced-context` M: the user, category and tag
+    contexts on /search/query and the full-page /search (a context in
+    the page's query), search_for_id, restrict_to_archetype, URLs in
+    terms (query strings stripped)
+    143h. `feat/search-advanced-rest` M: the full-page search's
+    categories & tags type (Category.search, tags/filter/search), user
+    search by groups among reviewers (user_search.rs:187), the
+    directory's search by name (directory.rs:343)
+    143i. `feat/search-advanced-panel` M: the full-page search's
+    advanced filters panel as Ember renders it (search-advanced-options:
+    the category and tag choosers, posted by, in, status, posted
+    before/after, views and posts counts), its terms written into the
+    search box and read back from it (94's leftover in 196)
 144. `feat/search-settings` M: search_ignore_accents (unaccent) and CJK
     tokenization, searching and indexing (search/mod.rs:542,555,559;
     posting/search_index.rs:267,275), use_pg_headlines_for_excerpt,
