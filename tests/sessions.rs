@@ -2343,13 +2343,18 @@ async fn both_layouts_load_the_same_head() {
                 "{desktop}"
             );
             assert!(mobile.contains(r#" mobile-view mobile-device"#), "{mobile}");
-            // The CSRF token is masked afresh for each page.
+            // The CSRF token is masked afresh for each page, and the bus
+            // position moves with any transaction on the server between
+            // the two requests.
             let head = |html: &str| {
-                let head = between(html, "<head>", "</head>");
-                match head.find(r#"<meta name="csrf-token""#) {
-                    Some(at) => head.replace(between(&head[at..], "<meta", "/>"), ""),
-                    None => head.to_string(),
+                let mut head = between(html, "<head>", "</head>").to_string();
+                if let Some(at) = head.find(r#"<meta name="csrf-token""#) {
+                    head = head.replace(between(&head[at..], "<meta", "/>"), "");
                 }
+                if let Some(at) = head.find(r#"<meta name="bus-position""#) {
+                    head = head.replace(between(&head[at..], "<meta", ">"), "");
+                }
+                head
             };
             assert_eq!(head(&desktop), head(&mobile), "{path}");
         }
