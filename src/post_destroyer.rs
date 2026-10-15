@@ -1212,7 +1212,10 @@ pub(crate) async fn reset_highest(
 
 /// `Topic#reset_bumped_at`: the last visible regular post's date, or the
 /// first post's; saved without validation when it changed.
-async fn reset_bumped_at(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
+pub(crate) async fn reset_bumped_at(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<(), sqlx::Error> {
     sqlx::query(
         "UPDATE topics t SET bumped_at = p.created_at, updated_at = clock_timestamp() \
          FROM (SELECT created_at FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \

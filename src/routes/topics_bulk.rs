@@ -95,7 +95,7 @@ async fn run(
     operation: Map<String, Value>,
 ) -> Result<Performed, AppError> {
     let mut tx = state.pool.begin().await?;
-    let performed = BulkAction::new(&mut tx, ctx, guardian, topic_ids, operation)
+    let performed = BulkAction::new(&mut tx, &state.pool, ctx, guardian, topic_ids, operation)
         .perform()
         .await?;
     tx.commit().await?;

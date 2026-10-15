@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "unlist"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "39"
+        ],
+        "operation": {
+          "type": "relist"
+        }
+      }
+    }
+  ]
+}

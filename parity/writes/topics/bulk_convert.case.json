@@ -1,0 +1,31 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "38",
+          "42"
+        ],
+        "operation": {
+          "type": "convert_to_private_message"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "43"
+        ],
+        "operation": {
+          "type": "convert_to_public_topic",
+          "category_id": "4"
+        }
+      }
+    }
+  ]
+}

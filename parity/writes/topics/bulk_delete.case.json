@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "38",
+          "41"
+        ],
+        "operation": {
+          "type": "delete"
+        }
+      }
+    }
+  ]
+}

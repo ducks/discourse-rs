@@ -1,0 +1,44 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "pin"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "38"
+        ],
+        "operation": {
+          "type": "pin",
+          "pinned_globally": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "37",
+          "41"
+        ],
+        "operation": {
+          "type": "unpin"
+        }
+      }
+    }
+  ]
+}

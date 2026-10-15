@@ -1,0 +1,32 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "42",
+          "43",
+          "35"
+        ],
+        "operation": {
+          "type": "archive_messages"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "44",
+          "42"
+        ],
+        "operation": {
+          "type": "move_messages_to_inbox"
+        }
+      }
+    }
+  ]
+}

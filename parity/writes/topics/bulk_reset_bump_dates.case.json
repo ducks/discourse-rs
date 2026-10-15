@@ -1,0 +1,22 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE topics SET bumped_at = now() WHERE id IN (35, 38)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38",
+          "42"
+        ],
+        "operation": {
+          "type": "reset_bump_dates"
+        }
+      }
+    }
+  ]
+}

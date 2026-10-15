@@ -1,0 +1,31 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "close",
+          "message": "Closing these together."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "38"
+        ],
+        "operation": {
+          "type": "archive"
+        }
+      }
+    }
+  ]
+}

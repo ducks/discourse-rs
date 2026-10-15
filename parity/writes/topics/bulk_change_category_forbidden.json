@@ -1,0 +1,82 @@
+{
+  "name": "bulk_change_category_forbidden",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "37"
+        ],
+        "operation": {
+          "type": "change_category",
+          "category_id": "3"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:46:34.893268",
+  "transaction_started_at": "2026-10-15T01:46:33.130066",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_ids": [],
+        "errors": {
+          "You cannot move this topic to a category where you do not have permission to create new topics.": 2
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EtS1kJhfv5jRjxc6NXXHElWBS8I=",
+            "created_at": "2026-10-15T01:46:34.11138",
+            "rotated_at": "2026-10-15T01:46:34.109497",
+            "updated_at": "2026-10-15T01:46:34.11138",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EtS1kJhfv5jRjxc6NXXHElWBS8I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T01:46:34.901013",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EtS1kJhfv5jRjxc6NXXHElWBS8I=",
+            "created_at": "2026-10-15T01:46:34.11138",
+            "rotated_at": "2026-10-15T01:46:34.109497",
+            "updated_at": "2026-10-15T01:46:34.11138",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EtS1kJhfv5jRjxc6NXXHElWBS8I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "1ca8d03b2ebae1606b11d87b34f834480fa428c09b88e2cf195bc67882f03a4b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1523,12 +1523,33 @@ route table has been made, so this list may be short.
     ~~`feat/topic-edits-dismiss`~~ (done) M (PUT /topics/reset-new,
     /topics/pm-reset-new and PUT /topics/bulk's dismiss_topics,
     dismiss_posts and destroy_post_timing, `filter=unread`), 188g.
-    `feat/topic-edits-bulk` M (the rest of TopicsBulkAction: change
+    ~~`feat/topic-edits-bulk`~~ (done) M (the rest of TopicsBulkAction: change
     category, close, archive, unlist, relist, pin, unpin, notification
     levels, delete, archiving messages and moving them to the inbox,
-    reset bump dates, converting, the nested view)
+    reset bump dates, converting, the nested view), 188h.
+    `feat/topic-edits-rest` M (what 188a-188g still refuse: whispers
+    from PostCreator, for the category change whisper
+    (create_post_for_category_and_tag_changes, revise_topic.rs) and the
+    whisper a move to a message leaves (post_mover.rs, with its
+    participants); title and category on posts#update (the composer's
+    first-post edit, routes/posts.rs); shared drafts on PUT /t
+    (routes/topic_update.rs); experimental_topic_category_change_
+    notification, og image regeneration, review_every_post on topic
+    edits (revise_topic.rs); a merge of a topic with votes (topic
+    voting's TopicMerger), a copied first post's polls, reactions and
+    flags, the split's topic rate limits, trashing a merged topic's
+    embed (post_mover.rs); a published page's topic converted
+    (topic_converter.rs); a group's message inbox in pm-reset-new and
+    bulk archiving, filter=unread over a message inbox, bulk deleting
+    one's own topics or as a non-staff user, the nested view toggle
+    while nested replies are on (routes/topics_bulk.rs,
+    topics_bulk.rs); a category definition's description changing on a
+    title edit needs CategorySerializer (190))
 189. `feat/tags-writes` L: tags on topics (posts#create and update
-    refuse them, routes/posts.rs), the composer's tag chooser (96), tag
+    refuse them, routes/posts.rs; PUT /t, routes/topic_update.rs; a
+    split's new topic, post_mover.rs; the bulk tag operations,
+    topics_bulk.rs; moving tagged topics under tag groups or category
+    tags, revise_topic.rs), the composer's tag chooser (96), tag
     CRUD, synonyms, tag groups and tag uploads, watched words' tag action
     (watched_words.rs:129,286; routes/admin_watched_words.rs:68;
     posting/create.rs:312), unused tags with synonyms
