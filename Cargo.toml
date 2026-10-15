@@ -99,3 +99,37 @@ opt-level = 3
 opt-level = 3
 [profile.dev.package.rsa]
 opt-level = 3
+
+# Every test process parses the vendored locales and settings (i18n_tree,
+# client and server YAML, site_settings.yml) at startup; unoptimized, that
+# parsing was most of a write case's CPU time.
+[profile.dev.package.serde_json]
+opt-level = 3
+[profile.dev.package.serde_yaml_ng]
+opt-level = 3
+[profile.dev.package.unsafe-libyaml]
+opt-level = 3
+[profile.dev.package.serde]
+opt-level = 3
+[profile.dev.package.serde_core]
+opt-level = 3
+[profile.dev.package.memchr]
+opt-level = 3
+[profile.dev.package.indexmap]
+opt-level = 3
+[profile.dev.package.hashbrown]
+opt-level = 3
+[profile.dev.package.regex]
+opt-level = 3
+[profile.dev.package.regex-automata]
+opt-level = 3
+[profile.dev.package.regex-syntax]
+opt-level = 3
+[profile.dev.package.fancy-regex]
+opt-level = 3
+[profile.dev.package.mdurl]
+opt-level = 3
+# Generic parsing is compiled where it's called: the markdown crate's
+# emoji tables are parsed with its own optimization level.
+[profile.dev.package.discourse-markdown]
+opt-level = 2
