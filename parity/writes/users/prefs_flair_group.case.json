@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, flair_icon, created_at, updated_at) VALUES (9001, 'testers', 'bell', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'plain', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (9001, (SELECT id FROM users WHERE username = 'user1'), '2026-10-01 10:00:00', '2026-10-01 10:00:00', 3)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (9002, (SELECT id FROM users WHERE username = 'user1'), '2026-10-01 10:00:00', '2026-10-01 10:00:00', 3)",
+    "UPDATE groups SET user_count = 1 WHERE id IN (9001, 9002)"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1.json", "params": { "flair_group_id": "9002" } },
+    { "method": "PUT", "path": "/u/user1.json", "params": { "flair_group_id": "9001" } },
+    { "method": "PUT", "path": "/u/user1.json", "params": { "flair_group_id": "" } }
+  ]
+}

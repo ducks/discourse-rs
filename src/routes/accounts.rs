@@ -26,7 +26,7 @@ fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
 }
 
 /// `ActionController::ParameterMissing`, as ApplicationController renders it.
-pub(super) fn param_missing(name: &str) -> Response {
+pub(crate) fn param_missing(name: &str) -> Response {
     (
         StatusCode::BAD_REQUEST,
         Json(json!({"errors": [format!("param is missing or the value is empty or invalid: {name}")]})),

@@ -1,0 +1,141 @@
+{
+  "name": "check_username",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?username=user2"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?username=freshname"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?username=a"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?username=USER1&for_user_id=3"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?username=about"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json?email=new@example.com"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_username.json"
+    }
+  ],
+  "started_at": "2026-10-15T04:37:00.092486",
+  "transaction_started_at": "2026-10-15T04:36:58.639147",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "available": false,
+        "suggestion": "user21"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "available": true,
+        "is_developer": false,
+        "avatar_template": "/letter_avatar_proxy/v4/letter/f/35a633/{size}.png"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "errors": [
+          "must be at least 3 characters"
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "available": true,
+        "is_developer": false,
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/9fc348/{size}.png"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: username"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 148,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "i7cHll3MxFvnnDlJQpoymqvpcmc=",
+            "created_at": "2026-10-15T04:36:59.109658",
+            "rotated_at": "2026-10-15T04:36:59.108529",
+            "updated_at": "2026-10-15T04:36:59.109658",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "i7cHll3MxFvnnDlJQpoymqvpcmc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 148,
+            "seen_at": "2026-10-15T04:37:00.104768",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "i7cHll3MxFvnnDlJQpoymqvpcmc=",
+            "created_at": "2026-10-15T04:36:59.109658",
+            "rotated_at": "2026-10-15T04:36:59.108529",
+            "updated_at": "2026-10-15T04:36:59.109658",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "i7cHll3MxFvnnDlJQpoymqvpcmc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "626cdec3af48452601de159c0d8a92aac8abc5c883cbb9f9da3cc33f47db6598",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

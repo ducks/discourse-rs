@@ -1,0 +1,27 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "seen_popups": ["1", "2"],
+        "hidden_composer_toolbar_buttons": ["bold", "italic"],
+        "understood_languages": ["en"]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "hidden_composer_toolbar_buttons": "bold",
+        "understood_languages": "en"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": { "skip_new_user_tips": "true" }
+    }
+  ]
+}

@@ -101,6 +101,7 @@ mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
 pub(crate) mod user_menu;
+mod user_preferences;
 mod user_search;
 mod user_update;
 mod users;
@@ -512,6 +513,25 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/u/recent-searches.json",
             get(recent_searches::show).delete(recent_searches::reset),
         )
+        .route("/u/check_username", get(user_preferences::check_username))
+        .route(
+            "/u/check_username.json",
+            get(user_preferences::check_username),
+        )
+        .route(
+            "/users/check_username",
+            get(user_preferences::check_username),
+        )
+        .route(
+            "/users/check_username.json",
+            get(user_preferences::check_username),
+        )
+        .route("/my/{*path}", get(user_preferences::my_redirect))
+        .route("/login-preferences", get(login_required::show_login))
+        .route(
+            "/.well-known/change-password",
+            get(user_preferences::change_password),
+        )
         .route("/u/search/users", get(user_search::search_users))
         .route("/u/search/users.json", get(user_search::search_users))
         .route(
@@ -541,7 +561,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/u/{username}/{*rest}",
-            get(users::show_with_tail).put(user_badges::put_user_tail),
+            get(users::show_with_tail)
+                .put(user_badges::put_user_tail)
+                .post(user_preferences::post_tail)
+                .delete(user_preferences::delete_tail),
         )
         .route(
             "/users/{username}",
@@ -567,7 +590,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/users/{username}/{*rest}",
-            get(users::show_with_tail).put(user_badges::put_user_tail),
+            get(users::show_with_tail)
+                .put(user_badges::put_user_tail)
+                .post(user_preferences::post_tail)
+                .delete(user_preferences::delete_tail),
         )
         .route("/user_actions.json", get(users::actions))
         // UserApiKeysController and UserApiKeyClientsController.
@@ -2167,6 +2193,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/users-directory.js", get(asset))
         .route("/assets/user-menu.js", get(asset))
         .route("/assets/user-notifications.js", get(asset))
+        .route("/assets/preferences.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))

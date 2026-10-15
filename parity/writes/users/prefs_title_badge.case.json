@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE badges SET allow_title = true WHERE id = 2"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1.json", "params": { "title": "Leader", "name": "User1" } },
+    { "method": "PUT", "path": "/u/user1.json", "params": { "title": "Member", "name": "User1" } },
+    { "method": "PUT", "path": "/u/user1.json", "params": { "title": "", "name": "User1" } }
+  ]
+}

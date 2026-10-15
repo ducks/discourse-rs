@@ -53,6 +53,9 @@ pub enum Tab<'a> {
     Messages(String),
     /// `user.badges`: the badges content (crate::badges_page), drawn.
     Badges(String),
+    /// `preferences.*`: the preferences navigation and tab
+    /// (crate::preferences_view), drawn.
+    Preferences(String),
 }
 
 /// The activity sub-navigation's stream routes.
@@ -569,7 +572,7 @@ pub fn render(
             &format!("{user_path}/preferences"),
             "gear",
             &t(cx, "user.preferences.title"),
-            false,
+            matches!(tab, Tab::Preferences(_)),
         ));
     }
     out.push_str("</ul></div></nav></section><div class=\"new-user-content-wrapper\">");
@@ -604,7 +607,9 @@ pub fn render(
                 solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
-            Tab::Messages(content) | Tab::Badges(content) => out.push_str(content),
+            Tab::Messages(content) | Tab::Badges(content) | Tab::Preferences(content) => {
+                out.push_str(content)
+            }
         }
     }
     out.push_str("</div></div></section></div>");

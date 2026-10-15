@@ -107,13 +107,22 @@ pub async fn update(
     if !user_updater::can_edit_user(&guardian, &target) {
         return Ok(super::search::invalid_access(&state));
     }
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // An admin's API request sets external ids (the managed authenticators'
+    // and DiscourseConnect's); everyone else's is ignored.
+    if matches!(p.get("external_ids"), Some(Value::Object(_))) && guardian.is_admin() {
+        return Err(crate::Unsupported("updating external ids (191)").into());
+    }
+    let user_fields = p.get("user_fields").cloned();
     // user_params.except(:username, :email, :password)
-    let mut attrs = p;
+    let mut attrs = user_updater::user_params(p, &settings)?;
     for key in ["username", "email", "password"] {
         attrs.remove(key);
     }
-    let settings =
-        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    if let Some(fields) = user_fields {
+        attrs.insert("user_fields".into(), fields);
+    }
     let host = Host::from_state(&state);
     let ctx = Ctx {
         host: &host,

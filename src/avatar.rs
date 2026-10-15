@@ -104,7 +104,7 @@ fn uploaded_avatar_template(
 
 /// `User.default_template(username)`: the letter avatar unless
 /// default_avatars is configured.
-fn default_template(
+pub(crate) fn default_template(
     settings: &SiteSettings,
     urls: &Urls<'_>,
     username: &str,

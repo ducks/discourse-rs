@@ -352,7 +352,7 @@ fn options_trigger(list: &ListContext, options: &[PopupOption], unported: &[&str
     )
 }
 
-fn toolbar(
+pub(crate) fn toolbar(
     list: &ListContext,
     upload: Option<&UploadUi>,
     options: Option<(&[PopupOption], &[&str])>,

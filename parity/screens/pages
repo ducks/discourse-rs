@@ -94,3 +94,11 @@
 /badges
 /badges/5/welcome mask=.granted-on
 /u/user1/badges
+
+# The preferences tabs (193a). The bio is the markdown editor here, the
+# rich editor on the reference (196).
+/u/user1/preferences/account as=user1
+/u/user1/preferences/profile as=user1
+/u/user1/preferences/notifications as=user1
+/u/user1/preferences/interface as=user1
+/u/user1/preferences/account as=admin

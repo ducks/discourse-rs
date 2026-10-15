@@ -1,0 +1,82 @@
+{
+  "name": "check_emails_member",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/emails.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user2/emails.json"
+    }
+  ],
+  "started_at": "2026-10-15T04:36:56.124051",
+  "transaction_started_at": "2026-10-15T04:36:54.492552",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "email": "user2@example.com",
+        "secondary_emails": [],
+        "unconfirmed_emails": [],
+        "associated_accounts": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 148,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uEPbpVy89JptzL8X7Z1o2Deum9A=",
+            "created_at": "2026-10-15T04:36:55.224783",
+            "rotated_at": "2026-10-15T04:36:55.223775",
+            "updated_at": "2026-10-15T04:36:55.224783",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uEPbpVy89JptzL8X7Z1o2Deum9A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 148,
+            "seen_at": "2026-10-15T04:36:56.13145",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uEPbpVy89JptzL8X7Z1o2Deum9A=",
+            "created_at": "2026-10-15T04:36:55.224783",
+            "rotated_at": "2026-10-15T04:36:55.223775",
+            "updated_at": "2026-10-15T04:36:55.224783",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uEPbpVy89JptzL8X7Z1o2Deum9A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "538d8ec769df8a388b5ca02f7e22c4bf22a76deb810209fe6f4bca8f2dbb89c6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

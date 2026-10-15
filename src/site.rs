@@ -163,6 +163,19 @@ const BUILTIN_AUTH_SETTINGS: &[&str] = &[
     "enable_linkedin_oidc_logins",
 ];
 
+/// Whether a builtin login provider is enabled (`Discourse.enabled_auth_providers`
+/// is not empty), the client's login methods.
+pub fn external_logins_enabled(
+    s: &crate::site_settings::SiteSettings,
+) -> Result<bool, crate::AppError> {
+    for name in BUILTIN_AUTH_SETTINGS {
+        if s.get(name)?.truthy() {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 #[derive(Debug)]
 pub enum SiteError {
     Db(sqlx::Error),
@@ -264,6 +277,17 @@ impl Site<'_> {
     /// `Discourse.base_path`
     fn base_path(&self) -> &str {
         self.config.globals.relative_url_root()
+    }
+
+    /// The part of `json_for` the preferences read: user_fields,
+    /// user_themes, user_color_schemes, and whether user_tips is there.
+    pub async fn preferences_json(&mut self) -> Result<Value, SiteError> {
+        Ok(json!({
+            "user_fields": self.user_fields().await?,
+            "user_themes": self.user_themes().await?,
+            "user_color_schemes": self.user_color_schemes().await?,
+            "user_tips": self.truthy("enable_user_tips")?,
+        }))
     }
 
     /// `Site.json_for(guardian)`: the full serializer, or the reduced

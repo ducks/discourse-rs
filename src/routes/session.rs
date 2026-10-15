@@ -224,6 +224,12 @@ pub(crate) fn viewer_state(
             previous_visit_at: user.previous_visit_at.map(|at| at.and_utc()),
             staff: user.admin || user.moderator,
             can_send_private_messages: guardian.can_send_private_messages(settings)?,
+            text_size_cookie: crate::session::current::cookie(headers, "text_size").map(|c| {
+                form_urlencoded::parse(format!("v={c}").as_bytes())
+                    .next()
+                    .map(|(_, v)| v.into_owned())
+                    .unwrap_or_default()
+            }),
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })

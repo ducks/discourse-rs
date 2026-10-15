@@ -1,0 +1,7 @@
+{
+  "user": "user2",
+  "requests": [
+    { "method": "GET", "path": "/u/user1/emails.json" },
+    { "method": "GET", "path": "/u/user2/emails.json" }
+  ]
+}

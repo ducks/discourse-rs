@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "GET", "path": "/u/user1/emails.json?context=%2Fu%2Fuser1%2Fpreferences%2Faccount" },
+    { "method": "GET", "path": "/u/admin/emails.json" }
+  ]
+}

@@ -1302,7 +1302,8 @@ generate_theme_screenshot_thumbnails (171).
     plugins/chat/publisher.rs:66; plugins/chat/channels.rs:434), slug
     changes (plugins/chat/dm_groups.rs:478), the separate sidebar and
     empty states (plugins/chat/view.rs:276,341,345), the mobile footer's
-    search and starred routes (99)
+    search and starred routes (99), chat's notification sounds (the
+    preferences' sound preview, static/js/preferences.js)
 163. `feat/solved-rest` S: discourse-solved's auto close timers, web
     hooks, crawler schema markup, search filters and lists by solved
     status (milestone 5), the dashboard's support section
@@ -1659,8 +1660,8 @@ route table has been made, so this list may be short.
     belongs to another item (avatars 131, second factor 155, external
     auth 191, user status 130, invites 192, exports 200) is refused
     naming it:
-    193a. `feat/user-pages-prefs` M: /my/* (users#my_redirect, which the
-    user menu and sidebar link to), the preferences shell (the profile
+    193a. ~~`feat/user-pages-prefs`~~ (done) M: /my/* (users#my_redirect,
+    which the user menu and sidebar link to), the preferences shell (the profile
     header, the preferences navigation, `form-vertical`, Save Changes
     through PUT /u with each tab's saveAttrNames, Saved!) and its four
     most used tabs: account (username and its change form, the email
@@ -1668,7 +1669,23 @@ route table has been made, so this list may be short.
     me, timezone, location, website, user fields, hide profile, default
     calendar), notifications and interface; the select-kit combo box
     and checkbox controls they share; the title, primary group and flair
-    group keys PUT /u refuses (156)
+    group keys PUT /u refuses (156). Done with them: users#check_username
+    and users#check_emails, user_params' permit (unpermitted keys,
+    lists and hashes dropped), the profile and card backgrounds, the
+    array options and the plugins' options (discourse-solved's, chat's)
+    PUT /u refused or ignored, the text size class (option and cookie)
+    on every page, the timezone a member without one saves on boot, the
+    dialog service's yesNoConfirm and custom buttons. Refused, naming
+    their items:
+    choosing an avatar and removing a profile image (131), the user
+    status (130), associated accounts and revoking them (191), exporting
+    one's data (200), featuring a topic (156), the email change page and
+    the alternate emails' actions (193d), logging out a device (193e),
+    subscribing to push notifications (186), chat's notification sounds
+    (162), choosing a theme or color palette (169), hiding composer
+    toolbar buttons and the bio's rich editor (196, drawn in markdown
+    mode), content languages (168), a multiselect user field (196's
+    MultiSelect)
     193b. `feat/user-pages-notifications` S: /u/:username/notifications
     and its filters (responses, likes-received, mentions, edits, links,
     reactions), the Filter By dropdown and Dismiss All

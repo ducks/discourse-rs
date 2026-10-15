@@ -21,7 +21,7 @@
 {%- macro hamburger_button() %}
 <li class="header-dropdown-toggle hamburger-dropdown"><button aria-label="{{ chrome.t("hamburger_menu") }}" class="btn no-text btn-icon icon btn-flat" id="toggle-hamburger-menu" title="{{ chrome.t("hamburger_menu") }}" aria-haspopup="true" type="button"><svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
 {%- endmacro %}
-<html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch{% if mobile %} mobile-view mobile-device{% else %} desktop-view not-mobile-device{% endif %}{{ chrome.html_classes }}">
+<html lang="{{ lang }}" class="text-size-{% if chrome.text_size.is_empty() %}normal{% else %}{{ chrome.text_size }}{% endif %}{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch{% if mobile %} mobile-view mobile-device{% else %} desktop-view not-mobile-device{% endif %}{{ chrome.html_classes }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -268,6 +268,18 @@
           htmx.ajax("GET", url, { swap: "none" });
         }
       }
+      {%- if let Some(v) = viewer %}{% if chrome.save_timezone %}
+      // User.resolveCurrent: a member without a timezone saves the guess.
+      if (Discourse.once("save-timezone") && window.Intl) {
+        var meta = function (n) { return (document.querySelector('meta[name="' + n + '"]') || {}).content || ""; };
+        fetch(meta("discourse-base-uri") + "/u/{{ v.username }}.json", {
+          method: "PUT",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", "X-CSRF-Token": meta("csrf-token"), "X-Requested-With": "XMLHttpRequest" },
+          body: "timezone=" + encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone),
+        });
+      }
+      {%- endif %}{% endif %}
       if (Discourse.once("page-error")) document.addEventListener("htmx:responseError", function (event) {
         // Forms that show their own errors say so.
         if (event.detail.elt.closest("[data-own-errors]")) { return; }
