@@ -700,6 +700,212 @@ pub async fn reports_index(
 
 /// A request for JSON rather than a page: `.json`, XHR, or an Accept the
 /// format negotiation reads as JSON.
+/// GET /admin/logs/staff_action_logs as a page: the logs for the route's
+/// `filters` (their JSON) and `startDate`/`endDate`, a later `page` for
+/// the load-more sentinel.
+pub async fn staff_action_logs_page(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut filters_json = serde_json::Value::Null;
+    let mut f = crate::admin_logs_view::StaffFilters::default();
+    let mut page = 0i64;
+    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
+        match k.as_ref() {
+            "filters" => filters_json = serde_json::from_str(&v).unwrap_or(serde_json::Value::Null),
+            "startDate" if !v.is_empty() => f.start_date = Some(v.into_owned()),
+            "endDate" if !v.is_empty() => f.end_date = Some(v.into_owned()),
+            "page" => page = v.parse().unwrap_or(0),
+            _ => {}
+        }
+    }
+    let get = |k: &str| match &filters_json[k] {
+        serde_json::Value::String(s) if !s.is_empty() => Some(s.clone()),
+        serde_json::Value::Number(n) => Some(n.to_string()),
+        _ => None,
+    };
+    f.action_name = get("action_name");
+    f.acting_user = get("acting_user");
+    f.target_user = get("target_user");
+    f.subject = get("subject");
+    let mut permitted = Vec::new();
+    for key in crate::staff_action_logs::STAFF_FILTERS {
+        if let Some(v) = get(key) {
+            permitted.push((key.to_string(), v));
+        }
+    }
+    let p = crate::staff_action_logs::Params {
+        action_id: get("action_id"),
+        custom_type: get("custom_type"),
+        acting_user: f.acting_user.clone(),
+        target_user: f.target_user.clone(),
+        subject: f.subject.clone(),
+        action_name: f.action_name.clone(),
+        start_date: f.start_date.clone(),
+        end_date: f.end_date.clone(),
+        page: Some(page.to_string()),
+        limit: None,
+        permitted,
+    };
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        &state,
+        &guardian,
+        &headers,
+        "admin_logs_staff_action_logs",
+    )
+    .await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &shell.settings,
+    };
+    let user_cx = crate::admin_user_show::Context {
+        settings: &shell.settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx_logs = crate::staff_action_logs::Context {
+        settings: &shell.settings,
+        user_cx: &user_cx,
+        base_path: state.config.globals.relative_url_root(),
+    };
+    let doc = match crate::staff_action_logs::index(&mut conn, &cx_logs, &guardian, &p).await? {
+        crate::staff_action_logs::Outcome::Json(doc) => doc,
+        crate::staff_action_logs::Outcome::InvalidParameter(key) => {
+            return Ok(super::search::invalid_parameters(&state, key));
+        }
+    };
+    let categories = std::collections::HashMap::new();
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let cx = shell.cx(&state);
+    let mut content = crate::admin_logs_view::header(
+        &cx,
+        shell.admin.can_see_emails,
+        crate::admin_logs_view::Tab::StaffActions,
+    );
+    content.push_str(&crate::admin_logs_view::staff_action_logs(
+        &cx, &list, &doc, &f, page,
+    ));
+    let main = crate::admin_view::contents("admin-logs staff-action-logs", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.staff_action_logs.title");
+    shell.render(&state, &uri, &title, main, "admin-logs.js", StatusCode::OK)
+}
+
+/// A screened emails, IPs or URLs tab as a page, from its JSON.
+pub async fn screened_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    tab: crate::admin_logs_view::Tab,
+    doc: &serde_json::Value,
+    filter: &str,
+) -> Result<Response, AppError> {
+    use crate::admin_logs_view::Tab;
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_logs_staff_action_logs",
+    )
+    .await?;
+    let categories = std::collections::HashMap::new();
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let rows = doc.as_array().cloned().unwrap_or_default();
+    let cx = shell.cx(state);
+    let mut content = crate::admin_logs_view::header(&cx, shell.admin.can_see_emails, tab);
+    let (class, body) = match tab {
+        Tab::ScreenedEmails => (
+            "screened-emails",
+            crate::admin_logs_view::screened_emails(&cx, &list, &rows),
+        ),
+        Tab::ScreenedUrls => (
+            "screened-urls",
+            crate::admin_logs_view::screened_urls(&cx, &list, &rows),
+        ),
+        _ => (
+            "screened-ip-addresses",
+            crate::admin_logs_view::screened_ips(&cx, &list, &rows, filter),
+        ),
+    };
+    content.push_str(&body);
+    let main = crate::admin_view::contents(&format!("admin-logs {class}"), &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.staff_action_logs.title");
+    shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
+}
+
+/// The search logs tab as a page, from its JSON.
+pub async fn search_logs_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+    period: &str,
+    search_type: &str,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_logs_staff_action_logs",
+    )
+    .await?;
+    let categories = std::collections::HashMap::new();
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let rows = doc.as_array().cloned().unwrap_or_default();
+    let cx = shell.cx(state);
+    let mut content = crate::admin_logs_view::header(
+        &cx,
+        shell.admin.can_see_emails,
+        crate::admin_logs_view::Tab::SearchLogs,
+    );
+    content.push_str(&crate::admin_logs_view::search_logs(
+        &cx,
+        &list,
+        &rows,
+        period,
+        search_type,
+    ));
+    let main = crate::admin_view::contents("admin-logs admin-search-logs", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.staff_action_logs.title");
+    shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
+}
+
 /// An admin page not drawn yet: refused, where its JSON is served.
 pub(super) fn refuse_page(
     uri: &Uri,

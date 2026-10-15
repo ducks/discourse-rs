@@ -629,11 +629,7 @@ async fn the_admin_pages_not_drawn_yet_are_refused() {
     let mut admin = Client::logged_in(st, "admin").await;
     for path in [
         "/admin/reports/signups",
-        "/admin/logs/staff_action_logs",
-        "/admin/logs/screened_emails",
-        "/admin/logs/screened_ip_addresses",
-        "/admin/logs/screened_urls",
-        "/admin/logs/search_logs",
+        "/admin/logs/search_logs/term?term=foo",
         "/admin/email-logs/sent",
     ] {
         let (status, _) = admin.page(path).await;
@@ -641,5 +637,51 @@ async fn the_admin_pages_not_drawn_yet_are_refused() {
         // Their JSON is served.
         let (status, _) = admin.send(Method::GET, path, "", true).await;
         assert_eq!(status, StatusCode::OK, "{path}");
+    }
+}
+
+#[tokio::test]
+async fn the_logs_pages() {
+    let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO screened_ip_addresses (ip_address, action_type, match_count, created_at, updated_at) VALUES ('10.1.0.0/16', 2, 3, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    // /admin/logs goes on to the staff action logs.
+    let (status, location) = admin.page("/admin/logs").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/logs/staff_action_logs");
+    let (status, html) = admin.page("/admin/logs/staff_action_logs").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-logs staff-action-logs\">"));
+    assert!(html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/logs/staff_action_logs\">Logs &amp; screening</a></li>"), "{html}");
+    assert!(html.contains("id=\"staff-action-logs-action-filter\""));
+    assert!(html.contains("<a data-auto-route=\"true\" href=\"/logs\">"));
+    // A filter shows as its button, with Show everything.
+    let (_, html) = admin
+        .page("/admin/logs/staff_action_logs?filters=%7B%22subject%22%3A%22title%22%7D")
+        .await;
+    assert!(html.contains("clear-filters"), "{html}");
+    assert!(html.contains("data-clear-filter=\"subject\""));
+    let (status, html) = admin.page("/admin/logs/screened_ip_addresses").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<strong>10.1.0.0/16</strong>"), "{html}");
+    assert!(html.contains("screened-ip-address-form inline-form"));
+    for path in [
+        "/admin/logs/screened_emails",
+        "/admin/logs/screened_urls",
+        "/admin/logs/search_logs",
+    ] {
+        let (status, html) = admin.page(path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {html}");
+        assert!(html.contains("/admin-logs.js"), "{path}");
+        // Their JSON stays as it was.
+        let (status, body) = admin.send(Method::GET, path, "", true).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert!(body.starts_with('['), "{path}: {body}");
     }
 }

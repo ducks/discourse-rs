@@ -31,3 +31,9 @@
 /admin/reports?filter=sign as=admin
 /admin/reports?group=traffic as=admin
 /admin/reports?filter=zzzzz as=admin
+# The logs pages (90g5). Masked: the reference's own relative dates.
+/admin/logs/staff_action_logs as=admin mask=.relative-date
+/admin/logs/screened_emails as=admin
+/admin/logs/screened_ip_addresses as=admin mask=.relative-date
+/admin/logs/screened_urls as=admin
+/admin/logs/search_logs as=admin mask=.top-date-string

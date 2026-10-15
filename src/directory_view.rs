@@ -176,7 +176,7 @@ fn group_selector(cx: &ListContext, groups: &[(String, String)], group: Option<&
 
 /// PeriodChooser (a DropdownSelectBox): its header, and its rows for
 /// users-directory.js to open.
-fn period_chooser(cx: &ListContext, period: &str) -> String {
+pub(crate) fn period_chooser(cx: &ListContext, period: &str) -> String {
     let mut rows = String::new();
     for (i, p) in PERIODS.iter().enumerate() {
         let selected = *p == period;
