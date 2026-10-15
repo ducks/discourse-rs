@@ -8,6 +8,16 @@ still work against it.
 
 The pre-rewrite Actix/Diesel version is tagged `v20260610.0.1`.
 
+The port serving Discourse's seed data (the parity fixtures, no Rails or
+Ember running), desktop and mobile:
+
+| | |
+|---|---|
+| ![The latest list](docs/screenshots/latest.png) | ![A topic](docs/screenshots/topic.png) |
+| ![The categories page](docs/screenshots/categories.png) | ![The composer, logged in](docs/screenshots/composer.png) |
+
+<img src="docs/screenshots/latest-mobile.png" alt="The latest list on a phone" width="300">
+
 ## Principles
 
 - **Discourse owns the schema.** `vendor/discourse/` holds files copied
