@@ -926,6 +926,9 @@ edits (started), 189 tags writes (the composer refuses tags), 193 the
 user pages (preferences first, split 193a-f), 143 advanced search (the
 search menu's `#`, `@` and `in:` suggestions run searches the port
 refuses), 131 avatars.
+Then 208 multisite, ahead of the other large items: its cost grows with
+every feature written against one AppState, and many forums in one
+process is the port's clearest win for self-hosting.
 Then the rest of Phase 10's core forum actions (190 categories writes,
 191 external auth, 192 invites), then 100.
 
@@ -1766,8 +1769,15 @@ route table has been made, so this list may be short.
     CSRF, `event`, `job`; the failure policy
 207. `feat/hosted-plugins` M: the same API over HTTP with a scoped key,
     events as signed webhooks
-208. `feat/multisite` L: several forums from one process, by hostname
-    (RailsMultisite)
+208. `feat/multisite` L, moved up to follow 131 (see "Next, in
+    order"): several forums from one process, by hostname
+    (RailsMultisite). The site picked from the Host header per request
+    and per job; each site's own pool, pg-bus, anonymous cache, rate
+    limits, search log cache and site settings (today one AppState holds
+    one of each); request tracking's counts and event queue
+    (request_tracking.rs, process-wide statics today) kept per site;
+    scheduled jobs run for every site; multisite.yml's shape for the
+    config
 
 ## Milestone 1: a hostable read-only mirror
 
