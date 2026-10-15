@@ -1,0 +1,52 @@
+{
+  "name": "bulk_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new.json"
+    }
+  ],
+  "started_at": "2026-10-15T01:22:25.43928",
+  "transaction_started_at": "2026-10-15T01:22:24.076974",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "e29e8ec0b3e2a34b2c753d8a98d632a2e196d30eda1bb08be3928efa60d8b34a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

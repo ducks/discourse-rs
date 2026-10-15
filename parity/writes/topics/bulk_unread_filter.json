@@ -1,0 +1,142 @@
+{
+  "name": "bulk_unread_filter",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "filter": "unread",
+        "category_id": "4",
+        "tracked": "true",
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:22:35.183497",
+  "transaction_started_at": "2026-10-15T01:22:34.040205",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_ids": [
+          35
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "topic_ids": []
+      }
+    }
+  ],
+  "changes": {
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.207662",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 1,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.215851"
+          },
+          "after": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.207662",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 5,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.215851"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EWFE4+bqvlCpqHUx6kpcKTU5cwI=",
+            "created_at": "2026-10-15T01:22:34.542387",
+            "rotated_at": "2026-10-15T01:22:34.541374",
+            "updated_at": "2026-10-15T01:22:34.542387",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EWFE4+bqvlCpqHUx6kpcKTU5cwI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T01:22:35.191488",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EWFE4+bqvlCpqHUx6kpcKTU5cwI=",
+            "created_at": "2026-10-15T01:22:34.542387",
+            "rotated_at": "2026-10-15T01:22:34.541374",
+            "updated_at": "2026-10-15T01:22:34.542387",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EWFE4+bqvlCpqHUx6kpcKTU5cwI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topic_users SET last_read_post_number = 1 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "recorded_from": {
+    "case": "a8e80a1c87adbc99bb5071ea88bff83e5272e90322d2566f0b21814e230d5d3b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

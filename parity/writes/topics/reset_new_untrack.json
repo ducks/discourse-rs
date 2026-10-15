@@ -1,0 +1,191 @@
+{
+  "name": "reset_new_untrack",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new.json",
+      "params": {
+        "dismiss_posts": "true",
+        "untrack": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:22:47.983626",
+  "transaction_started_at": "2026-10-15T01:22:47.034035",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_ids": [
+          35
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.207662",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 1,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.215851"
+          },
+          "after": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.207662",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 1,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 1,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-10-15T01:22:48.012781"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kulGp4YA/27dHQYir/6pVP352Vc=",
+            "created_at": "2026-10-15T01:22:47.395905",
+            "rotated_at": "2026-10-15T01:22:47.394971",
+            "updated_at": "2026-10-15T01:22:47.395905",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kulGp4YA/27dHQYir/6pVP352Vc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T01:22:47.99072",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kulGp4YA/27dHQYir/6pVP352Vc=",
+            "created_at": "2026-10-15T01:22:47.395905",
+            "rotated_at": "2026-10-15T01:22:47.394971",
+            "updated_at": "2026-10-15T01:22:47.395905",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kulGp4YA/27dHQYir/6pVP352Vc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-10-15T01:22:48.004582",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 4,
+        "topic_id": 35,
+        "input": "topic_notification_level_changed"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topic_users SET last_read_post_number = 1 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "recorded_from": {
+    "case": "9eeedd1fbb5d74e30d7075b764fb8f19aac5c6cae6efb0de17193a364e13bbe3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

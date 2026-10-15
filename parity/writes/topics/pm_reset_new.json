@@ -1,0 +1,132 @@
+{
+  "name": "pm_reset_new",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/pm-reset-new.json",
+      "params": {
+        "inbox": "user"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/pm-reset-new.json",
+      "params": {
+        "topic_ids": [
+          "43",
+          "44"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/pm-reset-new.json"
+    }
+  ],
+  "started_at": "2026-10-15T01:22:39.54066",
+  "transaction_started_at": "2026-10-15T01:22:35.634723",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "topic_ids": [
+          43,
+          44
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "topic_ids": [
+          43,
+          44
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: inbox"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "dismissed_topic_users": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": 3,
+          "topic_id": 44,
+          "created_at": "2026-10-15T01:22:39.605684"
+        },
+        {
+          "id": 3,
+          "user_id": 3,
+          "topic_id": 43,
+          "created_at": "2026-10-15T01:22:39.605684"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oAXkE5t+erE9qyETS0NcsfL/T6M=",
+            "created_at": "2026-10-15T01:22:37.151161",
+            "rotated_at": "2026-10-15T01:22:37.149314",
+            "updated_at": "2026-10-15T01:22:37.151161",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oAXkE5t+erE9qyETS0NcsfL/T6M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T01:22:39.552778",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oAXkE5t+erE9qyETS0NcsfL/T6M=",
+            "created_at": "2026-10-15T01:22:37.151161",
+            "rotated_at": "2026-10-15T01:22:37.149314",
+            "updated_at": "2026-10-15T01:22:37.151161",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oAXkE5t+erE9qyETS0NcsfL/T6M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "dismissed_topic_users": 2
+  },
+  "setup": [
+    "UPDATE user_options SET new_topic_duration_minutes = -1 WHERE user_id = 3",
+    "UPDATE users SET created_at = '2026-07-01 00:00:00' WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "620166c211d5ea40b7418c88e13a3236a1ba6f4dc28bcf05c624da6017b85b63",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

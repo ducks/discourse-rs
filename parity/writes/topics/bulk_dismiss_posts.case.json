@@ -1,0 +1,22 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE topic_users SET last_read_post_number = 1 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "41",
+          "99999"
+        ],
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    }
+  ]
+}

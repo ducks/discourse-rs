@@ -1,0 +1,18 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "40"
+        ],
+        "operation": {
+          "type": "destroy_post_timing"
+        }
+      }
+    }
+  ]
+}

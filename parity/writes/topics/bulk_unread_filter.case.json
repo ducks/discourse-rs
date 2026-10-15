@@ -1,0 +1,30 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE topic_users SET last_read_post_number = 1 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "filter": "unread",
+        "category_id": "4",
+        "tracked": "true",
+        "operation": {
+          "type": "dismiss_posts"
+        }
+      }
+    }
+  ]
+}

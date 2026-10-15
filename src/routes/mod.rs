@@ -90,6 +90,7 @@ mod topic_timer;
 mod topic_update;
 mod topic_voting;
 mod topics;
+mod topics_bulk;
 mod user_api_key_auth;
 mod user_api_key_device;
 mod user_api_keys;
@@ -227,6 +228,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/notifications/read", put(read_tracking::mark_read))
         .route("/notifications/read.json", put(read_tracking::mark_read))
         .route("/topics/timings", post(read_tracking::timings))
+        .route("/topics/bulk", put(topics_bulk::bulk))
+        .route("/topics/bulk.json", put(topics_bulk::bulk))
+        .route("/topics/reset-new", put(topics_bulk::reset_new))
+        .route("/topics/reset-new.json", put(topics_bulk::reset_new))
+        .route("/topics/pm-reset-new", put(topics_bulk::pm_reset_new))
+        .route("/topics/pm-reset-new.json", put(topics_bulk::pm_reset_new))
         .route("/topics/timings.json", post(read_tracking::timings))
         .route(
             "/t/{slug}/timings",

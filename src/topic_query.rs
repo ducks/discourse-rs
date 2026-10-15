@@ -911,6 +911,42 @@ impl TopicQuery<'_> {
         self.fetch(&clause, &order, count, 0).await
     }
 
+    /// The ids of `new_results`, `unread_results` or
+    /// `new_and_unread_results` without a limit, narrowed by `extra`
+    /// (TopicsController#reset_new's scopes).
+    pub async fn new_and_unread_ids(
+        &mut self,
+        new: bool,
+        unread: bool,
+        extra: &str,
+    ) -> Result<Vec<i32>, TopicQueryError> {
+        self.check_unported_filters()?;
+        self.filter = Filter::New;
+        self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
+        self.user = self.user_scope().await?;
+        let new_clause = format!(
+            "{} AND {} AND dismissed_topic_users.id IS NULL",
+            self.new_filter(),
+            self.remove_muted_clause()?
+        );
+        let unread_clause = format!("{} AND {}", self.unread_filter(), self.max_age_clause());
+        let clause = match (new, unread) {
+            (true, true) => format!("(({new_clause}) OR ({unread_clause}))"),
+            (true, false) => new_clause,
+            (false, true) => unread_clause,
+            (false, false) => return Ok(Vec::new()),
+        };
+        let sql = format!(
+            "SELECT topics.id FROM topics \
+             LEFT OUTER JOIN categories ON categories.id = topics.category_id{joins} \
+             WHERE {} AND ({clause}) AND ({extra})",
+            self.where_clause()?,
+            joins = self.joins(),
+        );
+        Ok(sqlx::query_scalar(&sql).fetch_all(&mut *self.conn).await?)
+    }
+
     async fn fetch(
         &mut self,
         extra_where: &str,
