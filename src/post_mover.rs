@@ -14,8 +14,10 @@
 //! Moving to a message (`move_to_pm`) leaves a whisper behind, allows the
 //! mover and the posts' authors in, and adds the named participants.
 //!
-//! Refused: tags on the new topic (189), a copied first post with polls
-//! or reactions, votes moving with a merge.
+//! The new topic of a split takes `tag_ids` (or the `tags` names).
+//!
+//! Refused: a copied first post with polls or reactions, votes moving
+//! with a merge.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -45,7 +47,14 @@ pub struct MoveArgs {
     pub move_to_pm: bool,
     pub participants: Option<String>,
     /// `tag_ids` or `tags` for the new topic.
-    pub tags: bool,
+    pub tags: Option<NewTopicTags>,
+}
+
+/// A split's tags: `tag_ids`, else the deprecated `tags` names.
+#[derive(Debug, Clone)]
+pub enum NewTopicTags {
+    Ids(Vec<i32>),
+    Names(Vec<String>),
 }
 
 /// How a move ends.
@@ -158,10 +167,9 @@ pub async fn move_posts(
     if let Some(destination_id) = args.destination_topic_id {
         mover.move_to_topic(pool, destination_id).await
     } else if let Some(title) = &args.title {
-        if args.tags {
-            return Err(Unsupported("tags on a split's new topic (189)").into());
-        }
-        mover.move_to_new_topic(pool, title, args.category_id).await
+        mover
+            .move_to_new_topic(pool, title, args.category_id, args.tags.as_ref())
+            .await
     } else {
         Ok(Moved::Nothing)
     }
@@ -201,7 +209,7 @@ impl Mover<'_, '_> {
             return Ok(refused);
         }
         let deferred = std::mem::take(&mut self.deferred);
-        deferred.enqueue(&mut tx).await?;
+        deferred.enqueue(&mut tx, self.ctx).await?;
         tx.commit().await?;
         let mut conn = pool.acquire().await?;
         if self.move_to_pm
@@ -220,6 +228,7 @@ impl Mover<'_, '_> {
         pool: &PgPool,
         title: &str,
         category_id: Option<i32>,
+        tags: Option<&NewTopicTags>,
     ) -> Result<Moved, AppError> {
         self.creating_new_topic = true;
         let first_id = self.post_ids_after_move.first().copied();
@@ -247,6 +256,9 @@ impl Mover<'_, '_> {
                 return Ok(Moved::Invalid(errors));
             }
         };
+        if let Some(tags) = tags {
+            self.tag_new_topic(&mut tx, topic_id, tags).await?;
+        }
         let dest = load_dest(&mut tx, topic_id).await?;
         if let Some(refused) = self.move_posts_to(&mut tx, &dest).await? {
             tx.rollback().await?;
@@ -281,7 +293,7 @@ impl Mover<'_, '_> {
             .execute(&mut *tx)
             .await?;
         let deferred = std::mem::take(&mut self.deferred);
-        deferred.enqueue(&mut tx).await?;
+        deferred.enqueue(&mut tx, self.ctx).await?;
         tx.commit().await?;
         let mut conn = pool.acquire().await?;
         self.enqueue_jobs(&mut conn, topic_id).await?;
@@ -1821,6 +1833,70 @@ impl Mover<'_, '_> {
                 },
             )
             .await?;
+        }
+        Ok(())
+    }
+
+    /// `DiscourseTagging.tag_topic_by_ids` / `tag_topic_by_names` on the
+    /// new topic as the mover: its tags written at once (the topic is
+    /// saved); tags it refuses leave the topic untagged, unsaid.
+    async fn tag_new_topic(
+        &mut self,
+        conn: &mut PgConnection,
+        topic_id: i32,
+        tags: &NewTopicTags,
+    ) -> Result<(), AppError> {
+        let names: Vec<String> = match tags {
+            NewTopicTags::Names(names) => names.clone(),
+            NewTopicTags::Ids(ids) => {
+                sqlx::query_scalar("SELECT name FROM tags WHERE id = ANY($1) ORDER BY ctid")
+                    .bind(ids)
+                    .fetch_all(&mut *conn)
+                    .await?
+            }
+        };
+        let category_id: Option<i32> =
+            sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+                .bind(topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let topic = crate::tagging::TaggedTopic {
+            id: Some(topic_id),
+            private_message: self.move_to_pm,
+            category_id,
+        };
+        let ctx = self.ctx;
+        match crate::tagging::tag_topic_by_names(
+            &mut *conn,
+            ctx.settings,
+            ctx.i18n,
+            self.guardian,
+            &topic,
+            &names,
+            false,
+        )
+        .await?
+        {
+            Err(rejected) => self.deferred.push_tags_created(rejected.created),
+            Ok(tagging) => {
+                if tagging.has_invalid_tag() {
+                    return Err(Unsupported(
+                        "a split's tags with one Tag's validations refuse (RecordNotSaved)",
+                    )
+                    .into());
+                }
+                self.deferred.push_tags_created(tagging.created.clone());
+                crate::tagging::apply(
+                    &mut *conn,
+                    &crate::tagging::SavedTopic {
+                        id: topic_id,
+                        private_message: topic.private_message,
+                        category_id,
+                    },
+                    &tagging,
+                )
+                .await?;
+            }
         }
         Ok(())
     }

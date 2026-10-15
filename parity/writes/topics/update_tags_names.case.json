@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          "guide",
+          "HowTo",
+          ""
+        ]
+      }
+    }
+  ]
+}

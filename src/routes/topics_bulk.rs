@@ -167,17 +167,6 @@ pub async fn bulk(
     {
         return Ok(super::accounts::param_missing("operation_type"));
     }
-    for key in [
-        "tag_ids",
-        "tags",
-        "add_tag_ids",
-        "remove_tag_ids",
-        "replace_tags",
-    ] {
-        if operation.contains_key(key) {
-            return Err(Unsupported("tags in topic bulk actions (189)").into());
-        }
-    }
     if operation.contains_key("group") {
         return Err(Unsupported("bulk actions on a group's messages").into());
     }
@@ -185,13 +174,20 @@ pub async fn bulk(
         Performed::InvalidParameters(message) => {
             Ok((StatusCode::BAD_REQUEST, Json(json!({"errors": [message]}))).into_response())
         }
-        Performed::Done { topic_ids, errors } => {
+        Performed::Done {
+            topic_ids,
+            errors,
+            tag_category_errors,
+        } => {
             let mut result = Map::new();
             result.insert("topic_ids".into(), json!(topic_ids));
             if !errors.is_empty() {
                 let errors: Map<String, Value> =
                     errors.into_iter().map(|(m, c)| (m, json!(c))).collect();
                 result.insert("errors".into(), Value::Object(errors));
+            }
+            if !tag_category_errors.is_empty() {
+                result.insert("tag_category_errors".into(), json!(tag_category_errors));
             }
             Ok((StatusCode::OK, Json(Value::Object(result))).into_response())
         }

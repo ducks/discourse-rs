@@ -1548,14 +1548,16 @@ route table has been made, so this list may be short.
     update_revision); the composer's first-post edit with its title and
     category, sending PUT /t then PUT /posts as Ember does, the
     original_title edit conflict; the live title redrawn on
-    reload_topic), 188i2. `feat/topic-edits-tags` L
-    (PostRevisor's tags field on PUT /t and posts#update through 189's
-    `tagging::tag_topic`, `apply` and `after_tags_saved`; PUT
-    /t/:id/tags; the edit composer's tags and original_tags; NotifyTagChange
-    and the tag change whisper; the drafts tag edit conflict (drafts.rs);
-    tags on a split's new topic (post_mover.rs); the bulk tag operations
-    (topics_bulk.rs); moving tagged topics under tag groups or category
-    tags (revise_topic.rs)), 188i3. `feat/topic-edits-revise-rest` M
+    reload_topic), 188i2. ~~`feat/topic-edits-tags`~~ (done) L
+    (PostRevisor's tags field on PUT /t through 189's
+    `tagging::tag_topic_by_names`, `apply` and `after_tags_saved`; PUT
+    /t/:id/tags; the edit composer's tags and original_tags; the tag
+    change whisper and notify_tag_change, with the notify_tag_change,
+    notify_category_change and notify_post_revision job handlers; the
+    revision page's tags_changes; the drafts tag edit conflict
+    (drafts.rs); tags on a split's new topic (post_mover.rs); the bulk tag
+    operations (topics_bulk.rs); moving tagged topics under tag groups or
+    category tags (revise_topic.rs, TopicCategoryChangeValidator)), 188i3. `feat/topic-edits-revise-rest` M
     (shared drafts on PUT /t, routes/topic_update.rs;
     experimental_topic_category_change_notification, og image
     regeneration, review_every_post on topic edits, revise_topic.rs),

@@ -1,0 +1,61 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38",
+          "37"
+        ],
+        "operation": {
+          "type": "manage_tags",
+          "add_tag_ids": [
+            "1"
+          ],
+          "remove_tag_ids": [
+            "2"
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "manage_tags",
+          "replace_tags": [
+            {
+              "from_tag_id": "1",
+              "to_tag_id": "2"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "manage_tags",
+          "remove_all_tags": "true",
+          "add_tag_ids": [
+            "1"
+          ]
+        }
+      }
+    }
+  ]
+}

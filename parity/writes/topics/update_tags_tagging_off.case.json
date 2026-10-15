@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "settings": {
+    "tagging_enabled": false
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          "howto"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

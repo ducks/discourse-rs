@@ -1,0 +1,161 @@
+{
+  "name": "draft_edit_tags_hidden",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_tags\":[{\"id\":2,\"name\":\"guide\"}]}"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T12:02:34.807531",
+  "transaction_started_at": "2026-10-15T12:02:33.89935",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "draft_sequence": 0
+      }
+    }
+  ],
+  "changes": {
+    "drafts": {
+      "inserted": [
+        {
+          "id": 1,
+          "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_tags\":[{\"id\":2,\"name\":\"guide\"}]}",
+          "owner": null,
+          "user_id": 2,
+          "sequence": 0,
+          "draft_key": "topic_35",
+          "revisions": 1,
+          "created_at": "2026-10-15T12:02:33.89935",
+          "updated_at": "2026-10-15T12:02:33.89935"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MA5AOn/5h/93mjPdkwkV615x+WQ=",
+            "created_at": "2026-10-15T12:02:34.281586",
+            "rotated_at": "2026-10-15T12:02:34.280679",
+            "updated_at": "2026-10-15T12:02:34.281586",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "MA5AOn/5h/93mjPdkwkV615x+WQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T12:02:34.813235",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MA5AOn/5h/93mjPdkwkV615x+WQ=",
+            "created_at": "2026-10-15T12:02:34.281586",
+            "rotated_at": "2026-10-15T12:02:34.280679",
+            "updated_at": "2026-10-15T12:02:34.281586",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "MA5AOn/5h/93mjPdkwkV615x+WQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 1,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "drafts": 1
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'secrettag', 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (35, 9806, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "c841e206e6e946c70788f370e7e3beda7333f8157e6b5c26236451251c8e3973",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

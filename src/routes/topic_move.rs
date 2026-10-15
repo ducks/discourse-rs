@@ -196,8 +196,18 @@ pub async fn move_posts(
             == Some("true"),
         move_to_pm: archetype.as_deref() == Some("private_message"),
         participants: present(&p, "participants"),
-        tags: p.get("tag_ids").is_some_and(|v| !blank(v))
-            || p.get("tags").is_some_and(|v| !blank(v)),
+        tags: if p.get("tag_ids").is_some_and(|v| !blank(v)) {
+            Some(post_mover::NewTopicTags::Ids(
+                list(p.get("tag_ids"))?
+                    .iter()
+                    .map(|v| crate::ruby::to_i(v) as i32)
+                    .collect(),
+            ))
+        } else if p.get("tags").is_some_and(|v| !blank(v)) {
+            Some(post_mover::NewTopicTags::Names(list(p.get("tags"))?))
+        } else {
+            None
+        },
     };
     drop(conn);
     let host = Host::from_state(&state);
@@ -210,6 +220,19 @@ pub async fn move_posts(
     };
     let moved = post_mover::move_posts(&state.pool, &ctx, &guardian, topic_id, &args).await?;
     moved_response(&state, moved).await
+}
+
+/// An array param's scalars.
+fn list(v: Option<&Value>) -> Result<Vec<String>, AppError> {
+    match v {
+        Some(Value::Array(items)) => items
+            .iter()
+            .map(|i| {
+                params::scalar(i).ok_or_else(|| Unsupported("a tags list of another shape").into())
+            })
+            .collect(),
+        _ => Err(Unsupported("tags of another shape on a split").into()),
+    }
 }
 
 /// `blank?` for a param.

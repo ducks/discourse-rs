@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "name": "Brand-New"
+          }
+        ],
+        "title": "Parity fixture: replies, posters and a new tag"
+      }
+    }
+  ]
+}

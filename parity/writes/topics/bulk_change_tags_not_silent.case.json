@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "settings": {
+    "create_post_for_category_and_tag_changes": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "change_tags",
+          "tags": [
+            "guide",
+            "brand-new-bulk"
+          ],
+          "silent": "false"
+        }
+      }
+    }
+  ]
+}

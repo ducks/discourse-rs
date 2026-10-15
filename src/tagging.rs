@@ -1008,7 +1008,7 @@ async fn restricted_category_ids_by_tag_name(
 }
 
 /// `tag_names_not_allowed_in_category`
-async fn tag_names_not_allowed_in_category(
+pub(crate) async fn tag_names_not_allowed_in_category(
     conn: &mut PgConnection,
     category: Option<&TagCategory>,
     names: &[String],

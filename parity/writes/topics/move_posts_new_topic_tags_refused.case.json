@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9801, 34, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37"
+        ],
+        "title": "Parity fixture: a reply split off where its tag may not go",
+        "category_id": "4",
+        "tag_ids": [
+          "2"
+        ]
+      }
+    }
+  ]
+}

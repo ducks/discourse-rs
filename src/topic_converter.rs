@@ -131,7 +131,7 @@ pub async fn to_public(
     if !silent {
         watch_topic(&mut tx, ctx, topic_id).await?;
     }
-    deferred.enqueue(&mut tx).await?;
+    deferred.enqueue(&mut tx, ctx).await?;
     tx.commit().await?;
     if !silent {
         add_small_action(pool, ctx, user, topic_id, "public_topic").await?;
@@ -287,7 +287,7 @@ pub async fn to_private(
     if !silent {
         watch_topic(&mut tx, ctx, topic_id).await?;
     }
-    deferred.enqueue(&mut tx).await?;
+    deferred.enqueue(&mut tx, ctx).await?;
     tx.commit().await?;
     if !silent {
         add_small_action(pool, ctx, user, topic_id, "private_topic").await?;
