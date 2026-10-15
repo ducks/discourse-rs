@@ -8,6 +8,7 @@ pub mod admin_dashboard_headlines;
 pub mod admin_dashboard_traffic;
 pub mod admin_dashboard_view;
 pub mod admin_flags;
+pub mod admin_groups_view;
 pub mod admin_site_settings;
 pub mod admin_site_settings_view;
 pub mod admin_traffic_explorer;

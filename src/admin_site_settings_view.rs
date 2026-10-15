@@ -325,22 +325,7 @@ pub fn render(cx: &AdminCx, page: &Page, categories: &[Category]) -> String {
         tabs: None,
     }
     .render(cx);
-    // AdminSiteSettingsFilterControls
-    out.push_str("<div class=\"admin-controls admin-site-settings-filter-controls\"><div class=\"controls\"><div class=\"inline-form\">");
-    if crate::mobile::mobile_view() {
-        out.push_str(&format!(
-            "<button class=\"btn no-text btn-icon btn-default menu-toggle\" type=\"button\">{}<span aria-hidden=\"true\"> &#8203; </span></button>",
-            icon("bars", None)
-        ));
-    }
-    out.push_str(&format!(
-        "<input autocomplete=\"off\" class=\"no-blur admin-site-settings-filter-controls__input\" id=\"setting-filter\" placeholder=\"{}\" value=\"{}\" type=\"text\"><button class=\"btn btn-text btn-default\" id=\"clear-filter\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div><div class=\"search controls\"><label><input id=\"setting-filter-toggle-overridden\" class=\"toggle-overridden\" type=\"checkbox\"{}> {}</label></div></div>",
-        escape(&t(i18n, "type_to_filter")),
-        escape(&page.filters.filter),
-        escape(&t(i18n, "admin.site_settings.clear_filter")),
-        if page.filters.only_overridden { " checked" } else { "" },
-        escape(&t(i18n, "admin.settings.show_overriden"))
-    ));
+    out.push_str(&filter_controls(cx, page.filters, true));
     // AdminSiteSettingsCategoryNav
     out.push_str("<div class=\"admin-nav admin-site-settings-category-nav pull-left\">");
     out.push_str(&nav(cx, page, categories));
@@ -379,6 +364,82 @@ pub fn render(cx: &AdminCx, page: &Page, categories: &[Category]) -> String {
         out.push_str("</section>");
     }
     out.push_str("</div><div class=\"clearfix\"></div>");
+    out.push_str(&client_strings(cx, page.settings));
+    out
+}
+
+/// AdminSiteSettingsFilterControls, with the mobile view's menu toggle
+/// when the page has a category nav (`@showMenu`).
+fn filter_controls(cx: &AdminCx, filters: &Filters, show_menu: bool) -> String {
+    let i18n = cx.i18n;
+    let mut out = String::from(
+        "<div class=\"admin-controls admin-site-settings-filter-controls\"><div class=\"controls\"><div class=\"inline-form\">",
+    );
+    if show_menu && crate::mobile::mobile_view() {
+        out.push_str(&format!(
+            "<button class=\"btn no-text btn-icon btn-default menu-toggle\" type=\"button\">{}<span aria-hidden=\"true\"> &#8203; </span></button>",
+            icon("bars", None)
+        ));
+    }
+    out.push_str(&format!(
+        "<input autocomplete=\"off\" class=\"no-blur admin-site-settings-filter-controls__input\" id=\"setting-filter\" placeholder=\"{}\" value=\"{}\" type=\"text\"><button class=\"btn btn-default\" id=\"clear-filter\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div><div class=\"search controls\"><label><input id=\"setting-filter-toggle-overridden\" class=\"toggle-overridden\" type=\"checkbox\"{}> {}</label></div></div>",
+        escape(&t(i18n, "type_to_filter")),
+        escape(&filters.filter),
+        escape(&t(i18n, "admin.site_settings.clear_filter")),
+        if filters.only_overridden { " checked" } else { "" },
+        escape(&t(i18n, "admin.settings.show_overriden"))
+    ));
+    out
+}
+
+/// AdminAreaSettings: a config area's settings (the page's own, loaded
+/// for its categories, area or plugin) under the filter controls, the
+/// first category's that match (AdminFilteredSiteSettings), or the empty
+/// list's note when the area has none.
+pub fn area_settings(cx: &AdminCx, page: &Page) -> String {
+    let i18n = cx.i18n;
+    let mut out = String::from(
+        "<div class=\"content-body admin-config-area__settings admin-detail pull-left\">",
+    );
+    if page.settings.is_empty() {
+        // AdminConfigAreaEmptyList
+        out.push_str(&format!(
+            "<div class=\"admin-config-area-empty-list\"><span class=\"admin-config-area-empty-list__title\">{}</span></div></div>",
+            escape(&t(i18n, "admin.settings.not_found"))
+        ));
+        out.push_str(&client_strings(cx, page.settings));
+        return out;
+    }
+    out.push_str(&filter_controls(cx, page.filters, false));
+    // The area's settings are one category (`All`), whatever their own.
+    let bucket: Vec<Value> = page
+        .settings
+        .iter()
+        .map(|setting| {
+            let mut setting = setting.clone();
+            setting["category"] = Value::String("area".into());
+            setting
+        })
+        .collect();
+    let categories = filter(&bucket, page.filters);
+    let matched = categories.iter().find(|c| c.key == "area");
+    let visible: Vec<&Value> = matched
+        .map(|c| {
+            c.settings
+                .iter()
+                .map(|i| &page.settings[*i])
+                .filter(|setting| visible_setting(page.settings, setting, &page.filters.filter))
+                .collect()
+        })
+        .unwrap_or_default();
+    out.push_str("<div class=\"loading-container\"><section class=\"admin-filtered-site-settings form-horizontal settings\">");
+    for setting in &visible {
+        out.push_str(&setting_row(cx, page, setting));
+    }
+    if visible.is_empty() {
+        out.push_str(&escape(&t(i18n, "admin.site_settings.no_results")));
+    }
+    out.push_str("</section></div></div>");
     out.push_str(&client_strings(cx, page.settings));
     out
 }

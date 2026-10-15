@@ -1,0 +1,353 @@
+{
+  "name": "config_index_names",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": [
+          "extended_site_description",
+          "about_banner_image",
+          "community_owner"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": [
+          "max_category_nesting"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": [
+          "site_description",
+          "enforce_second_factor"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:56:25.30497",
+  "transaction_started_at": "2026-10-15T01:56:24.191605",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_settings": [
+          {
+            "setting": "extended_site_description",
+            "humanized_name": "Extended site description",
+            "description": "",
+            "keywords": [],
+            "category": "basic",
+            "primary_area": "about",
+            "default": "",
+            "value": "",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "string"
+          },
+          {
+            "setting": "about_banner_image",
+            "humanized_name": "About banner image",
+            "description": "",
+            "keywords": [],
+            "category": "basic",
+            "primary_area": "about",
+            "default": "",
+            "value": "",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "upload"
+          },
+          {
+            "setting": "community_owner",
+            "humanized_name": "Community owner",
+            "description": "",
+            "keywords": [],
+            "category": "basic",
+            "primary_area": "about",
+            "default": "",
+            "value": "",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_settings": []
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_settings": [
+          {
+            "setting": "site_description",
+            "humanized_name": "Site description",
+            "description": "Describe this site in one sentence. Visible to all visitors including anonymous users.",
+            "keywords": [],
+            "category": "required",
+            "primary_area": "about",
+            "default": "",
+            "value": "",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "string"
+          },
+          {
+            "setting": "enforce_second_factor",
+            "humanized_name": "Enforce second factor",
+            "description": "Require users to enable two-factor authentication (2FA) before they can access the Discourse UI. This setting does not affect API or 'DiscourseConnect provider' authentication. If <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=enforce_second_factor_on_external_auth\" data-setting-name=\"enforce_second_factor_on_external_auth\" data-setting-area=\"login\" data-setting-category=\"security\">Enforce second factor on external auth</a> is enabled, users will not be able to log in with external authentication providers after they set up 2FA.",
+            "keywords": [],
+            "category": "security",
+            "primary_area": "login",
+            "default": "no",
+            "value": "no",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "enum",
+            "valid_values": [
+              {
+                "name": "no",
+                "value": "no"
+              },
+              {
+                "name": "staff",
+                "value": "staff"
+              },
+              {
+                "name": "all",
+                "value": "all"
+              }
+            ],
+            "translate_names": false,
+            "choices": [
+              "no",
+              "staff",
+              "all"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": -5,
+            "url": "/images/discourse-logo-sketch.png",
+            "etag": null,
+            "sha1": "_abaabe41348866838adb7a011cdd530175a53df",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": -1,
+            "animated": null,
+            "filesize": 169105,
+            "extension": "png",
+            "created_at": "2026-07-25T05:58:08.318954",
+            "updated_at": "2026-07-25T05:58:08.318954",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "9C9D9D",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "discourse-logo-sketch.png",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          },
+          "after": {
+            "id": -5,
+            "url": "/images/discourse-logo-sketch.png",
+            "etag": null,
+            "sha1": "_abaabe41348866838adb7a011cdd530175a53df",
+            "width": 1858,
+            "height": 512,
+            "origin": null,
+            "secure": false,
+            "user_id": -1,
+            "animated": null,
+            "filesize": 169105,
+            "extension": "png",
+            "created_at": "2026-07-25T05:58:08.318954",
+            "updated_at": "2026-07-25T05:58:08.318954",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "9C9D9D",
+            "thumbnail_width": 690,
+            "thumbnail_height": 190,
+            "original_filename": "discourse-logo-sketch.png",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          }
+        },
+        {
+          "before": {
+            "id": -6,
+            "url": "/images/discourse-logo-sketch-small.png",
+            "etag": null,
+            "sha1": "_129430568242d1b7f853bb13ebea28b3f6af4e7",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": -1,
+            "animated": null,
+            "filesize": 62655,
+            "extension": "png",
+            "created_at": "2026-07-25T05:58:08.322592",
+            "updated_at": "2026-07-25T05:58:08.322592",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "A3A3A4",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "discourse-logo-sketch-small.png",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          },
+          "after": {
+            "id": -6,
+            "url": "/images/discourse-logo-sketch-small.png",
+            "etag": null,
+            "sha1": "_129430568242d1b7f853bb13ebea28b3f6af4e7",
+            "width": 512,
+            "height": 512,
+            "origin": null,
+            "secure": false,
+            "user_id": -1,
+            "animated": null,
+            "filesize": 62655,
+            "extension": "png",
+            "created_at": "2026-07-25T05:58:08.322592",
+            "updated_at": "2026-07-25T05:58:08.322592",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "A3A3A4",
+            "thumbnail_width": 500,
+            "thumbnail_height": 500,
+            "original_filename": "discourse-logo-sketch-small.png",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 58,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BoT5X8Kq6OdbkatiNx1x4x5qGrg=",
+            "created_at": "2026-10-15T01:56:24.628067",
+            "rotated_at": "2026-10-15T01:56:24.626876",
+            "updated_at": "2026-10-15T01:56:24.628067",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BoT5X8Kq6OdbkatiNx1x4x5qGrg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 58,
+            "seen_at": "2026-10-15T01:56:25.313553",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BoT5X8Kq6OdbkatiNx1x4x5qGrg=",
+            "created_at": "2026-10-15T01:56:24.628067",
+            "rotated_at": "2026-10-15T01:56:24.626876",
+            "updated_at": "2026-10-15T01:56:24.628067",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BoT5X8Kq6OdbkatiNx1x4x5qGrg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "9d921f4c2db164070c242836459b68672f9388f738687d2fea7731f1df3a21d1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

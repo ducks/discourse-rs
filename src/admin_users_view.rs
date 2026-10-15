@@ -79,17 +79,25 @@ pub fn users_header(cx: &AdminCx, viewer: &HeaderViewer, active: &str) -> String
         false,
     ));
     let title = t(cx.i18n, "admin.config.users.title");
+    let mut crumbs = vec![
+        Crumb {
+            label: t(cx.i18n, "admin_title"),
+            path: "/admin",
+        },
+        Crumb {
+            label: title.clone(),
+            path: "/admin/users/list",
+        },
+    ];
+    // AdminAreaSettings adds its own crumb.
+    if active == "settings" {
+        crumbs.push(Crumb {
+            label: t(cx.i18n, "settings"),
+            path: "/admin/users/settings",
+        });
+    }
     PageHeader {
-        crumbs: vec![
-            Crumb {
-                label: t(cx.i18n, "admin_title"),
-                path: "/admin",
-            },
-            Crumb {
-                label: title.clone(),
-                path: "/admin/users/list",
-            },
-        ],
+        crumbs,
         title,
         actions,
         description: Some(escape(&t(cx.i18n, "admin.config.users.header_description"))),

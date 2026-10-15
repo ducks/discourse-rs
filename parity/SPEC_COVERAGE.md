@@ -60,6 +60,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
 | ReviewablesController#perform | 3 | 2 | 1 | 16 |
 | Admin::SiteSettingsController#update | 14 | 3 | 2 | 21 |
+| Admin::Config::SiteSettingsController#index | 6 | 1 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
@@ -102,7 +103,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (71 sections)** | **435** | **308** | **212** | **514** |
+| **All (72 sections)** | **441** | **309** | **212** | **514** |
 
 ## Cases added from this inventory
 
@@ -851,6 +852,21 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 817 | non-staff > default categories, default tags not updated (x2) | covered | setting_not_admin (404 before anything) |
 | - | (no spec it) secret setting logged as [FILTERED] | covered | setting_secret (new) |
 | - | (no spec it) enum with listed choices | covered | setting_enum (new, matches) |
+
+## Admin::Config::SiteSettingsController#index
+
+`spec/requests/admin/config/site_settings_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 9 | not logged in > returns 404 | recordable | config_index_anonymous (no user) |
+| 18 | not admin > returns 404 | covered | config_index_member (new) |
+| 27 | admin > 400 when no filter_names are provided | covered | config_index_none (new) |
+| 32 | admin > 400 when filter_area is invalid | covered | config_index_invalid (new) |
+| 37 | admin > includes only certain allowed hidden settings | covered | config_index_names (new) |
+| 56 | admin > site settings by exact name | covered | config_index_names (new) |
+| 67 | admin > site settings by area | covered | config_index_flags (new) |
+| - | (no spec it) by category, by the users area | covered | config_index_groups, config_index_area (new) |
 
 ## Admin::UsersController#suspend
 

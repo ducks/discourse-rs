@@ -16,12 +16,30 @@ use crate::setting_enums;
 use crate::site_settings::{DataType, Definition, Definitions, SiteSettings, Value};
 use crate::{AppError, Unsupported};
 
-/// The index's params: `categories`, `plugin` and `names`.
-#[derive(Default)]
+/// The index's params: `categories`, `plugin` and `names`; and the config
+/// areas' (Admin::Config::SiteSettingsController): `filter_area`, the
+/// hidden settings allowed and whether the locale setting comes first.
 pub struct Filters {
     pub categories: Option<Vec<String>>,
     pub plugin: Option<String>,
     pub names: Option<Vec<String>>,
+    pub area: Option<String>,
+    /// `include_hidden: true, filter_allowed_hidden:` these.
+    pub allowed_hidden: Option<Vec<String>>,
+    pub include_locale_setting: bool,
+}
+
+impl Default for Filters {
+    fn default() -> Self {
+        Filters {
+            categories: None,
+            plugin: None,
+            names: None,
+            area: None,
+            allowed_hidden: None,
+            include_locale_setting: true,
+        }
+    }
 }
 
 /// SiteSettings::TypeSupervisor::REQUIRES_CONFIRMATION_TYPES
@@ -49,9 +67,16 @@ pub async fn all_settings(
     filters: &Filters,
 ) -> Result<Vec<Json>, AppError> {
     let mut out = Vec::new();
+    // filter_names selects after the map, which measures and saves every
+    // upload setting's dimensions as fix_upload_dimensions does (recorded
+    // for the config areas' include_hidden: true).
+    if filters.names.is_some() && filters.allowed_hidden.is_some() {
+        fix_upload_dimensions(&mut *conn, cx).await?;
+    }
     let filtering =
         filters.categories.as_ref().is_some_and(|c| !c.is_empty()) || filters.plugin.is_some();
-    if !filtering
+    if filters.include_locale_setting
+        && !filtering
         && filters
             .names
             .as_ref()
@@ -60,7 +85,17 @@ pub async fn all_settings(
         out.push(locale_setting(cx)?);
     }
     for def in cx.defs.iter() {
-        if hidden(cx, def)? {
+        if hidden(cx, def)?
+            && !filters
+                .allowed_hidden
+                .as_ref()
+                .is_some_and(|allowed| allowed.contains(&def.name))
+        {
+            continue;
+        }
+        if let Some(area) = &filters.area
+            && !areas(def).contains(area)
+        {
             continue;
         }
         if let Some(categories) = filters.categories.as_ref().filter(|c| !c.is_empty())
@@ -137,6 +172,64 @@ fn primary_area(def: &Definition) -> Option<String> {
         return area.chars().next().map(String::from);
     }
     opt_str(def, "area").and_then(|a| a.split('|').next().map(str::to_string))
+}
+
+/// `Array.wrap(areas[name])`: the declared areas, or the one area a
+/// plugin stored as a string.
+fn areas(def: &Definition) -> Vec<String> {
+    if let Some(area) = setting_enums::string_area(&def.name) {
+        return vec![area.to_string()];
+    }
+    opt_str(def, "area")
+        .map(|a| a.split('|').map(str::to_string).collect())
+        .unwrap_or_default()
+}
+
+/// SiteSetting.valid_areas: VALID_AREAS and the bundled plugins' areas
+/// (DiscoursePluginRegistry.site_setting_areas, the areas their settings
+/// declare beyond core's).
+pub fn valid_area(defs: &Definitions, area: &str) -> bool {
+    const VALID_AREAS: [&str; 34] = [
+        "about",
+        "analytics",
+        "login",
+        "authenticators",
+        "discourseconnect",
+        "oauth2",
+        "oidc",
+        "saml",
+        "badges",
+        "categories",
+        "categories_and_tags",
+        "email",
+        "embedding",
+        "emojis",
+        "experimental",
+        "flags",
+        "fonts",
+        "gifs",
+        "group_permissions",
+        "interface",
+        "legal",
+        "localization",
+        "mcp",
+        "navigation",
+        "notifications",
+        "permalinks",
+        "reports",
+        "posts_and_topics",
+        "user_defaults",
+        "sharing",
+        "site_admin",
+        "stats_and_thresholds",
+        "trust_levels",
+        "users",
+    ];
+    VALID_AREAS.contains(&area)
+        || defs
+            .iter()
+            .filter(|def| def.plugin.is_some())
+            .any(|def| areas(def).iter().any(|a| a == area))
 }
 
 /// The `default_locale` entry all_settings puts first.

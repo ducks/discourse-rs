@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/groups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/groups/settings.json",
+      "params": {
+        "categories": ["groups"]
+      }
+    }
+  ]
+}

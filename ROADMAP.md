@@ -656,7 +656,7 @@ then by what running a forum needs (milestone 6). Briefs:
     unsuspend, unsilence, clearing the penalty history, the primary
     group, impersonate, anonymize and delete working through the JSON
     endpoints, and the dialog service they confirm with. Refused: the
-    settings tab (AdminAreaSettings, 90g6), the user's badges and TL3
+    settings tab (AdminAreaSettings, since drawn by 90g4), the user's badges and TL3
     requirements tabs. Left, saying so when used: the send invites
     modal, the user list export, the bulk suspend and delete
     confirmations, changing the username, revealing the email and the
@@ -701,10 +701,23 @@ then by what running a forum needs (milestone 6). Briefs:
     still hits the server's refusal of list settings
     (site_setting_update). Left: the category chooser's selected
     category shows its name, not its badge; the font selector's fonts
-    are not drawn in their own font; AdminAreaSettings, which the users
-    settings tab and the /admin/config settings tabs reuse, comes with
-    90g6), 90g4. `feat/admin-shell-groups` S
-    (/admin/groups and its settings tab), 90g5. `feat/admin-shell-reports-logs`
+    are not drawn in their own font), 90g4.
+    ~~`feat/admin-shell-groups`~~ (done) S (/admin/groups: the admin
+    groups header with its Settings and Groups tabs over GroupList as
+    /groups draws it, with its filter, type menu and New Group; its JSON
+    the empty index's 204; /admin/groups/settings and
+    /admin/users/settings as AdminAreaSettings (the filter controls over
+    the area's settings as one category, each setting's editor as on the
+    site settings page, the changes banner), loaded as
+    /admin/config/site_settings.json, now ported:
+    Admin::Config::SiteSettingsController#index by categories, area,
+    plugin and names with its allowed hidden settings and the
+    InvalidParameters of none, measuring the upload settings' dimensions
+    as filter_names' late select does (write cases config_index_*,
+    admin_groups_json). The /admin/config areas' own settings tabs reuse
+    AdminAreaSettings in 90g6. Left: Only show overridden stays in the
+    URL's query on these tabs, where Ember keeps it in the component),
+    90g5. `feat/admin-shell-reports-logs`
     M (/admin/reports and a report's page, /admin/logs: staff actions,
     screened emails, IPs and URLs, search logs and a term; email logs),
     90g6. `feat/admin-shell-config` L (the /admin/config areas: about,

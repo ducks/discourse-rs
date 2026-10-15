@@ -509,3 +509,91 @@ async fn the_site_settings_filters() {
     assert!(!html.contains("data-setting=\"title\""));
     assert!(html.contains("setting-controls__undo"));
 }
+
+#[tokio::test]
+async fn the_admin_groups_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/groups").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Groups - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-groups\">"));
+    assert!(html.contains(
+        "<li class=\"active admin-groups-tabs__index\"><a class=\"active\" href=\"/admin/groups\">Groups</a></li>"
+    ));
+    assert!(html.contains("<section class=\"container groups-index\">"));
+    assert!(html.contains("data-group-name=\"admins\""));
+    assert!(html.contains("/groups.js"));
+    // The index's JSON is empty.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/groups.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    assert!(body.is_empty());
+    // The settings tab: the groups category's settings.
+    let (status, html) = admin.page("/admin/groups/settings").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Settings - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-groups settings\">"));
+    assert!(html.contains(
+        "<div class=\"content-body admin-config-area__settings admin-detail pull-left\">"
+    ));
+    assert!(html.contains("data-setting=\"enable_group_directory\""));
+    assert!(!html.contains("data-setting=\"title\""));
+    assert!(html.contains("<a class=\"d-breadcrumbs__link\" href=\"/admin/groups/settings\">"));
+    // Not for members.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/groups")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn the_users_settings_tab() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/settings").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-users settings\">"));
+    assert!(html.contains(
+        "<li class=\"active admin-users-tabs__settings\"><a class=\"active\" href=\"/admin/users/settings\">Settings</a></li>"
+    ));
+    // The users area's settings, whatever their category.
+    assert!(html.contains("data-setting=\"min_username_length\""));
+    assert!(html.contains("data-setting=\"enable_user_tips\""));
+    let (_, html) = admin.page("/admin/users/settings?filter=username").await;
+    assert!(html.contains("data-setting=\"min_username_length\""));
+    assert!(!html.contains("data-setting=\"enable_user_tips\""));
+}
+
+#[tokio::test]
+async fn the_config_areas_settings_json() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            "/admin/config/site_settings.json?filter_area=flags",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let names: Vec<&str> = json["site_settings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["setting"].as_str().unwrap())
+        .collect();
+    assert!(names.contains(&"flag_post_allowed_groups"), "{names:?}");
+    assert!(!names.contains(&"title"));
+    let (status, _) = admin
+        .send(Method::GET, "/admin/config/site_settings.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+}

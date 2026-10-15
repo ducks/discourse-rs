@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": ["extended_site_description", "about_banner_image", "community_owner"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": ["max_category_nesting"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "filter_names": ["site_description", "enforce_second_factor"]
+      }
+    }
+  ]
+}
