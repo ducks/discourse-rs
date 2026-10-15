@@ -363,3 +363,64 @@ async fn memory_lists_are_saved_and_loaded() {
     assert_eq!(refused.available_in, 7);
     clock::pin(None);
 }
+
+/// The tracker's `GLOBAL::` lists (per address) are the process's: saved
+/// and read back by `load_global`, while a site's `load` takes only its
+/// own lists (per user, per crawler).
+#[tokio::test]
+async fn global_lists_are_loaded_apart_from_the_sites() {
+    use discourse_rs::rate_limiter::MemoryStore;
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    at(0);
+    let global = MemoryStore::default();
+    let site = MemoryStore::default();
+    let per_ip = || {
+        RateLimiter::new(None, "global_limit_10_ip/203.0.113.9", 1, 10)
+            .in_memory(&global)
+            .global()
+    };
+    let per_user = || RateLimiter::new(None, "global_limit_10_user/3", 1, 10).in_memory(&site);
+    assert!(per_ip().performed(&db.pool, true).await.unwrap().is_ok());
+    assert!(per_user().performed(&db.pool, true).await.unwrap().is_ok());
+    global.save(&db.pool).await.unwrap();
+    site.save(&db.pool).await.unwrap();
+
+    let global_loaded = MemoryStore::load_global(&db.pool).await.unwrap();
+    let site_loaded = MemoryStore::load(&db.pool).await.unwrap();
+    at(3);
+    let again = RateLimiter::new(None, "global_limit_10_ip/203.0.113.9", 1, 10).global();
+    let refused = again
+        .clone()
+        .in_memory(&global_loaded)
+        .performed(&db.pool, true)
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(refused.available_in, 7);
+    assert!(
+        again
+            .in_memory(&site_loaded)
+            .performed(&db.pool, true)
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    let user = RateLimiter::new(None, "global_limit_10_user/3", 1, 10);
+    assert!(
+        user.clone()
+            .in_memory(&global_loaded)
+            .performed(&db.pool, true)
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    assert!(
+        user.in_memory(&site_loaded)
+            .performed(&db.pool, true)
+            .await
+            .unwrap()
+            .is_err()
+    );
+    clock::pin(None);
+}

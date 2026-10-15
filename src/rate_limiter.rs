@@ -73,9 +73,13 @@ impl std::fmt::Debug for MemoryStore {
     }
 }
 
-/// The keys `load` takes back: the request tracker's lists.
-const MEMORY_KEYS: &str =
+/// The keys `load` takes back: the request tracker's lists of a site
+/// (per user, per crawler).
+const SITE_KEYS: &str =
     "key LIKE 'l-rate-limit3:::global_limit_%' OR key LIKE '%_crawler_rate_limit'";
+/// The keys `load_global` takes back: the tracker's `GLOBAL::` lists (per
+/// address, the health check).
+const GLOBAL_KEYS: &str = "key LIKE 'GLOBAL::l-rate-limit3:::global_limit_%'";
 
 impl MemoryStore {
     fn lists(&self) -> std::sync::MutexGuard<'_, Lists> {
@@ -149,10 +153,20 @@ impl MemoryStore {
         Ok(())
     }
 
-    /// The tracker's live lists read back from the table (startup).
+    /// A site's tracker lists read back from its table (startup).
     pub async fn load(pool: &PgPool) -> Result<MemoryStore, sqlx::Error> {
+        Self::load_keys(pool, SITE_KEYS).await
+    }
+
+    /// The process's `GLOBAL::` tracker lists read back from the table
+    /// they were saved to (startup).
+    pub async fn load_global(pool: &PgPool) -> Result<MemoryStore, sqlx::Error> {
+        Self::load_keys(pool, GLOBAL_KEYS).await
+    }
+
+    async fn load_keys(pool: &PgPool, keys: &str) -> Result<MemoryStore, sqlx::Error> {
         let rows: Vec<(String, Vec<i64>, i64)> = sqlx::query_as(&format!(
-            "SELECT key, stamps, expires_at FROM discourse_rs.rate_limits WHERE expires_at > $1 AND ({MEMORY_KEYS})"
+            "SELECT key, stamps, expires_at FROM discourse_rs.rate_limits WHERE expires_at > $1 AND ({keys})"
         ))
         .bind(crate::clock::now().timestamp())
         .fetch_all(pool)

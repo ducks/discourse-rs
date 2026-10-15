@@ -28,17 +28,18 @@ pub const SESSION_COOKIE: &str = "_forum_session";
 pub struct Keys {
     pub secret_key_base: String,
     pub codec: Codec,
-    /// `User.should_update_last_seen?`'s once-a-minute-per-day gate,
-    /// which Rails keeps in redis.
-    last_seen_gate: Mutex<HashMap<(i32, String), Instant>>,
 }
+
+/// `User.should_update_last_seen?`'s once-a-minute-per-day gate, which
+/// Rails keeps in Redis, namespaced by site.
+#[derive(Default)]
+pub struct LastSeenGate(Mutex<HashMap<(i32, String), Instant>>);
 
 impl Keys {
     pub fn new(secret_key_base: String) -> Keys {
         Keys {
             codec: Codec::new(&secret_key_base),
             secret_key_base,
-            last_seen_gate: Mutex::new(HashMap::new()),
         }
     }
 
@@ -804,8 +805,9 @@ async fn update_last_seen(
     let today = crate::clock::now().format("%Y-%m-%d").to_string();
     let allowed = {
         let mut gate = state
-            .keys
+            .site
             .last_seen_gate
+            .0
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         let key = (user.id, today);

@@ -23,7 +23,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use axum::http::{HeaderMap, Method, header};
 use chrono::{NaiveDate, NaiveDateTime};
 use serde_json::Value;
-use sqlx::{PgConnection, PgPool};
+use sqlx::PgConnection;
 
 use crate::browser_pageviews as bpv;
 use crate::site_settings::SiteSettings;
@@ -489,26 +489,34 @@ pub fn log_request(
 }
 
 /// `CachedCounting`'s queue: counts by (count, UTC day), waiting for the
-/// flush to the database.
-static COUNTS: Mutex<Option<HashMap<(Count, NaiveDate), i64>>> = Mutex::new(None);
-static FLUSHER: AtomicBool = AtomicBool::new(false);
+/// flush to the database, and whether the site's minute flush runs.
+#[derive(Default)]
+pub struct Counts {
+    queue: Mutex<HashMap<(Count, NaiveDate), i64>>,
+    flusher: AtomicBool,
+}
+
+impl Counts {
+    fn queue(&self) -> std::sync::MutexGuard<'_, HashMap<(Count, NaiveDate), i64>> {
+        self.queue.lock().unwrap_or_else(|e| e.into_inner())
+    }
+}
 
 /// `perform_increment!`, and `ensure_thread!` for the minute's flush.
-pub fn increment(pool: &PgPool, counts: Vec<Count>) {
+pub fn increment(state: &AppState, counts: Vec<Count>) {
     let date = crate::clock::now().date_naive();
     {
-        let mut queue = COUNTS.lock().unwrap_or_else(|e| e.into_inner());
-        let queue = queue.get_or_insert_with(HashMap::new);
+        let mut queue = state.site.counts.queue();
         for count in counts {
             *queue.entry((count, date)).or_insert(0) += 1;
         }
     }
-    if !FLUSHER.swap(true, Ordering::SeqCst) {
-        let pool = pool.clone();
+    if !state.site.counts.flusher.swap(true, Ordering::SeqCst) {
+        let state = state.clone();
         tokio::spawn(async move {
             loop {
                 tokio::time::sleep(std::time::Duration::from_secs(FLUSH_SECONDS)).await;
-                if let Err(e) = flush(&pool).await {
+                if let Err(e) = flush(&state).await {
                     tracing::warn!("Unexpected error while processing cached counts: {e}");
                 }
             }
@@ -517,18 +525,14 @@ pub fn increment(pool: &PgPool, counts: Vec<Count>) {
 }
 
 /// `CachedCounting.flush`: every waiting count written (`write_cache!`).
-pub async fn flush(pool: &PgPool) -> Result<(), AppError> {
-    let counts = COUNTS
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .take()
-        .unwrap_or_default();
+pub async fn flush(state: &AppState) -> Result<(), AppError> {
+    let counts = std::mem::take(&mut *state.site.counts.queue());
     if counts.is_empty() {
         return Ok(());
     }
     let mut counts = counts.into_iter();
     let written = async {
-        let mut conn = pool.acquire().await?;
+        let mut conn = state.pool.acquire().await?;
         // Each count leaves the queue as it is written (HGET then HDEL):
         // one that fails is lost, the rest wait for the next flush.
         for ((count, date), n) in counts.by_ref() {
@@ -546,8 +550,7 @@ pub async fn flush(pool: &PgPool) -> Result<(), AppError> {
     }
     .await;
     if written.is_err() {
-        let mut queue = COUNTS.lock().unwrap_or_else(|e| e.into_inner());
-        let queue = queue.get_or_insert_with(HashMap::new);
+        let mut queue = state.site.counts.queue();
         for (key, n) in counts {
             *queue.entry(key).or_insert(0) += n;
         }
@@ -656,7 +659,7 @@ pub fn log_later(state: &AppState, data: RequestData) {
         let login_required = settings.get("login_required")?.truthy();
         if !pg_readonly {
             let (counts, topic_view) = log_request(&data, is_crawler, login_required);
-            increment(&state.pool, counts);
+            increment(&state, counts);
             if topic_view && let Some(topic_id) = data.view.topic_id {
                 let ip = data.request_remote_ip.clone();
                 let user_id = data.current_user_id;
@@ -851,13 +854,13 @@ fn track_browser_pageview(
     later("Create BrowserPageviewEvent", async move {
         let mut conn = state.pool.acquire().await?;
         if crate::readonly::mode(&mut conn).await?.postgres {
-            enqueue_for_later(payload);
+            enqueue_for_later(&state.site.pageview_queue, payload);
             return Ok(());
         }
         match create_event(&mut conn, &payload, true).await {
             Ok(()) => Ok(()),
             Err(e) if e.sql_state().as_deref() == Some("25006") => {
-                enqueue_for_later(payload);
+                enqueue_for_later(&state.site.pageview_queue, payload);
                 Ok(())
             }
             Err(e) => {
@@ -953,24 +956,26 @@ async fn create_event(
 /// `BrowserPageviewEvent::REDIS_QUEUE_KEY`'s list, kept in the process
 /// (Redis's role): the events Postgres refused while read only, and when
 /// the list was last pushed to (its expiry).
-static QUEUE: Mutex<(VecDeque<EventPayload>, Option<NaiveDateTime>)> =
-    Mutex::new((VecDeque::new(), None));
+#[derive(Default)]
+pub struct PageviewQueue(Mutex<(VecDeque<EventPayload>, Option<NaiveDateTime>)>);
 
-fn queue() -> std::sync::MutexGuard<'static, (VecDeque<EventPayload>, Option<NaiveDateTime>)> {
-    let mut guard = QUEUE.lock().unwrap_or_else(|e| e.into_inner());
-    let now = crate::clock::now_naive();
-    if guard
-        .1
-        .is_some_and(|pushed| (now - pushed).num_seconds() >= QUEUE_TTL_SECONDS)
-    {
-        guard.0.clear();
-        guard.1 = None;
+impl PageviewQueue {
+    fn live(&self) -> std::sync::MutexGuard<'_, (VecDeque<EventPayload>, Option<NaiveDateTime>)> {
+        let mut guard = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        let now = crate::clock::now_naive();
+        if guard
+            .1
+            .is_some_and(|pushed| (now - pushed).num_seconds() >= QUEUE_TTL_SECONDS)
+        {
+            guard.0.clear();
+            guard.1 = None;
+        }
+        guard
     }
-    guard
 }
 
 /// `BrowserPageviewEvent.enqueue_for_later(payload)`
-pub fn enqueue_for_later(payload: EventPayload) {
+pub fn enqueue_for_later(queue: &PageviewQueue, payload: EventPayload) {
     if !present(&payload.url)
         || !valid_ip(&payload.ip_address)
         || !present(&payload.user_agent)
@@ -978,7 +983,7 @@ pub fn enqueue_for_later(payload: EventPayload) {
     {
         return;
     }
-    let mut queue = queue();
+    let mut queue = queue.live();
     if queue.0.len() >= QUEUE_MAX_SIZE {
         return;
     }
@@ -987,17 +992,26 @@ pub fn enqueue_for_later(payload: EventPayload) {
 }
 
 /// `BrowserPageviewEvent.queued_count`
-pub fn queued_count() -> usize {
-    queue().0.len()
+pub fn queued_count(queue: &PageviewQueue) -> usize {
+    queue.live().0.len()
 }
 
 /// `BrowserPageviewEvent.flush_queued!`: up to a batch of queued events
 /// inserted, the number taken off the queue.
-pub async fn flush_queued(conn: &mut PgConnection) -> Result<usize, AppError> {
+pub async fn flush_queued(
+    queue: &PageviewQueue,
+    conn: &mut PgConnection,
+) -> Result<usize, AppError> {
     if crate::readonly::mode(&mut *conn).await?.postgres {
         return Ok(0);
     }
-    let batch: Vec<EventPayload> = queue().0.iter().take(FLUSH_BATCH_SIZE).cloned().collect();
+    let batch: Vec<EventPayload> = queue
+        .live()
+        .0
+        .iter()
+        .take(FLUSH_BATCH_SIZE)
+        .cloned()
+        .collect();
     if batch.is_empty() {
         return Ok(0);
     }
@@ -1013,7 +1027,7 @@ pub async fn flush_queued(conn: &mut PgConnection) -> Result<usize, AppError> {
     match failed {
         None => {
             tx.commit().await?;
-            drop_front(batch.len());
+            drop_front(queue, batch.len());
         }
         Some(e) => {
             tx.rollback().await?;
@@ -1032,15 +1046,15 @@ pub async fn flush_queued(conn: &mut PgConnection) -> Result<usize, AppError> {
                         "Discarding queued BrowserPageviewEvent after insert failure: {e}"
                     );
                 }
-                drop_front(1);
+                drop_front(queue, 1);
             }
         }
     }
     Ok(batch.len())
 }
 
-fn drop_front(n: usize) {
-    let mut queue = queue();
+fn drop_front(queue: &PageviewQueue, n: usize) {
+    let mut queue = queue.live();
     let n = n.min(queue.0.len());
     queue.0.drain(..n);
 }

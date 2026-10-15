@@ -270,12 +270,16 @@ own docs), so every site on one Postgres shares publish throughput.
 - `CALLS` (jobs/periodical.rs:15): Rails' `@call_count` is per process
   and bumps once per db, so with N sites "every 24th run" lands on
   rotating sites. Per site is proposed; porting the quirk is possible.
+  208a: per site (`Periodical.calls` in the site's `SiteState`).
 - `last_job_perform_at`: process-wide in Rails, per site here; the
   sidekiq_check problem check reads it per site either way.
 - `GLOBAL::` rate limit lists: `MemoryStore::save` writes them but
   `load` (rate_limiter.rs:77-78, `MEMORY_KEYS`) only matches keys that
   start `l-rate-limit3:`, so per-IP lists are not restored at restart
   today. Where the process-wide store is saved under multisite (the
-  default site's database) is a choice 208a makes.
+  default site's database) is a choice 208a makes. 208a: `AppState`
+  holds `global_rate_limits`, one store shared by every site, saved to
+  and read back (`MemoryStore::load_global`) from the default site's
+  database; a site's `load` takes its own lists only.
 - Two host names of one site get different cookie keys (the salt takes
   the request's host); that is Rails' behaviour, kept.

@@ -35,12 +35,15 @@ pub fn bundle<'a>(langs: impl IntoIterator<Item = &'a str>) -> String {
     )
 }
 
+/// `HighlightJs.version`'s cache, one per site as Rails keys it by
+/// `current_db`: the last (languages, salt, digest).
+#[derive(Default)]
+pub struct VersionCache(Mutex<Option<(String, String, String)>>);
+
 /// `HighlightJs.version`: the bundle's digest for a `highlighted_languages`
-/// value, with `GlobalSetting.asset_url_salt`. The last one is kept, as
-/// Rails keeps it per site.
-pub fn version(lang_string: &str, asset_url_salt: &str) -> String {
-    static CACHE: Mutex<Option<(String, String, String)>> = Mutex::new(None);
-    let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
+/// value, with `GlobalSetting.asset_url_salt`. The last one is kept.
+pub fn version(cache: &VersionCache, lang_string: &str, asset_url_salt: &str) -> String {
+    let mut cache = cache.0.lock().unwrap_or_else(|e| e.into_inner());
     if let Some((langs, salt, digest)) = cache.as_ref()
         && langs == lang_string
         && salt == asset_url_salt
@@ -54,10 +57,15 @@ pub fn version(lang_string: &str, asset_url_salt: &str) -> String {
 }
 
 /// `HighlightJs.path`, without the base path.
-pub fn path(hostname: &str, lang_string: &str, asset_url_salt: &str) -> String {
+pub fn path(
+    cache: &VersionCache,
+    hostname: &str,
+    lang_string: &str,
+    asset_url_salt: &str,
+) -> String {
     format!(
         "/highlight-js/{hostname}/{}.js",
-        version(lang_string, asset_url_salt)
+        version(cache, lang_string, asset_url_salt)
     )
 }
 
@@ -95,13 +103,17 @@ mod tests {
     // salt (/highlight-js/localhost/<digest>.js).
     #[test]
     fn digests_as_rails_does() {
+        let cache = VersionCache::default();
         assert_eq!(
-            version(DEFAULT, ""),
+            version(&cache, DEFAULT, ""),
             "d125c3422119592da271b68fa9500c957dd748c0"
         );
-        assert_ne!(version(DEFAULT, "salt"), version(DEFAULT, ""));
+        assert_ne!(
+            version(&cache, DEFAULT, "salt"),
+            version(&cache, DEFAULT, "")
+        );
         assert_eq!(
-            path("localhost", DEFAULT, ""),
+            path(&cache, "localhost", DEFAULT, ""),
             "/highlight-js/localhost/d125c3422119592da271b68fa9500c957dd748c0.js"
         );
     }

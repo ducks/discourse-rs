@@ -34,7 +34,7 @@ pub async fn show(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let languages = settings.get("highlighted_languages")?.to_s().to_string();
     let salt = state.config.globals.get("asset_url_salt").unwrap_or("");
-    if highlight_js::version(&languages, salt) != requested {
+    if highlight_js::version(&state.site.highlight_js, &languages, salt) != requested {
         let urls = crate::url::Urls {
             config: &state.config,
             settings: &settings,
@@ -46,7 +46,12 @@ pub async fn show(
         let location = format!(
             "http://{host}{}{}",
             state.config.globals.relative_url_root(),
-            highlight_js::path(&urls.current_hostname()?, &languages, salt)
+            highlight_js::path(
+                &state.site.highlight_js,
+                &urls.current_hostname()?,
+                &languages,
+                salt,
+            )
         );
         return Ok((
             StatusCode::FOUND,

@@ -18,7 +18,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use serde::Serialize;
 use serde::ser::Serializer;
@@ -318,13 +318,21 @@ impl ChangeStatus {
 }
 
 /// Every setting declared in site_settings.yml, in file order.
-#[derive(Debug)]
-pub struct Definitions {
+/// The parsed definitions, shared by every site of the process.
+#[derive(Debug, Clone)]
+struct Parsed {
     list: Vec<Definition>,
     index: HashMap<String, usize>,
     /// Per plugin, the setting its plugin.rb names with
     /// `enabled_site_setting` (None: always enabled).
     plugin_enabled_settings: HashMap<String, Option<String>>,
+}
+
+/// Every setting declared in site_settings.yml, with one site's cache of
+/// their resolution.
+#[derive(Debug)]
+pub struct Definitions {
+    parsed: Arc<Parsed>,
     /// The last resolved settings with the table fingerprint they came
     /// from (`max(updated_at)`, row count): what Rails keeps in its
     /// process cache and invalidates over MessageBus.
@@ -341,9 +349,20 @@ impl Definitions {
         Ok(defs)
     }
 
+    /// The same definitions with a cache of their own, for another site:
+    /// two sites whose tables have the same fingerprint (two fresh ones)
+    /// must not share a resolution.
+    pub fn for_site(&self) -> Definitions {
+        Definitions {
+            parsed: self.parsed.clone(),
+            cache: Mutex::new(None),
+        }
+    }
+
     /// Settings a plugin registers with `SiteSetting.setting` from Ruby,
     /// as recorded: each is declared as its options would be in YAML.
     pub fn add_dynamic(&mut self, settings: &[serde_json::Value]) -> Result<(), String> {
+        let parsed = Arc::make_mut(&mut self.parsed);
         for s in settings {
             let name = s["name"]
                 .as_str()
@@ -367,11 +386,11 @@ impl Definitions {
             let mut def = parse_definition(category, name, &entry)
                 .map_err(|e| format!("dynamic setting {name}: {e}"))?;
             def.plugin = s["plugin"].as_str().map(str::to_string);
-            if self.index.contains_key(name) {
+            if parsed.index.contains_key(name) {
                 return Err(format!("dynamic setting {name} is declared in YAML too"));
             }
-            self.index.insert(name.to_string(), self.list.len());
-            self.list.push(def);
+            parsed.index.insert(name.to_string(), parsed.list.len());
+            parsed.list.push(def);
         }
         Ok(())
     }
@@ -380,9 +399,11 @@ impl Definitions {
         let root: Yaml =
             serde_yaml_ng::from_str(src).map_err(|e| format!("site_settings.yml: {e}"))?;
         let mut defs = Definitions {
-            list: Vec::new(),
-            index: HashMap::new(),
-            plugin_enabled_settings: HashMap::new(),
+            parsed: Arc::new(Parsed {
+                list: Vec::new(),
+                index: HashMap::new(),
+                plugin_enabled_settings: HashMap::new(),
+            }),
             cache: Mutex::new(None),
         };
         defs.add_categories(&root, None)?;
@@ -408,12 +429,15 @@ impl Definitions {
                 self.add_categories(settings, Some(&plugin))
                     .map_err(|e| format!("plugin {plugin}: {e}"))?;
             }
-            self.plugin_enabled_settings.insert(plugin, enabled);
+            Arc::make_mut(&mut self.parsed)
+                .plugin_enabled_settings
+                .insert(plugin, enabled);
         }
         Ok(())
     }
 
     fn add_categories(&mut self, root: &Yaml, plugin: Option<&str>) -> Result<(), String> {
+        let parsed = Arc::make_mut(&mut self.parsed);
         let categories = root
             .as_mapping()
             .ok_or("top level must be a mapping of categories")?;
@@ -432,14 +456,14 @@ impl Definitions {
                 let mut def = parse_definition(&category, &name, entry)
                     .map_err(|e| format!("setting {name}: {e}"))?;
                 def.plugin = plugin.map(str::to_string);
-                match self.index.get(&name) {
+                match parsed.index.get(&name) {
                     // `setting()` called again redefines: a plugin may
                     // take over a core setting (narrative-bot does).
-                    Some(&i) if plugin.is_some() => self.list[i] = def,
+                    Some(&i) if plugin.is_some() => parsed.list[i] = def,
                     Some(_) => return Err(format!("setting {name} declared twice")),
                     None => {
-                        self.index.insert(name, self.list.len());
-                        self.list.push(def);
+                        parsed.index.insert(name, parsed.list.len());
+                        parsed.list.push(def);
                     }
                 }
             }
@@ -453,7 +477,7 @@ impl Definitions {
         let Some(plugin) = &def.plugin else {
             return true;
         };
-        match self.plugin_enabled_settings.get(plugin) {
+        match self.parsed.plugin_enabled_settings.get(plugin) {
             Some(Some(setting)) => values.get(setting).is_some_and(Value::truthy),
             _ => true,
         }
@@ -462,26 +486,27 @@ impl Definitions {
     /// `Plugin::Instance#enabled?` for a bundled plugin: its
     /// `enabled_site_setting` is on, or it names none.
     pub fn plugin_enabled(&self, plugin: &str, settings: &SiteSettings) -> bool {
-        match self.plugin_enabled_settings.get(plugin) {
+        match self.parsed.plugin_enabled_settings.get(plugin) {
             Some(Some(setting)) => settings.get(setting).is_ok_and(Value::truthy),
             _ => true,
         }
     }
 
     pub fn get(&self, name: &str) -> Option<&Definition> {
-        self.index.get(name).map(|&i| &self.list[i])
+        self.parsed.index.get(name).map(|&i| &self.parsed.list[i])
     }
 
     /// A setting's place among the definitions (site_settings.yml's order,
     /// then the plugins').
     pub fn position(&self, name: &str) -> Option<usize> {
-        self.index.get(name).copied()
+        self.parsed.index.get(name).copied()
     }
 
     /// `UpcomingChanges.including_css`: upcoming changes whose metadata has
     /// `body_class: true`, enabled or not, sorted by name.
     pub fn upcoming_changes_with_css(&self) -> Vec<&str> {
         let mut names: Vec<&str> = self
+            .parsed
             .list
             .iter()
             .filter(|d| d.upcoming_change.is_some() && d.change_body_class)
@@ -495,6 +520,7 @@ impl Definitions {
     /// whose upcoming change is permanent, by name.
     pub fn permanent_upcoming_change_names(&self) -> Vec<&str> {
         let mut names: Vec<&str> = self
+            .parsed
             .list
             .iter()
             .filter(|d| d.upcoming_change == Some(ChangeStatus::Permanent))
@@ -508,6 +534,7 @@ impl Definitions {
     /// sorted by name.
     pub fn upcoming_change_names(&self) -> Vec<&str> {
         let mut names: Vec<&str> = self
+            .parsed
             .list
             .iter()
             .filter(|d| d.upcoming_change.is_some())
@@ -536,7 +563,7 @@ impl Definitions {
         let Some(plugin) = &def.plugin else {
             return true;
         };
-        match self.plugin_enabled_settings.get(plugin) {
+        match self.parsed.plugin_enabled_settings.get(plugin) {
             Some(Some(setting)) if setting == name => true,
             Some(Some(setting)) => settings.get(setting).is_ok_and(Value::truthy),
             _ => true,
@@ -544,15 +571,15 @@ impl Definitions {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Definition> {
-        self.list.iter()
+        self.parsed.list.iter()
     }
 
     pub fn len(&self) -> usize {
-        self.list.len()
+        self.parsed.list.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.list.is_empty()
+        self.parsed.list.is_empty()
     }
 }
 
