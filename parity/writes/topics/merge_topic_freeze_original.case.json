@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/merge-topic.json",
+      "params": {
+        "destination_topic_id": "41",
+        "freeze_original": "true"
+      }
+    }
+  ],
+  "ignore": [
+    "/jobs/17/1/post_ids"
+  ]
+}

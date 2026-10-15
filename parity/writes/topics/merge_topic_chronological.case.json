@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json",
+      "params": {
+        "destination_topic_id": "38",
+        "chronological_order": "true"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json"
+    },
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json",
+      "params": {
+        "destination_topic_id": "42"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json",
+      "params": {
+        "destination_topic_id": "99999"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/99999/merge-topic.json",
+      "params": {
+        "destination_topic_id": "35"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json",
+      "params": {
+        "destination_topic_id": "35"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/41/merge-topic.json",
+      "params": {
+        "destination_topic_id": "35",
+        "archetype": "private_message"
+      }
+    }
+  ]
+}
