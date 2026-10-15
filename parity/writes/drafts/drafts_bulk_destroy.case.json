@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9511, 3, 'topic_35', '{\"reply\":\"A reply draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9512, 3, 'new_topic', '{\"reply\":\"A topic draft\",\"title\":\"A title\",\"action\":\"createTopic\"}', 2, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9513, 3, 'topic_36', '{\"reply\":\"Another reply draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO draft_sequences (user_id, draft_key, sequence) VALUES (3, 'new_topic', 2)",
+    "UPDATE user_stats SET draft_count = 3 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/drafts/bulk_destroy.json",
+      "params": {
+        "draft_keys": ["topic_35", "new_topic", "topic_99"],
+        "sequences": { "topic_35": 0, "new_topic": 2 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+/*
+ * The activity tabs drawn by user_activity_view.rs, as the reference
+ * computes them: base/user-stream.scss and post-list (the drafts, the
+ * pending posts, the bulk controls), base/bookmark-list.scss and the bulk
+ * bookmarks dropdown, the topic list rules the user topic lists and the
+ * bookmark table share, and the alerts.
+ */
+.fk-d-menu.-animated[data-placement^="top"] { animation: 250ms ease 0s 1 normal forwards running float-up; }
+@media (prefers-reduced-motion) { .fk-d-menu.-animated[data-placement^="top"] { animation-duration: 0s; } }
+.fk-d-menu.-animated[data-placement^="top"] { transform-origin: center bottom; }
+.user-stream .draft-icon { color: var(--primary-high); font-size: var(--font-up-4); margin-right: 0.5rem; text-align: center; }
+@media (width >= 40rem) { .user-stream .draft-icon { width: 3rem; } }
+.user-stream .draft-title { color: var(--tertiary); padding: 0px; }
+.user-stream .user-stream-item .user-stream-item-draft-actions { display: flex; align-items: end; flex-direction: row; gap: 0.75em; }
+.user-stream .child-actions, .user-stream-item-actions, .user-stream-item-draft-actions { margin-top: 8px; }
+.user-stream .child-actions .fa, .user-stream-item-actions .fa, .user-stream-item-draft-actions .fa { width: 15px; display: inline-block; color: var(--primary); }
+.user-stream .child-actions .fa.d-icon-trash-can, .user-stream-item-actions .fa.d-icon-trash-can, .user-stream-item-draft-actions .fa.d-icon-trash-can { color: var(--secondary); }
+.post-list--bulk-select .post-list-item--selected { background: var(--d-selected); border-left: 3px solid var(--tertiary); }
+.post-list--bulk-select .post-list-item__bulk-select { margin-right: 0.75rem; align-self: flex-start; margin-top: 0.2rem; }
+.post-list--bulk-select .post-list-item__bulk-select .bulk-select-checkbox { margin: 0px; }
+.post-list-bulk-controls { background: var(--primary-very-low); border: 1px solid var(--primary-low); padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: var(--d-border-radius); }
+.post-list-bulk-controls__selection { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.post-list-bulk-controls__count { font-weight: 500; color: var(--primary); }
+.post-list-bulk-controls__actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.post-list-bulk-controls__actions .btn { margin: 0px; }
+@media (width < 40rem) { .post-list-bulk-controls__selection { flex-direction: column; align-items: flex-start; gap: 0.5rem; } }
+.bookmark-list .topic-list-data.post-metadata { text-align: center; }
+.bookmark-list-item .topic-list-data.post-metadata { text-align: center; }
+.bookmark-list-item .author-avatar img.avatar { height: 24px; width: 24px; }
+.bookmark-list-item .main-link.topic-list-data .bookmark-status-with-link a.title { padding: 0px; }
+.bookmark-list-item .d-icon.bookmark-pinned { font-size: var(--font-down-2); margin-right: 0.2em; }
+.bookmark-list-item .bookmark-metadata { font-size: var(--font-down-2); margin-bottom: 0.25em; }
+.bookmark-list-item .bookmark-metadata-item { display: inline-block; margin-right: 1em; margin-bottom: 0.25em; line-height: var(--line-height-medium); }
+.bookmark-list-item .bookmark-metadata-item span { word-break: break-word; }
+.bookmark-list-item .bookmark-metadata .d-icon { margin-right: 0.25em; }
+.bookmark-list-item .bookmark-status-with-link { display: flex; flex-direction: row; align-items: center; }
+.bookmark-list-item .bookmark-status-with-link .topic-statuses { float: none; }
+.bookmark-list-item .post-excerpt { overflow: hidden; padding-right: 1em; }
+.select-kit.bookmark-actions-dropdown .select-kit-body { max-width: 350px; }
+.bulk-select-bookmarks-dropdown .select-kit.single-select.dropdown-select-box .select-kit-row .texts .name { font-weight: normal; }
+.bulk-select-bookmarks-dropdown .select-kit.single-select.dropdown-select-box .select-kit-row .icons { font-size: var(--font-down-2); margin-right: 0.75em; position: relative; top: 0.15em; }
+.topic-list-item .post-excerpt { margin-top: var(--space-2); margin-bottom: var(--space-2); font-size: var(--font-down-2); word-break: break-word; }
+.topic-list-main-link, .topic-list .main-link { font-size: var(--d-topic-list-title-font-size); }
+.topic-list-main-link a.title, .topic-list .main-link a.title { word-break: break-word; color: var(--title-color); font-weight: var(--topic-title-font-weight); }
+.topic-list .main-link .title:focus { outline: none; }
+@media (width >= 40rem) { .topic-list .topic-list-data.bulk-select { padding: 0px; width: 30px; text-align: center; } }
+@media (width >= 40rem) { .bulk-select-topics { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); align-items: end; margin-left: -5px; } }
+:where(.uc-modernize-foundation-theme) .topic-list button.bulk-select .d-icon { color: var(--d-topic-list-header-text-color); }
+@media (width >= 40rem) { .dismiss-container-top { display: flex; justify-content: flex-end; } }
+.user-content .paginated-topics-list { position: relative; }
+.d-icon-thumbtack.unpinned { transform: rotate(180deg); }
+@media (width >= 40rem) { .topic-list .d-icon-thumbtack.unpinned { color: var(--primary-med-or-secondary-med); } }
+@media (width >= 40rem) { .topic-list .d-icon-bookmark { color: var(--primary-med-or-secondary-med); } }
+.topic-statuses .topic-status:first-child .d-icon.d-icon-bookmark { --bookmark-icon-size: 0.56em; width: var(--bookmark-icon-size); padding-right: calc((var(--icon-size) - var(--bookmark-icon-size))/2); }
+.alert { padding: 0.5em 2.5em 0.5em 1em; background-color: var(--danger-low); color: var(--primary); position: relative; margin-bottom: 1em; }
+.alert.alert-info { background-color: var(--tertiary-low); color: var(--primary); }

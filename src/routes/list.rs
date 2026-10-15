@@ -152,7 +152,7 @@ pub(super) struct TagListRequest {
 }
 
 /// The /latest document, shared by the JSON and HTML responses.
-async fn list_document(
+pub(super) async fn list_document(
     state: &AppState,
     guardian: &Guardian,
     params: &ListParams,
@@ -1266,6 +1266,109 @@ pub async fn user_list(
         (!json).then_some(uri),
     )
     .await
+}
+
+/// GET /topics/created-by/:username(.json): ListController#topics_by, the
+/// topics the user created. The HTML is the Ember app, which has no route
+/// for it: its not-found page.
+pub async fn topics_by(
+    State(state): State<AppState>,
+    axum::Extension(incoming): axum::Extension<crate::session::current::Incoming>,
+    Path(username): Path<String>,
+    Query(params): Query<ListParams>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let guardian = incoming.guardian.clone();
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(username) = username.strip_suffix(".json") else {
+        let bus_position = crate::bus::page_position(&state.bus).await?;
+        return super::user_preferences::ember_not_found(
+            &state,
+            &mut conn,
+            &settings,
+            &guardian,
+            &headers,
+            bus_position,
+        )
+        .await;
+    };
+    let mut options = match build_options(&params, &settings)? {
+        Ok(o) => o,
+        Err(message) => return Ok(invalid_list_params(&state, &message, true)),
+    };
+    // fetch_user_from_params(include_inactive: staff, or a member with
+    // show_inactive_accounts), then ensure_can_see_profile!.
+    let include_inactive = guardian.is_staff()
+        || (guardian.is_authenticated() && settings.get("show_inactive_accounts")?.truthy());
+    let user = if include_inactive {
+        crate::users::User::find_any(&mut conn, username).await?
+    } else {
+        crate::users::User::find_active(&mut conn, username).await?
+    };
+    let Some(user) = user else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if !user.visible_to(&settings, &guardian)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    options.no_definitions = false;
+    if params.period.is_some() {
+        return Err(Unsupported("period on the created-by list").into());
+    }
+    let list_path = format!(
+        "{}/topics/created-by/{}",
+        state.config.globals.relative_url_root(),
+        user.username.to_lowercase()
+    );
+    let more = next_url(&list_path, &params, &options, false);
+    let doc = topics_by_list(
+        &state, &mut conn, &settings, &guardian, user.id, options, more,
+    )
+    .await?;
+    Ok(Json(doc).into_response())
+}
+
+/// TopicQuery#list_topics_by(user), serialized as a topic list.
+pub(crate) async fn topics_by_list(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    user_id: i32,
+    options: Options,
+    more_topics_url: String,
+) -> Result<serde_json::Value, AppError> {
+    let topics = TopicQuery {
+        conn: &mut *conn,
+        settings,
+        guardian,
+        options,
+        category: Default::default(),
+        tags: Default::default(),
+        filter: Default::default(),
+        user: Default::default(),
+    }
+    .list(Filter::TopicsBy(user_id))
+    .await?;
+    let urls = Urls {
+        config: &state.config,
+        settings,
+    };
+    Ok(TopicListSerializer {
+        conn,
+        settings,
+        i18n: &state.i18n,
+        guardian,
+        urls: &urls,
+        more_topics_url: Some(more_topics_url),
+        category_id: None,
+        group_id: None,
+        prefetched: Default::default(),
+    }
+    .serialize(&topics)
+    .await?)
 }
 
 /// `CategoriesController#topics_per_page`: categories_topics when set,

@@ -1,0 +1,120 @@
+{
+  "name": "bookmarks_bulk_other",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          5,
+          6
+        ],
+        "operation": {
+          "type": "delete"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T11:23:47.670249",
+  "transaction_started_at": "2026-10-15T11:23:46.34051",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "bookmarks": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 5,
+          "name": "Parity fixture: reminder sent",
+          "pinned": null,
+          "user_id": 3,
+          "created_at": "2026-10-01T22:32:02.441836",
+          "updated_at": "2026-10-01T22:32:02.468854",
+          "reminder_at": null,
+          "bookmarkable_id": 52,
+          "reminder_set_at": null,
+          "bookmarkable_type": "Post",
+          "reminder_last_sent_at": "2026-10-01T22:32:02.467119",
+          "auto_delete_preference": 3
+        }
+      ],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 52,
+          "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/5\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: reminder sent\",\"bookmark_id\":5,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":52}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-01T22:32:02.464812",
+          "updated_at": "2026-10-01T22:32:02.464812",
+          "post_number": 5,
+          "high_priority": true,
+          "post_action_id": null,
+          "notification_type": 24
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 173,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "z/2WSKCbcaQdgdoh/+HKmJdn1es=",
+            "created_at": "2026-10-15T11:23:46.697692",
+            "rotated_at": "2026-10-15T11:23:46.696567",
+            "updated_at": "2026-10-15T11:23:46.697692",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "z/2WSKCbcaQdgdoh/+HKmJdn1es=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 173,
+            "seen_at": "2026-10-15T11:23:47.678935",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "z/2WSKCbcaQdgdoh/+HKmJdn1es=",
+            "created_at": "2026-10-15T11:23:46.697692",
+            "rotated_at": "2026-10-15T11:23:46.696567",
+            "updated_at": "2026-10-15T11:23:46.697692",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "z/2WSKCbcaQdgdoh/+HKmJdn1es=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "4eef010c379246409fd0ef24b75986ccb220d7cd3196664bbf4ca9ecf0c44a88",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

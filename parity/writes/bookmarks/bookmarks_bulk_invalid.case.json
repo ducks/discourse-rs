@@ -1,0 +1,43 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "operation": { "type": "delete" }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": "4",
+        "operation": { "type": "delete" }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [4]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [4],
+        "operation": { "type": "" }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [4],
+        "operation": { "type": "pin" }
+      }
+    }
+  ]
+}

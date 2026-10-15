@@ -135,8 +135,17 @@ async fn handle(
             tx.commit().await?;
             ok(json!({ "success": "OK" }))
         }
-        Outcome::Destroyed { topic_bookmarked } => {
+        Outcome::Destroyed {
+            topic_bookmarked,
+            reminders_deleted,
+        } => {
             tx.commit().await?;
+            // The reminder notifications' after_commit refresh_notification_count.
+            if reminders_deleted {
+                let mut conn = state.pool.acquire().await?;
+                crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id)
+                    .await?;
+            }
             ok(json!({ "success": "OK", "topic_bookmarked": topic_bookmarked }))
         }
         Outcome::Invalid(errors) => (

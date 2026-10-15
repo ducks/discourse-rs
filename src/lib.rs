@@ -176,6 +176,7 @@ pub mod topics_bulk;
 pub mod upload_references;
 pub mod uploads;
 pub mod url;
+pub mod user_activity_view;
 pub mod user_anonymizer;
 pub mod user_api_key_crypto;
 pub mod user_card_view;

@@ -94,6 +94,7 @@ mod topic_update;
 mod topic_voting;
 mod topics;
 mod topics_bulk;
+mod user_activity;
 mod user_api_key_auth;
 mod user_api_key_device;
 mod user_api_keys;
@@ -193,6 +194,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             cached!(get(list::user_list)).post(bookmark_writes::create),
         )
         .route(
+            "/bookmarks/bulk",
+            put(user_activity::bulk_bookmarks).delete(user_activity::destroy_bookmark_bulk),
+        )
+        .route(
             "/bookmarks/{id}",
             put(bookmark_writes::update).delete(bookmark_writes::destroy),
         )
@@ -224,6 +229,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/hashtags/search.json", get(hashtags::search))
         .route("/drafts", get(drafts::index).post(drafts::create))
         .route("/drafts.json", get(drafts::index).post(drafts::create))
+        .route(
+            "/drafts/bulk_destroy",
+            get(drafts::show_bulk_destroy).delete(drafts::bulk_destroy),
+        )
+        .route(
+            "/drafts/bulk_destroy.json",
+            get(drafts::show_bulk_destroy).delete(drafts::bulk_destroy),
+        )
         .route("/drafts/{id}", get(drafts::show).delete(drafts::destroy))
         .route("/notifications/mark-read", put(read_tracking::mark_read))
         .route(
@@ -431,6 +444,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/topics/voted-by/{username}",
             cached!(get(topic_voting::voted_by)),
+        )
+        .route(
+            "/topics/created-by/{username}",
+            cached!(get(list::topics_by)),
         )
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
@@ -1807,6 +1824,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/review", get(review::page))
         .route("/review.json", get(review::index))
         .route(
+            "/review/{reviewable_id}",
+            get(permalinks::show).delete(user_activity::destroy_reviewable),
+        )
+        .route(
             "/review/{reviewable_id}/perform/{action_id}",
             put(review::perform),
         )
@@ -1846,6 +1867,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(posts::by_number),
         )
         .route("/raw/{topic_id}/{post_number}", get(posts::raw))
+        .route("/posts/{id}/pending", get(user_activity::pending))
+        .route("/posts/{id}/pending.json", get(user_activity::pending))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))
         .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
         .route("/posts/{id}/revisions/{revision}", get(posts::revision))
@@ -2196,6 +2219,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-notifications.js", get(asset))
         .route("/assets/preferences.js", get(asset))
         .route("/assets/notifications-page.js", get(asset))
+        .route("/assets/user-activity.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/search-page.js", get(asset))

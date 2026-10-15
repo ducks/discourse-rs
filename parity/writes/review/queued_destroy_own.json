@@ -1,0 +1,203 @@
+{
+  "name": "queued_destroy_own",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/pending.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/review/9321"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/user1/pending.json"
+    }
+  ],
+  "started_at": "2026-10-15T11:24:00.067328",
+  "transaction_started_at": "2026-10-15T11:23:58.834605",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "pending_posts": [
+          {
+            "id": 9321,
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "created_by_id": 3,
+            "name": "User1",
+            "raw_text": "This reply from user1 waits for approval.",
+            "title": "Parity fixture: replies and posters",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3048/t/parity-fixture-replies-and-posters/35",
+            "username": "user1"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "pending_posts": []
+      }
+    }
+  ],
+  "changes": {
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 4,
+          "created_at": "2026-10-15T11:24:00.151729",
+          "updated_at": "2026-10-15T11:24:00.151729",
+          "created_by_id": 3,
+          "reviewable_id": 9321,
+          "reviewable_history_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewables": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9321,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 0,
+            "payload": {
+              "raw": "This reply from user1 waits for approval.",
+              "tags": null,
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 0,
+            "topic_id": 35,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": 3,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 3,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          },
+          "after": {
+            "id": 9321,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 4,
+            "payload": {
+              "raw": "This reply from user1 waits for approval.",
+              "tags": null,
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 1,
+            "topic_id": 35,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-15T11:24:00.145275",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": 3,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 3,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 173,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iHYvHkdv581VTNd9FozfBE4HS2Q=",
+            "created_at": "2026-10-15T11:23:59.288054",
+            "rotated_at": "2026-10-15T11:23:59.286743",
+            "updated_at": "2026-10-15T11:23:59.288054",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iHYvHkdv581VTNd9FozfBE4HS2Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 173,
+            "seen_at": "2026-10-15T11:24:00.074255",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iHYvHkdv581VTNd9FozfBE4HS2Q=",
+            "created_at": "2026-10-15T11:23:59.288054",
+            "rotated_at": "2026-10-15T11:23:59.286743",
+            "updated_at": "2026-10-15T11:23:59.288054",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iHYvHkdv581VTNd9FozfBE4HS2Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 9321,
+        "performing_username": "user1",
+        "updated_reviewable_ids": [
+          9321
+        ]
+      }
+    ]
+  ],
+  "next_ids": {
+    "reviewable_histories": 1
+  },
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9321, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"This reply from user1 waits for approval.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9321, 9321, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9321, 9321, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "3f24d55e8d43b76969220f74612f4f82bb1d026927ec90b5329fe3f703e1344c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -51,6 +51,10 @@ pub enum Tab<'a> {
     /// `userPrivateMessages.*`: the messages content (crate::messages_view),
     /// drawn.
     Messages(String),
+    /// The `userActivity.*` routes drawn elsewhere (topics, read, drafts,
+    /// pending, bookmarks): the tab's path and its content
+    /// (crate::user_activity_view).
+    ActivityPage(&'a str, String),
     /// `user.badges`: the badges content (crate::badges_page), drawn.
     Badges(String),
     /// `preferences.*`: the preferences navigation and tab
@@ -90,6 +94,19 @@ impl ActivityFilter {
             "solved" => ActivityFilter::Solved,
             _ => return None,
         })
+    }
+
+    /// The tab's path under `/activity`.
+    pub fn path(self) -> &'static str {
+        match self {
+            ActivityFilter::All => "",
+            ActivityFilter::Topics => "topics",
+            ActivityFilter::Replies => "replies",
+            ActivityFilter::LikesGiven => "likes-given",
+            ActivityFilter::Votes => "votes",
+            ActivityFilter::Reactions => "reactions",
+            ActivityFilter::Solved => "solved",
+        }
     }
 
     /// UserStream#filterParam: the user_actions types the stream loads.
@@ -529,7 +546,7 @@ pub fn render(
                 &format!("{user_path}/activity"),
                 "bars-staggered",
                 &t(cx, "user.activity_stream"),
-                matches!(tab, Tab::Activity { .. }),
+                matches!(tab, Tab::Activity { .. } | Tab::ActivityPage(..)),
             ));
         }
     }
@@ -610,6 +627,18 @@ pub fn render(
                 solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
+            Tab::ActivityPage(path, content) => {
+                out.push_str(&activity_nav(
+                    cx,
+                    settings,
+                    viewer,
+                    viewing_self,
+                    &user_path,
+                    path,
+                    u["pending_posts_count"].as_i64().unwrap_or(0),
+                ));
+                out.push_str(content);
+            }
             Tab::Messages(content)
             | Tab::Badges(content)
             | Tab::Preferences(content)
@@ -667,20 +696,15 @@ fn votes_list(cx: &ListContext, viewing_self: bool, user_path: &str, topics: &[V
     )
 }
 
-/// `user-activity.gjs`: the secondary navigation, then the user stream
-/// (`user/stream.gjs`).
-#[allow(clippy::too_many_arguments)]
-fn activity_content(
+/// user-activity.gjs's secondary navigation, `current` the routed tab's
+/// path under `/activity` ("" for all).
+pub(crate) fn activity_nav(
     cx: &ListContext,
     settings: &ProfileSettings,
     viewer: &Viewer,
     viewing_self: bool,
     user_path: &str,
-    filter: ActivityFilter,
-    stream: &[Value],
-    topics: &[Value],
-    reactions: &[Value],
-    solved: &[Value],
+    current: &str,
     pending_posts_count: i64,
 ) -> String {
     let mut out = String::from(
@@ -690,7 +714,7 @@ fn activity_content(
          <ul class=\"nav-pills action-list\" data-d-scroll-axis=\"horizontal\">",
     );
     let item = |class: &str, path: &str, icon_name: &str, label: &str, title: Option<&str>| {
-        let current = ActivityFilter::from_path(path) == Some(filter);
+        let current = path == current;
         format!(
             "<li{} class=\"{class}\"{}><a class=\"{}\" href=\"{user_path}/activity{}{path}\">{} <span>{}</span></a></li>",
             if current {
@@ -737,7 +761,11 @@ fn activity_content(
             Some(&t(cx, "user.read_help")),
         ));
         let drafts = if viewer.draft_count > 0 {
-            t_count(cx, "drafts.label_with_count", viewer.draft_count, &[])
+            t_with(
+                cx,
+                "drafts.label_with_count",
+                &[("count", &viewer.draft_count.to_string())],
+            )
         } else {
             t(cx, "drafts.label")
         };
@@ -754,11 +782,10 @@ fn activity_content(
             "user-nav__activity-pending",
             "pending",
             "clock",
-            &t_count(
+            &t_with(
                 cx,
                 "pending_posts.label_with_count",
-                pending_posts_count,
-                &[],
+                &[("count", &pending_posts_count.to_string())],
             ),
             None,
         ));
@@ -814,31 +841,56 @@ fn activity_content(
             &t(cx, "topic_voting.vote_title_plural"),
         ));
     }
+    out.push_str("</ul></div></nav></div>");
+    out
+}
+
+/// `user-activity.gjs`: the secondary navigation, then the user stream
+/// (`user/stream.gjs`).
+#[allow(clippy::too_many_arguments)]
+fn activity_content(
+    cx: &ListContext,
+    settings: &ProfileSettings,
+    viewer: &Viewer,
+    viewing_self: bool,
+    user_path: &str,
+    filter: ActivityFilter,
+    stream: &[Value],
+    topics: &[Value],
+    reactions: &[Value],
+    solved: &[Value],
+    pending_posts_count: i64,
+) -> String {
+    let mut out = activity_nav(
+        cx,
+        settings,
+        viewer,
+        viewing_self,
+        user_path,
+        filter.path(),
+        pending_posts_count,
+    );
     if filter == ActivityFilter::Reactions
         && let Some(ui) = settings.reactions.as_ref()
     {
-        out.push_str(
-            "</ul></div></nav></div><section class=\"user-content\" id=\"user-content\"><div>",
-        );
+        out.push_str("<section class=\"user-content\" id=\"user-content\"><div>");
         out.push_str(&reactions_list(cx, ui, reactions));
         out.push_str("</div></section>");
         return out;
     }
     if filter == ActivityFilter::Solved && settings.solved {
-        out.push_str("</ul></div></nav></div><section class=\"user-content\" id=\"user-content\">");
+        out.push_str("<section class=\"user-content\" id=\"user-content\">");
         out.push_str(&solved_list(cx, viewing_self, user_path, solved));
         out.push_str("</section>");
         return out;
     }
     if filter == ActivityFilter::Votes {
-        out.push_str("</ul></div></nav></div><section class=\"user-content\" id=\"user-content\">");
+        out.push_str("<section class=\"user-content\" id=\"user-content\">");
         out.push_str(&votes_list(cx, viewing_self, user_path, topics));
         out.push_str("</section>");
         return out;
     }
-    out.push_str(
-        "</ul></div></nav></div><section class=\"user-content\" id=\"user-content\"><div>",
-    );
+    out.push_str("<section class=\"user-content\" id=\"user-content\"><div>");
 
     let items = collapse_stream(stream);
     if items.is_empty() {

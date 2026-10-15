@@ -1458,7 +1458,7 @@ generate_theme_screenshot_thumbnails (171).
     group_pm_alert past group_pm_user_limit (pm_invite.rs:524), inviting
     a user who now ignores the inviter (:254), the inbox of a group the
     viewer isn't in (routes/users.rs:747), the dismiss and bulk select
-    buttons (33b)
+    buttons (33b; the user topic lists' too, 193c)
 184. `feat/user-deletion-rest` S: blocking a deleted user's links
     (user_destroyer.rs:458, block_urls), MCP authorizations (:475;
     user_private.rs:164), the user_delete_self log (user_destroyer.rs:266),
@@ -1711,9 +1711,28 @@ route table has been made, so this list may be short.
     dropdown and Dismiss All, a notification marked read on its click;
     another member's go to Ember's /404. Refused: the items' avatars
     under show_user_menu_avatars (194)
-    193c. `feat/user-pages-activity` M: the activity tabs drawn as the
-    default page today: topics (ListController#topics_by), read,
-    drafts, pending, bookmarks and bookmarks-with-reminders
+    193c. ~~`feat/user-pages-activity`~~ (done) M: the activity tabs
+    drawn as the default page before: topics (ListController#topics_by,
+    /topics/created-by/:username.json, its page Ember's not-found) and
+    read as user topic lists (no posters, the columns' sorting, DLoadMore's
+    next page, the empty states), drafts (PostList with the client's
+    excerpt, resume into the composer or the post, remove, bulk select
+    with PostListBulkControls and Delete selected through
+    drafts#bulk_destroy; another member's drafts go to one's own,
+    anonymous to /latest), pending (posts#pending, deleting one's queued
+    post through reviewables#destroy; another member's go to /404),
+    bookmarks (the search, BookmarkActionsDropdown's delete, clear
+    reminder and pin, BookmarkList's bulk select with
+    BulkSelectBookmarksDropdown's clear reminders and delete through
+    bookmarks#bulk and their toasts, the empty, nothing found and
+    permission denied states, the next page) and bookmarks-with-reminders'
+    redirect; a 403 on read or pending leaves Ember's exception page.
+    Done with them: dialog.deleteConfirm, a bookmark's destroy deleting
+    its reminder notifications (dependent_reminder_notifications).
+    Refused, naming their items: editing a bookmark (BookmarkModal, 196),
+    resuming a message draft (the message composer, 196); the user
+    topic lists' bulk select button is drawn without its actions, as on
+    every topic list (183)
     193d. `feat/user-pages-prefs-more` M: preferences emails (with the
     email change page, /preferences/email, and the secondary emails'
     menu), tracking (categories and tags; the tag tracking keys PUT /u
@@ -1744,7 +1763,9 @@ route table has been made, so this list may be short.
     the topic map's menus, the footer's flag, mark unread and pinned
     buttons, the sidebar's header actions and Customize (milestone 4.5),
     the login, signup and logout dialogs (79c), the Edit Directory
-    Columns modal (74). Split when started
+    Columns modal (74), BookmarkModal (editing a bookmark from the
+    bookmarks tab, 193c), the message composer (resuming a message draft
+    from the drafts tab, 193c). Split when started
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters; the topic_ids and state list
     filters (routes/list.rs:54; topic_query.rs:368)

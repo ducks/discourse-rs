@@ -7,6 +7,8 @@
 //                              confirmLabel, cancelLabel, confirmClass })
 //                                                     OK and Cancel
 //   Discourse.dialog.yesNoConfirm({ ... })            Yes and No
+//   Discourse.dialog.deleteConfirm({ ... })           Delete (btn-danger)
+//                                                     and Cancel
 //   Discourse.dialog.popupAjaxError(text)             an ajax error's alert
 //
 // rendered as DialogHolder renders them into #dialog-holder, closed by
@@ -74,7 +76,7 @@
   function button(cls, label, iconName) {
     return (
       '<button class="btn ' +
-      (iconName ? "btn-icon-text " : "btn-text ") +
+      (iconName ? "btn-icon-text " : "") +
       cls +
       '" type="button">' +
       (iconName ? icon(iconName) : "") +
@@ -91,6 +93,9 @@
     holder.id = "dialog-holder";
     holder.className = "dialog-container " + (options.class || "");
     holder.setAttribute("aria-labelledby", "dialog-title");
+    holder.setAttribute("aria-modal", "true");
+    holder.setAttribute("tabindex", "-1");
+    holder.setAttribute("role", "dialog");
     var html = '<div class="dialog-overlay" data-a11y-dialog-hide></div><div class="dialog-content" role="document">';
     if (options.title) {
       html +=
@@ -163,6 +168,15 @@
         Object.assign({ cancel: true }, options, {
           confirmLabel: s.yes_value || "Yes",
           cancelLabel: s.no_value || "No",
+        })
+      );
+    },
+    deleteConfirm: function (options) {
+      var s = strings();
+      show(
+        Object.assign({ cancel: true }, options, {
+          confirmClass: "btn-danger",
+          confirmLabel: options.confirmLabel || s.delete || "Delete",
         })
       );
     },

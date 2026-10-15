@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [3, 1],
+        "operation": { "type": "clear_reminder" }
+      }
+    }
+  ]
+}

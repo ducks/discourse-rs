@@ -1,0 +1,39 @@
+{
+  "name": "bookmarks_bulk_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          4
+        ],
+        "operation": {
+          "type": "delete"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T11:23:39.719505",
+  "transaction_started_at": "2026-10-15T11:23:38.286099",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "e8388801f1f30979b28fc985691be29f879788f7b97baa9a2ccd6f5885409254",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

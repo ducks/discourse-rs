@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE topics SET visible = FALSE WHERE id = 41"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/topics/created-by/user1.json" },
+    { "method": "GET", "path": "/topics/created-by/user0.json" },
+    { "method": "GET", "path": "/topics/created-by/user0.json", "params": { "order": "views", "ascending": "true" } },
+    { "method": "GET", "path": "/topics/created-by/nobody.json" }
+  ]
+}
