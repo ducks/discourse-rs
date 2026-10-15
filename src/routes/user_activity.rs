@@ -74,7 +74,7 @@ impl Page {
     }
 }
 
-fn found(headers: &HeaderMap, location: String) -> Response {
+pub(super) fn found(headers: &HeaderMap, location: String) -> Response {
     let host = headers
         .get(header::HOST)
         .and_then(|h| h.to_str().ok())

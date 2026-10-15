@@ -747,8 +747,18 @@ pub async fn username(
     if !settings.get("enable_badges")?.truthy() {
         return Ok(super::topics::not_found_response(&state));
     }
+    // The Ember app has no route for the HTML page: its not-found page.
     if format != Format::Json && !super::wants_json(uri.query(), &headers) {
-        return Err(Unsupported("the user badges page (HTML), Ember's unknown route").into());
+        let bus_position = crate::bus::page_position(&state.bus).await?;
+        return super::user_preferences::ember_not_found(
+            &state,
+            &mut conn,
+            &settings,
+            &guardian,
+            &headers,
+            bus_position,
+        )
+        .await;
     }
     // fetch_user_from_params(include_inactive: staff, or a user with
     // show_inactive_accounts)

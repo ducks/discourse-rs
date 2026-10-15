@@ -63,6 +63,9 @@ enum Action {
     /// The HTML of `/u/:username/badges`: users#badges (users#show),
     /// drawn as the badges tab.
     Badges,
+    /// The HTML of `/u/:username/deleted-posts` (users#show): the
+    /// user.deletedPosts route's stream of PostsController#deleted_posts.
+    DeletedPosts,
 }
 
 /// `/u/:username/messages(/...)` as a page: the route and its group.
@@ -166,6 +169,11 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     let action = match rest {
         "summary" => Action::Summary,
         "badges" if !json => Action::Badges,
+        "deleted-posts" if !json => Action::DeletedPosts,
+        "invited" if !json => return Err(Unsupported("the invites pages (192)")),
+        r if !json && r.starts_with("invited/") => {
+            return Err(Unsupported("the invites pages (192)"));
+        }
         "badges" | "notifications" | "messages" | "private-messages" | "deleted-posts" => {
             Action::Show
         }
@@ -464,7 +472,11 @@ async fn respond(
         auth_token: auth_token.as_deref(),
     };
     let doc = match action {
-        Action::Show | Action::Activity(_) | Action::Card | Action::Badges => {
+        Action::Show
+        | Action::Activity(_)
+        | Action::Card
+        | Action::Badges
+        | Action::DeletedPosts => {
             if matches!(action, Action::Badges) && !settings.get("enable_badges")?.truthy() {
                 return Ok(not_found());
             }
@@ -502,19 +514,43 @@ async fn respond(
         | Action::Activity(_)
         | Action::Card
         | Action::Messages(..)
-        | Action::Badges => doc,
+        | Action::Badges
+        | Action::DeletedPosts => doc,
         Action::Summary => users.show(&user).await?,
     };
     // user/index: one's own profile opens the activity stream, others
-    // view_user_route.
+    // view_user_route; a route the app lacks falls back to the summary.
+    let mut action = action;
     let filter = match action {
-        Action::Summary | Action::Card | Action::Messages(..) | Action::Badges => None,
+        Action::Summary
+        | Action::Card
+        | Action::Messages(..)
+        | Action::Badges
+        | Action::DeletedPosts => None,
         Action::Activity(filter) => Some(filter),
         Action::Show if guardian.is_me(user.id) => Some(ActivityFilter::All),
         Action::Show => match settings.get("view_user_route")?.to_s().as_str() {
-            "summary" => None,
             "activity" => Some(ActivityFilter::All),
-            _ => return Err(Unsupported("view_user_route other than summary or activity").into()),
+            "badges" => {
+                if !settings.get("enable_badges")?.truthy() {
+                    return Err(Unsupported("view_user_route badges with badges off").into());
+                }
+                action = Action::Badges;
+                None
+            }
+            "deletedPosts" => {
+                return Ok(super::user_activity::found(
+                    &headers,
+                    format!(
+                        "{base_path}/u/{}/deleted-posts",
+                        user.username.to_lowercase()
+                    ),
+                ));
+            }
+            "profile-hidden" => {
+                return Err(Unsupported("view_user_route profile-hidden").into());
+            }
+            _ => None,
         },
     };
     let visible = user.visible_to(&settings, &guardian)?;
@@ -537,7 +573,11 @@ async fn respond(
     } else {
         None
     };
-    let summary_doc = if visible && filter.is_none() && badges_tab.is_none() {
+    let summary_doc = if visible
+        && filter.is_none()
+        && badges_tab.is_none()
+        && !matches!(action, Action::DeletedPosts)
+    {
         Some(users.summary(&user).await?)
     } else {
         None
@@ -673,7 +713,42 @@ async fn respond(
         }
         None => None,
     };
+    // user.deletedPosts: the first page of PostsController#deleted_posts;
+    // for one who isn't staff it is refused, leaving Ember's exception
+    // page in the profile's place.
+    let deleted_request = format!(
+        "{base_path}/posts/{}/deleted?offset=0",
+        user.username.to_lowercase()
+    );
+    let deleted_content = if matches!(action, Action::DeletedPosts) && guardian.is_staff() {
+        let categories = crate::topic_list_view::categories(&mut *users.conn).await?;
+        let cx = crate::topic_list_view::ListContext {
+            i18n: &state.i18n,
+            base_path,
+            now: crate::clock::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            member_trust_level: None,
+            settings: crate::topic_list_view::ListSettings::load(&settings)?,
+        };
+        let posts = super::deleted_posts::posts(
+            &mut *users.conn,
+            &settings,
+            &urls,
+            &guardian,
+            user.id,
+            0,
+            super::deleted_posts::DEFAULT_LIMIT,
+        )
+        .await?;
+        Some(crate::user_profile_view::deleted_posts(&cx, &posts))
+    } else {
+        None
+    };
     let tab = match (&badges_content, filter) {
+        _ if deleted_content.is_some() => {
+            Tab::DeletedPosts(deleted_content.clone().unwrap_or_default())
+        }
         (Some(content), _) => Tab::Badges(content.clone()),
         (None, filter) => match filter {
             None => Tab::Summary(summary_doc.as_ref()),
@@ -711,8 +786,25 @@ async fn respond(
         &settings,
     )
     .await?;
+    if matches!(action, Action::DeletedPosts) {
+        if guardian.is_staff() {
+            // The route has no titleToken: the user's.
+            page.page_title = user.username.clone();
+        } else {
+            let cx = crate::topic_list_view::ListContext {
+                i18n: &state.i18n,
+                base_path,
+                now: crate::clock::now(),
+                categories: &std::collections::HashMap::new(),
+                expand_all_pinned: false,
+                member_trust_level: None,
+                settings: crate::topic_list_view::ListSettings::load(&settings)?,
+            };
+            page.main = crate::messages_view::exception(&cx, 403, &deleted_request);
+        }
+    }
     // The tab template's bodyClass.
-    if show_doc["user"]["profile_hidden"] != true {
+    if show_doc["user"]["profile_hidden"] != true && !matches!(action, Action::DeletedPosts) {
         page.chrome
             .body_classes
             .push_str(match (&badges_content, filter) {
@@ -1316,6 +1408,9 @@ pub(crate) async fn profile_page(
         )
         .await?,
         can_invite_to_forum: guardian.can_invite_to_forum(settings)?,
+        admin_button: guardian.is_staff()
+            && !settings.get("sidebar_user_navigation")?.truthy()
+            && !crate::mobile::mobile_view(),
     };
     let profile_settings = crate::user_profile_view::ProfileSettings {
         enable_badges: settings.get("enable_badges")?.truthy(),

@@ -158,16 +158,29 @@ pub async fn who(
 }
 
 /// GET /topics/voted-by/:username(.json): ListController#voted_by, the
-/// topics the user holds an active vote on. The HTML page is the profile's
-/// votes tab, not ported yet.
+/// topics the user holds an active vote on. The Ember app has no route
+/// for the HTML page: its not-found page.
 pub async fn voted_by(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     axum::extract::Path(username): axum::extract::Path<String>,
     axum::extract::Query(params): axum::extract::Query<super::list::ListParams>,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
     let Some(username) = username.strip_suffix(".json") else {
-        return Err(crate::Unsupported("the voted_by HTML page").into());
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        let bus_position = crate::bus::page_position(&state.bus).await?;
+        return super::user_preferences::ember_not_found(
+            &state,
+            &mut conn,
+            &settings,
+            &guardian,
+            &headers,
+            bus_position,
+        )
+        .await;
     };
     let mut conn = state.pool.acquire().await?;
     let settings =

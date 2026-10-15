@@ -224,6 +224,20 @@
   margin-right: 0.5rem;
 }
 
+.user-stream .delete-info {
+  align-items: center;
+  display: flex;
+}
+
+.user-stream .delete-info .d-icon {
+  font-size: var(--font-0);
+  margin-right: 0.5rem;
+}
+
+.user-stream .delete-info .avatar {
+  margin-right: 0.25rem;
+}
+
 .user-stream .expand-item,
 .user-stream .collapse-item {
   margin-right: 0.5em;

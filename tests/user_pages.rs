@@ -194,6 +194,48 @@ async fn profile_page_renders_summary_and_activity() {
 }
 
 #[tokio::test]
+async fn view_user_route_picks_the_default_profile_page() {
+    let db = TestDb::new().await;
+    const STRING: i32 = 1;
+    set_setting(&db.pool, "view_user_route", STRING, "badges").await;
+    let (status, _, html) = get(&db.pool, "/u/user1").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("user-badges-page"));
+    set_setting(&db.pool, "view_user_route", STRING, "deletedPosts").await;
+    let (status, headers, _) = get(&db.pool, "/u/user1").await;
+    assert_eq!(status, StatusCode::FOUND);
+    assert!(
+        headers
+            .iter()
+            .any(|(k, v)| k == "location" && v.ends_with("/u/user1/deleted-posts"))
+    );
+    // A route the app lacks: the summary.
+    set_setting(&db.pool, "view_user_route", STRING, "nonsense").await;
+    let (status, _, html) = get(&db.pool, "/u/user1").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("user-summary-page"));
+}
+
+#[tokio::test]
+async fn the_routes_the_app_lacks_and_the_deleted_posts_page() {
+    let db = TestDb::new().await;
+    for path in ["/user-badges/user1", "/topics/voted-by/user1"] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert!(html.contains("page-not-found"), "{path}");
+    }
+    // Only staff see deleted posts: Ember's exception page otherwise.
+    let (status, _, html) = get(&db.pool, "/u/user1/deleted-posts").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("class=\"error-page\""));
+    let (status, _, _) = get(&db.pool, "/posts/user1/deleted.json").await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    // The invites pages are 192's.
+    let (status, _, _) = get(&db.pool, "/u/user1/invited").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+#[tokio::test]
 async fn user_cards_for_anonymous_readers() {
     let db = TestDb::new().await;
     // UserCardSerializer: the card's attributes only, with the post count
