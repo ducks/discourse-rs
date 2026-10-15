@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/42/convert-topic/public.json",
+      "params": {
+        "category_id": "4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/48/revisions/latest.json"
+    }
+  ]
+}

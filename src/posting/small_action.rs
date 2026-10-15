@@ -48,6 +48,29 @@ pub async fn add_with_message(
     message: Option<&str>,
     silent: bool,
 ) -> Result<i32, AppError> {
+    add_inner(conn, ctx, action, message, silent, false).await
+}
+
+/// [`add`] in a message whose allowed users were all just added (a topic
+/// converted to a message): Postgres has no statistics for them yet and
+/// reads them through the (topic_id, user_id) index, by user, where it
+/// otherwise reads the table in the order they were added.
+pub async fn add_to_new_message(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    action: &SmallAction<'_>,
+) -> Result<i32, AppError> {
+    add_inner(conn, ctx, action, None, false, true).await
+}
+
+async fn add_inner(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    action: &SmallAction<'_>,
+    message: Option<&str>,
+    silent: bool,
+    allowed_by_user: bool,
+) -> Result<i32, AppError> {
     let (topic_id, user_id) = (action.topic_id, action.user_id);
     let raw = message.unwrap_or("").trim_end().to_string();
     let cooked = if raw.is_empty() {
@@ -148,9 +171,10 @@ pub async fn add_with_message(
     // UserActionManager.post_created: a reply, or in a message one row per
     // allowed user (small actions are not filtered out).
     if private_message {
-        let allowed: Vec<i32> = sqlx::query_scalar(
-            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
-        )
+        let order = if allowed_by_user { "user_id" } else { "id" };
+        let allowed: Vec<i32> = sqlx::query_scalar(&format!(
+            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY {order}"
+        ))
         .bind(topic_id)
         .fetch_all(&mut *conn)
         .await?;

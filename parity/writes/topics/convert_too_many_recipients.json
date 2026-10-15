@@ -1,0 +1,74 @@
+{
+  "name": "convert_too_many_recipients",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/convert-topic/private.json"
+    }
+  ],
+  "started_at": "2026-10-14T22:39:38.89907",
+  "transaction_started_at": "2026-10-14T22:39:37.050184",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Cannot convert: this topic has more participants than the max allowed (3)."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3d7kZKdGJZDCwu/KqaUEMo8vXeo=",
+            "created_at": "2026-10-14T22:39:37.97404",
+            "rotated_at": "2026-10-14T22:39:37.970989",
+            "updated_at": "2026-10-14T22:39:37.97404",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3d7kZKdGJZDCwu/KqaUEMo8vXeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T22:39:38.908091",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3d7kZKdGJZDCwu/KqaUEMo8vXeo=",
+            "created_at": "2026-10-14T22:39:37.97404",
+            "rotated_at": "2026-10-14T22:39:37.970989",
+            "updated_at": "2026-10-14T22:39:37.97404",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3d7kZKdGJZDCwu/KqaUEMo8vXeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_allowed_message_recipients": 3
+  },
+  "recorded_from": {
+    "case": "3b505ac5f672f0711503e7775c83dc8f6275ac5709a9cccba3107ace872434dd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

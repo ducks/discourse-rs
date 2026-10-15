@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET version = 3, public_version = 2 WHERE id = 48",
+    "UPDATE topics SET archetype = 'regular', category_id = 4 WHERE id = 42",
+    "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) VALUES (1, 48, 2, E'--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\\narchetype:\\n- private_message\\n- regular\\ncategory_id:\\n-\\n- 4\\n', TRUE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (1, 48, 3, E'--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\\ntitle:\\n- \\'Parity fixture: PM user1 to user0\\'\\n- \\'Parity fixture: PM user1 to user0, public\\'\\n', FALSE, '2026-10-02 11:00:00', '2026-10-02 11:00:00')",
+    "UPDATE topics SET title = 'Parity fixture: PM user1 to user0, public' WHERE id = 42"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/48/revisions/3.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/48/revisions/latest.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/48/revisions/2.json"
+    }
+  ]
+}
