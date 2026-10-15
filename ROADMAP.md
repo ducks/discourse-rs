@@ -1167,9 +1167,11 @@ generate_theme_screenshot_thumbnails (171).
     (type_filter=user) of only filters, which Rails fails on;
     search results for a member with lazy-loaded categories
     (GroupedSearchResultSerializer#extra)
-    143b. `feat/search-advanced-user` S: `@user` and `@me`, `user:`,
-    `created:@`, `group:` (visible groups whose members are visible),
-    `badge:`
+    143b. ~~`feat/search-advanced-user`~~ (done) S: `@user` and `@me`,
+    `user:` (a username or an id), `created:@` (first posts; a name
+    nobody has matches those without a user, as Rails does), `group:`
+    (visible groups whose members are visible, by name or id),
+    `badge:` (by name or id)
     143c. `feat/search-advanced-in` M: `in:` over the viewer's posts and
     topics: title (and `t`), first (and `f`), replies, pinned, wiki,
     likes, bookmarks, posted, created/mine, watching, tracking, seen,

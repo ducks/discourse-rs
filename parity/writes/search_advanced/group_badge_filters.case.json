@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=group%3Aadmins"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Astaff"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Atrust_level_1"},
+    {"method": "GET", "path": "/search/query.json?term=group%3A1"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Anope"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Atrust%25"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Aeveryone"},
+    {"method": "GET", "path": "/search/query.json?term=group%3Alogged_in_users"},
+    {"method": "GET", "path": "/search/query.json?term=badge%3ALeader"},
+    {"method": "GET", "path": "/search/query.json?term=badge%3Aleader"},
+    {"method": "GET", "path": "/search/query.json?term=badge%3A11"},
+    {"method": "GET", "path": "/search/query.json?term=badge%3Anothing"},
+    {"method": "GET", "path": "/search/query.json?term=badge%3A%22First%20Like%22"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20badge%3A"}
+  ]
+}

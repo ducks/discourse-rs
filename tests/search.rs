@@ -207,7 +207,7 @@ async fn secures_and_ranks_results() {
     assert!(pos(40) < pos(46), "closed before archived: {ids:?}");
 
     // Advanced syntax is refused rather than approximated.
-    for q in ["fixture%20in:title", "fixture%20order:latest", "%40user1"] {
+    for q in ["fixture%20in:title", "fixture%20order:latest"] {
         let (status, _, _) = get(&db.pool, &format!("/search.json?q={q}")).await;
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{q}");
     }

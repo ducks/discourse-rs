@@ -359,10 +359,17 @@ fn unported_keyword(_word: &str) -> &'static str {
 /// The filters not ported yet, and why.
 fn unported_filter(filter: Filter) -> Option<&'static str> {
     match filter {
-        Filter::Category | Filter::Hashtag => None,
-        _ => {
-            Some("advanced search filters other than # and category: (@, in:, status:, tags:, ...)")
-        }
+        Filter::Category
+        | Filter::Hashtag
+        | Filter::At
+        | Filter::User
+        | Filter::CreatedBy
+        | Filter::Group
+        | Filter::Badge => None,
+        _ => Some(
+            "advanced search filters other than #, category:, @, user:, created:@, group: and \
+             badge: (in:, status:, tags:, before:, ...)",
+        ),
     }
 }
 
