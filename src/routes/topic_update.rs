@@ -178,9 +178,17 @@ async fn update(
         fields.title = None;
     }
     if let Some(category) = scalar(&p, "category_id")? {
-        let category = crate::ruby::to_i(&category) as i32;
-        if category != current_category.unwrap_or(0) {
-            return Err(Unsupported("changing a topic's category (188b)").into());
+        let category_id = crate::ruby::to_i(&category) as i32;
+        if category_id != current_category.unwrap_or(0) {
+            match category_change_error(&mut conn, &ctx, &guardian, topic_id, category_id, &p)
+                .await?
+            {
+                CategoryCheck::Ok => fields.category_id = Some(category_id),
+                CategoryCheck::NotFound => return Ok(super::topics::not_found_response(&state)),
+                CategoryCheck::Error(status, message) => {
+                    return Ok(json_error(status, vec![message]));
+                }
+            }
         }
     }
     let tags_param = p.contains_key("tags");
@@ -231,6 +239,97 @@ async fn update(
         payload.insert("tags".into(), json!(tags));
     }
     Ok((StatusCode::OK, Json(Value::Object(payload))).into_response())
+}
+
+enum CategoryCheck {
+    Ok,
+    /// `Category.find` raising RecordNotFound.
+    NotFound,
+    Error(StatusCode, String),
+}
+
+/// `TopicCategoryChangeValidator.call`: the category exists, the user may
+/// move the topic there, and its tags are allowed there (only checked
+/// where tag groups or category tags exist, which wait for 189).
+async fn category_change_error(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    topic_id: i32,
+    category_id: i32,
+    p: &Map<String, Value>,
+) -> Result<CategoryCheck, AppError> {
+    let s = ctx.settings;
+    let shared_draft: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM shared_drafts WHERE topic_id = $1)")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if shared_draft {
+        return Err(Unsupported("moving a shared draft").into());
+    }
+    let exists = |id: i32| {
+        sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+            .bind(id)
+    };
+    let category = if category_id == 0 {
+        None
+    } else {
+        Some(category_id)
+    };
+    if let Some(id) = category
+        && !exists(id).fetch_one(&mut *conn).await?
+    {
+        return Ok(CategoryCheck::Error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            ctx.t("category.errors.not_found"),
+        ));
+    }
+    // ensure_can_move_topic_to_category!: no category means
+    // `Category.find(uncategorized_category_id)`.
+    let target = match category {
+        Some(id) => id,
+        None => {
+            let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
+            if !exists(uncategorized).fetch_one(&mut *conn).await? {
+                return Ok(CategoryCheck::NotFound);
+            }
+            uncategorized
+        }
+    };
+    let can_move = guardian.is_staff()
+        || (revise_topic::can_create_topic_on_category(&mut *conn, s, guardian, target).await?
+            && !crate::posting::validate::posting_review_required(
+                &mut *conn,
+                guardian,
+                target,
+                crate::posting::validate::REVIEW_TOPIC,
+            )
+            .await?);
+    if !can_move {
+        return Ok(CategoryCheck::Error(
+            StatusCode::FORBIDDEN,
+            ctx.t("category.errors.move_topic_to_category_disallowed"),
+        ));
+    }
+    if category.is_none() {
+        return Ok(CategoryCheck::Ok);
+    }
+    // resolve_tag_names: the tags sent, else the topic's.
+    let has_tags = match p.get("tags") {
+        Some(Value::Array(items)) => !items.is_empty(),
+        Some(_) => false,
+        None => !topic_tag_ids(&mut *conn, topic_id).await?.is_empty(),
+    };
+    let restricted: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM tag_groups) OR EXISTS (SELECT 1 FROM category_tags)",
+    )
+    .fetch_one(&mut *conn)
+    .await?;
+    if has_tags && restricted {
+        return Err(Unsupported("moving a tagged topic under tag restrictions (189)").into());
+    }
+    Ok(CategoryCheck::Ok)
 }
 
 /// `guardian.can_edit?(topic)` for a topic that exists.

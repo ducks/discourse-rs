@@ -1504,7 +1504,7 @@ route table has been made, so this list may be short.
     its topic diff, Topic's validations and before_validation cleanup,
     slug and fancy title, the search reindex, topic_edited web hooks, the
     reload_topic publish, keep_existing_draft; BasicTopicSerializer),
-    188b. `feat/topic-edits-category` M (category_id on PUT /t:
+    188b. ~~`feat/topic-edits-category`~~ (done) M (category_id on PUT /t:
     TopicCategoryChangeValidator, can_move_topic_to_category,
     change_category_to_id with the topic counts, auto watching and
     tracking, notify_category_change, update_topic_upload_security,

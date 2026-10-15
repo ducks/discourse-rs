@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/34.json",
+      "params": {
+        "category_id": "2"
+      }
+    }
+  ]
+}

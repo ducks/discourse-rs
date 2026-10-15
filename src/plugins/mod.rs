@@ -162,6 +162,19 @@ pub async fn topic_status_updated(
     Ok(())
 }
 
+/// DiscourseEvent `:post_edited` from a revision whose topic diff has
+/// `category_id`.
+pub async fn topic_category_revised(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    topic_id: i32,
+) -> Result<(), PluginError> {
+    if topic_voting::enabled(settings)? {
+        topic_voting::lifecycle::topic_category_changed(conn, topic_id).await?;
+    }
+    Ok(())
+}
+
 /// DiscourseEvent `:topic_trashed` (Topic#trash! on a topic not yet
 /// trashed).
 pub async fn topic_trashed(

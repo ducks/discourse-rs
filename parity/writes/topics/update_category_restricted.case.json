@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_profiles SET featured_topic_id = 35 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

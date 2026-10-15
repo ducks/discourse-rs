@@ -1,0 +1,80 @@
+{
+  "name": "update_category_min_tags",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "34"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:11:48.681951",
+  "transaction_started_at": "2026-10-14T22:11:44.247144",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You must select at least 2 tags."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8URbjTwcIC7gB8JFHx0NxLlPtn4=",
+            "created_at": "2026-10-14T22:11:45.9794",
+            "rotated_at": "2026-10-14T22:11:45.976918",
+            "updated_at": "2026-10-14T22:11:45.9794",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8URbjTwcIC7gB8JFHx0NxLlPtn4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T22:11:48.700698",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8URbjTwcIC7gB8JFHx0NxLlPtn4=",
+            "created_at": "2026-10-14T22:11:45.9794",
+            "rotated_at": "2026-10-14T22:11:45.976918",
+            "updated_at": "2026-10-14T22:11:45.9794",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8URbjTwcIC7gB8JFHx0NxLlPtn4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "setup": [
+    "UPDATE categories SET minimum_required_tags = 2 WHERE id = 34"
+  ],
+  "recorded_from": {
+    "case": "38d78cf5a23664e160ab94fb66f9e63413047320a931de8bf4c95a3eefc2a6ab",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
