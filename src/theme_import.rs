@@ -817,24 +817,19 @@ fn humanize(name: &str) -> String {
 /// each setting modifier from its setting's value. True when one changed.
 async fn refresh_setting_modifiers(
     conn: &mut PgConnection,
+    cx: &themes::Ctx<'_>,
     theme_id: i32,
     set: &mut ModifierSet,
 ) -> Result<bool, AppError> {
     let Some(modifiers) = set.setting_modifiers.clone().filter(|m| !m.is_empty()) else {
         return Ok(false);
     };
-    let settings = themes::settings_of(conn, theme_id).await?;
-    let stored = themes::stored_settings(conn, theme_id).await?;
+    let store = crate::file_store::FileStore::for_site(cx.urls.config, cx.settings)?;
+    let vcx = themes::ValueCx::new(&store, cx.settings)?;
     let mut changed = false;
     for (modifier, setting) in modifiers {
         let setting_name = ruby_to_s(Some(&setting));
-        let value = settings.iter().find(|s| s.name == setting_name).map(|s| {
-            let row = stored
-                .iter()
-                .find(|(n, t, _)| *n == s.name && *t == s.type_id)
-                .and_then(|(_, _, v)| v.as_deref());
-            theme_writes::setting_value(s, row)
-        });
+        let value = theme_writes::cached_setting(conn, &vcx, theme_id, &setting_name).await?;
         let new = match set.get(&modifier) {
             Some(Modifier::Bool(_)) => Modifier::Bool(Some(ruby_to_s(value.as_ref()) != "false")),
             Some(Modifier::Strings(_)) => Modifier::Strings(Some(match &value {
@@ -1626,7 +1621,7 @@ pub async fn update_zipped_theme(
         .await?
         .ok_or(Unsupported("a theme gone after its import"))?;
     create_theme_site_settings(conn, cx, &theme, info.get("theme_site_settings")).await?;
-    if refresh_setting_modifiers(conn, theme_id, &mut modifiers).await? {
+    if refresh_setting_modifiers(conn, cx, theme_id, &mut modifiers).await? {
         modifiers.save(conn, theme_id).await?;
     }
     // update_components on an existing theme: the child components by url.

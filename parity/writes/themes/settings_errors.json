@@ -1,0 +1,579 @@
+{
+  "name": "settings_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Bad settings",
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "too_big:\n  default: 20\n  max: 10\ntoo_small:\n  default: 1\n  min: 3\nshort_text:\n  default: ab\n  min: 3\nlong_text:\n  default: abcdef\n  max: 3\nbad_objects:\n  type: objects\n  default:\n    - name: 5\n    - other: x\n  schema:\n    name: x\n    properties:\n      name:\n        type: string\n        required: true\n      odd:\n        type: wat\nunknown_type:\n  type: color\n  default: red\nmissing_default:\n  type: string\nmembership:\n  type: string\n  default: x\n  resolve_group_membership: true\nobject_membership:\n  type: objects\n  default: []\n  schema:\n    name: z\n    properties:\n      who:\n        type: string\n        resolve_group_membership: true\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Group lists",
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "who:\n  type: list\n  list_type: group\n  default: \"0|11\"\nplain:\n  type: list\n  default: \"0|1\"\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.1.body.theme.id}}/setting.json",
+      "params": {
+        "name": "who",
+        "value": "0|0|12"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.1.body.theme.id}}.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:12:26.198858",
+  "transaction_started_at": "2026-10-14T23:12:21.046219",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Bad settings",
+          "description": null,
+          "created_at": "2026-10-14T23:12:26.267Z",
+          "updated_at": "2026-10-14T23:12:26.267Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "errors": [
+            "Setting `too_big` default value isn't valid. Value must be between -Infinity and 10.\nSetting `too_small` default value isn't valid. Value must be larger than or equal to 3.\nSetting `short_text` default value isn't valid. {one: \"Value must be at least %{count} character long.\", other: \"Value must be at least %{count} characters long.\"}\nSetting `long_text` default value isn't valid. Value must be between -Infinity and 3 characters long.\nSetting `bad_objects` default value isn't valid. The property at JSON Pointer '/0/name' must be a string. The property at JSON Pointer '/1/name' must be present.\nSetting `unknown_type` type is unsupported. Supported types are `integer`, `bool`, `list`, `enum` and `upload`\nSetting `missing_default` has no default value.\nSetting `membership` default value isn't valid. resolve_group_membership can only be used with type: list\nSetting `object_membership` default value isn't valid. resolve_group_membership can only be used with type: groups in object schemas. Invalid property: who"
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "too_big:\n  default: 20\n  max: 10\ntoo_small:\n  default: 1\n  min: 3\nshort_text:\n  default: ab\n  min: 3\nlong_text:\n  default: abcdef\n  max: 3\nbad_objects:\n  type: objects\n  default:\n    - name: 5\n    - other: x\n  schema:\n    name: x\n    properties:\n      name:\n        type: string\n        required: true\n      odd:\n        type: wat\nunknown_type:\n  type: color\n  default: red\nmissing_default:\n  type: string\nmembership:\n  type: string\n  default: x\n  resolve_group_membership: true\nobject_membership:\n  type: objects\n  default: []\n  schema:\n    name: z\n    properties:\n      who:\n        type: string\n        resolve_group_membership: true\n",
+              "error": "Setting `too_big` default value isn't valid. Value must be between -Infinity and 10.\nSetting `too_small` default value isn't valid. Value must be larger than or equal to 3.\nSetting `short_text` default value isn't valid. {one: \"Value must be at least %{count} character long.\", other: \"Value must be at least %{count} characters long.\"}\nSetting `long_text` default value isn't valid. Value must be between -Infinity and 3 characters long.\nSetting `bad_objects` default value isn't valid. The property at JSON Pointer '/0/name' must be a string. The property at JSON Pointer '/1/name' must be present.\nSetting `unknown_type` type is unsupported. Supported types are `integer`, `bool`, `list`, `enum` and `upload`\nSetting `missing_default` has no default value.\nSetting `membership` default value isn't valid. resolve_group_membership can only be used with type: list\nSetting `object_membership` default value isn't valid. resolve_group_membership can only be used with type: groups in object schemas. Invalid property: who",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 2,
+          "name": "Group lists",
+          "description": null,
+          "created_at": "2026-10-14T23:12:26.589Z",
+          "updated_at": "2026-10-14T23:12:26.589Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "who",
+              "humanized_name": "Who",
+              "type": "list",
+              "default": "0|11",
+              "value": "0|11",
+              "list_type": "group",
+              "resolve_group_membership": false
+            },
+            {
+              "setting": "plain",
+              "humanized_name": "Plain",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|1",
+              "list_type": null
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "who:\n  type: list\n  list_type: group\n  default: \"0|11\"\nplain:\n  type: list\n  default: \"0|1\"\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "who": "5|12"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 2,
+          "name": "Group lists",
+          "description": null,
+          "created_at": "2026-10-14T23:12:26.589Z",
+          "updated_at": "2026-10-14T23:12:26.589Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "who",
+              "humanized_name": "Who",
+              "type": "list",
+              "default": "0|11",
+              "value": "0|0|12",
+              "list_type": "group",
+              "resolve_group_membership": false
+            },
+            {
+              "setting": "plain",
+              "humanized_name": "Plain",
+              "type": "list",
+              "default": "0|1",
+              "value": "0|1",
+              "list_type": null
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "who:\n  type: list\n  list_type: group\n  default: \"0|11\"\nplain:\n  type: list\n  default: \"0|1\"\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 169,
+          "name": "yaml",
+          "error": "Setting `too_big` default value isn't valid. Value must be between -Infinity and 10.\nSetting `too_small` default value isn't valid. Value must be larger than or equal to 3.\nSetting `short_text` default value isn't valid. {one: \"Value must be at least %{count} character long.\", other: \"Value must be at least %{count} characters long.\"}\nSetting `long_text` default value isn't valid. Value must be between -Infinity and 3 characters long.\nSetting `bad_objects` default value isn't valid. The property at JSON Pointer '/0/name' must be a string. The property at JSON Pointer '/1/name' must be present.\nSetting `unknown_type` type is unsupported. Supported types are `integer`, `bool`, `list`, `enum` and `upload`\nSetting `missing_default` has no default value.\nSetting `membership` default value isn't valid. resolve_group_membership can only be used with type: list\nSetting `object_membership` default value isn't valid. resolve_group_membership can only be used with type: groups in object schemas. Invalid property: who",
+          "value": "too_big:\n  default: 20\n  max: 10\ntoo_small:\n  default: 1\n  min: 3\nshort_text:\n  default: ab\n  min: 3\nlong_text:\n  default: abcdef\n  max: 3\nbad_objects:\n  type: objects\n  default:\n    - name: 5\n    - other: x\n  schema:\n    name: x\n    properties:\n      name:\n        type: string\n        required: true\n      odd:\n        type: wat\nunknown_type:\n  type: color\n  default: red\nmissing_default:\n  type: string\nmembership:\n  type: string\n  default: x\n  resolve_group_membership: true\nobject_membership:\n  type: objects\n  default: []\n  schema:\n    name: z\n    properties:\n      who:\n        type: string\n        resolve_group_membership: true\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-10-14T23:12:26.273609",
+          "updated_at": "2026-10-14T23:12:26.273609",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 170,
+          "name": "yaml",
+          "error": null,
+          "value": "who:\n  type: list\n  list_type: group\n  default: \"0|11\"\nplain:\n  type: list\n  default: \"0|1\"\n",
+          "type_id": 5,
+          "theme_id": 2,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-10-14T23:12:26.594958",
+          "updated_at": "2026-10-14T23:12:26.594958",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        },
+        {
+          "id": 4,
+          "theme_id": 2,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_settings": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "who",
+          "value": "0|0|12",
+          "theme_id": 2,
+          "data_type": 4,
+          "created_at": "2026-10-14T23:12:26.89489",
+          "json_value": null,
+          "updated_at": "2026-10-14T23:12:26.89489"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Bad settings",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T23:12:26.267997",
+          "updated_at": "2026-10-14T23:12:26.267997",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        },
+        {
+          "id": 2,
+          "name": "Group lists",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T23:12:26.589224",
+          "updated_at": "2026-10-14T23:12:26.589224",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 134,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "S2ywXS2VL22VJ1+OMPN8C9V5Ask=",
+            "created_at": "2026-10-14T23:12:23.020358",
+            "rotated_at": "2026-10-14T23:12:23.014641",
+            "updated_at": "2026-10-14T23:12:23.020358",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "S2ywXS2VL22VJ1+OMPN8C9V5Ask=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 134,
+            "seen_at": "2026-10-14T23:12:26.217085",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "S2ywXS2VL22VJ1+OMPN8C9V5Ask=",
+            "created_at": "2026-10-14T23:12:23.020358",
+            "rotated_at": "2026-10-14T23:12:23.014641",
+            "updated_at": "2026-10-14T23:12:23.020358",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "S2ywXS2VL22VJ1+OMPN8C9V5Ask=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Bad settings",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Bad settings\",\"description\":null,\"created_at\":\"2026-10-14T23:12:26.267Z\",\"updated_at\":\"2026-10-14T23:12:26.267Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"errors\":[\"Setting `too_big` default value isn't valid. Value must be between -Infinity and 10.\\nSetting `too_small` default value isn't valid. Value must be larger than or equal to 3.\\nSetting `short_text` default value isn't valid. {one: \\\"Value must be at least %{count} character long.\\\", other: \\\"Value must be at least %{count} characters long.\\\"}\\nSetting `long_text` default value isn't valid. Value must be between -Infinity and 3 characters long.\\nSetting `bad_objects` default value isn't valid. The property at JSON Pointer '/0/name' must be a string. The property at JSON Pointer '/1/name' must be present.\\nSetting `unknown_type` type is unsupported. Supported types are `integer`, `bool`, `list`, `enum` and `upload`\\nSetting `missing_default` has no default value.\\nSetting `membership` default value isn't valid. resolve_group_membership can only be used with type: list\\nSetting `object_membership` default value isn't valid. resolve_group_membership can only be used with type: groups in object schemas. Invalid property: who\"],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"too_big:\\n  default: 20\\n  max: 10\\ntoo_small:\\n  default: 1\\n  min: 3\\nshort_text:\\n  default: ab\\n  min: 3\\nlong_text:\\n  default: abcdef\\n  max: 3\\nbad_objects:\\n  type: objects\\n  default:\\n    - name: 5\\n    - other: x\\n  schema:\\n    name: x\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      odd:\\n        type: wat\\nunknown_type:\\n  type: color\\n  default: red\\nmissing_default:\\n  type: string\\nmembership:\\n  type: string\\n  default: x\\n  resolve_group_membership: true\\nobject_membership:\\n  type: objects\\n  default: []\\n  schema:\\n    name: z\\n    properties:\\n      who:\\n        type: string\\n        resolve_group_membership: true\\n\",\"error\":\"Setting `too_big` default value isn't valid. Value must be between -Infinity and 10.\\nSetting `too_small` default value isn't valid. Value must be larger than or equal to 3.\\nSetting `short_text` default value isn't valid. {one: \\\"Value must be at least %{count} character long.\\\", other: \\\"Value must be at least %{count} characters long.\\\"}\\nSetting `long_text` default value isn't valid. Value must be between -Infinity and 3 characters long.\\nSetting `bad_objects` default value isn't valid. The property at JSON Pointer '/0/name' must be a string. The property at JSON Pointer '/1/name' must be present.\\nSetting `unknown_type` type is unsupported. Supported types are `integer`, `bool`, `list`, `enum` and `upload`\\nSetting `missing_default` has no default value.\\nSetting `membership` default value isn't valid. resolve_group_membership can only be used with type: list\\nSetting `object_membership` default value isn't valid. resolve_group_membership can only be used with type: groups in object schemas. Invalid property: who\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:26.446196",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:26.446196",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Group lists",
+          "topic_id": null,
+          "new_value": "{\"id\":2,\"name\":\"Group lists\",\"description\":null,\"created_at\":\"2026-10-14T23:12:26.589Z\",\"updated_at\":\"2026-10-14T23:12:26.589Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"who\",\"humanized_name\":\"Who\",\"type\":\"list\",\"default\":\"0|11\",\"value\":\"0|11\",\"list_type\":\"group\",\"resolve_group_membership\":false},{\"setting\":\"plain\",\"humanized_name\":\"Plain\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|1\",\"list_type\":null}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"who:\\n  type: list\\n  list_type: group\\n  default: \\\"0|11\\\"\\nplain:\\n  type: list\\n  default: \\\"0|1\\\"\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:26.759753",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:26.759753",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Group lists: who",
+          "topic_id": null,
+          "new_value": "0|0|12",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:12:26.958885",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:12:26.958885",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "5|11",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "theme_settings": 1,
+    "themes": 1,
+    "user_histories": 74
+  },
+  "settings": {
+    "granular_anonymous_and_logged_in_groups_permissions": true
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "e4966be84af58778af4b868a93528cb471ac80de5d2ed203fab941cf1d59fe3c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

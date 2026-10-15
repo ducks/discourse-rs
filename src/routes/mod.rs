@@ -1259,6 +1259,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/themes/generate_key_pair.json",
             post(themes::generate_key_pair),
         )
+        .route(
+            "/admin/themes/{id}/objects_setting_metadata/{setting_name}",
+            get(themes::objects_setting_metadata),
+        )
         .route("/admin/themes/{id}/source", put(themes::update_source))
         .route("/admin/themes/{id}/source.json", put(themes::update_source))
         .route("/admin/customize/themes/{id}/export", get(themes::export))

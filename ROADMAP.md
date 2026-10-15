@@ -567,10 +567,24 @@ then by what running a forum needs (milestone 6). Briefs:
     Refused (171): cloning a git repository, so remote imports, update
     checks, updates and source changes of git themes, and the child
     components about.json names; pax tar headers; sprites libxml2 would
-    reject (its own error text)), 90f2. `feat/theme-settings-types` M
-    (theme settings of the objects type with SchemaSettingsObjectValidator
-    and objects_setting_metadata, and of the list, upload and icon types;
-    site settings of the objects type with uploads), 90f3.
+    reject (its own error text)), 90f2. ~~`feat/theme-settings-types`~~
+    (done) M (theme settings of every ThemeSetting type: lists (group
+    lists' disallowed groups, the everyone alias under
+    granular_anonymous_and_logged_in_groups_permissions), uploads (the
+    default's upload field, urls to ids, the setting's upload reference),
+    icons, objects through SchemaSettingsObjectValidator (each property
+    type's checks and humanized messages, the ids looked up, uploads
+    normalized and hydrated, disallowed groups removed, json_value and
+    its upload references); ThemeSettingsValidator on values and on
+    validate_yaml!'s defaults (create_opts' infinite bounds and the
+    pluralized messages Rails joins as hashes, resolve_group_membership);
+    ThemeSettingsSerializer's list_type, disallowed_groups,
+    resolve_group_membership, json_schema and objects_schema;
+    objects_setting_metadata; theme settings' upload references
+    destroyed with the theme; site settings of the objects type read
+    through hydrate_objects_setting_value. Refused (171, 187): settings
+    YAML that doesn't parse (Psych's message), values of a shape Rails
+    raises on), 90f3.
     `feat/design-wizard` M (Admin::Config::DesignWizardController's index
     and update, DesignWizard::Apply; the setup wizard's steps), 90g.
     `feat/admin-shell` L (the
@@ -751,8 +765,8 @@ with the viewport, guessing from the user agent without it
 
 Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
 47 M, 19 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 10 M,
-9 L). Not counted here: the open items above (90f2, 90f3, 90g, 92b),
-100 (in Phase 10, after 192) and 101-119.
+9 L). Not counted here: the open items above (90f3, 90g, 92b), 100
+(in Phase 10, after 192) and 101-119.
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
@@ -777,12 +791,9 @@ names the refusals it lifts; a reason that appears in many places is
 cited by its main sites.
 
 Already owned elsewhere, so not repeated here: the admin's Ember pages
-(26 "(Ember)" and "admin ... page" refusals) are 90g; theme settings
-of the objects, list, upload and icon types and objects site settings
-with uploads (themes.rs:655; theme_writes.rs:1251,1493;
-admin_site_settings.rs:218) are 90f2, the wizards (site.rs:566;
-routes/accounts.rs:1062) 90f3; MessageBus's own ids and positions are
-100.
+(26 "(Ember)" and "admin ... page" refusals) are 90g; the wizards
+(site.rs:566; routes/accounts.rs:1062) are 90f3; MessageBus's own ids
+and positions are 100.
 
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146), notify_post_revision (137),
@@ -1173,7 +1184,7 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     and reseeding (routes/site_texts.rs:64,915), the unsubscribe pages
     (routes/email.rs:45), email templates
     (routes/admin_email_templates.rs:221), theme translations
-    (theme_writes.rs:353; routes/themes.rs:1045,1401), MessageFormat
+    (theme_writes.rs:353; routes/themes.rs:1043,1410), MessageFormat
     keys (routes/site_texts.rs:603), the default_locale entry
     (admin_site_settings.rs:145), slugs by transliteration
     (posting/text.rs:332), moment locales (49). Needs: the reference's
@@ -1200,16 +1211,17 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     process (Rails runs rollup, Babel and the Ember template compiler
     under mini_racer) and the theme-javascripts routes
 171. `feat/theme-writes-rest` M: settings that request a refresh
-    (routes/themes.rs:1125,1342, Discourse.request_refresh!, with 100),
-    destroying a theme's own color schemes (theme_writes.rs:1519), a
-    field over 1 MiB (:358), html that does not parse (:870), svg sprites
+    (routes/themes.rs:1123,1351, Discourse.request_refresh!, with 100),
+    destroying a theme's own color schemes (theme_writes.rs:1860), a
+    field over 1 MiB (:358), html that does not parse (:870), settings
+    YAML that does not parse (:1239, Psych's message), svg sprites
     libxml2 rejects or whose file is gone (:711,720, their error texts),
     pax tar headers in imported bundles (theme_import.rs:426); git themes
     (90f1): cloning a repository for a remote import
-    (theme_import.rs:1831,1837), update checks and updates
-    (routes/themes.rs:1088; Jobs::CheckOutOfDateThemes,
-    theme_import.rs:1861), source changes (routes/themes.rs:1917), the
-    child components about.json names (theme_import.rs:1620,1667).
+    (theme_import.rs:1826,1832), update checks and updates
+    (routes/themes.rs:1086; Jobs::CheckOutOfDateThemes,
+    theme_import.rs:1856), source changes (routes/themes.rs:2009), the
+    child components about.json names (theme_import.rs:1615,1662).
     Needs: network (git over http(s) behind FinalDestination's SSRF
     guard, and over ssh with the deploy key)
 172. `feat/admin-email-templates-rest` S: updating, showing and reverting
@@ -1307,6 +1319,9 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     numbers (routes/admin_embedding.rs, routes/admin_emoji.rs,
     routes/directory_columns.rs, routes/sidebar_sections.rs,
     routes/themes.rs, routes/color_schemes.rs, routes/admin_api_keys.rs,
+    theme settings and about.json values of a shape Rails raises on
+    (theme_writes.rs:1201,1216,1497; schema_objects.rs:391;
+    themes.rs:656,671; theme_import.rs),
     user_fields.rs, user_merger.rs, jobs/handlers.rs,
     request_tracking.rs, admin_traffic_explorer.rs, email/incoming.rs,
     onebox/generic.rs, onebox/api_engines.rs, onebox/github.rs,
@@ -1992,8 +2007,8 @@ API keys for posting, and grant_moderation! for the first admin's login.
 - [ ] Customize: themes and components, color schemes, site texts
       (translation overrides), sidebar defaults; the `/admin/config` pages.
       Site texts (90a), color schemes (90b), sidebar defaults (90c) and
-      the themes' reads and writes (90d, 90e), imports and exports (90f1)
-      done; left: 90f2, 90f3, 90g and 169-171
+      the themes' reads and writes (90d, 90e), imports, exports and
+      setting types (90f1, 90f2) done; left: 90f3, 90g and 169-171
 
 ## Not planned
 

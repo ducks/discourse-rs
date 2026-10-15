@@ -184,6 +184,7 @@ async fn entry(
         }
     }
     let mut upload = None;
+    let mut objects_value: Option<Json> = None;
     match def.data_type {
         DataType::Upload => {
             // Seeded uploads (negative ids) default to their url.
@@ -214,8 +215,33 @@ async fn entry(
                 }
             }
         }
-        DataType::Objects if objects_hold_uploads(def) => {
-            return Err(Unsupported("objects settings with uploads").into());
+        // hydrate_objects_setting_value: a value under a schema reads as
+        // its objects, upload ids as their urls, serialized with to_json
+        // (the stored text as a JSON string otherwise).
+        DataType::Objects => {
+            let text = if opt(def, "schema").is_some() && !crate::ruby::is_blank(&value) {
+                let objects: Json = serde_json::from_str(&value).map_err(|_| {
+                    std::io::Error::other("JSON::ParserError: an objects setting's value")
+                })?;
+                let schema = serde_json::to_value(opt(def, "schema")).unwrap_or(Json::Null);
+                let hydrated = match objects {
+                    Json::Array(items) if !items.is_empty() => {
+                        let store =
+                            crate::file_store::FileStore::for_site(cx.urls.config, cx.settings)?;
+                        Json::Array(
+                            crate::schema_objects::hydrate_uploads(
+                                conn, &store, &schema, &items, false,
+                            )
+                            .await?,
+                        )
+                    }
+                    other => other,
+                };
+                crate::web_hooks::to_json(&hydrated)
+            } else {
+                crate::web_hooks::to_json(&json!(value))
+            };
+            objects_value = Some(json!(text));
         }
         _ => {}
     }
@@ -228,7 +254,10 @@ async fn entry(
     e.insert("category".into(), json!(def.category));
     e.insert("primary_area".into(), json!(primary_area(def)));
     e.insert("default".into(), json!(default));
-    e.insert("value".into(), json!(value));
+    e.insert(
+        "value".into(),
+        objects_value.unwrap_or_else(|| json!(value)),
+    );
     e.insert("preview".into(), json!(opt_str(def, "preview")));
     e.insert(
         "secret".into(),
@@ -311,11 +340,6 @@ async fn upload_url(conn: &mut PgConnection, id: i32) -> Result<Option<String>, 
         .bind(id)
         .fetch_optional(&mut *conn)
         .await?)
-}
-
-fn objects_hold_uploads(def: &Definition) -> bool {
-    opt(def, "schema")
-        .is_some_and(|s| serde_yaml_ng::to_string(s).is_ok_and(|s| s.contains("type: upload")))
 }
 
 /// `ActiveSupport::NumberHelper.number_to_human_size`

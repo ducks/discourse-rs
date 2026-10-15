@@ -1023,9 +1023,7 @@ pub async fn update(
     let mut refresh = false;
     if let Some(Value::Object(settings)) = theme_param.get("settings") {
         for (name, value) in settings {
-            match theme_writes::update_setting(&mut tx, before.id, name, Some(value), &state.i18n)
-                .await?
-            {
+            match update_one_setting(&mut tx, &state, before.id, name, Some(value)).await? {
                 Ok(r) => refresh |= r,
                 Err(theme_writes::SettingError::NotFound) => {
                     tx.commit().await?;
@@ -1284,18 +1282,31 @@ pub async fn bulk_destroy(
 /// `theme.cached_settings[name]`, None for no such setting.
 async fn cached_setting(
     conn: &mut sqlx::PgConnection,
+    state: &AppState,
     theme_id: i32,
     name: &str,
 ) -> Result<Option<Value>, AppError> {
-    let settings = themes::settings_of(conn, theme_id).await?;
-    let stored = themes::stored_settings(conn, theme_id).await?;
-    Ok(settings.into_iter().find(|s| s.name == name).map(|s| {
-        let value = stored
-            .iter()
-            .find(|(n, t, _)| *n == s.name && *t == s.type_id)
-            .and_then(|(_, _, v)| v.as_deref());
-        theme_writes::setting_value(&s, value)
-    }))
+    let settings =
+        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &settings)?;
+    let vcx = themes::ValueCx::new(&store, &settings)?;
+    theme_writes::cached_setting(conn, &vcx, theme_id, name).await
+}
+
+/// `theme.update_setting(name, value)` with the store and settings its
+/// managers read.
+async fn update_one_setting(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    theme_id: i32,
+    name: &str,
+    value: Option<&Value>,
+) -> Result<Result<bool, theme_writes::SettingError>, AppError> {
+    let settings =
+        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &settings)?;
+    let vcx = themes::ValueCx::new(&store, &settings)?;
+    theme_writes::update_setting(conn, &vcx, theme_id, name, value, &state.i18n).await
 }
 
 /// PUT /admin/themes/:id/setting(.json): update_single_setting.
@@ -1333,10 +1344,8 @@ pub async fn update_setting(
         return Ok(super::search::invalid_parameters(&state, "id"));
     };
     let new_value = p.get("value").cloned().filter(|v| !v.is_null());
-    let previous = cached_setting(&mut tx, theme.id, &name).await?;
-    match theme_writes::update_setting(&mut tx, theme.id, &name, new_value.as_ref(), &state.i18n)
-        .await?
-    {
+    let previous = cached_setting(&mut tx, &state, theme.id, &name).await?;
+    match update_one_setting(&mut tx, &state, theme.id, &name, new_value.as_ref()).await? {
         Ok(false) => {}
         Ok(true) => {
             return Err(Unsupported(
@@ -1366,7 +1375,7 @@ pub async fn update_setting(
         new_log,
     )
     .await?;
-    let value = cached_setting(&mut tx, theme.id, &name).await?;
+    let value = cached_setting(&mut tx, &state, theme.id, &name).await?;
     tx.commit().await?;
     let mut out = Map::new();
     out.insert(name, value.unwrap_or(Value::Null));
@@ -1436,6 +1445,89 @@ pub async fn preview(
         [(axum::http::header::LOCATION, location)],
     )
         .into_response())
+}
+
+/// GET /admin/themes/:id/objects_setting_metadata/:setting_name(.json):
+/// ThemeObjectsSettingMetadataSerializer, the categories an objects
+/// setting's value names and its properties' descriptions.
+pub async fn objects_setting_metadata(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((raw, setting_name)): Path<(String, String)>,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_admin(&state, &guardian) {
+        return Ok(r);
+    }
+    let setting_name = setting_name
+        .strip_suffix(".json")
+        .unwrap_or(&setting_name)
+        .to_string();
+    let mut conn = state.pool.acquire().await?;
+    let conn = &mut *conn;
+    let Some(theme) = Theme::find(conn, id_of(&raw)).await? else {
+        return Ok(super::search::invalid_parameters(&state, "id"));
+    };
+    let settings = themes::settings_of(conn, theme.id).await?;
+    let Some(setting) = settings.into_iter().find(|s| s.name == setting_name) else {
+        return Ok(super::search::invalid_parameters(&state, "setting_name"));
+    };
+    if setting.type_name != "objects" {
+        return Err(
+            std::io::Error::other("NoMethodError: categories of a non-objects setting").into(),
+        );
+    }
+    let site_settings =
+        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &site_settings)?;
+    let vcx = themes::ValueCx::new(&store, &site_settings)?;
+    let stored = themes::stored_settings(conn, theme.id).await?;
+    let value = themes::setting_value(
+        conn,
+        &vcx,
+        theme.id,
+        &setting,
+        setting.row(&stored),
+        themes::Reading::Value,
+    )
+    .await?;
+    let objects = value.as_array().cloned().unwrap_or_default();
+    let mut ids: Vec<i32> =
+        crate::schema_objects::property_values_of_type(&setting.schema(), &objects, "categories")
+            .iter()
+            .filter_map(Value::as_i64)
+            .filter_map(|id| i32::try_from(id).ok())
+            .collect();
+    ids.sort_unstable();
+    let mut categories = Map::new();
+    if !ids.is_empty() {
+        let cx = crate::web_hooks::admin::Cx {
+            settings: &site_settings,
+            i18n: &state.i18n,
+            guardian: &guardian,
+            base_path: state.config.globals.relative_url_root(),
+        };
+        let list = crate::web_hooks::admin::categories(conn, &cx, &ids).await?;
+        for category in list.as_array().into_iter().flatten() {
+            if let Some(id) = category.get("id").and_then(Value::as_i64) {
+                categories.insert(id.to_string(), category.clone());
+            }
+        }
+    }
+    let prefix = format!(
+        "theme_metadata.settings.{}.schema.properties.",
+        setting.name
+    );
+    let mut descriptions = Map::new();
+    for t in crate::site_texts::theme_translations_of(conn, theme.id, true).await? {
+        if let Some(rest) = t.key.strip_prefix(&prefix) {
+            descriptions.insert(rest.replace(".schema.properties.", "."), json!(t.value()));
+        }
+    }
+    Ok(Json(json!({
+        "categories": categories,
+        "property_descriptions": descriptions,
+    }))
+    .into_response())
 }
 
 /// `Theme.allowed_remote_theme_ids` is set: `allowed_theme_repos`
