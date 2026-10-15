@@ -82,7 +82,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let state = AppState {
         pool,
         anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
-        config,
+        config: Arc::new(config),
         site_setting_defs: Arc::new(site_setting_defs),
         i18n: Arc::new(i18n),
         search_log_cache: Default::default(),

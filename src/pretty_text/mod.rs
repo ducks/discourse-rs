@@ -131,7 +131,7 @@ impl From<crate::file_store::StoreError> for CookError {
 #[derive(Clone)]
 pub struct Host {
     pub pool: PgPool,
-    pub config: Config,
+    pub config: std::sync::Arc<Config>,
     pub site_setting_defs: Arc<Definitions>,
     pub i18n: Arc<I18n>,
 }

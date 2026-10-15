@@ -222,7 +222,7 @@ pub async fn state_with_bus_on(bus_pool: PgPool, pool: PgPool, config: Config) -
         bus,
         pool,
         anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
-        config,
+        config: Arc::new(config),
         site_setting_defs: Arc::new(Definitions::vendored().expect("vendored site_settings.yml")),
         i18n: Arc::new(I18n::vendored().expect("vendored server.en.yml")),
         search_log_cache: Default::default(),

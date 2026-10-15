@@ -84,7 +84,7 @@ async fn client_settings_match_rails() {
 fn host(db: &TestDb) -> Host {
     Host {
         pool: db.pool.clone(),
-        config: recorded_config(),
+        config: std::sync::Arc::new(recorded_config()),
         site_setting_defs: std::sync::Arc::new(
             discourse_rs::site_settings::Definitions::vendored()
                 .expect("vendored site_settings.yml"),
@@ -417,7 +417,7 @@ async fn backup_corpus_matches_rails() {
     // Only what cooking reads: no bus, whose start would create its schema.
     let host = Host {
         pool,
-        config,
+        config: std::sync::Arc::new(config),
         site_setting_defs: std::sync::Arc::new(
             discourse_rs::site_settings::Definitions::vendored()
                 .expect("vendored site_settings.yml"),

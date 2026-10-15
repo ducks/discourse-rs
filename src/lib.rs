@@ -218,7 +218,7 @@ use crate::site_settings::Definitions;
 #[derive(Clone)]
 pub struct AppState {
     pub pool: PgPool,
-    pub config: Config,
+    pub config: Arc<Config>,
     pub site_setting_defs: Arc<Definitions>,
     pub i18n: Arc<I18n>,
     /// `SearchLog.log`'s per-IP dedupe window.

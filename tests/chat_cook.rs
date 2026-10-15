@@ -11,7 +11,7 @@ use serde_json::Value;
 fn host(db: &TestDb) -> Host {
     Host {
         pool: db.pool.clone(),
-        config: recorded_config(),
+        config: std::sync::Arc::new(recorded_config()),
         site_setting_defs: std::sync::Arc::new(
             discourse_rs::site_settings::Definitions::vendored()
                 .expect("vendored site_settings.yml"),
