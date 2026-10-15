@@ -730,9 +730,9 @@ async fn categories_side(
             continue;
         };
         let fields = cats.basic_fields(row).await?;
-        let children: i64 = sqlx::query_scalar(&format!(
-            "SELECT count(*) FROM categories WHERE parent_category_id = $1 AND id = ANY($2)"
-        ))
+        let children: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM categories WHERE parent_category_id = $1 AND id = ANY($2)",
+        )
         .bind(id)
         .bind(&allowed)
         .fetch_one(&mut *cats.conn)
