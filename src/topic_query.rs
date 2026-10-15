@@ -195,6 +195,9 @@ pub enum Filter {
     /// discourse-topic-voting's `list_voted_by(user)`: the topics the user
     /// holds an active vote on (`create_list(:user_topics)`).
     VotedBy(i32),
+    /// `list_topics_by(user)`: the topics the user created
+    /// (`create_list(:user_topics)`, `filtered_to_user`).
+    TopicsBy(i32),
 }
 
 impl Filter {
@@ -211,7 +214,7 @@ impl Filter {
             Filter::Posted => "posted",
             Filter::Bookmarks => "bookmarks",
             Filter::Votes => "votes",
-            Filter::VotedBy(_) => "user_topics",
+            Filter::VotedBy(_) | Filter::TopicsBy(_) => "user_topics",
         }
     }
 
@@ -220,7 +223,12 @@ impl Filter {
     pub fn requires_login(&self) -> bool {
         !matches!(
             self,
-            Filter::Latest | Filter::Top(_) | Filter::Hot | Filter::Votes | Filter::VotedBy(_)
+            Filter::Latest
+                | Filter::Top(_)
+                | Filter::Hot
+                | Filter::Votes
+                | Filter::VotedBy(_)
+                | Filter::TopicsBy(_)
         )
     }
 
@@ -331,7 +339,8 @@ impl TopicQuery<'_> {
             | Filter::Hot
             | Filter::Posted
             | Filter::Bookmarks
-            | Filter::VotedBy(_) => self.prioritize_pinned_topics().await?,
+            | Filter::VotedBy(_)
+            | Filter::TopicsBy(_) => self.prioritize_pinned_topics().await?,
         };
         Ok(TopicList {
             filter: self.filter.name(),
@@ -592,7 +601,10 @@ impl TopicQuery<'_> {
         }
         clauses.extend(self.category.clauses.iter().cloned());
         clauses.extend(self.tags.clause.iter().cloned());
-        if !self.guardian.can_see_unlisted_topics() {
+        // default_results: unlisted topics for those who may see them, and
+        // in a list of one's own topics.
+        let viewing_own = matches!(self.filter, Filter::TopicsBy(id) if self.user_id() == Some(id));
+        if !self.guardian.can_see_unlisted_topics() && !viewing_own {
             clauses.push("topics.visible = TRUE".to_string());
         }
         match &self.filter {
@@ -612,6 +624,7 @@ impl TopicQuery<'_> {
             Filter::VotedBy(user_id) => clauses.push(format!(
                 "topics.id IN (SELECT topic_id FROM topic_voting_votes WHERE user_id = {user_id} AND NOT archive)"
             )),
+            Filter::TopicsBy(user_id) => clauses.push(format!("topics.user_id = {user_id}")),
             _ => {}
         }
         // discourse-topic-voting's results filter callback: state=my_votes

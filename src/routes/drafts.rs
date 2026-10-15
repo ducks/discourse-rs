@@ -1,5 +1,6 @@
-//! Port of DraftsController#create, #show and #destroy: POST /drafts,
-//! GET /drafts/:id and DELETE /drafts/:id (each also with .json).
+//! Port of DraftsController#create, #show, #destroy and #bulk_destroy:
+//! POST /drafts, GET /drafts/:id, DELETE /drafts/:id and DELETE
+//! /drafts/bulk_destroy (each also with .json).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -352,4 +353,81 @@ pub async fn destroy(
     drafts::clear(&mut tx, user_id, key, sequence).await?;
     tx.commit().await?;
     Ok((StatusCode::OK, Json(json!({ "success": "OK" }))).into_response())
+}
+
+/// `DraftsController::BULK_DESTROY_LIMIT`
+const BULK_DESTROY_LIMIT: usize = 30;
+
+/// DELETE /drafts/bulk_destroy: the user's drafts at the given keys, when
+/// every given sequence is the current one.
+pub async fn bulk_destroy(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    let user_id = match front(&state, &guardian, &headers, &uri, &p, "DELETE") {
+        Ok(id) => id,
+        Err(response) => return Ok(*response),
+    };
+    // params.require(:draft_keys)
+    let keys: Vec<String> = match p.get("draft_keys") {
+        Some(Value::Array(keys)) if !keys.is_empty() => {
+            keys.iter().filter_map(params::scalar).collect()
+        }
+        Some(Value::String(s)) if !s.trim().is_empty() => {
+            return Err(Unsupported("draft_keys given as a string").into());
+        }
+        _ => return Ok(super::accounts::param_missing("draft_keys")),
+    };
+    if keys.len() > BULK_DESTROY_LIMIT {
+        let message = state
+            .i18n
+            .t_with(
+                "draft.bulk_destroy_limit",
+                &[("limit", &BULK_DESTROY_LIMIT.to_string())],
+            )
+            .unwrap_or_default();
+        return Ok(super::search::invalid_parameters(&state, &message));
+    }
+    if p.contains_key("username") || p.contains_key("external_id") {
+        return Err(Unsupported("clearing another user's drafts").into());
+    }
+    let empty = Map::new();
+    let sequences = match p.get("sequences") {
+        Some(Value::Object(map)) => map,
+        None => &empty,
+        Some(_) => return Err(Unsupported("sequences given as other than a hash").into()),
+    };
+    let mut tx = state.pool.begin().await?;
+    match drafts::bulk_destroy(&mut tx, user_id, &keys, sequences).await? {
+        Ok(count) => {
+            tx.commit().await?;
+            Ok(Json(json!({ "success": "OK", "deleted_count": count })).into_response())
+        }
+        Err(conflicts) => Ok((
+            StatusCode::CONFLICT,
+            Json(json!({
+                "failed": "FAILED",
+                "errors": format!("Draft sequence conflict for keys: {}", conflicts.join(", ")),
+            })),
+        )
+            .into_response()),
+    }
+}
+
+/// GET /drafts/bulk_destroy: drafts#show with that id.
+pub async fn show_bulk_destroy(
+    state: State<AppState>,
+    guardian: AuthGuardian,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let id = if uri.path().ends_with(".json") {
+        "bulk_destroy.json"
+    } else {
+        "bulk_destroy"
+    };
+    show(state, guardian, Path(id.to_string()), uri).await
 }

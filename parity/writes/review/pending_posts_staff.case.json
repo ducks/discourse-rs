@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9321, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 4, NULL, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A new topic from user1 waiting for approval.\", \"title\": \"A queued topic title\", \"tags\": null}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9322, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A reply from user1 waiting for approval.\"}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-03 10:00:00', '2026-10-03 10:00:00'), (9323, 'ReviewableQueuedPost', 'core', 1, 3, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"An approved reply.\"}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-03 10:00:00', '2026-10-03 10:00:00')"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/posts/user1/pending.json" },
+    { "method": "GET", "path": "/posts/nobody/pending.json" },
+    { "method": "DELETE", "path": "/review/9322" }
+  ]
+}

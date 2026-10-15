@@ -1,0 +1,124 @@
+{
+  "name": "drafts_bulk_destroy_missing",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/drafts/bulk_destroy.json",
+      "params": {
+        "sequences": {
+          "topic_35": 0
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/drafts/bulk_destroy.json",
+      "params": {
+        "draft_keys": [
+          "k1",
+          "k2",
+          "k3",
+          "k4",
+          "k5",
+          "k6",
+          "k7",
+          "k8",
+          "k9",
+          "k10",
+          "k11",
+          "k12",
+          "k13",
+          "k14",
+          "k15",
+          "k16",
+          "k17",
+          "k18",
+          "k19",
+          "k20",
+          "k21",
+          "k22",
+          "k23",
+          "k24",
+          "k25",
+          "k26",
+          "k27",
+          "k28",
+          "k29",
+          "k30",
+          "k31"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-15T11:23:53.693475",
+  "transaction_started_at": "2026-10-15T11:23:52.567051",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: draft_keys"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: You can only delete up to 30 drafts at once."
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 173,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KLVdJ4NSZRl8hApE8N33EszXsbQ=",
+            "created_at": "2026-10-15T11:23:52.960333",
+            "rotated_at": "2026-10-15T11:23:52.959213",
+            "updated_at": "2026-10-15T11:23:52.960333",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KLVdJ4NSZRl8hApE8N33EszXsbQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 173,
+            "seen_at": "2026-10-15T11:23:53.701542",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KLVdJ4NSZRl8hApE8N33EszXsbQ=",
+            "created_at": "2026-10-15T11:23:52.960333",
+            "rotated_at": "2026-10-15T11:23:52.959213",
+            "updated_at": "2026-10-15T11:23:52.960333",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KLVdJ4NSZRl8hApE8N33EszXsbQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "348afe215535db9822a8e5801d4f710f91037fe2092e36363b16eed96a72df1e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

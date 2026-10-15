@@ -1,0 +1,44 @@
+{
+  "name": "pending_posts_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/pending.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/review/9321"
+    }
+  ],
+  "started_at": "2026-10-15T11:23:55.01719",
+  "transaction_started_at": "2026-10-15T11:23:54.061767",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "f375d90ac895adf7f4db2083229764dd8bc3534e9c7f62ed52a885fe0652595f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

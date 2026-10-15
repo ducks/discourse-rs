@@ -116,6 +116,8 @@ enum Routed {
     /// A path users#show answers that the Ember app has no route for: its
     /// not-found page.
     EmberUnknown,
+    /// The HTML of the `userActivity.*` routes the stream doesn't draw.
+    ActivityPage(String, super::user_activity::Page),
     /// `/activity.json`, PostsController#user_posts_feed: the username.
     PostsFeed(String),
     /// No route matches (`/u/:username/card` has only a .json route).
@@ -150,6 +152,9 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
             Some(route) => Routed::Notifications(username, route),
             None => Routed::EmberUnknown,
         });
+    }
+    if !json && let Some(page) = super::user_activity::Page::from_path(rest) {
+        return Ok(Routed::ActivityPage(username, page));
     }
     if !json && let Some((route, group)) = messages_route(rest)? {
         return Ok(Routed::Profile(
@@ -270,6 +275,13 @@ pub async fn show_with_tail(
                 &incoming.guardian,
                 &username,
                 context,
+            )
+            .await;
+        }
+        Routed::ActivityPage(username, page) => {
+            let params = super::user_activity::list_params(&uri);
+            return super::user_activity::page(
+                state, incoming, username, page, params, headers, peer, uri,
             )
             .await;
         }

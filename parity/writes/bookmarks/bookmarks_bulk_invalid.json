@@ -1,0 +1,153 @@
+{
+  "name": "bookmarks_bulk_invalid",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "operation": {
+          "type": "delete"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": "4",
+        "operation": {
+          "type": "delete"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          4
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          4
+        ],
+        "operation": {
+          "type": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          4
+        ],
+        "operation": {
+          "type": "pin"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T11:23:45.932892",
+  "transaction_started_at": "2026-10-15T11:23:44.623002",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: bookmark_ids"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Expecting bookmark_ids to contain a list of bookmark ids"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: operation"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: operation_type"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: operation"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 173,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pR6/bHE7uF4CuV8jdae5uvGA2a0=",
+            "created_at": "2026-10-15T11:23:45.16821",
+            "rotated_at": "2026-10-15T11:23:45.167086",
+            "updated_at": "2026-10-15T11:23:45.16821",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pR6/bHE7uF4CuV8jdae5uvGA2a0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 173,
+            "seen_at": "2026-10-15T11:23:45.941903",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pR6/bHE7uF4CuV8jdae5uvGA2a0=",
+            "created_at": "2026-10-15T11:23:45.16821",
+            "rotated_at": "2026-10-15T11:23:45.167086",
+            "updated_at": "2026-10-15T11:23:45.16821",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pR6/bHE7uF4CuV8jdae5uvGA2a0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "1761af6cb4f196e9caf5fe7e21bea994af16d84fd4ae68002b1c8837d9eca0f2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

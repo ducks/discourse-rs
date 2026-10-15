@@ -1,0 +1,147 @@
+{
+  "name": "bookmarks_bulk_clear_reminder",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [
+          3,
+          1
+        ],
+        "operation": {
+          "type": "clear_reminder"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T11:23:42.702555",
+  "transaction_started_at": "2026-10-15T11:23:40.501284",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "bookmark_ids": [
+          1,
+          3
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "bookmarks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": null,
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T13:42:34.774059",
+            "updated_at": "2026-10-01T13:42:34.774059",
+            "reminder_at": null,
+            "bookmarkable_id": 40,
+            "reminder_set_at": "2026-10-01T13:42:34.762409",
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": null,
+            "auto_delete_preference": 3
+          },
+          "after": {
+            "id": 1,
+            "name": null,
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T13:42:34.774059",
+            "updated_at": "2026-10-15T11:23:42.750956",
+            "reminder_at": null,
+            "bookmarkable_id": 40,
+            "reminder_set_at": null,
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": "2026-10-15T11:23:42.744493",
+            "auto_delete_preference": 3
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "name": "Parity fixture: with a reminder",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-01T22:32:02.391051",
+            "reminder_at": "2031-01-15T09:30:00",
+            "bookmarkable_id": 36,
+            "reminder_set_at": "2026-10-01T22:32:02.387067",
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": null,
+            "auto_delete_preference": 3
+          },
+          "after": {
+            "id": 3,
+            "name": "Parity fixture: with a reminder",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-15T11:23:42.756354",
+            "reminder_at": null,
+            "bookmarkable_id": 36,
+            "reminder_set_at": null,
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": "2026-10-15T11:23:42.753705",
+            "auto_delete_preference": 3
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 173,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tW6ppr7WpsJiLykD1eYVti7XETk=",
+            "created_at": "2026-10-15T11:23:40.959623",
+            "rotated_at": "2026-10-15T11:23:40.955409",
+            "updated_at": "2026-10-15T11:23:40.959623",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tW6ppr7WpsJiLykD1eYVti7XETk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 173,
+            "seen_at": "2026-10-15T11:23:42.726566",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tW6ppr7WpsJiLykD1eYVti7XETk=",
+            "created_at": "2026-10-15T11:23:40.959623",
+            "rotated_at": "2026-10-15T11:23:40.955409",
+            "updated_at": "2026-10-15T11:23:40.959623",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tW6ppr7WpsJiLykD1eYVti7XETk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "1ccb1be97aa4ddde37872a0b3d57decaf9ec8a538f5a9ca35598b43f42a1ef7f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

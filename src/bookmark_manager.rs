@@ -22,8 +22,13 @@ pub enum Outcome {
     Created(i64),
     /// Updated or pinned.
     Done,
-    /// Destroyed: whether the user still has a bookmark in the topic.
-    Destroyed { topic_bookmarked: bool },
+    /// Destroyed: whether the user still has a bookmark in the topic, and
+    /// whether its reminder notifications went with it (the user's
+    /// notification state then needs publishing).
+    Destroyed {
+        topic_bookmarked: bool,
+        reminders_deleted: bool,
+    },
     /// Validation errors: a 400 with `failed_json` and the messages.
     Invalid(Vec<String>),
     /// `Discourse::NotFound`
@@ -366,11 +371,32 @@ pub async fn destroy(
         "Topic" => i32::try_from(id).map_err(|_| Unsupported("topic ids beyond 32 bits"))?,
         _ => return Err(Unsupported("bookmarkables other than posts and topics").into()),
     };
-    sqlx::query("DELETE FROM bookmarks WHERE id = $1")
-        .bind(bookmark_id)
+    let preference: i32 =
+        sqlx::query_scalar("DELETE FROM bookmarks WHERE id = $1 RETURNING auto_delete_preference")
+            .bind(bookmark_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    // has_many :dependent_reminder_notifications, dependent: :destroy; kept
+    // when the bookmark goes because its reminder was sent.
+    let reminders_deleted = if preference == 1 {
+        false
+    } else {
+        sqlx::query(
+            "DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+             AND data::jsonb->>'bookmark_id' = $3",
+        )
+        .bind(user_id)
+        .bind(crate::notification_create::types::BOOKMARK_REMINDER)
+        .bind(bookmark_id.to_string())
         .execute(&mut *conn)
-        .await?;
+        .await?
+        .rows_affected()
+            > 0
+    };
     // after_destroy, then the metadata.
     let topic_bookmarked = sync_topic_user(&mut *conn, user_id, topic_id).await?;
-    Ok(Outcome::Destroyed { topic_bookmarked })
+    Ok(Outcome::Destroyed {
+        topic_bookmarked,
+        reminders_deleted,
+    })
 }

@@ -1,0 +1,11 @@
+{
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/drafts/bulk_destroy.json",
+      "params": {
+        "draft_keys": ["topic_35"]
+      }
+    }
+  ]
+}

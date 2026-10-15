@@ -1,0 +1,6 @@
+{
+  "requests": [
+    { "method": "GET", "path": "/posts/user1/pending.json" },
+    { "method": "DELETE", "path": "/review/9321" }
+  ]
+}

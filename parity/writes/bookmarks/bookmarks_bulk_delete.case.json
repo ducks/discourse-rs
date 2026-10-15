@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/bulk",
+      "params": {
+        "bookmark_ids": [4, 2, 999],
+        "operation": { "type": "delete" }
+      }
+    }
+  ]
+}

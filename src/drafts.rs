@@ -253,6 +253,48 @@ pub async fn clear(
     Ok(true)
 }
 
+/// DraftsController#bulk_destroy past its parameter checks: the keys whose
+/// given sequence is not the current one, or the count destroyed.
+pub async fn bulk_destroy(
+    conn: &mut PgConnection,
+    user_id: i32,
+    keys: &[String],
+    sequences: &serde_json::Map<String, serde_json::Value>,
+) -> Result<Result<u64, Vec<String>>, AppError> {
+    if user_id <= 0 {
+        return Err(Unsupported("clearing drafts of non-human users").into());
+    }
+    let mut conflicts = Vec::new();
+    for key in keys {
+        let given = sequences
+            .get(key)
+            .and_then(crate::params::scalar)
+            .map(|s| crate::ruby::to_i(&s))
+            .unwrap_or(0);
+        if given != current_sequence(&mut *conn, user_id, key).await? {
+            conflicts.push(key.clone());
+        }
+    }
+    if !conflicts.is_empty() {
+        return Ok(Err(conflicts));
+    }
+    let ids: Vec<i32> = sqlx::query_scalar(
+        "DELETE FROM drafts WHERE user_id = $1 AND draft_key = ANY($2) RETURNING id",
+    )
+    .bind(user_id)
+    .bind(keys)
+    .fetch_all(&mut *conn)
+    .await?;
+    sqlx::query(
+        "DELETE FROM upload_references WHERE target_type = 'Draft' AND target_id = ANY($1)",
+    )
+    .bind(&ids)
+    .execute(&mut *conn)
+    .await?;
+    update_draft_count(&mut *conn, user_id).await?;
+    Ok(Ok(ids.len() as u64))
+}
+
 /// `Draft.stream`: the user's drafts at their key's current sequence (or
 /// past it), newest first, as DraftSerializer writes them. `guardian` is
 /// the user's.

@@ -662,7 +662,13 @@ pub(crate) fn replies_div(cx: &ListContext, topic: &Value) -> String {
 
 /// One topic's row.
 pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
-    row_for(cx, topic, users, false, false)
+    row_for(cx, topic, users, false, false, true)
+}
+
+/// A row without the posters column (`@showPosters={{false}}`, the user
+/// topics lists).
+pub fn row_without_posters(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
+    row_for(cx, topic, users, false, false, false)
 }
 
 /// TopicList#lastVisitedTopic: scanning back from the end, past the pinned
@@ -694,7 +700,7 @@ pub fn last_visited_topic(topics: &[Value], previous_visit_at: DateTime<Utc>) ->
 pub fn last_visited_row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
     format!(
         "{}<tr class=\"topic-list-item-separator\"><td class=\"topic-list-data\" colspan=\"6\"><span>{}</span></td></tr>",
-        row_for(cx, topic, users, false, true),
+        row_for(cx, topic, users, false, true, true),
         escape(&t(cx, "topics.new_messages_marker"))
     )
 }
@@ -702,7 +708,7 @@ pub fn last_visited_row(cx: &ListContext, topic: &Value, users: &[Value]) -> Str
 /// A suggested topic's row (more-topics): no posters column, and no
 /// pinned excerpt.
 pub fn suggested_row(cx: &ListContext, topic: &Value) -> String {
-    row_for(cx, topic, &[], true, false)
+    row_for(cx, topic, &[], true, false, false)
 }
 
 fn row_for(
@@ -711,6 +717,7 @@ fn row_for(
     users: &[Value],
     suggested: bool,
     last_visit: bool,
+    show_posters: bool,
 ) -> String {
     let base = cx.base_path;
     let id = topic["id"].as_i64().unwrap_or(0);
@@ -936,7 +943,7 @@ fn row_for(
         ));
     }
     posters.push_str("</td>");
-    if suggested {
+    if !show_posters {
         posters.clear();
     }
 
@@ -1005,10 +1012,24 @@ fn row_for(
         number(cx, views)
     );
 
-    // ActivityCell
+    let activity = activity_cell(cx, topic, "", &url_for(highest));
+
+    format!(
+        "<tr class=\"{}\" data-topic-id=\"{id}\">{topic_cell}{posters}{replies}{views}{activity}</tr>",
+        classes.join(" ")
+    )
+}
+
+/// ActivityCell: the bump age, cold by the time since creation.
+pub(crate) fn activity_cell(
+    cx: &ListContext,
+    topic: &Value,
+    extra_class: &str,
+    last_post_url: &str,
+) -> String {
     let created = date(&topic["created_at"]);
     let bumped = date(&topic["bumped_at"]).or(created);
-    let activity = match (created, bumped) {
+    match (created, bumped) {
         (Some(created), Some(bumped)) => {
             // coldAgeClass(createdAt, startDate: bumpedAt)
             let days = (bumped - created).num_milliseconds() as f64 / 86_400_000.0;
@@ -1033,18 +1054,12 @@ fn row_for(
                 t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))])
             };
             format!(
-                "<td class=\"activity num topic-list-data age{cold}\" title=\"{title}\"><a class=\"post-activity\" href=\"{}\">{}</a></td>",
-                url_for(highest),
+                "<td class=\"activity num topic-list-data age{cold}{extra_class}\" title=\"{title}\"><a class=\"post-activity\" href=\"{last_post_url}\">{}</a></td>",
                 relative_date(cx, bumped)
             )
         }
-        _ => "<td class=\"activity num topic-list-data age\"></td>".to_string(),
-    };
-
-    format!(
-        "<tr class=\"{}\" data-topic-id=\"{id}\">{topic_cell}{posters}{replies}{views}{activity}</tr>",
-        classes.join(" ")
-    )
+        _ => format!("<td class=\"activity num topic-list-data age{extra_class}\"></td>"),
+    }
 }
 
 /// What a mobile row takes from the desktop one's parts.
