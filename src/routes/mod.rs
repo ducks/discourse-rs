@@ -80,6 +80,7 @@ mod solved;
 mod srv;
 mod stylesheets;
 mod tag_admin;
+mod tag_groups;
 mod tag_search;
 mod tags;
 mod themes;
@@ -1860,6 +1861,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))
         .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
+        .route(
+            "/tag_groups",
+            get(tag_groups::index).post(tag_groups::create),
+        )
+        .route(
+            "/tag_groups.json",
+            get(tag_groups::index).post(tag_groups::create),
+        )
+        .route("/tag_groups/filter/search", get(tag_groups::search))
+        .route("/tag_groups/filter/search.json", get(tag_groups::search))
+        .route(
+            "/tag_groups/{id}",
+            get(tag_groups::show)
+                .put(tag_groups::update)
+                .delete(tag_groups::destroy),
+        )
         .route("/tags/filter/search", get(tag_search::search))
         .route("/tags/filter/search.json", get(tag_search::search))
         .route("/categories", cached!(get(list::categories)))

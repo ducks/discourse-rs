@@ -1536,7 +1536,7 @@ route table has been made, so this list may be short.
     settings page /tag/:slug/:id/edit (Ember, with 90g), tag
     localizations, and the remap_hashtag job it enqueues (HashtagRemapper,
     jobs/handlers.rs' fallback)), 189e.
-    `feat/tags-writes-groups` M (TagGroupsController: index, show,
+    ~~`feat/tags-writes-groups`~~ (done) M (TagGroupsController: index, show,
     create, update, destroy and search, with their staff action logs,
     permissions, parent tag and one_per_topic)
 190. `feat/categories-writes` L: POST, PUT and DELETE /categories,

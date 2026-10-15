@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/tag_groups.json", "params": {"tag_group": {"name": "Colors", "tags": [{"id": 1, "name": "howto"}, {"name": "Red Hot"}], "parent_tag": [{"id": 2, "name": "guide"}], "one_per_topic": true, "permissions": {"everyone": 1}}}},
+    {"method": "GET", "path": "/tag_groups.json"},
+    {"method": "POST", "path": "/tag_groups.json", "params": {"tag_group": {"name": "colors"}}},
+    {"method": "POST", "path": "/tag_groups.json", "params": {"tag_group": {"name": "Kinds", "tags": [{"name": "brand-new-kind"}], "parent_tag": [{"name": "New Parent"}], "permissions": {"staff": 1, "everyone": 3}}}},
+    {"method": "GET", "path": "/tag_groups/{{responses.3.body.tag_group.id}}.json"},
+    {"method": "PUT", "path": "/tag_groups/{{responses.0.body.tag_group.id}}.json", "params": {"tag_group": {"name": "Colours", "tags": [{"id": 2, "name": "guide"}], "parent_tag": [], "one_per_topic": false, "permissions": {"staff": 1}}}},
+    {"method": "PUT", "path": "/tag_groups/{{responses.0.body.tag_group.id}}.json", "params": {"tag_group": {"name": "Colours", "permissions": {}}}},
+    {"method": "DELETE", "path": "/tag_groups/{{responses.3.body.tag_group.id}}.json"},
+    {"method": "GET", "path": "/tag_groups/99999.json"}
+  ]
+}
