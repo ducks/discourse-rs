@@ -1533,6 +1533,7 @@ async fn setup_tags(
 /// `TopicCreator#create` for a regular topic: the row, the category's
 /// count and featured topics, the creator watching it, the NEW_TOPIC
 /// action and the topic's draft sequence.
+#[allow(clippy::too_many_arguments)]
 async fn create_topic(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
