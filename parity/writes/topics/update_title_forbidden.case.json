@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: not mine to rename"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/40.json",
+      "params": {
+        "title": "Parity fixture: a deleted topic renamed"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/99999.json",
+      "params": {
+        "title": "Parity fixture: no such topic here"
+      }
+    }
+  ]
+}

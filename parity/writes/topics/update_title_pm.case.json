@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {
+    "tl2_post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/42.json",
+      "params": {
+        "title": "Parity fixture: PM user1 to user0, renamed"
+      }
+    }
+  ]
+}

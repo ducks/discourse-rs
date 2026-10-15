@@ -1,0 +1,525 @@
+{
+  "name": "update_title_static_doc",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/4.json",
+      "params": {
+        "title": "Community guidelines, renamed"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/4/revisions/latest.json"
+    }
+  ],
+  "started_at": "2026-10-14T21:42:40.477178",
+  "transaction_started_at": "2026-10-14T21:42:39.145258",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "basic_topic": {
+          "fancy_title": "Community guidelines, renamed",
+          "id": 4,
+          "title": "Community guidelines, renamed",
+          "slug": "community-guidelines-renamed",
+          "posts_count": 2
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "created_at": "2026-10-14T21:42:40.685Z",
+        "post_id": 4,
+        "previous_hidden": false,
+        "current_hidden": false,
+        "first_revision": 2,
+        "previous_revision": null,
+        "current_revision": 2,
+        "next_revision": null,
+        "last_revision": 2,
+        "current_version": 2,
+        "version_count": 2,
+        "username": "admin",
+        "display_username": "admin",
+        "acting_user_name": "Admin",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+        "edit_reason": null,
+        "body_changes": {
+          "inline": "<div class=\"inline-diff\"><p><a name=\"civilized\"></a></p><h2><a name=\"this-is-a-civilized-place-for-public-discussioncivilized-1\" class=\"anchor\" href=\"#this-is-a-civilized-place-for-public-discussioncivilized-1\" aria-label=\"Heading link\"></a><a href=\"#civilized\">This is a Civilized Place for Public Discussion</a></h2><p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p><p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p><p><a name=\"improve\"></a></p><h2><a name=\"improve-the-discussionimprove-2\" class=\"anchor\" href=\"#improve-the-discussionimprove-2\" aria-label=\"Heading link\"></a><a href=\"#improve\">Improve the Discussion</a></h2><p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p><p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p><p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p><p><a name=\"agreeable\"></a></p><h2><a name=\"be-agreeable-even-when-you-disagreeagreeable-3\" class=\"anchor\" href=\"#be-agreeable-even-when-you-disagreeagreeable-3\" aria-label=\"Heading link\"></a><a href=\"#agreeable\">Be Agreeable, Even When You Disagree</a></h2><p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p><ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul><p>Instead, provide thoughtful insights that improve the conversation.</p><p><a name=\"participate\"></a></p><h2><a name=\"your-participation-countsparticipate-4\" class=\"anchor\" href=\"#your-participation-countsparticipate-4\" aria-label=\"Heading link\"></a><a href=\"#participate\">Your Participation Counts</a></h2><p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p><p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p><p>Let’s leave our community better than we found it.</p><p><a name=\"flag-problems\"></a></p><h2><a name=\"if-you-see-a-problem-flag-itflag-problems-5\" class=\"anchor\" href=\"#if-you-see-a-problem-flag-itflag-problems-5\" aria-label=\"Heading link\"></a><a href=\"#flag-problems\">If You See a Problem, Flag It</a></h2><p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p><p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p><p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p><p><a name=\"be-civil\"></a></p><h2><a name=\"always-be-civilbe-civil-6\" class=\"anchor\" href=\"#always-be-civilbe-civil-6\" aria-label=\"Heading link\"></a><a href=\"#be-civil\">Always Be Civil</a></h2><p>Nothing sabotages a healthy conversation like rudeness:</p><ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul><p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p><p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p><p><a name=\"keep-tidy\"></a></p><h2><a name=\"keep-it-tidykeep-tidy-7\" class=\"anchor\" href=\"#keep-it-tidykeep-tidy-7\" aria-label=\"Heading link\"></a><a href=\"#keep-tidy\">Keep It Tidy</a></h2><p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p><ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul><p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p><p><a name=\"stealing\"></a></p><h2><a name=\"post-only-your-own-stuffstealing-8\" class=\"anchor\" href=\"#post-only-your-own-stuffstealing-8\" aria-label=\"Heading link\"></a><a href=\"#stealing\">Post Only Your Own Stuff</a></h2><p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p><p><a name=\"power\"></a></p><h2><a name=\"powered-by-youpower-9\" class=\"anchor\" href=\"#powered-by-youpower-9\" aria-label=\"Heading link\"></a><a href=\"#power\">Powered by You</a></h2><p>This site is operated by your <a href=\"/about\">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href=\"/about\">contact the moderators</a>.</p></div>",
+          "side_by_side": "<div class=\"revision-content --previous\"><p><a name=\"civilized\"></a></p><h2><a name=\"this-is-a-civilized-place-for-public-discussioncivilized-1\" class=\"anchor\" href=\"#this-is-a-civilized-place-for-public-discussioncivilized-1\" aria-label=\"Heading link\"></a><a href=\"#civilized\">This is a Civilized Place for Public Discussion</a></h2><p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p><p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p><p><a name=\"improve\"></a></p><h2><a name=\"improve-the-discussionimprove-2\" class=\"anchor\" href=\"#improve-the-discussionimprove-2\" aria-label=\"Heading link\"></a><a href=\"#improve\">Improve the Discussion</a></h2><p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p><p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p><p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p><p><a name=\"agreeable\"></a></p><h2><a name=\"be-agreeable-even-when-you-disagreeagreeable-3\" class=\"anchor\" href=\"#be-agreeable-even-when-you-disagreeagreeable-3\" aria-label=\"Heading link\"></a><a href=\"#agreeable\">Be Agreeable, Even When You Disagree</a></h2><p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p><ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul><p>Instead, provide thoughtful insights that improve the conversation.</p><p><a name=\"participate\"></a></p><h2><a name=\"your-participation-countsparticipate-4\" class=\"anchor\" href=\"#your-participation-countsparticipate-4\" aria-label=\"Heading link\"></a><a href=\"#participate\">Your Participation Counts</a></h2><p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p><p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p><p>Let’s leave our community better than we found it.</p><p><a name=\"flag-problems\"></a></p><h2><a name=\"if-you-see-a-problem-flag-itflag-problems-5\" class=\"anchor\" href=\"#if-you-see-a-problem-flag-itflag-problems-5\" aria-label=\"Heading link\"></a><a href=\"#flag-problems\">If You See a Problem, Flag It</a></h2><p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p><p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p><p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p><p><a name=\"be-civil\"></a></p><h2><a name=\"always-be-civilbe-civil-6\" class=\"anchor\" href=\"#always-be-civilbe-civil-6\" aria-label=\"Heading link\"></a><a href=\"#be-civil\">Always Be Civil</a></h2><p>Nothing sabotages a healthy conversation like rudeness:</p><ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul><p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p><p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p><p><a name=\"keep-tidy\"></a></p><h2><a name=\"keep-it-tidykeep-tidy-7\" class=\"anchor\" href=\"#keep-it-tidykeep-tidy-7\" aria-label=\"Heading link\"></a><a href=\"#keep-tidy\">Keep It Tidy</a></h2><p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p><ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul><p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p><p><a name=\"stealing\"></a></p><h2><a name=\"post-only-your-own-stuffstealing-8\" class=\"anchor\" href=\"#post-only-your-own-stuffstealing-8\" aria-label=\"Heading link\"></a><a href=\"#stealing\">Post Only Your Own Stuff</a></h2><p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p><p><a name=\"power\"></a></p><h2><a name=\"powered-by-youpower-9\" class=\"anchor\" href=\"#powered-by-youpower-9\" aria-label=\"Heading link\"></a><a href=\"#power\">Powered by You</a></h2><p>This site is operated by your <a href=\"/about\">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href=\"/about\">contact the moderators</a>.</p></div><div class=\"revision-content --current\"><p><a name=\"civilized\"></a></p><h2><a name=\"this-is-a-civilized-place-for-public-discussioncivilized-1\" class=\"anchor\" href=\"#this-is-a-civilized-place-for-public-discussioncivilized-1\" aria-label=\"Heading link\"></a><a href=\"#civilized\">This is a Civilized Place for Public Discussion</a></h2><p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p><p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p><p><a name=\"improve\"></a></p><h2><a name=\"improve-the-discussionimprove-2\" class=\"anchor\" href=\"#improve-the-discussionimprove-2\" aria-label=\"Heading link\"></a><a href=\"#improve\">Improve the Discussion</a></h2><p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p><p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p><p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p><p><a name=\"agreeable\"></a></p><h2><a name=\"be-agreeable-even-when-you-disagreeagreeable-3\" class=\"anchor\" href=\"#be-agreeable-even-when-you-disagreeagreeable-3\" aria-label=\"Heading link\"></a><a href=\"#agreeable\">Be Agreeable, Even When You Disagree</a></h2><p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p><ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul><p>Instead, provide thoughtful insights that improve the conversation.</p><p><a name=\"participate\"></a></p><h2><a name=\"your-participation-countsparticipate-4\" class=\"anchor\" href=\"#your-participation-countsparticipate-4\" aria-label=\"Heading link\"></a><a href=\"#participate\">Your Participation Counts</a></h2><p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p><p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p><p>Let’s leave our community better than we found it.</p><p><a name=\"flag-problems\"></a></p><h2><a name=\"if-you-see-a-problem-flag-itflag-problems-5\" class=\"anchor\" href=\"#if-you-see-a-problem-flag-itflag-problems-5\" aria-label=\"Heading link\"></a><a href=\"#flag-problems\">If You See a Problem, Flag It</a></h2><p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p><p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p><p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p><p><a name=\"be-civil\"></a></p><h2><a name=\"always-be-civilbe-civil-6\" class=\"anchor\" href=\"#always-be-civilbe-civil-6\" aria-label=\"Heading link\"></a><a href=\"#be-civil\">Always Be Civil</a></h2><p>Nothing sabotages a healthy conversation like rudeness:</p><ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul><p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p><p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p><p><a name=\"keep-tidy\"></a></p><h2><a name=\"keep-it-tidykeep-tidy-7\" class=\"anchor\" href=\"#keep-it-tidykeep-tidy-7\" aria-label=\"Heading link\"></a><a href=\"#keep-tidy\">Keep It Tidy</a></h2><p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p><ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul><p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p><p><a name=\"stealing\"></a></p><h2><a name=\"post-only-your-own-stuffstealing-8\" class=\"anchor\" href=\"#post-only-your-own-stuffstealing-8\" aria-label=\"Heading link\"></a><a href=\"#stealing\">Post Only Your Own Stuff</a></h2><p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p><p><a name=\"power\"></a></p><h2><a name=\"powered-by-youpower-9\" class=\"anchor\" href=\"#powered-by-youpower-9\" aria-label=\"Heading link\"></a><a href=\"#power\">Powered by You</a></h2><p>This site is operated by your <a href=\"/about\">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href=\"/about\">contact the moderators</a>.</p></div>",
+          "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\">&lt;a name=&quot;civilized&quot;&gt;&lt;/a&gt;\n\n## [This is a Civilized Place for Public Discussion](#civilized)\n\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource &amp;mdash; a place to share skills, knowledge and interests through ongoing conversation.\n\nThese are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.\n\n&lt;a name=&quot;improve&quot;&gt;&lt;/a&gt;\n\n## [Improve the Discussion](#improve)\n\nHelp us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.\n\nOne way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.\n\nThe topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.\n\n&lt;a name=&quot;agreeable&quot;&gt;&lt;/a&gt;\n\n## [Be Agreeable, Even When You Disagree](#agreeable)\n\nYou may wish to respond by disagreeing. That’s fine. But remember to _criticize ideas, not people_. Please avoid:\n\n* Name-calling\n* Ad hominem attacks\n* Responding to a post’s tone instead of its actual content\n* Knee-jerk contradiction\n\nInstead, provide thoughtful insights that improve the conversation.\n\n&lt;a name=&quot;participate&quot;&gt;&lt;/a&gt;\n\n## [Your Participation Counts](#participate)\n\nThe conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be &amp;mdash; and avoiding those that do not.\n\nDiscourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.\n\nLet’s leave our community better than we found it.\n\n&lt;a name=&quot;flag-problems&quot;&gt;&lt;/a&gt;\n\n## [If You See a Problem, Flag It](#flag-problems)\n\nModerators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.\n\nWhen you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. _Just flag it_. If enough flags accrue, action will be taken, either automatically or by moderator intervention.\n\nIn order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.\n\n&lt;a name=&quot;be-civil&quot;&gt;&lt;/a&gt;\n\n## [Always Be Civil](#be-civil)\n\nNothing sabotages a healthy conversation like rudeness:\n\n* Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.\n* Keep it clean. Don’t post anything obscene or sexually explicit.\n* Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.\n* Respect our forum. Don’t post spam or otherwise vandalize the forum.\n\nThese are not concrete terms with precise definitions &amp;mdash; avoid even the _appearance_ of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.\n\nThis is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.\n\n&lt;a name=&quot;keep-tidy&quot;&gt;&lt;/a&gt;\n\n## [Keep It Tidy](#keep-tidy)\n\nMake the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:\n\n* Don’t start a topic in the wrong category; please read the category definitions.\n* Don’t cross-post the same thing in multiple topics.\n* Don’t post no-content replies.\n* Don’t divert a topic by changing it midstream.\n* Don’t sign your posts &amp;mdash; every post has your profile information attached to it.\n\nRather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.\n\n&lt;a name=&quot;stealing&quot;&gt;&lt;/a&gt;\n\n## [Post Only Your Own Stuff](#stealing)\n\nYou may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.\n\n&lt;a name=&quot;power&quot;&gt;&lt;/a&gt;\n\n## [Powered by You](#power)\n\nThis site is operated by your [friendly moderator team](/about) and *you*, the community. If you have any further questions about how things should work here, open a new topic in #site-feedback and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, [contact the moderators](/about).</td><td class=\"--current\">&lt;a name=&quot;civilized&quot;&gt;&lt;/a&gt;\n\n## [This is a Civilized Place for Public Discussion](#civilized)\n\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource &amp;mdash; a place to share skills, knowledge and interests through ongoing conversation.\n\nThese are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.\n\n&lt;a name=&quot;improve&quot;&gt;&lt;/a&gt;\n\n## [Improve the Discussion](#improve)\n\nHelp us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.\n\nOne way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.\n\nThe topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.\n\n&lt;a name=&quot;agreeable&quot;&gt;&lt;/a&gt;\n\n## [Be Agreeable, Even When You Disagree](#agreeable)\n\nYou may wish to respond by disagreeing. That’s fine. But remember to _criticize ideas, not people_. Please avoid:\n\n* Name-calling\n* Ad hominem attacks\n* Responding to a post’s tone instead of its actual content\n* Knee-jerk contradiction\n\nInstead, provide thoughtful insights that improve the conversation.\n\n&lt;a name=&quot;participate&quot;&gt;&lt;/a&gt;\n\n## [Your Participation Counts](#participate)\n\nThe conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be &amp;mdash; and avoiding those that do not.\n\nDiscourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.\n\nLet’s leave our community better than we found it.\n\n&lt;a name=&quot;flag-problems&quot;&gt;&lt;/a&gt;\n\n## [If You See a Problem, Flag It](#flag-problems)\n\nModerators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.\n\nWhen you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. _Just flag it_. If enough flags accrue, action will be taken, either automatically or by moderator intervention.\n\nIn order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.\n\n&lt;a name=&quot;be-civil&quot;&gt;&lt;/a&gt;\n\n## [Always Be Civil](#be-civil)\n\nNothing sabotages a healthy conversation like rudeness:\n\n* Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.\n* Keep it clean. Don’t post anything obscene or sexually explicit.\n* Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.\n* Respect our forum. Don’t post spam or otherwise vandalize the forum.\n\nThese are not concrete terms with precise definitions &amp;mdash; avoid even the _appearance_ of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.\n\nThis is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.\n\n&lt;a name=&quot;keep-tidy&quot;&gt;&lt;/a&gt;\n\n## [Keep It Tidy](#keep-tidy)\n\nMake the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:\n\n* Don’t start a topic in the wrong category; please read the category definitions.\n* Don’t cross-post the same thing in multiple topics.\n* Don’t post no-content replies.\n* Don’t divert a topic by changing it midstream.\n* Don’t sign your posts &amp;mdash; every post has your profile information attached to it.\n\nRather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.\n\n&lt;a name=&quot;stealing&quot;&gt;&lt;/a&gt;\n\n## [Post Only Your Own Stuff](#stealing)\n\nYou may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.\n\n&lt;a name=&quot;power&quot;&gt;&lt;/a&gt;\n\n## [Powered by You](#power)\n\nThis site is operated by your [friendly moderator team](/about) and *you*, the community. If you have any further questions about how things should work here, open a new topic in #site-feedback and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, [contact the moderators](/about).</td></tr></table>"
+        },
+        "title_changes": {
+          "inline": "<div class=\"inline-diff\"><div><ins>Community </ins><ins>guidelines</ins><ins>,</ins><ins> </ins><ins>renamed</ins><del>Guidelines</del></div></div>",
+          "side_by_side": "<div class=\"revision-content --previous\"><div><del>Guidelines</del></div></div><div class=\"revision-content --current\"><div><ins>Community </ins><ins>guidelines</ins><ins>,</ins><ins> </ins><ins>renamed</ins></div></div>"
+        },
+        "can_edit": true
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "topic_4"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 4,
+          "user_id": 1,
+          "created_at": "2026-10-14T21:42:40.685992",
+          "updated_at": "2026-10-14T21:42:40.685992",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- Guidelines\n- Community guidelines, renamed\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 4,
+            "version": 5,
+            "raw_data": "#civilized This is a Civilized Place for Public Discussion Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation. These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse. #improve Improve the Discussion Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later. One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you'll have a better chance of meeting others who share your interests. The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said. #agreeable Be Agreeable, Even When You Disagree You may wish to respond by disagreeing. That's fine. But remember to criticize ideas, not people . Please avoid: Name-calling Ad hominem attacks Responding to a post's tone instead of its actual content Knee-jerk contradiction Instead, provide thoughtful insights that improve the conversation. #participate Your Participation Counts The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not. Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else's, too. Let's leave our community better than we found it. #flag-problems If You See a Problem, Flag It Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police. When you see bad behavior, don't reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone's time. Just flag it . If enough flags accrue, action will be taken, either automatically or by moderator intervention. In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community. #be-civil Always Be Civil Nothing sabotages a healthy conversation like rudeness: Be civil. Don't post anything that a reasonable person would consider offensive, abusive, or hate speech. Keep it clean. Don't post anything obscene or sexually explicit. Respect each other. Don't harass or grief anyone, impersonate people, or expose their private information. Respect our forum. Don't post spam or otherwise vandalize the forum. These are not concrete terms with precise definitions — avoid even the appearance of any of these things. If you're unsure, ask yourself how you would feel if your post was featured on the front page of a major news site. This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends. #keep-tidy Keep It Tidy Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So: Don't start a topic in the wrong category; please read the category definitions. Don't cross-post the same thing in multiple topics. Don't post no-content replies. Don't divert a topic by changing it midstream. Don't sign your posts — every post has your profile information attached to it. Rather than posting \"+1\" or \"Agreed\", use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic. #stealing Post Only Your Own Stuff You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone's intellectual property (software, video, audio, images), or for breaking any other law. #power Powered by You This site is operated by your /about friendly moderator team and you , the community. If you have any further questions about how things should work here, open a new topic in /c/site-feedback/2 #square-full Site Feedback and let's discuss! If there's a critical or urgent issue that can't be handled by a meta topic or flag, /about contact the moderators .",
+            "search_data": "'+1':688 '/about':767,821 '/c/site-feedback/2':792 'abus':495 'account':441 'accru':413 'acknowledg':397 'act':170 'action':414 'actual':240 'ad':88,228 'add':103 'agre':690 'agreeabl':199,201 'aid':55 'alreadi':130 'alway':87,472 'anyon':518 'anyth':487,505,722 'appear':549 'arriv':269 'ask':559 'attach':682 'attack':230 'audio':749 'author':360 'automat':419 'avoid':224,294,546 'bad':387,394 'be-civil':469 'behavior':388,395 'belong':725 'best':310 'better':149,342 'bookmark':314 'break':753 'brows':134 'button':694 'call':227 'categori':638,642 'chanc':150 'chang':668 'choos':279 'civil':3,7,70,471,474,483 'clean':501,627 'collect':307 'communiti':31,61,277,305,341,377 'concret':541 'consid':493 'consum':399 'contact':822 'content':241,437,464,660 'contradict':245 'contribut':313 'convers':43,106,253,259,479 'count':257 'critic':219,806 'cross':647 'cross-post':646 'definit':545,643 'descript':735 'differ':704 'digit':723 'direct':705 'disagre':191,205,212 'discours':72,299 'discov':126 'discuss':11,15,76,85,93,123 'divert':664 'edit':318 'effort':609 'either':418 'els':334,728 'enabl':303 'encourag':393 'energi':401 'engag':281 'engin':586 'enough':411 'even':188,202,547 'everi':267,676 'everyon':333,404 'exist':699 'experi':331 'explicit':509 'expos':522 'facilit':378 'famili':598 'fast':49 'featur':569 'feedback':797 'feel':564 'fine':215 'flag':316,348,355,408,412,820 'flag-problem':347 'forth':323 'forum':16,287,366,528,537,583 'found':345 'friend':67,600,768 'front':572 'full':795 'futur':274 'great':82 'grief':517 'guidelin':1A,53 'handl':814 'happen':131 'harass':515 'hard':47 'hate':497 'healthi':478 'help':77,270,373 'hominem':229 'howev':94 'human':57 'idea':220 'identifi':308 'imag':595,750 'imperson':519 'improv':73,74,121,251,328 'index':587 'influenc':272 'inform':525,681 'insight':249 'instead':237,246 'intellectu':745 'interest':40,157,289 'intervent':423 'issu':809 'janitor':381 'jerk':244 'judgment':58 'keep':63,499,590,602,604 'keep-tidi':601 'kind':66 'knee':243 'knee-jerk':242 'knowledg':38 'languag':592 'later':117 'law':756 'leav':339 'less':626 'let':337,799 'like':315,480,693 'link':593,710,737 'll':146 'maintain':427 'major':576 'make':79,285,607 'matter':162,174 'may':207,719,732 'meet':152 'meta':817 'method':740 'midstream':670 'moder':357,374,422,430,448,455 'multipl':653 'mute':320 'name':226 'name-cal':225 'new':268,452,789 'news':577 'no-cont':658 'noth':475 'obscen':506 'offens':494 'one':118,127 'ongo':42 'open':787 'oper':458,764 'order':425 'other':153 'otherwis':534 'page':573 'park':25 'particip':254,256 'peopl':185,222,520 'permiss':730 'person':491 'place':8,34,68,83,290,616 'pleas':12,223,639 'polic':383 'posit':90 'post':102,234,453,465,486,504 'power':757,758 'precis':544 'preview':451 'privat':524 'problem':349,354 'profil':680 'properti':746 'provid':247,300 'public':10,24,71,582 'put':611 'question':780 'radic':703 'rather':685,695 're':557 'read':640 'reason':444,490 'rememb':217 'remov':435 'repli':139,317,391,392,661,707 'reserv':431 'resourc':32 'respect':20,179,510,526 'respond':210,231 'respons':363,461 'right':433,615 'rude':481 'rule':50 'sabotag':476 'safe':596 'said':198 'say':113 'search':585 'see':352,386 'set':263 'sexual':508 'share':30,36,155 'sign':673 'site':457,578,762,796 'skill':37 'small':95 'softwar':747 'someon':727,743 'someth':89 'spam':532 'special':359 'speech':498 'spend':132,621 'squar':794 'square-ful':793 'staff':2B 'start':141,632 'steal':712,742 'stuff':717 'sure':100 'take':459,697 'taken':417 'team':770 'term':542 'thing':554,612,651,783 'think':107 'thought':248 'tidi':603,606 'time':133,406,447,623 'tone':236,265 'tool':301,326 'topic':136,159,182,634,654,666 'treat':13 'tri':115 'unsur':558 'urgent':808 'us':78,164,271 'use':324,691,706 'user':440 'vandal':535 'video':748 'want':111,167 'wast':403 'watch':319 'way':119 'wish':208 'without':729 'work':785 'worst':312 'would':22,492,563 'wrong':637",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 4,
+            "version": 5,
+            "raw_data": "#civilized This is a Civilized Place for Public Discussion Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation. These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse. #improve Improve the Discussion Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later. One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you'll have a better chance of meeting others who share your interests. The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said. #agreeable Be Agreeable, Even When You Disagree You may wish to respond by disagreeing. That's fine. But remember to criticize ideas, not people . Please avoid: Name-calling Ad hominem attacks Responding to a post's tone instead of its actual content Knee-jerk contradiction Instead, provide thoughtful insights that improve the conversation. #participate Your Participation Counts The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not. Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else's, too. Let's leave our community better than we found it. #flag-problems If You See a Problem, Flag It Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police. When you see bad behavior, don't reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone's time. Just flag it . If enough flags accrue, action will be taken, either automatically or by moderator intervention. In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community. #be-civil Always Be Civil Nothing sabotages a healthy conversation like rudeness: Be civil. Don't post anything that a reasonable person would consider offensive, abusive, or hate speech. Keep it clean. Don't post anything obscene or sexually explicit. Respect each other. Don't harass or grief anyone, impersonate people, or expose their private information. Respect our forum. Don't post spam or otherwise vandalize the forum. These are not concrete terms with precise definitions — avoid even the appearance of any of these things. If you're unsure, ask yourself how you would feel if your post was featured on the front page of a major news site. This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends. #keep-tidy Keep It Tidy Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So: Don't start a topic in the wrong category; please read the category definitions. Don't cross-post the same thing in multiple topics. Don't post no-content replies. Don't divert a topic by changing it midstream. Don't sign your posts — every post has your profile information attached to it. Rather than posting \"+1\" or \"Agreed\", use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic. #stealing Post Only Your Own Stuff You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone's intellectual property (software, video, audio, images), or for breaking any other law. #power Powered by You This site is operated by your /about friendly moderator team and you , the community. If you have any further questions about how things should work here, open a new topic in /c/site-feedback/2 #square-full Site Feedback and let's discuss! If there's a critical or urgent issue that can't be handled by a meta topic or flag, /about contact the moderators .",
+            "search_data": "'+1':690 '/about':769,823 '/c/site-feedback/2':794 'abus':497 'account':443 'accru':415 'acknowledg':399 'act':172 'action':416 'actual':242 'ad':90,230 'add':105 'agre':692 'agreeabl':201,203 'aid':57 'alreadi':132 'alway':89,474 'anyon':520 'anyth':489,507,724 'appear':551 'arriv':271 'ask':561 'attach':684 'attack':232 'audio':751 'author':362 'automat':421 'avoid':226,296,548 'bad':389,396 'be-civil':471 'behavior':390,397 'belong':727 'best':312 'better':151,344 'bookmark':316 'break':755 'brows':136 'button':696 'call':229 'categori':640,644 'chanc':152 'chang':670 'choos':281 'civil':5,9,72,473,476,485 'clean':503,629 'collect':309 'communiti':1A,33,63,279,307,343,379 'concret':543 'consid':495 'consum':401 'contact':824 'content':243,439,466,662 'contradict':247 'contribut':315 'convers':45,108,255,261,481 'count':259 'critic':221,808 'cross':649 'cross-post':648 'definit':547,645 'descript':737 'differ':706 'digit':725 'direct':707 'disagre':193,207,214 'discours':74,301 'discov':128 'discuss':13,17,78,87,95,125 'divert':666 'edit':320 'effort':611 'either':420 'els':336,730 'enabl':305 'encourag':395 'energi':403 'engag':283 'engin':588 'enough':413 'even':190,204,549 'everi':269,678 'everyon':335,406 'exist':701 'experi':333 'explicit':511 'expos':524 'facilit':380 'famili':600 'fast':51 'featur':571 'feedback':799 'feel':566 'fine':217 'flag':318,350,357,410,414,822 'flag-problem':349 'forth':325 'forum':18,289,368,530,539,585 'found':347 'friend':69,602,770 'front':574 'full':797 'futur':276 'great':84 'grief':519 'guidelin':2A,55 'handl':816 'happen':133 'harass':517 'hard':49 'hate':499 'healthi':480 'help':79,272,375 'hominem':231 'howev':96 'human':59 'idea':222 'identifi':310 'imag':597,752 'imperson':521 'improv':75,76,123,253,330 'index':589 'influenc':274 'inform':527,683 'insight':251 'instead':239,248 'intellectu':747 'interest':42,159,291 'intervent':425 'issu':811 'janitor':383 'jerk':246 'judgment':60 'keep':65,501,592,604,606 'keep-tidi':603 'kind':68 'knee':245 'knee-jerk':244 'knowledg':40 'languag':594 'later':119 'law':758 'leav':341 'less':628 'let':339,801 'like':317,482,695 'link':595,712,739 'll':148 'maintain':429 'major':578 'make':81,287,609 'matter':164,176 'may':209,721,734 'meet':154 'meta':819 'method':742 'midstream':672 'moder':359,376,424,432,450,457 'multipl':655 'mute':322 'name':228 'name-cal':227 'new':270,454,791 'news':579 'no-cont':660 'noth':477 'obscen':508 'offens':496 'one':120,129 'ongo':44 'open':789 'oper':460,766 'order':427 'other':155 'otherwis':536 'page':575 'park':27 'particip':256,258 'peopl':187,224,522 'permiss':732 'person':493 'place':10,36,70,85,292,618 'pleas':14,225,641 'polic':385 'posit':92 'post':104,236,455,467,488,506 'power':759,760 'precis':546 'preview':453 'privat':526 'problem':351,356 'profil':682 'properti':748 'provid':249,302 'public':12,26,73,584 'put':613 'question':782 'radic':705 'rather':687,697 're':559 'read':642 'reason':446,492 'rememb':219 'remov':437 'renam':3A 'repli':141,319,393,394,663,709 'reserv':433 'resourc':34 'respect':22,181,512,528 'respond':212,233 'respons':365,463 'right':435,617 'rude':483 'rule':52 'sabotag':478 'safe':598 'said':200 'say':115 'search':587 'see':354,388 'set':265 'sexual':510 'share':32,38,157 'sign':675 'site':459,580,764,798 'skill':39 'small':97 'softwar':749 'someon':729,745 'someth':91 'spam':534 'special':361 'speech':500 'spend':134,623 'squar':796 'square-ful':795 'staff':4B 'start':143,634 'steal':714,744 'stuff':719 'sure':102 'take':461,699 'taken':419 'team':772 'term':544 'thing':556,614,653,785 'think':109 'thought':250 'tidi':605,608 'time':135,408,449,625 'tone':238,267 'tool':303,328 'topic':138,161,184,636,656,668 'treat':15 'tri':117 'unsur':560 'urgent':810 'us':80,166,273 'use':326,693,708 'user':442 'vandal':537 'video':750 'want':113,169 'wast':405 'watch':321 'way':121 'wish':210 'without':731 'work':787 'worst':314 'would':24,494,565 'wrong':639",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 5,
+            "version": 5,
+            "raw_data": "Edit the first post in this topic to change the contents of the Guidelines page.",
+            "search_data": "'chang':11 'content':13 'edit':3 'first':5 'guidelin':1A,16 'page':17 'post':6 'staff':2B 'topic':9",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 5,
+            "version": 0,
+            "raw_data": "Edit the first post in this topic to change the contents of the Guidelines page.",
+            "search_data": "'chang':11 'content':13 'edit':3 'first':5 'guidelin':1A,16 'page':17 'post':6 'staff':2B 'topic':9",
+            "private_message": false
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "raw": "<a name=\"civilized\"></a>\n\n## [This is a Civilized Place for Public Discussion](#civilized)\n\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource &mdash; a place to share skills, knowledge and interests through ongoing conversation.\n\nThese are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.\n\n<a name=\"improve\"></a>\n\n## [Improve the Discussion](#improve)\n\nHelp us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.\n\nOne way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.\n\nThe topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.\n\n<a name=\"agreeable\"></a>\n\n## [Be Agreeable, Even When You Disagree](#agreeable)\n\nYou may wish to respond by disagreeing. That’s fine. But remember to _criticize ideas, not people_. Please avoid:\n\n* Name-calling\n* Ad hominem attacks\n* Responding to a post’s tone instead of its actual content\n* Knee-jerk contradiction\n\nInstead, provide thoughtful insights that improve the conversation.\n\n<a name=\"participate\"></a>\n\n## [Your Participation Counts](#participate)\n\nThe conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be &mdash; and avoiding those that do not.\n\nDiscourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.\n\nLet’s leave our community better than we found it.\n\n<a name=\"flag-problems\"></a>\n\n## [If You See a Problem, Flag It](#flag-problems)\n\nModerators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.\n\nWhen you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. _Just flag it_. If enough flags accrue, action will be taken, either automatically or by moderator intervention.\n\nIn order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.\n\n<a name=\"be-civil\"></a>\n\n## [Always Be Civil](#be-civil)\n\nNothing sabotages a healthy conversation like rudeness:\n\n* Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.\n* Keep it clean. Don’t post anything obscene or sexually explicit.\n* Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.\n* Respect our forum. Don’t post spam or otherwise vandalize the forum.\n\nThese are not concrete terms with precise definitions &mdash; avoid even the _appearance_ of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.\n\nThis is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.\n\n<a name=\"keep-tidy\"></a>\n\n## [Keep It Tidy](#keep-tidy)\n\nMake the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:\n\n* Don’t start a topic in the wrong category; please read the category definitions.\n* Don’t cross-post the same thing in multiple topics.\n* Don’t post no-content replies.\n* Don’t divert a topic by changing it midstream.\n* Don’t sign your posts &mdash; every post has your profile information attached to it.\n\nRather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.\n\n<a name=\"stealing\"></a>\n\n## [Post Only Your Own Stuff](#stealing)\n\nYou may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.\n\n<a name=\"power\"></a>\n\n## [Powered by You](#power)\n\nThis site is operated by your [friendly moderator team](/about) and *you*, the community. If you have any further questions about how things should work here, open a new topic in #site-feedback and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, [contact the moderators](/about).",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p><a name=\"civilized\"></a></p>\n<h2><a name=\"this-is-a-civilized-place-for-public-discussioncivilized-1\" class=\"anchor\" href=\"#this-is-a-civilized-place-for-public-discussioncivilized-1\" aria-label=\"Heading link\"></a><a href=\"#civilized\">This is a Civilized Place for Public Discussion</a></h2>\n<p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p>\n<p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p>\n<p><a name=\"improve\"></a></p>\n<h2><a name=\"improve-the-discussionimprove-2\" class=\"anchor\" href=\"#improve-the-discussionimprove-2\" aria-label=\"Heading link\"></a><a href=\"#improve\">Improve the Discussion</a></h2>\n<p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p>\n<p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p>\n<p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p>\n<p><a name=\"agreeable\"></a></p>\n<h2><a name=\"be-agreeable-even-when-you-disagreeagreeable-3\" class=\"anchor\" href=\"#be-agreeable-even-when-you-disagreeagreeable-3\" aria-label=\"Heading link\"></a><a href=\"#agreeable\">Be Agreeable, Even When You Disagree</a></h2>\n<p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p>\n<ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul>\n<p>Instead, provide thoughtful insights that improve the conversation.</p>\n<p><a name=\"participate\"></a></p>\n<h2><a name=\"your-participation-countsparticipate-4\" class=\"anchor\" href=\"#your-participation-countsparticipate-4\" aria-label=\"Heading link\"></a><a href=\"#participate\">Your Participation Counts</a></h2>\n<p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p>\n<p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p>\n<p>Let’s leave our community better than we found it.</p>\n<p><a name=\"flag-problems\"></a></p>\n<h2><a name=\"if-you-see-a-problem-flag-itflag-problems-5\" class=\"anchor\" href=\"#if-you-see-a-problem-flag-itflag-problems-5\" aria-label=\"Heading link\"></a><a href=\"#flag-problems\">If You See a Problem, Flag It</a></h2>\n<p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p>\n<p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p>\n<p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p>\n<p><a name=\"be-civil\"></a></p>\n<h2><a name=\"always-be-civilbe-civil-6\" class=\"anchor\" href=\"#always-be-civilbe-civil-6\" aria-label=\"Heading link\"></a><a href=\"#be-civil\">Always Be Civil</a></h2>\n<p>Nothing sabotages a healthy conversation like rudeness:</p>\n<ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul>\n<p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p>\n<p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p>\n<p><a name=\"keep-tidy\"></a></p>\n<h2><a name=\"keep-it-tidykeep-tidy-7\" class=\"anchor\" href=\"#keep-it-tidykeep-tidy-7\" aria-label=\"Heading link\"></a><a href=\"#keep-tidy\">Keep It Tidy</a></h2>\n<p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p>\n<ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul>\n<p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p>\n<p><a name=\"stealing\"></a></p>\n<h2><a name=\"post-only-your-own-stuffstealing-8\" class=\"anchor\" href=\"#post-only-your-own-stuffstealing-8\" aria-label=\"Heading link\"></a><a href=\"#stealing\">Post Only Your Own Stuff</a></h2>\n<p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p>\n<p><a name=\"power\"></a></p>\n<h2><a name=\"powered-by-youpower-9\" class=\"anchor\" href=\"#powered-by-youpower-9\" aria-label=\"Heading link\"></a><a href=\"#power\">Powered by You</a></h2>\n<p>This site is operated by your <a href=\"/about\">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href=\"/about\">contact the moderators</a>.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 1,
+            "baked_at": "2026-07-25T05:58:27.915401",
+            "topic_id": 4,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-07-25T05:58:27.915472",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-07-25T05:58:27.915472",
+            "word_count": 854,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": -1,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-07-25T05:58:27.990431",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 4,
+            "raw": "<a name=\"civilized\"></a>\n\n## [This is a Civilized Place for Public Discussion](#civilized)\n\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource &mdash; a place to share skills, knowledge and interests through ongoing conversation.\n\nThese are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.\n\n<a name=\"improve\"></a>\n\n## [Improve the Discussion](#improve)\n\nHelp us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.\n\nOne way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.\n\nThe topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.\n\n<a name=\"agreeable\"></a>\n\n## [Be Agreeable, Even When You Disagree](#agreeable)\n\nYou may wish to respond by disagreeing. That’s fine. But remember to _criticize ideas, not people_. Please avoid:\n\n* Name-calling\n* Ad hominem attacks\n* Responding to a post’s tone instead of its actual content\n* Knee-jerk contradiction\n\nInstead, provide thoughtful insights that improve the conversation.\n\n<a name=\"participate\"></a>\n\n## [Your Participation Counts](#participate)\n\nThe conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be &mdash; and avoiding those that do not.\n\nDiscourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.\n\nLet’s leave our community better than we found it.\n\n<a name=\"flag-problems\"></a>\n\n## [If You See a Problem, Flag It](#flag-problems)\n\nModerators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.\n\nWhen you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. _Just flag it_. If enough flags accrue, action will be taken, either automatically or by moderator intervention.\n\nIn order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.\n\n<a name=\"be-civil\"></a>\n\n## [Always Be Civil](#be-civil)\n\nNothing sabotages a healthy conversation like rudeness:\n\n* Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.\n* Keep it clean. Don’t post anything obscene or sexually explicit.\n* Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.\n* Respect our forum. Don’t post spam or otherwise vandalize the forum.\n\nThese are not concrete terms with precise definitions &mdash; avoid even the _appearance_ of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.\n\nThis is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.\n\n<a name=\"keep-tidy\"></a>\n\n## [Keep It Tidy](#keep-tidy)\n\nMake the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:\n\n* Don’t start a topic in the wrong category; please read the category definitions.\n* Don’t cross-post the same thing in multiple topics.\n* Don’t post no-content replies.\n* Don’t divert a topic by changing it midstream.\n* Don’t sign your posts &mdash; every post has your profile information attached to it.\n\nRather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.\n\n<a name=\"stealing\"></a>\n\n## [Post Only Your Own Stuff](#stealing)\n\nYou may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.\n\n<a name=\"power\"></a>\n\n## [Powered by You](#power)\n\nThis site is operated by your [friendly moderator team](/about) and *you*, the community. If you have any further questions about how things should work here, open a new topic in #site-feedback and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, [contact the moderators](/about).",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p><a name=\"civilized\"></a></p>\n<h2><a name=\"this-is-a-civilized-place-for-public-discussioncivilized-1\" class=\"anchor\" href=\"#this-is-a-civilized-place-for-public-discussioncivilized-1\" aria-label=\"Heading link\"></a><a href=\"#civilized\">This is a Civilized Place for Public Discussion</a></h2>\n<p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p>\n<p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p>\n<p><a name=\"improve\"></a></p>\n<h2><a name=\"improve-the-discussionimprove-2\" class=\"anchor\" href=\"#improve-the-discussionimprove-2\" aria-label=\"Heading link\"></a><a href=\"#improve\">Improve the Discussion</a></h2>\n<p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p>\n<p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p>\n<p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p>\n<p><a name=\"agreeable\"></a></p>\n<h2><a name=\"be-agreeable-even-when-you-disagreeagreeable-3\" class=\"anchor\" href=\"#be-agreeable-even-when-you-disagreeagreeable-3\" aria-label=\"Heading link\"></a><a href=\"#agreeable\">Be Agreeable, Even When You Disagree</a></h2>\n<p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p>\n<ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul>\n<p>Instead, provide thoughtful insights that improve the conversation.</p>\n<p><a name=\"participate\"></a></p>\n<h2><a name=\"your-participation-countsparticipate-4\" class=\"anchor\" href=\"#your-participation-countsparticipate-4\" aria-label=\"Heading link\"></a><a href=\"#participate\">Your Participation Counts</a></h2>\n<p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p>\n<p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p>\n<p>Let’s leave our community better than we found it.</p>\n<p><a name=\"flag-problems\"></a></p>\n<h2><a name=\"if-you-see-a-problem-flag-itflag-problems-5\" class=\"anchor\" href=\"#if-you-see-a-problem-flag-itflag-problems-5\" aria-label=\"Heading link\"></a><a href=\"#flag-problems\">If You See a Problem, Flag It</a></h2>\n<p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p>\n<p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p>\n<p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p>\n<p><a name=\"be-civil\"></a></p>\n<h2><a name=\"always-be-civilbe-civil-6\" class=\"anchor\" href=\"#always-be-civilbe-civil-6\" aria-label=\"Heading link\"></a><a href=\"#be-civil\">Always Be Civil</a></h2>\n<p>Nothing sabotages a healthy conversation like rudeness:</p>\n<ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul>\n<p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p>\n<p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p>\n<p><a name=\"keep-tidy\"></a></p>\n<h2><a name=\"keep-it-tidykeep-tidy-7\" class=\"anchor\" href=\"#keep-it-tidykeep-tidy-7\" aria-label=\"Heading link\"></a><a href=\"#keep-tidy\">Keep It Tidy</a></h2>\n<p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p>\n<ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul>\n<p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p>\n<p><a name=\"stealing\"></a></p>\n<h2><a name=\"post-only-your-own-stuffstealing-8\" class=\"anchor\" href=\"#post-only-your-own-stuffstealing-8\" aria-label=\"Heading link\"></a><a href=\"#stealing\">Post Only Your Own Stuff</a></h2>\n<p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p>\n<p><a name=\"power\"></a></p>\n<h2><a name=\"powered-by-youpower-9\" class=\"anchor\" href=\"#powered-by-youpower-9\" aria-label=\"Heading link\"></a><a href=\"#power\">Powered by You</a></h2>\n<p>This site is operated by your <a href=\"/about\">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href=\"/about\">contact the moderators</a>.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 2,
+            "baked_at": "2026-07-25T05:58:27.915401",
+            "topic_id": 4,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-07-25T05:58:27.915472",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T21:42:40.515559",
+            "word_count": 854,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 1,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-14T21:42:40.512898",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Guidelines #civilized This is a Civilized Place for Public Discussion Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share",
+            "topic_id": 4,
+            "search_data": "'civil':2B,6B 'communiti':30B 'discuss':10B,14B 'forum':15B 'guidelin':1A 'park':24B 'place':7B,33B 'pleas':11B 'public':9B,23B 'resourc':31B 'respect':19B 'share':29B,35B 'treat':12B 'would':21B"
+          },
+          "after": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Community guidelines, renamed #civilized This is a Civilized Place for Public Discussion Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share",
+            "topic_id": 4,
+            "search_data": "'civil':4B,8B 'communiti':1A,32B 'discuss':12B,16B 'forum':17B 'guidelin':2A 'park':26B 'place':9B,35B 'pleas':13B 'public':11B,25B 'renam':3A 'resourc':33B 'respect':21B 'share':31B,37B 'treat':14B 'would':23B"
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "slug": "guidelines",
+            "score": 0.2,
+            "title": "Guidelines",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "This is a Civilized Place for Public Discussion\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and intere&hellip;",
+            "subtype": null,
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-07-25T05:58:28.203945",
+            "pinned_at": null,
+            "created_at": "2026-07-25T05:58:27.775869",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-07-25T05:58:28.251513",
+            "word_count": 869,
+            "category_id": 3,
+            "external_id": null,
+            "fancy_title": "Guidelines",
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-07-25T05:58:28.203945",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          },
+          "after": {
+            "id": 4,
+            "slug": "community-guidelines-renamed",
+            "score": 0.2,
+            "title": "Community guidelines, renamed",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "This is a Civilized Place for Public Discussion\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and intere&hellip;",
+            "subtype": null,
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-07-25T05:58:28.203945",
+            "pinned_at": null,
+            "created_at": "2026-07-25T05:58:27.775869",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T21:42:40.578404",
+            "word_count": 869,
+            "category_id": 3,
+            "external_id": null,
+            "fancy_title": "Community guidelines, renamed",
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-07-25T05:58:28.203945",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oda1lupXiTdGIbvOp+IQWZqs/mQ=",
+            "created_at": "2026-10-14T21:42:39.554192",
+            "rotated_at": "2026-10-14T21:42:39.553037",
+            "updated_at": "2026-10-14T21:42:39.554192",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oda1lupXiTdGIbvOp+IQWZqs/mQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T21:42:40.489727",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oda1lupXiTdGIbvOp+IQWZqs/mQ=",
+            "created_at": "2026-10-14T21:42:39.554192",
+            "rotated_at": "2026-10-14T21:42:39.553037",
+            "updated_at": "2026-10-14T21:42:39.554192",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oda1lupXiTdGIbvOp+IQWZqs/mQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": 1,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_post_revision",
+      {
+        "user_ids": [
+          -1
+        ],
+        "post_revision_id": 1
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 4,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 4
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_revisions": 1
+  },
+  "recorded_from": {
+    "case": "1728a0c06b13773ee6523940e8071afd008787119ee53175ee232255dea58da5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

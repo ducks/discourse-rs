@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "archetype": "banner"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "archetype": "regular"
+      }
+    }
+  ]
+}

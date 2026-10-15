@@ -1,0 +1,78 @@
+{
+  "name": "update_featured_link_disabled",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "featured_link": "https://example.com/featured"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T21:25:20.434006",
+  "transaction_started_at": "2026-10-14T21:25:18.928289",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "There was an error updating that topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/Y8aTjHraFcKi1r2E1lR9vXd8Po=",
+            "created_at": "2026-10-14T21:25:19.411042",
+            "rotated_at": "2026-10-14T21:25:19.409845",
+            "updated_at": "2026-10-14T21:25:19.411042",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/Y8aTjHraFcKi1r2E1lR9vXd8Po=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T21:25:20.444812",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/Y8aTjHraFcKi1r2E1lR9vXd8Po=",
+            "created_at": "2026-10-14T21:25:19.411042",
+            "rotated_at": "2026-10-14T21:25:19.409845",
+            "updated_at": "2026-10-14T21:25:19.411042",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/Y8aTjHraFcKi1r2E1lR9vXd8Po=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "post_edit_time_limit": 0,
+    "topic_featured_link_enabled": false
+  },
+  "recorded_from": {
+    "case": "8b3ff2efdf84058377a120855e31ad176ecc07affe67815e0f418cd735dc4d10",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

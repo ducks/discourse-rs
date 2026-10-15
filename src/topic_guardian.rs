@@ -919,3 +919,28 @@ impl Guardian {
         )
     }
 }
+
+/// `can_edit_featured_link?(category_id)` for a user of this trust level
+/// (None for an anonymous guardian): featured links on, past trust level
+/// 0, and a category (uncategorized for none) that allows them.
+pub async fn can_edit_featured_link(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    trust_level: Option<i32>,
+    category_id: Option<i32>,
+) -> Result<bool, crate::AppError> {
+    if !settings.get("topic_featured_link_enabled")?.truthy() {
+        return Ok(false);
+    }
+    if trust_level == Some(0) {
+        return Ok(false);
+    }
+    let category_id =
+        category_id.unwrap_or(settings.get("uncategorized_category_id")?.to_i() as i32);
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1 AND topic_featured_link_allowed)",
+    )
+    .bind(category_id)
+    .fetch_one(conn)
+    .await?)
+}

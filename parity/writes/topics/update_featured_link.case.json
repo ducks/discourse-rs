@@ -1,0 +1,31 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "featured_link": "  https://example.com/featured  "
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "featured_link": "not a url"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "featured_link": "",
+        "title": "Parity fixture: featured link cleared"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

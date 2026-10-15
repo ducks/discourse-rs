@@ -1,0 +1,102 @@
+{
+  "name": "update_tags_conflict",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/38.json",
+      "params": {
+        "title": "Parity fixture: a tag conflict",
+        "original_tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/38.json",
+      "params": {
+        "tags": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T21:49:38.189601",
+  "transaction_started_at": "2026-10-14T21:49:37.087382",
+  "responses": [
+    {
+      "status": 409,
+      "body": {
+        "errors": [
+          "That post was edited by another user and your changes can no longer be saved."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You can apply up to 5 tags to a topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NwQk4PZnhup/18p+nfNTu5rsi/4=",
+            "created_at": "2026-10-14T21:49:37.539093",
+            "rotated_at": "2026-10-14T21:49:37.538279",
+            "updated_at": "2026-10-14T21:49:37.539093",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NwQk4PZnhup/18p+nfNTu5rsi/4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T21:49:38.196702",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NwQk4PZnhup/18p+nfNTu5rsi/4=",
+            "created_at": "2026-10-14T21:49:37.539093",
+            "rotated_at": "2026-10-14T21:49:37.538279",
+            "updated_at": "2026-10-14T21:49:37.539093",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NwQk4PZnhup/18p+nfNTu5rsi/4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "1af93c127474911d222057397aab6a3301870a37b0c206b34695a8057b6e1fa3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/38.json",
+      "params": {
+        "title": "Parity fixture: a tag conflict",
+        "original_tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/38.json",
+      "params": {
+        "tags": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ]
+      }
+    }
+  ]
+}

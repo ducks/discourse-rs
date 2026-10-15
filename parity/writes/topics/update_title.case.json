@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "params": {
+        "title": "Parity fixture: replies, posters and a new title"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

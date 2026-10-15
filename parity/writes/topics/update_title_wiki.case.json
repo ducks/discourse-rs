@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE, edit_reason = 'made it a wiki' WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: the wiki renamed by user1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

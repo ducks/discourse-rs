@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: a title that conflicts",
+        "original_title": "Someone else's earlier title"
+      }
+    }
+  ]
+}

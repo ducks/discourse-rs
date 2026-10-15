@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/-/35.json",
+      "params": {
+        "title": "Parity fixture: my own topic renamed",
+        "original_title": "Parity fixture: replies and posters",
+        "keep_existing_draft": "true"
+      }
+    }
+  ]
+}

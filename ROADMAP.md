@@ -1497,7 +1497,7 @@ route table has been made, so this list may be short.
     converting topics, topic bulk actions (dismiss new and new posts);
     none of it is routed. Split by dependency, each branch stacked on the
     one before; tags on any of them wait for 189 and are refused until
-    then: 188a. `feat/topic-edits-title` M (PUT /t/:id and
+    then: 188a. ~~`feat/topic-edits-title`~~ (done) M (PUT /t/:id and
     /t/:slug/:id, TopicsController#update: ensure_can_edit, the
     original_title edit conflict, PostRevisor's topic fields on the first
     post for the title, archetype and featured link: the revision with

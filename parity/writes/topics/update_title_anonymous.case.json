@@ -1,0 +1,11 @@
+{
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: renamed anonymously"
+      }
+    }
+  ]
+}

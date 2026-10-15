@@ -1,0 +1,16 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "archetype": "banner",
+        "title": "Parity fixture: a banner by its owner"
+      }
+    }
+  ]
+}
