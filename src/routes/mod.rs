@@ -1040,9 +1040,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/logs/staff_action_logs.json",
             get(admin_logs::staff_action_logs),
         )
-        .route("/admin/users/list", get(admin_users::index))
+        .route("/admin/users", get(admin_pages::users_root))
+        .route("/admin/users.json", get(admin_pages::users_root))
+        .route("/admin/users/list", get(admin_pages::users_root))
         .route("/admin/users/list.json", get(admin_users::index))
-        .route("/admin/users/list/{query}", get(admin_users::index))
+        .route("/admin/users/list/{query}", get(admin_pages::users_list))
+        .route("/admin/users/settings", get(admin_pages::users_settings))
+        .route(
+            "/admin/users/{user_id}/{username}",
+            get(admin_pages::user_show),
+        )
+        .route(
+            "/admin/users/{user_id}/{username}/badges",
+            get(admin_pages::user_subpage),
+        )
+        .route(
+            "/admin/users/{user_id}/{username}/tl3_requirements",
+            get(admin_pages::user_subpage),
+        )
         .route(
             "/admin/users/{user_id}",
             get(admin_users::show).delete(admin_users::destroy),
@@ -2035,6 +2050,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin.css", get(asset))
         .route("/assets/admin.js", get(asset))
         .route("/assets/admin-dashboard.js", get(asset))
+        .route("/assets/admin-users.js", get(asset))
+        .route("/assets/admin-user.js", get(asset))
+        .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))
         .route("/assets/chartjs-adapter-moment.min.js", get(asset))
         .route("/assets/navigation-bar.js", get(asset))

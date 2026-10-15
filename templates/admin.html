@@ -2,8 +2,10 @@
 {% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
 {% block content %}
 {{ main|safe }}
-{#- The admin panel's filter and section toggles. -#}
+{#- The admin panel's filter and section toggles, and the dialogs the
+    pages' actions confirm and report with. -#}
 <script src="{{ crate::assets::url(base_path, "admin.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>
 {%- if script == "admin-dashboard.js" %}
 {#- The dashboard's charts: Chart.js with its moment adapter, as
     Discourse's chart-js-bundle loads them. -#}

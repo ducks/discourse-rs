@@ -205,6 +205,13 @@ ICONS=(
   circle-check
   grip-vertical
   chevron-right
+  # The admin's user page.
+  power-off
+  far-rectangle-list
+  unlock-keyhole
+  microphone-slash
+  crosshairs
+  left-right
   # The bundled plugins' admin links (setAdminPluginIcon).
   asterisk
   bed
