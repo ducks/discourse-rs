@@ -71,6 +71,16 @@ pub fn strip(s: &str) -> &str {
     s.trim_matches(|c| matches!(c, ' ' | '\t' | '\n' | '\x0b' | '\x0c' | '\r' | '\0'))
 }
 
+/// `String#split(sep)` with a non-empty string separator: trailing empty
+/// fields dropped, leading and inner ones kept.
+pub fn split<'a>(s: &'a str, sep: &str) -> Vec<&'a str> {
+    let mut parts: Vec<&str> = s.split(sep).collect();
+    while parts.last().is_some_and(|p| p.is_empty()) {
+        parts.pop();
+    }
+    parts
+}
+
 /// `CGI.escape`
 pub fn cgi_escape(s: &str) -> String {
     let mut out = String::new();
@@ -234,6 +244,15 @@ pub fn inspect_value(value: &serde_json::Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn split_drops_trailing_empty_fields() {
+        assert_eq!(split("a:b", ":"), vec!["a", "b"]);
+        assert_eq!(split("a::", ":"), vec!["a"]);
+        assert_eq!(split(":a", ":"), vec!["", "a"]);
+        assert!(split(":", ":").is_empty());
+        assert_eq!(split("a,,b", ","), vec!["a", "", "b"]);
+    }
 
     #[test]
     fn integer_parses_as_kernel_integer() {

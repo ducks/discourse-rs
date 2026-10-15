@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=category%3Ageneral"},
+    {"method": "GET", "path": "/search/query.json?term=category%3A%3Dgeneral"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20categories%3Asite-feedback%2Csub-general"},
+    {"method": "GET", "path": "/search/query.json?term=category%3A34"},
+    {"method": "GET", "path": "/search/query.json?term=category%3AGeneral"},
+    {"method": "GET", "path": "/search/query.json?term=category%3Agen%25"},
+    {"method": "GET", "path": "/search/query.json?term=category%3Anowhere"},
+    {"method": "GET", "path": "/search/query.json?term=category%3Astaff"},
+    {"method": "GET", "path": "/search/query.json?term=category%3Ageneral%2C%3Dgeneral"},
+    {"method": "GET", "path": "/search.json?q=fixture%20category%3Ageneral"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=%23general"},
+    {"method": "GET", "path": "/search/query.json?term=parity%20%23general"},
+    {"method": "GET", "path": "/search/query.json?term=%23sub-general"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20%23%3Dgeneral"},
+    {"method": "GET", "path": "/search/query.json?term=%23general%3Asub-general"},
+    {"method": "GET", "path": "/search/query.json?term=%23GENERAL%3ASub-General"},
+    {"method": "GET", "path": "/search/query.json?term=%23howto"},
+    {"method": "GET", "path": "/search/query.json?term=%23staff"},
+    {"method": "GET", "path": "/search/query.json?term=%23nothing"},
+    {"method": "GET", "path": "/search/query.json?term=%23ab"},
+    {"method": "GET", "path": "/search/query.json?term=%23general&type_filter=exclude_topics"},
+    {"method": "GET", "path": "/search/query.json?term=%22%23general%22"}
+  ]
+}

@@ -1,16 +1,17 @@
 //! Port of lib/search.rb, lib/search/grouped_search_results.rb and
-//! app/models/search_log.rb for anonymous users searching plain terms
-//! (words and quoted phrases). Advanced syntax (`in:`, `status:`,
-//! `category:`, `#`, `@user`, `order:`, ...) is refused until ported.
+//! app/models/search_log.rb: words, quoted phrases and the advanced
+//! filters and keywords ported so far (crate::search::advanced); the
+//! others are refused.
 
+pub mod advanced;
 pub mod blurb;
+mod posts_query;
 
 use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock};
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use chrono::NaiveDateTime;
-use regex::Regex;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
@@ -174,159 +175,12 @@ pub fn clean_term(term: &str) -> String {
         .collect()
 }
 
-/// `process_advanced_search!`'s tokenizer: a run of non-quote, non-space
-/// characters with an optional quoted phrase glued on; unbalanced quotes
-/// vanish.
-fn words(term: &str) -> Vec<String> {
-    let chars: Vec<char> = term.chars().collect();
-    let is_ws = |c: char| matches!(c, ' ' | '\t' | '\n' | '\u{b}' | '\u{c}' | '\r');
-    let mut out = Vec::new();
-    let mut i = 0;
-    while i < chars.len() {
-        let start = i;
-        while i < chars.len() && chars[i] != '"' && !is_ws(chars[i]) {
-            i += 1;
-        }
-        if i < chars.len()
-            && chars[i] == '"'
-            && let Some(close) = chars[i + 1..].iter().position(|&c| c == '"')
-            && close > 0
-        {
-            i += close + 2;
-        }
-        if i == start {
-            i += 1;
-            continue;
-        }
-        out.push(chars[start..i].iter().collect());
-    }
-    out
-}
-
-/// Every registered `advanced_filter` regex, tested on the word with its
-/// quotes stripped (case-insensitive).
-const FILTER_PATTERNS: &[&str] = &[
-    r"\Ain:personal-direct\z",
-    r"\Ain:all-pms\z",
-    r"\Ain:tagged\z",
-    r"\Ain:bots?\z",
-    r"\Ain:humans?\z",
-    r"\Ain:whispers?\z",
-    r"\Ain:regular\z",
-    r"\Ain:untagged\z",
-    r"\Astatus:open\z",
-    r"\Astatus:closed\z",
-    r"\Astatus:public\z",
-    r"\Astatus:archived\z",
-    r"\Astatus:noreplies\z",
-    r"\Astatus:single_user\z",
-    r"\Aposts_count:(\d+)\z",
-    r"\Amin_post_count:(\d+)\z",
-    r"\Amin_posts:(\d+)\z",
-    r"\Amax_posts:(\d+)\z",
-    r"\Ain:first|^f\z",
-    r"\Ain:replies\z",
-    r"\Ain:pinned\z",
-    r"\Ain:wiki\z",
-    r"\Abadge:(.*)\z",
-    r"\Ain:(likes)\z",
-    r"\Ain:(bookmarks)\z",
-    r"\Ain:posted\z",
-    r"\Ain:(created|mine)\z",
-    r"\Ain:(watching|tracking)\z",
-    r"\Ain:seen\z",
-    r"\Ain:unseen\z",
-    r"\Acreated:@(.*)\z",
-    r"\Awith:images\z",
-    r"\Acategor(?:y|ies):(.+)\z",
-    r"\A\#([\p{L}\p{M}0-9\-:=]+)\z",
-    r"\Agroup:(.+)\z",
-    r"\Agroup_messages:(.+)\z",
-    r"\Auser:(.+)\z",
-    r"\A\@(\S+)\z",
-    r"\Abefore:(.*)\z",
-    r"\Aafter:(.*)\z",
-    r"\Atags?:([\p{L}\p{M}0-9,\-_+]+)\z",
-    r"\A\-tags?:([\p{L}\p{M}0-9,\-_+]+)\z",
-    r"\Afiletypes?:([a-zA-Z0-9,\-_]+)\z",
-    r"\Amin_views:(\d+)\z",
-    r"\Amax_views:(\d+)\z",
-    r"\Alocale:([a-zA-Z0-9_-]+)\z",
-];
-
-/// The keyword chain tested on the raw word after the filters.
-const KEYWORD_PATTERNS: &[&str] = &[
-    r"\Aorder:\w+\z",
-    r"\Ain:title\z",
-    r"\Atopic:(\d+)\z",
-    r"\Ain:all\z",
-    r"\Ain:all-posts\z",
-    r"\Ain:personal\z",
-    r"\Ain:messages\z",
-    r"\Ain:personal-direct\z",
-    r"\Ain:all-pms\z",
-    r"\Agroup_messages:(.+)\z",
-    r"\Apersonal_messages:(.+)\z",
-    r"\Ainclude:(invisible|unlisted)\z",
-];
-
-fn compiled(
-    patterns: &'static [&'static str],
-    cell: &'static OnceLock<Vec<Regex>>,
-) -> &'static [Regex] {
-    cell.get_or_init(|| {
-        patterns
-            .iter()
-            .map(|p| {
-                regex::RegexBuilder::new(p)
-                    .case_insensitive(true)
-                    .build()
-                    .expect("static search pattern")
-            })
-            .collect()
-    })
-}
-
-static FILTERS: OnceLock<Vec<Regex>> = OnceLock::new();
-static KEYWORDS: OnceLock<Vec<Regex>> = OnceLock::new();
-
-/// `process_advanced_search!` for the plain case: the words re-joined
-/// with single spaces; any filter or keyword is refused.
-pub fn process_advanced_search(term: &str) -> Result<String, Unsupported> {
-    let filters = compiled(FILTER_PATTERNS, &FILTERS);
-    let keywords = compiled(KEYWORD_PATTERNS, &KEYWORDS);
-    let mut kept = Vec::new();
-    for word in words(term) {
-        let cleaned: String = word.chars().filter(|c| *c != '"' && *c != '\'').collect();
-        if filters.iter().any(|re| re.is_match(&cleaned)) {
-            return Err(Unsupported(
-                "advanced search filters (in:, status:, category:, #, @, tags:, ...)",
-            ));
-        }
-        if matches!(word.as_str(), "l" | "r" | "t") || keywords.iter().any(|re| re.is_match(&word))
-        {
-            return Err(Unsupported(
-                "advanced search keywords (order:, in:title, l, t, ...)",
-            ));
-        }
-        kept.push(word);
-    }
-    Ok(kept.join(" "))
-}
-
-/// posts_query's `term_without_quote` for a topic's search: the term, or
-/// what its outermost double quotes enclose, or its outermost single
-/// quotes (checked last, so they win).
-pub fn topic_search_term(term: &str) -> String {
-    let mut out = term.to_string();
-    for quote in ['"', '\''] {
-        if let (Some(first), Some(last)) = (term.find(quote), term.rfind(quote))
-            && last > first + 1
-        {
-            out = term[first + 1..last].to_string();
-        }
-    }
-    out
+/// Ruby `String#squish`: stripped, whitespace runs one space.
+pub fn squish(s: &str) -> String {
+    s.split(char::is_whitespace)
+        .filter(|w| !w.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 /// `filter_short_terms`: words shorter than min_search_term_length go,
@@ -448,20 +302,29 @@ impl Search<'_> {
     /// `Search.new(term, args).execute` serialized through
     /// GroupedSearchResultSerializer; `None` is the nil result
     /// (`{"grouped_search_result":null}`).
+    /// `Search.new(term, args).execute` serialized through
+    /// GroupedSearchResultSerializer; `None` is the nil result
+    /// (`{"grouped_search_result":null}`).
     pub async fn execute(&mut self, args: &SearchArgs) -> Result<Option<Value>, SearchError> {
         self.check_unported()?;
         let clean = clean_term(&args.term);
-        let after_advanced = process_advanced_search(&clean)?;
-        // prepare_data: only URL rewriting is left to do after the tokenizer's
-        // squish, and URLs lose their query string there.
-        if after_advanced.split_whitespace().any(|w| {
+        let adv = advanced::process(&clean, self.settings, self.guardian.user_id().is_some())?;
+        let topic_context = args.topic_context;
+        // prepare_data: squished (but in a topic), and URLs lose their
+        // query string.
+        let mut term = match topic_context {
+            Some(_) => adv.term.clone(),
+            None => squish(&adv.term),
+        };
+        if term.split_whitespace().any(|w| {
             w.trim_matches('"').starts_with("http://")
                 || w.trim_matches('"').starts_with("https://")
         }) {
             return Err(Unsupported("URLs in search terms (query string stripping)").into());
         }
-        let blurb_term = (!after_advanced.is_empty()).then(|| after_advanced.clone());
-        let original_term = after_advanced.replace('\\', "\\\\");
+        // blurb_term is the term before prepare_data, blank or not.
+        let blurb_term = adv.term.clone();
+        let original_term = (!term.is_empty()).then(|| term.replace('\\', "\\\\"));
 
         let mut results = Results::default();
         // log_query?: not while the site is read only.
@@ -477,19 +340,13 @@ impl Search<'_> {
 
         // A topic's search keeps its short words (and searches the posts
         // even without any).
-        let topic_context = args.topic_context;
-        let term = match topic_context {
-            Some(_) => after_advanced.clone(),
-            None => {
-                let min_length =
-                    self.settings.get("min_search_term_length")?.to_i().max(0) as usize;
-                let term = filter_short_terms(&after_advanced, min_length);
-                if term.trim().is_empty() {
-                    return Ok(None);
-                }
-                term
+        if topic_context.is_none() {
+            let min_length = self.settings.get("min_search_term_length")?.to_i().max(0) as usize;
+            term = filter_short_terms(&term, min_length);
+            if term.trim().is_empty() && adv.filters.is_empty() && adv.order.is_none() {
+                return Ok(None);
             }
-        };
+        }
 
         // use_full_page_limit: the full page and a topic's search.
         let full_page_limit = args.full_page || topic_context.is_some();
@@ -505,40 +362,29 @@ impl Search<'_> {
             0
         };
 
-        // find_grouped_results
-        match args.type_filter {
-            Some(TypeFilter::User) => {
-                self.user_search(&term, &original_term, &mut results)
-                    .await?
+        let mut run = posts_query::Run {
+            adv,
+            term,
+            topic: topic_context,
+            category_filter_matched: false,
+            limit,
+            offset,
+        };
+        // find_grouped_results rescues ActiveRecord::StatementInvalid: a
+        // query Postgres rejects ends the search with what it found so far.
+        match self
+            .find_grouped_results(
+                args.type_filter,
+                &mut run,
+                original_term.as_deref(),
+                &mut results,
+            )
+            .await
+        {
+            Err(SearchError::Db(sqlx::Error::Database(e))) => {
+                tracing::warn!("search query failed: {e}");
             }
-            Some(TypeFilter::Category) => self.category_search(&term, &mut results).await?,
-            Some(TypeFilter::Tags) => self.tags_search(&term, &mut results).await?,
-            Some(TypeFilter::ExcludeTopics) => {
-                self.user_search(&term, &original_term, &mut results)
-                    .await?;
-                self.category_search(&term, &mut results).await?;
-                self.tags_search(&term, &mut results).await?;
-                self.groups_search(&term, &mut results).await?;
-            }
-            Some(TypeFilter::Topic) => {
-                self.topic_search(&term, limit, offset, &mut results)
-                    .await?
-            }
-            None => match topic_context {
-                Some(topic) => {
-                    self.topic_context_search(&term, topic, limit, &mut results)
-                        .await?
-                }
-                None => {
-                    self.user_search(&term, &original_term, &mut results)
-                        .await?;
-                    self.category_search(&term, &mut results).await?;
-                    self.tags_search(&term, &mut results).await?;
-                    self.groups_search(&term, &mut results).await?;
-                    self.topic_search(&term, limit, offset, &mut results)
-                        .await?;
-                }
-            },
+            other => other?,
         }
         // add()'s limit trick: the extra row flips the flag.
         let cap = if full_page_limit {
@@ -569,13 +415,58 @@ impl Search<'_> {
             self.serialize(
                 results,
                 &clean,
-                blurb_term.as_deref(),
+                Some(&blurb_term),
                 args.blurb_length,
-                &original_term,
+                original_term.as_deref().unwrap_or(""),
                 args.full_page,
             )
             .await?,
         ))
+    }
+
+    /// `find_grouped_results`
+    async fn find_grouped_results(
+        &mut self,
+        type_filter: Option<TypeFilter>,
+        run: &mut posts_query::Run,
+        original_term: Option<&str>,
+        results: &mut Results,
+    ) -> Result<(), SearchError> {
+        let term = run.term.clone();
+        let present = !term.trim().is_empty();
+        match type_filter {
+            Some(TypeFilter::User) => {
+                // Rails reads the nil @original_term of a term that was
+                // only filters, and raises.
+                let Some(original) = original_term else {
+                    return Err(Unsupported("type_filter=user with a term of only filters").into());
+                };
+                self.user_search(&term, original, results).await?
+            }
+            Some(TypeFilter::Category) => self.category_search(&term, results).await?,
+            Some(TypeFilter::Tags) => self.tags_search(&term, results).await?,
+            Some(TypeFilter::ExcludeTopics) => {
+                if present {
+                    self.user_search(&term, original_term.unwrap_or(""), results)
+                        .await?;
+                    self.category_search(&term, results).await?;
+                    self.tags_search(&term, results).await?;
+                    self.groups_search(&term, results).await?;
+                }
+            }
+            Some(TypeFilter::Topic) => self.topic_search(run, results).await?,
+            None => {
+                if present && run.topic.is_none() {
+                    self.user_search(&term, original_term.unwrap_or(""), results)
+                        .await?;
+                    self.category_search(&term, results).await?;
+                    self.tags_search(&term, results).await?;
+                    self.groups_search(&term, results).await?;
+                }
+                self.topic_search(run, results).await?;
+            }
+        }
+        Ok(())
     }
 
     /// Settings that change the queries in ways not ported.
@@ -607,248 +498,20 @@ impl Search<'_> {
         if s.get("search_default_sort_order")?.to_i() != 0 {
             return Err(Unsupported("search_default_sort_order other than relevance").into());
         }
+        if s.get("solved_enabled")?.truthy()
+            && s.get("prioritize_solved_topics_in_search")?.truthy()
+        {
+            return Err(Unsupported("prioritize_solved_topics_in_search").into());
+        }
+        // GroupedSearchResultSerializer#extra's categories.
+        if self.guardian.can_lazy_load_categories(s)? {
+            return Err(Unsupported("search results for lazy-loaded categories (extra)").into());
+        }
         Ok(())
     }
 
     fn config(&self) -> Result<&'static str, SearchError> {
         Ok(ts_config(&self.settings.get("default_locale")?.to_s()))
-    }
-
-    /// `topic_search` -> `aggregate_search`: one row per topic with its
-    /// lowest matching post number, topics ranked by their best post.
-    /// With search_recent_regular_posts_offset_post_id set (large sites,
-    /// by create_recent_post_search_indexes), `aggregate_post_sql` splits
-    /// at that post: topics matched by recent posts first, the older ones
-    /// only when those fall short of the limit. Neither before:/after: nor
-    /// the all-topics and message searches, which search everything, are
-    /// ported.
-    async fn topic_search(
-        &mut self,
-        term: &str,
-        limit: i64,
-        offset: i64,
-        results: &mut Results,
-    ) -> Result<(), SearchError> {
-        let config = self.config()?;
-        let weights = if self.settings.get("tagging_enabled")?.truthy() {
-            "ABCD"
-        } else {
-            "ABD"
-        };
-        let normalization = self.settings.get("search_ranking_normalization")?.to_s();
-        let low = ruby_float(
-            self.settings
-                .get("category_search_priority_low_weight")?
-                .to_f(),
-        );
-        let high = ruby_float(
-            self.settings
-                .get("category_search_priority_high_weight")?
-                .to_f(),
-        );
-        let priority_weights = format!(
-            "(CASE categories.search_priority WHEN 3 THEN {low} WHEN 4 THEN {high} ELSE 1.0 END \
-             * CASE WHEN topics.closed THEN 0.9 WHEN topics.archived THEN 0.85 ELSE 1.0 END)"
-        );
-        let rank = format!(
-            "TS_RANK_CD(post_search_data.search_data, {}, {normalization}|32)",
-            ts_query_sql(config, 1)
-        );
-        let exact_rank = format!(
-            "TS_RANK_CD(post_search_data.search_data, {}, {normalization}|32)",
-            ts_query_sql(config, 2)
-        );
-        let mut order = vec![
-            "MAX((CASE categories.search_priority WHEN 5 THEN 3 WHEN 2 THEN 1 ELSE 2 END)) DESC"
-                .to_string(),
-        ];
-        if self
-            .settings
-            .get("prioritize_exact_search_title_match")?
-            .truthy()
-        {
-            order.push(format!("MAX({exact_rank} * {priority_weights}) DESC"));
-        }
-        order.push(format!("MAX(({rank} * {priority_weights})) DESC"));
-        order.push("topics.bumped_at DESC".to_string());
-
-        // Quoted phrases must also appear verbatim in the raw or the title.
-        let phrases: Vec<String> = quoted_phrases(term);
-        let mut phrase_clauses = String::new();
-        for (i, _) in phrases.iter().enumerate() {
-            let bind = 5 + i;
-            phrase_clauses.push_str(&format!(
-                " AND (posts.raw ILIKE ${bind} OR topics.title ILIKE ${bind})"
-            ));
-        }
-        // Whisperers search whispers too; members see their secure
-        // categories.
-        let post_types = self
-            .guardian
-            .visible_post_types(self.settings)?
-            .iter()
-            .map(|t| t.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-        let secure_ids = self
-            .guardian
-            .secure_category_ids(&mut *self.conn, self.settings)
-            .await?;
-        let secure = if secure_ids.is_empty() {
-            String::new()
-        } else {
-            format!(
-                " OR (categories.id IN ({}))",
-                secure_ids
-                    .iter()
-                    .map(|id| id.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            )
-        };
-        let inner = format!(
-            "SELECT topics.id, min(posts.post_number) post_number FROM posts \
-             INNER JOIN post_search_data ON post_search_data.post_id = posts.id \
-             INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id \
-             LEFT JOIN categories ON categories.id = topics.category_id \
-             WHERE posts.deleted_at IS NULL AND posts.post_type IN ({post_types}) AND posts.hidden = FALSE \
-             AND (topics.visible) \
-             AND (topics.archetype <> 'private_message' AND NOT post_search_data.private_message) \
-             AND (post_search_data.search_data @@ {}){phrase_clauses}{{split}} \
-             AND ((categories.search_priority IS NULL OR categories.search_priority IS NOT NULL AND categories.search_priority <> 1)) \
-             AND ((categories.id IS NULL) OR (NOT categories.read_restricted){secure}) \
-             GROUP BY topics.id ORDER BY {} LIMIT $3 OFFSET $4",
-            ts_query_sql(config, 1),
-            order.join(", ")
-        );
-        let sql = format!(
-            "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
-                    posts.like_count, psd.raw_data, psd.version \
-             FROM posts \
-             JOIN (SELECT *, row_number() over() row_number FROM ({inner}) xxx) x \
-               ON x.id = posts.topic_id AND x.post_number = posts.post_number \
-             JOIN post_search_data psd ON psd.post_id = posts.id \
-             WHERE posts.deleted_at IS NULL ORDER BY x.row_number"
-        );
-        let min_id = self
-            .settings
-            .get("search_recent_regular_posts_offset_post_id")?
-            .to_i();
-        let min_bind = 5 + phrases.len();
-        let parts: Vec<String> = if min_id > 0 {
-            vec![
-                format!(" AND post_search_data.post_id >= ${min_bind}"),
-                format!(" AND post_search_data.post_id < ${min_bind}"),
-            ]
-        } else {
-            vec![String::new()]
-        };
-        for (i, split) in parts.iter().enumerate() {
-            // aggregate_search: the remaining set only when the default
-            // set came up short.
-            if i > 0 && results.posts.len() as i64 >= limit {
-                break;
-            }
-            let sql = sql.replace("{split}", split);
-            let mut query = sqlx::query_as::<_, PostHit>(&sql)
-                .bind(ts_query_value(term, weights, true))
-                .bind(ts_query_value(term, "A", false))
-                .bind(limit)
-                .bind(offset);
-            for phrase in &phrases {
-                query = query.bind(format!("%{phrase}%"));
-            }
-            if min_id > 0 {
-                query = query.bind(min_id as i32);
-            }
-            results
-                .posts
-                .extend(query.fetch_all(&mut *self.conn).await?);
-        }
-        Ok(())
-    }
-
-    /// `topic_search` with a topic as the context: posts_query's topic
-    /// branch, the topic's visible posts (hidden topics included) whose raw,
-    /// indexed text, author's username (and name) contain the term (the
-    /// first quoted part when it has one), in post order.
-    async fn topic_context_search(
-        &mut self,
-        term: &str,
-        topic: TopicContext,
-        limit: i64,
-        results: &mut Results,
-    ) -> Result<(), SearchError> {
-        let post_types = self
-            .guardian
-            .visible_post_types(self.settings)?
-            .iter()
-            .map(|t| t.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-        let mut sql = String::from(
-            "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
-                    posts.like_count, post_search_data.raw_data, post_search_data.version \
-             FROM posts \
-             INNER JOIN post_search_data ON post_search_data.post_id = posts.id \
-             INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id ",
-        );
-        if !topic.private_message {
-            sql.push_str("LEFT JOIN categories ON categories.id = topics.category_id ");
-        }
-        sql.push_str(&format!(
-            "JOIN users u ON u.id = posts.user_id \
-             WHERE posts.deleted_at IS NULL AND posts.post_type IN ({post_types}) AND posts.hidden = FALSE "
-        ));
-        if topic.private_message {
-            sql.push_str(
-                "AND (topics.archetype = 'private_message' AND post_search_data.private_message) ",
-            );
-            if !self.guardian.is_admin() {
-                let uid = self.guardian.user_id().unwrap_or(-1);
-                sql.push_str(&format!(
-                    "AND (topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {uid}) \
-                     OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
-                       JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id)) "
-                ));
-            }
-        } else {
-            sql.push_str(
-                "AND (topics.archetype <> 'private_message' AND NOT post_search_data.private_message) ",
-            );
-        }
-        let mut fields =
-            "posts.raw || ' ' || post_search_data.raw_data || ' ' || u.username".to_string();
-        if self.settings.get("enable_names")?.truthy() {
-            fields.push_str(" || ' ' || COALESCE(u.name, '')");
-        }
-        sql.push_str(&format!("AND ({fields} ILIKE $1) AND (topics.id = $2) "));
-        if !topic.private_message {
-            let secure_ids = self
-                .guardian
-                .secure_category_ids(&mut *self.conn, self.settings)
-                .await?;
-            if secure_ids.is_empty() {
-                sql.push_str("AND ((categories.id IS NULL) OR (NOT categories.read_restricted)) ");
-            } else {
-                sql.push_str(&format!(
-                    "AND ((categories.id IS NULL) OR (NOT categories.read_restricted) OR (categories.id IN ({}))) ",
-                    secure_ids
-                        .iter()
-                        .map(|id| id.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                ));
-            }
-        }
-        sql.push_str("AND (posts.topic_id = $2) ORDER BY posts.post_number ASC LIMIT $3 OFFSET 0");
-        results.posts = sqlx::query_as(&sql)
-            .bind(format!("%{}%", topic_search_term(term)))
-            .bind(topic.id)
-            .bind(limit)
-            .fetch_all(&mut *self.conn)
-            .await?;
-        Ok(())
     }
 
     /// `user_search`: active, unstaged, unsuspended users matching in the
@@ -1349,25 +1012,6 @@ impl Search<'_> {
     }
 }
 
-/// `@term.scan(/"([^"]+)"/)`
-fn quoted_phrases(term: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut rest = term;
-    while let Some(start) = rest.find('"') {
-        let after = &rest[start + 1..];
-        match after.find('"') {
-            Some(end) => {
-                if end > 0 {
-                    out.push(after[..end].to_string());
-                }
-                rest = &after[end + 1..];
-            }
-            None => break,
-        }
-    }
-    out
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1377,32 +1021,6 @@ mod tests {
         assert_eq!(clean_term("cap\u{200b}ybara"), "capybara");
         assert_eq!(clean_term("\u{201c}discourse\u{201d}"), "\"discourse\"");
         assert_eq!(clean_term("it\u{2019}s"), "it's");
-    }
-
-    #[test]
-    fn tokenizes_like_process_advanced_search() {
-        assert_eq!(words("hello\tworld"), vec!["hello", "world"]);
-        assert_eq!(words("foo\"bar baz\" x"), vec!["foo\"bar baz\"", "x"]);
-        assert_eq!(words("\"a b\" c"), vec!["\"a b\"", "c"]);
-        assert_eq!(words("a \" b"), vec!["a", "b"]);
-        assert_eq!(
-            process_advanced_search(" hello    world ").unwrap(),
-            "hello world"
-        );
-        assert_eq!(process_advanced_search("foo:bar").unwrap(), "foo:bar");
-        assert_eq!(process_advanced_search("a#b").unwrap(), "a#b");
-        for term in [
-            "hello #general",
-            "f foo",
-            "in:title x",
-            "order:latest x",
-            "@user",
-            "l",
-            "x category:general",
-            "\"in:first\"",
-        ] {
-            assert!(process_advanced_search(term).is_err(), "{term}");
-        }
     }
 
     #[test]
@@ -1426,6 +1044,14 @@ mod tests {
         assert_eq!(ts_query_value("a\\b", "ABCD", true), "'a\\\\\\\\b':*ABCD");
         assert_eq!(ruby_float(0.8), "0.8");
         assert_eq!(ruby_float(1.0), "1.0");
-        assert_eq!(quoted_phrases("x \"a b\" y \"c\""), vec!["a b", "c"]);
+        assert_eq!(
+            posts_query::quoted_phrases("x \"a b\" y \"c\""),
+            vec!["a b", "c"]
+        );
+    }
+
+    #[test]
+    fn squishes_like_ruby() {
+        assert_eq!(squish("  a \t\"b   c\"\n d "), "a \"b c\" d");
     }
 }

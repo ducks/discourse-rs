@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=%23general&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20%23general&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=%23staff&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"}
+  ]
+}

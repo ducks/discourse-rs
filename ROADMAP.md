@@ -1150,15 +1150,23 @@ generate_theme_screenshot_thumbnails (171).
     search menu suggests (`#`, `@`, `in:`, `status:`, `order:`), stacked
     branches `feat/search-advanced-<x>`; accents, CJK and the ranking
     settings stay with 144:
-    143a. `feat/search-advanced-category` M: posts_query as Rails builds
-    it (Search#posts_query with apply_filters and apply_order: the
-    filters run over a term, or alone; the blank term's blurbs), the
-    tokenizer's filters and keywords recognized as registered (core's,
-    then the enabled plugins'), the `#` filter (`#slug`,
-    `#parent:child`, `#=slug` without subcategories, a tag or its
-    synonym's target, a tag group, the term put back otherwise) and
+    143a. ~~`feat/search-advanced-category`~~ (done) M: posts_query as
+    Rails builds it (Search#posts_query with apply_filters: the filters
+    run over a term, or alone; the term squished as prepare_data does;
+    the blank term's blurbs; find_grouped_results' rescue of a query
+    Postgres rejects), the tokenizer's filters and keywords recognized
+    as registered (core's, then the enabled plugins'), the `#` filter
+    (`#slug`, `#parent:child`, `#=slug` without subcategories, a tag or
+    its synonym's target, a tag group, the term put back otherwise) and
     `category:`/`categories:` (lists, `=`, ids, names), which skip
-    categories_ignored once matched. Anything else stays refused
+    categories_ignored once matched; the search menu's category, tag and
+    user suggestions put their slug in the term (Ember's fullSlug), the
+    full page's blurbs draw their emoji. Refused until their items:
+    every other filter and keyword (search/advanced.rs), the solved
+    plugin's prioritize_solved_topics_in_search (143e), a user search
+    (type_filter=user) of only filters, which Rails fails on;
+    search results for a member with lazy-loaded categories
+    (GroupedSearchResultSerializer#extra)
     143b. `feat/search-advanced-user` S: `@user` and `@me`, `user:`,
     `created:@`, `group:` (visible groups whose members are visible),
     `badge:`
@@ -1193,7 +1201,8 @@ generate_theme_screenshot_thumbnails (171).
     advanced filters panel as Ember renders it (search-advanced-options:
     the category and tag choosers, posted by, in, status, posted
     before/after, views and posts counts), its terms written into the
-    search box and read back from it (94's leftover in 196)
+    search box and read back from it, the count of filters in use on
+    its toggle (94's leftover in 196)
 144. `feat/search-settings` M: search_ignore_accents (unaccent) and CJK
     tokenization, searching and indexing (search/mod.rs:542,555,559;
     posting/search_index.rs:267,275), use_pg_headlines_for_excerpt,
