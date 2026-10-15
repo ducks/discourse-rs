@@ -33,6 +33,52 @@ pub struct TopicListData {
     /// the users of the topic's answer posts, through Rails' join on posts,
     /// which keeps deleted ones.
     pub answerers: HashMap<i32, Vec<i32>>,
+    /// The custom fields topic_list_keys reads, for the page's categories.
+    pub category_fields: CategoryFields,
+}
+
+/// Category custom fields read once for many topics: by category, in id
+/// order, as `category.custom_fields[name]` finds the first.
+#[derive(Debug, Default)]
+pub struct CategoryFields(Vec<(i32, String, Option<String>)>);
+
+impl CategoryFields {
+    /// What topic_list_keys reads for the topics' categories.
+    async fn load(conn: &mut PgConnection, topic_ids: &[i32]) -> Result<Self, sqlx::Error> {
+        Ok(CategoryFields(
+            sqlx::query_as(
+                "SELECT category_id, name, value FROM category_custom_fields \
+                 WHERE category_id IN (SELECT category_id FROM topics WHERE id = ANY($1)) \
+                   AND name IN ('empty_box_on_unsolved', 'enable_accepted_answers') \
+                 ORDER BY id",
+            )
+            .bind(topic_ids)
+            .fetch_all(conn)
+            .await?,
+        ))
+    }
+
+    fn get(&self, category_id: Option<i32>, name: &str) -> Option<String> {
+        let category_id = category_id?;
+        self.0
+            .iter()
+            .find(|(id, n, _)| *id == category_id && n == name)
+            .and_then(|(_, _, v)| v.clone())
+    }
+}
+
+/// `category.custom_fields[name]` from the page's fields when given, else
+/// read for the one category.
+async fn field(
+    conn: &mut PgConnection,
+    fields: Option<&CategoryFields>,
+    category_id: Option<i32>,
+    name: &str,
+) -> Result<Option<String>, sqlx::Error> {
+    match fields {
+        Some(fields) => Ok(fields.get(category_id, name)),
+        None => category_field(conn, category_id, name).await,
+    }
 }
 
 impl TopicListData {
@@ -57,6 +103,7 @@ impl TopicListData {
                 }
             }
         }
+        data.category_fields = CategoryFields::load(conn, topic_ids).await?;
         Ok(data)
     }
 
@@ -135,6 +182,7 @@ async fn enabled_for_category(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     topic: &TopicFacts,
+    fields: Option<&CategoryFields>,
 ) -> Result<bool, PluginError> {
     if settings.get("allow_solved_on_all_topics")?.truthy() {
         return Ok(true);
@@ -152,7 +200,7 @@ async fn enabled_for_category(
         }
     }
     Ok(
-        category_field(conn, topic.category_id, "enable_accepted_answers")
+        field(conn, fields, topic.category_id, "enable_accepted_answers")
             .await?
             .as_deref()
             == Some("true"),
@@ -164,6 +212,7 @@ pub async fn allow_accepted_answers(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     topic: &TopicFacts,
+    fields: Option<&CategoryFields>,
 ) -> Result<bool, PluginError> {
     if settings.get("allow_solved_on_all_topics")?.truthy() {
         return Ok(true);
@@ -182,7 +231,7 @@ pub async fn allow_accepted_answers(
         .fetch_one(&mut *conn)
         .await?);
     }
-    enabled_for_category(conn, settings, topic).await
+    enabled_for_category(conn, settings, topic, fields).await
 }
 
 /// TopicAnswerMixin's keys for a topic in a list: `has_accepted_answer`,
@@ -192,13 +241,14 @@ pub async fn topic_list_keys(
     settings: &SiteSettings,
     topic: &TopicFacts,
     answered: bool,
+    fields: Option<&CategoryFields>,
     out: &mut Map<String, Value>,
 ) -> Result<(), PluginError> {
     if !enabled(settings)? {
         return Ok(());
     }
     out.insert("has_accepted_answer".into(), json!(answered));
-    if category_field(conn, topic.category_id, "empty_box_on_unsolved")
+    if field(conn, fields, topic.category_id, "empty_box_on_unsolved")
         .await?
         .as_deref()
         == Some("true")
@@ -208,7 +258,7 @@ pub async fn topic_list_keys(
         } else if !topic.private_message() && (topic.closed || topic.archived) {
             false
         } else {
-            allow_accepted_answers(conn, settings, topic).await?
+            allow_accepted_answers(conn, settings, topic, fields).await?
         };
         out.insert("can_have_answer".into(), json!(can_have));
     }
@@ -285,7 +335,7 @@ impl TopicView {
                 .await?,
                 None => Vec::new(),
             };
-        let allow = allow_accepted_answers(conn, settings, &topic).await?;
+        let allow = allow_accepted_answers(conn, settings, &topic, None).await?;
         let staff = guardian.is_staff();
         let mut accepts_any = staff
             || (guardian.is_authenticated()
@@ -492,6 +542,7 @@ mod tests {
         let data = TopicListData {
             answered: HashSet::from([35]),
             answerers: HashMap::from([(35, vec![4])]),
+            ..Default::default()
         };
         let mut posters = inputs();
         data.rewrite_posters(&i18n, 35, 5, &mut posters);
@@ -507,6 +558,7 @@ mod tests {
         let data = TopicListData {
             answered: HashSet::from([35]),
             answerers: HashMap::from([(35, vec![5])]),
+            ..Default::default()
         };
         data.rewrite_posters(&i18n, 35, 5, &mut posters);
         assert!(posters.last_poster_stays);

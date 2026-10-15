@@ -407,11 +407,15 @@ impl TopicListSerializer<'_> {
         if !crate::plugins::solved::enabled(self.settings)? {
             return Ok(());
         }
-        let answered = match &self.prefetched.plugins.solved {
-            Some(data) if self.prefetched.topic_ids.contains(&t.id) => {
-                data.answered.contains(&t.id)
-            }
-            _ => crate::plugins::solved::answered_topics(&mut *self.conn, &[t.id])
+        let prefetched = self
+            .prefetched
+            .plugins
+            .solved
+            .as_ref()
+            .filter(|_| self.prefetched.topic_ids.contains(&t.id));
+        let answered = match prefetched {
+            Some(data) => data.answered.contains(&t.id),
+            None => crate::plugins::solved::answered_topics(&mut *self.conn, &[t.id])
                 .await?
                 .contains(&t.id),
         };
@@ -429,6 +433,7 @@ impl TopicListSerializer<'_> {
             self.settings,
             &facts,
             answered,
+            prefetched.map(|data| &data.category_fields),
             out,
         )
         .await?;
