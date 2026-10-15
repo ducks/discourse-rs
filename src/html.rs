@@ -3,6 +3,8 @@
 //! crawler views (app/views/list/list.erb, topics/show.html.erb); the
 //! styling is ours.
 
+use std::collections::HashMap;
+
 use askama::Template;
 use chrono::NaiveDateTime;
 use serde_json::Value;
@@ -142,6 +144,9 @@ pub struct Site {
     pub bus_position: String,
     /// What the layout's header and body need beyond the settings.
     pub chrome: Chrome,
+    /// The list categories as the chrome's composer read them, for the
+    /// page to take (list_categories).
+    categories: Option<HashMap<i64, crate::topic_list_view::ListCategory>>,
 }
 
 impl Site {
@@ -154,7 +159,20 @@ impl Site {
             viewer: None,
             bus_position: String::new(),
             chrome: Chrome::default(),
+            categories: None,
         })
+    }
+
+    /// topic_list_view::categories: the chrome's when it read them, else
+    /// read now.
+    pub async fn list_categories(
+        &mut self,
+        conn: &mut PgConnection,
+    ) -> Result<HashMap<i64, crate::topic_list_view::ListCategory>, sqlx::Error> {
+        match self.categories.take() {
+            Some(categories) => Ok(categories),
+            None => crate::topic_list_view::categories(conn).await,
+        }
     }
 }
 
@@ -912,7 +930,7 @@ impl Site {
     /// The member's composer, with the categories they may create topics
     /// in for its chooser.
     async fn composer(
-        &self,
+        &mut self,
         conn: &mut PgConnection,
         state: &crate::AppState,
         settings: &SiteSettings,
@@ -1029,7 +1047,7 @@ impl Site {
             || guardian.in_setting_groups(settings, "poll_create_allowed_groups")?;
         let popup_options = crate::composer_view::popup_options(settings, can_create_poll)?;
         let unported_popup = crate::composer_view::unported_popup_plugins(settings)?;
-        Ok(crate::composer_view::render(
+        let html = crate::composer_view::render(
             &list,
             &chooser,
             default_category,
@@ -1048,7 +1066,9 @@ impl Site {
             .as_ref(),
             Some((&popup_options, &unported_popup)),
             tag_chooser.as_ref(),
-        ))
+        );
+        self.categories = Some(categories);
+        Ok(html)
     }
 }
 
@@ -1837,14 +1857,14 @@ fn s(v: &Value) -> String {
 /// the member's last visit was (TopicList#lastVisitedTopic).
 pub async fn latest_page(
     conn: &mut PgConnection,
-    site: Site,
+    mut site: Site,
     list: &Value,
     i18n: &I18n,
     settings: &SiteSettings,
     expand_all_pinned: bool,
     highlight_last_visited: bool,
 ) -> Result<LatestPage, HtmlError> {
-    let categories = crate::topic_list_view::categories(conn).await?;
+    let categories = site.list_categories(conn).await?;
     let cx = crate::topic_list_view::ListContext {
         i18n,
         base_path: &site.base_path,
@@ -1879,7 +1899,6 @@ pub async fn latest_page(
         })
         .unwrap_or_default();
     // Discovery topics hides the footer while the list can load more.
-    let mut site = site;
     if list["topic_list"]["more_topics_url"].is_string() {
         site.chrome.powered_by = false;
     }
@@ -1995,7 +2014,7 @@ pub async fn topic_page(
     conn: &mut PgConnection,
     i18n: &I18n,
     settings: &SiteSettings,
-    site: Site,
+    mut site: Site,
     view: &Value,
     page: i64,
 ) -> Result<TopicPage, HtmlError> {
@@ -2004,7 +2023,7 @@ pub async fn topic_page(
     let id = view["id"].as_i64().unwrap_or(0);
     let topic_url = format!("{base}/t/{slug}/{id}");
 
-    let categories = crate::topic_list_view::categories(conn).await?;
+    let categories = site.list_categories(conn).await?;
     let list = crate::topic_list_view::ListContext {
         i18n,
         base_path: &base,
@@ -2093,8 +2112,6 @@ pub async fn topic_page(
         }
     };
 
-    // topic.gjs hides the footer until the post stream is loaded to its end.
-    let mut site = site;
     // The page's posts, which the live updates redraw when a change spans
     // the topic (discourse-solved's accepted answers).
     let numbers: Vec<i64> = view["post_stream"]["posts"]
@@ -2109,6 +2126,7 @@ pub async fn topic_page(
     if let (Some(first), Some(last)) = (numbers.iter().min(), numbers.iter().max()) {
         site.chrome.live_param("posts", &format!("{first}-{last}"));
     }
+    // topic.gjs hides the footer until the post stream is loaded to its end.
     if page < last_page {
         site.chrome.powered_by = false;
     }
