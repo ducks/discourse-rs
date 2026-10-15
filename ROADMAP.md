@@ -1555,7 +1555,38 @@ route table has been made, so this list may be short.
     CRUD, synonyms, tag groups and tag uploads, watched words' tag action
     (watched_words.rs:129,286; routes/admin_watched_words.rs:68;
     posting/create.rs:312), unused tags with synonyms
-    (jobs/cleanup.rs:340)
+    (jobs/cleanup.rs:340). Split by dependency, each branch stacked on the
+    one before. PUT /t's tag edits (PostRevisor's tags field, PUT
+    /t/:id/tags, the edit composer's tags, NotifyTagChange) go with 188,
+    whose PostRevisor calls 189a's `tagging::tag_topic`: 189a.
+    `feat/tags-writes-topics` L (posts#create's `tags`, as names or
+    `{id, name}` objects: reject_too_many_tags, TopicCreator#valid?'s
+    validate_category_tags, DiscourseTagging.tag_topic_by_names with
+    can_tag?, tags_for_saving and clean_tag, synonyms resolving to their
+    target, readonly, hidden and permitted tags, filter_allowed_tags for
+    the topic's category, creating new tags when allowed (Tag's slug,
+    validations, search index and tag_created web hooks), one tag per
+    group, mandatory parent tags, minimum_required_tags, required tag
+    groups, tags restricted to other categories, tags on messages
+    (pm_tags_allowed_for_groups); TopicTag's counters and
+    category_tag_stats; TagUser.auto_watch and auto_track; first post
+    alerts to tag watchers (jobs/post_alert.rs:556, taken from 145);
+    watched words that tag topics (posting/create.rs:312)), 189b.
+    `feat/tags-writes-chooser` M (GET /tags/filter/search, Tags::Search
+    with its required tag group and forbidden answers; the composer's
+    mini-tag-chooser as Ember renders it on desktop and mobile, posting
+    its tags), 189c. `feat/tags-writes-watched-words` S (the tag action
+    in the admin's watched words: creating, listing and site.json
+    (watched_words.rs:129,286; routes/admin_watched_words.rs:68)), 189d.
+    `feat/tags-writes-admin` L (TagsController: update and rename with
+    the renamed_tag log and hashtag remap, destroy, synonyms added and
+    removed, upload CSV, bulk_create, the unused tags listed and deleted
+    (jobs/cleanup.rs:340), info, settings and update_settings, list,
+    personal_messages, and the notification level per tag (TagUser.change)
+    with the tag page's notifications menu), 189e.
+    `feat/tags-writes-groups` M (TagGroupsController: index, show,
+    create, update, destroy and search, with their staff action logs,
+    permissions, parent tag and one_per_topic)
 190. `feat/categories-writes` L: POST, PUT and DELETE /categories,
     categories#show with CategorySerializer (the `not_yet` cases
     groups/read_permissions_anon and groups/read_permissions_user1;
