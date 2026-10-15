@@ -152,6 +152,7 @@ pub mod site;
 pub mod site_icons;
 pub mod site_setting_update;
 pub mod site_settings;
+pub mod site_state;
 pub mod site_texts;
 pub mod staff_action_logs;
 pub mod stylesheet;
@@ -231,8 +232,14 @@ pub struct AppState {
     pub bus: pg_bus::Bus,
     /// Anonymous responses kept for the actions that allow it.
     pub anonymous_cache: Arc<anonymous_cache::Cache>,
-    /// The request tracker's rate limit lists, kept in the process.
+    /// The request tracker's rate limit lists of this site (per user,
+    /// per crawler), kept in the process.
     pub rate_limits: rate_limiter::MemoryStore,
+    /// The tracker's `GLOBAL::` lists (per address), one store for every
+    /// site of the process.
+    pub global_rate_limits: rate_limiter::MemoryStore,
+    /// What the site keeps in the process between requests and jobs.
+    pub site: Arc<site_state::SiteState>,
 }
 
 pub fn app(state: AppState) -> Router {

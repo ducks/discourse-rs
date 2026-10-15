@@ -15,7 +15,7 @@
 //! ([`I18n::refresh_overrides`], before every request and job).
 
 use std::collections::{HashMap, HashSet};
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 use serde_yaml_ng::Value as Yaml;
 
@@ -33,7 +33,8 @@ pub const OVERRIDE_LOCALE: &str = "en";
 
 #[derive(Debug)]
 pub struct I18n {
-    strings: HashMap<String, String>,
+    /// The vendored strings, shared by every site of the process.
+    strings: Arc<HashMap<String, String>>,
     overrides: RwLock<Overrides>,
 }
 
@@ -69,7 +70,7 @@ impl I18n {
         let mut i18n = Self::parse(SERVER_EN_YML)?;
         let client =
             Self::parse(CLIENT_EN_YML).map_err(|e| e.replace("server.en.yml", "client.en.yml"))?;
-        i18n.strings.extend(client.strings);
+        Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(client.strings));
         for (name, src) in [
             ("plugin_client.en.yml", PLUGIN_CLIENT_EN_YML),
             ("plugin_server.en.yml", PLUGIN_SERVER_EN_YML),
@@ -78,7 +79,7 @@ impl I18n {
                 let root: Yaml = serde::Deserialize::deserialize(document)
                     .map_err(|e| format!("{name}: {e}"))?;
                 let plugin = Self::from_yaml(root).map_err(|e| e.replace("server.en.yml", name))?;
-                i18n.strings.extend(plugin.strings);
+                Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(plugin.strings));
             }
         }
         Ok(i18n)
@@ -89,9 +90,17 @@ impl I18n {
         Self::from_yaml(root)
     }
 
+    /// The same strings with no overrides read yet, for another site.
+    pub fn for_site(&self) -> I18n {
+        I18n {
+            strings: self.strings.clone(),
+            overrides: RwLock::new(Overrides::default()),
+        }
+    }
+
     fn new(strings: HashMap<String, String>) -> Self {
         I18n {
-            strings,
+            strings: Arc::new(strings),
             overrides: RwLock::new(Overrides::default()),
         }
     }
@@ -190,7 +199,7 @@ impl I18n {
     pub fn subtree(&self, key: &str) -> Option<serde_json::Value> {
         let prefix = format!("{key}.");
         let mut root = serde_json::Map::new();
-        for (k, v) in &self.strings {
+        for (k, v) in self.strings.iter() {
             let Some(rest) = k.strip_prefix(&prefix) else {
                 continue;
             };

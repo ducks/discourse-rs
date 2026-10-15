@@ -197,18 +197,23 @@ fn active_limiter(
     (format!("ip/{ip}"), "ip", true)
 }
 
+/// A tracker limiter on its lists: a `GLOBAL::` one on the process's,
+/// shared by every site as Rails' unnamespaced Redis keys are, the rest on
+/// the site's.
 fn limiter(
-    store: &crate::rate_limiter::MemoryStore,
+    state: &AppState,
     key: String,
     max: i64,
     secs: i64,
     code: String,
     global: bool,
 ) -> RateLimiter {
-    let limiter = RateLimiter::new(None, &key, max, secs)
-        .error_code(&code)
-        .in_memory(store);
-    if global { limiter.global() } else { limiter }
+    let limiter = RateLimiter::new(None, &key, max, secs).error_code(&code);
+    if global {
+        limiter.in_memory(&state.global_rate_limits).global()
+    } else {
+        limiter.in_memory(&state.rate_limits)
+    }
 }
 
 /// The plain text 429 the tracker answers before the app.
@@ -323,7 +328,7 @@ async fn check_limits(
         let hostname = std::env::var("HOSTNAME").unwrap_or_default();
         let (key, code, global) = active_limiter(&limits, cookie.as_ref(), path, &ip, &hostname);
         let limiter10 = limiter(
-            &state.rate_limits,
+            state,
             format!("global_limit_10_{key}"),
             limits.per_10_seconds,
             10,
@@ -332,7 +337,7 @@ async fn check_limits(
         )
         .aggressive();
         let limiter60 = limiter(
-            &state.rate_limits,
+            state,
             format!("global_limit_60_{key}"),
             limits.per_minute,
             60,
@@ -341,7 +346,7 @@ async fn check_limits(
         )
         .aggressive();
         let assets10 = limiter(
-            &state.rate_limits,
+            state,
             format!("global_limit_10_assets_{key}"),
             limits.assets_per_10_seconds,
             10,

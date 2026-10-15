@@ -69,9 +69,9 @@ async fn tracking(env: RailsEnv) -> (TestDb, AppState) {
 
 /// The deferred work done and the counts written, as the minute's flush
 /// would.
-async fn settle(pool: &PgPool) {
+async fn settle(st: &AppState) {
     request_tracking::drain().await;
-    request_tracking::flush(pool).await.unwrap();
+    request_tracking::flush(st).await.unwrap();
 }
 
 async fn counts(pool: &PgPool) -> Vec<(String, i32)> {
@@ -134,8 +134,9 @@ async fn sign_in(st: &AppState) -> String {
 }
 
 /// Clears what earlier requests (signing in) logged.
-async fn reset(pool: &PgPool) {
-    settle(pool).await;
+async fn reset(st: &AppState) {
+    let pool = &st.pool;
+    settle(st).await;
     for table in [
         "application_requests",
         "web_crawler_requests",
@@ -160,7 +161,7 @@ async fn development_logs_nothing() {
     assert_eq!(reply.status, StatusCode::OK);
     assert!(!reply.headers.contains_key("x-discourse-trackview"));
     assert!(!reply.headers.contains_key("x-runtime"));
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(counts(&db.pool).await, vec![]);
 }
 
@@ -202,7 +203,7 @@ async fn an_html_page_is_an_anonymous_page_view() {
         "",
     )
     .await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[
@@ -229,7 +230,7 @@ async fn crawlers_are_counted_by_user_agent() {
         "",
     )
     .await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[("http_total", 3), ("http_2xx", 3), ("page_view_crawler", 3)])
@@ -269,7 +270,7 @@ async fn background_requests_and_the_pageview_ping() {
         "",
     )
     .await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[("http_total", 2), ("http_2xx", 1), ("http_background", 1)])
@@ -288,10 +289,10 @@ async fn an_explicit_browser_page_view_records_the_topic_view_once() {
     assert_eq!(reply.status, StatusCode::OK);
     assert_eq!(reply.headers["x-discourse-trackview"], "1");
     assert_eq!(reply.headers["x-discourse-browserpageview"], "1");
-    settle(&db.pool).await;
+    settle(&st).await;
     // Twice from the same address: one view.
     send(&st, Method::GET, "/t/35.json", &headers, "").await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[
@@ -327,7 +328,7 @@ async fn an_explicit_browser_page_view_records_the_topic_view_once() {
         ("discourse-track-view-topic-id", "2"),
     ];
     send(&st, Method::GET, "/latest.json", &hidden, "").await;
-    settle(&db.pool).await;
+    settle(&st).await;
     let none: i64 = sqlx::query_scalar("SELECT count(*) FROM topic_views WHERE topic_id = 2")
         .fetch_one(&db.pool)
         .await
@@ -339,7 +340,7 @@ async fn an_explicit_browser_page_view_records_the_topic_view_once() {
 async fn a_signed_in_view_counts_for_the_user() {
     let (db, st) = tracking(RailsEnv::Test).await;
     let auth = sign_in(&st).await;
-    reset(&db.pool).await;
+    reset(&st).await;
     let entered: i32 =
         sqlx::query_scalar("SELECT topics_entered FROM user_stats WHERE user_id = 3")
             .fetch_one(&db.pool)
@@ -352,7 +353,7 @@ async fn a_signed_in_view_counts_for_the_user() {
         ("discourse-track-view-topic-id", "35"),
     ];
     send(&st, Method::GET, "/t/35.json", &headers, "").await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[
@@ -396,7 +397,7 @@ async fn login_required_leaves_anonymous_views_uncounted() {
         "",
     )
     .await;
-    settle(&db.pool).await;
+    settle(&st).await;
     let names: Vec<String> = counts(&db.pool).await.into_iter().map(|(n, _)| n).collect();
     assert!(
         !names.iter().any(|n| n.starts_with("page_view")),
@@ -424,7 +425,7 @@ async fn a_same_origin_beacon_records_the_event() {
     assert_eq!(reply.status, StatusCode::NO_CONTENT);
     assert!(!reply.headers.contains_key("content-type"));
     assert_eq!(reply.headers["x-discourse-browserpageview"], "1");
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[
@@ -485,7 +486,7 @@ async fn a_cross_origin_beacon_is_refused_and_not_logged() {
         let reply = send(&st, Method::POST, "/srv/pv", &headers, BEACON).await;
         assert_eq!(reply.status, StatusCode::FORBIDDEN);
     }
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(counts(&db.pool).await, vec![]);
     let events: i64 = sqlx::query_scalar("SELECT count(*) FROM browser_pageview_events")
         .fetch_one(&db.pool)
@@ -510,7 +511,7 @@ async fn a_beacon_without_a_session_is_counted_but_not_recorded() {
     )
     .await;
     assert_eq!(reply.status, StatusCode::NO_CONTENT);
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[
@@ -542,7 +543,7 @@ async fn an_embedded_beacon_counts_as_an_embed() {
         r#"{"url":"http://test.localhost/t/a-topic/35","session_id":"s1","topic_id":35,"embed":true}"#,
     )
     .await;
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[("http_total", 1), ("http_2xx", 1), ("page_view_embed", 1)])
@@ -597,7 +598,7 @@ async fn engagement_keeps_each_count_at_its_highest() {
     )
     .await;
     assert_eq!(refused.status, StatusCode::FORBIDDEN);
-    settle(&db.pool).await;
+    settle(&st).await;
     let rows: Vec<(String, i32, i32, i32, i32, Option<i32>)> = sqlx::query_as(
         "SELECT session_id, click_events, key_events, scroll_events, engaged_seconds, \
                 time_to_first_interaction_ms FROM browser_pageview_session_engagements",
@@ -655,10 +656,10 @@ async fn read_only_postgres_queues_events_for_the_flush_job() {
     )
     .await;
     assert_eq!(reply.status, StatusCode::NO_CONTENT);
-    settle(&db.pool).await;
+    settle(&st).await;
     // Nothing counted or written while read only; the event waits.
     assert_eq!(counts(&db.pool).await, vec![]);
-    assert_eq!(request_tracking::queued_count(), 1);
+    assert_eq!(request_tracking::queued_count(&st.site.pageview_queue), 1);
     // The job does nothing until Postgres is writable again.
     discourse_rs::jobs::run_scheduled(
         &st,
@@ -666,7 +667,7 @@ async fn read_only_postgres_queues_events_for_the_flush_job() {
     )
     .await
     .unwrap();
-    assert_eq!(request_tracking::queued_count(), 1);
+    assert_eq!(request_tracking::queued_count(&st.site.pageview_queue), 1);
     sqlx::query("DELETE FROM discourse_rs.expiring_keys")
         .execute(&db.pool)
         .await
@@ -677,7 +678,7 @@ async fn read_only_postgres_queues_events_for_the_flush_job() {
     )
     .await
     .unwrap();
-    assert_eq!(request_tracking::queued_count(), 0);
+    assert_eq!(request_tracking::queued_count(&st.site.pageview_queue), 0);
     let event: (String, String, Option<String>) = sqlx::query_as(
         "SELECT normalized_url, session_id, normalized_language FROM browser_pageview_events",
     )
@@ -719,7 +720,7 @@ async fn admin_api_requests_count_as_api() {
     )
     .await;
     assert_eq!(reply.status, StatusCode::OK);
-    settle(&db.pool).await;
+    settle(&st).await;
     assert_eq!(
         counts(&db.pool).await,
         named(&[("http_total", 1), ("http_2xx", 1), ("api", 1)])

@@ -11,13 +11,18 @@ use crate::{AppError, AppState, Unsupported};
 /// `Jobs::PeriodicalUpdates`, every 15 minutes.
 pub const PERIODICAL_UPDATES: &str = "periodical_updates";
 
-/// `should_update_long_topics?`'s count of runs in this process.
-static CALLS: AtomicU64 = AtomicU64::new(0);
-
-/// `category-featured-topic:next-category-id`: where the next batch of
-/// categories starts. Rails keeps it in Redis for a day; the port's one
-/// worker keeps it in memory.
-static NEXT_CATEGORY_ID: AtomicI64 = AtomicI64::new(0);
+/// What the job keeps between runs, per site.
+#[derive(Default)]
+pub struct Periodical {
+    /// `should_update_long_topics?`'s count of runs. Rails' class
+    /// variable counts runs across sites; per site, every site gets its
+    /// long topics updated every 24th run.
+    calls: AtomicU64,
+    /// `category-featured-topic:next-category-id`: where the next batch
+    /// of categories starts. Rails keeps it in Redis for a day; the
+    /// site's one worker keeps it in memory.
+    next_category_id: AtomicI64,
+}
 
 /// `CategoryFeaturedTopic.feature_topics(batched: true)`'s batch.
 const FEATURE_BATCH: i64 = 100;
@@ -25,7 +30,7 @@ const FEATURE_BATCH: i64 = 100;
 /// `Jobs::PeriodicalUpdates#execute`, step by step.
 pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
     // should_update_long_topics?: every 24th run, the first included.
-    let calls = CALLS.fetch_add(1, Ordering::SeqCst) + 1;
+    let calls = state.site.periodical.calls.fetch_add(1, Ordering::SeqCst) + 1;
     let long_topics = calls % 24 == 1;
     let bumped_since = crate::clock::now_naive() - chrono::Duration::days(1);
 
@@ -42,7 +47,11 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
     for (topic_id, category_id) in rows {
         current.entry(category_id).or_default().push(topic_id);
     }
-    let next = NEXT_CATEGORY_ID.load(Ordering::SeqCst);
+    let next = state
+        .site
+        .periodical
+        .next_category_id
+        .load(Ordering::SeqCst);
     let batch: Vec<i32> =
         sqlx::query_scalar("SELECT id FROM categories WHERE id >= $1 ORDER BY id ASC LIMIT $2")
             .bind(next as i32)
@@ -60,7 +69,11 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
         }
         _ => None,
     };
-    NEXT_CATEGORY_ID.store(following.map_or(0, i64::from), Ordering::SeqCst);
+    state
+        .site
+        .periodical
+        .next_category_id
+        .store(following.map_or(0, i64::from), Ordering::SeqCst);
     for category_id in batch {
         let existing = current.remove(&category_id).unwrap_or_default();
         crate::posting::create::feature_topics_for(&mut conn, &s, category_id, Some(&existing))

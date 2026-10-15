@@ -763,6 +763,7 @@ impl Site {
             "{}{}",
             self.base_path,
             crate::highlight_js::path(
+                &state.site.highlight_js,
                 &urls.current_hostname()?,
                 &settings.get("highlighted_languages")?.to_s(),
                 state.config.globals.get("asset_url_salt").unwrap_or(""),

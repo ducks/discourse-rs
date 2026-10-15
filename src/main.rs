@@ -78,9 +78,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
     let mailer = discourse_rs::email::Mailer::from_globals(&config.globals)?;
     tracing::info!(mailer = ?mailer, "outgoing mail");
-    let pool_for_limits = pool.clone();
     let state = AppState {
-        pool,
         anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
         config: Arc::new(config),
         site_setting_defs: Arc::new(site_setting_defs),
@@ -89,7 +87,12 @@ async fn run() -> Result<(), Box<dyn Error>> {
         keys: Arc::new(keys),
         mailer,
         bus,
-        rate_limits: discourse_rs::rate_limiter::MemoryStore::load(&pool_for_limits).await?,
+        rate_limits: discourse_rs::rate_limiter::MemoryStore::load(&pool).await?,
+        // The process's lists, saved to and read back from the site's
+        // database.
+        global_rate_limits: discourse_rs::rate_limiter::MemoryStore::load_global(&pool).await?,
+        site: Default::default(),
+        pool,
     };
     // SiteIconManager.ensure_optimized! at boot: the sized icons' files.
     {
@@ -119,7 +122,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             )))
         }
     };
-    let rate_limits = state.rate_limits.clone();
+    let site = state.clone();
     axum::serve(
         listener,
         app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
@@ -127,10 +130,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
     .with_graceful_shutdown(shutdown_signal())
     .await?;
     // The tracker's lists, kept for the next start.
-    rate_limits.save(&pool_for_limits).await?;
+    site.rate_limits.save(&site.pool).await?;
+    site.global_rate_limits.save(&site.pool).await?;
     // The tracker's deferred work and counts, which Redis would keep.
     discourse_rs::request_tracking::drain().await;
-    if let Err(e) = discourse_rs::request_tracking::flush(&pool_for_limits).await {
+    if let Err(e) = discourse_rs::request_tracking::flush(&site).await {
         tracing::warn!("Unexpected error while processing cached counts: {e:?}");
     }
     if let Some(worker) = worker {

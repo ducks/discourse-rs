@@ -229,6 +229,31 @@ pub async fn state_with_bus_on(bus_pool: PgPool, pool: PgPool, config: Config) -
         keys: Arc::new(discourse_rs::session::current::Keys::ephemeral()),
         mailer: discourse_rs::email::Mailer::memory(),
         rate_limits: Default::default(),
+        global_rate_limits: Default::default(),
+        site: Default::default(),
+    }
+}
+
+/// Another site of `first`'s process: its own database, bus, caches and
+/// lists; the parsed definitions and strings, the keys, the mailer and the
+/// `GLOBAL::` rate limit lists shared.
+pub async fn other_site(first: &AppState, pool: PgPool, config: Config) -> AppState {
+    let bus = pg_bus::Bus::start(pool.clone(), discourse_rs::bus::config())
+        .await
+        .expect("bus starts");
+    AppState {
+        bus,
+        pool,
+        anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
+        config: Arc::new(config),
+        site_setting_defs: Arc::new(first.site_setting_defs.for_site()),
+        i18n: Arc::new(first.i18n.for_site()),
+        search_log_cache: Default::default(),
+        keys: first.keys.clone(),
+        mailer: first.mailer.clone(),
+        rate_limits: Default::default(),
+        global_rate_limits: first.global_rate_limits.clone(),
+        site: Default::default(),
     }
 }
 

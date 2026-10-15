@@ -480,10 +480,11 @@ pub async fn flush_browser_pageview_events(state: &AppState) -> Result<(), AppEr
     }
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(MAX_FLUSH_SECONDS);
     loop {
-        if crate::request_tracking::queued_count() == 0 {
+        if crate::request_tracking::queued_count(&state.site.pageview_queue) == 0 {
             return Ok(());
         }
-        let processed = crate::request_tracking::flush_queued(&mut conn).await?;
+        let processed =
+            crate::request_tracking::flush_queued(&state.site.pageview_queue, &mut conn).await?;
         if processed < crate::request_tracking::FLUSH_BATCH_SIZE
             || std::time::Instant::now() >= deadline
         {
