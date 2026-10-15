@@ -1995,8 +1995,10 @@ route table has been made, so this list may be short.
     208d. `feat/multisite-ops` M (the refusal lifted; the connection
     budget: a site's `pool`, an idle timeout on every pool, a startup
     warning when the sites' pools plus the rate limiter's 4 and pg-bus's
-    listener exceed `max_connections`; a site that fails to start logged
-    and skipped or fatal, decided here; deploy/'s env, Caddyfile, unit
+    listener exceed `max_connections`; a site that fails to start is logged
+    and skipped (decided 2026-10-15, as Rails' `safe_each_connection`
+    keeps going): the other sites serve, and its hosts answer 503 until
+    a restart brings it up; deploy/'s env, Caddyfile, unit
     and install for several hosts). No multisite reference instance
     exists, so each branch is verified by two-site integration tests
     (two cloned test databases, two AppStates, from 208b through the
