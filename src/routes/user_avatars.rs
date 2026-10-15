@@ -132,8 +132,8 @@ pub async fn show_letter(State(state): State<AppState>, uri: Uri) -> Result<Resp
 }
 
 /// `GET /user_avatar/:hostname/:username/:size/:version.png` (show): the
-/// user's avatar upload at that size, made on demand. One site, so any
-/// hostname is this one (`with_hostname(raise_on_missing: false)`).
+/// user's avatar upload at that size, made on demand, on the site the
+/// hostname names (the dispatcher picks it, as `with_hostname` does).
 pub async fn show(
     State(state): State<AppState>,
     headers: HeaderMap,

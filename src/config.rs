@@ -6,7 +6,9 @@ use crate::ruby;
 
 #[derive(Clone, Debug)]
 pub struct Config {
-    pub database_url: String,
+    /// What is the site's own: under multisite.yml each site has its own;
+    /// everything else is the process's.
+    pub site: SiteConfig,
     pub bind: SocketAddr,
     pub rails_env: RailsEnv,
     /// `ENV["UNICORN_PORT"]`, appended to the base URL in development.
@@ -35,6 +37,34 @@ pub struct Config {
     /// Middleware::RequestTracker's logging and beacons, which Rails loads
     /// outside development or with TRACK_REQUESTS.
     pub track_requests: bool,
+}
+
+/// A site's part of the Config (RailsMultisite's connection spec).
+#[derive(Clone, Debug)]
+pub struct SiteConfig {
+    /// `current_db`: `default` for the environment's site, else its
+    /// multisite.yml key.
+    pub db: String,
+    /// DATABASE_URL, or the multisite.yml entry's connection.
+    pub database_url: String,
+    /// The site's host names, the first `current_hostname`. Empty for the
+    /// environment's site, whose one host name is DISCOURSE_HOSTNAME's
+    /// (`GlobalSettings::hostname`).
+    pub host_names: Vec<String>,
+    /// GlobalSetting db_pool's role: DISCOURSE_DB_POOL, else 10; a
+    /// multisite.yml entry's `pool`.
+    pub pool: u32,
+}
+
+impl Default for SiteConfig {
+    fn default() -> Self {
+        SiteConfig {
+            db: crate::multisite::DEFAULT.into(),
+            database_url: String::new(),
+            host_names: Vec::new(),
+            pool: 10,
+        }
+    }
 }
 
 /// The CDN `UserAvatarsController#show_proxy_letter` proxies.
@@ -185,7 +215,13 @@ impl Config {
         }));
 
         Ok(Config {
-            database_url,
+            site: SiteConfig {
+                database_url,
+                pool: var("DISCOURSE_DB_POOL")
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(10),
+                ..SiteConfig::default()
+            },
             bind,
             rails_env,
             unicorn_port: var("UNICORN_PORT").unwrap_or("3000").to_string(),
@@ -206,6 +242,27 @@ impl Config {
             rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
             track_requests: rails_env != RailsEnv::Development || var("TRACK_REQUESTS").is_some(),
         })
+    }
+}
+
+impl Config {
+    /// `current_db_hostnames`: the site's host names.
+    pub fn hostnames(&self) -> Vec<&str> {
+        if self.site.host_names.is_empty() {
+            vec![self.globals.hostname(self.rails_env)]
+        } else {
+            self.site.host_names.iter().map(String::as_str).collect()
+        }
+    }
+
+    /// `RailsMultisite::ConnectionManagement.current_hostname`: the site's
+    /// first host name (`Discourse.current_hostname` is `Urls`'s, which
+    /// honours force_hostname).
+    pub fn hostname(&self) -> &str {
+        self.site
+            .host_names
+            .first()
+            .map_or_else(|| self.globals.hostname(self.rails_env), String::as_str)
     }
 }
 

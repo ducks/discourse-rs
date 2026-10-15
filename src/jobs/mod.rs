@@ -727,10 +727,13 @@ async fn paused(pool: &PgPool) -> bool {
         .is_ok_and(|v| v.is_some())
 }
 
-/// A worker: drains the queue, then polls once a second, until `stop`
-/// resolves. Scheduled jobs run between polls when due.
-pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) {
+/// A site's worker: drains the queue, then polls once a second, until
+/// `stop` resolves. Scheduled jobs run between polls when due, the first
+/// time once `stagger` has passed, so several sites do not all run every
+/// scheduled job at once when the process starts.
+pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, stagger: Duration) {
     tokio::pin!(stop);
+    let scheduled_from = std::time::Instant::now() + stagger;
     let mut last_run: Vec<Option<std::time::Instant>> = vec![None; SCHEDULED.len()];
     loop {
         // Sidekiq.pause! (a backup restore): no job, scheduled or not.
@@ -745,6 +748,9 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) 
             tracing::error!("job queue: {e}");
         }
         for (i, (name, every)) in SCHEDULED.iter().enumerate() {
+            if std::time::Instant::now() < scheduled_from {
+                break;
+            }
             if last_run[i].is_some_and(|at| at.elapsed() < *every) {
                 continue;
             }

@@ -170,11 +170,19 @@ pub async fn detect_crawler_pageviews(state: &AppState) -> Result<(), AppError> 
 pub async fn maintain_browser_pageview_rollups(state: &AppState) -> Result<(), AppError> {
     let mut tx = state.pool.begin().await?;
     let s = settings(&mut tx, state).await?;
-    let host = state
+    // site_hostnames: every host name of the site, and current_hostname.
+    let current = crate::url::Urls {
+        config: &state.config,
+        settings: &s,
+    }
+    .current_hostname()?;
+    let hosts: Vec<String> = state
         .config
-        .globals
-        .hostname(state.config.rails_env)
-        .to_string();
+        .hostnames()
+        .into_iter()
+        .map(str::to_string)
+        .chain([current])
+        .collect();
     let end = today();
     let earliest: Option<NaiveDate> =
         sqlx::query_scalar("SELECT MIN(created_at)::date FROM browser_pageview_events")
@@ -233,8 +241,8 @@ pub async fn maintain_browser_pageview_rollups(state: &AppState) -> Result<(), A
         .get("browser_pageview_referrer_backfill_batch_size")?
         .to_i();
     let cleanup = s.get("clean_up_browser_pageview_events")?.truthy();
-    backfill_referrers(&mut tx, &host, batch, cleanup, entry_urls_initialized).await?;
-    backfill_urls(&mut tx, &host, batch, entry_urls_initialized).await?;
+    backfill_referrers(&mut tx, &hosts, batch, cleanup, entry_urls_initialized).await?;
+    backfill_urls(&mut tx, &hosts, batch, entry_urls_initialized).await?;
     if referrer_batch(&mut tx, 1, cleanup).await?.is_empty()
         && url_batch(&mut tx, 1).await?.is_empty()
     {
@@ -249,7 +257,7 @@ pub async fn maintain_browser_pageview_rollups(state: &AppState) -> Result<(), A
             earliest
         };
         if let Some(start) = start {
-            bpv::aggregate_entry_urls(&mut tx, &host, start, end).await?;
+            bpv::aggregate_entry_urls(&mut tx, &hosts, start, end).await?;
         }
     }
     backfill_browsers(&mut tx, batch).await?;
@@ -284,7 +292,7 @@ async fn referrer_batch(
 /// `backfill_referrers`
 async fn backfill_referrers(
     conn: &mut PgConnection,
-    host: &str,
+    hosts: &[String],
     batch: i64,
     cleanup: bool,
     recompute_entry_urls: bool,
@@ -333,7 +341,7 @@ async fn backfill_referrers(
     let entry_dates = entry_url_dates(conn, &ids, Backfill::Referrer).await?;
     bpv::recompute_referrers(conn, &referrer_dates).await?;
     if recompute_entry_urls {
-        bpv::recompute_entry_urls(conn, host, &entry_dates).await?;
+        bpv::recompute_entry_urls(conn, hosts, &entry_dates).await?;
     }
     sqlx::query(
         "UPDATE browser_pageview_events SET normalized_referrer_version = $1 WHERE id = ANY($2)",
@@ -404,7 +412,7 @@ async fn url_batch(conn: &mut PgConnection, limit: i64) -> Result<Vec<(i64, Stri
 /// `backfill_urls`
 async fn backfill_urls(
     conn: &mut PgConnection,
-    host: &str,
+    hosts: &[String],
     batch: i64,
     recompute_entry_urls: bool,
 ) -> Result<(), AppError> {
@@ -427,7 +435,7 @@ async fn backfill_urls(
     .await?;
     if recompute_entry_urls {
         let dates = entry_url_dates(conn, &ids, Backfill::Url).await?;
-        bpv::recompute_entry_urls(conn, host, &dates).await?;
+        bpv::recompute_entry_urls(conn, hosts, &dates).await?;
     }
     sqlx::query(
         "UPDATE browser_pageview_events SET normalized_url_version = $1 WHERE id = ANY($2)",

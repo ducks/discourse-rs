@@ -1,8 +1,8 @@
 //! Two sites in one process (RailsMultisite): each site's AppState over its
 //! own cloned database, the process-wide parts shared as main.rs shares
-//! them. Every test asserts that what one site does stays out of the
-//! other, except for what Rails shares between sites (the `GLOBAL::`
-//! rate limits).
+//! them, every request through the dispatcher by its Host. Every test
+//! asserts that what one site does stays out of the other, except for
+//! what Rails shares between sites (the `GLOBAL::` rate limits).
 
 mod common;
 
@@ -11,7 +11,8 @@ use axum::extract::ConnectInfo;
 use axum::http::{Method, Request, StatusCode, header};
 use common::{TestDb, config, other_site, state};
 use discourse_rs::AppState;
-use discourse_rs::config::{Config, RailsEnv};
+use discourse_rs::config::{Config, RailsEnv, SiteConfig};
+use discourse_rs::multisite::{Dispatcher, Sites};
 use discourse_rs::request_tracking;
 use discourse_rs::site_settings::SiteSettings;
 use http_body_util::BodyExt;
@@ -22,15 +23,48 @@ const BROWSER: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537
 struct Site {
     db: TestDb,
     st: AppState,
+    /// The Host its requests carry.
+    host: &'static str,
+    dispatcher: Dispatcher,
 }
 
-/// Two sites, `a` and `b`, each with its config from `make`.
+/// The second site's host name.
+const B_HOST: &str = "b.example";
+
+/// Two sites behind one dispatcher, each with its config from `make`:
+/// `a` the default (test.localhost), `b` the multisite.yml entry `second`
+/// (b.example).
 async fn two_sites(make: impl Fn() -> Config) -> (Site, Site) {
     let db_a = TestDb::new().await;
     let db_b = TestDb::new().await;
-    let a = state(db_a.pool.clone(), make()).await;
-    let b = other_site(&a, db_b.pool.clone(), make()).await;
-    (Site { db: db_a, st: a }, Site { db: db_b, st: b })
+    let mut config_a = make();
+    config_a.site.database_url = db_a.url();
+    let mut config_b = make();
+    config_b.site = SiteConfig {
+        db: "second".into(),
+        database_url: db_b.url(),
+        host_names: vec![B_HOST.into()],
+        pool: 4,
+    };
+    let a = state(db_a.pool.clone(), config_a).await;
+    let b = other_site(&a, db_b.pool.clone(), config_b).await;
+    let dispatcher = Sites::multisite(vec![a.clone(), b.clone()])
+        .unwrap()
+        .into_service();
+    (
+        Site {
+            db: db_a,
+            st: a,
+            host: "test.localhost",
+            dispatcher: dispatcher.clone(),
+        },
+        Site {
+            db: db_b,
+            st: b,
+            host: B_HOST,
+            dispatcher,
+        },
+    )
 }
 
 struct Reply {
@@ -75,10 +109,10 @@ impl<'a> Client<'a> {
         headers: &[(&str, &str)],
         body: &str,
     ) -> Reply {
-        let mut request = Request::builder()
-            .method(method)
-            .uri(path)
-            .header(header::HOST, "test.localhost");
+        let mut request = Request::builder().method(method).uri(path);
+        if !headers.iter().any(|(k, _)| *k == "host") {
+            request = request.header(header::HOST, self.site.host);
+        }
         if !self.cookies.is_empty() {
             let cookie: Vec<String> = self
                 .cookies
@@ -99,10 +133,7 @@ impl<'a> Client<'a> {
         let mut request = request.body(Body::from(body.to_string())).unwrap();
         let peer: std::net::SocketAddr = format!("{}:443", self.from).parse().unwrap();
         request.extensions_mut().insert(ConnectInfo(peer));
-        let response = discourse_rs::app(self.site.st.clone())
-            .oneshot(request)
-            .await
-            .unwrap();
+        let response = self.site.dispatcher.clone().oneshot(request).await.unwrap();
         let status = response.status();
         let headers = response.headers().clone();
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
@@ -375,4 +406,213 @@ async fn user_and_crawler_limits_are_per_site() {
     assert_eq!(crawl(&a).await, StatusCode::OK);
     assert_eq!(crawl(&b).await, StatusCode::OK);
     assert_eq!(crawl(&a).await, StatusCode::TOO_MANY_REQUESTS);
+}
+
+async fn set_title(site: &Site, title: &str) {
+    common::set_setting(&site.db.pool, "title", 1, title).await;
+}
+
+fn json(reply: &Reply) -> serde_json::Value {
+    serde_json::from_str(&reply.body).unwrap_or_else(|_| panic!("not JSON: {}", reply.body))
+}
+
+/// The Host picks the site; a port in it is not part of the name.
+#[tokio::test]
+async fn the_host_picks_the_site() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    set_title(&a, "Forum A").await;
+    set_title(&b, "Forum B").await;
+    let reply = Client::new(&a, "127.0.0.1")
+        .get("/site/basic-info.json")
+        .await;
+    assert_eq!(json(&reply)["title"], "Forum A");
+    let reply = Client::new(&b, "127.0.0.1")
+        .get("/site/basic-info.json")
+        .await;
+    assert_eq!(json(&reply)["title"], "Forum B");
+    let reply = Client::new(&b, "127.0.0.1")
+        .send(
+            Method::GET,
+            "/site/basic-info.json",
+            &[("host", "b.example:8443")],
+            "",
+        )
+        .await;
+    assert_eq!(json(&reply)["title"], "Forum B");
+}
+
+/// RailsMultisite::Middleware: a host no site has is a bare 404 `not
+/// found`, except /srv/status, which the default site answers.
+#[tokio::test]
+async fn an_unknown_host_is_not_found_but_the_status_check_answers() {
+    let (a, _b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(&a, "127.0.0.1");
+    let reply = client
+        .send(
+            Method::GET,
+            "/latest.json",
+            &[("host", "nowhere.example")],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+    assert_eq!(reply.body, "not found");
+    assert!(reply.headers.get(header::CONTENT_TYPE).is_none());
+    let reply = client
+        .send(
+            Method::GET,
+            "/srv/status",
+            &[("host", "nowhere.example")],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert_eq!(reply.body, "ok");
+}
+
+/// A request to an asset host names its site in `__ws`, and its cookies
+/// are dropped (ConnectionManagement#host).
+#[tokio::test]
+async fn an_asset_host_request_names_its_site_in_ws() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    set_title(&b, "Forum B").await;
+    let mut on_b = Client::new(&b, "127.0.0.1");
+    on_b.login("user1").await;
+    assert_eq!(
+        on_b.get("/session/current.json").await.status,
+        StatusCode::OK
+    );
+    // The default site's host names are the asset hosts without a CDN.
+    let reply = Client::new(&a, "127.0.0.1")
+        .get("/site/basic-info.json?__ws=b.example")
+        .await;
+    assert_eq!(json(&reply)["title"], "Forum B");
+    let reply = on_b
+        .send(
+            Method::GET,
+            "/session/current.json?__ws=b.example",
+            &[("host", a.host)],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND, "cookies dropped");
+    // `__ws` is only honoured on an asset host.
+    let reply = Client::new(&b, "127.0.0.1")
+        .get("/site/basic-info.json?__ws=test.localhost")
+        .await;
+    assert_eq!(json(&reply)["title"], "Forum B");
+}
+
+/// /highlight-js/:hostname/ (and /user_avatar/:hostname/, /svg-sprite/)
+/// are the named site's (`with_hostname`), the default's when no site has
+/// the name.
+#[tokio::test]
+async fn a_path_hostname_picks_the_site() {
+    let (a, _b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let location = |reply: &Reply| {
+        reply.headers[header::LOCATION]
+            .to_str()
+            .unwrap()
+            .to_string()
+    };
+    let mut client = Client::new(&a, "127.0.0.1");
+    let reply = client.get("/highlight-js/b.example/0.js").await;
+    assert_eq!(reply.status, StatusCode::FOUND);
+    assert!(
+        location(&reply).contains("/highlight-js/b.example/"),
+        "{}",
+        location(&reply)
+    );
+    let reply = client.get("/highlight-js/nowhere.example/0.js").await;
+    assert!(
+        location(&reply).contains("/highlight-js/test.localhost/"),
+        "{}",
+        location(&reply)
+    );
+    // The user_avatar route's shape is checked in multisite::tests.
+}
+
+/// A session is its site's: user 3's cookie from one site is anonymous on
+/// the other (its token is in the other site's database only).
+#[tokio::test]
+async fn a_session_stays_on_its_site() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let mut on_a = Client::new(&a, "127.0.0.1");
+    on_a.login("user1").await;
+    assert_eq!(
+        on_a.get("/session/current.json").await.status,
+        StatusCode::OK
+    );
+    let mut on_b = Client::new(&b, "127.0.0.1");
+    on_b.cookies = on_a.cookies.clone();
+    assert_eq!(
+        on_b.get("/session/current.json").await.status,
+        StatusCode::NOT_FOUND
+    );
+}
+
+/// The anonymous cache is the site's: what one site stored is not served
+/// to the other.
+#[tokio::test]
+async fn the_anonymous_cache_is_per_site() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let cached = |reply: &Reply| {
+        reply
+            .headers
+            .get("x-discourse-cached")
+            .map(|v| v.to_str().unwrap().to_string())
+    };
+    for expected in ["skip", "store", "true"] {
+        let reply = Client::new(&a, "127.0.0.1").get("/latest.json").await;
+        assert_eq!(cached(&reply).as_deref(), Some(expected));
+    }
+    let reply = Client::new(&b, "127.0.0.1").get("/latest.json").await;
+    assert_eq!(cached(&reply).as_deref(), Some("skip"));
+}
+
+/// Live updates are the site's: a message published on one site's bus is
+/// not in the other's backlog.
+#[tokio::test]
+async fn bus_messages_stay_on_their_site() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let from_a = a.st.bus.now().await.unwrap();
+    let from_b = b.st.bus.now().await.unwrap();
+    let mut tx = a.db.pool.begin().await.unwrap();
+    a.st.bus
+        .publish(&mut tx, "/latest", &serde_json::json!({"site": "a"}), None)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    assert_eq!(
+        common::bus_messages(&a.st, from_a, &["/latest"])
+            .await
+            .len(),
+        1
+    );
+    assert!(
+        common::bus_messages(&b.st, from_b, &["/latest"])
+            .await
+            .is_empty()
+    );
+}
+
+/// A job is its site's: queued on one site, the other's worker leaves it.
+#[tokio::test]
+async fn jobs_run_on_their_own_site() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let mut conn = a.db.pool.acquire().await.unwrap();
+    discourse_rs::jobs::enqueue(
+        &mut conn,
+        "update_gravatar",
+        serde_json::json!({"user_id": 3}),
+    )
+    .await
+    .unwrap();
+    drop(conn);
+    assert_eq!(discourse_rs::jobs::drain(&b.st).await.unwrap(), 0);
+    let queued: i64 = sqlx::query_scalar("SELECT count(*) FROM discourse_rs.jobs")
+        .fetch_one(&a.db.pool)
+        .await
+        .unwrap();
+    assert_eq!(queued, 1);
 }

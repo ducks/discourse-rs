@@ -283,3 +283,21 @@ own docs), so every site on one Postgres shares publish throughput.
   database; a site's `load` takes its own lists only.
 - Two host names of one site get different cookie keys (the salt takes
   the request's host); that is Rails' behaviour, kept.
+
+## Decided while porting
+
+- 208b: a multisite.yml entry needs `database` and at least one
+  `host_names` entry; one host name on two sites, or two sites on one
+  database (host, socket, port and name), is refused at startup, where
+  Rails lets the later spec win silently. An entry without `pool` takes
+  the process's (`DISCOURSE_DB_POOL`, else 10). A `host` starting with
+  `/` is a socket directory, as libpq reads it.
+- 208b: `DISCOURSE_MULTISITE_CONFIG_PATH` naming a file that does not
+  exist is an error (Rails falls back to one site); an empty file is
+  multisite with the default site alone, which runs the dispatcher's
+  host lookup.
+- 208b: the dispatcher reads the Host header (HTTP/2's authority), not
+  X-Forwarded-Host as Rack would; the port's deploy passes the Host
+  through.
+- 208b: one job worker per site; site N's scheduled jobs first run
+  N × 10 s after startup.
