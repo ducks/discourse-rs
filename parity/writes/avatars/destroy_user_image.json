@@ -1,0 +1,192 @@
+{
+  "name": "destroy_user_image",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": {
+        "type": "profile_background"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": {
+        "type": "card_background"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": {
+        "type": "avatar"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": {}
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user2/preferences/user_image.json",
+      "params": {
+        "type": "card_background"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T14:36:32.757992",
+  "transaction_started_at": "2026-10-15T14:36:26.407395",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: type"
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "upload_references": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 36,
+          "target_id": 3,
+          "upload_id": 34,
+          "created_at": "2026-10-15T14:36:26.407395",
+          "updated_at": "2026-10-15T14:36:26.407395",
+          "target_type": "UserProfile"
+        },
+        {
+          "id": 37,
+          "target_id": 3,
+          "upload_id": 35,
+          "created_at": "2026-10-15T14:36:26.407395",
+          "updated_at": "2026-10-15T14:36:26.407395",
+          "target_type": "UserProfile"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gh+duLZ4FxeWjzIn+isi7G+Pdls=",
+            "created_at": "2026-10-15T14:36:29.404565",
+            "rotated_at": "2026-10-15T14:36:29.395135",
+            "updated_at": "2026-10-15T14:36:29.404565",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gh+duLZ4FxeWjzIn+isi7G+Pdls=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 107,
+            "seen_at": "2026-10-15T14:36:32.774284",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gh+duLZ4FxeWjzIn+isi7G+Pdls=",
+            "created_at": "2026-10-15T14:36:29.404565",
+            "rotated_at": "2026-10-15T14:36:29.395135",
+            "updated_at": "2026-10-15T14:36:29.404565",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gh+duLZ4FxeWjzIn+isi7G+Pdls=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": 35,
+            "profile_background_upload_id": 34
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_profiles SET profile_background_upload_id = 34, card_background_upload_id = 35 WHERE user_id = 3",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (34, 'UserProfile', 3, now(), now()), (35, 'UserProfile', 3, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "64fd3748d538ee19ff14b30e8b2c995cc47672ba94ebf7835ee7cee90e80d402",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

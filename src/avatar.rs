@@ -72,6 +72,18 @@ pub fn avatar_template(
     class_avatar_template(urls, username, uploaded_avatar_id)
 }
 
+/// `Discourse.avatar_sizes`: the avatar_sizes setting as a set.
+pub fn avatar_sizes(settings: &SiteSettings) -> Result<Vec<u32>, SettingError> {
+    let mut sizes: Vec<u32> = Vec::new();
+    for size in settings.get("avatar_sizes")?.to_s().split('|') {
+        let size = crate::ruby::to_i(size).clamp(0, i64::from(u32::MAX)) as u32;
+        if !sizes.contains(&size) {
+            sizes.push(size);
+        }
+    }
+    Ok(sizes)
+}
+
 impl AvatarError {
     /// As an AppError, an Unsupported kept recognizable as one.
     pub fn into_app(self) -> crate::AppError {
@@ -228,7 +240,7 @@ fn first_grapheme(s: &str) -> &str {
 
 /// `UrlHelper.encode_component` = Addressable::URI.encode_component with its
 /// default class: reserved and unreserved characters pass through.
-fn encode_component(s: &str) -> String {
+pub(crate) fn encode_component(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {
         if b.is_ascii_alphanumeric()

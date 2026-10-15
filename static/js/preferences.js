@@ -274,6 +274,11 @@
       unported(unportedEl.dataset.unported);
       return;
     }
+    var editAvatar = event.target.closest(".user-preferences #edit-avatar[data-avatar-selector]");
+    if (editAvatar) {
+      avatarSelector(JSON.parse(editAvatar.dataset.avatarSelector));
+      return;
+    }
     if (event.target.closest(".user-preferences .save-changes")) {
       save();
       return;
@@ -1062,6 +1067,310 @@
         escape(l.select_file || "Click to upload or drag & drop file") +
         '</label><div class="file-uploader__progress-status hidden"><div class="progress-bar-container" role="progressbar"><div class="progress-bar" style="width: 0%"></div></div><span></span></div></div></div>';
     }
+  }
+
+  // avatarUrl over getRawSize: the template at the size times the pixel
+  // ratio (1, 2 or 3), drawn as dBoundAvatarTemplate draws it.
+  function boundAvatar(template, size) {
+    if (!template) {
+      return '<div class="avatar-placeholder"></div>';
+    }
+    var ratio = window.devicePixelRatio || 1;
+    var raw = ratio > 1.1 && ratio < 2.1 ? 2 : ratio >= 2.1 ? 3 : 1;
+    var src = template.replace(/\{size\}/g, String(size * raw));
+    if (src.charAt(0) === "/" && src.charAt(1) !== "/") {
+      src = base() + src;
+    }
+    return '<img alt="" width="' + size + '" height="' + size + '" src="' + escape(src) + '" class="avatar">';
+  }
+
+  // modal/avatar-selector.gjs: the selectable avatars, the system,
+  // gravatar and uploaded choices with AvatarUploader, Save Changes
+  // through PUT .../preferences/avatar/pick and a selectable avatar
+  // through .../avatar/select, each followed by a reload.
+  function avatarSelector(data) {
+    var user = data.user;
+    var l = data.labels;
+    var userPath = "/u/" + encodeURIComponent(String(data.username).toLowerCase());
+    var mode = data.selectable_avatars_mode;
+    var showSelectable = mode !== "disabled";
+    var showCustom = (function () {
+      switch (mode) {
+        case "no_one":
+          return false;
+        case "tl1":
+        case "tl2":
+        case "tl3":
+        case "tl4":
+          return !!(user.admin || user.moderator || (user.trust_level || 0) >= parseInt(mode.replace("tl", ""), 10));
+        case "staff":
+          return !!(user.admin || user.moderator);
+        default:
+          return true;
+      }
+    })();
+    var selected;
+    if (user.use_logo_small_as_avatar) {
+      selected = "logo";
+    } else if (user.avatar_template === user.system_avatar_template) {
+      selected = "system";
+    } else if (user.avatar_template === user.gravatar_avatar_template) {
+      selected = "gravatar";
+    } else {
+      selected = "custom";
+    }
+    var bodyEl;
+    var saveButton;
+
+    function radio(id, name, value) {
+      return (
+        '<input name="' + name + '" id="' + id + '" class="ember-view" type="radio" value="' + value + '"' +
+        (selected === value ? " checked" : "") +
+        ">"
+      );
+    }
+
+    function select(value) {
+      selected = value;
+      bodyEl.querySelectorAll('input[type="radio"]').forEach(function (input) {
+        input.checked = input.value === value;
+      });
+      bodyEl.querySelectorAll(".selectable-avatar").forEach(function (a) {
+        if (a.dataset.url === value) {
+          a.setAttribute("aria-current", "true");
+        } else {
+          a.removeAttribute("aria-current");
+        }
+      });
+      if (saveButton) {
+        saveButton.disabled = value === "logo";
+      }
+    }
+
+    function uploadedChoice() {
+      return user.custom_avatar_template
+        ? boundAvatar(user.custom_avatar_template, 48) + " " + escape(l.uploaded_avatar)
+        : escape(l.uploaded_avatar_empty);
+    }
+
+    function render() {
+      var html = "";
+      if (showSelectable) {
+        html += '<div class="selectable-avatars">';
+        (data.selectable_avatars || []).forEach(function (url) {
+          html +=
+            '<a' +
+            (selected === url ? ' aria-current="true"' : "") +
+            ' class="selectable-avatar" href data-url="' +
+            escape(url) +
+            '">' +
+            boundAvatar(url, 144) +
+            "</a>";
+        });
+        html += "</div>";
+        if (showCustom) {
+          html += "<h4>" + escape(l.use_custom) + "</h4>";
+        }
+      }
+      if (showCustom) {
+        if (user.use_logo_small_as_avatar) {
+          html +=
+            '<div class="avatar-choice">' +
+            radio("logo-small", "logo", "logo") +
+            '<label class="radio" for="logo-small">' +
+            boundAvatar(data.site_logo_small_url, 48) +
+            " " +
+            escape(l.logo_small) +
+            "</label></div>";
+        }
+        html +=
+          '<div class="avatar-choice avatar-choice--system">' +
+          radio("system-avatar", "avatar", "system") +
+          '<label class="radio" for="system-avatar">' +
+          (user.system_avatar_template
+            ? boundAvatar(user.system_avatar_template, 48)
+            : '<span class="avatar-selector__placeholder">' + icon("user") + "</span>") +
+          " " +
+          escape(l.letter_based) +
+          "</label></div>";
+        if (data.allow_gravatar) {
+          html +=
+            '<div class="avatar-choice avatar-choice--gravatar">' +
+            radio("gravatar", "avatar", "gravatar") +
+            '<label class="radio" for="gravatar">' +
+            boundAvatar(user.gravatar_avatar_template, 48) +
+            "<span>" +
+            l.gravatar +
+            " " +
+            escape(user.email || "") +
+            "</span></label>" +
+            '<button class="btn no-text btn-icon btn-default avatar-selector-refresh-gravatar" title="' +
+            escape(l.refresh_gravatar_title) +
+            '" type="button">' +
+            icon("arrows-rotate") +
+            '<span aria-hidden="true">&#8203;</span></button>' +
+            '<p class="error hidden">' +
+            escape(l.gravatar_failed) +
+            "</p></div>";
+        }
+        if (data.allow_upload) {
+          html +=
+            '<div class="avatar-choice avatar-choice--upload">' +
+            radio("uploaded-avatar", "avatar", "custom") +
+            '<label class="radio" for="uploaded-avatar">' +
+            uploadedChoice() +
+            "</label>" +
+            '<span class="avatar-uploader"><input accept="image/*" aria-hidden="true" class="hidden-upload-field" id="custom-profile-upload" type="file">' +
+            '<button class="btn btn-icon-text btn-default avatar-uploader__button" title="' +
+            escape(l.upload_title) +
+            '" type="button">' +
+            icon("far-image") +
+            '<span class="d-button-label">' +
+            escape(l.upload) +
+            "</span></button></span></div>";
+        }
+      }
+      bodyEl.innerHTML = html;
+    }
+
+    function reloadAfter(promise) {
+      promise
+        .then(function () {
+          window.location.reload();
+        })
+        .catch(popupAjaxError);
+    }
+
+    Discourse.modal.show({
+      className: "avatar-selector-modal",
+      title: l.title,
+      body: function (el) {
+        bodyEl = el;
+        el.classList.add("avatar-selector");
+        render();
+        el.addEventListener("click", function (event) {
+          var choice = event.target.closest('input[type="radio"]');
+          if (choice) {
+            select(choice.value);
+            return;
+          }
+          var selectable = event.target.closest(".selectable-avatar");
+          if (selectable) {
+            event.preventDefault();
+            reloadAfter(ajax("PUT", userPath + "/preferences/avatar/select", { url: selectable.dataset.url }));
+            return;
+          }
+          if (event.target.closest(".avatar-uploader__button")) {
+            el.querySelector("#custom-profile-upload").click();
+            return;
+          }
+          var refresh = event.target.closest(".avatar-selector-refresh-gravatar");
+          if (refresh) {
+            refresh.disabled = true;
+            ajax("POST", "/user_avatar/" + encodeURIComponent(data.username) + "/refresh_gravatar.json")
+              .then(function (result) {
+                var failed = el.querySelector(".avatar-choice--gravatar .error");
+                if (!result || !result.gravatar_upload_id) {
+                  failed.classList.remove("hidden");
+                } else {
+                  failed.classList.add("hidden");
+                  user.gravatar_avatar_upload_id = result.gravatar_upload_id;
+                  user.gravatar_avatar_template = result.gravatar_avatar_template;
+                  var label = el.querySelector('label[for="gravatar"]');
+                  var old = label.querySelector(".avatar, .avatar-placeholder");
+                  old.outerHTML = boundAvatar(user.gravatar_avatar_template, 48);
+                }
+              })
+              .finally(function () {
+                refresh.disabled = false;
+              });
+          }
+        });
+        el.addEventListener("change", function (event) {
+          var input = event.target.closest("#custom-profile-upload");
+          if (!input || !input.files.length) {
+            return;
+          }
+          var file = input.files[0];
+          var button = el.querySelector(".avatar-uploader__button");
+          var label = button.querySelector(".d-button-label");
+          var form = new FormData();
+          form.append("upload_type", "avatar");
+          form.append("user_id", user.id || "");
+          form.append("file", file, file.name);
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", base() + "/uploads.json?client_id=" + Date.now());
+          xhr.setRequestHeader("X-CSRF-Token", csrf());
+          xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+          input.disabled = true;
+          button.disabled = true;
+          xhr.upload.addEventListener("progress", function (e) {
+            if (e.lengthComputable) {
+              label.textContent = l.uploading + " " + Math.round((e.loaded / e.total) * 100) + "%";
+            }
+          });
+          xhr.addEventListener("loadend", function () {
+            input.disabled = false;
+            button.disabled = false;
+            label.textContent = l.upload;
+            input.value = "";
+            var json = null;
+            try {
+              json = JSON.parse(xhr.responseText);
+            } catch (e) {
+              json = null;
+            }
+            if (xhr.status >= 200 && xhr.status < 300 && json && json.id) {
+              user.custom_avatar_template = json.url;
+              user.custom_avatar_upload_id = json.id;
+              el.querySelector('label[for="uploaded-avatar"]').innerHTML = uploadedChoice();
+              button.dataset.avatarUploadId = json.id;
+              button.dataset.uploaded = "true";
+              var warning = el.querySelector(".avatar-uploader .warning");
+              if (json.width !== json.height) {
+                if (!warning) {
+                  button.insertAdjacentHTML(
+                    "afterend",
+                    '<div class="warning">' + escape(l.image_is_not_a_square) + "</div>"
+                  );
+                }
+              } else if (warning) {
+                warning.remove();
+              }
+              select("custom");
+            } else {
+              Discourse.dialog.popupAjaxError(
+                (json && json.errors && json.errors.join(" ")) || labels().generic_error || "Sorry, an error has occurred."
+              );
+            }
+          });
+          xhr.send(form);
+        });
+      },
+      footer: function (el, close) {
+        if (!showCustom) {
+          return;
+        }
+        el.innerHTML =
+          '<button class="btn btn-primary" type="button"><span class="d-button-label">' +
+          escape(l.save) +
+          '</span></button><button class="btn btn-flat d-modal-cancel" type="button"><span class="d-button-label">' +
+          escape(l.cancel) +
+          "</span></button>";
+        saveButton = el.querySelector(".btn-primary");
+        saveButton.disabled = selected === "logo";
+        saveButton.addEventListener("click", function () {
+          var uploadId =
+            selected === "system"
+              ? user.system_avatar_upload_id
+              : selected === "gravatar"
+                ? user.gravatar_avatar_upload_id
+                : user.custom_avatar_upload_id;
+          reloadAfter(ajax("PUT", userPath + "/preferences/avatar/pick", { upload_id: uploadId, type: selected }));
+        });
+        el.querySelector(".d-modal-cancel").addEventListener("click", close);
+      },
+    });
   }
 
   document.addEventListener("change", function (event) {

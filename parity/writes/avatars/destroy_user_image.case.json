@@ -1,0 +1,34 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_profiles SET profile_background_upload_id = 34, card_background_upload_id = 35 WHERE user_id = 3",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (34, 'UserProfile', 3, now(), now()), (35, 'UserProfile', 3, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": { "type": "profile_background" }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": { "type": "card_background" }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": { "type": "avatar" }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/user_image.json",
+      "params": {}
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user2/preferences/user_image.json",
+      "params": { "type": "card_background" }
+    }
+  ]
+}

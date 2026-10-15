@@ -451,6 +451,13 @@ pub async fn put_user_tail(
         "preferences/username" | "preferences/username.json" => {
             super::user_update::username(state.0, guardian.0, username, headers, uri, body).await
         }
+        "preferences/avatar/pick" | "preferences/avatar/pick.json" => {
+            super::user_avatar_writes::pick(state.0, guardian.0, username, headers, uri, body).await
+        }
+        "preferences/avatar/select" | "preferences/avatar/select.json" => {
+            super::user_avatar_writes::select(state.0, guardian.0, username, headers, uri, body)
+                .await
+        }
         "notification_level" | "notification_level.json" => {
             super::user_update::notification_level(
                 state.0, guardian.0, username, headers, uri, body,

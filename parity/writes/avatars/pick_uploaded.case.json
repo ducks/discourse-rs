@@ -1,0 +1,27 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": { "upload_type": "avatar", "file": { "fixture": "small.png" } }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user3/preferences/avatar/pick.json",
+      "params": { "upload_id": "{{responses.0.body.id}}", "type": "uploaded" }
+    },
+    { "method": "GET", "path": "/u/user3.json" },
+    {
+      "method": "PUT",
+      "path": "/u/user3/preferences/avatar/pick.json",
+      "params": { "type": "system" }
+    },
+    { "method": "GET", "path": "/u/user3.json" },
+    {
+      "method": "PUT",
+      "path": "/u/user3/preferences/avatar/pick.json",
+      "params": { "upload_id": "{{responses.0.body.id}}", "type": "custom" }
+    }
+  ]
+}
