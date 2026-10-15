@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET reply_to_post_number = 2, reply_to_user_id = 3 WHERE id = 37",
+    "UPDATE posts SET reply_count = 1 WHERE id = 36",
+    "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) VALUES (36, 37, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37",
+          "52"
+        ],
+        "title": "Parity fixture: a reply split from its parent",
+        "category_id": "34"
+      }
+    }
+  ]
+}

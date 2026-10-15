@@ -207,6 +207,29 @@ async fn add_inner(
         .await?;
     }
 
+    // extract_links: a message's links (none without a raw).
+    if !raw.is_empty() {
+        let urls = crate::url::Urls {
+            config: ctx.config,
+            settings: ctx.settings,
+        };
+        super::links::extract_from(
+            &mut *conn,
+            &super::links::Site {
+                hostname: &urls.current_hostname()?,
+                base_path: ctx.config.globals.relative_url_root(),
+                base_url_no_prefix: &urls.base_url_no_prefix()?,
+                settings: ctx.settings,
+            },
+            &super::links::LinkPost {
+                id: post_id,
+                user_id,
+                topic_id,
+                cooked: &cooked,
+            },
+        )
+        .await?;
+    }
     // track_topic
     change_topic_user(
         &mut *conn,

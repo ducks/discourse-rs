@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "35",
+          "36"
+        ],
+        "title": "Parity fixture: the first post split off",
+        "category_id": "2"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "delete_merged_stub_topics_after_days": 0
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/41/move-posts.json",
+      "params": {
+        "post_ids": [
+          "46"
+        ],
+        "destination_topic_id": "35"
+      }
+    }
+  ]
+}

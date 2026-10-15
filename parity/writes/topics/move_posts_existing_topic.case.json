@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "52"
+        ],
+        "destination_topic_id": "41"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/41.json"
+    }
+  ],
+  "ignore": [
+    "/responses/1/body/suggested_topics"
+  ]
+}

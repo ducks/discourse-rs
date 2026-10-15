@@ -1512,7 +1512,7 @@ route table has been made, so this list may be short.
     safe_revision_errors), 188c. ~~`feat/topic-edits-convert`~~ (done) S (PUT
     /t/:id/convert-topic/:type, TopicConverter: the archetype and category
     through PostRevisor with a hidden revision, allowed users, user stats,
-    the small actions, watching), 188d. `feat/topic-edits-move` L (POST
+    the small actions, watching), 188d. ~~`feat/topic-edits-move`~~ (done) L (POST
     /t/:id/move-posts, PostMover: to a new topic (splitting) and to an
     existing one, moved_posts, the split_topic small action, counters,
     timings, topic users, notifications, reply links, quotes, bookmarks,
