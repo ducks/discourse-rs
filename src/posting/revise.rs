@@ -609,7 +609,7 @@ pub async fn revise(
             }
         }
     }
-    let yaml = modifications::dump(&fields)?;
+    let yaml = modifications::dump_column(&fields)?;
     // create_or_update_revision: none with skip_revision; within the
     // grace period the current revision takes the change.
     let mut revision_dropped = false;
@@ -645,7 +645,7 @@ pub async fn revise(
                 private_message: new_archetype == "private_message",
                 silent: false,
                 category_changed,
-                tags_changed: false,
+                tags_changed: topic_diff.iter().any(|(k, _)| *k == "tags"),
             },
         )
         .await?
@@ -692,7 +692,7 @@ pub async fn revise(
     next_draft_sequence(&mut tx, editor_user.id, &format!("topic_{}", post.topic_id)).await?;
     // What Rails sends from after_commit goes out before what revise!
     // does after its transaction.
-    deferred.enqueue(&mut tx).await?;
+    deferred.enqueue(&mut tx, ctx).await?;
     // post_process_post and alert_users, committed with the edit.
     crate::jobs::enqueue(
         &mut tx,

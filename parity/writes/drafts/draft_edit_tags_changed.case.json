@@ -1,0 +1,14 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_title\":\"Parity fixture: replies and posters\",\"original_tags\":[]}"
+      }
+    }
+  ]
+}

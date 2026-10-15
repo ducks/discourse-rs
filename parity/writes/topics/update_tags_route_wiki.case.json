@@ -1,0 +1,24 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    }
+  ]
+}

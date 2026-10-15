@@ -1,0 +1,28 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "notify_tag_change"
+  ],
+  "setup": [
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (1, 3, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (1, 4, 4, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, last_read_post_number) VALUES (5, 35, 3, 5) ON CONFLICT (user_id, topic_id) DO UPDATE SET notification_level = 3, last_read_post_number = 5"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    }
+  ]
+}

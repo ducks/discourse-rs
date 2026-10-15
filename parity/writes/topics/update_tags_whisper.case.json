@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "settings": {
+    "create_post_for_category_and_tag_changes": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    }
+  ]
+}

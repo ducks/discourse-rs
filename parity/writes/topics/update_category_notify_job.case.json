@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "notify_category_change"
+  ],
+  "setup": [
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (34, 3, 3), (34, 4, 4)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, last_read_post_number) VALUES (5, 35, 3, 5) ON CONFLICT (user_id, topic_id) DO UPDATE SET notification_level = 3, last_read_post_number = 5"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "category_id": "34"
+      }
+    }
+  ]
+}

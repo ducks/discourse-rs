@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ],
+        "original_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

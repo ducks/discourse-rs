@@ -52,6 +52,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
         crate::sidebar_backfill::JOB => crate::sidebar_backfill::run(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
+        "notify_tag_change" => notify_job(state, &job.args, NotifyJob::TagChange).await,
+        "notify_category_change" => notify_job(state, &job.args, NotifyJob::CategoryChange).await,
+        "notify_post_revision" => notify_job(state, &job.args, NotifyJob::PostRevision).await,
         super::problem_checks::RUN_PROBLEM_CHECK => {
             super::problem_checks::run_problem_check(state, &job.args).await
         }
@@ -1099,6 +1102,41 @@ async fn post_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
     };
     let mut tx = state.pool.begin().await?;
     super::post_alert::run(&ctx, &mut tx, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+enum NotifyJob {
+    TagChange,
+    CategoryChange,
+    PostRevision,
+}
+
+/// `Jobs::NotifyTagChange`, `NotifyCategoryChange` and
+/// `NotifyPostRevision` (the latter in its transaction, the others'
+/// notifications each committed as they go in Rails, here together).
+async fn notify_job(state: &AppState, args: &Value, job: NotifyJob) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let mut tx = state.pool.begin().await?;
+    match job {
+        NotifyJob::TagChange => super::post_alert::notify_tag_change(&ctx, &mut tx, args).await?,
+        NotifyJob::CategoryChange => {
+            super::post_alert::notify_category_change(&ctx, &mut tx, args).await?
+        }
+        NotifyJob::PostRevision => {
+            super::post_alert::notify_post_revision(&ctx, &mut tx, args).await?
+        }
+    }
     tx.commit().await?;
     Ok(())
 }

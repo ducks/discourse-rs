@@ -1,0 +1,154 @@
+{
+  "name": "draft_edit_tags_old_format",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_tags\":[\"guide\"]}"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T12:02:36.063412",
+  "transaction_started_at": "2026-10-15T12:02:35.157984",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "draft_sequence": 0
+      }
+    }
+  ],
+  "changes": {
+    "drafts": {
+      "inserted": [
+        {
+          "id": 1,
+          "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_tags\":[\"guide\"]}",
+          "owner": null,
+          "user_id": 2,
+          "sequence": 0,
+          "draft_key": "topic_35",
+          "revisions": 1,
+          "created_at": "2026-10-15T12:02:35.157984",
+          "updated_at": "2026-10-15T12:02:35.157984"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jsTMm6NzRlwLp+AkfvP698I0wdA=",
+            "created_at": "2026-10-15T12:02:35.509003",
+            "rotated_at": "2026-10-15T12:02:35.508054",
+            "updated_at": "2026-10-15T12:02:35.509003",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jsTMm6NzRlwLp+AkfvP698I0wdA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T12:02:36.070505",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jsTMm6NzRlwLp+AkfvP698I0wdA=",
+            "created_at": "2026-10-15T12:02:35.509003",
+            "rotated_at": "2026-10-15T12:02:35.508054",
+            "updated_at": "2026-10-15T12:02:35.509003",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jsTMm6NzRlwLp+AkfvP698I0wdA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 1,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "drafts": 1
+  },
+  "recorded_from": {
+    "case": "8484bd650addf5b688e67bd4db50d5213473c0e63a477f8bd58a3478c38827cf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

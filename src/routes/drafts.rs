@@ -223,14 +223,56 @@ async fn edit_conflict(
     let mut conflict = original_text != raw;
     if post_number == 1 {
         conflict = conflict || text("original_title").is_some_and(|t| t != title);
+        // The tags: the draft's original ones (tag objects by id, or names
+        // in the old format) against the topic's less those hidden from
+        // the editor, whose editor never showed them.
         if !conflict {
-            let original_tags = data
-                .get("original_tags")
-                .and_then(Value::as_array)
-                .is_some_and(|tags| !tags.is_empty());
-            if tagged || original_tags {
-                return Err(Unsupported("the edit conflict check on tags").into());
+            let original: Vec<Value> = match data.get("original_tags") {
+                Some(Value::Array(tags)) => tags.clone(),
+                None | Some(Value::Null) => Vec::new(),
+                Some(_) => return Err(Unsupported("original_tags of another shape").into()),
+            };
+            let mut ids: Vec<Value> = original
+                .iter()
+                .filter_map(|t| t.as_object().and_then(|o| o.get("id")).cloned())
+                .filter(|id| !id.is_null())
+                .collect();
+            let names: Vec<String> = original
+                .iter()
+                .filter_map(|t| t.as_str().map(str::to_string))
+                .collect();
+            if !names.is_empty() {
+                let found: Vec<i32> =
+                    sqlx::query_scalar("SELECT id FROM tags WHERE name = ANY($1)")
+                        .bind(&names)
+                        .fetch_all(&mut *conn)
+                        .await?;
+                ids.extend(found.into_iter().map(|id| json!(id)));
             }
+            let mut current: Vec<Value> = if tagged {
+                let hidden = crate::tagging::hidden_tag_names(&mut *conn, guardian).await?;
+                sqlx::query_scalar::<_, i32>(
+                    "SELECT tags.id FROM topic_tags JOIN tags ON tags.id = topic_tags.tag_id \
+                     JOIN posts p ON p.topic_id = topic_tags.topic_id \
+                     WHERE p.id = $1 AND NOT (tags.name = ANY($2))",
+                )
+                .bind(post_id)
+                .bind(&hidden)
+                .fetch_all(&mut *conn)
+                .await?
+                .into_iter()
+                .map(|id| json!(id))
+                .collect()
+            } else {
+                Vec::new()
+            };
+            // to_set: compared without order or repeats.
+            let key = |v: &Value| v.to_string();
+            ids.sort_by_key(key);
+            ids.dedup();
+            current.sort_by_key(key);
+            current.dedup();
+            conflict = ids != current;
         }
     }
     if !conflict {

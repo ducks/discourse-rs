@@ -98,6 +98,10 @@ struct Opts {
     display_name: Option<String>,
     /// `custom_data`, merged into the data last.
     custom_data: Map<String, Value>,
+    /// `acting_user_id`: who the user action names (the author otherwise).
+    acting_user_id: Option<i32>,
+    /// `revision_number`, an edit's.
+    revision_number: Option<i32>,
 }
 
 /// The post and what create_notification reads about it; None when it or
@@ -773,10 +777,28 @@ impl Alerter<'_> {
         .bind(post.post_number)
         .fetch_all(&mut *conn)
         .await?;
-        if existing.contains(&notification_type) {
-            if notification_type == types::EDITED {
-                return Err(Unsupported("repeated edit notifications").into());
+        if existing.contains(&notification_type) && notification_type == types::EDITED {
+            // should_notify_edit?: a day later, or by someone else.
+            let (old, shown): (bool, Option<String>) = sqlx::query_as(
+                "SELECT created_at < now() - interval '1 day', data::json->>'display_username' \
+                 FROM notifications WHERE user_id = $1 AND topic_id = $2 AND post_number = $3 \
+                   AND notification_type = $4 ORDER BY id DESC LIMIT 1",
+            )
+            .bind(user_id)
+            .bind(post.topic_id)
+            .bind(post.post_number)
+            .bind(notification_type)
+            .fetch_one(&mut *conn)
+            .await?;
+            let display = opts
+                .display_username
+                .clone()
+                .filter(|u| !u.is_empty())
+                .or_else(|| post.username.clone());
+            if !old && shown == display {
+                return Ok(false);
             }
+        } else if existing.contains(&notification_type) {
             // should_notify_like?, for reactions too (PostAlerterExtension):
             // always, or first_time_and_daily once the last one is a day old.
             let renotify = [types::LIKED, types::REACTION].contains(&notification_type)
@@ -877,7 +899,7 @@ impl Alerter<'_> {
             )
             .bind(action)
             .bind(user_id)
-            .bind(post.user_id)
+            .bind(opts.acting_user_id.or(post.user_id))
             .bind(post.topic_id)
             .bind(post.id)
             .execute(&mut *conn)
@@ -905,7 +927,7 @@ impl Alerter<'_> {
         data.insert("original_post_id".into(), json!(post.id));
         data.insert("original_post_type".into(), json!(post.post_type));
         data.insert("original_username".into(), json!(original_username));
-        data.insert("revision_number".into(), Value::Null);
+        data.insert("revision_number".into(), json!(opts.revision_number));
         data.insert("display_username".into(), json!(displayed));
         if let Some(name) = opts.display_name.as_ref().or(target_name.as_ref()) {
             data.insert("display_name".into(), json!(name));
@@ -1008,6 +1030,325 @@ pub async fn push_notification(
     .await?;
     if push {
         return Err(Unsupported("push notifications").into());
+    }
+    Ok(())
+}
+
+/// The post a notify job is about, and whether its topic is visible
+/// (`post&.topic&.visible?`).
+async fn load_visible_post(
+    conn: &mut PgConnection,
+    args: &Value,
+) -> Result<Option<Post>, AppError> {
+    let Some(post_id) = args.get("post_id").and_then(Value::as_i64) else {
+        return Ok(None);
+    };
+    let Some(post) = load_post(conn, post_id as i32).await? else {
+        return Ok(None);
+    };
+    let visible: bool = sqlx::query_scalar("SELECT visible FROM topics WHERE id = $1")
+        .bind(post.topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    Ok(visible.then_some(post))
+}
+
+fn id_list(args: &Value, key: &str) -> Vec<i32> {
+    args.get(key)
+        .and_then(Value::as_array)
+        .map(|ids| {
+            ids.iter()
+                .filter_map(Value::as_i64)
+                .map(|id| id as i32)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+impl Alerter<'_> {
+    /// `notify_post_users(post, notified, group_ids:, include_*_watchers:)`
+    /// for an edit (not a new record): the watchers asked for, less the
+    /// users in `notified`, each told the post was posted, or edited when
+    /// they have read it already.
+    async fn notify_watchers(
+        &mut self,
+        conn: &mut PgConnection,
+        notified: &[i32],
+        group_ids: Option<&[i32]>,
+        topic: bool,
+        category: bool,
+        tags: bool,
+    ) -> Result<(), AppError> {
+        let post = self.post;
+        let mut sql = String::from("SELECT id FROM users WHERE false");
+        if topic {
+            sql.push_str(
+                " UNION SELECT user_id FROM topic_users WHERE notification_level = 3 AND topic_id = $1",
+            );
+        }
+        if category {
+            sql.push_str(
+                " UNION SELECT cu.user_id FROM category_users cu \
+                  LEFT JOIN topic_users tu ON tu.user_id = cu.user_id AND tu.topic_id = $1 \
+                  WHERE cu.notification_level = 3 AND cu.category_id = $2 \
+                    AND (tu.user_id IS NULL OR tu.notification_level = 3)",
+            );
+        }
+        let tagged: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = $1)")
+                .bind(post.topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if tags && tagged {
+            sql.push_str(
+                " UNION SELECT tag_users.user_id FROM tag_users \
+                  LEFT JOIN topic_users tu ON tu.user_id = tag_users.user_id AND tu.topic_id = $1 \
+                  LEFT JOIN tag_group_memberships tgm ON tag_users.tag_id = tgm.tag_id \
+                  LEFT JOIN tag_group_permissions tgp ON tgm.tag_group_id = tgp.tag_group_id \
+                  LEFT JOIN group_users gu ON gu.user_id = tag_users.user_id \
+                  WHERE (tgp.group_id IS NULL OR tgp.group_id = gu.group_id OR tgp.group_id = 0 OR gu.group_id = 3) \
+                    AND tag_users.notification_level = 3 \
+                    AND tag_users.tag_id IN (SELECT tag_id FROM topic_tags WHERE topic_id = $1) \
+                    AND (tu.user_id IS NULL OR tu.notification_level = 3)",
+            );
+        }
+        let mut query = format!("SELECT id FROM users WHERE id IN ({sql}) AND NOT (id = ANY($3))");
+        if group_ids.is_some() {
+            query.push_str(" AND id IN (SELECT user_id FROM group_users WHERE group_id = ANY($4))");
+        }
+        if post.archetype == "private_message" {
+            query.push_str(" AND NOT staged AND (admin OR moderator)");
+        }
+        // each_user_in_batches: User.where(id:), in the table's order.
+        query.push_str(" ORDER BY ctid");
+        let users: Vec<i32> = sqlx::query_scalar(&query)
+            .bind(post.topic_id)
+            .bind(post.category_id.unwrap_or(0))
+            .bind(notified)
+            .bind(group_ids.unwrap_or_default())
+            .fetch_all(&mut *conn)
+            .await?;
+        let seen: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM topic_users WHERE topic_id = $1 AND last_read_post_number >= $2",
+        )
+        .bind(post.topic_id)
+        .bind(post.post_number)
+        .fetch_all(&mut *conn)
+        .await?;
+        for user_id in users {
+            let (notification_type, opts) = if seen.contains(&user_id) {
+                (
+                    types::EDITED,
+                    Opts {
+                        display_username: post.editor_username.clone(),
+                        ..Default::default()
+                    },
+                )
+            } else {
+                (types::POSTED, Opts::default())
+            };
+            self.create_notification(conn, user_id, notification_type, &opts)
+                .await?;
+        }
+        Ok(())
+    }
+
+    /// `notify_first_post_watchers(post, user_ids)`: once each, never the
+    /// author or last editor.
+    async fn notify_first_post_watchers(
+        &mut self,
+        conn: &mut PgConnection,
+        mut user_ids: Vec<i32>,
+    ) -> Result<(), AppError> {
+        let post = self.post;
+        user_ids.retain(|u| Some(*u) != post.user_id && Some(*u) != post.last_editor_id);
+        // User.where(id:), in the table's order.
+        let users: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) ORDER BY ctid")
+                .bind(&user_ids)
+                .fetch_all(&mut *conn)
+                .await?;
+        for user_id in users {
+            self.create_notification(conn, user_id, types::WATCHING_FIRST_POST, &Opts::default())
+                .await?;
+        }
+        Ok(())
+    }
+}
+
+/// `Jobs::NotifyTagChange`: the tags' first-post watchers, then (unless
+/// tag edit notifications are off) the topic's watchers other than those
+/// named, limited to the tags' groups when every changed tag is in a
+/// group.
+pub async fn notify_tag_change(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    args: &Value,
+) -> Result<(), AppError> {
+    let Some(post) = load_visible_post(conn, args).await? else {
+        return Ok(());
+    };
+    let mut alerter = Alerter {
+        ctx,
+        post: &post,
+        notified: Vec::new(),
+    };
+    let watchers =
+        crate::tagging::tag_watchers(&mut *conn, post.topic_id, WATCHING_FIRST_POST_LEVEL).await?;
+    alerter.notify_first_post_watchers(conn, watchers).await?;
+    if ctx
+        .settings
+        .get("disable_tags_edit_notifications")?
+        .truthy()
+        && args.get("force") != Some(&json!(true))
+    {
+        return Ok(());
+    }
+    let diff_tags: Vec<String> = args
+        .get("diff_tags")
+        .and_then(Value::as_array)
+        .map(|t| {
+            t.iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default();
+    // all_tags_in_hidden_groups?, then tag_group_ids.
+    let group_ids: Option<Vec<i32>> = if diff_tags.is_empty() {
+        None
+    } else {
+        let in_groups: i64 = sqlx::query_scalar(
+            "SELECT count(DISTINCT tags.id) FROM tags \
+             JOIN tag_group_memberships tgm ON tgm.tag_id = tags.id \
+             JOIN tag_group_permissions tgp ON tgp.tag_group_id = tgm.tag_group_id \
+             WHERE tags.name = ANY($1) AND tgp.group_id <> 0",
+        )
+        .bind(&diff_tags)
+        .fetch_one(&mut *conn)
+        .await?;
+        if in_groups == diff_tags.len() as i64 {
+            Some(
+                sqlx::query_scalar(
+                    "SELECT tgp.group_id FROM tags \
+                     JOIN tag_group_memberships tgm ON tgm.tag_id = tags.id \
+                     JOIN tag_group_permissions tgp ON tgp.tag_group_id = tgm.tag_group_id \
+                     WHERE tags.name = ANY($1)",
+                )
+                .bind(&diff_tags)
+                .fetch_all(&mut *conn)
+                .await?,
+            )
+        } else {
+            None
+        }
+    };
+    let notified = id_list(args, "notified_user_ids");
+    let private_message = post.archetype == "private_message";
+    alerter
+        .notify_watchers(
+            conn,
+            &notified,
+            group_ids.as_deref(),
+            !private_message,
+            false,
+            true,
+        )
+        .await
+}
+
+/// `Jobs::NotifyCategoryChange`: the topic's and category's watchers other
+/// than those named, the category's first-post watchers, then the mailing
+/// list job.
+pub async fn notify_category_change(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    args: &Value,
+) -> Result<(), AppError> {
+    let Some(post) = load_visible_post(conn, args).await? else {
+        return Ok(());
+    };
+    let mut alerter = Alerter {
+        ctx,
+        post: &post,
+        notified: Vec::new(),
+    };
+    let notified = id_list(args, "notified_user_ids");
+    alerter
+        .notify_watchers(conn, &notified, None, true, true, false)
+        .await?;
+    let watchers: Vec<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM category_users WHERE category_id = $1 AND notification_level = 4 \
+         ORDER BY id",
+    )
+    .bind(post.category_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    alerter.notify_first_post_watchers(conn, watchers).await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "notify_mailing_list_subscribers",
+        json!({"post_id": post.id}),
+    )
+    .await?;
+    Ok(())
+}
+
+/// `Jobs::NotifyPostRevision`: each user named told of the edit (staff
+/// only for a hidden revision), by the revision's author.
+pub async fn notify_post_revision(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    args: &Value,
+) -> Result<(), AppError> {
+    if args.get("user_ids").is_none_or(Value::is_null) {
+        return Err(
+            Unsupported("notify_post_revision without user_ids (InvalidParameters)").into(),
+        );
+    }
+    let Some(revision_id) = args.get("post_revision_id").and_then(Value::as_i64) else {
+        return Ok(());
+    };
+    type Revision = (i32, i32, Option<i32>, bool, Option<String>);
+    let revision: Option<Revision> = sqlx::query_as(
+        "SELECT r.post_id, r.number, r.user_id, r.hidden, u.username FROM post_revisions r \
+         LEFT JOIN users u ON u.id = r.user_id WHERE r.id = $1",
+    )
+    .bind(revision_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((post_id, number, editor_id, hidden, editor_username)) = revision else {
+        return Ok(());
+    };
+    let Some(post) = load_post(conn, post_id).await? else {
+        return Ok(());
+    };
+    let mut alerter = Alerter {
+        ctx,
+        post: &post,
+        notified: Vec::new(),
+    };
+    let users: Vec<(i32, bool)> =
+        sqlx::query_as("SELECT id, admin OR moderator FROM users WHERE id = ANY($1) ORDER BY id")
+            .bind(id_list(args, "user_ids"))
+            .fetch_all(&mut *conn)
+            .await?;
+    for (user_id, staff) in users {
+        if hidden && !staff {
+            continue;
+        }
+        alerter
+            .create_notification(
+                conn,
+                user_id,
+                types::EDITED,
+                &Opts {
+                    display_username: editor_username.clone(),
+                    acting_user_id: editor_id,
+                    revision_number: Some(number),
+                    ..Default::default()
+                },
+            )
+            .await?;
     }
     Ok(())
 }

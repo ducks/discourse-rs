@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'secrettag', 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (35, 9806, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edited first post\",\"action\":\"edit\",\"postId\":35,\"original_text\":\"First post of a topic with several repliers, long enough to be a real post body for the excerpt.\",\"original_tags\":[{\"id\":2,\"name\":\"guide\"}]}"
+      }
+    }
+  ]
+}

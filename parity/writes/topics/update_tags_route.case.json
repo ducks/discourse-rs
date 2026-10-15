@@ -1,0 +1,37 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {
+        "tags": [
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {
+        "tags": [
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {}
+    }
+  ]
+}

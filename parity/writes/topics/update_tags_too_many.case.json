@@ -1,0 +1,40 @@
+{
+  "user": "admin",
+  "settings": {
+    "max_tags_per_topic": 1
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          },
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    }
+  ]
+}

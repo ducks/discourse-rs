@@ -1364,14 +1364,20 @@
           body: JSON.stringify(props),
         });
       } else if (topic.canEditTags) {
-        var tagPairs = selectedTags.map(function (t) {
-          return ["tags[]", t.name];
+        // Topic#updateTags: the tags as objects ({id, name}), as Rack
+        // reads `tags[][...]`; none sends no tags.
+        var tagPairs = [];
+        serializedTags().forEach(function (t) {
+          if (t.id) {
+            tagPairs.push(["tags[][id]", t.id]);
+          }
+          tagPairs.push(["tags[][name]", t.name]);
         });
         promise = fetch(base + "/t/" + topic.id + "/tags", {
           method: "PUT",
           headers: csrfHeaders(),
           credentials: "same-origin",
-          body: form(tagPairs.length ? tagPairs : [["tags", ""]]),
+          body: form(tagPairs),
         });
       }
     }

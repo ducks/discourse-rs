@@ -1,0 +1,17 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/tags.json",
+      "params": {
+        "tags": [
+          {
+            "id": 1,
+            "name": "howto"
+          }
+        ]
+      }
+    }
+  ]
+}

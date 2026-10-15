@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37"
+        ],
+        "title": "Parity fixture: a reply split off with tags",
+        "category_id": "4",
+        "tag_ids": [
+          "1",
+          "2"
+        ]
+      }
+    }
+  ]
+}

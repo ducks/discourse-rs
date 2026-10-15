@@ -11,6 +11,15 @@ use crate::Unsupported;
 
 const TAG: &str = "ruby/hash:ActiveSupport::HashWithIndifferentAccess";
 
+/// The column as a new revision saves it: an empty hash is the
+/// serialized attribute's default, stored as NULL.
+pub fn dump_column(fields: &[(&str, [Value; 2])]) -> Result<Option<String>, Unsupported> {
+    if fields.is_empty() {
+        return Ok(None);
+    }
+    dump(fields).map(Some)
+}
+
 /// The column's text for these changes, in field order.
 pub fn dump(fields: &[(&str, [Value; 2])]) -> Result<String, Unsupported> {
     let mut map = serde_yaml_ng::Mapping::new();

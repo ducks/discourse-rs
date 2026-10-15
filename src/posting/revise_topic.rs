@@ -32,6 +32,8 @@ pub struct TopicFields {
     pub category_id: Option<i32>,
     /// `featured_link`; a blank one clears it.
     pub featured_link: Option<String>,
+    /// `tags`, as names; empty removes them all.
+    pub tags: Option<Vec<String>>,
 }
 
 impl TopicFields {
@@ -40,6 +42,7 @@ impl TopicFields {
             && self.archetype.is_none()
             && self.category_id.is_none()
             && self.featured_link.is_none()
+            && self.tags.is_none()
     }
 }
 
@@ -149,28 +152,235 @@ pub async fn revise(
             return Ok(Outcome::Invalid(errors));
         }
     };
-    deferred.enqueue(&mut tx).await?;
+    deferred.enqueue(&mut tx, ctx).await?;
     tx.commit().await?;
     let mut conn = pool.acquire().await?;
     finish(&mut conn, ctx, editor, &prepared, &revised, opts).await?;
     Ok(Outcome::Revised)
 }
 
-/// Jobs Rails enqueues from `DB.after_commit`: they go out when the
-/// outermost transaction commits, after the jobs enqueued in it.
+/// What Rails runs from `DB.after_commit`, in the order it was asked for:
+/// it goes out when the outermost transaction commits, after the jobs
+/// enqueued in it.
 #[derive(Default)]
-pub struct Deferred(Vec<(&'static str, Value)>);
+pub struct Deferred(Vec<AfterCommit>);
+
+enum AfterCommit {
+    Job(&'static str, Value),
+    /// New tags' tag_created web hooks (Tag's after_commit).
+    TagsCreated(Vec<crate::tagging::CreatedTag>),
+    /// TopicChanges#apply_tag_changes' block: NotifyTagChange and the tag
+    /// change whisper for what the topic's tags became.
+    TagsChanged {
+        topic_id: i32,
+        editor_id: i32,
+        previous: Vec<String>,
+    },
+}
 
 impl Deferred {
     pub fn push(&mut self, name: &'static str, args: Value) {
-        self.0.push((name, args));
+        self.0.push(AfterCommit::Job(name, args));
     }
 
-    pub async fn enqueue(self, conn: &mut PgConnection) -> Result<(), AppError> {
-        for (name, args) in self.0 {
-            crate::jobs::enqueue(&mut *conn, name, args).await?;
+    pub fn push_tags_created(&mut self, created: Vec<crate::tagging::CreatedTag>) {
+        if !created.is_empty() {
+            self.0.push(AfterCommit::TagsCreated(created));
+        }
+    }
+
+    pub fn push_tags_changed(&mut self, topic_id: i32, editor_id: i32, previous: Vec<String>) {
+        self.0.push(AfterCommit::TagsChanged {
+            topic_id,
+            editor_id,
+            previous,
+        });
+    }
+
+    pub async fn enqueue(self, conn: &mut PgConnection, ctx: &Ctx<'_>) -> Result<(), AppError> {
+        for item in self.0 {
+            match item {
+                AfterCommit::Job(name, args) => {
+                    crate::jobs::enqueue(&mut *conn, name, args).await?
+                }
+                AfterCommit::TagsCreated(created) => {
+                    crate::tagging::enqueue_tag_created(&mut *conn, &created).await?
+                }
+                AfterCommit::TagsChanged {
+                    topic_id,
+                    editor_id,
+                    previous,
+                } => tags_changed(&mut *conn, ctx, topic_id, editor_id, &previous).await?,
+            }
         }
         Ok(())
+    }
+}
+
+/// apply_tag_changes' after_commit block: the first post's author and
+/// last editor told of the tags added and removed (notify_tag_change),
+/// and the whisper saying so.
+async fn tags_changed(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    editor_id: i32,
+    previous: &[String],
+) -> Result<(), AppError> {
+    let Some((post_id, user_id, last_editor_id)): Option<(i32, Option<i32>, Option<i32>)> =
+        sqlx::query_as(
+            "SELECT id, user_id, last_editor_id FROM posts WHERE topic_id = $1 \
+               AND deleted_at IS NULL ORDER BY post_number LIMIT 1",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *conn)
+        .await?
+    else {
+        return Ok(());
+    };
+    let mut notified = vec![user_id];
+    if last_editor_id != user_id {
+        notified.push(last_editor_id);
+    }
+    let persisted: Vec<String> = sqlx::query_scalar(
+        "SELECT tags.name FROM topic_tags JOIN tags ON tags.id = topic_tags.tag_id \
+         WHERE topic_tags.topic_id = $1 ORDER BY topic_tags.id",
+    )
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let added: Vec<String> = persisted
+        .iter()
+        .filter(|t| !previous.contains(t))
+        .cloned()
+        .collect();
+    let removed: Vec<String> = previous
+        .iter()
+        .filter(|t| !persisted.contains(t))
+        .cloned()
+        .collect();
+    let mut diff_tags = added.clone();
+    for t in &removed {
+        if !diff_tags.contains(t) {
+            diff_tags.push(t.clone());
+        }
+    }
+    if diff_tags.is_empty() {
+        return Ok(());
+    }
+    crate::jobs::enqueue(
+        &mut *conn,
+        "notify_tag_change",
+        json!({"post_id": post_id, "notified_user_ids": notified, "diff_tags": diff_tags}),
+    )
+    .await?;
+    // create_small_action_for_tag_changes
+    let s = ctx.settings;
+    if !s.get("create_post_for_category_and_tag_changes")?.truthy()
+        || s.get("whispers_allowed_groups")?.to_s().is_empty()
+    {
+        return Ok(());
+    }
+    let added_raw = tag_list_to_raw(&mut *conn, &added).await?;
+    let removed_raw = tag_list_to_raw(&mut *conn, &removed).await?;
+    let raw = match (added.is_empty(), removed.is_empty()) {
+        (false, false) => ctx.i18n.t_with(
+            "topic_tag_changed.added_and_removed",
+            &[("added", &added_raw), ("removed", &removed_raw)],
+        ),
+        (false, true) => ctx
+            .i18n
+            .t_with("topic_tag_changed.added", &[("added", &added_raw)]),
+        _ => ctx
+            .i18n
+            .t_with("topic_tag_changed.removed", &[("removed", &removed_raw)]),
+    }
+    .ok_or(Unsupported("topic_tag_changed"))?;
+    let whisper = small_action::add_whisper(
+        &mut *conn,
+        ctx,
+        &small_action::SmallAction {
+            user_id: editor_id,
+            topic_id,
+            action_code: "tags_changed",
+            bump: false,
+            who: None,
+        },
+        &raw,
+    )
+    .await?;
+    // custom_fields: an array is a row per value.
+    for (name, values) in [("tags_added", &added), ("tags_removed", &removed)] {
+        for value in values.iter() {
+            sqlx::query(
+                "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+                 VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+            )
+            .bind(whisper)
+            .bind(name)
+            .bind(value)
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    Ok(())
+}
+
+/// `PostRevisor.tag_list_to_raw`: the tags sorted, each as the hashtag the
+/// composer would write (`#name`, or `#name::tag` where a top-level
+/// category has that slug), or the bare name where no hashtag can say it.
+async fn tag_list_to_raw(conn: &mut PgConnection, tags: &[String]) -> Result<String, AppError> {
+    let mut sorted = tags.to_vec();
+    sorted.sort();
+    if sorted.iter().any(|t| t.contains(':')) {
+        return Err(Unsupported("tag hashtags in the parent:child form").into());
+    }
+    let lower: Vec<String> = sorted.iter().map(|t| t.to_lowercase()).collect();
+    let conflicting: Vec<String> = sqlx::query_scalar(
+        "SELECT lower(slug) FROM categories WHERE parent_category_id IS NULL \
+           AND lower(slug) = ANY($1)",
+    )
+    .bind(&lower)
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(sorted
+        .iter()
+        .map(|slug| {
+            let reference = if conflicting.contains(&slug.to_lowercase()) {
+                format!("{slug}::tag")
+            } else {
+                slug.clone()
+            };
+            if usable_ref(&reference) {
+                format!("#{reference}")
+            } else {
+                slug.clone()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", "))
+}
+
+/// `HashtagRewriter.usable_ref?`: the ref scans back as one whole hashtag
+/// (hashtag-autocomplete's MATCHER characters, no dot at either end).
+fn usable_ref(reference: &str) -> bool {
+    let ok = |c: char, dot: bool| {
+        c.is_ascii_alphanumeric()
+            || matches!(c, '_' | ':' | '-')
+            || (dot && c == '.')
+            || ('\u{C0}'..='\u{1FFF}').contains(&c)
+            || ('\u{2C00}'..='\u{D7FF}').contains(&c)
+    };
+    let chars: Vec<char> = reference.chars().collect();
+    match chars.len() {
+        0 => false,
+        1 => ok(chars[0], false),
+        n if n > 101 => false,
+        n => {
+            ok(chars[0], false)
+                && ok(chars[n - 1], false)
+                && chars[1..n - 1].iter().all(|c| ok(*c, true))
+        }
     }
 }
 
@@ -382,7 +592,7 @@ pub async fn apply(
         modifications.push(("edit_reason", [json!(post.edit_reason), Value::Null]));
     }
     modifications.extend(diff.iter().cloned());
-    let yaml = modifications::dump(&modifications)?;
+    let yaml = modifications::dump_column(&modifications)?;
     let revision_id: i32 = sqlx::query_scalar(
         "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) \
          SELECT $1, id, version, $3, $4, clock_timestamp(), clock_timestamp() FROM posts WHERE id = $2 \
@@ -406,7 +616,7 @@ pub async fn apply(
             private_message: archetype == "private_message",
             silent: opts.silent,
             category_changed: modifications.iter().any(|(k, _)| *k == "category_id"),
-            tags_changed: false,
+            tags_changed: modifications.iter().any(|(k, _)| *k == "tags"),
         },
     )
     .await?
@@ -511,11 +721,14 @@ pub async fn update_topic(
         } else if new_category.is_none()
             || can_move_topic_to_category(&mut *conn, s, editor, category_id).await?
         {
-            if let Some(target) = new_category
-                && let Some(message) =
-                    category_tags_error(&mut *conn, ctx, editor, topic_id, target, fields).await?
-            {
-                errors.push(message);
+            let tag_errors = match new_category {
+                Some(target) => {
+                    category_tags_errors(&mut *conn, ctx, editor, topic_id, target, fields).await?
+                }
+                None => Vec::new(),
+            };
+            if !tag_errors.is_empty() {
+                errors = tag_errors;
                 errored = true;
             } else {
                 record_change(
@@ -573,6 +786,69 @@ pub async fn update_topic(
             }
         }
     }
+    // TopicChanges#apply_tag_changes
+    let mut tags_saved = false;
+    if !errored
+        && let Some(tags) = &fields.tags
+        && editor.can_tag_topics(s)?
+    {
+        let mut previous: Vec<String> = sqlx::query_scalar(
+            "SELECT tags.name FROM topic_tags JOIN tags ON tags.id = topic_tags.tag_id \
+             WHERE topic_tags.topic_id = $1 ORDER BY topic_tags.id",
+        )
+        .bind(topic_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        previous.sort();
+        if !(tags.is_empty() && previous.is_empty()) {
+            let tagged = crate::tagging::TaggedTopic {
+                id: Some(topic_id),
+                private_message: new.archetype == "private_message",
+                category_id: new.category_id,
+            };
+            match crate::tagging::tag_topic_by_names(
+                &mut *conn, s, ctx.i18n, editor, &tagged, tags, false,
+            )
+            .await?
+            {
+                Err(rejected) => {
+                    deferred.push_tags_created(rejected.created);
+                    errors = rejected.errors;
+                    errored = true;
+                }
+                Ok(tagging) => {
+                    if tagging.has_invalid_tag() {
+                        return Err(Unsupported(
+                            "a topic's tags with one Tag's validations refuse (RecordInvalid)",
+                        )
+                        .into());
+                    }
+                    deferred.push_tags_created(tagging.created.clone());
+                    // topic.tags = tags, written at once for a saved topic.
+                    crate::tagging::apply(
+                        &mut *conn,
+                        &crate::tagging::SavedTopic {
+                            id: topic_id,
+                            private_message: tagged.private_message,
+                            category_id: tagged.category_id,
+                        },
+                        &tagging,
+                    )
+                    .await?;
+                    tags_saved = true;
+                    let mut next: Vec<String> =
+                        tagging.tags.iter().map(|t| t.name.clone()).collect();
+                    next.sort();
+                    if next != previous {
+                        record_change(&mut diff, "tags", json!(previous), json!(next));
+                        if !silent {
+                            deferred.push_tags_changed(topic_id, p.editor_id, previous);
+                        }
+                    }
+                }
+            }
+        }
+    }
     if !errored && let Some(link) = &fields.featured_link {
         if link.trim().is_empty() {
             record_change(
@@ -595,6 +871,12 @@ pub async fn update_topic(
         }
     }
     if !errored {
+        // after_save with tags_changed: the reindex queued and TagUser's
+        // auto watching and tracking, ahead of the save's own index of a
+        // new title (a failed save rolls it all back).
+        if tags_saved {
+            crate::tagging::after_tags_saved(&mut *conn, topic_id).await?;
+        }
         errors = saver.save(&mut *conn, &mut saved, &mut new).await?;
         errored = !errors.is_empty();
     }
@@ -1091,45 +1373,41 @@ pub async fn can_create_topic_on_category(
             .contains(&category_id))
 }
 
-/// `DiscourseTagging.validate_category_tags(guardian, topic, category,
-/// tags)` for the tags the topic will have: the category's minimum
-/// (`tags.minimum_required_tags`). Tag groups, restricted and required
-/// tags wait for tag writes (189).
-async fn category_tags_error(
+/// The category callback's `DiscourseTagging.validate_category_tags` for
+/// the tags the topic will have (those sent, else its own): the topic's
+/// errors, empty when they may go there.
+async fn category_tags_errors(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     topic_id: i32,
     category_id: i32,
     fields: &TopicFields,
-) -> Result<Option<String>, AppError> {
-    let tag_count: i64 = sqlx::query_scalar("SELECT count(*) FROM topic_tags WHERE topic_id = $1")
-        .bind(topic_id)
-        .fetch_one(&mut *conn)
-        .await?;
-    let restrictions: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM tag_groups) OR EXISTS (SELECT 1 FROM category_tags) \
-           OR EXISTS (SELECT 1 FROM category_required_tag_groups WHERE category_id = $1)",
+) -> Result<Vec<String>, AppError> {
+    let names: Vec<String> = match &fields.tags {
+        Some(tags) => tags.clone(),
+        None => {
+            sqlx::query_scalar(
+                "SELECT tags.name FROM topic_tags JOIN tags ON tags.id = topic_tags.tag_id \
+                 WHERE topic_tags.topic_id = $1 ORDER BY topic_tags.id",
+            )
+            .bind(topic_id)
+            .fetch_all(&mut *conn)
+            .await?
+        }
+    };
+    let Some(category) = crate::tagging::TagCategory::load(&mut *conn, category_id).await? else {
+        return Ok(Vec::new());
+    };
+    crate::tagging::validate_category_tags(
+        conn,
+        ctx.settings,
+        ctx.i18n,
+        guardian,
+        &category,
+        &names,
     )
-    .bind(category_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if restrictions && (tag_count > 0 || !guardian.is_admin()) {
-        return Err(Unsupported("moving a topic under tag groups or restricted tags (189)").into());
-    }
-    let _ = fields;
-    let minimum: i32 = sqlx::query_scalar(
-        "SELECT COALESCE((SELECT minimum_required_tags FROM categories WHERE id = $1), 0)",
-    )
-    .bind(category_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if !guardian.is_admin() && minimum > 0 && tag_count < i64::from(minimum) {
-        return Ok(Some(
-            ctx.t_count("tags.minimum_required_tags", i64::from(minimum)),
-        ));
-    }
-    Ok(None)
+    .await
 }
 
 /// `Topic#change_category_to_id(category_id, silent:)` from the category
@@ -1560,4 +1838,82 @@ async fn category_slug_ref(conn: &mut PgConnection, category_id: i32) -> Result<
         Some(parent) => format!("{parent}:{slug}"),
         None => slug,
     })
+}
+
+/// A tags param as a list: an array, or a hash's values (Rack's indexed
+/// form `tags[0][id]`).
+pub fn tag_items(v: &Value) -> Result<Vec<Value>, AppError> {
+    Ok(match v {
+        Value::Null => Vec::new(),
+        Value::String(s) if s.is_empty() => Vec::new(),
+        Value::Array(items) => items.clone(),
+        Value::Object(map) => map.values().cloned().collect(),
+        _ => return Err(Unsupported("tags of another shape").into()),
+    })
+}
+
+/// `PostRevisor.tag_change_noop?(topic, incoming)`: the incoming tags (names,
+/// or objects with ids) are the topic's own, synonyms resolved to their
+/// target; blank ones match a topic without tags.
+pub async fn tag_change_noop(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    incoming: &Value,
+) -> Result<bool, AppError> {
+    let current = current_tag_ids(&mut *conn, topic_id).await?;
+    let items = tag_items(incoming)?;
+    if items.is_empty() {
+        return Ok(current.is_empty());
+    }
+    let ids: Vec<i32> = if items[0].is_string() {
+        let mut names: Vec<String> = Vec::new();
+        for item in &items {
+            let name = item
+                .as_str()
+                .ok_or(Unsupported("tags of mixed shapes"))?
+                .to_lowercase();
+            if !names.contains(&name) {
+                names.push(name);
+            }
+        }
+        let found: Vec<i32> = sqlx::query_scalar("SELECT id FROM tags WHERE lower(name) = ANY($1)")
+            .bind(&names)
+            .fetch_all(&mut *conn)
+            .await?;
+        if found.len() != names.len() {
+            return Ok(false);
+        }
+        found
+    } else {
+        let mut ids = Vec::new();
+        for item in &items {
+            match item
+                .get("id")
+                .and_then(crate::params::scalar)
+                .filter(|i| !i.is_empty())
+            {
+                Some(id) => ids.push(crate::ruby::to_i(&id) as i32),
+                None => return Ok(false),
+            }
+        }
+        ids
+    };
+    if ids.is_empty() {
+        return Ok(false);
+    }
+    let canonical: Vec<i32> = sqlx::query_scalar(
+        "SELECT DISTINCT COALESCE(target_tag_id, id) AS id FROM tags WHERE id = ANY($1) ORDER BY 1",
+    )
+    .bind(&ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(canonical == current)
+}
+
+/// The topic's tag ids, sorted.
+async fn current_tag_ids(conn: &mut PgConnection, topic_id: i32) -> Result<Vec<i32>, sqlx::Error> {
+    sqlx::query_scalar("SELECT tag_id FROM topic_tags WHERE topic_id = $1 ORDER BY tag_id")
+        .bind(topic_id)
+        .fetch_all(conn)
+        .await
 }

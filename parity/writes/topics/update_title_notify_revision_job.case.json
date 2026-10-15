@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "notify_post_revision"
+  ],
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 35",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, last_read_post_number) VALUES (5, 35, 3, 5) ON CONFLICT (user_id, topic_id) DO UPDATE SET notification_level = 3, last_read_post_number = 5"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35.json",
+      "params": {
+        "title": "Parity fixture: a wiki renamed for its watchers"
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9801, 34, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "change_tags",
+          "tag_ids": [
+            "2"
+          ]
+        }
+      }
+    }
+  ]
+}

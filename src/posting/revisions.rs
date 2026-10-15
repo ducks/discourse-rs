@@ -271,7 +271,7 @@ async fn serialize(
         "SELECT p.raw, p.cooked, p.edit_reason, p.wiki, p.post_type, p.user_id, p.locale, p.reply_to_post_number, \
                 p.version, p.hidden, t.title, t.archetype, t.category_id, t.featured_link, \
                 COALESCE(ARRAY(SELECT tg.name FROM topic_tags tt JOIN tags tg ON tg.id = tt.tag_id \
-                  WHERE tt.topic_id = t.id ORDER BY tg.name), '{}') AS tags \
+                  WHERE tt.topic_id = t.id ORDER BY tg.name COLLATE \"C\"), '{}') AS tags \
          FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
     )
     .bind(access.post.id)
@@ -364,7 +364,6 @@ async fn serialize(
     for k in [
         "user_id",
         "reply_to_post_number",
-        "tags",
         "wiki",
         "post_type",
         "locale",
@@ -503,6 +502,31 @@ async fn serialize(
             json!({"previous": visible[0], "current": visible[1]})
         };
         out.insert("category_id_changes".into(), changes);
+    }
+    // tags_changes: each side less the tags hidden from the viewer, null
+    // when both come out the same; for those who can see the topic's
+    // tags (can_see_tags?).
+    let (prev_tags, cur_tags) = (field(previous, "tags"), field(current, "tags"));
+    let can_see_tags = s.get("tagging_enabled")?.truthy()
+        && (latest.archetype != "private_message" || guardian.can_tag_pms(s)?);
+    if !suppress && prev_tags != cur_tags && can_see_tags {
+        let hidden = crate::tagging::hidden_tag_names(&mut *conn, guardian).await?;
+        let filter = |v: &Value| match v {
+            Value::Array(tags) if !tags.is_empty() => Value::Array(
+                tags.iter()
+                    .filter(|t| t.as_str().is_none_or(|n| !hidden.iter().any(|h| h == n)))
+                    .cloned()
+                    .collect(),
+            ),
+            other => other.clone(),
+        };
+        let (pre, cur) = (filter(&prev_tags), filter(&cur_tags));
+        let changes = if pre == cur {
+            Value::Null
+        } else {
+            json!({"previous": pre, "current": cur})
+        };
+        out.insert("tags_changes".into(), changes);
     }
     // The compared fields PostRevisor's track_topic_field adds.
     for k in ["archetype", "featured_link"] {
