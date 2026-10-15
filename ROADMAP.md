@@ -612,15 +612,35 @@ then by what running a forum needs (milestone 6). Briefs:
     non-JSON requests today). Split by admin usage, each branch stacked
     on the one before, interactive parts through the existing JSON write
     endpoints with small scripts as the rest of the client: 90g1.
-    `feat/admin-shell-dashboard` L (the shell: the admin stylesheet,
-    AdminSidebarPanel's sections from ADMIN_NAV_MAP filtered for
-    moderators, Back to Forum, the admin pages' `admin-area` and
-    `admin-interface` classes, DPageHeader with its breadcrumbs, the
-    mobile view's menu; GET /admin as the dashboard: site advice
-    (problems) with ignore and refresh, the redesigned dashboard's
-    sections from /admin/dashboard.json, the period picker, the
-    configure menu; the legacy dashboard while dashboard_improvements
-    is off), 90g2. `feat/admin-shell-users` M (/admin/users/list/:filter
+    ~~`feat/admin-shell-dashboard`~~ (done) L (the shell: Rails' admin
+    stylesheet, vendored as compiled and served to staff on every page
+    as Rails serves it; AdminSidebarPanel's sections from ADMIN_NAV_MAP
+    with its amendments (upcoming changes, form templates and GIFs while
+    enabled, the enabled bundled plugins' links with their
+    setAdminPluginIcon icons) filtered for moderators, collapsed until
+    opened unless holding the page, the review count and the news dots,
+    Back to Forum, ToggleAllSections, the moderators' filter, the search
+    box's mod+/ keycaps; `admin-area` and `admin-interface`, no Powered
+    by Discourse; DPageHeader with DBreadcrumbsItem; the mobile view's
+    header menu with the panel; GET /admin as the redesigned dashboard
+    from /admin/dashboard.json for the controller's range: site advice
+    with Ignore and Refresh, highlights, the pinned reports' cards
+    loaded through /admin/dashboard/reports/bulk and drawn with Chart.js
+    4.5.1 as AdminReportChart and AdminReportStackedChart draw them, a
+    card's size toggle, site traffic with its stacked chart and top
+    lists, engagement (headline, trust level pipeline, who's posting,
+    activity by category with its sorting), search, system; the period
+    picker with its presets and calendar and the configure menu, which
+    reload the page for the new range or layout. Refused: the legacy
+    dashboard (dashboard_improvements off), plugin dashboard sections,
+    country names in the top countries (Intl.DisplayNames), and every
+    admin page for moderators, whose current user's reviewable counts
+    are refused already. Left, saying so when used: the manage reports,
+    compare groups and category pickers, dragging a card's corner, the
+    report modes other than the charts in a card, the design wizard
+    (90f) and the admin search (90g9); not drawn: the setting links'
+    rewrite to their config pages (90g9) and the sidebar footer's
+    keyboard shortcuts, as on the forum's sidebar), 90g2. `feat/admin-shell-users` M (/admin/users/list/:filter
     with its search, ordering and bulk select, /admin/users/:id/:username
     with its actions: trust level, groups, suspend and silence, activate,
     approve, log out, grant and revoke moderation and admin, delete,

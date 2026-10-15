@@ -155,21 +155,29 @@ impl Context<'_> {
 /// Sidebar.gjs with the anonymous or the user sections, inside
 /// SidebarWrapper.
 pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
-    Ok(format!(
-        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\">{}</nav></div>",
-        escape(&cx.t("sidebar.title")),
-        sections(site, cx)?
-    ))
+    Ok(wrap_sidebar(cx.i18n, &sections(site, cx)?))
+}
+
+/// SidebarWrapper around a panel's sections and footer.
+pub(crate) fn wrap_sidebar(i18n: &I18n, panel: &str) -> String {
+    format!(
+        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\">{panel}</nav></div>",
+        escape(i18n.t("js.sidebar.title").unwrap_or("sidebar.title")),
+    )
 }
 
 /// The mobile view's navigation menu: SidebarHamburgerDropdown, the same
 /// sections in the header's slide-in panel (HamburgerDropdownWrapper),
 /// then the cloak over the page behind it.
 pub fn hamburger(site: &Value, cx: &Context) -> Result<String, SettingError> {
-    Ok(format!(
-        "<div class=\"hamburger-dropdown-wrapper\"><div class=\"hamburger-panel\"><div class=\"revamped menu-panel slide-in\" data-max-width=\"320\"><div class=\"panel-body\"><div class=\"panel-body-contents\"><div class=\"sidebar-hamburger-dropdown\">{}</div></div></div></div></div></div><div class=\"header-cloak\" style=\"display: block;\"></div>",
-        sections(site, cx)?
-    ))
+    Ok(wrap_hamburger(&sections(site, cx)?))
+}
+
+/// HamburgerDropdownWrapper around a panel's sections and footer.
+pub(crate) fn wrap_hamburger(panel: &str) -> String {
+    format!(
+        "<div class=\"hamburger-dropdown-wrapper\"><div class=\"hamburger-panel\"><div class=\"revamped menu-panel slide-in\" data-max-width=\"320\"><div class=\"panel-body\"><div class=\"panel-body-contents\"><div class=\"sidebar-hamburger-dropdown\">{panel}</div></div></div></div></div></div><div class=\"header-cloak\" style=\"display: block;\"></div>"
+    )
 }
 
 /// The sections and the footer, as both menus show them.
@@ -203,11 +211,13 @@ fn sections(site: &Value, cx: &Context) -> Result<String, SettingError> {
     }
     out.push_str(cx.plugin_sections);
     out.push_str("</div>");
-    // The footer's only anonymous action, keyboard shortcuts, opens a modal
-    // that is not ported, so its bar is empty.
-    out.push_str("<div class=\"sidebar-footer-wrapper\"><div class=\"sidebar-footer-container\"><div class=\"sidebar-footer-actions\"></div></div></div>");
+    out.push_str(FOOTER);
     Ok(out)
 }
+
+/// The footer. Its only anonymous action, keyboard shortcuts, opens a modal
+/// that is not ported, so its bar is empty.
+pub(crate) const FOOTER: &str = "<div class=\"sidebar-footer-wrapper\"><div class=\"sidebar-footer-container\"><div class=\"sidebar-footer-actions\"></div></div></div>";
 
 /// The member's links that carry counts (Topics, their categories and
 /// tags), each with an out-of-band swap that replaces it on the page: the
@@ -575,21 +585,38 @@ pub(crate) fn section_html_with(
     links: &str,
     cx: &Context,
 ) -> String {
+    section_html_state(name, header, header_buttons, links, true, "", cx.i18n)
+}
+
+/// Section.gjs expanded or collapsed (its content hidden, as sidebar.js
+/// toggles it), with classes after the expanded state
+/// (`sidebar-section--persistent-actions`).
+pub(crate) fn section_html_state(
+    name: &str,
+    header: Option<&str>,
+    header_buttons: &str,
+    links: &str,
+    expanded: bool,
+    classes: &str,
+    i18n: &I18n,
+) -> String {
+    let state = if expanded { "expanded" } else { "collapsed" };
     let mut out = format!(
-        "<div class=\"sidebar-section sidebar-section-wrapper sidebar-section--expanded\" data-section-name=\"{}\">",
+        "<div class=\"sidebar-section sidebar-section-wrapper sidebar-section--{state}{classes}\" data-section-name=\"{}\">",
         escape(name)
     );
     let content_id = format!("sidebar-section-content-{}", escape(name));
     if let Some(header) = header {
         out.push_str(&format!(
-            "<div class=\"sidebar-section-header-wrapper sidebar-row\"><button aria-controls=\"{content_id}\" aria-expanded=\"true\" class=\"btn no-text sidebar-section-header sidebar-section-header-collapsable btn-transparent\" title=\"{}\" type=\"button\"><span class=\"sidebar-section-header-caret\">{}</span><span class=\"sidebar-section-header-text\">{}</span></button>{header_buttons}</div>",
-            escape(&cx.t("sidebar.toggle_section")),
-            icon("angle-down", None),
+            "<div class=\"sidebar-section-header-wrapper sidebar-row\"><button aria-controls=\"{content_id}\" aria-expanded=\"{expanded}\" class=\"btn no-text sidebar-section-header sidebar-section-header-collapsable btn-transparent\" title=\"{}\" type=\"button\"><span class=\"sidebar-section-header-caret\">{}</span><span class=\"sidebar-section-header-text\">{}</span></button>{header_buttons}</div>",
+            escape(i18n.t("js.sidebar.toggle_section").unwrap_or("sidebar.toggle_section")),
+            icon(if expanded { "angle-down" } else { "angle-right" }, None),
             escape(header)
         ));
     }
     out.push_str(&format!(
-        "<ul class=\"sidebar-section-content\" id=\"{content_id}\">{links}</ul></div>"
+        "<ul class=\"sidebar-section-content\" id=\"{content_id}\"{}>{links}</ul></div>",
+        if expanded { "" } else { " hidden" }
     ));
     out
 }

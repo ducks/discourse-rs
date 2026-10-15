@@ -851,15 +851,8 @@ pub async fn serialize(
             out.insert("show_site_owner_onboarding".into(), json!(true));
         }
     }
-    if user.admin {
-        let theme = settings.get("default_theme_id")?.to_i();
-        let custom_themes: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM themes WHERE id NOT IN (-1, -2))")
-                .fetch_one(&mut *conn)
-                .await?;
-        if (theme == -1 || theme == -2) && !custom_themes {
-            out.insert("can_run_design_wizard".into(), json!(true));
-        }
+    if user.admin && can_run_design_wizard(&mut *conn, settings).await? {
+        out.insert("can_run_design_wizard".into(), json!(true));
     }
     // chat's keys.
     if crate::plugins::chat::enabled(settings)? {
@@ -948,6 +941,20 @@ fn parameterize(s: &str) -> String {
 
 /// What a member's sidebar reads from their current user: the fields of
 /// `serialize` its sections and links ask for, and their tracking state.
+/// `can_run_design_wizard` for an admin: the site still runs a default
+/// theme and has no theme of its own.
+pub async fn can_run_design_wizard(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+) -> Result<bool, AppError> {
+    let theme = settings.get("default_theme_id")?.to_i();
+    let custom_themes: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM themes WHERE id NOT IN (-1, -2))")
+            .fetch_one(&mut *conn)
+            .await?;
+    Ok((theme == -1 || theme == -2) && !custom_themes)
+}
+
 pub async fn sidebar_member(
     conn: &mut PgConnection,
     settings: &SiteSettings,

@@ -103,18 +103,22 @@
   // For scripts that redraw sections (chat's, after a membership change).
   Discourse.setSidebarSectionExpanded = setSectionExpanded;
 
-  // A section holding the current page stays open (expandWhenActive).
+  // A section holding the current page stays open (expandWhenActive); one
+  // drawn collapsed until opened (the admin panel's, collapsedByDefault)
+  // opens when the member left it open.
   function applyCollapsed(root) {
     root
       .querySelectorAll(".sidebar-section[data-section-name]")
       .forEach(function (section) {
         var name = section.getAttribute("data-section-name");
-        if (
-          section.querySelector(".sidebar-section-header-collapsable") &&
-          getItem(collapsedKey(name)) === "true" &&
-          !section.querySelector(".sidebar-section-link.active")
-        ) {
+        if (!section.querySelector(".sidebar-section-header-collapsable")) {
+          return;
+        }
+        var stored = getItem(collapsedKey(name));
+        if (stored === "true" && !section.querySelector(".sidebar-section-link.active")) {
           setSectionExpanded(section, false);
+        } else if (stored === "false" && section.classList.contains("sidebar-section--collapsed")) {
+          setSectionExpanded(section, true);
         }
       });
   }

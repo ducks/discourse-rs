@@ -69,45 +69,90 @@ pub async fn index(
         }
         return Ok(Json(data).into_response());
     }
-    let viewer = Viewer {
-        guardian: Some(&guardian),
+    let start = p.get("start_date").and_then(crate::params::scalar);
+    let end = p.get("end_date").and_then(crate::params::scalar);
+    let doc = sections_document(
+        &mut conn,
+        &state,
+        &guardian,
+        &settings,
+        &cx,
+        start.as_deref(),
+        end.as_deref(),
+    )
+    .await?;
+    Ok(Json(doc).into_response())
+}
+
+/// The redesigned dashboard's document: the visible sections built for the
+/// range, the problems, and for admins the configuration.
+async fn sections_document(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    settings: &SiteSettings,
+    cx: &reports::Cx<'_>,
+    start: Option<&str>,
+    end: Option<&str>,
+) -> Result<Value, AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
     };
-    let all = dashboard::sections(&mut conn, &cx).await?;
+    let viewer = Viewer {
+        guardian: Some(guardian),
+    };
+    let all = dashboard::sections(&mut *conn, cx).await?;
     let visible: Vec<String> = all
         .iter()
         .filter(|(_, v)| *v)
         .map(|(id, _)| id.clone())
         .collect();
-    let start = p.get("start_date").and_then(crate::params::scalar);
-    let end = p.get("end_date").and_then(crate::params::scalar);
-    let sections = dashboard::build_sections(
-        &mut conn,
-        &cx,
-        &viewer,
-        &visible,
-        start.as_deref(),
-        end.as_deref(),
-    )
-    .await?;
+    let sections = dashboard::build_sections(&mut *conn, cx, &viewer, &visible, start, end).await?;
     let env = crate::problem_checks::Env {
-        settings: &settings,
+        settings,
         defs: &state.site_setting_defs,
         config: &state.config,
         i18n: &state.i18n,
     };
-    let problems = crate::problem_checks::serialized_problems(&mut conn, &env, &urls).await?;
+    let problems = crate::problem_checks::serialized_problems(&mut *conn, &env, &urls).await?;
     let mut out = Map::new();
     out.insert("sections".into(), sections);
     out.insert("problems".into(), problems);
     if guardian.is_admin() {
         // The configuration as it stands after the sections were built.
-        let all = dashboard::sections(&mut conn, &cx).await?;
+        let all = dashboard::sections(&mut *conn, cx).await?;
         out.insert(
             "configuration".into(),
             json!({ "sections": dashboard::sections_json(&all) }),
         );
     }
-    Ok(Json(Value::Object(out)).into_response())
+    Ok(Value::Object(out))
+}
+
+/// What GET /admin/dashboard.json serves the redesigned dashboard for the
+/// range, as the admin page asks for it.
+pub async fn document(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    settings: &SiteSettings,
+    start: &str,
+    end: &str,
+) -> Result<Value, AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let cx = reports::context(
+        &mut *conn,
+        settings,
+        &state.site_setting_defs,
+        &state.i18n,
+        &urls,
+    )
+    .await?;
+    sections_document(conn, state, guardian, settings, &cx, Some(start), Some(end)).await
 }
 
 /// GET /admin/dashboard/general(.json)
