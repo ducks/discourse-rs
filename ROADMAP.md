@@ -1495,7 +1495,38 @@ route table has been made, so this list may be short.
 188. `feat/topic-edits` L: PUT /t/:slug/:id (title, category and tags
     edits, refused since milestone 4), moving, merging, splitting and
     converting topics, topic bulk actions (dismiss new and new posts);
-    none of it is routed
+    none of it is routed. Split by dependency, each branch stacked on the
+    one before; tags on any of them wait for 189 and are refused until
+    then: 188a. `feat/topic-edits-title` M (PUT /t/:id and
+    /t/:slug/:id, TopicsController#update: ensure_can_edit, the
+    original_title edit conflict, PostRevisor's topic fields on the first
+    post for the title, archetype and featured link: the revision with
+    its topic diff, Topic's validations and before_validation cleanup,
+    slug and fancy title, the search reindex, topic_edited web hooks, the
+    reload_topic publish, keep_existing_draft; BasicTopicSerializer),
+    188b. `feat/topic-edits-category` M (category_id on PUT /t:
+    TopicCategoryChangeValidator, can_move_topic_to_category,
+    change_category_to_id with the topic counts, auto watching and
+    tracking, notify_category_change, update_topic_upload_security,
+    featured topics and reviewables, the category change whisper,
+    safe_revision_errors), 188c. `feat/topic-edits-convert` S (PUT
+    /t/:id/convert-topic/:type, TopicConverter: the archetype and category
+    through PostRevisor with a hidden revision, allowed users, user stats,
+    the small actions, watching), 188d. `feat/topic-edits-move` L (POST
+    /t/:id/move-posts, PostMover: to a new topic (splitting) and to an
+    existing one, moved_posts, the split_topic small action, counters,
+    timings, topic users, notifications, reply links, quotes, bookmarks,
+    reviewables, a full move closing the topic with its deletion,
+    notify_moved_posts; chronological order, freeze_original, messages
+    with participants), 188e. `feat/topic-edits-merge` S (POST
+    /t/:id/merge-topic: every post through 188d's mover), 188f.
+    `feat/topic-edits-dismiss` M (PUT /topics/reset-new,
+    /topics/pm-reset-new and PUT /topics/bulk's dismiss_topics,
+    dismiss_posts and destroy_post_timing, `filter=unread`), 188g.
+    `feat/topic-edits-bulk` M (the rest of TopicsBulkAction: change
+    category, close, archive, unlist, relist, pin, unpin, notification
+    levels, delete, archiving messages and moving them to the inbox,
+    reset bump dates, converting, the nested view)
 189. `feat/tags-writes` L: tags on topics (posts#create and update
     refuse them, routes/posts.rs), the composer's tag chooser (96), tag
     CRUD, synonyms, tag groups and tag uploads, watched words' tag action
