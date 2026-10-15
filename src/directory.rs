@@ -339,9 +339,6 @@ pub async fn index(
     q: &Query,
 ) -> Result<Result<(Vec<Value>, i64, Value), Refused>, AppError> {
     let ptype = period_type(&q.period).expect("checked by the controller");
-    if present(&q.name).is_some() {
-        return Err(Unsupported("searching the user directory by name (UserSearch)").into());
-    }
     let mut filters = vec![format!("di.period_type = {ptype}")];
     if let Some(name) = present(&q.group) {
         let group: Option<(i32, i32, i32)> = sqlx::query_as(
@@ -402,6 +399,48 @@ pub async fn index(
             "NOT (di.user_id = ANY('{{{}}}'::int[]))",
             ids.iter().map(i32::to_string).collect::<Vec<_>>().join(",")
         ));
+    }
+    // filter_name: the users UserSearch finds for the name, the viewer
+    // added when any of them is listed (prioritize_user).
+    if let Some(name) = present(&q.name) {
+        let options = crate::user_search::Options {
+            include_staged_users: true,
+            user_directory_search: true,
+            limit: Some(200),
+            search_custom_fields: true,
+            ..Default::default()
+        };
+        let mut user_ids = match crate::user_search::UserSearch::new(
+            &mut *conn, settings, guardian, name, options,
+        )
+        .await?
+        {
+            Ok(mut search) => search.search_ids().await?,
+            Err(_) => return Err(Unsupported("a refused directory name search").into()),
+        };
+        if user_ids.is_empty() {
+            filters.push("false".into());
+        } else {
+            let list = |ids: &[i32]| {
+                ids.iter()
+                    .map(i32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            if let Some(viewer) = guardian.user_id() {
+                let listed: bool = sqlx::query_scalar(&format!(
+                    "SELECT EXISTS (SELECT 1 FROM directory_items di WHERE {} AND di.user_id IN ({}))",
+                    filters.join(" AND "),
+                    list(&user_ids)
+                ))
+                .fetch_one(&mut *conn)
+                .await?;
+                if listed {
+                    user_ids.push(viewer);
+                }
+            }
+            filters.push(format!("di.user_id IN ({})", list(&user_ids)));
+        }
     }
     if let Some(username) = present(&q.username) {
         let id: Option<i32> = sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")

@@ -5,7 +5,7 @@
 .badge-category-bg { display: inline-block; width: .6rem; height: .6rem; }
 .excerpt { margin: .35rem 0 0; color: #555; font-size: .9rem; }
 .list-container > .more-topics, .search-page .more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
-.category-heading { font-size: 1.4rem; margin: 0 0 .75rem; }
+h1.category-heading { font-size: 1.4rem; margin: 0 0 .75rem; }
 .category-heading a { color: var(--primary); }
 .category-heading + .subcategories, .legacy-category-list .subcategories { margin: 0 0 1rem; font-size: .9rem; }
 .subcategory .description { color: var(--muted); }

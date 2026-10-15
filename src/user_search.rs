@@ -6,10 +6,10 @@
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
+use crate::AppError;
 use crate::guardian::Guardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
-use crate::{AppError, Unsupported};
 
 /// `UserSearch::MAX_SIZE_PRIORITY_MENTION`
 const MAX_SIZE_PRIORITY_MENTION: i32 = 500;
@@ -27,6 +27,11 @@ pub struct Options {
     pub last_seen_users: bool,
     pub can_review: bool,
     pub limit: Option<i64>,
+    /// The directory's search: staged users for anyone when the
+    /// directory is on (`can_search_staged_users?(user_directory_search:)`).
+    pub user_directory_search: bool,
+    /// Match searchable user fields too (the directory's search).
+    pub search_custom_fields: bool,
 }
 
 /// Why the search can't run: what `Topic.find`, `Category.find` and the
@@ -127,7 +132,9 @@ impl<'a> UserSearch<'a> {
         {
             return Ok(Err(Refused::InvalidAccess));
         }
-        let include_staged = opts.include_staged_users && guardian.is_staff();
+        let include_staged = opts.include_staged_users
+            && (guardian.is_staff()
+                || (opts.user_directory_search && settings.get("enable_user_directory")?.truthy()));
         let last_seen = opts.last_seen_users && !include_staged;
         let limit = opts.limit.unwrap_or(20);
         let topic_restricted_category = topic
@@ -183,10 +190,12 @@ impl<'a> UserSearch<'a> {
                 .get("enable_category_group_moderation")?
                 .truthy()
             {
-                if self.opts.groups.is_some() {
-                    return Err(Unsupported("user search by groups among reviewers").into());
+                // left_joins(:group_users) after joins(:group_users) is the
+                // same inner join: the reviewers among the groups' members.
+                if self.opts.groups.is_none() {
+                    joins
+                        .push_str(" LEFT OUTER JOIN group_users ON group_users.user_id = users.id");
                 }
-                joins.push_str(" LEFT OUTER JOIN group_users ON group_users.user_id = users.id");
                 conditions.push(
                     "(users.admin OR users.moderator OR group_users.group_id IN \
                      (SELECT DISTINCT group_id FROM category_moderation_groups))"
@@ -214,12 +223,23 @@ impl<'a> UserSearch<'a> {
     async fn filtered_by_term_users(&mut self) -> Result<(String, String, Vec<String>), AppError> {
         let (mut joins, mut condition) = self.scoped_users()?;
         let mut order = Vec::new();
+        let names = self.settings.get("enable_names")?.truthy();
+        // tsvector_filtered_users' weight filter: the directory's search
+        // leaves out names (B) when they are off; the plain search only
+        // runs it with names on.
+        let tsvector_weights = if self.term.is_empty() {
+            None
+        } else if self.opts.search_custom_fields {
+            Some(if names { "" } else { "AC" })
+        } else if names && !self.term.contains(['_', '.', '-']) {
+            Some("")
+        } else {
+            None
+        };
         if self.term.is_empty() {
-        } else if self.settings.get("enable_names")?.truthy()
-            && !self.term.contains(['_', '.', '-'])
-        {
+        } else if let Some(weights) = tsvector_weights {
             // tsvector_filtered_users: Search.ts_query(term:, ts_config: "simple")
-            let mut value = crate::search::ts_query_value(&self.term, "", true);
+            let mut value = crate::search::ts_query_value(&self.term, weights, true);
             if self.settings.get("search_ignore_accents")?.truthy() {
                 value = sqlx::query_scalar("SELECT unaccent($1)")
                     .bind(&value)

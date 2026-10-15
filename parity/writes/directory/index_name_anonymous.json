@@ -1,0 +1,156 @@
+{
+  "name": "index_name_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "name": "user"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "name": "admin"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T16:18:54.661995",
+  "transaction_started_at": "2026-10-15T16:18:52.18128",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "directory_items": [
+          {
+            "id": 2,
+            "likes_received": 1,
+            "likes_given": 1,
+            "topic_count": 2,
+            "post_count": 1,
+            "topics_entered": 0,
+            "posts_read": 0,
+            "days_visited": 1,
+            "time_read": 0,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "trust_level": 1
+            }
+          },
+          {
+            "id": 3,
+            "likes_received": 1,
+            "likes_given": 1,
+            "topic_count": 1,
+            "post_count": 1,
+            "topics_entered": 0,
+            "posts_read": 0,
+            "days_visited": 1,
+            "time_read": 0,
+            "user": {
+              "id": 3,
+              "username": "user1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "title": null,
+              "trust_level": 2
+            }
+          },
+          {
+            "id": 4,
+            "likes_received": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "post_count": 1,
+            "topics_entered": 0,
+            "posts_read": 0,
+            "days_visited": 0,
+            "time_read": 0,
+            "user": {
+              "id": 4,
+              "username": "user2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "title": null,
+              "trust_level": 2
+            }
+          },
+          {
+            "id": 5,
+            "likes_received": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "post_count": 0,
+            "topics_entered": 0,
+            "posts_read": 0,
+            "days_visited": 0,
+            "time_read": 0,
+            "user": {
+              "id": 5,
+              "username": "user3",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+              "title": null,
+              "trust_level": 4
+            }
+          }
+        ],
+        "meta": {
+          "last_updated_at": null,
+          "total_rows_directory_items": 4,
+          "load_more_directory_items": "/directory_items.json?name=user&page=1&period=all"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "directory_items": [
+          {
+            "id": 1,
+            "likes_received": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "post_count": 1,
+            "topics_entered": 0,
+            "posts_read": 0,
+            "days_visited": 1,
+            "time_read": 0,
+            "user": {
+              "id": 1,
+              "username": "admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "title": null,
+              "admin": true,
+              "moderator": true,
+              "trust_level": 4
+            }
+          }
+        ],
+        "meta": {
+          "last_updated_at": null,
+          "total_rows_directory_items": 1,
+          "load_more_directory_items": "/directory_items.json?name=admin&page=1&period=all"
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_names": false
+  },
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "5aaa52c1da9b3106274847d7cdb9662f3137dfcff03c486d54c8106a9dc4f8e2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

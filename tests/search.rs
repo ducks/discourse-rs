@@ -281,15 +281,17 @@ async fn renders_a_results_page() {
     .await;
     assert_eq!(status, StatusCode::OK);
 
-    // The users type lists the matching users; categories & tags is
-    // refused.
+    // The users type lists the matching users; categories & tags the
+    // matching categories.
     let (status, _, html) = get(&db.pool, "/search?q=user1&search_type=users").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains(r#"class="search-types__type active" data-search-type="users""#));
     assert!(html.contains(r#"<a class="fps-user-item""#));
     assert!(html.contains(r#"<span class="username">user1</span>"#));
-    let (status, _, _) = get(&db.pool, "/search?q=gen&search_type=categories_tags").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    let (status, _, html) = get(&db.pool, "/search?q=gen&search_type=categories_tags").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"<h4 class="category-heading">Categories</h4>"#));
+    assert!(html.contains(r#"fps-category-item" style="#));
 
     let (status, _, body) = get(&db.pool, "/search?q=ba").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);

@@ -313,7 +313,7 @@ fn valid_term(term: &str, settings: &SiteSettings) -> Result<bool, AppError> {
 
 /// `Site#sortedCategories`: the viewer's categories by topic count (a
 /// stable sort), each parent followed by its children.
-async fn sorted_site_categories(
+pub(crate) async fn sorted_site_categories(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
@@ -350,10 +350,7 @@ async fn sorted_site_categories(
         .collect())
 }
 
-/// Tags::Search for the menu (`q`, `limit`, no category or selected
-/// tags): DiscourseTagging.filter_allowed_tags over the visible tags whose
-/// name contains the cleaned term, the exact name first, then by topic
-/// count and name; by popularity without a term.
+/// The names of `tag_search_rows`.
 async fn tag_search(
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
@@ -361,6 +358,24 @@ async fn tag_search(
     q: &str,
     limit: i64,
 ) -> Result<Vec<String>, AppError> {
+    Ok(tag_search_rows(conn, settings, guardian, q, limit)
+        .await?
+        .into_iter()
+        .map(|(_, name, _)| name)
+        .collect())
+}
+
+/// Tags::Search for the menu (`q`, `limit`, no category or selected
+/// tags): DiscourseTagging.filter_allowed_tags over the visible tags whose
+/// name contains the cleaned term, the exact name first, then by topic
+/// count and name; by popularity without a term.
+pub(crate) async fn tag_search_rows(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    q: &str,
+    limit: i64,
+) -> Result<Vec<(i32, String, Option<String>)>, AppError> {
     if settings.get("content_localization_enabled")?.truthy() {
         return Err(Unsupported("tag search over localized tags").into());
     }
@@ -390,9 +405,9 @@ async fn tag_search(
         )
     };
     let sql = format!(
-        "SELECT tags.name FROM tags WHERE ({visible}) AND ({condition}) ORDER BY {order} LIMIT $2"
+        "SELECT tags.id, tags.name, tags.slug FROM tags WHERE ({visible}) AND ({condition}) ORDER BY {order} LIMIT $2"
     );
-    Ok(sqlx::query_scalar(&sql)
+    Ok(sqlx::query_as(&sql)
         .bind(&term)
         .bind(limit)
         .fetch_all(&mut *conn)
@@ -423,6 +438,7 @@ async fn user_suggestions(
         last_seen_users: last_seen,
         can_review: false,
         limit: Some(6),
+        ..Default::default()
     };
     let mut search = match UserSearch::new(&mut *conn, settings, guardian, q, options).await? {
         Ok(search) => search,

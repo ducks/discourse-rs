@@ -60,9 +60,15 @@ pub async fn search_users(
     let mut group_names: Vec<String> = match p.get("groups") {
         None => Vec::new(),
         Some(Value::Array(items)) => items.iter().filter_map(params::scalar).collect(),
-        Some(_) => return Err(Unsupported("a groups param that is not a list").into()),
+        // A string: `<<` appends the group param to it.
+        Some(other) => match params::scalar(other) {
+            Some(name) => vec![name + &scalar("group").unwrap_or_default()],
+            None => return Err(Unsupported("a groups param that is a hash").into()),
+        },
     };
-    if let Some(group) = scalar("group") {
+    if let Some(group) = scalar("group")
+        && !matches!(p.get("groups"), Some(v) if params::scalar(v).is_some())
+    {
         group_names.push(group);
     }
     let groups = if group_names.is_empty() {
@@ -86,6 +92,7 @@ pub async fn search_users(
         last_seen_users: cast_boolean(scalar("last_seen_users").as_deref()) == Some(true),
         can_review: cast_boolean(scalar("can_review").as_deref()) == Some(true),
         limit,
+        ..Default::default()
     };
     let mut search = match UserSearch::new(&mut conn, &settings, &guardian, &term, options).await? {
         Ok(search) => search,

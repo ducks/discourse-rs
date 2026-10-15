@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"],
+  "requests": [
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "user"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "user0"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "adm"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "nobody"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "user", "order": "username", "asc": "true"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "all", "name": "us_er"}},
+    {"method": "GET", "path": "/directory_items.json", "params": {"period": "weekly", "name": "user"}}
+  ]
+}

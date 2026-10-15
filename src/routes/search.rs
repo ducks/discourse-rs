@@ -367,12 +367,6 @@ async fn show_response(
     };
     let term = params.q.clone().unwrap_or_default();
     let search_type = crate::search_view::SearchType::parse(params.search_type.as_deref());
-    if !json && search_type == crate::search_view::SearchType::CategoriesTags {
-        return Err(Unsupported(
-            "the full-page search's categories & tags type (Category.search, tags/filter/search)",
-        )
-        .into());
-    }
     {
         let mut conn = state.pool.acquire().await?;
         let settings =
@@ -487,6 +481,44 @@ async fn show_response(
         config: &state.config,
         settings: &settings,
     };
+    // The categories & tags type's searchCategoryTag after the route's
+    // search: Category.search over the site's categories (5), then
+    // /tags/filter/search for the rest.
+    let cats_tags = if search_type == crate::search_view::SearchType::CategoriesTags
+        && valid_search_term(&term, &settings)?
+    {
+        let search_term = crate::search_view::clean_term(
+            &term,
+            settings.get("search_default_sort_order")?.to_i(),
+        )
+        .0;
+        let all = crate::topic_list_view::categories(&mut conn).await?;
+        let sorted = super::search_menu::sorted_site_categories(
+            &state, &mut conn, &settings, &guardian, &all,
+        )
+        .await?;
+        let refs: Vec<&crate::topic_list_view::ListCategory> = sorted.iter().collect();
+        let found: Vec<crate::topic_list_view::ListCategory> =
+            crate::search_menu_view::category_search(&refs, &search_term, 5)
+                .into_iter()
+                .cloned()
+                .collect();
+        let tags = if found.len() != 5 && settings.get("tagging_enabled")?.truthy() {
+            super::search_menu::tag_search_rows(
+                &mut conn,
+                &settings,
+                &guardian,
+                &search_term,
+                5 - found.len() as i64,
+            )
+            .await?
+        } else {
+            Vec::new()
+        };
+        (found, tags)
+    } else {
+        (Vec::new(), Vec::new())
+    };
     // The users type's userSearch({term, limit: 20}) after the route's
     // search.
     let users = if search_type == crate::search_view::SearchType::Users
@@ -544,6 +576,8 @@ async fn show_response(
         login_required: settings.get("login_required")?.truthy(),
         doc: Some(&doc),
         users: &users,
+        categories: &cats_tags.0,
+        tags: &cats_tags.1,
         page,
         avatar_size: 0,
         site_url: format!("{}/", urls.base_url()?),
