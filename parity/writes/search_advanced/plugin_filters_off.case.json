@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "settings": {"solved_enabled": false, "topic_voting_enabled": false, "poll_enabled": false},
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Asolved"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20min_vote_count%3A1"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Apolls"}
+  ]
+}

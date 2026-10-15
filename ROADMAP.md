@@ -1183,11 +1183,14 @@ generate_theme_screenshot_thumbnails (171).
     the ordered posts; posts that tie on every sort term come out as
     Postgres plans that query, on either side. discourse-solved's eager
     load follows solved_enabled now, where Rails reads it at boot
-    143d. `feat/search-advanced-status` S: `status:` open, closed,
-    public, archived, noreplies, single_user, solved's solved and
-    unsolved; posts_count, min_post_count, min_posts, max_posts,
-    min_views, max_views, topic voting's min_vote_count, `with:images`,
-    `filetypes:`, `before:`, `after:` (Search.word_to_date), `locale:`
+    143d. ~~`feat/search-advanced-status`~~ (done) S: `status:` open,
+    closed, public, archived, noreplies, single_user, solved's solved
+    and unsolved (the categories and tags enabling answers unless
+    allow_solved_on_all_topics); posts_count, min_post_count,
+    min_posts, max_posts, min_views, max_views, topic voting's
+    min_vote_count, `with:images`, `filetypes:`, `before:`, `after:`
+    (Search.word_to_date in UTC; they search every post, not only the
+    recent ones), `locale:`
     143e. `feat/search-advanced-order` S: `order:` latest, oldest,
     latest_topic, oldest_topic, views, likes, read, topic voting's
     votes, the `l` and `r` aliases; solved's

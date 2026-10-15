@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, created_at, updated_at) VALUES (35, 36, now(), now())",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 3, now(), now()), (41, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=status%3Asolved"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Aunsolved"},
+    {"method": "GET", "path": "/search/query.json?term=min_vote_count%3A1"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20min_vote_count%3A2"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Asolved%20in%3Afirst%20in%3Aall-posts"}
+  ]
+}
