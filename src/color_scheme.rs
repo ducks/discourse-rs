@@ -786,6 +786,22 @@ impl ColorScheme {
         ))
     }
 
+    /// `ColorScheme.sort_colors(resolved_colors)`: COLORS_ORDER first, then
+    /// the rest in resolved order.
+    pub fn sorted_resolved_colors(&self) -> Result<Vec<(String, String)>, crate::Unsupported> {
+        let resolved = self.resolved_colors()?;
+        let mut ordered: Vec<(String, String)> = COLORS_ORDER
+            .iter()
+            .filter_map(|n| resolved.iter().find(|(name, _)| name == n).cloned())
+            .collect();
+        ordered.extend(
+            resolved
+                .into_iter()
+                .filter(|(n, _)| !COLORS_ORDER.contains(&n.as_str())),
+        );
+        Ok(ordered)
+    }
+
     /// ColorSchemeSerializer (embedding ColorSchemeColorSerializer).
     pub fn serialize(&self) -> Result<serde_json::Value, crate::Unsupported> {
         let base = self.base_colors()?;
@@ -848,6 +864,33 @@ impl ColorScheme {
 /// `ColorScheme.base_colors` in file order, for merges that keep order.
 static BASE_COLORS_ORDERED: LazyLock<Vec<(String, String)>> =
     LazyLock::new(|| parse_base_colors_ordered(BASE_COLORS_SCSS));
+
+/// `ColorScheme::NAMES_TO_ID_MAP[name]`
+pub fn built_in_id(name: &str) -> Option<i32> {
+    NAMES_TO_ID_MAP
+        .iter()
+        .find(|(n, _)| *n == name)
+        .map(|(_, id)| *id)
+}
+
+/// `ColorScheme::NAMES_TO_ID_MAP.invert[id]`
+pub fn built_in_name(id: i32) -> Option<&'static str> {
+    NAMES_TO_ID_MAP
+        .iter()
+        .find(|(_, i)| *i == id)
+        .map(|(n, _)| *n)
+}
+
+/// `ColorScheme::BUILT_IN_SCHEMES[name]`: the palette's colors, None for
+/// Light (the base colors).
+pub fn built_in_colors(name: &str) -> Option<Vec<(String, String)>> {
+    built_in_scheme(name).map(|colors| {
+        colors
+            .iter()
+            .map(|(n, h)| (n.to_string(), h.to_string()))
+            .collect()
+    })
+}
 
 /// `ColorScheme.base.colors_hashes`: the base colors' names and hexes, in
 /// colors.scss's order.

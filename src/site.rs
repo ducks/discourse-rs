@@ -527,45 +527,15 @@ impl Site<'_> {
         Ok(Value::Object(out))
     }
 
-    /// `Wizard.user_requires_completion?(user)`: the wizard is on, the
-    /// site has at most 15 topics, and the viewer is the first admin to
-    /// have logged in and hasn't finished it. (Rails flips
-    /// bypass_wizard_check on when the topic count passes 15; the port
-    /// only reads.) A partly completed wizard isn't ported.
+    /// `Wizard.user_requires_completion?(user)` (crate::wizard).
     async fn wizard_required(&mut self) -> Result<bool, SiteError> {
-        let Some(user) = self.guardian.user() else {
+        let Some(user_id) = self.guardian.user_id() else {
             return Ok(false);
         };
-        if !self.truthy("wizard_enabled")? || self.truthy("bypass_wizard_check")? {
-            return Ok(false);
-        }
-        let topics: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM (SELECT 1 FROM topics WHERE deleted_at IS NULL LIMIT 16) t",
+        Ok(
+            crate::wizard::requires_completion(&mut *self.conn, self.defs, self.settings, user_id)
+                .await?,
         )
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if topics > 15 {
-            return Ok(false);
-        }
-        // User.first_login_admin_id
-        let first_admin: Option<i32> = sqlx::query_scalar(
-            "SELECT users.id FROM users JOIN user_auth_tokens ON user_auth_tokens.user_id = users.id \
-             WHERE users.admin AND users.id > 0 ORDER BY user_auth_tokens.created_at LIMIT 1",
-        )
-        .fetch_optional(&mut *self.conn)
-        .await?;
-        if first_admin != Some(user.id) {
-            return Ok(false);
-        }
-        // UserHistory.actions[:wizard_step] = 40
-        let started: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_histories WHERE action = 40)")
-                .fetch_one(&mut *self.conn)
-                .await?;
-        if started {
-            return Err(Unsupported("wizard completion (Wizard::Builder steps)").into());
-        }
-        Ok(true)
     }
 
     /// The category type registry over this request's settings.

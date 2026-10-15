@@ -1,0 +1,736 @@
+{
+  "name": "requires_completion",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session/forgot_password.json",
+      "params": {
+        "login": "user1@example.com"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/password-reset-code/verify.json",
+      "params": {
+        "code": "{{jobs.send_email_login_code.code}}"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/password-reset/{{responses.1.body.redirect_url|last_segment}}.json",
+      "params": {
+        "password": "a-brand-new-pass-phrase"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/wizard.json"
+    }
+  ],
+  "started_at": "2026-10-15T00:08:56.162073",
+  "transaction_started_at": "2026-10-15T00:08:51.729503",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_code": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "redirect_url": "/u/password-reset/1c4ba13f3f7422d87d32260281c1f30b"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "You successfully changed your password and are now logged in.",
+        "requires_approval": false,
+        "redirect_to": null
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "email_login_codes": {
+      "inserted": [
+        {
+          "id": 1,
+          "email": "user1@example.com",
+          "purpose": 1,
+          "attempts": 0,
+          "code_hash": "fcf4f40fa003283b5ea95f211e84b259dfef820aea9586a06c4be9bd61a0bbda",
+          "created_at": "2026-10-15T00:08:57.280433",
+          "expires_at": "2026-10-15T00:18:57.275465",
+          "updated_at": "2026-10-15T00:08:57.280433",
+          "consumed_at": "2026-10-15T00:08:57.380269"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "user1@example.com",
+          "scope": 2,
+          "expired": true,
+          "user_id": 3,
+          "confirmed": true,
+          "created_at": "2026-10-15T00:08:57.390541",
+          "token_hash": "6b55801a3695c9ef76f3c8c9dee9eb3500b0eacb253eeac9034a29e300c57354",
+          "updated_at": "2026-10-15T00:08:57.434289"
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 8,
+            "email": "user1@example.com",
+            "scope": 1,
+            "expired": false,
+            "user_id": 3,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:16.630359",
+            "token_hash": "aef12bbdfd65ce93826f4cfcf2bd5c01ade7239a9e22dfa1dc35501905657e70",
+            "updated_at": "2026-07-25T05:59:16.678851"
+          },
+          "after": {
+            "id": 8,
+            "email": "user1@example.com",
+            "scope": 1,
+            "expired": true,
+            "user_id": 3,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:16.630359",
+            "token_hash": "aef12bbdfd65ce93826f4cfcf2bd5c01ade7239a9e22dfa1dc35501905657e70",
+            "updated_at": "2026-07-25T05:59:16.678851"
+          }
+        }
+      ]
+    },
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "name": "bypass_wizard_check",
+            "value": "f",
+            "data_type": 5,
+            "created_at": "2026-10-01T16:20:49.568485",
+            "updated_at": "2026-10-15T00:08:53.781552"
+          },
+          "after": {
+            "id": 36,
+            "name": "bypass_wizard_check",
+            "value": "t",
+            "data_type": 5,
+            "created_at": "2026-10-01T16:20:49.568485",
+            "updated_at": "2026-10-15T00:08:58.264441"
+          }
+        }
+      ]
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/u/password-reset/1c4ba13f3f7422d87d32260281c1f30b.json",
+          "action": "generate",
+          "user_id": 3,
+          "client_ip": "127.0.0.1",
+          "auth_token": "Qi+ACLOAkBOP2dy7lzaRNGPkwRM=",
+          "created_at": "2026-10-15T00:08:58.225394",
+          "user_agent": null,
+          "user_auth_token_id": 134
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 134,
+          "seen_at": "2026-10-15T00:08:58.307231",
+          "user_id": 3,
+          "client_ip": "127.0.0.1",
+          "auth_token": "Qi+ACLOAkBOP2dy7lzaRNGPkwRM=",
+          "created_at": "2026-10-15T00:08:58.173026",
+          "rotated_at": "2026-10-15T00:08:58.169921",
+          "updated_at": "2026-10-15T00:08:58.173026",
+          "user_agent": null,
+          "auth_token_seen": true,
+          "prev_auth_token": "Qi+ACLOAkBOP2dy7lzaRNGPkwRM=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [
+        {
+          "id": 75,
+          "seen_at": "2026-10-14T07:49:31.558079",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "1HN54Od1PBK+l2MpGxgVvwmjtCg=",
+          "created_at": "2026-10-14T07:49:31.388665",
+          "rotated_at": "2026-10-14T07:49:31.388399",
+          "updated_at": "2026-10-14T07:49:31.388665",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "1HN54Od1PBK+l2MpGxgVvwmjtCg=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 83,
+          "seen_at": "2026-10-14T10:26:05.422592",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "Rupy5FiInSkY6Kfm7QPWRouzraQ=",
+          "created_at": "2026-10-14T10:26:04.560667",
+          "rotated_at": "2026-10-14T10:26:04.55314",
+          "updated_at": "2026-10-14T10:26:04.560667",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "Rupy5FiInSkY6Kfm7QPWRouzraQ=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 2,
+          "seen_at": "2026-10-14T07:25:47.385041",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "Bs3l0wqbAjtVRjqp+yYGEsB+z9g=",
+          "created_at": "2026-10-14T07:25:47.004087",
+          "rotated_at": "2026-10-14T07:25:47.000332",
+          "updated_at": "2026-10-14T07:25:47.004087",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "Bs3l0wqbAjtVRjqp+yYGEsB+z9g=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 5,
+          "seen_at": "2026-10-14T07:33:11.721377",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "xqE0NtLyxg56jqKzT+aruoWlVrQ=",
+          "created_at": "2026-10-14T07:33:11.232376",
+          "rotated_at": "2026-10-14T07:33:11.23114",
+          "updated_at": "2026-10-14T07:33:11.232376",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "xqE0NtLyxg56jqKzT+aruoWlVrQ=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 69,
+          "seen_at": "2026-10-14T07:42:19.163299",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "D1KOtMoSUn0Quem4Tibxs6koiiQ=",
+          "created_at": "2026-10-14T07:42:18.652272",
+          "rotated_at": "2026-10-14T07:42:18.651718",
+          "updated_at": "2026-10-14T07:42:18.652272",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "D1KOtMoSUn0Quem4Tibxs6koiiQ=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 72,
+          "seen_at": "2026-10-14T07:44:55.918085",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "LsXSIBjxd5ZdoYI4gBLBsk0LkTw=",
+          "created_at": "2026-10-14T07:44:55.530778",
+          "rotated_at": "2026-10-14T07:44:55.530447",
+          "updated_at": "2026-10-14T07:44:55.530778",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "LsXSIBjxd5ZdoYI4gBLBsk0LkTw=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 73,
+          "seen_at": "2026-10-14T07:45:25.20134",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "LNTXwanUuIuROwgZQGe6xmbh2iE=",
+          "created_at": "2026-10-14T07:45:24.791923",
+          "rotated_at": "2026-10-14T07:45:24.790816",
+          "updated_at": "2026-10-14T07:45:24.791923",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "LNTXwanUuIuROwgZQGe6xmbh2iE=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 78,
+          "seen_at": "2026-10-14T07:56:01.641314",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "Ma7VrRU14aWvef/IOIUkBsQYzJg=",
+          "created_at": "2026-10-14T07:56:01.45511",
+          "rotated_at": "2026-10-14T07:56:01.454861",
+          "updated_at": "2026-10-14T07:56:01.45511",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "Ma7VrRU14aWvef/IOIUkBsQYzJg=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 80,
+          "seen_at": "2026-10-14T07:57:16.485467",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "Xfzb5vVZhINzVd6oyROTh4BhCLc=",
+          "created_at": "2026-10-14T07:57:16.342908",
+          "rotated_at": "2026-10-14T07:57:16.34267",
+          "updated_at": "2026-10-14T07:57:16.342908",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "Xfzb5vVZhINzVd6oyROTh4BhCLc=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 84,
+          "seen_at": "2026-10-14T10:26:13.938728",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "RS5ALdoov7pAzwUNuOf+ttrnkzc=",
+          "created_at": "2026-10-14T10:26:13.556118",
+          "rotated_at": "2026-10-14T10:26:13.555624",
+          "updated_at": "2026-10-14T10:26:13.556118",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "RS5ALdoov7pAzwUNuOf+ttrnkzc=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 85,
+          "seen_at": "2026-10-14T10:26:21.356483",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "otsPyOpi2pGCjTcaupgX9AnUc1o=",
+          "created_at": "2026-10-14T10:26:20.998452",
+          "rotated_at": "2026-10-14T10:26:20.997925",
+          "updated_at": "2026-10-14T10:26:20.998452",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "otsPyOpi2pGCjTcaupgX9AnUc1o=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 87,
+          "seen_at": "2026-10-14T10:42:03.661968",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "9aneWD6OxZAdYsLnKnkPq6CYDTo=",
+          "created_at": "2026-10-14T10:42:03.434935",
+          "rotated_at": "2026-10-14T10:42:03.434688",
+          "updated_at": "2026-10-14T10:42:03.434935",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "9aneWD6OxZAdYsLnKnkPq6CYDTo=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 90,
+          "seen_at": "2026-10-14T10:47:18.587569",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "3T4SkNc8CAEfjzZU0yXDT/uDJ6I=",
+          "created_at": "2026-10-14T10:47:18.194959",
+          "rotated_at": "2026-10-14T10:47:18.194482",
+          "updated_at": "2026-10-14T10:47:18.194959",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "3T4SkNc8CAEfjzZU0yXDT/uDJ6I=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 93,
+          "seen_at": "2026-10-14T10:51:50.623026",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "dv2hs6OtLLv2L4gnbJn+XZBv21M=",
+          "created_at": "2026-10-14T10:51:50.476728",
+          "rotated_at": "2026-10-14T10:51:50.476417",
+          "updated_at": "2026-10-14T10:51:50.476728",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "dv2hs6OtLLv2L4gnbJn+XZBv21M=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 96,
+          "seen_at": "2026-10-14T10:52:52.630279",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "iWtNiVcCl868lkIqtQeAa+hWuC4=",
+          "created_at": "2026-10-14T10:52:52.322838",
+          "rotated_at": "2026-10-14T10:52:52.322509",
+          "updated_at": "2026-10-14T10:52:52.322838",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "iWtNiVcCl868lkIqtQeAa+hWuC4=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 99,
+          "seen_at": "2026-10-14T10:58:32.934473",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "rE8Pvl5R52QiQGU8NhTcTpgN9YA=",
+          "created_at": "2026-10-14T10:58:32.710343",
+          "rotated_at": "2026-10-14T10:58:32.710044",
+          "updated_at": "2026-10-14T10:58:32.710343",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "rE8Pvl5R52QiQGU8NhTcTpgN9YA=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 102,
+          "seen_at": "2026-10-14T10:59:54.110004",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "mPRHPOEdSf3mQpJTC0KyMuw1bqM=",
+          "created_at": "2026-10-14T10:59:53.955718",
+          "rotated_at": "2026-10-14T10:59:53.95546",
+          "updated_at": "2026-10-14T10:59:53.955718",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "mPRHPOEdSf3mQpJTC0KyMuw1bqM=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 105,
+          "seen_at": "2026-10-14T11:03:31.012634",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "t4rxVCkWmKqV8xwoN9VhuGnUpOE=",
+          "created_at": "2026-10-14T11:03:30.866225",
+          "rotated_at": "2026-10-14T11:03:30.865982",
+          "updated_at": "2026-10-14T11:03:30.866225",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "t4rxVCkWmKqV8xwoN9VhuGnUpOE=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 108,
+          "seen_at": "2026-10-14T11:04:29.259331",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "lVovqZhMxYPQ87KOh1PYZ0cCWXE=",
+          "created_at": "2026-10-14T11:04:29.074566",
+          "rotated_at": "2026-10-14T11:04:29.074254",
+          "updated_at": "2026-10-14T11:04:29.074566",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "lVovqZhMxYPQ87KOh1PYZ0cCWXE=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 115,
+          "seen_at": "2026-10-14T16:34:30.067586",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "EdYuDkIr3GRWNWFvyU7bLrHvZb0=",
+          "created_at": "2026-10-14T16:34:29.553505",
+          "rotated_at": "2026-10-14T16:34:29.553015",
+          "updated_at": "2026-10-14T16:34:29.553505",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "EdYuDkIr3GRWNWFvyU7bLrHvZb0=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 113,
+          "seen_at": "2026-10-14T16:28:50.710946",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "+tKG/b8PjhYfJ1YGEuCFJ0wFa3k=",
+          "created_at": "2026-10-14T16:28:50.403469",
+          "rotated_at": "2026-10-14T16:28:50.403212",
+          "updated_at": "2026-10-14T16:28:50.403469",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "+tKG/b8PjhYfJ1YGEuCFJ0wFa3k=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 117,
+          "seen_at": "2026-10-14T16:42:15.380849",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "F1mlgudv4QzEUEQeA5Jtcx6c4HM=",
+          "created_at": "2026-10-14T16:42:15.168073",
+          "rotated_at": "2026-10-14T16:42:15.167838",
+          "updated_at": "2026-10-14T16:42:15.168073",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "F1mlgudv4QzEUEQeA5Jtcx6c4HM=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 119,
+          "seen_at": "2026-10-14T16:42:41.772664",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "ljgkyaoc80Uuv4FUbWdrSzoOMUo=",
+          "created_at": "2026-10-14T16:42:41.608196",
+          "rotated_at": "2026-10-14T16:42:41.607794",
+          "updated_at": "2026-10-14T16:42:41.608196",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "ljgkyaoc80Uuv4FUbWdrSzoOMUo=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 121,
+          "seen_at": "2026-10-14T18:35:32.41752",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "ZR7dYEkm8A9majRg0WCv2JFjtsU=",
+          "created_at": "2026-10-14T18:35:32.112888",
+          "rotated_at": "2026-10-14T18:35:32.112504",
+          "updated_at": "2026-10-14T18:35:32.112888",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "ZR7dYEkm8A9majRg0WCv2JFjtsU=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 123,
+          "seen_at": "2026-10-14T18:37:33.966188",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "hI9SOkoHWWpCkyBTnwxel9YZX8U=",
+          "created_at": "2026-10-14T18:37:33.704526",
+          "rotated_at": "2026-10-14T18:37:33.704081",
+          "updated_at": "2026-10-14T18:37:33.704526",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "hI9SOkoHWWpCkyBTnwxel9YZX8U=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 125,
+          "seen_at": "2026-10-14T18:40:09.852296",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "TiEiBDYkGtBfyvawWVd3g5m1pks=",
+          "created_at": "2026-10-14T18:40:09.492811",
+          "rotated_at": "2026-10-14T18:40:09.492425",
+          "updated_at": "2026-10-14T18:40:09.492811",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "TiEiBDYkGtBfyvawWVd3g5m1pks=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 127,
+          "seen_at": "2026-10-14T18:42:10.820689",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "devCReP6vmphokky/7Z8AEeb+pM=",
+          "created_at": "2026-10-14T18:42:10.551364",
+          "rotated_at": "2026-10-14T18:42:10.550952",
+          "updated_at": "2026-10-14T18:42:10.551364",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "devCReP6vmphokky/7Z8AEeb+pM=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 130,
+          "seen_at": "2026-10-14T19:31:06.860521",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "OH/xirRqvO0lR7uCrHUMuvhqlX0=",
+          "created_at": "2026-10-14T19:31:06.585182",
+          "rotated_at": "2026-10-14T19:31:06.584754",
+          "updated_at": "2026-10-14T19:31:06.585182",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/136.0.7103.25 Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "OH/xirRqvO0lR7uCrHUMuvhqlX0=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
+          "id": 133,
+          "seen_at": "2026-10-14T19:33:09.099123",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "6aMrmrnbpmYOyL8zHI/HOrNxPng=",
+          "created_at": "2026-10-14T19:33:08.895554",
+          "rotated_at": "2026-10-14T19:33:08.895159",
+          "updated_at": "2026-10-14T19:33:08.895554",
+          "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+          "auth_token_seen": true,
+          "prev_auth_token": "6aMrmrnbpmYOyL8zHI/HOrNxPng=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        }
+      ],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 67,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-15T00:08:58.161647",
+          "ip_address": null,
+          "updated_at": "2026-10-15T00:08:58.161647",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 3,
+          "previous_value": null,
+          "target_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_passwords": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.435347",
+            "updated_at": "2026-07-25T05:59:16.435347",
+            "password_hash": "6f961573b5c7ae0a37f3bbab74dacf3c7b03141eb4b0e50ce77f06b5352fd832",
+            "password_salt": "24bd754cdaa69e3945db1dbc0534c18a",
+            "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
+            "password_expired_at": null
+          },
+          "after": {
+            "id": 5,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.435347",
+            "updated_at": "2026-10-15T00:08:58.097824",
+            "password_hash": "e3ada124169ab071fe55075d7423b38139f9ddae35bfa6a216038f0d63528c17",
+            "password_salt": "d195d04819365ac055ec4cbe2bad39f3",
+            "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
+            "password_expired_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "send_email_login_code",
+      {
+        "to_address": "user1@example.com",
+        "code": "658379",
+        "password_reset": true
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_login_codes": 1,
+    "email_tokens": 13,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 134,
+    "user_histories": 74
+  },
+  "settings": {
+    "bypass_wizard_check": false
+  },
+  "recorded_from": {
+    "case": "b96507130f3a65148f26944abeb27e57f58787f23b7d99eab1eb8dbb307871ee",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
