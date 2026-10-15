@@ -48,7 +48,16 @@ pub async fn add_with_message(
     message: Option<&str>,
     silent: bool,
 ) -> Result<i32, AppError> {
-    add_inner(conn, ctx, action, message, silent, false).await
+    add_inner(
+        conn,
+        ctx,
+        action,
+        message,
+        silent,
+        false,
+        post_types::SMALL_ACTION,
+    )
+    .await
 }
 
 /// [`add`] in a message whose allowed users were all just added (a topic
@@ -60,7 +69,37 @@ pub async fn add_to_new_message(
     ctx: &Ctx<'_>,
     action: &SmallAction<'_>,
 ) -> Result<i32, AppError> {
-    add_inner(conn, ctx, action, None, false, true).await
+    add_inner(
+        conn,
+        ctx,
+        action,
+        None,
+        false,
+        true,
+        post_types::SMALL_ACTION,
+    )
+    .await
+}
+
+/// `add_moderator_post(user, message, post_type: whisper, action_code:)`:
+/// a whisper by PostCreator, which numbers it on the topic's staff count
+/// and sends it the jobs a post gets after it is created.
+pub async fn add_whisper(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    action: &SmallAction<'_>,
+    message: &str,
+) -> Result<i32, AppError> {
+    add_inner(
+        conn,
+        ctx,
+        action,
+        Some(message),
+        false,
+        false,
+        post_types::WHISPER,
+    )
+    .await
 }
 
 async fn add_inner(
@@ -70,6 +109,7 @@ async fn add_inner(
     message: Option<&str>,
     silent: bool,
     allowed_by_user: bool,
+    post_type: i32,
 ) -> Result<i32, AppError> {
     let (topic_id, user_id) = (action.topic_id, action.user_id);
     let raw = message.unwrap_or("").trim_end().to_string();
@@ -112,14 +152,23 @@ async fn add_inner(
     .unwrap_or(0);
     let notice = super::create::post_notice(&mut *conn, ctx, user_id).await?;
 
-    // Topic.next_post_number for a small action: the posts' highest plus
-    // one, the topic's counters untouched.
+    // Topic.next_post_number: for a small action the posts' highest plus
+    // one, the topic's counters untouched; a whisper also moves the
+    // topic's staff count.
     let post_number: i32 = sqlx::query_scalar(
         "SELECT COALESCE(MAX(post_number), 0) + 1 FROM posts WHERE topic_id = $1",
     )
     .bind(topic_id)
     .fetch_one(&mut *conn)
     .await?;
+    let whisper = post_type == post_types::WHISPER;
+    if whisper {
+        sqlx::query("UPDATE topics SET highest_staff_post_number = $2 WHERE id = $1")
+            .bind(topic_id)
+            .bind(post_number)
+            .execute(&mut *conn)
+            .await?;
+    }
     let (post_id, created_at): (i32, chrono::NaiveDateTime) = sqlx::query_as(
         "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, post_type, action_code, created_at, \
                             updated_at, last_editor_id, word_count, sort_order, last_version_at, baked_at, \
@@ -131,7 +180,7 @@ async fn add_inner(
     .bind(user_id)
     .bind(topic_id)
     .bind(post_number)
-    .bind(post_types::SMALL_ACTION)
+    .bind(post_type)
     .bind(action.action_code)
     .bind(BAKED_VERSION)
     .bind(&raw)
@@ -207,8 +256,9 @@ async fn add_inner(
         .await?;
     }
 
-    // extract_links: a message's links (none without a raw).
-    if !raw.is_empty() {
+    // extract_links: a message's links (none without a raw; TopicLink skips
+    // whispers).
+    if !raw.is_empty() && !whisper {
         let urls = crate::url::Urls {
             config: ctx.config,
             settings: ctx.settings,
@@ -402,6 +452,24 @@ async fn add_inner(
         json!({"bypass_bump": false, "cooking_options": null, "new_post": true, "post_id": post_id, "skip_pull_hotlinked_images": false}),
     )
     .await?;
+    if whisper {
+        // after_post_create, which small actions skip.
+        crate::jobs::enqueue(
+            &mut *conn,
+            "post_update_topic_tracking_state",
+            json!({"post_id": post_id}),
+        )
+        .await?;
+        if !private_message {
+            crate::jobs::enqueue_in(
+                &mut *conn,
+                ctx.settings.get("email_time_window_mins")?.to_i() * 60,
+                "notify_mailing_list_subscribers",
+                json!({"post_id": post_id}),
+            )
+            .await?;
+        }
+    }
     crate::badge_granter::queue(
         &mut *conn,
         ctx.settings,

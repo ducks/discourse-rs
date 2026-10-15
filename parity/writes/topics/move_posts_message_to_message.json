@@ -1,0 +1,844 @@
+{
+  "name": "move_posts_message_to_message",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/move-posts.json",
+      "params": {
+        "post_ids": [
+          "49"
+        ],
+        "destination_topic_id": "43",
+        "archetype": "private_message",
+        "participants": "user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T02:22:16.513346",
+  "transaction_started_at": "2026-10-15T02:22:14.718899",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "url": "/t/parity-fixture-pm-admin-to-user1-and-user2/43"
+      }
+    }
+  ],
+  "changes": {
+    "moved_posts": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "full_move": false,
+          "created_at": "2026-10-15T02:22:16.639116",
+          "updated_at": "2026-10-15T02:22:16.639116",
+          "new_post_id": 49,
+          "old_post_id": 49,
+          "new_topic_id": 43,
+          "old_topic_id": 42,
+          "post_user_id": 2,
+          "new_post_number": 2,
+          "new_topic_title": "Parity fixture: PM admin to user1 and user2",
+          "old_post_number": 2,
+          "old_topic_title": "Parity fixture: PM user1 to user0",
+          "created_new_topic": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 44,
+            "data": "{\"topic_title\":\"Parity fixture: PM user1 to user0\",\"original_post_id\":49,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User0\"}",
+            "read": false,
+            "user_id": 3,
+            "topic_id": 42,
+            "created_at": "2026-10-01T15:39:51.818843",
+            "updated_at": "2026-10-01T15:39:51.818843",
+            "post_number": 2,
+            "high_priority": true,
+            "post_action_id": null,
+            "notification_type": 6
+          },
+          "after": {
+            "id": 44,
+            "data": "{\"topic_title\": \"Parity fixture: PM admin to user1 and user2\", \"display_name\": \"User0\", \"revision_number\": null, \"display_username\": \"user0\", \"original_post_id\": 49, \"original_username\": \"user0\", \"original_post_type\": 1}",
+            "read": false,
+            "user_id": 3,
+            "topic_id": 43,
+            "created_at": "2026-10-01T15:39:51.818843",
+            "updated_at": "2026-10-01T15:39:51.818843",
+            "post_number": 2,
+            "high_priority": true,
+            "post_action_id": null,
+            "notification_type": 6
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 49,
+            "version": 5,
+            "raw_data": "A reply from user0 inside the private message, long enough too.",
+            "search_data": "'enough':16 'fixtur':2A 'insid':11 'long':15 'messag':14 'pariti':1A 'pm':3A 'privat':13 'repli':8 'user0':6A,10 'user1':4A",
+            "private_message": true
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 49,
+            "version": 5,
+            "raw_data": "A reply from user0 inside the private message, long enough too.",
+            "search_data": "'admin':4A 'enough':18 'fixtur':2A 'insid':13 'long':17 'messag':16 'pariti':1A 'pm':3A 'privat':15 'repli':10 'user0':12 'user1':6A 'user2':8A",
+            "private_message": true
+          }
+        }
+      ]
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-15T02:22:16.821327",
+          "updated_at": "2026-10-15T02:22:16.821327",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 2,
+          "topic_id": 43,
+          "post_number": 2
+        },
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 42,
+          "post_number": 2
+        }
+      ],
+      "deleted": [
+        {
+          "msecs": 5000,
+          "user_id": 2,
+          "topic_id": 42,
+          "post_number": 2
+        }
+      ],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "A post was merged into an existing message: [Parity fixture: PM admin to user1 and user2](/t/parity-fixture-pm-admin-to-user1-and-user2/43/2)",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>A post was merged into an existing message: <a href=\"/t/parity-fixture-pm-admin-to-user1-and-user2/43/2\">Parity fixture: PM admin to user1 and user2</a></p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-15T02:22:16.746025",
+          "topic_id": 42,
+          "hidden_at": null,
+          "post_type": 4,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-15T02:22:16.746068",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 2,
+          "spam_count": 0,
+          "updated_at": "2026-10-15T02:22:16.746068",
+          "word_count": 27,
+          "action_code": "split_topic",
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 2,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-15T02:22:16.814458",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 49,
+            "raw": "A reply from user0 inside the private message, long enough too.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>A reply from user0 inside the private message, long enough too.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.295059",
+            "topic_id": 42,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.295091",
+            "word_count": 11,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.318046",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 49,
+            "raw": "A reply from user0 inside the private message, long enough too.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>A reply from user0 inside the private message, long enough too.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.295059",
+            "topic_id": 43,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T02:22:16.622661",
+            "word_count": 11,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.318046",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 2,
+          "topic_id": 43,
+          "created_at": "2026-10-15T02:22:16.659825",
+          "updated_at": "2026-10-15T02:22:16.659825"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 2,
+          "topic_id": 43,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-01T15:39:51.429671",
+          "first_visited_at": "2026-10-01T15:39:51.429671",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 2,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-01T15:39:51.102139"
+        },
+        {
+          "id": 56,
+          "liked": false,
+          "posted": true,
+          "user_id": 1,
+          "topic_id": 42,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-15T02:22:16.901248",
+          "last_visited_at": "2026-10-15T02:22:16.902969",
+          "first_visited_at": "2026-10-15T02:22:16.902969",
+          "cleared_pinned_at": null,
+          "notification_level": 1,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": null,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 48,
+            "liked": false,
+            "posted": true,
+            "user_id": 2,
+            "topic_id": 42,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-01T15:39:51.336918",
+            "last_visited_at": "2026-10-01T15:39:51.103089",
+            "first_visited_at": "2026-10-01T15:39:51.103089",
+            "cleared_pinned_at": null,
+            "notification_level": 3,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 2,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": 1,
+            "notifications_changed_at": "2026-10-01T15:39:51.102139"
+          },
+          "after": {
+            "id": 48,
+            "liked": false,
+            "posted": true,
+            "user_id": 2,
+            "topic_id": 42,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-01T15:39:51.336918",
+            "last_visited_at": "2026-10-01T15:39:51.103089",
+            "first_visited_at": "2026-10-01T15:39:51.103089",
+            "cleared_pinned_at": null,
+            "notification_level": 3,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 1,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": 1,
+            "notifications_changed_at": "2026-10-01T15:39:51.102139"
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 43,
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "score": 0.2,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from admin to two users, so the list shows three participants.",
+            "subtype": "user_to_user",
+            "user_id": 1,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-01T15:39:51.514895",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.429671",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.545798",
+            "word_count": 14,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.514895",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          },
+          "after": {
+            "id": 43,
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "score": 0.2,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from admin to two users, so the list shows three participants.",
+            "subtype": "user_to_user",
+            "user_id": 1,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-15T02:22:17.001427",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.429671",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T02:22:17.019957",
+            "word_count": 25,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": null,
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.295091",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": 2,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          }
+        },
+        {
+          "before": {
+            "id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "score": 0.2,
+            "title": "Parity fixture: PM user1 to user0",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-01T15:39:51.295091",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.071813",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.342717",
+            "word_count": 26,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.295091",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          },
+          "after": {
+            "id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "score": 0.2,
+            "title": "Parity fixture: PM user1 to user0",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-01T15:39:51.295091",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.071813",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T02:22:16.919332",
+            "word_count": 15,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.142516",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 3,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          }
+        }
+      ]
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 2,
+          "created_at": "2026-10-15T02:22:16.746068",
+          "updated_at": "2026-10-15T02:22:16.845721",
+          "action_type": 13,
+          "acting_user_id": 1,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 42
+        },
+        {
+          "id": 66,
+          "user_id": 3,
+          "created_at": "2026-10-15T02:22:16.746068",
+          "updated_at": "2026-10-15T02:22:16.858932",
+          "action_type": 13,
+          "acting_user_id": 1,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 42
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 54,
+            "user_id": 2,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "updated_at": "2026-10-01T15:39:51.325978",
+            "action_type": 12,
+            "acting_user_id": 2,
+            "target_post_id": 49,
+            "target_user_id": null,
+            "target_topic_id": 42
+          },
+          "after": {
+            "id": 54,
+            "user_id": 2,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "updated_at": "2026-10-01T15:39:51.325978",
+            "action_type": 12,
+            "acting_user_id": 2,
+            "target_post_id": 49,
+            "target_user_id": null,
+            "target_topic_id": 43
+          }
+        },
+        {
+          "before": {
+            "id": 55,
+            "user_id": 3,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "updated_at": "2026-10-01T15:39:51.330821",
+            "action_type": 13,
+            "acting_user_id": 2,
+            "target_post_id": 49,
+            "target_user_id": null,
+            "target_topic_id": 42
+          },
+          "after": {
+            "id": 55,
+            "user_id": 3,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "updated_at": "2026-10-01T15:39:51.330821",
+            "action_type": 13,
+            "acting_user_id": 2,
+            "target_post_id": 49,
+            "target_user_id": null,
+            "target_topic_id": 43
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8VfmK1XxFct1hlBCIHErho5//28=",
+            "created_at": "2026-10-15T02:22:15.499827",
+            "rotated_at": "2026-10-15T02:22:15.498648",
+            "updated_at": "2026-10-15T02:22:15.499827",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8VfmK1XxFct1hlBCIHErho5//28=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T02:22:16.532822",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8VfmK1XxFct1hlBCIHErho5//28=",
+            "created_at": "2026-10-15T02:22:15.499827",
+            "rotated_at": "2026-10-15T02:22:15.498648",
+            "updated_at": "2026-10-15T02:22:15.499827",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8VfmK1XxFct1hlBCIHErho5//28=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 42
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "update_topic_upload_security",
+      {
+        "topic_id": 43
+      }
+    ],
+    [
+      "sync_topic_user_bookmarked",
+      {
+        "topic_id": 42
+      }
+    ],
+    [
+      "sync_topic_user_bookmarked",
+      {
+        "topic_id": 43
+      }
+    ],
+    [
+      "notify_moved_posts",
+      {
+        "post_ids": [
+          49
+        ],
+        "moved_by_id": 1
+      }
+    ],
+    [
+      "delete_inaccessible_notifications",
+      {
+        "topic_id": 43
+      }
+    ]
+  ],
+  "next_ids": {
+    "moved_posts": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_users": 55,
+    "user_actions": 65
+  },
+  "recorded_from": {
+    "case": "44371bfa30b446bed056652b4b85d3810217d0c7ed56d67b1e7776c6e8db5c9c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

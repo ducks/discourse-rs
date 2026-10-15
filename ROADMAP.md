@@ -1527,11 +1527,13 @@ route table has been made, so this list may be short.
     category, close, archive, unlist, relist, pin, unpin, notification
     levels, delete, archiving messages and moving them to the inbox,
     reset bump dates, converting, the nested view), 188h.
-    `feat/topic-edits-rest` M (what 188a-188g still refuse: whispers
-    from PostCreator, for the category change whisper
-    (create_post_for_category_and_tag_changes, revise_topic.rs) and the
-    whisper a move to a message leaves (post_mover.rs, with its
-    participants); title and category on posts#update (the composer's
+    ~~`feat/topic-edits-whispers`~~ (done) S (whispers from PostCreator:
+    the category change whisper (create_post_for_category_and_tag_changes)
+    and moving posts to a message: the whisper left behind, the mover and
+    the posts' authors allowed in, participants, the new message's
+    notification levels, a copied first post as a message reply), 188i.
+    `feat/topic-edits-rest` M (what 188a-188h still refuse: title and
+    category on posts#update (the composer's
     first-post edit, routes/posts.rs); shared drafts on PUT /t
     (routes/topic_update.rs); experimental_topic_category_change_
     notification, og image regeneration, review_every_post on topic

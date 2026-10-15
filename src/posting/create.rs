@@ -1071,47 +1071,7 @@ pub async fn create(
     )
     .await?;
     if private_message {
-        // ensure_in_allowed_users: a staff author not allowed (nor in an
-        // allowed group) joins the message.
-        if guardian.is_staff() {
-            sqlx::query(
-                "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) \
-                 SELECT $1, $2, clock_timestamp(), clock_timestamp() \
-                 WHERE NOT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2) \
-                   AND NOT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1 \
-                     AND group_id IN (SELECT group_id FROM group_users WHERE user_id = $2))",
-            )
-            .bind(topic_id)
-            .bind(user.id)
-            .execute(&mut *tx)
-            .await?;
-        }
-        // unarchive_message: back in each archiver's inbox, unless they
-        // muted it.
-        let archivers: Vec<i32> =
-            sqlx::query_scalar("SELECT user_id FROM user_archived_messages WHERE topic_id = $1")
-                .bind(topic_id)
-                .fetch_all(&mut *tx)
-                .await?;
-        for archiver in archivers {
-            crate::archived_messages::user_move_to_inbox(ctx.bus, &mut tx, archiver, topic_id)
-                .await?;
-        }
-        let archiving_groups: Vec<i32> =
-            sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
-                .bind(topic_id)
-                .fetch_all(&mut *tx)
-                .await?;
-        for group_id in archiving_groups {
-            crate::archived_messages::group_move_to_inbox(
-                ctx.bus,
-                &mut tx,
-                group_id,
-                topic_id,
-                Some(user.id),
-            )
-            .await?;
-        }
+        message_posted(&mut tx, ctx, topic_id, user.id, guardian.is_staff()).await?;
     }
     // DraftSequence.next!(user, draft_key) when the composer asked
     // (advance_draft).
@@ -1350,6 +1310,59 @@ pub async fn omit_nofollow(
     .fetch_optional(&mut *conn)
     .await?
     .unwrap_or(false))
+}
+
+/// PostCreator's message steps: `ensure_in_allowed_users` for a staff
+/// author, then `unarchive_message`.
+pub(crate) async fn message_posted(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    user_id: i32,
+    staff: bool,
+) -> Result<(), AppError> {
+    // ensure_in_allowed_users: a staff author not allowed (nor in an
+    // allowed group) joins the message.
+    if staff {
+        sqlx::query(
+            "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) \
+             SELECT $1, $2, clock_timestamp(), clock_timestamp() \
+             WHERE NOT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2) \
+               AND NOT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1 \
+                 AND group_id IN (SELECT group_id FROM group_users WHERE user_id = $2))",
+        )
+        .bind(topic_id)
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
+    }
+    // unarchive_message: back in each archiver's inbox, unless they
+    // muted it.
+    let archivers: Vec<i32> =
+        sqlx::query_scalar("SELECT user_id FROM user_archived_messages WHERE topic_id = $1")
+            .bind(topic_id)
+            .fetch_all(&mut *conn)
+            .await?;
+    for archiver in archivers {
+        crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
+            .await?;
+    }
+    let archiving_groups: Vec<i32> =
+        sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
+            .bind(topic_id)
+            .fetch_all(&mut *conn)
+            .await?;
+    for group_id in archiving_groups {
+        crate::archived_messages::group_move_to_inbox(
+            ctx.bus,
+            &mut *conn,
+            group_id,
+            topic_id,
+            Some(user_id),
+        )
+        .await?;
+    }
+    Ok(())
 }
 
 /// `create_post_notice`: a first post gets the new-user notice, one after
