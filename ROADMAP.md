@@ -1686,9 +1686,12 @@ route table has been made, so this list may be short.
     toolbar buttons and the bio's rich editor (196, drawn in markdown
     mode), content languages (168), a multiselect user field (196's
     MultiSelect)
-    193b. `feat/user-pages-notifications` S: /u/:username/notifications
-    and its filters (responses, likes-received, mentions, edits, links,
-    reactions), the Filter By dropdown and Dismiss All
+    193b. ~~`feat/user-pages-notifications`~~ (done) S:
+    /u/:username/notifications and its filters (responses,
+    likes-received, mentions, edits, links, reactions), the Filter By
+    dropdown and Dismiss All, a notification marked read on its click;
+    another member's go to Ember's /404. Refused: the items' avatars
+    under show_user_menu_avatars (194)
     193c. `feat/user-pages-activity` M: the activity tabs drawn as the
     default page today: topics (ListController#topics_by), read,
     drafts, pending, bookmarks and bookmarks-with-reminders

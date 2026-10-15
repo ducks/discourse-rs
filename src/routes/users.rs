@@ -111,6 +111,11 @@ enum Routed {
     Preferences(String, super::user_preferences::Route, bool),
     /// `/u/:username/emails`: users#check_emails.
     CheckEmails(String),
+    /// The HTML of `/u/:username/notifications(/<tab>)`.
+    Notifications(String, crate::user_notifications_view::Route),
+    /// A path users#show answers that the Ember app has no route for: its
+    /// not-found page.
+    EmberUnknown,
     /// `/activity.json`, PostsController#user_posts_feed: the username.
     PostsFeed(String),
     /// No route matches (`/u/:username/card` has only a .json route).
@@ -139,6 +144,12 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     }
     if rest == "emails" {
         return Ok(Routed::CheckEmails(username));
+    }
+    if !json && (rest == "notifications" || rest.starts_with("notifications/")) {
+        return Ok(match super::user_notifications::route(rest) {
+            Some(route) => Routed::Notifications(username, route),
+            None => Routed::EmberUnknown,
+        });
     }
     if !json && let Some((route, group)) = messages_route(rest)? {
         return Ok(Routed::Profile(
@@ -259,6 +270,28 @@ pub async fn show_with_tail(
                 &incoming.guardian,
                 &username,
                 context,
+            )
+            .await;
+        }
+        Routed::Notifications(username, route) => {
+            return super::user_notifications::page(
+                state, incoming, username, route, headers, peer, uri,
+            )
+            .await;
+        }
+        Routed::EmberUnknown => {
+            let bus_position = crate::bus::page_position(&state.bus).await?;
+            let mut conn = state.pool.acquire().await?;
+            let settings =
+                SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+                    .await?;
+            return super::user_preferences::ember_not_found(
+                &state,
+                &mut conn,
+                &settings,
+                &incoming.guardian,
+                &headers,
+                bus_position,
             )
             .await;
         }

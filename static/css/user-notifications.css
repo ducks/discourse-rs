@@ -1,0 +1,175 @@
+/*
+ * The notifications pages under the profile, ported from
+ * components/user-menu (the quick access panel's rules, which name
+ * .user-notifications-list too), base/user.scss (the page's list and
+ * filter), base/new-user.scss (the navigation's controls),
+ * select-kit/notifications-filter.scss and common/base/navs.scss.
+ */
+
+.navigation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--nav-space) 0.5em;
+}
+
+.navigation-controls > * {
+  white-space: nowrap;
+}
+
+.new-user-wrapper .user-navigation-secondary .navigation-controls {
+  margin: calc(var(--nav-space) / 2) 0;
+  flex-wrap: nowrap;
+}
+
+@media (width < 80rem) {
+  .new-user-wrapper .user-navigation-secondary .navigation-controls {
+    font-size: var(--font-down-1);
+  }
+}
+
+.user-content .user-notifications-filter {
+  display: block;
+  width: 100%;
+  padding-bottom: var(--space-2);
+  border-bottom: 0.5px solid var(--content-border-color);
+}
+
+.select-kit.dropdown-select-box.notifications-filter {
+  display: inline-flex;
+  position: relative;
+}
+
+.select-kit.dropdown-select-box.notifications-filter .notifications-filter-header {
+  padding: 0.5em;
+  background: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.select-kit.dropdown-select-box.notifications-filter .notifications-filter-header .filter-text {
+  margin-right: 0.5em;
+  color: var(--primary-medium);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.select-kit.dropdown-select-box.notifications-filter .notifications-filter-header .header-text {
+  color: var(--tertiary);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.select-kit.dropdown-select-box.notifications-filter .notifications-filter-header .d-icon {
+  color: var(--primary-medium);
+  margin: 0 0 0 0.25em;
+  font-size: var(--font-up-2);
+}
+
+.user-notifications-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  cursor: default;
+  user-select: none;
+}
+
+.user-notifications-list:focus {
+  outline: none;
+}
+
+.user-notifications-list .item-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--primary);
+}
+
+.user-notifications-list li {
+  box-sizing: border-box;
+  list-style-type: none;
+}
+
+.user-notifications-list li.unread,
+.user-notifications-list li.pending {
+  background-color: var(--d-unread-notification-background);
+}
+
+.user-notifications-list li:hover {
+  background-color: var(--d-hover);
+  outline: none;
+}
+
+.user-notifications-list li a {
+  display: flex;
+  padding: var(--list-item-padding);
+}
+
+.user-notifications-list li a .item-label {
+  font-weight: bold;
+}
+
+.user-notifications-list li a .item-description {
+  color: var(--primary);
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.user-notifications-list li a > div,
+.user-notifications-list li button > div {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-notifications-list li:not(.show-all) {
+  padding: 0;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.user-notifications-list li:not(.show-all) .d-icon {
+  padding-top: 0.2em;
+  margin-right: 0.5em;
+}
+
+.user-notifications-list .read,
+.user-notifications-list .bookmark {
+  background-color: var(--secondary);
+}
+
+.user-notifications-list .read a .d-icon,
+.user-notifications-list .bookmark a .d-icon {
+  color: var(--primary-medium);
+}
+
+.user-stream .user-notifications-list {
+  padding-top: 0;
+}
+
+.user-stream .user-notifications-list li.notification {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--content-border-color);
+}
+
+.user-stream .user-notifications-list li.notification a {
+  align-items: center;
+}
+
+.user-stream .user-notifications-list li.notification .d-icon {
+  color: var(--primary-medium);
+  padding-top: 0;
+  font-size: var(--font-up-2);
+}
+
+.user-stream .user-notifications-list li.notification .relative-date {
+  margin-left: auto;
+  padding-top: 0;
+  float: none;
+}

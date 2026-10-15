@@ -528,6 +528,12 @@ struct Item {
 }
 
 fn render_item(cx: &MenuContext, item: &Item) -> String {
+    render_item_with_end(cx, item, "")
+}
+
+/// An item with its endComponent (the notifications page's date) after
+/// the texts.
+fn render_item_with_end(cx: &MenuContext, item: &Item, end: &str) -> String {
     let mut out = format!(
         "<li class=\"{}\"{}><a",
         escape(&item.class),
@@ -561,7 +567,9 @@ fn render_item(cx: &MenuContext, item: &Item) -> String {
             description.render(cx, true)
         ));
     }
-    out.push_str("</div></a></li>");
+    out.push_str("</div>");
+    out.push_str(end);
+    out.push_str("</a></li>");
     out
 }
 
@@ -629,6 +637,12 @@ fn post_url(base_path: &str, slug: &str, topic_id: i64, post_number: Option<i64>
 /// (NotificationTypeBase and its subclasses).
 pub fn notification_item(cx: &MenuContext, n: &Value) -> String {
     render_item(cx, &notification(cx, n))
+}
+
+/// A notification as the notifications page lists it: its date at the end
+/// (DRelativeDate).
+pub fn notification_item_with_end(cx: &MenuContext, n: &Value, end: &str) -> String {
+    render_item_with_end(cx, &notification(cx, n), end)
 }
 
 fn notification(cx: &MenuContext, n: &Value) -> Item {

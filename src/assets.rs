@@ -33,6 +33,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/topic.css"),
     include_str!("../static/css/user.css"),
     include_str!("../static/css/preferences.css"),
+    include_str!("../static/css/user-notifications.css"),
     include_str!("../static/css/badges.css"),
     include_str!("../static/css/user-stream.css"),
     include_str!("../static/css/user-card.css"),
@@ -300,6 +301,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "preferences.js",
         JS,
         include_str!("../static/js/preferences.js"),
+    ),
+    (
+        "notifications-page.js",
+        JS,
+        include_str!("../static/js/notifications-page.js"),
     ),
     (
         "overflow-controls.js",

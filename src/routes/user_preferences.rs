@@ -699,7 +699,7 @@ pub async fn page(
 
 /// Ember's not-found page in the application layout, for a route the app
 /// lacks.
-async fn ember_not_found(
+pub(super) async fn ember_not_found(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,

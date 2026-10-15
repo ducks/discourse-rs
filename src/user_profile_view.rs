@@ -56,6 +56,9 @@ pub enum Tab<'a> {
     /// `preferences.*`: the preferences navigation and tab
     /// (crate::preferences_view), drawn.
     Preferences(String),
+    /// `userNotifications.*`: the notifications navigation and tab
+    /// (crate::user_notifications_view), drawn.
+    Notifications(String),
 }
 
 /// The activity sub-navigation's stream routes.
@@ -536,7 +539,7 @@ pub fn render(
             &format!("{user_path}/notifications"),
             "bell",
             &t(cx, "user.notifications"),
-            false,
+            matches!(tab, Tab::Notifications(_)),
         ));
     }
     if viewer.can_send_private_messages && (viewing_self || viewer.admin) {
@@ -607,9 +610,10 @@ pub fn render(
                 solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
-            Tab::Messages(content) | Tab::Badges(content) | Tab::Preferences(content) => {
-                out.push_str(content)
-            }
+            Tab::Messages(content)
+            | Tab::Badges(content)
+            | Tab::Preferences(content)
+            | Tab::Notifications(content) => out.push_str(content),
         }
     }
     out.push_str("</div></div></section></div>");
@@ -909,6 +913,38 @@ fn activity_content(
     out
 }
 
+/// user/stream.gjs for a stream route elsewhere (the notifications' tabs):
+/// the empty state with `title` when there is nothing, and the PostList
+/// with `filter-<type>`.
+pub(crate) fn stream_parts(
+    cx: &ListContext,
+    action_type: i32,
+    stream: &[Value],
+    title: &str,
+) -> (String, String) {
+    let items = collapse_stream(stream);
+    let empty = if items.is_empty() {
+        format!(
+            "<div class=\"empty-state__container --text-only\"><div class=\"empty-state\"><div class=\"empty-state__title\" data-test-title>{}</div></div></div>",
+            escape(title)
+        )
+    } else {
+        String::new()
+    };
+    let mut list = format!("<div class=\"post-list user-stream filter-{action_type}\">");
+    if items.is_empty() {
+        list.push_str(&format!(
+            "<div class=\"post-list__empty-text\">{}</div>",
+            escape(&t(cx, "post_list.empty"))
+        ));
+    }
+    for item in &items {
+        list.push_str(&stream_item(cx, item));
+    }
+    list.push_str("</div>");
+    (empty, list)
+}
+
 /// A collapsed user action with its likes, stars, edits and bookmarks
 /// (UserAction#children), each the acting users' actions.
 struct StreamItem<'a> {
@@ -1192,7 +1228,7 @@ fn solved_list(cx: &ListContext, viewing_self: bool, user_path: &str, posts: &[V
 /// discourse-reactions' user-activity/reactions: a PostList of the
 /// reactions (flattenForPostList), each with the reaction and its user
 /// above the excerpt (DiscourseReactionsReactionEmoji).
-fn reactions_list(
+pub(crate) fn reactions_list(
     cx: &ListContext,
     ui: &crate::plugins::reactions::view::ReactionsUi,
     reactions: &[Value],

@@ -28,3 +28,9 @@
 /u/user1/preferences/notifications as=user1
 /u/user1/preferences/interface as=user1
 /u/user1/preferences/account as=admin
+
+# The notifications pages (193b). Relative dates move with the clock.
+/u/user1/notifications as=user1 mask=.relative-date
+/u/user1/notifications/responses as=user1
+/u/user1/notifications/likes-received as=user1
+/u/user1/notifications/reactions-received as=user1
