@@ -52,6 +52,8 @@ pub struct Opts {
     /// `hidden:`: the revision is hidden from those who can't see hidden
     /// revisions (and leaves `public_version` alone).
     pub hidden: bool,
+    /// `bypass_rate_limiter:` no EditRateLimiter.
+    pub bypass_rate_limiter: bool,
 }
 
 #[derive(Debug)]
@@ -517,7 +519,7 @@ pub async fn apply(
         );
     }
     // perform_edit
-    if ctx.config.rate_limits {
+    if ctx.config.rate_limits && !opts.bypass_rate_limiter {
         let limiter = super::limits::edit_limiter(
             s,
             crate::rate_limiter::LimitUser {
@@ -1002,7 +1004,7 @@ async fn category_tag_stats_moved(
 
 /// `can_move_topic_to_category?(category)`: staff, or those who may
 /// create topics there without review.
-async fn can_move_topic_to_category(
+pub(crate) async fn can_move_topic_to_category(
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
     guardian: &Guardian,

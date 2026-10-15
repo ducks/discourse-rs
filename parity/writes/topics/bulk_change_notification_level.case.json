@@ -1,0 +1,32 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38",
+          "37"
+        ],
+        "operation": {
+          "type": "change_notification_level",
+          "notification_level_id": "3"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "change_notification_level"
+        }
+      }
+    }
+  ]
+}

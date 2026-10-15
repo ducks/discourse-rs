@@ -70,6 +70,9 @@ pub struct StatusOpts<'a> {
     pub silent: bool,
     /// `message:`: the small action's raw text.
     pub message: Option<&'a str>,
+    /// `visibility_reason_id:` for a visibility change (manually unlisted
+    /// or relisted when not given).
+    pub visibility_reason_id: Option<i32>,
 }
 
 /// How a status update ends when it isn't a server error.
@@ -269,11 +272,11 @@ pub async fn apply(
                                 OR fancy_title IS NOT NULL)",
         )
         .bind(topic.id)
-        .bind(if enabled {
+        .bind(opts.visibility_reason_id.unwrap_or(if enabled {
             MANUALLY_RELISTED
         } else {
             MANUALLY_UNLISTED
-        })
+        }))
         .bind(&slug)
         .execute(&mut *conn)
         .await?;

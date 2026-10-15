@@ -23,22 +23,26 @@ pub enum Converted {
     Invalid(Vec<String>),
 }
 
-/// `revise_opts`: not silent, so bumping and notifying as usual, and the
-/// revision hidden.
-const REVISE_OPTS: Opts = Opts {
-    keep_existing_draft: false,
-    bypass_bump: false,
-    silent: false,
-    hidden: true,
-};
+/// `revise_opts`: a silent conversion (the bulk action's) doesn't bump or
+/// notify; the revision is hidden either way.
+fn revise_opts(silent: bool) -> Opts {
+    Opts {
+        bypass_bump: silent,
+        silent,
+        hidden: true,
+        ..Default::default()
+    }
+}
 
-/// `TopicConverter#convert_to_public_topic(category_id)`
+/// `TopicConverter#convert_to_public_topic(category_id)`; a silent one
+/// leaves no small action and changes no one's watching.
 pub async fn to_public(
     pool: &PgPool,
     ctx: &Ctx<'_>,
     user: &Guardian,
     topic_id: i32,
     category_id: Option<i32>,
+    silent: bool,
 ) -> Result<Converted, AppError> {
     let s = ctx.settings;
     let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
@@ -75,7 +79,18 @@ pub async fn to_public(
         ..Default::default()
     };
     let mut deferred = Deferred::default();
-    match revise(&mut tx, pool, ctx, user, topic_id, &fields, &mut deferred).await? {
+    match revise(
+        &mut tx,
+        pool,
+        ctx,
+        user,
+        topic_id,
+        &fields,
+        revise_opts(silent),
+        &mut deferred,
+    )
+    .await?
+    {
         Some(Ok(())) => {}
         Some(Err(errors)) => {
             tx.rollback().await?;
@@ -113,10 +128,14 @@ pub async fn to_public(
         json!({"topic_id": topic_id}),
     )
     .await?;
-    watch_topic(&mut tx, ctx, topic_id).await?;
+    if !silent {
+        watch_topic(&mut tx, ctx, topic_id).await?;
+    }
     deferred.enqueue(&mut tx).await?;
     tx.commit().await?;
-    add_small_action(pool, ctx, user, topic_id, "public_topic").await?;
+    if !silent {
+        add_small_action(pool, ctx, user, topic_id, "public_topic").await?;
+    }
     Ok(Converted::Done(relative_url(pool, ctx, topic_id).await?))
 }
 
@@ -126,6 +145,7 @@ pub async fn to_private(
     ctx: &Ctx<'_>,
     user: &Guardian,
     topic_id: i32,
+    silent: bool,
 ) -> Result<Converted, AppError> {
     let s = ctx.settings;
     let user_id = user
@@ -184,7 +204,18 @@ pub async fn to_private(
         ..Default::default()
     };
     let mut deferred = Deferred::default();
-    match revise(&mut tx, pool, ctx, user, topic_id, &fields, &mut deferred).await? {
+    match revise(
+        &mut tx,
+        pool,
+        ctx,
+        user,
+        topic_id,
+        &fields,
+        revise_opts(silent),
+        &mut deferred,
+    )
+    .await?
+    {
         Some(Ok(())) => {}
         Some(Err(errors)) => {
             tx.rollback().await?;
@@ -253,15 +284,20 @@ pub async fn to_private(
         json!({"topic_id": topic_id}),
     )
     .await?;
-    watch_topic(&mut tx, ctx, topic_id).await?;
+    if !silent {
+        watch_topic(&mut tx, ctx, topic_id).await?;
+    }
     deferred.enqueue(&mut tx).await?;
     tx.commit().await?;
-    add_small_action(pool, ctx, user, topic_id, "private_topic").await?;
+    if !silent {
+        add_small_action(pool, ctx, user, topic_id, "private_topic").await?;
+    }
     Ok(Converted::Done(relative_url(pool, ctx, topic_id).await?))
 }
 
 /// PostRevisor inside the converter's transaction. None when revise!
 /// returned false without errors on the topic (slow mode).
+#[allow(clippy::too_many_arguments)]
 async fn revise(
     conn: &mut PgConnection,
     pool: &PgPool,
@@ -269,6 +305,7 @@ async fn revise(
     user: &Guardian,
     topic_id: i32,
     fields: &TopicFields,
+    opts: Opts,
     deferred: &mut Deferred,
 ) -> Result<Option<Result<(), Vec<String>>>, AppError> {
     let Some(prepared) = revise_topic::prepare(&mut *conn, ctx, user, topic_id, fields).await?
@@ -276,19 +313,12 @@ async fn revise(
         return Ok(None);
     };
     match revise_topic::apply(
-        &mut *conn,
-        pool,
-        ctx,
-        user,
-        &prepared,
-        fields,
-        REVISE_OPTS,
-        deferred,
+        &mut *conn, pool, ctx, user, &prepared, fields, opts, deferred,
     )
     .await?
     {
         Applied::Revised(revised) => {
-            revise_topic::finish(&mut *conn, ctx, user, &prepared, &revised, REVISE_OPTS).await?;
+            revise_topic::finish(&mut *conn, ctx, user, &prepared, &revised, opts).await?;
             Ok(Some(Ok(())))
         }
         Applied::Invalid(errors) if errors.is_empty() => Ok(None),

@@ -1,0 +1,41 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "close"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "delete"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "reset_bump_dates"
+        }
+      }
+    }
+  ]
+}

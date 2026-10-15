@@ -78,9 +78,10 @@ pub async fn convert(
             .get("category_id")
             .and_then(params::scalar)
             .map(|c| crate::ruby::to_i(&c) as i32);
-        topic_converter::to_public(&state.pool, &ctx, &guardian, topic_id, category_id).await?
+        topic_converter::to_public(&state.pool, &ctx, &guardian, topic_id, category_id, false)
+            .await?
     } else {
-        topic_converter::to_private(&state.pool, &ctx, &guardian, topic_id).await?
+        topic_converter::to_private(&state.pool, &ctx, &guardian, topic_id, false).await?
     };
     Ok(match converted {
         Converted::Done(url) => {

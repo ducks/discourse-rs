@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38",
+          "42"
+        ],
+        "operation": {
+          "type": "change_category",
+          "category_id": "2"
+        }
+      }
+    }
+  ]
+}
