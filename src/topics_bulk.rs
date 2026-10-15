@@ -329,11 +329,12 @@ impl<'a, 'b> BulkAction<'a, 'b> {
         Ok(Ok(()))
     }
 
-    /// The topic's tag names, as its tags load.
+    /// The topic's tag names as topics_with_tags preloads them: by its topic
+    /// tags, in the order they were added.
     async fn topic_tag_names(&mut self, topic_id: i32) -> Result<Vec<String>, sqlx::Error> {
         sqlx::query_scalar(
             "SELECT tags.name FROM tags JOIN topic_tags ON topic_tags.tag_id = tags.id \
-             WHERE topic_tags.topic_id = $1 ORDER BY tags.id",
+             WHERE topic_tags.topic_id = $1 ORDER BY topic_tags.id",
         )
         .bind(topic_id)
         .fetch_all(&mut *self.conn)
@@ -479,7 +480,10 @@ impl<'a, 'b> BulkAction<'a, 'b> {
     }
 
     /// `topics`: the live topics among the ids, in the order Postgres reads
-    /// the table (Rails iterates them without an order).
+    /// the table, as Rails' unordered `Topic.where(id:)` is a sequential
+    /// scan. That order is physical: a row updated more than once may land
+    /// in a slot pruning freed, which depends on what else the cluster is
+    /// doing, so no parity case iterates two topics it updated earlier.
     async fn topics(&mut self) -> Result<Vec<i32>, sqlx::Error> {
         sqlx::query_scalar(
             "SELECT id FROM topics WHERE id = ANY($1) AND deleted_at IS NULL ORDER BY ctid",

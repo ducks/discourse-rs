@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topic_tags SET tag_id = 1 WHERE topic_id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35",
+          "38"
+        ],
+        "operation": {
+          "type": "manage_tags",
+          "replace_tags": [
+            {
+              "from_tag_id": "1",
+              "to_tag_id": "2"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
