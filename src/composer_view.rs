@@ -3,9 +3,10 @@
 //! create a topic or edit a post. The markup follows composer-container,
 //! composer-editor, d-editor and the category chooser's select-kit; the
 //! script sets the mode, its title and submit label (rendered here into
-//! data attributes) and posts through /posts.
+//! data attributes) and posts through /posts, with the tag chooser
+//! (MiniTagChooser) for a member who may tag topics.
 //!
-//! Not ported yet: the preview (Rust as WASM, next), drafts, uploads, tags,
+//! Not ported yet: the preview (Rust as WASM, next), drafts, uploads,
 //! the heading, emoji and options menus, the composer actions menu and the
 //! rich text editor.
 
@@ -18,6 +19,9 @@ pub struct ChooserCategory {
     pub id: i64,
     pub topic_count: i64,
     pub description_text: Option<String>,
+    /// `Category#minimumRequiredTags`: the minimum, or the required tag
+    /// groups' counts when they come to more (0 for none).
+    pub minimum_required_tags: i64,
 }
 
 /// The categories the member may create topics in, ordered as
@@ -97,8 +101,16 @@ fn row(list: &ListContext, c: &ChooserCategory, category: &ListCategory) -> Stri
         })
         .unwrap_or_default();
     format!(
-        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\" role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
+        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\"{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
         c.id,
+        if c.minimum_required_tags > 0 {
+            format!(
+                " data-minimum-required-tags=\"{}\"",
+                c.minimum_required_tags
+            )
+        } else {
+            String::new()
+        },
         badge_span(list, category, &count),
         n = escape(&category.name)
     )
@@ -372,6 +384,73 @@ fn toolbar(
     out
 }
 
+/// What the tag chooser (MiniTagChooser) needs of the site and the member,
+/// for a member who may tag topics (`composer.canEditTags`).
+pub struct TagChooser {
+    /// `site.can_create_tag`: the chooser offers to create a tag.
+    pub can_create: bool,
+    /// Staff skip the composer's required tags check.
+    pub staff: bool,
+    pub max_tags_per_topic: i64,
+    pub max_tag_search_results: i64,
+    pub max_tag_length: i64,
+    pub force_lowercase: bool,
+    pub sort_alphabetically: bool,
+    pub prioritize_recent: bool,
+    /// The tag_style setting (`simple`, `box`, `bullet`).
+    pub style: String,
+}
+
+/// `site.tags_filter_regexp`: DiscourseTagging::TAGS_FILTER_REGEXP's source.
+const TAGS_FILTER_REGEXP: &str = r#"[\/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+"#;
+
+/// The `.tags-input`: MiniTagChooser closed (its body is drawn when it
+/// opens, by composer.js) and its validation's tip.
+fn tag_chooser(list: &ListContext, tags: &TagChooser, category: Option<i64>) -> String {
+    let labels = serde_json::json!({
+        "optional": t(list, "tagging.choose_for_topic"),
+        "required_one": t(list, "tagging.choose_for_topic_required.one"),
+        "required_other": t(list, "tagging.choose_for_topic_required.other"),
+        "required_group_one": t(list, "tagging.choose_for_topic_required_group.one"),
+        "required_group_other": t(list, "tagging.choose_for_topic_required_group.other"),
+        "filter_placeholder": t(list, "select_kit.filter_placeholder"),
+        "filter_placeholder_with_any": t(list, "select_kit.filter_placeholder_with_any"),
+        "delete_item": t(list, "select_kit.delete_item"),
+        "create": t(list, "select_kit.create"),
+        "no_content": t(list, "select_kit.no_content"),
+        "results_one": t(list, "select_kit.results_count.one"),
+        "results_other": t(list, "select_kit.results_count.other"),
+        "max_one": t(list, "select_kit.max_content_reached.one"),
+        "max_other": t(list, "select_kit.max_content_reached.other"),
+        "synonym_hint": t(list, "tagging.synonym_hint"),
+        "tags_missing_one": t(list, "composer.error.tags_missing.one"),
+        "tags_missing_other": t(list, "composer.error.tags_missing.other"),
+    });
+    let options = serde_json::json!({
+        "allowAny": tags.can_create,
+        "staff": tags.staff,
+        "maximum": tags.max_tags_per_topic,
+        "limit": tags.max_tag_search_results,
+        "maxLength": tags.max_tag_length,
+        "forceLowercase": tags.force_lowercase,
+        "sortAlphabetically": tags.sort_alphabetically,
+        "prioritizeRecent": tags.prioritize_recent,
+        "filterRegexp": TAGS_FILTER_REGEXP,
+        "style": tags.style,
+        "labels": labels,
+    });
+    format!(
+        "<div class=\"tags-input\"><details{} class=\"select-kit multi-select mini-tag-chooser no-tags\" data-options=\"{}\"><summary data-name=\"\" data-value=\"\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details><a tabindex=\"0\" class=\"popup-tip good hide\"> {}</a></div>",
+        category
+            .map(|c| format!(" category-id=\"{c}\""))
+            .unwrap_or_default(),
+        escape(&options.to_string()),
+        escape(&t(list, "tagging.choose_for_topic")),
+        icon("plus", Some("angle-icon")),
+        icon("circle-xmark", None),
+    )
+}
+
 /// The closed composer with its category chooser. `default_category` is
 /// the category a new topic starts in (default_composer_category).
 /// `preview` is where the preview's WebAssembly and render settings are
@@ -387,6 +466,7 @@ pub fn render(
     presence: Option<&serde_json::Value>,
     upload: Option<&UploadUi>,
     options: Option<(&[PopupOption], &[&str])>,
+    tags: Option<&TagChooser>,
 ) -> String {
     // discourse-presence's before-composer-controls connector, and the
     // strings and settings static/js/topic-presence.js draws it with.
@@ -561,7 +641,7 @@ pub fn render(
         None => String::new(),
     };
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -614,6 +694,10 @@ pub fn render(
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
         save_or_cancel = save_or_cancel,
+        reply_area_tags = if tags.is_some() { " with-tags" } else { "" },
+        tags_input = tags
+            .map(|t| tag_chooser(list, t, selected.map(|c| c.id)))
+            .unwrap_or_default(),
     )
 }
 
@@ -651,16 +735,19 @@ mod tests {
                 id: 2,
                 topic_count: 1,
                 description_text: None,
+                minimum_required_tags: 0,
             },
             ChooserCategory {
                 id: 3,
                 topic_count: 9,
                 description_text: None,
+                minimum_required_tags: 0,
             },
             ChooserCategory {
                 id: 1,
                 topic_count: 3,
                 description_text: None,
+                minimum_required_tags: 0,
             },
         ];
         assert_eq!(chooser_order(&cats, &allowed), [1, 3, 2]);

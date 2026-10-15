@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "settings": {
+    "display_personal_messages_tag_counts": true
+  },
+  "requests": [
+    {"method": "GET", "path": "/tags/filter/search.json?q=&limit=5&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=h&limit=5&filterForInput=true"}
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "name": "search_groups",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=9611"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=blu&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=9611"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=chi&limit=5&categoryId=4&filterForInput=true"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=chi&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=2"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=&limit=5&categoryId=2&filterForInput=true"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/filter/search.json?q=&limit=5&categoryId=2&filterForInput=true&selected_tag_ids[]=9612"
+    }
+  ],
+  "started_at": "2026-10-14T23:27:27.88627",
+  "transaction_started_at": "2026-10-14T23:27:25.438234",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 9612,
+            "name": "blue",
+            "text": "blue",
+            "count": 0,
+            "disabled": true,
+            "title": "Conflicts with \"red\" (only one allowed per topic)"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 9613,
+            "name": "child",
+            "text": "child",
+            "count": 0,
+            "disabled": true,
+            "title": "Available after adding the \"guide\" tag"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 9613,
+            "text": "child",
+            "name": "child",
+            "slug": "child",
+            "description": null,
+            "count": 0,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 9611,
+            "text": "red",
+            "name": "red",
+            "slug": "red",
+            "description": null,
+            "count": 3,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 9612,
+            "text": "blue",
+            "name": "blue",
+            "slug": "blue",
+            "description": null,
+            "count": 1,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ],
+        "required_tag_group": {
+          "name": "Colors",
+          "min_count": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "results": [
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 298,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BrI6MTuPcq4641zzvmI5zYGJgPk=",
+            "created_at": "2026-10-14T23:27:26.684843",
+            "rotated_at": "2026-10-14T23:27:26.682959",
+            "updated_at": "2026-10-14T23:27:26.684843",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BrI6MTuPcq4641zzvmI5zYGJgPk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 298,
+            "seen_at": "2026-10-14T23:27:27.899777",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BrI6MTuPcq4641zzvmI5zYGJgPk=",
+            "created_at": "2026-10-14T23:27:26.684843",
+            "rotated_at": "2026-10-14T23:27:26.682959",
+            "updated_at": "2026-10-14T23:27:26.684843",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BrI6MTuPcq4641zzvmI5zYGJgPk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tags (id, name, slug, created_at, updated_at, staff_topic_count, public_topic_count) VALUES (9611, 'red', 'red', now(), now(), 3, 3), (9612, 'blue', 'blue', now(), now(), 1, 1), (9613, 'child', 'child', now(), now(), 0, 0)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Colors', now(), now(), true)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic, parent_tag_id) VALUES (9602, 'Under guide', now(), now(), false, 2)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (9611, 9601, now(), now()), (9612, 9601, now(), now()), (9613, 9602, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 0, 1, now(), now()), (9602, 0, 1, now(), now())",
+    "INSERT INTO category_required_tag_groups (category_id, tag_group_id, min_count, \"order\", created_at, updated_at) VALUES (2, 9601, 1, 1, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "2afc296b1d7c456f15ac3e4c265d80fb4217c0c8162da0b34923501ec6741a43",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, created_at, updated_at, staff_topic_count, public_topic_count) VALUES (9611, 'red', 'red', now(), now(), 3, 3), (9612, 'blue', 'blue', now(), now(), 1, 1), (9613, 'child', 'child', now(), now(), 0, 0)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Colors', now(), now(), true)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic, parent_tag_id) VALUES (9602, 'Under guide', now(), now(), false, 2)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (9611, 9601, now(), now()), (9612, 9601, now(), now()), (9613, 9602, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 0, 1, now(), now()), (9602, 0, 1, now(), now())",
+    "INSERT INTO category_required_tag_groups (category_id, tag_group_id, min_count, \"order\", created_at, updated_at) VALUES (2, 9601, 1, 1, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/tags/filter/search.json?q=&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=9611"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=blu&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=9611"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=chi&limit=5&categoryId=4&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=chi&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=2"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=&limit=5&categoryId=2&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=&limit=5&categoryId=2&filterForInput=true&selected_tag_ids[]=9612"}
+  ]
+}

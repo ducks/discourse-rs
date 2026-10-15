@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/tags/filter/search.json?q=gu"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=&filterForInput=true&limit=5"}
+  ]
+}

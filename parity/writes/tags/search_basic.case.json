@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/tags/filter/search.json?q=&limit=5&categoryId=4&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=GU&limit=5&categoryId=4&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=o&limit=1"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=howto&limit=5&categoryId=4&filterForInput=true&selected_tag_ids[]=1"},
+    {"method": "GET", "path": "/tags/filter/search.json?q=nothing%20like%20it&filterForInput=true"},
+    {"method": "GET", "path": "/tags/filter/search.json?limit=abc"},
+    {"method": "GET", "path": "/tags/filter/search.json?limit=999"},
+    {"method": "GET", "path": "/tags/filter/search.json?selected_tags[]=guide&filterForInput=true"}
+  ]
+}
