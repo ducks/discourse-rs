@@ -217,6 +217,7 @@ pub(super) async fn serialize_post(
             post_number: None,
         },
         post_types: Vec::new(),
+        logo_small_url: None,
     };
     Ok(view
         .serialize_single_post(post_id, with_link_counts, with_raw_and_draft_sequence, true)
@@ -247,6 +248,7 @@ pub(super) async fn serialize_post_alone(
             post_number: None,
         },
         post_types: Vec::new(),
+        logo_small_url: None,
     };
     Ok(view
         .serialize_single_post(post_id, false, false, false)

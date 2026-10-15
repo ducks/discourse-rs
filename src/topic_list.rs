@@ -169,6 +169,8 @@ pub struct Prefetched {
     participants: HashMap<i32, Vec<Poster>>,
     /// The bundled plugins' after-load data for the page.
     plugins: crate::plugins::TopicListData,
+    /// `logo_small`'s url once read: each serialized topic asks for it.
+    logo_small_url: Option<Option<String>>,
 }
 
 /// The topic_users columns the list item reads (`user_data`).
@@ -452,14 +454,20 @@ impl TopicListSerializer<'_> {
     }
 
     pub(crate) async fn logo_small_url(&mut self) -> Result<Option<String>, TopicListError> {
-        let id = self.settings.get("logo_small")?.to_i();
-        if id == 0 {
-            return Ok(None);
+        if let Some(url) = &self.prefetched.logo_small_url {
+            return Ok(url.clone());
         }
-        Ok(sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
-            .bind(i32::try_from(id).unwrap_or(0))
-            .fetch_optional(&mut *self.conn)
-            .await?)
+        let id = self.settings.get("logo_small")?.to_i();
+        let url = if id == 0 {
+            None
+        } else {
+            sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+                .bind(i32::try_from(id).unwrap_or(0))
+                .fetch_optional(&mut *self.conn)
+                .await?
+        };
+        self.prefetched.logo_small_url = Some(url.clone());
+        Ok(url)
     }
 
     /// PosterSerializer (BasicUserSerializer + flair/primary group mixins).
