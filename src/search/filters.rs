@@ -3,6 +3,7 @@
 
 use unicode_normalization::UnicodeNormalization;
 
+use super::advanced::Filter;
 use super::posts_query::Query;
 use super::{Search, SearchError};
 
@@ -93,6 +94,122 @@ impl Search<'_> {
             None => q.none(),
         }
         Ok(())
+    }
+
+    /// The `in:` filters over the viewer's own activity; anonymous
+    /// searches ignore them.
+    pub(super) fn viewer_filter(&self, q: &mut Query, filter: Filter, capture: &str) {
+        let Some(uid) = self.guardian.user_id() else {
+            return;
+        };
+        let timings = format!(
+            "post_timings ON post_timings.topic_id = posts.topic_id \
+             AND post_timings.post_number = posts.post_number AND post_timings.user_id = {uid}"
+        );
+        match filter {
+            // PostActionType.types[:like]
+            Filter::Likes => q.and(format!(
+                "posts.id IN (SELECT pa.post_id FROM post_actions pa WHERE pa.user_id = {uid} \
+                 AND pa.post_action_type_id = 2 AND deleted_at IS NULL)"
+            )),
+            Filter::Bookmarks => q.and(format!(
+                "posts.id IN (SELECT bookmarkable_id FROM bookmarks \
+                 WHERE bookmarks.user_id = {uid} AND bookmarks.bookmarkable_type = 'Post')"
+            )),
+            Filter::Posted => q.and(format!("posts.user_id = {uid}")),
+            Filter::Created => q.and(format!("posts.user_id = {uid} AND posts.post_number = 1")),
+            Filter::WatchingTracking => {
+                // TopicUser.notification_levels
+                let level = if capture.eq_ignore_ascii_case("watching") {
+                    3
+                } else {
+                    2
+                };
+                q.and(format!(
+                    "posts.topic_id IN (SELECT tu.topic_id FROM topic_users tu \
+                     WHERE tu.user_id = {uid} AND tu.notification_level >= {level})"
+                ));
+            }
+            Filter::Seen => q.join(&format!("INNER JOIN {timings}")),
+            Filter::Unseen => {
+                q.join(&format!("LEFT JOIN {timings}"));
+                q.and("post_timings.user_id IS NULL");
+            }
+            _ => {}
+        }
+    }
+
+    /// `search_tags`: `tags:a,b` any of them, `tags:a+b` all of them
+    /// (synonyms read as their target); `-tags:` none of them.
+    pub(super) async fn tags_filter(
+        &mut self,
+        q: &mut Query,
+        tags: &str,
+        positive: bool,
+    ) -> Result<(), SearchError> {
+        let lower = tags.to_lowercase();
+        let modifier = if positive { "" } else { "NOT" };
+        if lower.contains('+') {
+            let names = self
+                .resolve_tag_synonyms(crate::ruby::split(&lower, "+"))
+                .await?;
+            let config = super::ts_config(&self.settings.get("default_locale")?.to_s());
+            q.and(format!(
+                "topics.id {modifier} IN (SELECT tt.topic_id FROM topic_tags tt, tags \
+                 WHERE tt.tag_id = tags.id GROUP BY tt.topic_id \
+                 HAVING to_tsvector('{config}', array_to_string(array_agg(lower(tags.name)), ' ')) \
+                 @@ to_tsquery('{config}', {}))",
+                crate::user_search::quote(&names.join("&"))
+            ));
+            return Ok(());
+        }
+        let names = self
+            .resolve_tag_synonyms(crate::ruby::split(&lower, ","))
+            .await?;
+        let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+        let ids: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM tags WHERE lower(tags.name) = ANY($1)")
+                .bind(&lowered)
+                .fetch_all(&mut *self.conn)
+                .await?;
+        if ids.is_empty() {
+            if positive {
+                q.none();
+            }
+            return Ok(());
+        }
+        q.and(format!(
+            "{modifier} EXISTS (SELECT 1 FROM topic_tags tt WHERE tt.topic_id = topics.id \
+             AND tt.tag_id IN ({}))",
+            ids.iter()
+                .map(i32::to_string)
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+        Ok(())
+    }
+
+    /// `resolve_tag_synonyms`: each name that is a synonym becomes its
+    /// target's, lowercased.
+    async fn resolve_tag_synonyms(&mut self, names: Vec<&str>) -> Result<Vec<String>, SearchError> {
+        let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+        let synonyms: Vec<(String, String)> = sqlx::query_as(
+            "SELECT lower(s.name), lower(t.name) FROM tags s JOIN tags t ON t.id = s.target_tag_id \
+             WHERE lower(s.name) = ANY($1) AND s.target_tag_id IS NOT NULL",
+        )
+        .bind(&lowered)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(names
+            .iter()
+            .map(|n| {
+                synonyms
+                    .iter()
+                    .find(|(s, _)| s == n)
+                    .map(|(_, t)| t.clone())
+                    .unwrap_or_else(|| n.to_string())
+            })
+            .collect())
     }
 
     /// `badge:` a badge's name (ILIKE) or id: the posts of its holders.

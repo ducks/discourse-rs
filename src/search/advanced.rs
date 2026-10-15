@@ -282,14 +282,19 @@ pub struct Advanced {
     /// `@order`, as the symbol the keyword names.
     pub order: Option<String>,
     pub in_title: bool,
+    /// `in:all-posts`: every matching post, not one per topic.
+    pub all_posts: bool,
+    /// `include:unlisted`, for those who can see unlisted topics.
+    pub include_invisible: bool,
 }
 
 /// Parses the term. Filters and keywords not ported yet are refused.
 pub fn process(
     term: &str,
     settings: &SiteSettings,
-    logged_in: bool,
+    guardian: &crate::guardian::Guardian,
 ) -> Result<Advanced, SearchError> {
+    let logged_in = guardian.user_id().is_some();
     let filter_res = filter_regexes();
     let keyword_res = keyword_regexes();
     let mut adv = Advanced::default();
@@ -331,6 +336,12 @@ pub fn process(
                 adv.order = Some(word.to_lowercase().replace("order:", ""));
             }
             Some(Keyword::InTitle) => adv.in_title = true,
+            Some(Keyword::AllPosts) => adv.all_posts = true,
+            Some(Keyword::Include) => {
+                if guardian.can_see_unlisted_topics() {
+                    adv.include_invisible = true;
+                }
+            }
             Some(_) => return Err(Unsupported(unported_keyword(&word)).into()),
             None if found => {}
             None => kept.push(word),
@@ -344,16 +355,13 @@ pub fn process(
     if adv.order.is_some() {
         return Err(Unsupported("advanced search orders (order:, l, r)").into());
     }
-    if adv.in_title {
-        return Err(Unsupported("the in:title advanced search keyword").into());
-    }
     adv.term = kept.join(" ");
     Ok(adv)
 }
 
 fn unported_keyword(_word: &str) -> &'static str {
-    "advanced search keywords (topic:, in:all, in:all-posts, in:personal, in:messages, \
-     in:personal-direct, in:all-pms, group_messages:, personal_messages:, include:)"
+    "advanced search keywords (topic:, in:all, in:personal, in:messages, \
+     in:personal-direct, in:all-pms, group_messages:, personal_messages:)"
 }
 
 /// The filters not ported yet, and why.
@@ -365,10 +373,34 @@ fn unported_filter(filter: Filter) -> Option<&'static str> {
         | Filter::User
         | Filter::CreatedBy
         | Filter::Group
-        | Filter::Badge => None,
+        | Filter::Badge
+        | Filter::Tagged
+        | Filter::Untagged
+        | Filter::Bots
+        | Filter::Humans
+        | Filter::Whispers
+        | Filter::Regular
+        | Filter::First
+        | Filter::Replies
+        | Filter::Pinned
+        | Filter::Wiki
+        | Filter::Likes
+        | Filter::Bookmarks
+        | Filter::Posted
+        | Filter::Created
+        | Filter::WatchingTracking
+        | Filter::Seen
+        | Filter::Unseen
+        | Filter::Polls
+        | Filter::Tags
+        | Filter::NotTags => None,
+        Filter::PersonalDirect | Filter::AllPms | Filter::GroupMessages => {
+            Some("personal message searches (in:personal-direct, in:all-pms, group_messages:)")
+        }
         _ => Some(
-            "advanced search filters other than #, category:, @, user:, created:@, group: and \
-             badge: (in:, status:, tags:, before:, ...)",
+            "advanced search filters status:, posts_count:, min_posts:, max_posts:, \
+             min_views:, max_views:, min_vote_count:, with:images, filetypes:, before:, \
+             after: and locale:",
         ),
     }
 }

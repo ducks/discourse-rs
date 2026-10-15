@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": ["UPDATE posts SET post_type = 4 WHERE id = 38"],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=in%3Awhispers"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20in%3Awhisper"},
+    {"method": "GET", "path": "/search/query.json?term=unlisted%20include%3Aunlisted"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20include%3Ainvisible"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aposted%20in%3Aall-posts"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Afirst&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Areplies%20%40user1&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tags (name, target_tag_id, created_at, updated_at) VALUES ('how-to', 1, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=tags%3Aguide"},
+    {"method": "GET", "path": "/search/query.json?term=tag%3AGuide"},
+    {"method": "GET", "path": "/search/query.json?term=tags%3Ahowto%2Cguide"},
+    {"method": "GET", "path": "/search/query.json?term=tags%3Ahowto%2Bguide"},
+    {"method": "GET", "path": "/search/query.json?term=tags%3Ahow-to%2Bguide"},
+    {"method": "GET", "path": "/search/query.json?term=tags%3Ahow-to"},
+    {"method": "GET", "path": "/search/query.json?term=tags%3Anothing"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20-tags%3Aguide"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20-tags%3Anothing"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20-tags%3Ahowto%2Bguide"},
+    {"method": "GET", "path": "/search/query.json?term=%23general%20tags%3Aguide"},
+    {"method": "GET", "path": "/search.json?q=tags%3Aguide%2Chowto"}
+  ]
+}
