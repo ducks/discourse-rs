@@ -1,0 +1,40 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/trusted-session.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "not-the-password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/u/trusted-session.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    }
+  ]
+}

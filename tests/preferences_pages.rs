@@ -1,8 +1,10 @@
 //! The preferences pages (`/u/:username/preferences/...`): the shell and
-//! the account, profile, emails, notifications, tracking, users,
-//! interface and navigation menu tabs, what each tab's Save Changes
-//! sends, the email change page and its confirmation links, where the
-//! routes Ember redirects go, and the tabs other branches port, refused.
+//! the account, security, profile, emails, notifications, tracking,
+//! users, interface, apps, navigation menu, calendar and chat tabs, what
+//! each tab's Save Changes sends, the email change page and its
+//! confirmation links, the second factor page behind a confirmed
+//! session, where the routes Ember redirects go, and what other items
+//! port, refused.
 
 mod common;
 
@@ -18,6 +20,8 @@ struct Client {
     state: AppState,
     cookies: Vec<(String, String)>,
     csrf: Option<String>,
+    /// The last send's status.
+    status: StatusCode,
 }
 
 struct Page {
@@ -54,6 +58,7 @@ impl Client {
             .oneshot(request.body(Body::from(body.to_string())).unwrap())
             .await
             .unwrap();
+        self.status = response.status();
         for v in response.headers().get_all(header::SET_COOKIE) {
             let v = v.to_str().unwrap();
             let pair = v.split(';').next().unwrap();
@@ -72,6 +77,7 @@ impl Client {
             state,
             cookies: Vec::new(),
             csrf: None,
+            status: StatusCode::OK,
         };
         let csrf = client.send(Method::GET, "/session/csrf.json", "").await;
         let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
@@ -267,11 +273,82 @@ async fn the_routes_ember_redirects_go_where_it_does() {
     let unknown = user1.page("/u/user1/preferences/username").await;
     assert_eq!(unknown.status, StatusCode::OK);
     assert!(unknown.html.contains("page-not-found"));
-    // The tabs another branch ports.
-    assert_eq!(
-        user1.page("/u/user1/preferences/security").await.status,
-        StatusCode::INTERNAL_SERVER_ERROR
+    // The second factor page wants a trusted session.
+    let second_factor = user1.page("/u/user1/preferences/second-factor").await;
+    assert_eq!(second_factor.status, StatusCode::FOUND);
+    assert!(
+        second_factor
+            .location
+            .unwrap()
+            .ends_with("/u/user1/preferences/security")
     );
+}
+
+#[tokio::test]
+async fn the_security_apps_calendar_and_chat_tabs_draw() {
+    let (db, mut user1) = client("user1").await;
+    sqlx::query(
+        "INSERT INTO user_api_key_clients (id, client_id, application_name, created_at, updated_at) \
+         VALUES (9801, 'some-app', 'Some App', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO user_api_keys (id, user_id, key_hash, user_api_key_client_id, created_at, updated_at) \
+         VALUES (9802, 3, 'hash-9802', 9801, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = user1.page("/u/user1/preferences/security").await.html;
+    assert!(html.contains("<title>Security - Preferences - user1 - "));
+    assert!(html.contains("id=\"change-password-button\""));
+    assert!(html.contains("id=\"remove-password-link\""));
+    assert!(html.contains("class=\"control-group pref-passkeys\""));
+    assert!(html.contains("btn-second-factor"));
+    // The current device, active, without its menu.
+    assert!(html.contains("class=\"row auth-token\""));
+    assert!(html.contains("<span class=\"active\">"));
+    assert!(html.contains("<div class=\"user-api-key__name\">Some App</div>"));
+    assert!(html.contains("id=\"prefs-security-strings\""));
+
+    let html = user1.page("/u/user1/preferences/apps").await.html;
+    assert!(html.contains("<title>Preferences - user1 - "));
+    assert!(html.contains("data-key-id=\"9802\""));
+
+    let html = user1
+        .page("/u/user1/preferences/calendar-subscriptions")
+        .await
+        .html;
+    assert!(html.contains("calendar-subscriptions__description"));
+    assert!(html.contains("calendar-generate"));
+
+    let html = user1.page("/u/user1/preferences/chat").await.html;
+    assert!(html.contains("class=\"form-kit chat-preferences\""));
+    assert!(html.contains("name=\"chat_enabled\""));
+    assert!(html.contains("name=\"chat_separate_sidebar_mode\""));
+}
+
+#[tokio::test]
+async fn a_confirmed_session_opens_the_second_factor_page() {
+    let (_db, mut user1) = client("user1").await;
+    let trusted = user1.send(Method::GET, "/u/trusted-session.json", "").await;
+    assert_eq!(trusted, "{\"failed\":\"FAILED\"}");
+    let confirmed = user1
+        .send(Method::POST, "/u/confirm-session.json", "password=password")
+        .await;
+    assert_eq!(confirmed, "{\"success\":\"OK\"}");
+    let page = user1.page("/u/user1/preferences/second-factor").await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.html.contains("solo-preference second-factor"));
+    assert!(page.html.contains("new-totp"));
+    assert!(page.html.contains("new-security-key"));
+    // Adding one is 155's.
+    let refused = user1
+        .send(Method::POST, "/u/create_second_factor_totp.json", "")
+        .await;
+    assert_eq!(user1.status, StatusCode::INTERNAL_SERVER_ERROR, "{refused}");
 }
 
 #[tokio::test]
@@ -282,6 +359,7 @@ async fn anonymous_preferences_are_not_found() {
         state: st,
         cookies: Vec::new(),
         csrf: None,
+        status: StatusCode::OK,
     };
     let page = anon.page("/u/user1/preferences/account").await;
     assert_eq!(page.status, StatusCode::NOT_FOUND);

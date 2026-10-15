@@ -324,7 +324,6 @@ pub fn refused_tail(method: &str, rest: &str) -> Option<&'static str> {
     let rest = rest.strip_suffix(".json").unwrap_or(rest);
     Some(match (method, rest) {
         ("POST", "preferences/revoke-account") => "revoking an associated account (191)",
-        ("POST", "preferences/revoke-auth-token") => "logging out a device (193e)",
         _ => return None,
     })
 }
@@ -333,15 +332,32 @@ pub fn refused_tail(method: &str, rest: &str) -> Option<&'static str> {
 /// preference endpoints other items port refused; no other route.
 pub async fn post_tail(
     State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
+    axum::Extension(incoming): axum::Extension<Incoming>,
     Path((username, rest)): Path<(String, String)>,
     headers: HeaderMap,
     super::search::Peer(peer): super::search::Peer,
     uri: Uri,
     body: axum::body::Bytes,
 ) -> Result<Response, AppError> {
+    if matches!(
+        rest.as_str(),
+        "preferences/revoke-auth-token" | "preferences/revoke-auth-token.json"
+    ) {
+        return super::user_security::revoke_auth_token(
+            state, &incoming, username, headers, uri, body,
+        )
+        .await;
+    }
     tail(
-        "POST", state, guardian, username, rest, headers, peer, uri, body,
+        "POST",
+        state,
+        incoming.guardian.clone(),
+        username,
+        rest,
+        headers,
+        peer,
+        uri,
+        body,
     )
     .await
 }
@@ -437,8 +453,9 @@ pub fn json(state: &AppState, guardian: &crate::guardian::Guardian, route: &Rout
 /// The HTML of a preferences route: the profile (users#show, its view
 /// tracked as Ember's user route does) with the tab drawn under the
 /// preferences navigation. One who may not edit the user goes to their
-/// activity (RestrictedUserRoute); the tabs other branches port are
-/// refused naming them.
+/// activity (RestrictedUserRoute); chat's tab without chat goes home,
+/// the second factor page without a confirmed session to the security
+/// tab.
 pub async fn page(
     state: AppState,
     incoming: Incoming,
@@ -508,29 +525,29 @@ pub async fn page(
         }
         Route::Tab(tab) => tab,
     };
-    let item = match tab {
-        PrefTab::Account
-        | PrefTab::Profile
-        | PrefTab::Notifications
-        | PrefTab::Interface
-        | PrefTab::Emails
-        | PrefTab::Email
-        | PrefTab::Tracking
-        | PrefTab::Users
-        | PrefTab::NavigationMenu
-        | PrefTab::Tags => None,
-        PrefTab::Security
-        | PrefTab::Apps
-        | PrefTab::CalendarSubscriptions
-        | PrefTab::Chat
-        | PrefTab::SecondFactor => Some("193e"),
+    // PreferencesSecondFactor: the viewer's second factors once the
+    // session is trusted, else back to the security tab.
+    let second_factors = if tab == PrefTab::SecondFactor {
+        let viewer = guardian
+            .user_id()
+            .ok_or(Unsupported("a logged-in viewer without a session"))?;
+        if settings.get("enable_discourse_connect")?.truthy()
+            || !settings.get("enable_local_logins")?.truthy()
+        {
+            return Err(Unsupported("the second factor page without local logins").into());
+        }
+        let mut session = crate::session::forum::load_forum_session(&state, &headers);
+        let session_id = session.server_session_id();
+        if !super::user_security::session_is_trusted(&mut conn, &session_id, viewer).await? {
+            return Ok(found(format!(
+                "{}{user_path}/preferences/security",
+                origin(&headers)
+            )));
+        }
+        Some(super::user_security::second_factors(&mut conn, viewer).await?)
+    } else {
+        None
     };
-    if let Some(item) = item {
-        return Err(Unsupported(Box::leak(
-            format!("the {tab:?} preferences tab ({item})").into_boxed_str(),
-        ))
-        .into());
-    }
 
     let session_user = incoming
         .session
@@ -593,6 +610,11 @@ pub async fn page(
         viewer_staff: guardian.is_staff(),
     };
     let chat_enabled = crate::plugins::chat::enabled(&settings)?;
+    let chat_tab = chat_enabled && (u["can_chat"] == true || guardian.is_admin());
+    // PreferencesChatRoute: without chat, the homepage.
+    if tab == PrefTab::Chat && !chat_tab {
+        return Ok(found(format!("{}{base_path}/", origin(&headers))));
+    }
     let (content, attrs) = match tab {
         PrefTab::Account => {
             // UserBadge.findByUsername: the title-granting badges' names.
@@ -737,7 +759,70 @@ pub async fn page(
         PrefTab::Tags => view::tracking::render_tags(&p)?,
         PrefTab::Users => view::users::render(&p)?,
         PrefTab::NavigationMenu => view::navigation_menu::render(&p),
-        _ => unreachable!("refused above"),
+        PrefTab::Security => {
+            let local = !settings.get("enable_discourse_connect")?.truthy()
+                && settings.get("enable_local_logins")?.truthy();
+            let can_check_emails = guardian.is_me(user.id)
+                || guardian.is_admin()
+                || (settings.get("moderators_view_emails")?.truthy() && guardian.is_staff());
+            (
+                view::security::render_security(
+                    &p,
+                    &view::security::Security {
+                        passkeys: local && settings.get("enable_passkeys")?.truthy(),
+                        can_check_emails,
+                    },
+                )?,
+                serde_json::Map::new(),
+            )
+        }
+        PrefTab::Apps => (view::security::render_apps(&p), serde_json::Map::new()),
+        PrefTab::CalendarSubscriptions => {
+            let viewer = guardian
+                .user_id()
+                .ok_or(Unsupported("a logged-in viewer without a session"))?;
+            let has = super::user_security::has_calendar_subscription(&mut conn, viewer).await?;
+            (
+                view::security::render_calendar(&p, has),
+                serde_json::Map::new(),
+            )
+        }
+        PrefTab::Chat => (view::security::render_chat(&p)?, serde_json::Map::new()),
+        PrefTab::SecondFactor => {
+            let lists = second_factors
+                .as_ref()
+                .ok_or(Unsupported("the second factor page without its lists"))?;
+            (
+                view::security::render_second_factor(
+                    &p,
+                    &view::security::SecondFactorPage {
+                        totps: &lists.totps,
+                        security_keys: &lists.security_keys,
+                    },
+                ),
+                serde_json::Map::new(),
+            )
+        }
+    };
+    // The security pages' dialog strings.
+    let content = if matches!(
+        tab,
+        PrefTab::Security | PrefTab::Apps | PrefTab::CalendarSubscriptions | PrefTab::SecondFactor
+    ) {
+        let viewer_username = current_user["username"].as_str().unwrap_or_default();
+        format!(
+            "{content}{}",
+            view::security::strings(
+                &cx,
+                viewer_username,
+                &format!("{base_path}/u/{}", escape(&viewer_username.to_lowercase())),
+                guardian.is_me(user.id)
+                    && settings.get("enable_passkeys")?.truthy()
+                    && u["user_passkeys"].as_array().is_some_and(|a| !a.is_empty()),
+            )
+        )
+    } else {
+        content
     };
     // The choosers' strings, where there are choosers.
     let content = if matches!(tab, PrefTab::Tracking | PrefTab::Tags | PrefTab::Users) {
@@ -758,7 +843,6 @@ pub async fn page(
     } else {
         content
     };
-    let chat_tab = chat_enabled && (u["can_chat"] == true || guardian.is_admin());
     let main = view::shell(&p, tab, chat_tab, &view::form_attrs(&p, &attrs), &content);
 
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
@@ -792,8 +876,17 @@ pub async fn page(
             .push_str(" user-preferences-tracking-page");
     }
     // Preferences#titleToken over the user route's username.
-    // The email and tags controllers have no subpageTitle.
-    page.page_title = if matches!(tab, PrefTab::Email | PrefTab::Tags) {
+    // The email, tags, apps, calendar, second factor and chat controllers
+    // have no subpageTitle.
+    page.page_title = if matches!(
+        tab,
+        PrefTab::Email
+            | PrefTab::Tags
+            | PrefTab::Apps
+            | PrefTab::CalendarSubscriptions
+            | PrefTab::Chat
+            | PrefTab::SecondFactor
+    ) {
         format!(
             "{} - {}",
             crate::topic_list_view::t(&cx, "user.preferences.title"),

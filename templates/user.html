@@ -4,6 +4,7 @@
 {{ main|safe }}
 {% if main.contains("messages-dropdown-trigger") %}<script src="{{ crate::assets::url(base_path, "messages-dropdown.js") }}"></script>{% endif %}
 {% if main.contains("user-content user-preferences") %}<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script><script src="{{ crate::assets::url(base_path, "preferences.js") }}"></script>{% endif %}
+{% if main.contains("prefs-security-strings") || main.contains("chat-preferences") %}{% if main.contains("emoji-picker-template") %}<script src="{{ crate::assets::url(base_path, "emoji-picker.js") }}"></script>{% endif %}<script src="{{ crate::assets::url(base_path, "prefs-security.js") }}"></script>{% endif %}
 {% if main.contains("prefs-choosers-strings") %}<script src="{{ crate::assets::url(base_path, "prefs-choosers.js") }}"></script>{% endif %}
 {% if main.contains("user-activity-strings") %}<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script><script src="{{ crate::assets::url(base_path, "user-activity.js") }}"></script>{% endif %}
 {% if main.contains("notifications-page-strings") %}<script src="{{ crate::assets::url(base_path, "notifications-page.js") }}"></script>{% endif %}

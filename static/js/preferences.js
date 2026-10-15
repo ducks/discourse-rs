@@ -263,6 +263,11 @@
       var chooser = row.closest("details");
       if (chooser.classList.contains("email-dropdown")) {
         emailAction(chooser, row.dataset.value);
+      } else if (chooser.classList.contains("dropdown-select-box")) {
+        // Another page's action menu (prefs-security.js).
+        chooser.dispatchEvent(
+          new CustomEvent("prefs-action", { bubbles: true, detail: { value: row.dataset.value } })
+        );
       } else {
         select(chooser, row);
       }

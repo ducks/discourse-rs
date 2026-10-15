@@ -16,6 +16,7 @@ pub mod interface;
 pub mod navigation_menu;
 pub mod notifications;
 pub mod profile;
+pub mod security;
 pub mod tracking;
 pub mod users;
 
