@@ -1,0 +1,12 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/39/merge-topic.json",
+      "params": {
+        "destination_topic_id": "35"
+      }
+    }
+  ]
+}

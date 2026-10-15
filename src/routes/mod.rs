@@ -449,6 +449,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         // TopicsController#move_posts; {slug} holds the topic id.
         .route("/t/{slug}/move-posts", post(topic_move::move_posts))
         .route("/t/{slug}/move-posts.json", post(topic_move::move_posts))
+        // TopicsController#merge_topic; {slug} holds the topic id.
+        .route("/t/{slug}/merge-topic", post(topic_move::merge_topic))
+        .route("/t/{slug}/merge-topic.json", post(topic_move::merge_topic))
         // TopicsController#convert_topic; {slug} holds the topic id.
         .route(
             "/t/{slug}/convert-topic/{kind}",

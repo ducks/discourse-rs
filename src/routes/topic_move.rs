@@ -1,4 +1,5 @@
-//! Port of TopicsController#move_posts: POST /t/:topic_id/move-posts,
+//! Port of TopicsController#move_posts and #merge_topic: POST
+//! /t/:topic_id/move-posts and /t/:topic_id/merge-topic,
 //! through PostMover (crate::post_mover).
 
 use axum::Json;
@@ -220,4 +221,75 @@ fn blank(v: &Value) -> bool {
         Value::Object(o) => o.is_empty(),
         _ => false,
     }
+}
+
+/// POST /t/:topic_id/merge-topic(.json): every post of the topic moved
+/// into the destination through PostMover.
+pub async fn merge_topic(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let Some(destination) = present(&p, "destination_topic_id") else {
+        return Ok(super::accounts::param_missing("destination_topic_id"));
+    };
+    let archetype = present(&p, "archetype");
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    if archetype.as_deref() == Some("private_message") && !guardian.is_staff() {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let topic_id = crate::ruby::to_i(&topic_id) as i32;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !exists || !can_move_posts(&mut conn, &settings, &guardian, topic_id).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    // topic.posts.pluck(:id)
+    let post_ids: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL ORDER BY id",
+    )
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    drop(conn);
+    let args = MoveArgs {
+        post_ids,
+        destination_topic_id: Some(crate::ruby::to_i(&destination) as i32),
+        chronological_order: p
+            .get("chronological_order")
+            .and_then(params::scalar)
+            .as_deref()
+            == Some("true"),
+        freeze_original: p.get("freeze_original").and_then(params::scalar).as_deref()
+            == Some("true"),
+        move_to_pm: archetype.as_deref() == Some("private_message"),
+        participants: present(&p, "participants"),
+        ..Default::default()
+    };
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let moved = post_mover::move_posts(&state.pool, &ctx, &guardian, topic_id, &args).await?;
+    moved_response(&state, moved).await
 }
