@@ -15,7 +15,7 @@ pub mod cleanup;
 pub mod consistency;
 pub mod dashboard;
 pub mod group_messages;
-mod handlers;
+pub(crate) mod handlers;
 pub mod heat;
 pub mod housekeeping;
 pub mod list_stats;

@@ -1,0 +1,45 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "9999"
+        ],
+        "title": "Parity fixture: moving nothing at all"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37"
+        ],
+        "destination_topic_id": "42"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37"
+        ],
+        "title": "x"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/37/move-posts.json",
+      "params": {
+        "post_ids": [
+          "41"
+        ],
+        "title": "Parity fixture: a small action first"
+      }
+    }
+  ]
+}

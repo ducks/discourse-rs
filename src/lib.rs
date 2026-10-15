@@ -104,6 +104,7 @@ pub mod pm_lists;
 pub mod pm_tracking_state;
 pub mod post_actions;
 pub mod post_destroyer;
+pub mod post_mover;
 pub mod post_owner_changer;
 pub mod post_view;
 pub mod posting;

@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "38"
+        ],
+        "title": "Parity fixture: a reply moved to a message",
+        "archetype": "private_message",
+        "participants": "user1"
+      }
+    }
+  ],
+  "not_yet": "moving posts to a message: the whisper left behind (PostCreator for whispers) is not ported"
+}

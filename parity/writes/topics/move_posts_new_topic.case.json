@@ -1,0 +1,25 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37",
+          "38"
+        ],
+        "title": "Parity fixture: replies split off",
+        "category_id": "4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/45.json"
+    }
+  ],
+  "ignore": [
+    "/responses/1/body/suggested_topics",
+    "/responses/1/body/message_bus_last_id"
+  ]
+}

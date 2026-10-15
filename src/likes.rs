@@ -55,7 +55,7 @@ const TODAY: &str = "(clock_timestamp() AT TIME ZONE 'UTC')::date";
 
 /// `PostAction#update_counters` for a like: the post's like count and
 /// score, the liker's topic user, the topic's like count.
-async fn update_counters(
+pub(crate) async fn update_counters(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     post_id: i32,

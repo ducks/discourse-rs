@@ -83,6 +83,7 @@ mod tags;
 mod themes;
 mod topic_convert;
 mod topic_excerpts;
+mod topic_move;
 mod topic_notifications;
 mod topic_status;
 mod topic_timer;
@@ -445,6 +446,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
+        // TopicsController#move_posts; {slug} holds the topic id.
+        .route("/t/{slug}/move-posts", post(topic_move::move_posts))
+        .route("/t/{slug}/move-posts.json", post(topic_move::move_posts))
         // TopicsController#convert_topic; {slug} holds the topic id.
         .route(
             "/t/{slug}/convert-topic/{kind}",

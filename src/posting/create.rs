@@ -1354,7 +1354,7 @@ pub async fn omit_nofollow(
 
 /// `create_post_notice`: a first post gets the new-user notice, one after
 /// a long absence the returning-user notice.
-pub(super) async fn post_notice(
+pub(crate) async fn post_notice(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     user_id: i32,

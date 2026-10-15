@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/39/move-posts.json",
+      "params": {
+        "post_ids": [
+          "43"
+        ],
+        "destination_topic_id": "35"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "post_ids": [
+          "37"
+        ],
+        "title": "Parity fixture: not allowed to split"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/35/move-posts.json",
+      "params": {
+        "title": "Parity fixture: no posts given"
+      }
+    }
+  ]
+}
