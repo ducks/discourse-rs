@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "sidebar_category_ids": [4, 2, 999],
+        "sidebar_tag_names": ["guide", "missing"]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "sidebar_category_ids": [2],
+        "sidebar_tag_names": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "sidebar_category_ids": ""
+      }
+    }
+  ]
+}

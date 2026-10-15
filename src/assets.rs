@@ -54,6 +54,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/about.css"),
     include_str!("../static/css/d-page-header.css"),
     include_str!("../static/css/admin-kit.css"),
+    include_str!("../static/css/preferences-more.css"),
     include_str!("../static/css/file-uploader.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
@@ -302,6 +303,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "preferences.js",
         JS,
         include_str!("../static/js/preferences.js"),
+    ),
+    (
+        "prefs-choosers.js",
+        JS,
+        include_str!("../static/js/prefs-choosers.js"),
     ),
     (
         "notifications-page.js",

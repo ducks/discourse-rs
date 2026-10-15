@@ -107,6 +107,7 @@ mod user_preferences;
 mod user_search;
 mod user_update;
 mod users;
+mod users_email;
 mod wizard;
 
 use axum::Router;
@@ -576,6 +577,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/u/{username}/user-menu-private-messages.json",
             get(user_menu::messages),
+        )
+        .route(
+            "/u/confirm-old-email/{token}",
+            get(users_email::show_confirm_old).put(users_email::confirm_old),
+        )
+        .route(
+            "/u/confirm-new-email/{token}",
+            get(users_email::show_confirm_new).put(users_email::confirm_new),
+        )
+        .route(
+            "/users/confirm-old-email/{token}",
+            get(users_email::show_confirm_old).put(users_email::confirm_old),
+        )
+        .route(
+            "/users/confirm-new-email/{token}",
+            get(users_email::show_confirm_new).put(users_email::confirm_new),
         )
         .route(
             "/u/{username}/{*rest}",
@@ -2218,6 +2235,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-menu.js", get(asset))
         .route("/assets/user-notifications.js", get(asset))
         .route("/assets/preferences.js", get(asset))
+        .route("/assets/prefs-choosers.js", get(asset))
         .route("/assets/notifications-page.js", get(asset))
         .route("/assets/user-activity.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))

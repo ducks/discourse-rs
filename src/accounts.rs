@@ -11,6 +11,7 @@ pub mod token_scopes {
     pub const SIGNUP: i32 = 1;
     pub const PASSWORD_RESET: i32 = 2;
     pub const EMAIL_LOGIN: i32 = 3;
+    pub const EMAIL_UPDATE: i32 = 4;
 }
 
 /// `EmailToken.hash_token`

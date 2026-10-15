@@ -1,0 +1,44 @@
+{
+  "user": "user1",
+  "settings": {
+    "allowed_email_domains": "example.com"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "not-an-email"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "someone@elsewhere.org"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "user2@example.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user2/preferences/email.json",
+      "params": {
+        "email": "x@example.com"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

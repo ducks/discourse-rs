@@ -54,3 +54,6 @@
 .topic-statuses .topic-status:first-child .d-icon.d-icon-bookmark { --bookmark-icon-size: 0.56em; width: var(--bookmark-icon-size); padding-right: calc((var(--icon-size) - var(--bookmark-icon-size))/2); }
 .alert { padding: 0.5em 2.5em 0.5em 1em; background-color: var(--danger-low); color: var(--primary); position: relative; margin-bottom: 1em; }
 .alert.alert-info { background-color: var(--tertiary-low); color: var(--primary); }
+.alert.alert-success { background-color: var(--success-low); color: var(--primary); }
+.alert.alert-error { background-color: var(--danger-low); color: var(--primary); }
+.alert.alert-warning { background-color: var(--highlight-bg); color: var(--primary); }

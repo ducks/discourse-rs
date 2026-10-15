@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "  User1-New@Example.com "
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

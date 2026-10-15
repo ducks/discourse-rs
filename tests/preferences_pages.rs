@@ -1,7 +1,8 @@
 //! The preferences pages (`/u/:username/preferences/...`): the shell and
-//! the account, profile, notifications and interface tabs, what each
-//! tab's Save Changes sends, where the routes Ember redirects go, and
-//! the tabs other branches port, refused.
+//! the account, profile, emails, notifications, tracking, users,
+//! interface and navigation menu tabs, what each tab's Save Changes
+//! sends, the email change page and its confirmation links, where the
+//! routes Ember redirects go, and the tabs other branches port, refused.
 
 mod common;
 
@@ -366,4 +367,129 @@ async fn a_second_theme_is_refused() {
     .unwrap();
     let page = user1.page("/u/user1/preferences/interface").await;
     assert_eq!(page.status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+#[tokio::test]
+async fn the_emails_tracking_users_and_navigation_tabs_draw_their_options() {
+    let (_db, mut user1) = client("user1").await;
+    let html = user1.page("/u/user1/preferences/emails").await.html;
+    assert!(html.contains("<title>Emails - Preferences - user1 - "));
+    assert!(html.contains("data-pref=\"email_messages_level\""));
+    assert!(html.contains("data-pref=\"digest_after_minutes\""));
+    assert!(html.contains("data-disabled-by=\"mailing_list_mode\""));
+    let attrs = save_attrs(&html);
+    assert!(attrs.get("email_level").is_some());
+    assert!(attrs.get("chat_email_frequency").is_some());
+
+    let html = user1.page("/u/user1/preferences/tracking").await.html;
+    assert!(html.contains("user-preferences-tracking-page"));
+    assert!(html.contains("data-chooser=\"category\" data-pref=\"watched_category_ids\""));
+    assert!(html.contains("data-chooser=\"tag\" data-pref=\"watched_tags\""));
+    assert!(html.contains("id=\"prefs-choosers-strings\""));
+    let attrs = save_attrs(&html);
+    // Category id lists, [-1] standing in for an empty one.
+    for key in [
+        "watched_category_ids",
+        "tracked_category_ids",
+        "muted_category_ids",
+        "watched_first_post_category_ids",
+    ] {
+        assert!(!attrs[key].as_array().unwrap().is_empty(), "{key}");
+    }
+
+    let html = user1.page("/u/user1/preferences/tags").await.html;
+    assert!(html.contains("<title>Preferences - user1 - "));
+    assert!(html.contains("data-pref=\"tracked_tags\""));
+
+    let html = user1.page("/u/user1/preferences/users").await.html;
+    assert!(html.contains("<title>Users - Preferences - user1 - "));
+    assert!(html.contains("add-ignored-user"));
+    assert!(html.contains("data-chooser=\"user\" data-pref=\"muted_usernames\""));
+    assert!(html.contains("data-disabled-unless=\"allow_private_messages\""));
+
+    let html = user1
+        .page("/u/user1/preferences/navigation-menu")
+        .await
+        .html;
+    assert!(html.contains("data-pref=\"sidebar_link_to_filtered_list\""));
+    let attrs = save_attrs(&html);
+    assert_eq!(attrs["sidebar_show_count_of_new_items"], false);
+}
+
+#[tokio::test]
+async fn the_email_page_changes_or_adds_an_address() {
+    let (db, mut user1) = client("user1").await;
+    let email: String =
+        sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = 3 AND \"primary\"")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    let html = user1.page("/u/user1/preferences/email").await.html;
+    assert!(html.contains("id=\"change-email\""));
+    assert!(html.contains(&format!("data-email-old=\"{email}\"")));
+    assert!(html.contains("data-email-new=\"false\""));
+    let html = user1.page("/u/user1/preferences/email?new=1").await.html;
+    assert!(html.contains("data-email-new=\"true\""));
+    assert!(html.contains("value=\"\" id=\"change-email\""));
+}
+
+#[tokio::test]
+async fn an_email_change_is_confirmed_from_the_new_address() {
+    let (db, mut user1) = client("user1").await;
+    let body = user1
+        .send(
+            Method::PUT,
+            "/u/user1/preferences/email.json",
+            "email=changed%40example.com",
+        )
+        .await;
+    // UsersEmailController#update renders an empty body.
+    assert_eq!(body, "");
+    let args: serde_json::Value = sqlx::query_scalar(
+        "SELECT args FROM discourse_rs.jobs WHERE name = 'critical_user_email' ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(args["type"], "confirm_new_email");
+    assert_eq!(args["to_address"], "changed@example.com");
+    let token = args["email_token"].as_str().unwrap().to_string();
+
+    let page = user1.page(&format!("/u/confirm-new-email/{token}")).await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.html.contains("class=\"confirm-new-email\""));
+    assert!(page.html.contains("changed@example.com"));
+    let json = user1
+        .send(
+            Method::GET,
+            &format!("/u/confirm-new-email/{token}.json"),
+            "",
+        )
+        .await;
+    let json: serde_json::Value = serde_json::from_str(&json).unwrap();
+    assert_eq!(json["new_email"], "changed@example.com");
+
+    let body = user1
+        .send(
+            Method::PUT,
+            &format!("/u/confirm-new-email/{token}.json"),
+            "",
+        )
+        .await;
+    assert_eq!(body, "{\"success\":\"OK\"}");
+    let primary: String =
+        sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = 3 AND \"primary\"")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(primary, "changed@example.com");
+    // The token is spent.
+    let again = user1
+        .send(
+            Method::PUT,
+            &format!("/u/confirm-new-email/{token}.json"),
+            "",
+        )
+        .await;
+    assert!(!again.contains("success"));
 }

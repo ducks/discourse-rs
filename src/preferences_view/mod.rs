@@ -10,9 +10,14 @@
 //! static/js/preferences.js, which updates it from the controls and puts
 //! it to /u/:username.json.
 
+pub mod email;
+pub mod emails;
 pub mod interface;
+pub mod navigation_menu;
 pub mod notifications;
 pub mod profile;
+pub mod tracking;
+pub mod users;
 
 use serde_json::{Map, Value, json};
 
@@ -497,7 +502,7 @@ pub(crate) fn combo(cx: &ListContext, c: &Combo) -> String {
 /// DSaveControls
 pub(crate) fn save_controls(cx: &ListContext) -> String {
     format!(
-        "<div class=\"controls save-button\"><button class=\"btn btn-text btn-primary save-changes\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div>",
+        "<div class=\"controls save-button\"><button class=\"btn btn-primary save-changes\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div>",
         escape(&t(cx, "save"))
     )
 }
@@ -605,6 +610,8 @@ pub fn account(p: &Prefs, a: &Account) -> Result<(String, Map<String, Value>), A
                     "primary": t(cx, "user.email.primary_label"),
                     "unconfirmed": t(cx, "user.email.unconfirmed_label"),
                     "instructions": t(cx, "user.email.instructions"),
+                    "resending": t(cx, "user.email.resending_label"),
+                    "resent": t(cx, "user.email.resent_label"),
                 })
                 .to_string()
             ),
@@ -838,7 +845,7 @@ fn emails(p: &Prefs, email: &str) -> Result<String, AppError> {
             }
             if !confirmed {
                 out.push_str(&format!(
-                    "<span class=\"unconfirmed\">{}</span> &bull; <button class=\"resend-email-confirmation\" type=\"button\" data-unported=\"resending an email confirmation (193d)\">{}</button>",
+                    "<span class=\"unconfirmed\">{}</span> &bull; <button class=\"resend-email-confirmation\" type=\"button\">{}</button>",
                     escape(&t(cx, "user.email.unconfirmed_label")),
                     escape(&t(cx, "user.email.resend_label"))
                 ));

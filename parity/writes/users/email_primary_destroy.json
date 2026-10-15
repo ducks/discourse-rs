@@ -1,0 +1,317 @@
+{
+  "name": "email_primary_destroy",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/primary-email.json",
+      "params": {
+        "email": "user1@example.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/primary-email.json",
+      "params": {
+        "email": "nobody@example.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/primary-email.json",
+      "params": {
+        "email": "user1-alt@example.com"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "user1-pending@example.com"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "user1-third@example.com"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "user1-alt@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T13:57:16.441118",
+  "transaction_started_at": "2026-10-15T13:57:14.499042",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 428,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "That email address is not associated with your account."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 428,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "email_change_requests": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "new_email": "user1-pending@example.com",
+          "old_email": null,
+          "created_at": "2026-10-01T10:00:00",
+          "updated_at": "2026-10-01T10:00:00",
+          "change_state": 2,
+          "new_email_token_id": null,
+          "old_email_token_id": null,
+          "requested_by_user_id": null
+        }
+      ],
+      "updated": []
+    },
+    "email_tokens": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 7,
+          "email": "user1@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 3,
+          "confirmed": true,
+          "created_at": "2026-07-25T05:59:16.439842",
+          "token_hash": "a1850705531b01be26574fee15e219f14079ed81331354da1e083a1cf5870d23",
+          "updated_at": "2026-07-25T05:59:16.439842"
+        },
+        {
+          "id": 8,
+          "email": "user1@example.com",
+          "scope": 1,
+          "expired": false,
+          "user_id": 3,
+          "confirmed": true,
+          "created_at": "2026-07-25T05:59:16.630359",
+          "token_hash": "aef12bbdfd65ce93826f4cfcf2bd5c01ade7239a9e22dfa1dc35501905657e70",
+          "updated_at": "2026-07-25T05:59:16.678851"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 190,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KvIHfL9ETBysU/QEH/iHZV0KI4A=",
+            "created_at": "2026-10-15T13:57:15.194766",
+            "rotated_at": "2026-10-15T13:57:15.192705",
+            "updated_at": "2026-10-15T13:57:15.194766",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KvIHfL9ETBysU/QEH/iHZV0KI4A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 190,
+            "seen_at": "2026-10-15T13:57:16.458696",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KvIHfL9ETBysU/QEH/iHZV0KI4A=",
+            "created_at": "2026-10-15T13:57:15.194766",
+            "rotated_at": "2026-10-15T13:57:15.192705",
+            "updated_at": "2026-10-15T13:57:15.194766",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KvIHfL9ETBysU/QEH/iHZV0KI4A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_emails": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 7,
+          "email": "user1-third@example.com",
+          "primary": false,
+          "user_id": 3,
+          "created_at": "2026-10-01T10:00:00",
+          "updated_at": "2026-10-01T10:00:00",
+          "normalized_email": "user1-third@example.com"
+        }
+      ],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "email": "user1@example.com",
+            "primary": true,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.2567",
+            "updated_at": "2026-07-25T05:59:16.539895",
+            "normalized_email": "user1@example.com"
+          },
+          "after": {
+            "id": 3,
+            "email": "user1@example.com",
+            "primary": false,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.2567",
+            "updated_at": "2026-10-15T13:57:16.574092",
+            "normalized_email": "user1@example.com"
+          }
+        },
+        {
+          "before": {
+            "id": 6,
+            "email": "user1-alt@example.com",
+            "primary": false,
+            "user_id": 3,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00",
+            "normalized_email": "user1-alt@example.com"
+          },
+          "after": {
+            "id": 6,
+            "email": "user1-alt@example.com",
+            "primary": true,
+            "user_id": 3,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-15T13:57:16.59035",
+            "normalized_email": "user1-alt@example.com"
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 89,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-15T13:57:16.599051",
+          "ip_address": null,
+          "updated_at": "2026-10-15T13:57:16.599051",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 3,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 90,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-15T13:57:16.6462",
+          "ip_address": null,
+          "updated_at": "2026-10-15T13:57:16.6462",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 3,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 90,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-15T13:57:16.687406",
+          "ip_address": null,
+          "updated_at": "2026-10-15T13:57:16.687406",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 3,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO user_emails (user_id, email, normalized_email, \"primary\", created_at, updated_at) VALUES (3, 'user1-alt@example.com', 'user1-alt@example.com', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 'user1-third@example.com', 'user1-third@example.com', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, change_state, created_at, updated_at) VALUES (3, NULL, 'user1-pending@example.com', 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "e5cdf35939e734323f3a4c9a259413e2cf6e5f176ba17507156fed2ddd9fb1b5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

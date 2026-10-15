@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/admin/preferences/email.json",
+      "params": {
+        "email": "admin-second@example.com"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/user1/preferences/email.json",
+      "params": {
+        "email": "user1-second@example.com"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

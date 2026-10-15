@@ -73,22 +73,27 @@ fn badge_span(list: &ListContext, category: &ListCategory, inside: &str) -> Stri
     }
 }
 
-fn row(list: &ListContext, c: &ChooserCategory, category: &ListCategory) -> String {
+pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCategory) -> String {
     let parent = category
         .parent_id
         .and_then(|p| list.categories.get(&p))
         .map(|p| badge_span(list, p, ""))
         .unwrap_or_default();
-    let count = format!(
-        "<span class=\"topic-count\" aria-label=\"{}\">× {}</span>",
-        escape(&t_count(
-            list,
-            "category_row.topic_count",
-            c.topic_count,
-            &[]
-        )),
-        c.topic_count
-    );
+    // categoryBadgeHTML's topicCount: none for an empty category.
+    let count = if c.topic_count == 0 {
+        String::new()
+    } else {
+        format!(
+            "<span class=\"topic-count\" aria-label=\"{}\">× {}</span>",
+            escape(&t_count(
+                list,
+                "category_row.topic_count",
+                c.topic_count,
+                &[]
+            )),
+            c.topic_count
+        )
+    };
     let desc = c
         .description_text
         .as_deref()

@@ -489,7 +489,7 @@ pub fn normalize_email(email: &str) -> String {
 }
 
 /// `EmailValidator.allowed?`
-fn email_allowed(settings: &SiteSettings, email: &str) -> Result<bool, AppError> {
+pub(crate) fn email_allowed(settings: &SiteSettings, email: &str) -> Result<bool, AppError> {
     let matches = |setting: &str| {
         let domains = setting.replace('.', "\\.");
         regex::RegexBuilder::new(&format!("@(.+\\.)?({domains})$"))

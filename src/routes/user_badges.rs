@@ -434,9 +434,16 @@ pub async fn put_user_tail(
     guardian: AuthGuardian,
     Path((username, rest)): Path<(String, String)>,
     headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
+    if let Some(endpoint) = super::users_email::Endpoint::from_tail("PUT", &rest) {
+        return super::users_email::handle(
+            state.0, guardian.0, username, endpoint, headers, peer, uri, body,
+        )
+        .await;
+    }
     match rest.as_str() {
         "preferences/badge_title" | "preferences/badge_title.json" => {
             badge_title(state, guardian, username, headers, uri, body).await

@@ -1250,18 +1250,17 @@ generate_theme_screenshot_thumbnails (171).
     second_factor.rs:102,112; routes/session_2fa.rs:84), the 2FA page's
     HTML (:64), password reset with second factors
     (routes/accounts.rs:580), the login-required 2FA redirect
-    (enforce_second_factor)
+    (enforce_second_factor), confirming an email change with second
+    factors (routes/users_email.rs:391)
 156. `feat/user-profile-rest` M: featured topics (users.rs:678;
     current_user.rs:709), the title, primary group and flair group
-    (user_updater.rs:296), tag tracking (:330), PUT /u's custom fields,
-    external ids, backgrounds, date of birth and sidebar links
-    (user_updater.rs's REFUSED), array options (:821), the ignore
-    notification level (routes/user_update.rs:265), another acting
-    user's notification level (:257), the profile page's public user
-    fields (87b), user tips and redirected_to_top
-    (current_user.rs:1191,1214). The keys a preferences tab saves go
-    with 193: the title, primary group and flair group with 193a, tag
-    tracking, sidebar links and the ignore level with 193d
+    (user_updater.rs:296), PUT /u's custom fields, external ids,
+    backgrounds and date of birth (user_updater.rs's REFUSED), array
+    options (:821), the profile page's public user fields (87b), user
+    tips and redirected_to_top (current_user.rs:1191,1214). The keys a
+    preferences tab saves go with 193: the title, primary group and
+    flair group with 193a; tag tracking, sidebar links, the ignore
+    level and another acting user's notification level are done (193d)
 157. `feat/groups-rest` M: group flair uploads (site.rs:721; groups.rs:32;
     routes/groups.rs:588; group_writes.rs:565;
     routes/admin_groups.rs:1175), group custom fields and associated
@@ -1699,7 +1698,8 @@ route table has been made, so this list may be short.
     choosing an avatar and removing a profile image (131), the user
     status (130), associated accounts and revoking them (191), exporting
     one's data (200), featuring a topic (156), the email change page and
-    the alternate emails' actions (193d), logging out a device (193e),
+    the alternate emails' actions (193d, since done), logging out a
+    device (193e),
     subscribing to push notifications (186), chat's notification sounds
     (162), choosing a theme or color palette (169), hiding composer
     toolbar buttons and the bio's rich editor (196, drawn in markdown
@@ -1733,12 +1733,25 @@ route table has been made, so this list may be short.
     resuming a message draft (the message composer, 196); the user
     topic lists' bulk select button is drawn without its actions, as on
     every topic list (183)
-    193d. `feat/user-pages-prefs-more` M: preferences emails (with the
-    email change page, /preferences/email, and the secondary emails'
-    menu), tracking (categories and tags; the tag tracking keys PUT /u
-    refuses), users (muted, ignored with its duration modal; the ignore
-    level users#notification_level refuses), navigation menu (sidebar
-    categories and tags; PUT /u's sidebar keys) and tags
+    193d. ~~`feat/user-pages-prefs-more`~~ (done) M: preferences emails
+    (chat's email frequency, the digest and mailing list controls), the
+    email change page (/preferences/email and ?new, validated and saved
+    as EmailController does), users_email's create, update, primary and
+    destroy (EmailUpdater: authorizing the old address for staff or
+    require_change_email_confirmation, the new one otherwise, the
+    critical_user_email confirm_old_email, confirm_new_email(_via_admin),
+    notify_old_email and account_exists mails with their To address,
+    the rate limits, the screened email Levenshtein check, user_updated
+    web hooks), the confirm-old-email and confirm-new-email pages and
+    their PUTs (automatic groups and the bounce score reset on
+    completion), the account tab's resend, make primary and remove
+    actions, tracking (the category and tag choosers, watched precedence
+    over muted; PUT /u's tag tracking keys), tags, users (muted users,
+    ignored users with the ignore duration modal and its time
+    shortcuts, the allowed PM users; users#notification_level's ignore
+    level and acting_user_id) and navigation menu (PUT /u's sidebar
+    keys). Refused, naming their items: confirming an email change with
+    second factors (155), finding the user by external id (191)
     193e. `feat/user-pages-prefs-security` M: preferences security
     (password reset request, the auth tokens and logging them out, user
     API keys), apps, calendar subscriptions, chat's tab; the second

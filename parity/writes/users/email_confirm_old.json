@@ -1,0 +1,352 @@
+{
+  "name": "email_confirm_old",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/confirm-old-email/known-token-193d.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/confirm-old-email/known-token-193d.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-old-email/known-token-193d.json"
+    }
+  ],
+  "started_at": "2026-10-15T13:57:09.435336",
+  "transaction_started_at": "2026-10-15T13:57:06.123216",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "new_email": "admin-added@example.com",
+        "old_email": null,
+        "token": "known-token-193d"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "email_change_requests": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "user_id": 1,
+            "new_email": "admin-added@example.com",
+            "old_email": null,
+            "created_at": "2026-10-15T13:57:06.123216",
+            "updated_at": "2026-10-15T13:57:06.123216",
+            "change_state": 1,
+            "new_email_token_id": null,
+            "old_email_token_id": 9601,
+            "requested_by_user_id": null
+          },
+          "after": {
+            "id": 1,
+            "user_id": 1,
+            "new_email": "admin-added@example.com",
+            "old_email": null,
+            "created_at": "2026-10-15T13:57:06.123216",
+            "updated_at": "2026-10-15T13:57:09.779072",
+            "change_state": 2,
+            "new_email_token_id": 13,
+            "old_email_token_id": 9601,
+            "requested_by_user_id": null
+          }
+        }
+      ]
+    },
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 1,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-15T13:57:09.941207",
+          "email_type": "confirm_new_email",
+          "message_id": "d3046831-4626-4923-ab9f-7d626e644fb2@localhost",
+          "to_address": "admin-added@example.com",
+          "updated_at": "2026-10-15T13:57:09.941207",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "admin-added@example.com",
+          "scope": 4,
+          "expired": false,
+          "user_id": 1,
+          "confirmed": false,
+          "created_at": "2026-10-15T13:57:09.765056",
+          "token_hash": "fcd431c8e80d51850d2488a905b4fabd12f4da8c85ee6981f12be4b8368a070c",
+          "updated_at": "2026-10-15T13:57:09.765056"
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9601,
+            "email": "admin@example.com",
+            "scope": 4,
+            "expired": false,
+            "user_id": 1,
+            "confirmed": false,
+            "created_at": "2026-10-15T13:57:06.123216",
+            "token_hash": "c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9",
+            "updated_at": "2026-10-15T13:57:06.123216"
+          },
+          "after": {
+            "id": 9601,
+            "email": "admin@example.com",
+            "scope": 4,
+            "expired": true,
+            "user_id": 1,
+            "confirmed": true,
+            "created_at": "2026-10-15T13:57:06.123216",
+            "token_hash": "c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9",
+            "updated_at": "2026-10-15T13:57:09.742667"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 190,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3IWRfWeVotras+OUNVVxoMpSOFE=",
+            "created_at": "2026-10-15T13:57:07.294695",
+            "rotated_at": "2026-10-15T13:57:07.29229",
+            "updated_at": "2026-10-15T13:57:07.294695",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3IWRfWeVotras+OUNVVxoMpSOFE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 190,
+            "seen_at": "2026-10-15T13:57:09.468068",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3IWRfWeVotras+OUNVVxoMpSOFE=",
+            "created_at": "2026-10-15T13:57:07.294695",
+            "rotated_at": "2026-10-15T13:57:07.29229",
+            "updated_at": "2026-10-15T13:57:07.294695",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3IWRfWeVotras+OUNVVxoMpSOFE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": "2026-10-15T13:57:06.123216",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "critical_user_email",
+      {
+        "to_address": "admin-added@example.com",
+        "type": "confirm_new_email",
+        "user_id": 1,
+        "email_token": "176dfcc2437f4a5f44f0f3c66c2fa4c5"
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_logs": 1,
+    "email_tokens": 13
+  },
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, token_hash, scope, expired, confirmed, created_at, updated_at) VALUES (9601, 1, 'admin@example.com', 'c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9', 4, FALSE, FALSE, now(), now())",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, old_email_token_id, change_state, created_at, updated_at) VALUES (1, NULL, 'admin-added@example.com', 9601, 1, now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "admin-added@example.com"
+        ],
+        [
+          "Message-ID",
+          "<d3046831-4626-4923-ab9f-7d626e644fb2@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Confirm your new email address"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ad0dbb5e407f_15cf3f28494c8"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Confirm your new email address for Discourse by clicking on the following link:\n\nhttp://localhost:3048/u/confirm-new-email/176dfcc2437f4a5f44f0f3c66c2fa4c5\n\nIf you did not request this change, please contact a [site admin](http://localhost:3048/about).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Confirm your new email address for Discourse by clicking on the following link:</p>\n<p><a href=\"http://localhost:3048/u/confirm-new-email/176dfcc2437f4a5f44f0f3c66c2fa4c5\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3048/u/confirm-new-email/176dfcc2437f4a5f44f0f3c66c2fa4c5</a></p>\n<p>If you did not request this change, please contact a <a href=\"http://localhost:3048/about\" style=\"text-decoration:none;font-weight:bold;color:#006699\">site admin</a>.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "1c75baf89ad3b278173e887fcd582e07d2452af6e519a5a5000344970eb12c4c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

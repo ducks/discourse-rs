@@ -1,14 +1,15 @@
 //! `UserUpdater#update` as UsersController#update calls it: the user's
 //! options (discourse-solved's and chat's included), profile (bio,
 //! location, website, the profile and card backgrounds), name, locale,
-//! title, primary and flair groups, category tracking, muted users and
+//! title, primary and flair groups, category and tag tracking, sidebar
+//! links, muted users and
 //! allowed PM senders, the notification schedule, with the model
 //! callbacks that follow (the bio cooked, the search index, the name
 //! change logged, the display name job, the title's badge, the profile's
 //! upload references and the schedule's do not disturb timings).
 //!
 //! Refused: what failing validations would answer (the errors JSON),
-//! external ids, date of birth, tag tracking, sidebar links, user status,
+//! external ids, date of birth, user status,
 //! uploads in the bio, and gravatar downloads.
 
 use serde_json::{Map, Value, json};
@@ -277,11 +278,6 @@ const REFUSED: &[(&str, &str)] = &[
         "date_of_birth",
         "updating the date of birth (discourse-cakeday, 202)",
     ),
-    (
-        "sidebar_category_ids",
-        "updating sidebar category links (156)",
-    ),
-    ("sidebar_tag_names", "updating sidebar tag links (156)"),
     ("status", "updating the user status (130)"),
 ];
 
@@ -638,8 +634,21 @@ pub async fn update(
                 batch_set_categories(&mut *conn, user.id, level, &ids).await?;
             }
         }
-        if TAG_NAMES.iter().any(|k| attrs.contains_key(*k)) {
-            return Err(Unsupported("updating tag tracking").into());
+        for (key, level) in TAG_NAMES
+            .iter()
+            .zip([WATCHING_FIRST_POST, WATCHING, TRACKING, MUTED])
+        {
+            if attrs.contains_key(*key) {
+                let names: Vec<String> = text(&attrs, key)
+                    .map(|v| {
+                        v.split(',')
+                            .filter(|n| !n.is_empty())
+                            .map(str::to_string)
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                tag_user_batch_set(&mut *conn, user.id, level, &names).await?;
+            }
         }
     }
 
@@ -691,6 +700,7 @@ pub async fn update(
         _ => None,
     };
     update_profile(&mut *conn, ctx, actor, user, &attrs).await?;
+    update_sidebar(&mut *conn, s, user, &attrs).await?;
 
     // user.save
     let old_name = user.name.clone().unwrap_or_default();
@@ -891,6 +901,197 @@ pub(crate) async fn after_save(
         Some(_) => {}
     }
     crate::posting::search_index::index_user(conn, s, user_id, username_lower, name).await
+}
+
+/// `TagUser.batch_set(user, level, tag_names)`: the names' tags (a
+/// synonym as its target) at the level, the level's others dropped.
+async fn tag_user_batch_set(
+    conn: &mut PgConnection,
+    user_id: i32,
+    level: i32,
+    names: &[String],
+) -> Result<(), AppError> {
+    let old_ids: Vec<i32> = sqlx::query_scalar(
+        "SELECT tag_id FROM tag_users WHERE user_id = $1 AND notification_level = $2",
+    )
+    .bind(user_id)
+    .bind(level)
+    .fetch_all(&mut *conn)
+    .await?;
+    let lower: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+    let found: Vec<(i32, Option<i32>)> =
+        sqlx::query_as("SELECT id, target_tag_id FROM tags WHERE lower(name) = ANY($1)")
+            .bind(&lower)
+            .fetch_all(&mut *conn)
+            .await?;
+    let mut tag_ids: Vec<i32> = Vec::new();
+    for (id, target) in found {
+        let id = target.unwrap_or(id);
+        if !tag_ids.contains(&id) {
+            tag_ids.push(id);
+        }
+    }
+    let mut changed = false;
+    if !tag_ids.is_empty() {
+        changed |= sqlx::query(
+            "UPDATE tag_users SET notification_level = $3 \
+             WHERE user_id = $1 AND tag_id = ANY($2) AND notification_level <> $3",
+        )
+        .bind(user_id)
+        .bind(&tag_ids)
+        .bind(level)
+        .execute(&mut *conn)
+        .await?
+        .rows_affected()
+            > 0;
+    }
+    let remove: Vec<i32> = old_ids
+        .iter()
+        .filter(|id| !tag_ids.contains(id))
+        .copied()
+        .collect();
+    if !remove.is_empty() {
+        sqlx::query(
+            "DELETE FROM tag_users WHERE user_id = $1 AND notification_level = $2 AND tag_id = ANY($3)",
+        )
+        .bind(user_id)
+        .bind(level)
+        .bind(&remove)
+        .execute(&mut *conn)
+        .await?;
+        changed = true;
+    }
+    // insert_all: duplicates skipped.
+    for id in tag_ids.iter().filter(|id| !old_ids.contains(id)) {
+        changed |= sqlx::query(
+            "INSERT INTO tag_users (user_id, tag_id, notification_level, created_at, updated_at) \
+             VALUES ($1, $2, $3, now(), now()) ON CONFLICT DO NOTHING",
+        )
+        .bind(user_id)
+        .bind(id)
+        .bind(level)
+        .execute(&mut *conn)
+        .await?
+        .rows_affected()
+            > 0;
+    }
+    if changed {
+        crate::tagging::auto_watch(&mut *conn, None, &[user_id]).await?;
+        crate::tagging::auto_track(&mut *conn, None, &[user_id]).await?;
+    }
+    Ok(())
+}
+
+/// SidebarSectionLinksUpdater: the user's links of a type made the given
+/// ids (none deletes them all).
+async fn update_section_links(
+    conn: &mut PgConnection,
+    user_id: i32,
+    linkable_type: &str,
+    ids: &[i32],
+) -> Result<(), sqlx::Error> {
+    if ids.is_empty() {
+        sqlx::query("DELETE FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = $2")
+            .bind(user_id)
+            .bind(linkable_type)
+            .execute(&mut *conn)
+            .await?;
+        return Ok(());
+    }
+    let existing: Vec<i32> = sqlx::query_scalar(
+        "SELECT linkable_id FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = $2",
+    )
+    .bind(user_id)
+    .bind(linkable_type)
+    .fetch_all(&mut *conn)
+    .await?;
+    let delete: Vec<i32> = existing
+        .iter()
+        .filter(|id| !ids.contains(id))
+        .copied()
+        .collect();
+    if !delete.is_empty() {
+        sqlx::query(
+            "DELETE FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = $2 AND linkable_id = ANY($3)",
+        )
+        .bind(user_id)
+        .bind(linkable_type)
+        .bind(&delete)
+        .execute(&mut *conn)
+        .await?;
+    }
+    let insert: Vec<i32> = ids
+        .iter()
+        .filter(|id| !existing.contains(id))
+        .copied()
+        .collect();
+    if !insert.is_empty() {
+        sqlx::query(
+            "INSERT INTO sidebar_section_links (user_id, linkable_type, linkable_id, created_at, updated_at) \
+             SELECT $1, $2, x, now(), now() FROM unnest($3::int[]) WITH ORDINALITY AS t(x, n) ORDER BY n \
+             ON CONFLICT DO NOTHING",
+        )
+        .bind(user_id)
+        .bind(linkable_type)
+        .bind(&insert)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
+/// The sidebar keys of UserUpdater#update: the categories the user may
+/// see (at most MAX_USER_CATEGORY_LINKS), the browsable tags.
+async fn update_sidebar(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    user: &Target,
+    attrs: &Map<String, Value>,
+) -> Result<(), AppError> {
+    let wants_categories = attrs.contains_key("sidebar_category_ids");
+    let wants_tags = attrs.contains_key("sidebar_tag_names") && s.get("tagging_enabled")?.truthy();
+    if !wants_categories && !wants_tags {
+        return Ok(());
+    }
+    let list = |key: &str| -> Vec<String> {
+        attrs
+            .get(key)
+            .and_then(Value::as_array)
+            .map(|items| items.iter().filter_map(params::scalar).collect())
+            .unwrap_or_default()
+    };
+    let session_user = crate::session::current::SessionUser::load(&mut *conn, user.id)
+        .await?
+        .ok_or(Unsupported("a user that vanished"))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &session_user).await?;
+    if wants_categories {
+        let given: Vec<i32> = list("sidebar_category_ids")
+            .iter()
+            .map(|v| crate::ruby::to_i(v) as i32)
+            .collect();
+        let allowed = guardian.allowed_category_ids(&mut *conn, s).await?;
+        let mut ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT id FROM categories WHERE id = ANY($1) AND id = ANY($2) ORDER BY id",
+        )
+        .bind(&given)
+        .bind(&allowed)
+        .fetch_all(&mut *conn)
+        .await?;
+        ids.truncate(100);
+        update_section_links(&mut *conn, user.id, "Category", &ids).await?;
+    }
+    if wants_tags {
+        let names = list("sidebar_tag_names");
+        let visible = crate::tags::visible_tags_where(&guardian, s)?;
+        let ids: Vec<i32> = sqlx::query_scalar(&format!(
+            "SELECT id FROM tags WHERE target_tag_id IS NULL AND name = ANY($1) AND {visible} ORDER BY id"
+        ))
+        .bind(&names)
+        .fetch_all(&mut *conn)
+        .await?;
+        update_section_links(&mut *conn, user.id, "Tag", &ids).await?;
+    }
+    Ok(())
 }
 
 /// `CategoryUser.batch_set(user, level, category_ids)`

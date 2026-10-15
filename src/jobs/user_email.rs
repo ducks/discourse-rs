@@ -82,7 +82,8 @@ async fn send_user_email(
     if !critical && s.get("disable_emails")?.to_s() == "yes" {
         return Ok(());
     }
-    let account = crate::email::account::template_for(email_type, true).is_some();
+    let account = crate::email::account::template_for(email_type, true).is_some()
+        || crate::email::account::plain_template(email_type).is_some();
     // Chat's UserNotifications#chat_summary.
     let chat_summary = email_type == "chat_summary";
     let digest = email_type == "digest";
@@ -94,7 +95,7 @@ async fn send_user_email(
         .and_then(Value::as_str)
         .filter(|a| !a.trim().is_empty())
         .map(str::to_string);
-    if given_address.is_some() && !chat_summary {
+    if given_address.is_some() && !chat_summary && !account {
         return Err(Unsupported("user_email with an address").into());
     }
     if !account && args.get("email_token").is_some() {
@@ -411,7 +412,15 @@ async fn send_user_email(
 }
 
 /// `EmailLog::CRITICAL_EMAIL_TYPES` this port sends.
-const CRITICAL_EMAIL_TYPES: [&str; 2] = ["signup", "forgot_password"];
+const CRITICAL_EMAIL_TYPES: [&str; 7] = [
+    "signup",
+    "forgot_password",
+    "confirm_new_email",
+    "confirm_old_email",
+    "confirm_old_email_add",
+    "notify_old_email",
+    "notify_old_email_add",
+];
 
 /// The rest of message_for_email for an account email: the daily and
 /// bounce limits (critical types exempt), then the token template.
@@ -425,9 +434,11 @@ async fn account_email(
     user: &Recipient,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
-    let Some(token) = args.get("email_token").and_then(Value::as_str) else {
+    let plain = crate::email::account::plain_template(email_type);
+    let token = args.get("email_token").and_then(Value::as_str);
+    if plain.is_none() && token.is_none() {
         return Err(Unsupported("account emails without a token").into());
-    };
+    }
     let critical = CRITICAL_EMAIL_TYPES.contains(&email_type);
     let max = s.get("max_emails_per_day_per_user")?.to_i();
     if max > 0 && !critical {
@@ -466,9 +477,53 @@ async fn account_email(
             .bind(user_id)
             .fetch_one(&mut *conn)
             .await?;
-    let template = crate::email::account::template_for(email_type, has_password)
-        .ok_or(Unsupported("this email type"))?;
-    let built = crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?;
+    let mut built = match (plain, token) {
+        (Some((template, job_arg, template_arg)), _) => {
+            let value = if job_arg.is_empty() {
+                ""
+            } else {
+                args.get(job_arg).and_then(Value::as_str).unwrap_or("")
+            };
+            crate::email::account::build_with(
+                &mut *conn,
+                ctx,
+                template,
+                user_id,
+                template_arg,
+                value,
+            )
+            .await?
+        }
+        (None, Some(token)) => {
+            let mut template = crate::email::account::template_for(email_type, has_password)
+                .ok_or(Unsupported("this email type"))?;
+            // EmailChangeRequest.find_by_new_token: an admin's request for
+            // someone else names the admin.
+            if email_type == "confirm_new_email" {
+                let by_admin: Option<bool> = sqlx::query_scalar(
+                    "SELECT COALESCE(r.admin, FALSE) AND c.requested_by_user_id IS DISTINCT FROM c.user_id \
+                     FROM email_change_requests c \
+                     JOIN email_tokens t ON t.id = c.new_email_token_id \
+                     LEFT JOIN users r ON r.id = c.requested_by_user_id \
+                     WHERE t.token_hash = $1 ORDER BY c.id DESC LIMIT 1",
+                )
+                .bind(crate::accounts::hash_token(token))
+                .fetch_optional(&mut *conn)
+                .await?;
+                if by_admin == Some(true) {
+                    template = "user_notifications.confirm_new_email_via_admin";
+                }
+            }
+            crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?
+        }
+        (None, None) => return Err(Unsupported("account emails without a token").into()),
+    };
+    // message.to = to_address
+    for (name, value) in built.message.headers.iter_mut() {
+        if name == "To" {
+            *value = to_address.to_string();
+        }
+    }
     sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {
