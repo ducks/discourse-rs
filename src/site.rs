@@ -606,15 +606,23 @@ impl Site<'_> {
         if !self.truthy("enable_simplified_category_creation")? {
             return Ok(());
         }
-        self.with_category_types(async |r, conn, _| {
-            for c in categories.iter_mut() {
-                if let Some(id) = c["id"].as_i64() {
-                    c["category_types"] = r.for_category(conn, id as i32).await?;
-                }
+        let ids: Vec<i32> = categories
+            .iter()
+            .filter_map(|c| c["id"].as_i64())
+            .map(|id| id as i32)
+            .collect();
+        let mut types = self
+            .with_category_types(async |r, conn, _| r.for_categories(conn, &ids).await)
+            .await?
+            .into_iter();
+        for c in categories.iter_mut() {
+            if c["id"].as_i64().is_some()
+                && let Some(t) = types.next()
+            {
+                c["category_types"] = t;
             }
-            Ok(())
-        })
-        .await
+        }
+        Ok(())
     }
     /// Site.json_for's login_required branch (site.rb:245-268).
     async fn login_required_json(&mut self) -> Result<Value, SiteError> {

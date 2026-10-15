@@ -7,6 +7,8 @@
 //! content localization, and category descriptions with markup beyond
 //! plain paragraphs (ExcerptParser), which are refused.
 
+use std::collections::HashMap;
+
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
@@ -196,6 +198,20 @@ impl Categories<'_> {
             REGULAR
         };
 
+        // `can_vote` and the category images, for every category at once.
+        let voting: Vec<i32> = if crate::plugins::topic_voting::enabled(self.settings)? {
+            sqlx::query_scalar(
+                "SELECT DISTINCT category_id FROM topic_voting_category_settings \
+                 WHERE category_id = ANY($1)",
+            )
+            .bind(&visible_ids)
+            .fetch_all(&mut *self.conn)
+            .await?
+        } else {
+            Vec::new()
+        };
+        let uploads = self.uploads_for(&visible).await?;
+
         let mut out = Vec::with_capacity(visible.len());
         for category in visible {
             // Children of a hidden parent are dropped.
@@ -204,9 +220,14 @@ impl Categories<'_> {
             {
                 continue;
             }
-            let mut json = self
-                .serialize(category, tagging, &form_templates, &tag_groups)
-                .await?;
+            let mut json = self.serialize(
+                category,
+                tagging,
+                &form_templates,
+                &tag_groups,
+                voting.contains(&category.id),
+                &uploads,
+            )?;
             let level = notification_levels
                 .iter()
                 .find(|(id, _)| *id == i64::from(category.id))
@@ -274,14 +295,19 @@ impl Categories<'_> {
     /// SiteCategorySerializer as cached by Site.all_categories_cache (no
     /// scope), in attribute order. notification_level, has_children and
     /// can_edit are filled in by for_site.
-    async fn serialize(
-        &mut self,
+    fn serialize(
+        &self,
         c: &CategoryRow,
         tagging: bool,
         form_templates: &[(i32, i32)],
         tag_groups: &[(i32, i32)],
+        can_vote: bool,
+        uploads: &HashMap<i32, Value>,
     ) -> Result<Map<String, Value>, CategoriesError> {
-        let mut out = self.basic_fields(c).await?;
+        let mut out = self.basic_fields_without_votes(c)?;
+        if can_vote {
+            out.insert("can_vote".into(), json!(true));
+        }
         // custom_fields: only present when plugins register category fields.
         if tagging {
             out.insert("allow_global_tags".into(), json!(c.allow_global_tags));
@@ -313,7 +339,10 @@ impl Categories<'_> {
         // Filled in by Site (crate::category_types) when
         // enable_simplified_category_creation is on.
         out.insert("category_types".into(), json!({}));
-        self.uploads(&mut out, c).await?;
+        for (key, upload_id) in upload_ids(c) {
+            let upload = upload_id.and_then(|id| uploads.get(&id).cloned());
+            out.insert(key.into(), upload.unwrap_or(Value::Null));
+        }
         Ok(out)
     }
 
@@ -323,15 +352,40 @@ impl Categories<'_> {
         out: &mut Map<String, Value>,
         c: &CategoryRow,
     ) -> Result<(), CategoriesError> {
-        for (key, upload_id) in [
-            ("uploaded_logo", c.uploaded_logo_id),
-            ("uploaded_logo_dark", c.uploaded_logo_dark_id),
-            ("uploaded_background", c.uploaded_background_id),
-            ("uploaded_background_dark", c.uploaded_background_dark_id),
-        ] {
+        for (key, upload_id) in upload_ids(c) {
             out.insert(key.into(), self.upload(upload_id).await?);
         }
         Ok(())
+    }
+
+    /// CategoryUploadSerializer for the images of every category, by
+    /// upload id.
+    async fn uploads_for(
+        &mut self,
+        categories: &[&CategoryRow],
+    ) -> Result<HashMap<i32, Value>, CategoriesError> {
+        let ids: Vec<i32> = categories
+            .iter()
+            .flat_map(|c| upload_ids(c).map(|(_, id)| id))
+            .flatten()
+            .collect();
+        if ids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let rows: Vec<(i32, String, Option<i32>, Option<i32>)> =
+            sqlx::query_as("SELECT id, url, width, height FROM uploads WHERE id = ANY($1)")
+                .bind(&ids)
+                .fetch_all(&mut *self.conn)
+                .await?;
+        Ok(rows
+            .into_iter()
+            .map(|(id, url, width, height)| {
+                (
+                    id,
+                    json!({"id": id, "url": url, "width": width, "height": height}),
+                )
+            })
+            .collect())
     }
 
     /// BasicCategorySerializer's attributes through
@@ -339,6 +393,21 @@ impl Categories<'_> {
     /// has_children left null for the caller to fill.
     pub(crate) async fn basic_fields(
         &mut self,
+        c: &CategoryRow,
+    ) -> Result<Map<String, Value>, CategoriesError> {
+        let mut out = self.basic_fields_without_votes(c)?;
+        // discourse-topic-voting: `can_vote` on a voting category.
+        if crate::plugins::topic_voting::enabled(self.settings)?
+            && crate::plugins::topic_voting::category_votes(&mut *self.conn, c.id).await?
+        {
+            out.insert("can_vote".into(), json!(true));
+        }
+        Ok(out)
+    }
+
+    /// basic_fields but `can_vote`, which follows them.
+    fn basic_fields_without_votes(
+        &self,
         c: &CategoryRow,
     ) -> Result<Map<String, Value>, CategoriesError> {
         let uncategorized =
@@ -433,12 +502,6 @@ impl Categories<'_> {
             "navigate_to_first_post_after_read".into(),
             json!(c.navigate_to_first_post_after_read),
         );
-        // discourse-topic-voting: `can_vote` on a voting category.
-        if crate::plugins::topic_voting::enabled(self.settings)?
-            && crate::plugins::topic_voting::category_votes(&mut *self.conn, c.id).await?
-        {
-            out.insert("can_vote".into(), json!(true));
-        }
         Ok(out)
     }
 
@@ -459,6 +522,17 @@ impl Categories<'_> {
             None => Value::Null,
         })
     }
+}
+
+/// The four category images' keys and upload ids.
+fn upload_ids(c: &CategoryRow) -> impl Iterator<Item = (&'static str, Option<i32>)> {
+    [
+        ("uploaded_logo", c.uploaded_logo_id),
+        ("uploaded_logo_dark", c.uploaded_logo_dark_id),
+        ("uploaded_background", c.uploaded_background_id),
+        ("uploaded_background_dark", c.uploaded_background_dark_id),
+    ]
+    .into_iter()
 }
 
 /// `ERB::Util.html_escape`
