@@ -77,10 +77,25 @@ pub async fn show(
     let base_path = state.config.globals.relative_url_root().to_string();
     let categories = crate::topic_list_view::categories(&mut conn).await?;
 
+    // The tag page passes its tag's id (Tag#searchContext's id, which the
+    // mobile search link carries); the menu names it (its `name`).
+    let tag_name: Option<String> =
+        match (params.context_type.as_deref(), params.context_id.as_deref()) {
+            (Some("tag"), Some(id)) => match id.parse::<i32>() {
+                Ok(id) => {
+                    sqlx::query_scalar("SELECT name FROM tags WHERE id = $1")
+                        .bind(id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                }
+                Err(_) => None,
+            },
+            _ => None,
+        };
     let context = match (params.context_type.as_deref(), params.context_id.as_deref()) {
         (Some("topic"), Some(id)) => id.parse().ok().map(PageContext::Topic),
         (Some("category"), Some(id)) => id.parse().ok().map(PageContext::Category),
-        (Some("tag"), Some(id)) => Some(PageContext::Tag(id.to_string())),
+        (Some("tag"), Some(_)) => tag_name.map(PageContext::Tag),
         (Some("user"), Some(id)) => Some(PageContext::User(id.to_string())),
         (Some("private_messages"), Some(id)) => Some(PageContext::PrivateMessages(id.to_string())),
         _ => None,

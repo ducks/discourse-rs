@@ -399,6 +399,8 @@ pub async fn search_log_term(
         session_id: None,
         log: false,
         context: None,
+        search_for_id: false,
+        restrict_to_archetype: None,
     };
     let mut search = crate::search::Search {
         conn: &mut conn,

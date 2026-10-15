@@ -300,6 +300,20 @@ impl Search<'_> {
                     q.and(private_posts_for_user(id));
                 }
             }
+            Some(SearchContext::Category(id)) => {
+                let mut ids: Vec<i32> =
+                    sqlx::query_scalar("SELECT id FROM categories WHERE parent_category_id = $1")
+                        .bind(id)
+                        .fetch_all(&mut *self.conn)
+                        .await?;
+                ids.push(id);
+                q.and(format!("topics.category_id IN ({})", id_list(&ids)));
+            }
+            Some(SearchContext::Tag(id)) => {
+                q.join("LEFT JOIN topic_tags ON topic_tags.topic_id = topics.id");
+                q.join("LEFT JOIN tags ON tags.id = topic_tags.tag_id");
+                q.and(format!("tags.id = {id}"));
+            }
             None => {
                 if !run.category_filter_matched {
                     q.and(

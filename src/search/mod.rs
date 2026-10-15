@@ -8,6 +8,7 @@ pub mod blurb;
 mod dates;
 mod filters;
 mod posts_query;
+mod uri;
 
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -47,12 +48,14 @@ pub enum SearchError {
     Avatar(AvatarError),
     /// `Discourse::InvalidAccess`
     InvalidAccess,
+    Url(crate::url::UrlError),
 }
 
 impl std::fmt::Display for SearchError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SearchError::InvalidAccess => write!(f, "invalid access"),
+            SearchError::Url(e) => e.fmt(f),
             SearchError::Db(e) => write!(f, "database: {e}"),
             SearchError::Setting(e) => e.fmt(f),
             SearchError::Unsupported(e) => e.fmt(f),
@@ -105,6 +108,12 @@ impl From<TopicListError> for SearchError {
     }
 }
 
+impl From<crate::url::UrlError> for SearchError {
+    fn from(e: crate::url::UrlError) -> Self {
+        SearchError::Url(e)
+    }
+}
+
 impl From<AvatarError> for SearchError {
     fn from(e: AvatarError) -> Self {
         SearchError::Avatar(e)
@@ -140,6 +149,10 @@ pub struct SearchArgs {
     pub log: bool,
     /// The `search_context` the controller found.
     pub context: Option<SearchContext>,
+    /// `search_for_id`: a topic id or URL as the term finds that topic.
+    pub search_for_id: bool,
+    /// `restrict_to_archetype` for search_for_id's topic.
+    pub restrict_to_archetype: Option<String>,
 }
 
 /// `@search_context`
@@ -150,6 +163,10 @@ pub enum SearchContext {
     Topic(TopicContext),
     /// A user: their posts, or with private messages, their messages.
     User(i32),
+    /// A category: its topics and its subcategories' (one level).
+    Category(i32),
+    /// A tag: its topics.
+    Tag(i32),
 }
 
 impl SearchContext {
@@ -157,7 +174,7 @@ impl SearchContext {
     pub fn id(&self) -> i32 {
         match self {
             SearchContext::Topic(t) => t.id,
-            SearchContext::User(id) => *id,
+            SearchContext::User(id) | SearchContext::Category(id) | SearchContext::Tag(id) => *id,
         }
     }
 }
@@ -383,16 +400,10 @@ impl Search<'_> {
         };
         // prepare_data: squished (but in a topic), and URLs lose their
         // query string.
-        let mut term = match topic_context {
+        let mut term = uri::strip_url_queries(&match topic_context {
             Some(_) => adv.term.clone(),
             None => squish(&adv.term),
-        };
-        if term.split_whitespace().any(|w| {
-            w.trim_matches('"').starts_with("http://")
-                || w.trim_matches('"').starts_with("https://")
-        }) {
-            return Err(Unsupported("URLs in search terms (query string stripping)").into());
-        }
+        });
         // blurb_term is the term before prepare_data, blank or not.
         let blurb_term = adv.term.clone();
         let original_term = (!term.is_empty()).then(|| term.replace('\\', "\\\\"));
@@ -411,7 +422,7 @@ impl Search<'_> {
 
         // A topic's search keeps its short words (and searches the posts
         // even without any).
-        if topic_context.is_none() {
+        if !args.search_for_id && topic_context.is_none() {
             let min_length = self.settings.get("min_search_term_length")?.to_i().max(0) as usize;
             term = filter_short_terms(&term, min_length);
             if term.trim().is_empty() && adv.filters.is_empty() && adv.order.is_none() {
@@ -442,21 +453,42 @@ impl Search<'_> {
             limit,
             offset,
         };
+        // search_for_id: a topic's id or URL finds that topic.
+        if args.search_for_id
+            && matches!(
+                type_filter,
+                Some(TypeFilter::Topic | TypeFilter::PrivateMessages | TypeFilter::AllTopics)
+            )
+        {
+            let term = run.term.clone();
+            let id = if !term.is_empty() && term.bytes().all(|b| b.is_ascii_digit()) {
+                Some(crate::ruby::to_i(&term))
+            } else {
+                let hostname = self.urls.current_hostname()?;
+                uri::topic_id_for(&term, &hostname, self.base_path).filter(|id| *id > 0)
+            };
+            if let Some(id) = id {
+                self.single_topic(id, args.restrict_to_archetype.as_deref(), &mut results)
+                    .await?;
+            }
+        }
         // find_grouped_results rescues ActiveRecord::StatementInvalid: a
         // query Postgres rejects ends the search with what it found so far.
-        match self
-            .find_grouped_results(
-                type_filter,
-                &mut run,
-                original_term.as_deref(),
-                &mut results,
-            )
-            .await
-        {
-            Err(SearchError::Db(sqlx::Error::Database(e))) => {
-                tracing::warn!("search query failed: {e}");
+        if results.posts.is_empty() {
+            match self
+                .find_grouped_results(
+                    type_filter,
+                    &mut run,
+                    original_term.as_deref(),
+                    &mut results,
+                )
+                .await
+            {
+                Err(SearchError::Db(sqlx::Error::Database(e))) => {
+                    tracing::warn!("search query failed: {e}");
+                }
+                other => other?,
             }
-            other => other?,
         }
         // add()'s limit trick: the extra row flips the flag.
         let cap = if full_page_limit {
@@ -494,6 +526,74 @@ impl Search<'_> {
             )
             .await?,
         ))
+    }
+
+    /// `single_topic`: the topic's first post, of the archetype asked for,
+    /// when the viewer can see it.
+    async fn single_topic(
+        &mut self,
+        id: i64,
+        restrict_to_archetype: Option<&str>,
+        results: &mut Results,
+    ) -> Result<(), SearchError> {
+        let Ok(id) = i32::try_from(id) else {
+            return Ok(());
+        };
+        let post_id: Option<i32> = match restrict_to_archetype.filter(|a| !a.is_empty()) {
+            Some(archetype) => {
+                let archetype = if archetype == "regular" {
+                    "regular"
+                } else {
+                    "private_message"
+                };
+                sqlx::query_scalar(
+                    "SELECT posts.id FROM posts \
+                     INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id \
+                     WHERE posts.deleted_at IS NULL AND topics.id = $1 AND topics.archetype = $2 \
+                     AND posts.post_number = 1 LIMIT 1",
+                )
+                .bind(id)
+                .bind(archetype)
+                .fetch_optional(&mut *self.conn)
+                .await?
+            }
+            None => {
+                sqlx::query_scalar(
+                    "SELECT id FROM posts WHERE posts.deleted_at IS NULL \
+                     AND posts.topic_id = $1 AND posts.post_number = 1 LIMIT 1",
+                )
+                .bind(id)
+                .fetch_optional(&mut *self.conn)
+                .await?
+            }
+        };
+        let Some(post_id) = post_id else {
+            return Ok(());
+        };
+        let Some(post) = crate::topic_guardian::PostCtx::load(&mut *self.conn, post_id).await?
+        else {
+            return Ok(());
+        };
+        let topic_can_see = !self
+            .guardian
+            .can_see_topic_ids(&mut *self.conn, self.settings, &[id])
+            .await?
+            .is_empty();
+        if !self
+            .guardian
+            .can_see_post(self.settings, &post, topic_can_see)?
+        {
+            return Ok(());
+        }
+        results.posts = sqlx::query_as(
+            "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
+                    posts.like_count, psd.raw_data, psd.version \
+             FROM posts LEFT JOIN post_search_data psd ON psd.post_id = posts.id WHERE posts.id = $1",
+        )
+        .bind(post_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(())
     }
 
     /// `Topic.find_by(id:)` when the guardian can see it.

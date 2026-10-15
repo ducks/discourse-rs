@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=35&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=35&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=http%3A%2F%2Flocalhost%3A3050%2Ft%2Fparity-fixture-replies-and-posters%2F35&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=%2Ft%2Fx%2F38%2F2&type_filter=topic&search_for_id=true&restrict_to_archetype=regular"},
+    {"method": "GET", "path": "/search/query.json?term=42&type_filter=topic&search_for_id=true&restrict_to_archetype=regular"},
+    {"method": "GET", "path": "/search/query.json?term=42&type_filter=topic&search_for_id=true&restrict_to_archetype=private_message"},
+    {"method": "GET", "path": "/search/query.json?term=44&type_filter=private_messages&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=43&type_filter=all_topics&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=40&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=39&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=2&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=999&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=http%3A%2F%2Fother.example%2Ft%2Fx%2F35&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&type_filter=topic&search_for_id=true"},
+    {"method": "GET", "path": "/search/query.json?term=re&type_filter=topic&search_for_id=true"}
+  ]
+}

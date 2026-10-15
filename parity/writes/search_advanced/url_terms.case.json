@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE post_search_data SET search_data = search_data || to_tsvector('english', 'https://example.com/docs/page') WHERE post_id = 36"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Futm%3D1"},
+    {"method": "GET", "path": "/search/query.json?term=%22https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Fx%22"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20https%3A%2F%2Fexample.com%2Fdocs%2Fpage%23top"},
+    {"method": "GET", "path": "/search/query.json?term=http%3A%2F%2Fx.com%2Fa%7Cb%3Fc"},
+    {"method": "GET", "path": "/search.json?q=https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Fa%3Db"},
+    {"method": "GET", "path": "/search/query.json?term=https%3A%2F%2Fexample.com%2Fdocs%3Fx&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"}
+  ]
+}
