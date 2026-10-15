@@ -184,6 +184,12 @@ html:not(.composer-has-preview) .sidebar-wrapper .sidebar-container {
   gap: var(--d-sidebar-vertical-gap);
 }
 
+/* A collapsed section's links, which Ember doesn't render: hidden here,
+   whatever display the menus give them. */
+.sidebar-section-wrapper .sidebar-section-content[hidden] {
+  display: none;
+}
+
 /* sidebar-section-link.scss */
 :root {
   --d-sidebar-section-link-prefix-margin-right: var(--space-2);

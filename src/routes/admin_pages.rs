@@ -80,12 +80,14 @@ impl Shell {
         };
         // The admin route forces the admin panel (maybeForceAdminSidebar),
         // whatever navigation_menu says; the mobile view's header menu
-        // shows it too.
-        let (sidebar, hamburger) = if crate::mobile::mobile_view() {
-            (String::new(), crate::admin_view::hamburger(&cx, active)?)
-        } else {
-            (crate::admin_view::sidebar(&cx, active)?, String::new())
-        };
+        // shows it too, as does the narrow desktop view's toggle, whose
+        // sidebar is enabled but not shown.
+        let (sidebar, hamburger) =
+            if crate::mobile::mobile_view() || crate::mobile::narrow_desktop_view() {
+                (String::new(), crate::admin_view::hamburger(&cx, active)?)
+            } else {
+                (crate::admin_view::sidebar(&cx, active)?, String::new())
+            };
         site.chrome.use_admin_panel(sidebar, hamburger);
         Ok(Shell {
             settings,
