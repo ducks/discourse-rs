@@ -2,9 +2,8 @@
 //! WatchedWordGroup (their normalization, validations and saves), the
 //! staff action logs, and WatchedWordListSerializer.
 //!
-//! Refused: the tag action (topic tagging writes aren't ported), and
-//! admin regexps the port can't read as Ruby and JavaScript do (see
-//! `word_watcher`).
+//! Refused: admin regexps the port can't read as Ruby and JavaScript do
+//! (see `word_watcher`).
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -125,9 +124,6 @@ pub async fn create_or_update_word(
         row.html = true;
     }
     row.watched_word_group_id = group_id;
-    if row.action == TAG {
-        return Err(Unsupported("tag watched words (topic tagging writes)").into());
-    }
     // before_validation
     row.word = normalize_word(&row.word);
     if let Some(r) = row
@@ -190,6 +186,30 @@ pub async fn create_or_update_word(
             i18n,
             "activerecord.errors.models.watched_word.attributes.base.invalid_url",
         ));
+    }
+    // replacement_is_tag_list: existing tags, each named once.
+    if row.action == TAG {
+        let list: Vec<String> = match row.replacement.as_deref() {
+            // String#split(","): trailing empty pieces dropped.
+            Some(r) => {
+                let mut parts: Vec<String> = r.split(',').map(str::to_string).collect();
+                while parts.last().is_some_and(String::is_empty) {
+                    parts.pop();
+                }
+                parts
+            }
+            None => Vec::new(),
+        };
+        let found: i64 = sqlx::query_scalar("SELECT count(*) FROM tags WHERE name = ANY($1)")
+            .bind(&list)
+            .fetch_one(&mut *conn)
+            .await?;
+        if list.is_empty() || found == 0 || list.len() as i64 != found {
+            errors.push(t(
+                i18n,
+                "activerecord.errors.models.watched_word.attributes.base.invalid_tag_list",
+            ));
+        }
     }
     if row.html
         && row
@@ -282,9 +302,6 @@ pub async fn create_group(
     html: bool,
 ) -> Result<Created, AppError> {
     let action = ww::action_id(action_key);
-    if action == Some(TAG) {
-        return Err(Unsupported("tag watched words (topic tagging writes)").into());
-    }
     let mut saved = Vec::new();
     let mut word_errors = Vec::new();
     for w in words {

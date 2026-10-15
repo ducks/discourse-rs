@@ -2,7 +2,7 @@
 //! everyone else 404s, as StaffConstraint has it).
 //!
 //! Refused: the CSV upload (its writes run deferred and report over
-//! MessageBus to the uploading client), and the tag action.
+//! MessageBus to the uploading client).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -64,9 +64,6 @@ pub async fn create(
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
-    if p.contains_key("replacement_tags") {
-        return Err(Unsupported("tag watched words (topic tagging writes)").into());
-    }
     // `opts.delete(:words)`, then `words.each`: no list is a NoMethodError.
     let words: Vec<String> = match p.get("words") {
         Some(Value::Array(list)) => list.iter().filter_map(crate::params::scalar).collect(),
@@ -75,7 +72,26 @@ pub async fn create(
     let Some(action_key) = crate::params::string(&p, "action_key") else {
         return Err(Unsupported("creating watched words without an action_key").into());
     };
-    let replacement = crate::params::string(&p, "replacement");
+    let mut replacement = crate::params::string(&p, "replacement");
+    // The tag action's replacement_tags: the names of the tags by id, then
+    // the new ones found or created (find_or_create_tags!), joined.
+    if crate::word_watcher::action_id(&action_key) == Some(crate::word_watcher::TAG)
+        && let Some(tags) = p.get("replacement_tags").filter(|v| !v.is_null())
+    {
+        let mut conn = state.pool.acquire().await?;
+        let s =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        match resolve_replacement_tags(&mut conn, &s, &state.i18n, &guardian, tags).await? {
+            Ok(names) => replacement = names,
+            Err(errors) => {
+                return Ok((
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    Json(json!({ "errors": errors, "error_type": "record_invalid" })),
+                )
+                    .into_response());
+            }
+        }
+    }
     // case_sensitive / html: Rails' boolean casting of the param.
     let case_sensitive = crate::params::string(&p, "case_sensitive").map(|v| truthy(&v));
     let html = crate::params::string(&p, "html").is_some_and(|v| truthy(&v));
@@ -113,6 +129,60 @@ pub async fn create(
         )
             .into_response()),
     }
+}
+
+/// `resolve_replacement_tags`: the tag objects' names (those with ids
+/// looked up, the others found or created as the staff member), joined
+/// with commas; None for none. Err with the errors of a tag Tag.create!
+/// refused.
+async fn resolve_replacement_tags(
+    conn: &mut sqlx::PgConnection,
+    s: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    guardian: &crate::guardian::Guardian,
+    tags: &Value,
+) -> Result<Result<Option<String>, Vec<String>>, AppError> {
+    // A form's numbered hash is read by its values.
+    let items: Vec<Value> = match tags {
+        Value::Array(items) => items.clone(),
+        Value::Object(map) => map.values().cloned().collect(),
+        _ => return Err(Unsupported("replacement_tags of another shape").into()),
+    };
+    if items.is_empty() {
+        return Ok(Ok(None));
+    }
+    let mut ids: Vec<i64> = Vec::new();
+    let mut new_names: Vec<String> = Vec::new();
+    for item in &items {
+        let Value::Object(t) = item else {
+            return Err(Unsupported("replacement_tags of another shape").into());
+        };
+        let id = t.get("id").and_then(crate::params::scalar);
+        match id.as_deref().filter(|i| !crate::ruby::is_blank(i)) {
+            Some(i) => ids.push(crate::ruby::to_i(i)),
+            None => {
+                if let Some(name) = t.get("name").and_then(crate::params::scalar) {
+                    new_names.push(name);
+                }
+            }
+        }
+    }
+    let ids: Vec<i32> = ids
+        .into_iter()
+        .filter_map(|i| i32::try_from(i).ok())
+        .collect();
+    let mut names: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM tags WHERE id = ANY($1) ORDER BY ctid")
+            .bind(&ids)
+            .fetch_all(&mut *conn)
+            .await?;
+    if !new_names.is_empty() {
+        match crate::tagging::find_or_create_tags(conn, s, i18n, guardian, &new_names).await? {
+            Ok(found) => names.extend(found.into_iter().map(|(_, n)| n)),
+            Err(errors) => return Ok(Err(errors)),
+        }
+    }
+    Ok(Ok(Some(names.join(","))))
 }
 
 /// ActiveModel's boolean cast: false for "false", "0", "f", "off" and

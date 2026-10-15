@@ -1,0 +1,21 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (2, 5, 3, now(), now()), (3, 5, 3, now(), now())"
+  ],
+  "settings": {
+    "create_tag_allowed_groups": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": ["kitten"],
+        "action_key": "tag",
+        "replacement_tags": [{"name": "brand-new"}, {"id": 2, "name": "guide"}]
+      }
+    }
+  ]
+}

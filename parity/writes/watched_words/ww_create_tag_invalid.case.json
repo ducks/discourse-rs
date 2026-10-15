@@ -1,0 +1,40 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": ["kitten"],
+        "action_key": "tag",
+        "replacement": "howto,no-such-tag"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": ["kitten"],
+        "action_key": "tag"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": ["kitten"],
+        "action_key": "tag",
+        "replacement": "howto,guide"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": ["puppy"],
+        "action_key": "tag",
+        "replacement_tags": [{"name": "none"}]
+      }
+    }
+  ]
+}

@@ -1522,7 +1522,7 @@ route table has been made, so this list may be short.
     ~~`feat/tags-writes-chooser`~~ (done) M (GET /tags/filter/search, Tags::Search
     with its required tag group and forbidden answers; the composer's
     mini-tag-chooser as Ember renders it on desktop and mobile, posting
-    its tags), 189c. `feat/tags-writes-watched-words` S (the tag action
+    its tags), 189c. ~~`feat/tags-writes-watched-words`~~ (done) S (the tag action
     in the admin's watched words: creating, listing and site.json
     (watched_words.rs:129,286; routes/admin_watched_words.rs:68)), 189d.
     `feat/tags-writes-admin` L (TagsController: update and rename with
