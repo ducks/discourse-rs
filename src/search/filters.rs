@@ -212,6 +212,99 @@ impl Search<'_> {
             .collect())
     }
 
+    /// `status:public`: the topics in categories everyone can read.
+    pub(super) async fn public_filter(&mut self, q: &mut Query) -> Result<(), SearchError> {
+        let ids: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM categories WHERE read_restricted = FALSE")
+                .fetch_all(&mut *self.conn)
+                .await?;
+        // An empty list is `IN (NULL)` to ActiveRecord.
+        let list = if ids.is_empty() {
+            "NULL".to_string()
+        } else {
+            ids.iter()
+                .map(i32::to_string)
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        q.and(format!("topics.category_id in ({list})"));
+        Ok(())
+    }
+
+    /// `filetypes:` a comma list of extensions: posts linking to such
+    /// files or with such uploads.
+    pub(super) fn filetypes_filter(&self, q: &mut Query, types: &str) {
+        let list = crate::ruby::split(types, ",")
+            .iter()
+            .map(|t| crate::user_search::quote(&t.to_lowercase()))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let list = if list.is_empty() {
+            "NULL".to_string()
+        } else {
+            list
+        };
+        q.and(format!(
+            "posts.id IN (SELECT post_id FROM topic_links WHERE extension IN ({list}) \
+             UNION SELECT upload_references.target_id FROM uploads \
+             JOIN upload_references ON upload_references.target_type = 'Post' \
+             AND upload_references.upload_id = uploads.id \
+             WHERE lower(uploads.extension) IN ({list}))"
+        ));
+    }
+
+    /// `locale:` none, any, or a language (its base, `pt` for `pt_BR`).
+    pub(super) fn locale_filter(&self, q: &mut Query, locale: &str) {
+        match locale.to_lowercase().as_str() {
+            "none" | "null" => q.and("posts.locale IS NULL"),
+            "any" | "present" => q.and("posts.locale IS NOT NULL"),
+            other => {
+                let normalized = other.replace('-', "_");
+                let base = normalized.split('_').next().unwrap_or("");
+                q.and(format!(
+                    "posts.locale LIKE {}",
+                    crate::user_search::quote(&format!("{base}%"))
+                ));
+            }
+        }
+    }
+
+    /// discourse-solved's `status:unsolved`: topics without an answer,
+    /// where answers are accepted (all topics, or the categories and tags
+    /// enabling them).
+    pub(super) async fn unsolved_filter(&mut self, q: &mut Query) -> Result<(), SearchError> {
+        q.and("topics.id NOT IN (SELECT topic_id FROM discourse_solved_solved_topics)");
+        if !self.settings.get("allow_solved_on_all_topics")?.truthy() {
+            let names: Vec<String> = self
+                .settings
+                .get("enable_solved_tags")?
+                .to_s()
+                .split('|')
+                .map(str::to_string)
+                .collect();
+            let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM tags WHERE name = ANY($1)")
+                .bind(&names)
+                .fetch_all(&mut *self.conn)
+                .await?;
+            let list = if ids.is_empty() {
+                "NULL".to_string()
+            } else {
+                ids.iter()
+                    .map(i32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            q.and(format!(
+                "topics.id IN (SELECT t.id FROM topics t JOIN category_custom_fields cc \
+                 ON t.category_id = cc.category_id AND cc.name = 'enable_accepted_answers' \
+                 AND cc.value = 'true') \
+                 OR topics.id IN (SELECT topic_id FROM topic_tags WHERE tag_id IN ({list}))"
+            ));
+        }
+        q.and("NOT (topics.archetype = 'private_message')");
+        Ok(())
+    }
+
     /// `badge:` a badge's name (ILIKE) or id: the posts of its holders.
     pub(super) async fn badge_filter(
         &mut self,

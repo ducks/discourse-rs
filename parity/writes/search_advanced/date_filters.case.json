@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20before%3A2026-10-01"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20after%3A2026-09-30"},
+    {"method": "GET", "path": "/search/query.json?term=after%3A2026-9-30"},
+    {"method": "GET", "path": "/search/query.json?term=before%3A2026-07-26"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20after%3A2026"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20before%3A2026-02-31"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20after%3A2026-13"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20after%3Asoon"},
+    {"method": "GET", "path": "/search/query.json?term=after%3A20"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20before%3Ayesterday"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20after%3Amonday"},
+    {"method": "GET", "path": "/search/query.json?term=after%3ASep"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20before%3Aaugust"},
+    {"method": "GET", "path": "/search.json?q=after%3A2026-10-01"}
+  ]
+}

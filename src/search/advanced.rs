@@ -367,41 +367,10 @@ fn unported_keyword(_word: &str) -> &'static str {
 /// The filters not ported yet, and why.
 fn unported_filter(filter: Filter) -> Option<&'static str> {
     match filter {
-        Filter::Category
-        | Filter::Hashtag
-        | Filter::At
-        | Filter::User
-        | Filter::CreatedBy
-        | Filter::Group
-        | Filter::Badge
-        | Filter::Tagged
-        | Filter::Untagged
-        | Filter::Bots
-        | Filter::Humans
-        | Filter::Whispers
-        | Filter::Regular
-        | Filter::First
-        | Filter::Replies
-        | Filter::Pinned
-        | Filter::Wiki
-        | Filter::Likes
-        | Filter::Bookmarks
-        | Filter::Posted
-        | Filter::Created
-        | Filter::WatchingTracking
-        | Filter::Seen
-        | Filter::Unseen
-        | Filter::Polls
-        | Filter::Tags
-        | Filter::NotTags => None,
         Filter::PersonalDirect | Filter::AllPms | Filter::GroupMessages => {
             Some("personal message searches (in:personal-direct, in:all-pms, group_messages:)")
         }
-        _ => Some(
-            "advanced search filters status:, posts_count:, min_posts:, max_posts:, \
-             min_views:, max_views:, min_vote_count:, with:images, filetypes:, before:, \
-             after: and locale:",
-        ),
+        _ => None,
     }
 }
 

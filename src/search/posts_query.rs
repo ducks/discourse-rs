@@ -101,6 +101,16 @@ impl Query {
     }
 }
 
+/// `match.to_i` of a digits capture, as ActiveRecord quotes the integer.
+fn int(digits: &str) -> String {
+    let trimmed = digits.trim_start_matches('0');
+    if trimmed.is_empty() {
+        "0".to_string()
+    } else {
+        trimmed.to_string()
+    }
+}
+
 /// `columns_for_distinct`: an ORDER BY term without its direction.
 fn without_direction(order: &str) -> String {
     let re = regex::Regex::new(r"(?i)\s+(?:ASC|DESC)\b").expect("static pattern");
@@ -377,6 +387,45 @@ impl Search<'_> {
                         q.join("INNER JOIN polls ON polls.post_id = posts.id");
                     }
                 }
+                Filter::StatusOpen => q.and("NOT topics.closed AND NOT topics.archived"),
+                Filter::StatusClosed => q.and("topics.closed"),
+                Filter::StatusPublic => self.public_filter(q).await?,
+                Filter::StatusArchived => q.and("topics.archived"),
+                Filter::StatusNoreplies => q.and("topics.posts_count = 1"),
+                Filter::StatusSingleUser => q.and("topics.participant_count = 1"),
+                Filter::PostsCount => q.and(format!("topics.posts_count = {}", int(&capture))),
+                Filter::MinPostCount | Filter::MinPosts => {
+                    q.and(format!("topics.posts_count >= {}", int(&capture)))
+                }
+                Filter::MaxPosts => q.and(format!("topics.posts_count <= {}", int(&capture))),
+                Filter::MinViews => q.and(format!("topics.views >= {}", int(&capture))),
+                Filter::MaxViews => q.and(format!("topics.views <= {}", int(&capture))),
+                Filter::MinVoteCount => q.and(format!(
+                    "(SELECT votes_count FROM topic_voting_topic_vote_count \
+                     WHERE topic_voting_topic_vote_count.topic_id = posts.topic_id) >= {}",
+                    int(&capture)
+                )),
+                Filter::WithImages => q.and("posts.image_upload_id IS NOT NULL"),
+                Filter::Filetypes => self.filetypes_filter(q, &capture),
+                Filter::Before | Filter::After => {
+                    match super::dates::word_to_date(&capture, crate::clock::now()) {
+                        Some(date) => q.and(format!(
+                            "posts.created_at {} '{}'",
+                            if filter == Filter::Before { "<" } else { ">" },
+                            date.format("%Y-%m-%d %H:%M:%S")
+                        )),
+                        None => q.none(),
+                    }
+                }
+                Filter::Locale => self.locale_filter(q, &capture),
+                Filter::Solved => {
+                    q.join(
+                        "INNER JOIN discourse_solved_solved_topics \
+                         ON discourse_solved_solved_topics.topic_id = topics.id",
+                    );
+                    q.and("NOT (topics.archetype = 'private_message')");
+                }
+                Filter::Unsolved => self.unsolved_filter(q).await?,
                 Filter::Tags => self.tags_filter(q, &capture, true).await?,
                 Filter::NotTags => self.tags_filter(q, &capture, false).await?,
                 _ => return Err(Unsupported("an advanced search filter not ported").into()),
@@ -597,27 +646,31 @@ impl Search<'_> {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<PostHit>, SearchError> {
+        // ActiveRecord's alias tracker renames an eager join whose table a
+        // string join already uses; these joins only load associations, so
+        // their own aliases leave the results as they are.
         let mut eager = vec![
             "LEFT OUTER JOIN categories categories_topics ON categories_topics.id = topics.category_id",
             "LEFT OUTER JOIN categories parent_categories_categories \
              ON parent_categories_categories.id = categories_topics.parent_category_id",
         ];
         if self.settings.get("tagging_enabled")?.truthy() {
-            eager.push("LEFT OUTER JOIN topic_tags ON topic_tags.topic_id = topics.id");
-            eager.push("LEFT OUTER JOIN tags ON tags.id = topic_tags.tag_id");
+            eager.push("LEFT OUTER JOIN topic_tags eager_topic_tags ON eager_topic_tags.topic_id = topics.id");
+            eager
+                .push("LEFT OUTER JOIN tags eager_tags ON eager_tags.id = eager_topic_tags.tag_id");
         }
         // discourse-solved's custom_topic_eager_load
         if self.settings.get("solved_enabled")?.truthy() {
             eager.push(
-                "LEFT OUTER JOIN discourse_solved_solved_topics \
-                 ON discourse_solved_solved_topics.topic_id = topics.id",
+                "LEFT OUTER JOIN discourse_solved_solved_topics eager_solved \
+                 ON eager_solved.topic_id = topics.id",
             );
             eager.push(
-                "LEFT OUTER JOIN discourse_solved_topic_answers \
-                 ON discourse_solved_topic_answers.solved_topic_id = discourse_solved_solved_topics.id",
+                "LEFT OUTER JOIN discourse_solved_topic_answers eager_answers \
+                 ON eager_answers.solved_topic_id = eager_solved.id",
             );
         }
-        eager.push("LEFT OUTER JOIN users ON users.id = posts.user_id");
+        eager.push("LEFT OUTER JOIN users eager_users ON eager_users.id = posts.user_id");
         let from_where = q.eager_from_where(&eager, extra_where);
         let order = if q.orders.is_empty() {
             String::new()
@@ -689,10 +742,19 @@ impl Search<'_> {
              JOIN post_search_data psd ON psd.post_id = posts.id \
              WHERE posts.deleted_at IS NULL ORDER BY x.row_number"
         );
-        let min_id = self
-            .settings
-            .get("search_recent_regular_posts_offset_post_id")?
-            .to_i();
+        // before: and after: search every post.
+        let dated = run
+            .adv
+            .filters
+            .iter()
+            .any(|(f, _)| matches!(f, Filter::Before | Filter::After));
+        let min_id = if dated {
+            0
+        } else {
+            self.settings
+                .get("search_recent_regular_posts_offset_post_id")?
+                .to_i()
+        };
         let parts: Vec<String> = if min_id > 0 {
             vec![
                 format!(" AND (post_search_data.post_id >= {min_id})"),

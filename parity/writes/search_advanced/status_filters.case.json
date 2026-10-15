@@ -1,0 +1,29 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE topics SET views = 10 WHERE id = 35",
+    "UPDATE topics SET views = 3 WHERE id = 38",
+    "UPDATE posts SET locale = 'pt_BR' WHERE id = 36",
+    "UPDATE posts SET image_upload_id = 1 WHERE id = 42"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Aopen"},
+    {"method": "GET", "path": "/search/query.json?term=status%3Aclosed"},
+    {"method": "GET", "path": "/search/query.json?term=status%3Apublic"},
+    {"method": "GET", "path": "/search/query.json?term=status%3Aarchived"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Anoreplies"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20status%3Asingle_user"},
+    {"method": "GET", "path": "/search/query.json?term=posts_count%3A5"},
+    {"method": "GET", "path": "/search/query.json?term=min_post_count%3A2"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20min_posts%3A02"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20max_posts%3A1"},
+    {"method": "GET", "path": "/search/query.json?term=min_views%3A3"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20max_views%3A3"},
+    {"method": "GET", "path": "/search/query.json?term=with%3Aimages"},
+    {"method": "GET", "path": "/search/query.json?term=filetypes%3Apdf%2Cpng"},
+    {"method": "GET", "path": "/search/query.json?term=locale%3Apt-PT"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20locale%3Anone"},
+    {"method": "GET", "path": "/search/query.json?term=locale%3Aany"},
+    {"method": "GET", "path": "/search.json?q=fixture%20status%3Aopen"}
+  ]
+}
