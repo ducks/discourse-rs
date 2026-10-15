@@ -3,7 +3,7 @@
 // order's term, the type and the context checkbox in the URL, swapped in
 // as a link's page is); the clear button empties the field; the types
 // switch the search; the sort order's ComboBox opens its rows and searches
-// in that order; the advanced filters' toggle opens and closes. Terms are
+// in that order (search-advanced.js runs the advanced filters). Terms are
 // highlighted in the results as HighlightSearch does (highlightHTML), and
 // DLoadMore's sentinel loads the next page of results as it comes into
 // view.
@@ -312,6 +312,10 @@
     var row = target.closest("#search-sort-by .select-kit-row");
     if (row) {
       document.getElementById("search-sort-by").open = false;
+      // setSortOrder searches without collapsing the advanced filters.
+      if (Discourse.searchAdvancedKeepOpen) {
+        Discourse.searchAdvancedKeepOpen();
+      }
       search({ order: ORDER_TERMS[row.dataset.value] || "" });
       return;
     }
@@ -348,16 +352,6 @@
       config.searchType = type.dataset.searchType;
       document.querySelector("input.search-query").focus();
       return;
-    }
-    var toggle = target.closest(".advanced-filters__toggle");
-    if (toggle) {
-      var expanded = toggle.getAttribute("aria-expanded") !== "true";
-      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-      toggle.parentNode.classList.toggle("--is-expanded", expanded);
-      var chevron = toggle.querySelector(".d-icon");
-      if (chevron) {
-        chevron.outerHTML = icon(expanded ? "chevron-up" : "chevron-down");
-      }
     }
   });
 })();

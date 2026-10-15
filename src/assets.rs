@@ -331,6 +331,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/search-page.js"),
     ),
     (
+        "search-advanced.js",
+        JS,
+        include_str!("../static/js/search-advanced.js"),
+    ),
+    (
         "search-menu.js",
         JS,
         include_str!("../static/js/search-menu.js"),

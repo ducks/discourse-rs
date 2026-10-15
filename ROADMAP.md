@@ -1169,7 +1169,7 @@ generate_theme_screenshot_thumbnails (171).
     (onebox/ruby_time.rs), Ruby's float printing
     (onebox/embed_engines.rs:271; onebox/generic.rs:97). Needs: 175 and
     176 for the URL and charset cases, network for the APIs
-143. `feat/search-advanced` L: advanced filters and keywords
+143. ~~`feat/search-advanced`~~ (done, 143a-i) L: advanced filters and keywords
     (search/mod.rs:292,298: `in:`, `status:`, `category:`, `#`, `@`,
     `tags:`, `before:`, `after:`, `order:`...), search contexts
     (routes/search.rs:348,522), search_for_id (:529),
@@ -1257,12 +1257,20 @@ generate_theme_screenshot_thumbnails (171).
     the directory is on, the viewer listed with their matches); the
     port's category page heading rule no longer styles the search
     page's headings
-    143i. `feat/search-advanced-panel` M: the full-page search's
-    advanced filters panel as Ember renders it (search-advanced-options:
-    the category and tag choosers, posted by, in, status, posted
-    before/after, views and posts counts), its terms written into the
-    search box and read back from it, the count of filters in use on
-    its toggle (94's leftover in 196)
+    143i. ~~`feat/search-advanced-panel`~~ (done) M: the full-page
+    search's advanced filters panel as Ember renders it
+    (SearchAdvancedOptions, static/js/search-advanced.js: the category
+    chooser, the tag chooser with "all the above tags", the topics/posts
+    multi-select, the status combo box with solved's statuses, the
+    posted-by user chooser, posted before/after with its date input,
+    the posts and views counts), its filters written into the search
+    term and read back from it (didReceiveAttrs, Ember's quirks kept),
+    the count of filters in use on its toggle, the panel kept open by a
+    sort order's search and closed by Enter and the Search button
+    (94's leftover in 196); the no-results "Perhaps start a new
+    topic?" link opening the composer for a new topic (createTopic).
+    Refused: the category chooser under
+    fixed_category_positions_on_create
 144. `feat/search-settings` M: search_ignore_accents (unaccent) and CJK
     tokenization, searching and indexing (search/mod.rs:542,555,559;
     posting/search_index.rs:267,275), use_pg_headlines_for_excerpt,
@@ -1888,8 +1896,8 @@ route table has been made, so this list may be short.
 196. `feat/client-rest` L: the client's leftovers named under done
     items: the rich editor (ProseMirror) and its toggle, the composer's
     actions, heading, list, options and emoji menus, the insert-date
-    modal (49, 96), the desktop header's search menu and the advanced
-    filters panel (94), the do not disturb and user status modals (95),
+    modal (49, 96), the desktop header's search menu (94; the advanced
+    filters panel was 143i), the do not disturb and user status modals (95),
     the drafts and post menus as sheets, the jump to post prompt (98),
     the topic map's menus, the footer's flag, mark unread and pinned
     buttons, the sidebar's header actions and Customize (milestone 4.5),

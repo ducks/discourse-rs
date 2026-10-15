@@ -1695,6 +1695,12 @@
   });
 
   // The preview's renderer for others: the insert date modal's preview.
+  // The composer service's open, for openers outside this file (the
+  // full-page search's "start a new topic").
+  Discourse.composerOpen = function (opts) {
+    open(opts);
+  };
+
   Discourse.composerCook = function (raw) {
     return loadRenderer().then(function (render) {
       return render(raw);

@@ -137,6 +137,7 @@ pub mod schema;
 pub mod schema_objects;
 pub mod screened;
 pub mod search;
+pub mod search_advanced_view;
 pub mod search_logs;
 pub mod search_menu_view;
 pub mod search_view;
