@@ -402,3 +402,110 @@ async fn a_users_admin_page() {
     let (status, _) = admin.page("/admin/users/3/user1/badges").await;
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
 }
+
+#[tokio::test]
+async fn the_site_settings_index_goes_to_required() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, location) = admin.page("/admin/site_settings").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/site_settings/category/required");
+    // The route's query rides along.
+    let (_, location) = admin.page("/admin/site_settings?filter=title").await;
+    assert_eq!(
+        location,
+        "/admin/site_settings/category/required?filter=title"
+    );
+    // The JSON stays the index's.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/site_settings", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"site_settings\":["), "{body}");
+    // AdminConstraint: only admins.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/site_settings/category/required")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn a_site_settings_category_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/site_settings/category/required").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>All site settings - Admin - "),
+        "{html}"
+    );
+    // The filter controls and the category nav, Required active.
+    assert!(html.contains("id=\"setting-filter\""));
+    assert!(html.contains("id=\"setting-filter-toggle-overridden\""));
+    assert!(html.contains(
+        "<a class=\"active required\" title=\"Required\" href=\"/admin/site_settings/category/required\">Required</a>"
+    ));
+    // Each setting's row: its form-kit control and description.
+    assert!(html.contains("data-setting=\"title\""));
+    assert!(html.contains(
+        "<input class=\"form-kit__control-input\" id=\"setting-title\" name=\"title\" value=\"Discourse\" type=\"text\">"
+    ));
+    assert!(html.contains("<select class=\"form-kit__control-select d-native-select\""));
+    assert!(html.contains("id=\"site-settings-strings\""));
+    assert!(html.contains("/site-settings.js"));
+    // The legacy editors: a simple list's values and a group list's names.
+    let (_, html) = admin.page("/admin/site_settings/category/basic").await;
+    assert!(
+        html.contains("<div class=\"simple-list value-list\">"),
+        "{html}"
+    );
+    assert!(html.contains("title=\"latest\" value=\"latest\""));
+    assert!(html.contains("class=\"select-kit single-select combobox combo-box add-value-input\""));
+    let (_, html) = admin.page("/admin/site_settings/category/posting").await;
+    assert!(html.contains("<span class=\"formatted-selection\">admins, moderators</span>"));
+    // Not ported yet, said in place.
+    let (_, html) = admin
+        .page("/admin/site_settings/category/all_results?filter=moderator_guide_topic")
+        .await;
+    assert!(
+        html.contains("Not ported yet: the topic setting editor."),
+        "{html}"
+    );
+}
+
+#[tokio::test]
+async fn the_site_settings_filters() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "short_site_description", 1, "A test forum").await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin
+        .page("/admin/site_settings/category/all_results?filter=contact")
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("data-setting=\"contact_email\""));
+    assert!(!html.contains("data-setting=\"title\""));
+    assert!(html.contains("value=\"contact\""));
+    // A category without a match goes to All.
+    let (status, location) = admin
+        .page("/admin/site_settings/category/posting?filter=contact_email")
+        .await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(
+        location,
+        "/admin/site_settings/category/all_results?filter=contact_email"
+    );
+    // Only the overridden ones, with their undo button.
+    let (_, html) = admin
+        .page("/admin/site_settings/category/all_results?onlyOverridden=true")
+        .await;
+    assert!(
+        html.contains("data-setting=\"short_site_description\""),
+        "{html}"
+    );
+    assert!(!html.contains("data-setting=\"title\""));
+    assert!(html.contains("setting-controls__undo"));
+}

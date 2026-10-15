@@ -656,7 +656,7 @@ then by what running a forum needs (milestone 6). Briefs:
     unsuspend, unsilence, clearing the penalty history, the primary
     group, impersonate, anonymize and delete working through the JSON
     endpoints, and the dialog service they confirm with. Refused: the
-    settings tab (AdminAreaSettings, 90g3), the user's badges and TL3
+    settings tab (AdminAreaSettings, 90g6), the user's badges and TL3
     requirements tabs. Left, saying so when used: the send invites
     modal, the user list export, the bulk suspend and delete
     confirmations, changing the username, revealing the email and the
@@ -665,11 +665,45 @@ then by what running a forum needs (milestone 6). Briefs:
     upcoming changes and merge modals, the custom groups' picker,
     deleting every post, the archive export, deleting the
     DiscourseConnect record),
-    90g3. `feat/admin-shell-site-settings` L (/admin/site_settings and
-    /admin/site_settings/category/:id: the categories, the filter, every
-    setting type's editor, saving through PUT /admin/site_settings, the
-    default and undo buttons; AdminAreaSettings, which the /admin/config
-    settings tabs reuse), 90g4. `feat/admin-shell-groups` S
+    90g3. ~~`feat/admin-shell-site-settings`~~ (done) L (/admin/site_settings
+    sent on to the Required category with its query; /admin/site_settings/
+    category/:id from the index's settings: the category nav (the
+    mobile view's menu toggle opening it in a DMenu), the filter
+    (SiteSettingFilter's name, keyword, description, value and fuzzy
+    matches, Only show overridden and dependsOn, a category without a
+    match going to All, the 100 results cap), each row with its staff
+    log link, description, theme, upcoming change and dependency notes
+    and dependents hidden until their parent is on; the form-kit editors
+    (input, email, number, password with its toggle, textarea, checkbox,
+    select with the none option as FKControlSelect adds it) and the
+    legacy ones: the group ComboBox, the simple list (its values, shift
+    and remove buttons, add input or the choices' ComboBox), ValueList
+    for list, url_list and value_list, the closed MultiSelects of the
+    compact, group, host and category lists, the tag chooser, the file
+    types list with its add types buttons and toast, the category
+    chooser, the font selector, the file size input with its unit, the
+    color input, the upload editor with its preview, lightbox and Delete,
+    the emoji list, the secret list, the uploaded image list's button;
+    editing tracks each setting against its value with the save, cancel
+    and undo controls and the changes banner, saving through PUT
+    /admin/site_settings/:id or, from the banner, PUT
+    /admin/site_settings/bulk_update (now ported: one transaction, the
+    write cases bulk_update and bulk_update_invalid), with the
+    requires_confirmation dialog and the backfill question's user count
+    first. Refused: the backfill question when users would change (its
+    modal), uploading a site setting file, the emoji picker on this page,
+    the editors of the locale_list, tag_group_list, topic, date and icon
+    settings and of the JSON and objects schema settings (their Edit
+    buttons), the List, UrlList and ValueList editing (Ember's ValueList
+    never hands the change back, so it can't be saved there either), the
+    secret list's editing, the uploaded image list's modal, the category,
+    MultiSelect list and tag pickers' dropdowns; saving any list type
+    still hits the server's refusal of list settings
+    (site_setting_update). Left: the category chooser's selected
+    category shows its name, not its badge; the font selector's fonts
+    are not drawn in their own font; AdminAreaSettings, which the users
+    settings tab and the /admin/config settings tabs reuse, comes with
+    90g6), 90g4. `feat/admin-shell-groups` S
     (/admin/groups and its settings tab), 90g5. `feat/admin-shell-reports-logs`
     M (/admin/reports and a report's page, /admin/logs: staff actions,
     screened emails, IPs and URLs, search logs and a term; email logs),

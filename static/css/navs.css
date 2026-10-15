@@ -200,3 +200,61 @@
     margin-right: 0;
   }
 }
+
+/* navs.scss: the stacked nav */
+.nav-stacked {
+  margin-left: 0;
+  list-style: none;
+  padding: 0;
+}
+
+.nav-stacked li a {
+  display: block;
+  text-decoration: none;
+}
+
+.nav-stacked li {
+  border-bottom: 1px solid var(--content-border-color);
+}
+
+.nav-stacked li:last-of-type {
+  border-bottom: 0;
+}
+
+.nav-stacked li.indent {
+  padding-left: 15px;
+}
+
+.nav-stacked a {
+  margin: 0;
+  padding: 0.75em;
+  line-height: var(--line-height-small);
+  cursor: pointer;
+  color: var(--primary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nav-stacked a:hover {
+  background: var(--d-sidebar-highlight-background);
+}
+
+.nav-stacked a.active {
+  color: var(--d-selected-text-color);
+  background-color: var(--d-selected);
+  font-weight: bold;
+  font-weight: var(--d-sidebar-active-font-weight);
+}
+
+.nav-stacked .count {
+  font-size: var(--font-down-1);
+}
+
+.nav-stacked .glyph {
+  font-size: var(--font-down-1);
+  width: 1.25em;
+  text-align: center;
+  margin-right: 0.25em;
+  line-height: var(--line-height-large);
+}

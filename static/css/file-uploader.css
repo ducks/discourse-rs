@@ -1,0 +1,221 @@
+/* The file uploader (components/file-uploader.scss and the rules naming
+   it or the pick files button) as Rails compiles it into common.css: the
+   admin site settings' upload editor; and the file size input. */
+
+.form-kit__control-image .file-uploader-preview {
+  max-width:100%;
+  width:100%;
+  margin:0;
+  border-radius:var(--d-input-border-radius);
+}
+.pick-files-button input[type=file] {
+  display:none;
+}
+.group-flair-inputs .file-uploader__preview {
+  height:75px;
+  width:275px;
+}
+.file-uploader {
+  display:flex;
+  flex-direction:column;
+}
+.file-uploader__restrictions {
+  font-size:var(--font-down-1);
+  color:var(--primary-medium);
+  margin-top:.25em;
+}
+.file-uploader__preview {
+  position:relative;
+  max-width:400px;
+  width:100%;
+  height:125px;
+  box-sizing:border-box;
+  border-radius:var(--d-input-border-radius);
+  background-origin:content-box;
+  background-clip:content-box;
+}
+.file-uploader__preview:has(.lightbox) {
+  height:85px;
+}
+.file-uploader__preview:focus,
+.file-uploader__preview:focus-within {
+  border-color:var(--tertiary);
+  outline:2px solid var(--tertiary);
+  outline-offset:-2px;
+}
+.file-uploader__preview:hover {
+  background-color:var(--tertiary-very-low);
+}
+.has-image .file-uploader__preview:hover,
+.has-file .file-uploader__preview:hover {
+  background-color:unset;
+}
+.no-image .file-uploader__preview,
+.no-file .file-uploader__preview {
+  position:relative;
+  border:1px dashed var(--primary-medium);
+  background-color:var(--primary-very-low);
+}
+.no-image .file-uploader__preview:hover,
+.no-file .file-uploader__preview:hover {
+  background-color:var(--tertiary-very-low);
+}
+.no-image .file-uploader__preview:focus,
+.no-image .file-uploader__preview:focus-within,
+.no-file .file-uploader__preview:focus,
+.no-file .file-uploader__preview:focus-within {
+  outline:2px dashed var(--tertiary);
+}
+.has-image .file-uploader__preview {
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:left center;
+  border:1px solid var(--primary-low-mid);
+  padding:var(--space-1);
+}
+.has-image .file-uploader__preview.--bg-size-cover {
+  background-size:cover;
+  background-position:center;
+}
+.has-file .file-uploader__preview {
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:left center;
+  border:1px solid var(--primary-low-mid);
+  padding:var(--space-1);
+}
+.has-file .file-uploader__preview:focus,
+.has-file .file-uploader__preview:focus-within {
+  border-color:var(--tertiary);
+  outline:2px solid var(--tertiary);
+  outline-offset:-2px;
+}
+.file-uploader__preview .file-info {
+  display:flex;
+  align-items:center;
+  gap:var(--space-3);
+  padding:var(--space-4);
+  background:var(--primary-very-low);
+  border-radius:var(--d-input-border-radius);
+  height:100%;
+  box-sizing:border-box;
+}
+.file-uploader__preview .file-info .file-icon {
+  color:var(--primary-medium);
+  font-size:var(--font-up-3);
+}
+.file-uploader__preview .file-info .file-details {
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-width:0;
+}
+.file-uploader__preview .file-info .file-details .file-name {
+  font-weight:500;
+  word-break:break-all;
+}
+.file-uploader__preview .file-info .file-details .file-size {
+  color:var(--primary-medium);
+  font-size:var(--font-down-1);
+}
+.file-uploader__preview .meta {
+  display:none;
+}
+.file-uploader__preview .expand-overlay {
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:30;
+  opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+}
+.file-uploader__preview:hover .expand-overlay,
+.file-uploader__preview:focus-within .expand-overlay {
+  opacity:1;
+  pointer-events:auto;
+}
+.file-uploader__progress-status {
+  position:absolute;
+  top:60%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width:90%;
+}
+.file-uploader__progress-status .progress-bar-container {
+  --d-border-radius: 10px;
+  background:var(--primary-low-mid);
+  border-radius:var(--d-border-radius);
+  height:5px;
+  position:relative;
+}
+.file-uploader__progress-status .progress-bar-container .progress-bar {
+  border-radius:var(--d-border-radius);
+  height:100%;
+  background:var(--tertiary);
+  transition:width .3s ease;
+  position:absolute;
+  left:0;
+  top:0%;
+}
+.file-uploader__progress-status span {
+  font-size:var(--font-down-2);
+  margin-top:8px;
+  display:block;
+  text-align:center;
+  color:var(--primary-high);
+}
+.file-uploader__controls {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100%;
+}
+.has-file .file-uploader__controls,
+.has-image .file-uploader__controls {
+  gap:var(--space-2);
+  margin-top:var(--space-2);
+  justify-content:flex-start;
+}
+.file-uploader__controls label {
+  display:flex;
+  font-weight:normal;
+  box-sizing:border-box;
+  color:var(--primary-very-high);
+  border-radius:var(--d-button-border-radius);
+  cursor:pointer;
+}
+.no-image .file-uploader__controls label,
+.no-file .file-uploader__controls label {
+  height:100%;
+  width:100%;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-1);
+  padding:var(--space-2);
+  white-space:normal;
+}
+.no-image .file-uploader__controls label:hover,
+.no-image .file-uploader__controls label:focus-visible,
+.no-file .file-uploader__controls label:hover,
+.no-file .file-uploader__controls label:focus-visible {
+  color:var(--primary-very-high);
+}
+
+/* components/file-size-input.scss */
+.file-size-picker {
+  display: flex;
+}
+
+.file-size-picker .file-size-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.file-size-picker .file-size-unit-selector {
+  flex: 0 0 8em;
+}
+
+.file-size-picker .select-kit .select-kit-header {
+  border-left: 0;
+}

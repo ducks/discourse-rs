@@ -51,6 +51,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/about.css"),
     include_str!("../static/css/d-page-header.css"),
     include_str!("../static/css/admin-kit.css"),
+    include_str!("../static/css/file-uploader.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),
@@ -208,6 +209,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "admin-user.js",
         JS,
         include_str!("../static/js/admin-user.js"),
+    ),
+    (
+        "site-settings.js",
+        JS,
+        include_str!("../static/js/site-settings.js"),
     ),
     ("dialog.js", JS, include_str!("../static/js/dialog.js")),
     (

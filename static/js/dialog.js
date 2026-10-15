@@ -97,7 +97,12 @@
       }
     });
     if (buttons[1]) {
-      buttons[1].addEventListener("click", close);
+      buttons[1].addEventListener("click", function () {
+        close();
+        if (options.didCancel) {
+          options.didCancel();
+        }
+      });
     }
     holder.querySelectorAll(".dialog-overlay, .dialog-close").forEach(function (el) {
       el.addEventListener("click", close);

@@ -331,7 +331,7 @@ pub async fn user_show(
 }
 
 /// GET /admin/users/settings: the users pages' settings tab, an
-/// AdminAreaSettings (90g3), not ported yet.
+/// AdminAreaSettings (90g6), not ported yet.
 pub async fn users_settings(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -352,6 +352,109 @@ pub async fn user_subpage(
         return Ok(r);
     }
     Err(crate::Unsupported("the admin user's badges and TL3 requirements pages").into())
+}
+
+/// GET /admin/site_settings: the index's JSON, else the first category's
+/// page (adminSiteSettings index replaces itself with `required`).
+pub async fn site_settings_root(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if wants_json(&uri, &headers) || !guardian.is_admin() {
+        return super::admin_site_settings::index(State(state), AuthGuardian(guardian), uri).await;
+    }
+    let base = state.config.globals.relative_url_root();
+    let query = uri.query().map(|q| format!("?{q}")).unwrap_or_default();
+    Ok(axum::response::Redirect::to(&format!(
+        "{base}/admin/site_settings/category/required{query}"
+    ))
+    .into_response())
+}
+
+/// GET /admin/site_settings/category/:category: the site settings page for
+/// the category, filtered by the route's query params; a category with no
+/// matching setting goes to All.
+pub async fn site_settings_category(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(category): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    // The site settings are under AdminConstraint.
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let mut filters = crate::admin_site_settings_view::Filters::default();
+    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
+        match k.as_ref() {
+            "filter" => filters.filter = v.into_owned(),
+            "onlyOverridden" => filters.only_overridden = v == "true",
+            "dependsOn" if !v.is_empty() => filters.depends_on = Some(v.into_owned()),
+            _ => {}
+        }
+    }
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        &state,
+        &guardian,
+        &headers,
+        "admin_all_site_settings",
+    )
+    .await?;
+    let (site_settings, default_theme) =
+        super::admin_site_settings::document(&mut conn, &state, &shell.settings).await?;
+    let categories = crate::admin_site_settings_view::filter(&site_settings, &filters);
+    let found = categories
+        .iter()
+        .any(|c| c.key == category && !c.settings.is_empty());
+    if !found && category != "all_results" {
+        let base = state.config.globals.relative_url_root();
+        let query = uri.query().map(|q| format!("?{q}")).unwrap_or_default();
+        return Ok(axum::response::Redirect::to(&format!(
+            "{base}/admin/site_settings/category/all_results{query}"
+        ))
+        .into_response());
+    }
+    // Site#groups for the group settings' chooser.
+    let groups: Vec<(i64, String)> =
+        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM groups ORDER BY name")
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .map(|(id, name)| (i64::from(id), name))
+            .collect();
+    let site_categories: Vec<(i64, String)> =
+        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM categories ORDER BY id")
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .map(|(id, name)| (i64::from(id), name))
+            .collect();
+    let cx = shell.cx(&state);
+    let page = crate::admin_site_settings_view::Page {
+        settings: &site_settings,
+        default_theme: &default_theme,
+        groups: &groups,
+        categories: &site_categories,
+        filters: &filters,
+        category: &category,
+    };
+    let content = crate::admin_site_settings_view::render(&cx, &page, &categories);
+    let main =
+        crate::admin_view::contents("admin-site-settings admin-site-settings-category", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.site_settings.title");
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "site-settings.js",
+        StatusCode::OK,
+    )
 }
 
 /// A request for JSON rather than a page: `.json`, XHR, or an Accept the
