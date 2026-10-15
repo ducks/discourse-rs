@@ -338,6 +338,9 @@ pub struct NewUpload<'a> {
     pub for_theme: bool,
     /// UploadCreator's `skip_validations`: saved without UploadValidator.
     pub skip_validations: bool,
+    /// `for_gravatar` with its `origin` (the gravatar's url): a png, jpeg
+    /// or gif is checked for its size only.
+    pub gravatar_origin: Option<&'a str>,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -526,8 +529,8 @@ pub async fn create(
     let id: i32 = sqlx::query_scalar(
         "INSERT INTO uploads (user_id, original_filename, filesize, sha1, url, extension, width, height, \
                               thumbnail_width, thumbnail_height, animated, \
-                              verification_status, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, '', $5, $6, $7, $8, $9, $10, 1, clock_timestamp(), clock_timestamp()) \
+                              verification_status, origin, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, '', $5, $6, $7, $8, $9, $10, 1, $11, clock_timestamp(), clock_timestamp()) \
          RETURNING id",
     )
     .bind(up.user_id)
@@ -540,6 +543,7 @@ pub async fn create(
     .bind(thumb.map(|t| t.0 as i32))
     .bind(thumb.map(|t| t.1 as i32))
     .bind(animated)
+    .bind(up.gravatar_origin.map(|o| o.chars().take(2000).collect::<String>()))
     .fetch_one(&mut *conn)
     .await?;
 
@@ -611,6 +615,22 @@ fn validate(
         .extension()
         .map(|e| e.to_string_lossy().to_string())
         .unwrap_or_default();
+    // for_gravatar and FileHelper.supported_gravatar_extensions: the
+    // image size only.
+    if up.gravatar_origin.is_some() && matches!(extension.as_str(), "jpg" | "jpeg" | "png" | "gif")
+    {
+        let max_bytes = s.get("max_image_size_kb")?.to_i() * 1024;
+        if filesize as i64 > max_bytes {
+            return Ok(vec![
+                i18n.t_with(
+                    "upload.images.too_large_humanized",
+                    &[("max_size", &human_size(max_bytes))],
+                )
+                .unwrap_or_default(),
+            ]);
+        }
+        return Ok(Vec::new());
+    }
     let authorized_setting = if up.for_theme {
         s.get("theme_authorized_extensions")?.to_s()
     } else if up.for_export {

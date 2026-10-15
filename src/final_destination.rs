@@ -254,6 +254,8 @@ pub enum Read {
     /// Nothing to read: an invalid or blocked address, a page that asked
     /// not to be oneboxed, an error, too many redirects.
     Nothing,
+    /// The last response's error status (4xx, 5xx).
+    Failed { status: u16 },
 }
 
 /// What `lookup_and_filter_ips` found.
@@ -628,7 +630,9 @@ impl Fetcher<'_> {
                 continue;
             }
             if !status.is_success() {
-                return Ok(Read::Nothing);
+                return Ok(Read::Failed {
+                    status: status.as_u16(),
+                });
             }
             let content_type = response
                 .headers()

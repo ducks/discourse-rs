@@ -729,6 +729,7 @@ pub(crate) async fn logs_markdown(
             for_private_message: false,
             for_export: true,
             for_theme: false,
+            gravatar_origin: None,
             skip_validations: false,
         },
     )

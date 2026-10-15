@@ -925,7 +925,7 @@ so a member can use the port without telling it from Rails. 188 topic
 edits (started), 189 tags writes (the composer refuses tags), 193 the
 user pages (preferences first, split 193a-f), 143 advanced search (the
 search menu's `#`, `@` and `in:` suggestions run searches the port
-refuses), 131 avatars.
+refuses), 131 avatars (done).
 Then 208 multisite, ahead of the other large items: its cost grows with
 every feature written against one AppState, and many forums in one
 process is the port's clearest win for self-hosting.
@@ -955,7 +955,6 @@ The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146), notify_post_revision (137),
 crawl_topic_link (127), index_category_for_search (144),
 rebake_quoted_posts_for_user (135), change_display_name (153),
-update_gravatar and create_avatar_thumbnails (131),
 pull_hotlinked_images and pull_user_profile_hotlinked_images (140),
 refresh_latest_new_feature (173), user_suspension_expired (151),
 generate_theme_screenshot_thumbnails (171).
@@ -1030,8 +1029,8 @@ generate_theme_screenshot_thumbnails (171).
     plugins/chat/direct_messages.rs:237; plugins/chat/membership.rs:128;
     plugins/chat/messages.rs:636; plugins/chat/channels.rs:654) and PUT
     /u's `status` (user_updater.rs's REFUSED)
-131. `feat/avatars` M: generated letter avatars (avatar.rs:134,
-    LetterAvatar), default_avatars and restrict_letter_avatar_colors
+131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
+    (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
     (user_updater.rs:554,556), random avatars at signup (signup.rs:406),
     system_user_avatar_template (site.rs:479), renaming or merging the
@@ -1062,10 +1061,16 @@ generate_theme_screenshot_thumbnails (171).
     the preferences account tab (selectable avatars, the system, gravatar
     and uploaded choices, AvatarUploader); the avatar routes skip
     login_required as Rails' controller does
-    131c. `feat/avatars-gravatar` M: UserAvatar#update_gravatar! and its
-    job, POST /user_avatar/:username/refresh_gravatar, the after_save
-    refresh_avatar paths that refuse gravatar downloads
-    (user_updater.rs), random selectable avatars at signup
+    131c. ~~`feat/avatars-gravatar`~~ (done) M: UserAvatar#update_gravatar!
+    (FileHelper.download through FinalDestination, the 404 that is no
+    error, the for_gravatar upload with its origin, the user's avatar
+    following the old gravatar) and Jobs::UpdateGravatar, POST
+    /user_avatar/:username/refresh_gravatar, after_save's refresh_avatar
+    (the missing avatar row made, the gravatar job enqueued), random
+    selectable avatars at signup. The success path is tested past the
+    download (gravatar is https only, which the replay's fixture server
+    is not); a gravatar the reference already holds becomes a new upload
+    here, the port's encoders giving the processed file another sha1
 132. `feat/title-emoji` S: unicode emoji in titles (posting/text.rs:283,
     performEmojiEscape; posting/validate.rs:741), emoji in a quoted
     topic's title (crates/markdown), the emoji shortcut regex's

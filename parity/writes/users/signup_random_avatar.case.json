@@ -1,0 +1,29 @@
+{
+  "settings": {
+    "selectable_avatars": "34|35",
+    "selectable_avatars_mode": "everyone"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "New Person",
+        "email": "new.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "newperson",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "ignore": [
+    "/changes/users/inserted/0/uploaded_avatar_id",
+    "/changes/user_avatars/inserted/0/custom_upload_id",
+    "/changes/upload_references/inserted/0/upload_id"
+  ]
+}

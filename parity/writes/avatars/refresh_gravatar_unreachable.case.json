@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "settings": {
+    "gravatar_base_url": "fixtures.localhost:8099",
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "requests": [
+    { "method": "POST", "path": "/user_avatar/user1/refresh_gravatar.json" },
+    { "method": "POST", "path": "/user_avatar/user2/refresh_gravatar.json" },
+    { "method": "POST", "path": "/user_avatar/nobody/refresh_gravatar.json" }
+  ]
+}

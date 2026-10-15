@@ -306,6 +306,82 @@ async fn local_letter_avatars_need_the_font() {
     std::fs::remove_dir_all(&dir).unwrap();
 }
 
+#[test]
+fn gravatar_hashes_are_of_the_trimmed_lowercased_email() {
+    assert_eq!(
+        discourse_rs::user_avatar::email_hash(" User1@Example.com "),
+        format!("{:x}", md5::compute("user1@example.com"))
+    );
+}
+
+/// UserAvatar#update_gravatar! past the download (which needs gravatar's
+/// https): the avatar upload made of it, cropped, with the url as its
+/// origin; the user's avatar follows when it was the old gravatar.
+#[tokio::test]
+async fn a_downloaded_gravatar_becomes_the_avatar_it_replaces() {
+    let db = TestDb::new().await;
+    let dir = scratch("gravatar");
+    let config = proxy_config("http://127.0.0.1:1", &dir);
+    let app = state(db.pool.clone(), config.clone()).await;
+    // user3 (id 5) shows its gravatar, upload 34.
+    sqlx::query("UPDATE users SET uploaded_avatar_id = 34 WHERE id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE user_avatars SET gravatar_upload_id = 34 WHERE user_id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/parity/writes/files/small.png"
+    ))
+    .unwrap();
+    let url = "https://www.gravatar.com/avatar/abc.png?s=288&d=404&reset_cache=x";
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &app.site_setting_defs,
+        &app.config.globals,
+    )
+    .await
+    .unwrap();
+    let user = discourse_rs::user_avatar::load_target(&mut conn, 5)
+        .await
+        .unwrap()
+        .unwrap();
+    discourse_rs::user_avatar::save_gravatar(
+        &app,
+        &mut conn,
+        &settings,
+        &user,
+        Some(34),
+        url,
+        &bytes,
+        ".png",
+    )
+    .await
+    .unwrap();
+    let (id, origin, width, name): (i32, Option<String>, i32, String) = sqlx::query_as(
+        "SELECT id, origin, width, original_filename FROM uploads ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(origin.as_deref(), Some(url));
+    assert_eq!(width, 288);
+    assert_eq!(name, "gravatar.png");
+    let (avatar, gravatar): (Option<i32>, Option<i32>) = sqlx::query_as(
+        "SELECT u.uploaded_avatar_id, a.gravatar_upload_id FROM users u \
+         JOIN user_avatars a ON a.user_id = u.id WHERE u.id = 5",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((avatar, gravatar), (Some(id), Some(id)));
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
 /// `/user_avatar`: an avatar upload's square thumbnail made on demand,
 /// another upload of the user's redirected to the current one, and the
 /// blank avatar for what is not one, as the reference answers.
