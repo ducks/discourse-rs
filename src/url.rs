@@ -51,11 +51,7 @@ impl Urls<'_> {
     pub fn current_hostname(&self) -> Result<String, UrlError> {
         Ok(match self.settings.get("force_hostname")?.presence() {
             Some(host) => host,
-            None => self
-                .config
-                .globals
-                .hostname(self.config.rails_env)
-                .to_string(),
+            None => self.config.hostname().to_string(),
         })
     }
 
@@ -178,7 +174,7 @@ mod tests {
 
     fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         Config {
-            database_url: String::new(),
+            site: Default::default(),
             bind: "127.0.0.1:0".parse().unwrap(),
             rails_env: env,
             unicorn_port: "3000".into(),

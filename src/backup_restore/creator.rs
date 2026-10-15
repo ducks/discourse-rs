@@ -151,7 +151,7 @@ pub(crate) fn database_args(state: &AppState) -> DbArgs {
     let database = opts.get_database().unwrap_or("discourse").to_string();
     DbArgs {
         args,
-        password: url_password(&state.config.database_url),
+        password: url_password(&state.config.site.database_url),
         database,
     }
 }

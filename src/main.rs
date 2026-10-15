@@ -1,13 +1,17 @@
 use std::error::Error;
 use std::process::ExitCode;
 use std::sync::Arc;
+use std::time::Duration;
 
+use axum::ServiceExt;
 use discourse_rs::config::Config;
 use discourse_rs::i18n::I18n;
+use discourse_rs::multisite::{self, Shared, Sites};
 use discourse_rs::site_settings::Definitions;
-use discourse_rs::{AppState, app, schema};
-use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::EnvFilter;
+
+/// How far apart the sites' workers first run the scheduled jobs.
+const STAGGER: Duration = Duration::from_secs(10);
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -32,38 +36,24 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
     tracing::info!(settings = site_setting_defs.len(), env = ?config.rails_env, "loaded site setting definitions");
-    // GlobalSetting db_pool's role: DISCOURSE_DB_POOL, else 10.
-    let pool_size = std::env::var("DISCOURSE_DB_POOL")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or(10);
-    // A request waits up to 5 s for a connection, ActiveRecord's
-    // checkout_timeout, rather than sqlx's 30.
-    let pool = PgPoolOptions::new()
-        .max_connections(pool_size)
-        .acquire_timeout(std::time::Duration::from_secs(5))
-        .connect(&config.database_url)
-        .await?;
 
-    let report = schema::verify(&mut *pool.acquire().await?).await?;
-    tracing::info!(
-        discourse = schema::discourse_commit(),
-        versions = report.expected,
-        "schema verified"
-    );
-    if !report.extra.is_empty() {
-        tracing::warn!(
-            count = report.extra.len(),
-            latest = report.extra.last().map(String::as_str),
-            "database has schema versions newer than the vendored structure.sql"
-        );
+    // multisite.yml, when DISCOURSE_MULTISITE_CONFIG_PATH names one.
+    let specs = match config.globals.get("multisite_config_path") {
+        Some(path) => {
+            let src = std::fs::read_to_string(path)
+                .map_err(|e| format!("DISCOURSE_MULTISITE_CONFIG_PATH {path}: {e}"))?;
+            Some(multisite::parse(&src)?)
+        }
+        None => None,
+    };
+    if let Some(spec) = specs.iter().flatten().next() {
+        return Err(format!(
+            "multisite.yml: site {}: only the default site is served yet",
+            spec.db
+        )
+        .into());
     }
 
-    discourse_rs::owned_schema::migrate(&pool).await?;
-    let bus = pg_bus::Bus::start(pool.clone(), discourse_rs::bus::config()).await?;
-
-    let listener = tokio::net::TcpListener::bind(config.bind).await?;
-    tracing::info!(addr = %config.bind, "listening");
     // Rails keeps secret_key_base in redis when it is not configured; a
     // process without one gets a random secret, so sessions work but do
     // not survive a restart and Rails cookies are unreadable.
@@ -78,66 +68,57 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
     let mailer = discourse_rs::email::Mailer::from_globals(&config.globals)?;
     tracing::info!(mailer = ?mailer, "outgoing mail");
-    let state = AppState {
-        anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
-        config: Arc::new(config),
+    let shared = Shared {
         site_setting_defs: Arc::new(site_setting_defs),
         i18n: Arc::new(i18n),
-        search_log_cache: Default::default(),
         keys: Arc::new(keys),
         mailer,
-        bus,
-        rate_limits: discourse_rs::rate_limiter::MemoryStore::load(&pool).await?,
-        // The process's lists, saved to and read back from the site's
-        // database.
-        global_rate_limits: discourse_rs::rate_limiter::MemoryStore::load_global(&pool).await?,
-        site: Default::default(),
-        pool,
+        global_rate_limits: Default::default(),
     };
-    // SiteIconManager.ensure_optimized! at boot: the sized icons' files.
-    {
-        let mut conn = state.pool.acquire().await?;
-        let settings = discourse_rs::site_settings::SiteSettings::load(
-            &mut conn,
-            &state.site_setting_defs,
-            &state.config.globals,
-        )
-        .await?;
-        match discourse_rs::site_icons::ensure_optimized(&mut conn, &settings, &state.config).await
-        {
-            Ok(0) => {}
-            Ok(n) => tracing::info!(files = n, "made the site icons' optimized copies"),
-            Err(e) => tracing::error!("site icons: {e}"),
-        }
-    }
-    // A worker beside the web server unless DISCOURSE_RS_JOBS=off, which
-    // leaves the queue to a separate process.
-    let worker = match std::env::var("DISCOURSE_RS_JOBS").as_deref() {
-        Ok("off") => None,
+
+    let listener = tokio::net::TcpListener::bind(config.bind).await?;
+    let default = multisite::boot(&shared, config).await?;
+    let sites = match specs {
+        None => Sites::single(default),
+        Some(_) => Sites::multisite(vec![default])?,
+    };
+    tracing::info!(addr = %listener.local_addr()?, "listening");
+
+    // A worker per site beside the web server unless DISCOURSE_RS_JOBS=off,
+    // which leaves the queue to a separate process.
+    let workers: Vec<_> = match std::env::var("DISCOURSE_RS_JOBS").as_deref() {
+        Ok("off") => Vec::new(),
         _ => {
             tracing::info!("running background jobs");
-            Some(tokio::spawn(discourse_rs::jobs::work(
-                state.clone(),
-                shutdown_signal(),
-            )))
+            sites
+                .states()
+                .enumerate()
+                .map(|(i, state)| {
+                    tokio::spawn(discourse_rs::jobs::work(
+                        state.clone(),
+                        shutdown_signal(),
+                        STAGGER * i as u32,
+                    ))
+                })
+                .collect()
         }
     };
-    let site = state.clone();
+    let dispatcher = sites.into_service();
     axum::serve(
         listener,
-        app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        dispatcher
+            .clone()
+            .into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown_signal())
     .await?;
-    // The tracker's lists, kept for the next start.
-    site.rate_limits.save(&site.pool).await?;
-    site.global_rate_limits.save(&site.pool).await?;
-    // The tracker's deferred work and counts, which Redis would keep.
+    // The tracker's deferred work, then each site's lists and counts,
+    // which Redis would keep.
     discourse_rs::request_tracking::drain().await;
-    if let Err(e) = discourse_rs::request_tracking::flush(&site).await {
-        tracing::warn!("Unexpected error while processing cached counts: {e:?}");
+    for state in dispatcher.sites().states() {
+        multisite::shut_down(state).await?;
     }
-    if let Some(worker) = worker {
+    for worker in workers {
         worker.await?;
     }
 

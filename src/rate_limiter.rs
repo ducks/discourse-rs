@@ -153,6 +153,12 @@ impl MemoryStore {
         Ok(())
     }
 
+    /// Takes `other`'s lists in (the `GLOBAL::` ones read back at startup).
+    pub fn extend(&self, other: MemoryStore) {
+        let taken = std::mem::take(&mut *other.lists());
+        self.lists().extend(taken);
+    }
+
     /// A site's tracker lists read back from its table (startup).
     pub async fn load(pool: &PgPool) -> Result<MemoryStore, sqlx::Error> {
         Self::load_keys(pool, SITE_KEYS).await

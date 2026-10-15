@@ -428,8 +428,7 @@ pub async fn top_referrers(
     ]);
     let c = rollup_count_sql(cx)?;
     let end_exclusive = r.end_date.date() + Duration::days(1);
-    let globals = &cx.urls.config.globals;
-    let host = normalize_host(globals.hostname(cx.urls.config.rails_env))?;
+    let host = normalize_host(&cx.urls.current_hostname()?)?;
     let escaped: String = host
         .chars()
         .flat_map(|ch| {

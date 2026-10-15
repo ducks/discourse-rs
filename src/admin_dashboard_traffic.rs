@@ -380,16 +380,12 @@ async fn fetch_card(
     if reports::hidden(kind, viewer, cx.settings)? {
         return Ok(None);
     }
-    let globals = &cx.urls.config.globals;
     let mut filters = Map::new();
     filters.insert(
         "login_required".into(),
         json!(cx.settings.get("login_required")?.truthy()),
     );
-    filters.insert(
-        "host".into(),
-        json!(globals.hostname(cx.urls.config.rails_env)),
-    );
+    filters.insert("host".into(), json!(cx.urls.config.hostname()));
     let opts = Opts {
         start_date: Some(start),
         end_date: Some(end),

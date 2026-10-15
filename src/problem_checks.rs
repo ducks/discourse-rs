@@ -342,8 +342,12 @@ pub async fn call(
             Err(Unsupported("checking a group's SMTP credentials (EmailSettingsValidator)").into())
         }
         "host_names" => {
-            let host = env.config.globals.hostname(env.config.rails_env);
-            if !matches!(host, "localhost" | "production.localhost") {
+            let urls = crate::url::Urls {
+                config: env.config,
+                settings: env.settings,
+            };
+            let host = urls.current_hostname()?;
+            if !matches!(host.as_str(), "localhost" | "production.localhost") {
                 return none;
             }
             Ok(problem(&[]))

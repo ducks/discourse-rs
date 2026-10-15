@@ -9,9 +9,10 @@ use chrono::Months;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, highlight_js};
 
-/// GET /highlight-js/:hostname/:version.js. A single site serves its own
-/// bundle whatever the hostname (`with_hostname(raise_on_missing: false)`);
-/// a version other than the current one redirects to the current one.
+/// GET /highlight-js/:hostname/:version.js: the site the hostname names
+/// (the dispatcher picks it, the default site for a name no site has, as
+/// `with_hostname(raise_on_missing: false)` does); a version other than
+/// the current one redirects to the current one.
 pub async fn show(
     State(state): State<AppState>,
     Path((hostname, file)): Path<(String, String)>,

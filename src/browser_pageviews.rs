@@ -443,15 +443,24 @@ pub async fn aggregate_engagement(
     Ok(())
 }
 
-/// `BrowserPageviewEntryUrlDailyRollup.site_hostnames`
-fn site_hostnames(host: &str) -> Result<Vec<String>, AppError> {
-    Ok(normalize_host(Some(host))?.into_iter().collect())
+/// `BrowserPageviewEntryUrlDailyRollup.site_hostnames`: the site's host
+/// names normalized, each once.
+fn site_hostnames(hosts: &[String]) -> Result<Vec<String>, AppError> {
+    let mut normalized = Vec::new();
+    for host in hosts {
+        if let Some(host) = normalize_host(Some(host))?
+            && !normalized.contains(&host)
+        {
+            normalized.push(host);
+        }
+    }
+    Ok(normalized)
 }
 
 /// `BrowserPageviewEntryUrlDailyRollup.aggregate`
 pub async fn aggregate_entry_urls(
     conn: &mut PgConnection,
-    hostname: &str,
+    hostnames: &[String],
     start: NaiveDate,
     end: NaiveDate,
 ) -> Result<(), AppError> {
@@ -509,7 +518,7 @@ pub async fn aggregate_entry_urls(
     ))
     .bind(start)
     .bind(exclusive)
-    .bind(site_hostnames(hostname)?)
+    .bind(site_hostnames(hostnames)?)
     .execute(conn)
     .await?;
     Ok(())
@@ -518,7 +527,7 @@ pub async fn aggregate_entry_urls(
 /// `BrowserPageviewEntryUrlDailyRollup.recompute(dates)`
 pub async fn recompute_entry_urls(
     conn: &mut PgConnection,
-    hostname: &str,
+    hostnames: &[String],
     dates: &[NaiveDate],
 ) -> Result<(), AppError> {
     let mut seen = Vec::new();
@@ -527,7 +536,7 @@ pub async fn recompute_entry_urls(
             continue;
         }
         seen.push(*d);
-        aggregate_entry_urls(conn, hostname, *d, *d).await?;
+        aggregate_entry_urls(conn, hostnames, *d, *d).await?;
     }
     Ok(())
 }

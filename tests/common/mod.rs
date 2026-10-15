@@ -107,6 +107,16 @@ impl TestDb {
         TestDb { pool, name, admin }
     }
 
+    /// The copy's connection URL: TEST_DATABASE_URL naming it.
+    pub fn url(&self) -> String {
+        let url = test_database_url();
+        let template = PgConnectOptions::from_str(&url)
+            .ok()
+            .and_then(|o| o.get_database().map(str::to_string))
+            .expect("TEST_DATABASE_URL has a database name");
+        url.replacen(&format!("/{template}"), &format!("/{}", self.name), 1)
+    }
+
     /// Pins the port's clock and the database's (None releases both).
     pub async fn pin_clock(&self, at: Option<chrono::DateTime<chrono::Utc>>) {
         discourse_rs::clock::pin(at);
@@ -191,7 +201,10 @@ impl Drop for TestDb {
 
 pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
     Config {
-        database_url: test_database_url(),
+        site: discourse_rs::config::SiteConfig {
+            database_url: test_database_url(),
+            ..Default::default()
+        },
         bind: "127.0.0.1:0".parse().unwrap(),
         rails_env: env,
         unicorn_port: "3000".into(),
@@ -234,27 +247,14 @@ pub async fn state_with_bus_on(bus_pool: PgPool, pool: PgPool, config: Config) -
     }
 }
 
-/// Another site of `first`'s process: its own database, bus, caches and
-/// lists; the parsed definitions and strings, the keys, the mailer and the
-/// `GLOBAL::` rate limit lists shared.
+/// Another site of `first`'s process (multisite::Shared): its own
+/// database, bus, caches and lists; the parsed definitions and strings,
+/// the keys, the mailer and the `GLOBAL::` rate limit lists shared.
 pub async fn other_site(first: &AppState, pool: PgPool, config: Config) -> AppState {
     let bus = pg_bus::Bus::start(pool.clone(), discourse_rs::bus::config())
         .await
         .expect("bus starts");
-    AppState {
-        bus,
-        pool,
-        anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
-        config: Arc::new(config),
-        site_setting_defs: Arc::new(first.site_setting_defs.for_site()),
-        i18n: Arc::new(first.i18n.for_site()),
-        search_log_cache: Default::default(),
-        keys: first.keys.clone(),
-        mailer: first.mailer.clone(),
-        rate_limits: Default::default(),
-        global_rate_limits: first.global_rate_limits.clone(),
-        site: Default::default(),
-    }
+    discourse_rs::multisite::Shared::of(first).site(pool, bus, config, Default::default())
 }
 
 /// `SiteSetting.<name> = value`, as the row add_override! writes.
