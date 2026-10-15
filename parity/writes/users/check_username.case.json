@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/u/check_username.json?username=user2" },
+    { "method": "GET", "path": "/u/check_username.json?username=freshname" },
+    { "method": "GET", "path": "/u/check_username.json?username=a" },
+    { "method": "GET", "path": "/u/check_username.json?username=USER1&for_user_id=3" },
+    { "method": "GET", "path": "/u/check_username.json?username=about" },
+    { "method": "GET", "path": "/u/check_username.json?email=new@example.com" },
+    { "method": "GET", "path": "/u/check_username.json" }
+  ]
+}

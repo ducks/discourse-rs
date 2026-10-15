@@ -1,0 +1,35 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "status": "",
+        "unknown_key": "x",
+        "location": ["Somewhere"],
+        "website": "example.com",
+        "external_ids": { "github": "123" },
+        "custom_fields": { "favorite": "blue" }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "user_notification_schedule": {
+          "enabled": "true",
+          "id": "5",
+          "user_id": "9",
+          "day_0_start_time": "480", "day_0_end_time": "1020",
+          "day_1_start_time": "480", "day_1_end_time": "1020",
+          "day_2_start_time": "480", "day_2_end_time": "1020",
+          "day_3_start_time": "480", "day_3_end_time": "1020",
+          "day_4_start_time": "480", "day_4_end_time": "1020",
+          "day_5_start_time": "-1", "day_5_end_time": "1020",
+          "day_6_start_time": "-1", "day_6_end_time": "1020"
+        }
+      }
+    }
+  ]
+}

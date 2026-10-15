@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/my/preferences" },
+    { "method": "GET", "path": "/my/activity/drafts" },
+    { "method": "GET", "path": "/my/x%20y" },
+    { "method": "GET", "path": "/u/user1/preferences/account.json" },
+    { "method": "GET", "path": "/u/user1/preferences.json" }
+  ]
+}

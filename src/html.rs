@@ -87,6 +87,8 @@ pub struct Viewer {
     pub can_send_private_messages: bool,
     /// `currentUser.previous_visit_at`, for the lists' last visit marker.
     pub previous_visit_at: Option<chrono::DateTime<chrono::Utc>>,
+    /// The `text_size` cookie (`<size>|<seq>`), one device's text size.
+    pub text_size_cookie: Option<String>,
 }
 
 impl Viewer {
@@ -245,6 +247,13 @@ pub struct Chrome {
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
+    /// User.resolveCurrent's `_saveTimezone`: a member without a timezone
+    /// saves the browser's guess as the app boots.
+    pub save_timezone: bool,
+    /// ApplicationHelper#text_size_class's size: this device's cookie when
+    /// it is as new as the member's option, else the option, else
+    /// default_text_size.
+    pub text_size: String,
     /// The search service's searchContext as the mobile search button
     /// passes it to the full-page search (Header#toggleSearchMenu): a
     /// query string, empty on pages without one.
@@ -761,6 +770,34 @@ impl Site {
         );
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
+        self.chrome.text_size = settings.get("default_text_size")?.to_s();
+        if let Some(user) = guardian.user() {
+            let row: Option<(Option<String>, i32, i32)> = sqlx::query_as(
+                "SELECT timezone, text_size_key, text_size_seq FROM user_options WHERE user_id = $1",
+            )
+            .bind(user.id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if let Some((timezone, size_key, size_seq)) = row {
+                self.chrome.save_timezone = timezone.as_deref().is_none_or(str::is_empty);
+                // UserOption.text_sizes
+                let sizes = ["normal", "larger", "largest", "smaller", "smallest"];
+                if let Some(size) = usize::try_from(size_key).ok().and_then(|k| sizes.get(k)) {
+                    self.chrome.text_size = size.to_string();
+                }
+                let cookie = self
+                    .viewer
+                    .as_ref()
+                    .and_then(|v| v.text_size_cookie.as_deref())
+                    .and_then(|c| c.split_once('|'));
+                if let Some((size, seq)) = cookie
+                    && sizes.contains(&size)
+                    && crate::ruby::to_i(seq) >= i64::from(size_seq)
+                {
+                    self.chrome.text_size = size.to_string();
+                }
+            }
+        }
         if crate::plugins::local_dates::enabled(settings)? {
             let (default_calendar, user_timezone) = match guardian.user() {
                 Some(user) => {

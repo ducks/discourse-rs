@@ -1,15 +1,15 @@
 //! `UserUpdater#update` as UsersController#update calls it: the user's
-//! options, profile (bio, location, website), name and locale, category
-//! tracking, muted users and allowed PM senders, the notification
-//! schedule, with the model callbacks that follow (the bio cooked, the
-//! search index, the name change logged, the display name job and the
-//! schedule's do not disturb timings).
+//! options (discourse-solved's and chat's included), profile (bio,
+//! location, website, the profile and card backgrounds), name, locale,
+//! title, primary and flair groups, category tracking, muted users and
+//! allowed PM senders, the notification schedule, with the model
+//! callbacks that follow (the bio cooked, the search index, the name
+//! change logged, the display name job, the title's badge, the profile's
+//! upload references and the schedule's do not disturb timings).
 //!
-//! Refused: what failing validations would answer (the errors JSON), user
-//! fields and custom fields, external ids, profile and card backgrounds,
-//! titles, primary and flair groups, date of birth, tag tracking, sidebar
-//! links, user status, themes and the array options, uploads in the bio,
-//! and gravatar downloads.
+//! Refused: what failing validations would answer (the errors JSON),
+//! external ids, date of birth, tag tracking, sidebar links, user status,
+//! uploads in the bio, and gravatar downloads.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -34,6 +34,8 @@ pub struct Target {
     pub active: bool,
     pub trust_level: i32,
     pub title: Option<String>,
+    pub primary_group_id: Option<i32>,
+    pub flair_group_id: Option<i32>,
 }
 
 impl Target {
@@ -56,7 +58,7 @@ pub async fn find_target(
         .unwrap_or(&username_lower);
     sqlx::query_as(
         "SELECT id, username, username_lower, name, locale, admin, moderator, staged, active, \
-                trust_level, title \
+                trust_level, title, primary_group_id, flair_group_id \
          FROM users WHERE username_lower = $1 AND (active OR id = $2 OR $3) LIMIT 1",
     )
     .bind(username_lower)
@@ -132,7 +134,8 @@ enum Kind {
     /// An integer column behind an ActiveRecord enum.
     Enum(&'static [(&'static str, i64)]),
     Text,
-    /// Array columns, not ported.
+    /// An array column: theme_ids (by name), seen_popups (integers), the
+    /// rest strings.
     Array,
 }
 
@@ -209,22 +212,190 @@ const OPTION_ATTR: &[(&str, Kind)] = &[
     ("automatically_translate", Kind::Bool),
     ("understood_languages", Kind::Array),
     ("hidden_composer_toolbar_buttons", Kind::Array),
+    // discourse-solved's and chat's, pushed by their plugin.rb.
+    ("notify_on_solved", Kind::Bool),
+    ("chat_enabled", Kind::Bool),
+    (
+        "chat_quick_reaction_type",
+        Kind::Enum(CHAT_QUICK_REACTION_TYPES),
+    ),
+    ("chat_quick_reactions_custom", Kind::Text),
+    ("chat_sound", Kind::Text),
+    ("ignore_channel_wide_mention", Kind::Bool),
+    ("show_thread_title_prompts", Kind::Bool),
+    ("chat_announce_new_messages", Kind::Bool),
+    ("chat_channel_list_filter", Kind::Enum(CHAT_LIST_FILTERS)),
+    (
+        "chat_channel_list_filter_starred",
+        Kind::Enum(CHAT_LIST_FILTERS),
+    ),
+    (
+        "chat_channel_list_filter_dms",
+        Kind::Enum(CHAT_LIST_FILTERS),
+    ),
+    ("chat_channel_list_sort", Kind::Enum(CHAT_LIST_SORTS)),
+    (
+        "chat_channel_list_sort_starred",
+        Kind::Enum(CHAT_LIST_SORTS),
+    ),
+    ("chat_channel_list_sort_dms", Kind::Enum(CHAT_LIST_SORTS)),
+    ("chat_new_message_sound", Kind::Bool),
+    ("chat_email_frequency", Kind::Enum(CHAT_EMAIL_FREQUENCIES)),
+    (
+        "chat_header_indicator_preference",
+        Kind::Enum(CHAT_HEADER_INDICATORS),
+    ),
+    ("chat_separate_sidebar_mode", Kind::Enum(CHAT_SIDEBAR_MODES)),
+    ("chat_send_shortcut", Kind::Enum(SEND_SHORTCUTS)),
+];
+
+/// Chat::UserOptionExtension's enums.
+const CHAT_QUICK_REACTION_TYPES: &[(&str, i64)] = &[("frequent", 0), ("custom", 1)];
+const CHAT_LIST_FILTERS: &[(&str, i64)] =
+    &[("all", 0), ("active", 1), ("unread", 2), ("mentions", 3)];
+const CHAT_LIST_SORTS: &[(&str, i64)] =
+    &[("alphabetical", 0), ("recent_activity", 1), ("priority", 2)];
+const CHAT_EMAIL_FREQUENCIES: &[(&str, i64)] = &[("never", 0), ("when_away", 1)];
+const CHAT_HEADER_INDICATORS: &[(&str, i64)] = &[
+    ("all_new", 0),
+    ("dm_and_mentions", 1),
+    ("never", 2),
+    ("only_mentions", 3),
+];
+const CHAT_SIDEBAR_MODES: &[(&str, i64)] = &[
+    ("default", 0),
+    ("never", 1),
+    ("always", 2),
+    ("fullscreen", 3),
 ];
 
 /// What the update refuses outright, by param.
 const REFUSED: &[(&str, &str)] = &[
     ("custom_fields", "updating custom fields"),
-    ("external_ids", "updating external ids"),
+    ("external_ids", "updating external ids (191)"),
     (
-        "profile_background_upload_url",
-        "updating the profile background",
+        "date_of_birth",
+        "updating the date of birth (discourse-cakeday, 202)",
     ),
-    ("card_background_upload_url", "updating the card background"),
-    ("date_of_birth", "updating the date of birth"),
-    ("sidebar_category_ids", "updating sidebar category links"),
-    ("sidebar_tag_names", "updating sidebar tag links"),
-    ("status", "updating the user status"),
+    (
+        "sidebar_category_ids",
+        "updating sidebar category links (156)",
+    ),
+    ("sidebar_tag_names", "updating sidebar tag links (156)"),
+    ("status", "updating the user status (130)"),
 ];
+
+/// `UsersController#user_params`' scalar keys beside OPTION_ATTR's.
+const PERMITTED: &[&str] = &[
+    "name",
+    "email",
+    "password",
+    "username",
+    "title",
+    "date_of_birth",
+    "muted_usernames",
+    "allowed_pm_usernames",
+    "theme_ids",
+    "locale",
+    "bio_raw",
+    "location",
+    "website",
+    "dismissed_banner_key",
+    "profile_background_upload_url",
+    "card_background_upload_url",
+    "primary_group_id",
+    "flair_group_id",
+    "featured_topic_id",
+    "show_original_content",
+    "watching_first_post_tags",
+    "watched_tags",
+    "tracked_tags",
+    "muted_tags",
+];
+
+/// `UserUpdater::NOTIFICATION_SCHEDULE_ATTRS`' keys.
+const SCHEDULE_KEYS: &[&str] = &[
+    "enabled",
+    "day_0_start_time",
+    "day_0_end_time",
+    "day_1_start_time",
+    "day_1_end_time",
+    "day_2_start_time",
+    "day_2_end_time",
+    "day_3_start_time",
+    "day_3_end_time",
+    "day_4_start_time",
+    "day_4_end_time",
+    "day_5_start_time",
+    "day_5_end_time",
+    "day_6_start_time",
+    "day_6_end_time",
+];
+
+/// `UsersController#user_params`: what `params.permit` keeps of the
+/// params. A permitted scalar takes no list or hash, a list key takes
+/// only a list of scalars; unknown keys go. No bundled plugin the port
+/// runs registers an editable custom field, so `custom_fields` goes too.
+pub fn user_params(
+    mut p: Map<String, Value>,
+    s: &SiteSettings,
+) -> Result<Map<String, Value>, AppError> {
+    let tagging = s.get("tagging_enabled")?.truthy();
+    for key in ["sidebar_category_ids", "sidebar_tag_names"] {
+        if (key == "sidebar_category_ids" || tagging)
+            && p.get(key)
+                .is_some_and(|v| params::scalar(v).is_some_and(|v| crate::ruby::is_blank(&v)))
+        {
+            p.insert(key.into(), json!([]));
+        }
+    }
+    let scalar = |v: &Value| !matches!(v, Value::Array(_) | Value::Object(_));
+    let list = |v: &Value| matches!(v, Value::Array(items) if items.iter().all(scalar));
+    let mut out = Map::new();
+    for (key, value) in p {
+        let keep = match key.as_str() {
+            "understood_languages" | "hidden_composer_toolbar_buttons" | "sidebar_category_ids" => {
+                list(&value)
+            }
+            "sidebar_tag_names" => tagging && list(&value),
+            k if CATEGORY_IDS.iter().any(|(c, _)| *c == k) => list(&value),
+            "theme_ids" | "seen_popups" => scalar(&value) || list(&value),
+            "user_notification_schedule" => {
+                if let Value::Object(given) = &value {
+                    let kept: Map<String, Value> = given
+                        .iter()
+                        .filter(|(k, v)| SCHEDULE_KEYS.contains(&k.as_str()) && scalar(v))
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    out.insert(key, Value::Object(kept));
+                }
+                continue;
+            }
+            "status" if s.get("enable_user_status")?.truthy() => match &value {
+                Value::Object(given) => {
+                    let kept: Map<String, Value> = given
+                        .iter()
+                        .filter(|(k, v)| {
+                            ["emoji", "description", "ends_at"].contains(&k.as_str()) && scalar(v)
+                        })
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    out.insert(key, Value::Object(kept));
+                    continue;
+                }
+                v => scalar(v),
+            },
+            k if PERMITTED.contains(&k) || OPTION_ATTR.iter().any(|(o, _)| *o == k) => {
+                scalar(&value)
+            }
+            _ => false,
+        };
+        if keep {
+            out.insert(key, value);
+        }
+    }
+    Ok(out)
+}
 
 /// A param as `attributes[key]`: its string, or nil.
 fn text(attrs: &Map<String, Value>, key: &str) -> Option<String> {
@@ -234,6 +405,15 @@ fn text(attrs: &Map<String, Value>, key: &str) -> Option<String> {
 /// `blank?`
 fn blank(v: Option<&str>) -> bool {
     v.is_none_or(|v| v.trim().is_empty())
+}
+
+/// `ActiveModel::Type::Boolean` on a param: blank is nil.
+fn cast_bool(value: &Value) -> Value {
+    match params::scalar(value).as_deref() {
+        None | Some("") => Value::Null,
+        Some("0" | "f" | "F" | "false" | "FALSE" | "off" | "OFF") => json!(false),
+        Some(_) => json!(true),
+    }
 }
 
 /// `ActiveModel::Type::Integer` on a param: blank is nil, the rest `to_i`.
@@ -272,6 +452,144 @@ fn valid_url(website: &str) -> bool {
     http_host(website).is_some_and(|h| h.contains('.'))
 }
 
+/// The title, primary group and flair group an update leaves the user
+/// with.
+struct Groups {
+    title: Option<String>,
+    primary_group_id: Option<i32>,
+    flair_group_id: Option<i32>,
+}
+
+/// `Guardian#can_grant_title?(user, title)`
+async fn can_grant_title(
+    conn: &mut PgConnection,
+    i18n: &crate::i18n::I18n,
+    actor: &Guardian,
+    user: &Target,
+    title: &str,
+) -> Result<bool, AppError> {
+    if actor.is_staff() || title.is_empty() {
+        return Ok(true);
+    }
+    if !actor.is_me(user.id) {
+        return Ok(false);
+    }
+    let names: Vec<String> = sqlx::query_scalar(
+        "SELECT b.name FROM user_badges ub JOIN badges b ON b.id = ub.badge_id \
+         WHERE ub.user_id = $1 AND b.allow_title",
+    )
+    .bind(user.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    // Badge.display_name(name)
+    let badged = names.iter().any(|name| {
+        let key = format!("badges.{}.name", name.to_lowercase().replace(' ', "_"));
+        i18n.t(&key).unwrap_or(name) == title
+    });
+    if badged {
+        return Ok(true);
+    }
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM group_users gu JOIN groups g ON g.id = gu.group_id \
+                        WHERE gu.user_id = $1 AND g.title = $2)",
+    )
+    .bind(user.id)
+    .bind(title)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
+/// `Guardian#can_use_primary_group?` and `#can_use_flair_group?`: the
+/// user is in the group, which is not automatic (primary) or has a flair.
+async fn can_use_group(
+    conn: &mut PgConnection,
+    user_id: i32,
+    group_id: i32,
+    flair: bool,
+) -> Result<bool, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM group_users gu JOIN groups g ON g.id = gu.group_id \
+                        WHERE gu.user_id = $1 AND g.id = $2 \
+                          AND CASE WHEN $3 THEN (COALESCE(btrim(g.flair_icon), '') <> '' \
+                                                 OR g.flair_upload_id IS NOT NULL) \
+                                   ELSE NOT g.automatic END)",
+    )
+    .bind(user_id)
+    .bind(group_id)
+    .bind(flair)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
+/// UserUpdater's title, primary group and flair group, then
+/// User#match_primary_group_changes: a new primary group carries its
+/// title over a title the old one gave, and its id over a flair the old
+/// one was.
+async fn titles_and_groups(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    actor: &Guardian,
+    user: &Target,
+    attrs: &Map<String, Value>,
+) -> Result<Groups, AppError> {
+    let mut title = user.title.clone();
+    if let Some(t) = text(attrs, "title")
+        && Some(&t) != user.title.as_ref()
+        && can_grant_title(&mut *conn, i18n, actor, user, &t).await?
+    {
+        title = Some(t);
+    }
+    let id = |v: &str| i32::try_from(crate::ruby::to_i(v)).unwrap_or(0);
+    let mut primary_group_id = user.primary_group_id;
+    if s.get("user_selected_primary_groups")?.truthy()
+        && let Some(v) = text(attrs, "primary_group_id")
+    {
+        if can_use_group(&mut *conn, user.id, id(&v), false).await? {
+            primary_group_id = Some(id(&v));
+        } else if blank(Some(&v)) {
+            primary_group_id = None;
+        }
+    }
+    let mut flair_group_id = user.flair_group_id;
+    if let Some(v) = text(attrs, "flair_group_id") {
+        if blank(Some(&v)) {
+            flair_group_id = None;
+        } else if can_use_group(&mut *conn, user.id, id(&v), true).await? {
+            flair_group_id = Some(id(&v));
+        }
+    }
+    if primary_group_id != user.primary_group_id {
+        let was_title: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1 AND title IS NOT DISTINCT FROM $2)",
+        )
+        .bind(user.primary_group_id)
+        .bind(&title)
+        .fetch_one(&mut *conn)
+        .await?;
+        if was_title {
+            title = match primary_group_id {
+                Some(gid) => sqlx::query_scalar::<_, Option<String>>(
+                    "SELECT title FROM groups WHERE id = $1",
+                )
+                .bind(gid)
+                .fetch_optional(&mut *conn)
+                .await?
+                .flatten(),
+                None => None,
+            };
+        }
+        if flair_group_id == user.primary_group_id {
+            flair_group_id = primary_group_id;
+        }
+    }
+    Ok(Groups {
+        title,
+        primary_group_id,
+        flair_group_id,
+    })
+}
+
 /// `UserUpdater#update(attributes)`: whether it saved. `custom_fields`
 /// is `attributes[:custom_fields]` as the controller builds it from
 /// `user_fields` (None when that param wasn't given).
@@ -289,13 +607,7 @@ pub async fn update(
             return Err(Unsupported(what).into());
         }
     }
-    for key in ["title", "primary_group_id", "flair_group_id"] {
-        if let Some(v) = text(attrs, key).filter(|v| !v.is_empty())
-            && (key != "title" || Some(&v) != user.title.as_ref())
-        {
-            return Err(Unsupported("changing the title, primary group or flair group").into());
-        }
-    }
+    let groups = titles_and_groups(&mut *conn, s, ctx.i18n, actor, user, attrs).await?;
 
     // LEGACY_SHOW_ORIGINAL_CONTENT_ATTR
     let mut attrs = attrs.clone();
@@ -378,7 +690,7 @@ pub async fn update(
         }
         _ => None,
     };
-    update_profile(&mut *conn, ctx, user, &attrs).await?;
+    update_profile(&mut *conn, ctx, actor, user, &attrs).await?;
 
     // user.save
     let old_name = user.name.clone().unwrap_or_default();
@@ -395,13 +707,34 @@ pub async fn update(
     if name_changed {
         validate_name(&mut *conn, s, user.id, name.as_deref()).await?;
     }
-    if name_changed || locale != user.locale {
-        sqlx::query("UPDATE users SET name = $2, locale = $3, updated_at = now() WHERE id = $1")
-            .bind(user.id)
-            .bind(&name)
-            .bind(&locale)
-            .execute(&mut *conn)
-            .await?;
+    let title_changed = groups.title != user.title;
+    if title_changed {
+        crate::badge_granter::check_if_title_is_badged_granted(
+            &mut *conn,
+            ctx.i18n,
+            user.id,
+            groups.title.as_deref(),
+        )
+        .await?;
+    }
+    if name_changed
+        || locale != user.locale
+        || title_changed
+        || groups.primary_group_id != user.primary_group_id
+        || groups.flair_group_id != user.flair_group_id
+    {
+        sqlx::query(
+            "UPDATE users SET name = $2, locale = $3, title = $4, primary_group_id = $5, \
+                              flair_group_id = $6, updated_at = now() WHERE id = $1",
+        )
+        .bind(user.id)
+        .bind(&name)
+        .bind(&locale)
+        .bind(&groups.title)
+        .bind(groups.primary_group_id)
+        .bind(groups.flair_group_id)
+        .execute(&mut *conn)
+        .await?;
     }
     if name_changed {
         // after_update :change_display_name
@@ -794,6 +1127,7 @@ async fn update_options(
         let column = match *key {
             "text_size" => "text_size_key",
             "title_count_mode" => "title_count_mode_key",
+            "chat_send_shortcut" => "send_shortcut",
             k => k,
         };
         let new = match kind {
@@ -818,10 +1152,30 @@ async fn update_options(
                 }
                 new
             }
-            Kind::Array => return Err(Unsupported("updating array options").into()),
+            // A string is a Postgres array literal; the empty one is
+            // what the preferences send for seen_popups' nil.
+            Kind::Array => {
+                let Value::Array(items) = value else {
+                    match params::scalar(value).as_deref() {
+                        Some("") => {
+                            after.insert(column.to_string(), json!([]));
+                            continue;
+                        }
+                        _ => return Err(Unsupported("an array option given as a string").into()),
+                    }
+                };
+                let items = items.iter().filter_map(params::scalar);
+                if *key == "seen_popups" {
+                    json!(items.map(|s| crate::ruby::to_i(&s)).collect::<Vec<_>>())
+                } else {
+                    json!(items.collect::<Vec<_>>())
+                }
+            }
+            // `[true, false].include?(value)`: `to_s == "true"`; an unset
+            // (nil) column takes the param as ActiveModel casts it.
             Kind::Bool => match &before[column] {
                 Value::Bool(_) => json!(params::scalar(value).as_deref() == Some("true")),
-                _ => return Err(Unsupported("a boolean option that is unset").into()),
+                _ => cast_bool(value),
             },
             Kind::Int => cast_int(value),
             Kind::Text => match value {
@@ -856,7 +1210,7 @@ async fn update_options(
         let hidden = after["hide_profile"] == json!(true) || after["hide_presence"] == json!(true);
         after.insert("hide_profile_and_presence".into(), json!(hidden));
     }
-    validate_options(&mut *conn, &after).await?;
+    validate_options(&mut *conn, &before, &after).await?;
 
     let changed: Vec<&String> = after
         .keys()
@@ -916,9 +1270,38 @@ async fn allow_themes(conn: &mut PgConnection, ids: &[i64]) -> Result<bool, sqlx
 /// UserOption's validations.
 async fn validate_options(
     conn: &mut PgConnection,
+    before: &Map<String, Value>,
     after: &Map<String, Value>,
 ) -> Result<(), AppError> {
     let invalid = || Err(Unsupported("an invalid option (the errors JSON)").into());
+    let changed = |key: &str| after.get(key) != before.get(key);
+    let strings = |key: &str| -> Vec<String> {
+        after[key]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|v| {
+                v.as_str()
+                    .map(str::to_string)
+                    .unwrap_or_else(|| v.to_string())
+            })
+            .collect()
+    };
+    // hidden_composer_toolbar_buttons_are_bounded
+    if changed("hidden_composer_toolbar_buttons") {
+        let buttons = strings("hidden_composer_toolbar_buttons");
+        if buttons.len() > 50 || buttons.iter().any(|b| b.chars().count() > 100) {
+            return invalid();
+        }
+    }
+    // understood_languages_are_supported
+    if changed("understood_languages")
+        && !strings("understood_languages")
+            .iter()
+            .all(|l| crate::themes::locale_available(l))
+    {
+        return invalid();
+    }
     for key in ["email_level", "email_messages_level"] {
         if !after[key].as_i64().is_some_and(|l| (0..=2).contains(&l)) {
             return invalid();
@@ -941,6 +1324,7 @@ async fn validate_options(
 async fn update_profile(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
+    actor: &Guardian,
     user: &Target,
     attrs: &Map<String, Value>,
 ) -> Result<(), AppError> {
@@ -998,6 +1382,44 @@ async fn update_profile(
     } else {
         format_url(fetch("website", &before.website).as_deref())
     };
+    // The backgrounds: "" (or a user the guardian refuses) clears one, a
+    // known upload's url sets it, anything else leaves it.
+    let mut backgrounds = [
+        before.profile_background_upload_id,
+        before.card_background_upload_id,
+    ];
+    for (i, (key, groups)) in [
+        (
+            "profile_background_upload_url",
+            "profile_background_allowed_groups",
+        ),
+        (
+            "card_background_upload_url",
+            "user_card_background_allowed_groups",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        if !attrs.contains_key(key) {
+            continue;
+        }
+        let allowed =
+            actor.is_staff() || (actor.is_me(user.id) && actor.in_setting_groups(s, groups)?);
+        match text(attrs, key) {
+            Some(url) if url.is_empty() || !allowed => backgrounds[i] = None,
+            Some(url) => {
+                if let Some((id, _)) =
+                    crate::upload_references::get_from_url(&mut *conn, &url).await?
+                {
+                    backgrounds[i] = Some(id);
+                }
+            }
+            None if !allowed => backgrounds[i] = None,
+            None => {}
+        }
+    }
+    let [profile_background, card_background] = backgrounds;
 
     // validations
     let invalid = || Err(Unsupported("an invalid profile (the errors JSON)").into());
@@ -1061,11 +1483,14 @@ async fn update_profile(
         || location != before.location
         || website != before.website
         || banner != before.dismissed_banner_key
+        || profile_background != before.profile_background_upload_id
+        || card_background != before.card_background_upload_id
     {
         sqlx::query(
             "UPDATE user_profiles SET bio_raw = $2, bio_cooked = $3, location = $4, website = $5, \
                     dismissed_banner_key = $6, \
-                    bio_cooked_version = CASE WHEN $7 THEN 1 ELSE bio_cooked_version END \
+                    bio_cooked_version = CASE WHEN $7 THEN 1 ELSE bio_cooked_version END, \
+                    profile_background_upload_id = $8, card_background_upload_id = $9 \
              WHERE user_id = $1",
         )
         .bind(user.id)
@@ -1075,9 +1500,13 @@ async fn update_profile(
         .bind(&website)
         .bind(banner)
         .bind(cooked_version)
+        .bind(profile_background)
+        .bind(card_background)
         .execute(&mut *conn)
         .await?;
     }
+    let backgrounds_changed = profile_background != before.profile_background_upload_id
+        || card_background != before.card_background_upload_id;
     if bio_changed {
         // pull_hotlinked_image
         let grace = s.get("editing_grace_period")?.to_i();
@@ -1088,18 +1517,21 @@ async fn update_profile(
             json!({ "user_id": user.id }),
         )
         .await?;
-        // UploadReference.ensure_exist!: the backgrounds and the bio's
-        // uploads (none).
-        if before.profile_background_upload_id.is_some()
-            || before.card_background_upload_id.is_some()
-        {
-            return Err(Unsupported("upload references of profile backgrounds").into());
-        }
-        sqlx::query(
-            "DELETE FROM upload_references WHERE target_type = 'UserProfile' AND target_id = $1",
+    }
+    // UploadReference.ensure_exist!: the backgrounds and the bio's
+    // uploads (none: refused above).
+    if bio_changed || backgrounds_changed {
+        let ids: Vec<i64> = [profile_background, card_background]
+            .into_iter()
+            .flatten()
+            .map(i64::from)
+            .collect();
+        crate::upload_references::ensure_exist_many(
+            &mut *conn,
+            "UserProfile",
+            user.id.into(),
+            &ids,
         )
-        .bind(user.id)
-        .execute(&mut *conn)
         .await?;
     }
     Ok(())

@@ -361,7 +361,10 @@ pub async fn search(
 }
 
 /// `User.username_exists?`: a user or a group by that name.
-async fn username_exists(conn: &mut PgConnection, lower: &str) -> Result<bool, sqlx::Error> {
+pub(super) async fn username_exists(
+    conn: &mut PgConnection,
+    lower: &str,
+) -> Result<bool, sqlx::Error> {
     sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM users WHERE username_lower = $1) \
              OR EXISTS (SELECT 1 FROM groups WHERE lower(name) = $1)",
@@ -372,7 +375,7 @@ async fn username_exists(conn: &mut PgConnection, lower: &str) -> Result<bool, s
 }
 
 /// `User.username_available?(name)` (reserved names not allowed).
-async fn username_available(
+pub(super) async fn username_available(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,
@@ -384,9 +387,38 @@ async fn username_available(
     Ok(!username_exists(conn, &lower).await?)
 }
 
+/// `User.username_available?(name, email, allow_reserved_username:)`: a
+/// taken name is free to the staged user whose primary email it is.
+pub(super) async fn username_available_for(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    name: &str,
+    email: Option<&str>,
+    allow_reserved: bool,
+) -> Result<bool, AppError> {
+    let lower = crate::accounts::normalize_username(name)?;
+    if !allow_reserved && crate::signup::reserved_by_settings(settings, &lower)? {
+        return Ok(false);
+    }
+    if !username_exists(conn, &lower).await? {
+        return Ok(true);
+    }
+    let Some(email) = email.filter(|e| !e.trim().is_empty()) else {
+        return Ok(false);
+    };
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM users u JOIN user_emails e ON e.user_id = u.id \
+                        WHERE u.staged AND u.username_lower = $1 AND e.primary AND e.email = $2)",
+    )
+    .bind(&lower)
+    .bind(email)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
 /// `UserNameSuggester.suggest(name)` for a name that passed the format
 /// check: numbered after the name, from the first free number.
-async fn suggest_username(
+pub(super) async fn suggest_username(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,

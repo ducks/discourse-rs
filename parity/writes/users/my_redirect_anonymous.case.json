@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "requests": [
+    { "method": "GET", "path": "/my/preferences" },
+    { "method": "GET", "path": "/u/user1/preferences/account.json" },
+    { "method": "GET", "path": "/.well-known/change-password" }
+  ]
+}

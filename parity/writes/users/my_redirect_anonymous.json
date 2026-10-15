@@ -1,0 +1,47 @@
+{
+  "name": "my_redirect_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/my/preferences"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user1/preferences/account.json"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/change-password"
+    }
+  ],
+  "started_at": "2026-10-15T04:37:02.012579",
+  "transaction_started_at": "2026-10-15T04:37:01.118198",
+  "responses": [
+    {
+      "status": 302,
+      "body": ""
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 302,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "5f97601112a91326827d848aa2e76e8e9ba158dbb2850a945a1730a0a6963278",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

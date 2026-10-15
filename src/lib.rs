@@ -108,6 +108,7 @@ pub mod post_mover;
 pub mod post_owner_changer;
 pub mod post_view;
 pub mod posting;
+pub mod preferences_view;
 pub mod presence;
 pub mod pretty_text;
 pub mod problem_checks;

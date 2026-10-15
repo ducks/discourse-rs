@@ -231,6 +231,11 @@ ICONS=(
   headset
   microphone-lines
   gif
+  # The preferences navigation and its tabs.
+  address-card
+  desktop
+  bell-slash
+  play
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

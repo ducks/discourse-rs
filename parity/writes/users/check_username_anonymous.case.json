@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "requests": [
+    { "method": "GET", "path": "/u/check_username.json?username=freshname" },
+    { "method": "GET", "path": "/users/check_username.json?username=user1" }
+  ]
+}

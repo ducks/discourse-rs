@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "like_notification_frequency": "3",
+        "notify_on_solved": "false",
+        "chat_header_indicator_preference": "never",
+        "chat_sound": "soft",
+        "ignore_channel_wide_mention": "",
+        "chat_email_frequency": "never",
+        "chat_send_shortcut": "meta_enter",
+        "chat_separate_sidebar_mode": "always",
+        "chat_channel_list_sort": "recent_activity"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": { "ignore_channel_wide_mention": "true", "chat_sound": "" }
+    }
+  ]
+}

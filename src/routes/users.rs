@@ -106,6 +106,11 @@ enum Routed {
     /// UsersController: the username, the action, and whether the request
     /// wants JSON.
     Profile(String, Action, bool),
+    /// users#preferences and users_email#index: the username, the route,
+    /// and whether the request wants JSON.
+    Preferences(String, super::user_preferences::Route, bool),
+    /// `/u/:username/emails`: users#check_emails.
+    CheckEmails(String),
     /// `/activity.json`, PostsController#user_posts_feed: the username.
     PostsFeed(String),
     /// No route matches (`/u/:username/card` has only a .json route).
@@ -126,6 +131,15 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
         Some(r) => (r, true),
         None => (rest, json),
     };
+    if rest.starts_with("preferences") {
+        return Ok(match super::user_preferences::route(rest) {
+            Some(route) => Routed::Preferences(username, route, json),
+            None => Routed::NotFound,
+        });
+    }
+    if rest == "emails" {
+        return Ok(Routed::CheckEmails(username));
+    }
     if !json && let Some((route, group)) = messages_route(rest)? {
         return Ok(Routed::Profile(
             username,
@@ -222,6 +236,31 @@ pub async fn show_with_tail(
         Routed::Profile(username, action, json) => (username, action, json),
         Routed::PostsFeed(username) => {
             return posts_feed(&state, &incoming.guardian, &username).await;
+        }
+        Routed::Preferences(_, route, true) => {
+            return Ok(super::user_preferences::json(
+                &state,
+                &incoming.guardian,
+                &route,
+            ));
+        }
+        Routed::Preferences(username, route, false) => {
+            return super::user_preferences::page(
+                state, incoming, username, route, headers, peer, uri,
+            )
+            .await;
+        }
+        Routed::CheckEmails(username) => {
+            let context = crate::params::parse(uri.query(), &headers, &axum::body::Bytes::new())
+                .get("context")
+                .and_then(crate::params::scalar);
+            return super::user_preferences::check_emails(
+                &state,
+                &incoming.guardian,
+                &username,
+                context,
+            )
+            .await;
         }
         Routed::NotFound => return Ok(super::topics::not_found_response(&state)),
     };
@@ -1189,7 +1228,7 @@ pub struct ProfilePage {
 }
 
 #[allow(clippy::too_many_arguments)]
-async fn profile_page(
+pub(crate) async fn profile_page(
     conn: &mut sqlx::PgConnection,
     site: crate::html::Site,
     i18n: &crate::i18n::I18n,

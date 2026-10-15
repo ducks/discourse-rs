@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "profile_background_upload_url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+        "card_background_upload_url": "/uploads/default/original/1X/46d43cd68924bf0f8dca7c468f5a3722ff0a750f.png"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "profile_background_upload_url": "",
+        "card_background_upload_url": "/uploads/default/original/1X/0000000000000000000000000000000000000000.png"
+      }
+    }
+  ]
+}

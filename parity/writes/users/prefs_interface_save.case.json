@@ -1,0 +1,33 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "locale": "",
+        "allow_private_messages": "true",
+        "automatically_unpin_topics": "true",
+        "bookmark_auto_delete_preference": "3",
+        "color_scheme_id": "",
+        "dark_scheme_id": "",
+        "dynamic_favicon": "false",
+        "enable_allowed_pm_users": "false",
+        "enable_markdown_monospace_font": "true",
+        "enable_quoting": "true",
+        "enable_smart_lists": "true",
+        "external_links_in_new_tab": "true",
+        "hide_presence": "false",
+        "homepage_id": "8",
+        "interface_color_mode": "1",
+        "seen_popups": "",
+        "send_shortcut": "enter",
+        "automatically_translate": "true",
+        "skip_new_user_tips": "false",
+        "text_size": "larger",
+        "theme_ids": ["-1"],
+        "title_count_mode": "contextual"
+      }
+    }
+  ]
+}

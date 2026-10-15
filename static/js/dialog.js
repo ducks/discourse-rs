@@ -1,12 +1,19 @@
-// The dialog service (dialog-holder) as the admin pages use it:
+// The dialog service (dialog-holder: services/dialog.js and
+// components/dialog-holder.gjs) for the server-rendered pages:
 //
-//   Discourse.dialog.alert(message)                  OK
-//   Discourse.dialog.confirm({ message, title, didConfirm, confirmLabel,
-//                              cancelLabel, confirmClass })  OK and Cancel
+//   Discourse.dialog.alert(message | { message, title, didConfirm,
+//                                      didCancel, buttons })   OK
+//   Discourse.dialog.confirm({ message, title, didConfirm, didCancel,
+//                              confirmLabel, cancelLabel, confirmClass })
+//                                                     OK and Cancel
+//   Discourse.dialog.yesNoConfirm({ ... })            Yes and No
+//   Discourse.dialog.popupAjaxError(text)             an ajax error's alert
 //
 // rendered as DialogHolder renders them into #dialog-holder, closed by
-// its buttons, the close button, the overlay or Escape. The labels come
-// from the page's #dialog-strings (ok_value, cancel, modal.close).
+// its buttons, the close button, the overlay or Escape (the last three
+// cancel). `buttons` replaces the footer's: { label, class, icon,
+// action }. The labels come from the page's #dialog-strings (ok_value,
+// cancel, yes_value, no_value, modal.close).
 (function () {
   "use strict";
 
@@ -32,33 +39,53 @@
       .replace(/"/g, "&quot;");
   }
 
-  function close() {
+  var cancelCurrent = null;
+
+  function close(cancelled) {
     var holder = document.getElementById("dialog-holder");
     if (holder) {
       holder.remove();
     }
     document.documentElement.classList.remove("dialog-open");
     document.removeEventListener("keydown", onKey);
+    var cancel = cancelCurrent;
+    cancelCurrent = null;
+    if (cancelled && cancel) {
+      cancel();
+    }
   }
 
   function onKey(event) {
     if (event.key === "Escape") {
-      close();
+      close(true);
     }
   }
 
-  function button(cls, label) {
+  function icon(name) {
     return (
-      '<button class="btn btn-text ' +
+      '<svg class="fa d-icon d-icon-' +
+      name +
+      ' svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
+      name +
+      '"></use></svg>'
+    );
+  }
+
+  function button(cls, label, iconName) {
+    return (
+      '<button class="btn ' +
+      (iconName ? "btn-icon-text " : "btn-text ") +
       cls +
-      '" type="button"><span class="d-button-label">' +
+      '" type="button">' +
+      (iconName ? icon(iconName) : "") +
+      '<span class="d-button-label">' +
       escapeHtml(label) +
       "</span></button>"
     );
   }
 
   function show(options) {
-    close();
+    close(false);
     var s = strings();
     var holder = document.createElement("div");
     holder.id = "dialog-holder";
@@ -71,16 +98,27 @@
         escapeHtml(options.title) +
         '</h3><button class="btn no-text btn-icon btn-flat dialog-close close" title="' +
         escapeHtml(s["modal.close"] || "close") +
-        '" type="button"><svg class="fa d-icon d-icon-xmark svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#xmark"></use></svg><span aria-hidden="true"> &#8203; </span></button></div>';
+        '" type="button">' +
+        icon("xmark") +
+        '<span aria-hidden="true"> &#8203; </span></button></div>';
     }
     if (options.message) {
       html += '<div class="dialog-body"><p>' + options.message + "</p></div>";
     }
-    html +=
-      '<div class="dialog-footer">' +
-      button(options.confirmClass || "btn-primary", options.confirmLabel || s.ok_value || "OK");
-    if (options.cancel) {
-      html += button("btn-default", options.cancelLabel || s.cancel || "Cancel");
+    html += '<div class="dialog-footer">';
+    var actions = [];
+    if (options.buttons) {
+      options.buttons.forEach(function (b) {
+        html += button(b.class || "btn-default", b.label, b.icon);
+        actions.push(b.action || null);
+      });
+    } else {
+      html += button(options.confirmClass || "btn-primary", options.confirmLabel || s.ok_value || "OK");
+      actions.push(options.didConfirm || null);
+      if (options.cancel) {
+        html += button("btn-default", options.cancelLabel || s.cancel || "Cancel");
+        actions.push("cancel");
+      }
     }
     html += "</div></div>";
     holder.innerHTML = html;
@@ -88,33 +126,48 @@
     root.appendChild(holder);
     document.documentElement.classList.add("dialog-open");
     document.addEventListener("keydown", onKey);
+    cancelCurrent = options.didCancel || null;
     var buttons = holder.querySelectorAll(".dialog-footer .btn");
-    buttons[0].focus();
-    buttons[0].addEventListener("click", function () {
-      close();
-      if (options.didConfirm) {
-        options.didConfirm();
-      }
-    });
-    if (buttons[1]) {
-      buttons[1].addEventListener("click", function () {
-        close();
-        if (options.didCancel) {
-          options.didCancel();
+    buttons.forEach(function (el, i) {
+      el.addEventListener("click", function () {
+        if (actions[i] === "cancel") {
+          close(true);
+          return;
+        }
+        close(false);
+        if (actions[i]) {
+          actions[i]();
         }
       });
+    });
+    if (buttons[0]) {
+      buttons[0].focus();
     }
     holder.querySelectorAll(".dialog-overlay, .dialog-close").forEach(function (el) {
-      el.addEventListener("click", close);
+      el.addEventListener("click", function () {
+        close(true);
+      });
     });
   }
 
   Discourse.dialog = {
-    alert: function (message) {
-      show({ message: message });
+    alert: function (options) {
+      show(typeof options === "string" ? { message: options } : options);
     },
     confirm: function (options) {
       show(Object.assign({ cancel: true }, options));
+    },
+    yesNoConfirm: function (options) {
+      var s = strings();
+      show(
+        Object.assign({ cancel: true }, options, {
+          confirmLabel: s.yes_value || "Yes",
+          cancelLabel: s.no_value || "No",
+        })
+      );
+    },
+    popupAjaxError: function (text) {
+      show({ message: escapeHtml(text) });
     },
   };
 })();

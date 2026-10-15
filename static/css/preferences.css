@@ -1,0 +1,495 @@
+/*
+ * The user preferences, ported from base/user.scss (the .user-preferences,
+ * .pref-email, notification schedule and user field rules),
+ * common/foundation/base.scss and common/base/discourse.scss (forms,
+ * fieldsets, the text sizes), components/file-uploader.scss and
+ * components/d-editor.scss's bio rules:
+ * the rules of the reference's compiled stylesheet that match a
+ * preferences tab and the port's sheets lacked.
+ */
+
+/* foundation/base.scss */
+fieldset {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+legend {
+  color: var(--primary-high);
+  font-weight: bold;
+  font-size: var(--font-down-1-rem);
+}
+
+::-webkit-datetime-edit {
+  display: inline;
+}
+
+::-webkit-datetime-edit-fields-wrapper,
+::-webkit-datetime-edit-text,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-year-field {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+select,
+input[type="file"] {
+  line-height: var(--line-height-large);
+}
+
+.pick-files-button input[type="file"] {
+  display: none;
+}
+
+html.text-size-smallest {
+  font-size: var(--base-font-size-smallest);
+}
+
+html.text-size-smaller {
+  font-size: var(--base-font-size-smaller);
+}
+
+html.text-size-larger {
+  font-size: var(--base-font-size-larger);
+}
+
+html.text-size-largest {
+  font-size: var(--base-font-size-largest);
+}
+
+/* discourse.scss: forms */
+.control-group {
+  margin-bottom: 9px;
+}
+
+.controls-dropdown {
+  margin-bottom: 10px;
+}
+
+@media (width >= 40rem) {
+  .input-xxlarge,
+  .input-xxlarge + .control-instructions {
+    width: 530px;
+  }
+}
+
+.form-vertical input,
+.form-vertical textarea,
+.form-vertical select {
+  display: inline-block;
+  margin-bottom: 0;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.form-vertical .control-label:not(.checkbox-label) {
+  font-family: var(--heading-font-family);
+  font-weight: bold;
+  font-size: var(--font-up-2);
+  line-height: var(--line-height-large);
+}
+
+.form-vertical .control-group,
+.form-vertical .controls {
+  margin-left: 0;
+}
+
+.form-vertical .control-group label,
+.form-vertical .controls label {
+  font-weight: normal;
+}
+
+.form-vertical .control-group {
+  margin-bottom: var(--space-5);
+}
+
+.form-vertical .controls:not(.controls-dropdown) + .controls {
+  margin-top: var(--space-2);
+}
+
+.form-horizontal .control-group {
+  margin-bottom: 18px;
+}
+
+.form-horizontal .control-group::before,
+.form-horizontal .control-group::after {
+  content: "";
+  display: table;
+}
+
+.form-horizontal .control-group::after {
+  clear: both;
+}
+
+/* user.scss */
+.user-preferences .form-vertical {
+  width: 500px;
+  max-width: 100%;
+}
+
+.user-preferences .form-vertical .control-group {
+  margin-bottom: 2em;
+}
+
+.user-preferences .static {
+  color: var(--primary);
+  display: inline-block;
+}
+
+.user-preferences .instructions {
+  color: var(--primary-medium);
+  font-size: var(--font-down-1);
+  line-height: var(--line-height-large);
+  display: block;
+  margin-top: 0.25em;
+}
+
+.user-preferences .avatar {
+  margin-left: 3px;
+}
+
+.user-preferences .save-button {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.user-preferences #user-default-calendar {
+  min-width: 175px;
+}
+
+.pref-avatar .avatar {
+  max-width: 90px;
+  max-height: 90px;
+}
+
+.pref-email {
+  display: grid;
+  grid-template-areas: "title title" "email email" "instructions controls";
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 var(--space-2);
+}
+
+.pref-email .control-label {
+  grid-area: title;
+}
+
+.pref-email .emails {
+  grid-area: email;
+}
+
+.pref-email .instructions {
+  grid-area: instructions;
+}
+
+.pref-email .controls {
+  margin-top: var(--space-2);
+  grid-area: controls;
+}
+
+.pref-email .resend-email-confirmation {
+  background: transparent;
+  border: none;
+  color: var(--tertiary);
+  padding: 0;
+  text-align: left;
+}
+
+.pref-email .row {
+  border-bottom: 1px solid var(--content-border-color);
+  padding: var(--space-1) 0;
+  display: grid;
+  grid-template-areas: "email dropdown" "meta dropdown";
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+}
+
+.pref-email .email-first {
+  grid-area: email;
+  align-self: center;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.pref-email .email-second {
+  grid-area: meta;
+  color: var(--primary-medium);
+}
+
+.pref-email .email-second .primary {
+  color: var(--success);
+}
+
+.pref-email .email-second .unconfirmed {
+  font-style: italic;
+}
+
+.pref-email .email-dropdown {
+  grid-area: dropdown;
+  align-self: center;
+  justify-self: end;
+}
+
+.pref-email .email-dropdown summary {
+  background: transparent;
+}
+
+.pref-email .email-dropdown summary .d-icon {
+  color: var(--primary-high);
+}
+
+.notification-schedule .instruction {
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+
+.notification-schedule .notification-schedule-table .notification-schedule-tbody {
+  border-top-width: 1px;
+}
+
+.notification-schedule .notification-schedule-table .notification-schedule-tbody .day .day-label {
+  padding: 1em 1em 1em 0;
+}
+
+.notification-schedule .notification-schedule-table .notification-schedule-tbody .day .to {
+  padding: 0 0.5em;
+}
+
+.chat-notifications .chat-sound-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.user-main .user-field {
+  margin-bottom: 10px;
+}
+
+.user-main .user-field .controls label:not(.checkbox-label) {
+  width: auto;
+  text-align: left;
+  font-weight: bold;
+}
+
+.user-main .user-field .controls .instructions {
+  color: var(--primary-medium);
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: var(--font-down-1);
+}
+
+@media (width >= 48rem) {
+  .user-main .user-field input[type="text"] {
+    width: 530px;
+  }
+}
+
+.control-group[data-setting-name="user-user-fields"] .user-field.text .controls,
+.control-group[data-setting-name="user-user-fields"] .user-field.textarea .controls,
+.control-group[data-setting-name="user-user-fields"] .user-field.date .controls {
+  display: flex;
+  flex-direction: column;
+}
+
+.control-group[data-setting-name="user-user-fields"] .user-field .controls .control-label.alt-placeholder {
+  order: 1;
+}
+
+.control-group[data-setting-name="user-user-fields"] .user-field .controls .ember-text-field,
+.control-group[data-setting-name="user-user-fields"] .user-field .controls .ember-text-area {
+  order: 2;
+}
+
+.control-group[data-setting-name="user-user-fields"] .user-field .controls .instructions {
+  order: 4;
+}
+
+/* file-uploader.scss */
+.file-uploader {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-uploader__preview {
+  position: relative;
+  max-width: 400px;
+  width: 100%;
+  height: 125px;
+  box-sizing: border-box;
+  border-radius: var(--d-input-border-radius);
+  background-origin: content-box;
+  background-clip: content-box;
+}
+
+.file-uploader__preview:has(.lightbox) {
+  height: 85px;
+}
+
+.has-image .file-uploader__preview:hover {
+  background-color: unset;
+}
+
+.has-image .file-uploader__preview {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left center;
+  border: 1px solid var(--primary-low-mid);
+  padding: var(--space-1);
+}
+
+.file-uploader__preview .meta {
+  display: none;
+}
+
+.file-uploader__preview .expand-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.file-uploader__preview:hover .expand-overlay,
+.file-uploader__preview:focus-within .expand-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.file-uploader__preview:focus,
+.file-uploader__preview:focus-within {
+  border-color: var(--tertiary);
+  outline: 2px solid var(--tertiary);
+  outline-offset: -2px;
+}
+
+.file-uploader__preview:hover {
+  background-color: var(--tertiary-very-low);
+}
+
+.no-image .file-uploader__preview,
+.no-file .file-uploader__preview {
+  position: relative;
+  border: 1px dashed var(--primary-medium);
+  background-color: var(--primary-very-low);
+}
+
+.no-image .file-uploader__preview:hover,
+.no-file .file-uploader__preview:hover {
+  background-color: var(--tertiary-very-low);
+}
+
+.no-image .file-uploader__preview:focus,
+.no-image .file-uploader__preview:focus-within,
+.no-file .file-uploader__preview:focus,
+.no-file .file-uploader__preview:focus-within {
+  outline: 2px dashed var(--tertiary);
+}
+
+.file-uploader__progress-status {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+}
+
+.file-uploader__progress-status .progress-bar-container {
+  --d-border-radius: 10px;
+  background: var(--primary-low-mid);
+  border-radius: var(--d-border-radius);
+  height: 5px;
+  position: relative;
+}
+
+.file-uploader__progress-status .progress-bar-container .progress-bar {
+  border-radius: var(--d-border-radius);
+  height: 100%;
+  background: var(--tertiary);
+  transition: width 0.3s;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.file-uploader__progress-status span {
+  font-size: var(--font-down-2);
+  margin-top: 8px;
+  display: block;
+  text-align: center;
+  color: var(--primary-high);
+}
+
+.file-uploader__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.file-uploader__controls label {
+  display: flex;
+  font-weight: normal;
+  box-sizing: border-box;
+  color: var(--primary-very-high);
+  border-radius: var(--d-button-border-radius);
+  cursor: pointer;
+}
+
+.no-image .file-uploader__controls label,
+.no-file .file-uploader__controls label {
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  white-space: normal;
+}
+
+.no-image .file-uploader__controls label:hover,
+.no-image .file-uploader__controls label:focus-visible,
+.no-file .file-uploader__controls label:hover,
+.no-file .file-uploader__controls label:focus-visible {
+  color: var(--primary-very-high);
+}
+
+.has-image .file-uploader__controls {
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  justify-content: flex-start;
+}
+
+.timezone-input {
+  margin-bottom: 0.5em;
+}
+
+/* d-editor.scss: the bio */
+.user-preferences .bio-composer .d-editor-container {
+  display: block;
+}
+
+.user-preferences .bio-composer .d-editor-textarea-wrapper {
+  border: var(--d-input-border);
+}
+
+.user-preferences .bio-composer .d-editor-preview-wrapper {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.user-preferences .bio-composer .d-editor-preview {
+  background-color: var(--primary-very-low);
+  margin-top: 1em;
+  padding: 0.667em;
+}
+
+.user-preferences .bio-composer .d-editor-preview:empty {
+  margin: 0;
+  padding: 0;
+}

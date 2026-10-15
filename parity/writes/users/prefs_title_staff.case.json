@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "PUT", "path": "/u/user1.json", "params": { "title": "Benevolent", "flair_group_id": "", "primary_group_id": "" } }
+  ]
+}
