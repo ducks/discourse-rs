@@ -1,0 +1,727 @@
+{
+  "name": "edit_first_post_composer_flow",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "params": {
+        "title": "Parity fixture: replies and posters, as the composer saves",
+        "category_id": 4,
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          }
+        ],
+        "original_title": "Parity fixture: replies and posters",
+        "original_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, saved by the composer with its new title.",
+          "topic_id": "35",
+          "original_text": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ],
+  "started_at": "2026-10-15T10:13:16.289735",
+  "transaction_started_at": "2026-10-15T10:13:13.431424",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "basic_topic": {
+          "fancy_title": "Parity fixture: replies and posters, as the composer saves",
+          "id": 35,
+          "title": "Parity fixture: replies and posters, as the composer saves",
+          "slug": "parity-fixture-replies-and-posters-as-the-composer-saves",
+          "posts_count": 5
+        },
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "post": {
+          "id": 35,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-09-30T07:28:28.901Z",
+          "cooked": "<p>First post of a topic with several repliers, saved by the composer with its new title.</p>",
+          "post_number": 1,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-10-15T10:13:17.700Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 0.2,
+          "yours": true,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters-as-the-composer-saves",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 2,
+          "can_edit": true,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": true,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": false,
+          "raw": "First post of a topic with several repliers, saved by the composer with its new title.",
+          "actions_summary": [
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "draft_sequence": 2,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "post_url": "/t/parity-fixture-replies-and-posters-as-the-composer-saves/35/1",
+          "reactions": [],
+          "current_user_reaction": null,
+          "reaction_users_count": 0,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null,
+          "can_vote": false
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "created_at": "2026-10-15T10:13:17.531Z",
+        "post_id": 35,
+        "previous_hidden": false,
+        "current_hidden": false,
+        "first_revision": 2,
+        "previous_revision": null,
+        "current_revision": 2,
+        "next_revision": null,
+        "last_revision": 2,
+        "current_version": 2,
+        "version_count": 2,
+        "username": "user0",
+        "display_username": "user0",
+        "acting_user_name": "User0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "edit_reason": null,
+        "body_changes": {
+          "inline": "<div class=\"inline-diff\"><p>First post of a topic with several repliers, <del>long </del><del>enough </del><del>to </del><del>be </del><del>a </del><del>real </del><del>post </del><del>body </del><del>for </del><ins>saved </ins><ins>by </ins>the <del>excerpt</del><ins>composer </ins><ins>with </ins><ins>its </ins><ins>new </ins><ins>title</ins>.</p></div>",
+          "side_by_side": "<div class=\"revision-content --previous\"><p>First post of a topic with several repliers, <del>long </del><del>enough </del><del>to </del><del>be </del><del>a </del><del>real </del><del>post </del><del>body </del><del>for </del>the <del>excerpt</del>.</p></div><div class=\"revision-content --current\"><p>First post of a topic with several repliers, <ins>saved </ins><ins>by </ins>the <ins>composer </ins><ins>with </ins><ins>its </ins><ins>new </ins><ins>title</ins>.</p></div>",
+          "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\">First post of a topic with several repliers, <del>long enough to be a real post body for </del>the <del>excerpt</del>.</td><td class=\"--current\">First post of a topic with several repliers, <ins>saved by </ins>the <ins>composer with its new title</ins>.</td></tr></table>"
+        },
+        "title_changes": {
+          "inline": "<div class=\"inline-diff\"><div>Parity fixture: replies and posters<ins>,</ins><ins> </ins><ins>as </ins><ins>the </ins><ins>composer </ins><ins>saves</ins></div></div>",
+          "side_by_side": "<div class=\"revision-content --previous\"><div>Parity fixture: replies and posters</div></div><div class=\"revision-content --current\"><div>Parity fixture: replies and posters<ins>,</ins><ins> </ins><ins>as </ins><ins>the </ins><ins>composer </ins><ins>saves</ins></div></div>"
+        },
+        "can_edit": true
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "sequence": 2,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 35,
+          "user_id": 2,
+          "created_at": "2026-10-15T10:13:17.531929",
+          "updated_at": "2026-10-15T10:13:17.708025",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- 'Parity fixture: replies and posters, as the composer saves'\nraw:\n- First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.\n- First post of a topic with several repliers, saved by the composer with its new\n  title.\ncooked:\n- \"<p>First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.</p>\"\n- \"<p>First post of a topic with several repliers, saved by the composer with its\n  new title.</p>\"\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 0,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 5,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 0,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 5,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 0,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "search_data": "'bodi':23 'enough':17 'excerpt':26 'first':8 'fixtur':2A 'general':6B 'guid':7C 'long':16 'pariti':1A 'post':9,22 'poster':5A 'real':21 'repli':3A 'replier':15 'sever':14 'topic':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, saved by the composer with its new title.",
+            "search_data": "'compos':8A,23 'first':12 'fixtur':2A 'general':10B 'guid':11C 'new':26 'pariti':1A 'post':13 'poster':5A 'repli':3A 'replier':19 'save':9A,20 'sever':18 'titl':27 'topic':16",
+            "private_message": false
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:28.901878",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:28.901913",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:28.901913",
+            "word_count": 19,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:28.917598",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/35@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 35,
+            "raw": "First post of a topic with several repliers, saved by the composer with its new title.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>First post of a topic with several repliers, saved by the composer with its new title.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 2,
+            "baked_at": "2026-10-15T10:13:17.699887",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:28.901913",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 2,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T10:13:17.700047",
+            "word_count": 16,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-15T10:13:16.338907",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/35@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "topic_id": 35,
+            "search_data": "'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B"
+          },
+          "after": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Parity fixture: replies and posters, as the composer saves First post of a topic with several repliers, saved by the composer with its new title.",
+            "topic_id": 35,
+            "search_data": "'compos':8A,21B 'first':10B 'fixtur':2A 'new':24B 'pariti':1A 'post':11B 'poster':5A 'repli':3A 'replier':17B 'save':9A,18B 'sever':16B 'titl':25B 'topic':14B"
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters-as-the-composer-saves",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters, as the composer saves",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, saved by the composer with its new title.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T10:13:17.502497",
+            "word_count": 65,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters, as the composer saves",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5q8wpTSKF/MNrGJDvcBdnDXshaw=",
+            "created_at": "2026-10-15T10:13:14.654055",
+            "rotated_at": "2026-10-15T10:13:14.649361",
+            "updated_at": "2026-10-15T10:13:14.654055",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "5q8wpTSKF/MNrGJDvcBdnDXshaw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T10:13:16.302253",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5q8wpTSKF/MNrGJDvcBdnDXshaw=",
+            "created_at": "2026-10-15T10:13:14.654055",
+            "rotated_at": "2026-10-15T10:13:14.649361",
+            "updated_at": "2026-10-15T10:13:14.654055",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "5q8wpTSKF/MNrGJDvcBdnDXshaw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": 2,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 35,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "post_id": 35,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 35
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 35,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "post_id": 35,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 35
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_revisions": 1
+  },
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "recorded_from": {
+    "case": "90ff8fd38b2ad600933ea4765c7ccf9fa3731030de86abfdca3570ffd795174b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

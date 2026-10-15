@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "title": "Parity fixture: moved, renamed and edited at once",
+        "post": {
+          "raw": "First post of a topic with several repliers, edited while its topic moves.",
+          "category_id": "2",
+          "edit_reason": "moving it"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

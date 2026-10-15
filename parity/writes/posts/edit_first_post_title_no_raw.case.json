@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "title": "Parity fixture: a title without a raw",
+        "post": {
+          "edit_reason": "title only"
+        }
+      }
+    }
+  ]
+}

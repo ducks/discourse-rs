@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "title": "Parity fixture: a wiki editor renaming the topic",
+        "post": {
+          "raw": "First post of a topic with several repliers, edited by a wiki editor."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, edited by a wiki editor who leaves the title.",
+          "category_id": "34"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "name": "edit_first_post_title_invalid",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "title": "short",
+        "post": {
+          "raw": "First post of a topic with several repliers, edited with a title too short to keep."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "title": "short",
+        "post": {
+          "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T09:39:53.800223",
+  "transaction_started_at": "2026-10-15T09:39:50.866944",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Title is too short (minimum is 15 characters)",
+          "Title seems unclear, most of the words contain the same letters over and over?"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Title is too short (minimum is 15 characters)",
+          "Title seems unclear, most of the words contain the same letters over and over?"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8lv4k5CgxZSZLx1BpQHqoDwqlq0=",
+            "created_at": "2026-10-15T09:39:51.354778",
+            "rotated_at": "2026-10-15T09:39:51.353646",
+            "updated_at": "2026-10-15T09:39:51.354778",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8lv4k5CgxZSZLx1BpQHqoDwqlq0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T09:39:53.80956",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8lv4k5CgxZSZLx1BpQHqoDwqlq0=",
+            "created_at": "2026-10-15T09:39:51.354778",
+            "rotated_at": "2026-10-15T09:39:51.353646",
+            "updated_at": "2026-10-15T09:39:51.354778",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8lv4k5CgxZSZLx1BpQHqoDwqlq0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "recorded_from": {
+    "case": "32ec3e467fb39437d95b3899207a3b99b247d44ea6124f65b95b83f631eb4ac7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

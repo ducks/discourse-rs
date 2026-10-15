@@ -485,9 +485,84 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     .await?;
     // Deleted, or no longer visible to them: it goes from the page, its
     // wrapper with it.
-    Ok(Some(html.unwrap_or_else(|| {
+    let mut html = html.unwrap_or_else(|| {
         format!(r#"<div hx-swap-oob="delete:#posts > [data-post-number='{post_number}']"></div>"#)
-    })))
+    });
+    // reload_topic: Ember reloads the topic, redrawing its title,
+    // category and tags.
+    if kind == "revised" && data["reload_topic"] == Value::Bool(true) {
+        html.push_str(&render_title(live).await?);
+    }
+    Ok(Some(html))
+}
+
+/// The topic's title block as this viewer sees it now, replacing
+/// `#topic-title`; empty when the topic is gone for them.
+async fn render_title(live: &Live) -> Result<String, AppError> {
+    let Some(topic_id) = live
+        .topic_channel
+        .as_deref()
+        .and_then(|c| c.rsplit('/').next())
+        .and_then(|id| id.parse::<i32>().ok())
+    else {
+        return Ok(String::new());
+    };
+    let state = &live.state;
+    let settings = &live.settings;
+    let guardian = &live.guardian;
+    let mut conn = state.pool.acquire().await?;
+    let urls = Urls {
+        config: &state.config,
+        settings,
+    };
+    let mut view = crate::topic_view::TopicView {
+        conn: &mut conn,
+        settings,
+        i18n: &state.i18n,
+        guardian,
+        urls: &urls,
+        options: crate::topic_view::Options {
+            page: 1,
+            post_number: None,
+        },
+        post_types: Vec::new(),
+    };
+    let rendered = match view.render(topic_id).await {
+        Ok(rendered) => rendered,
+        Err(crate::topic_view::TopicViewError::NotFound) => return Ok(String::new()),
+        Err(e) => return Err(e.into()),
+    };
+    drop(view);
+    let json = &rendered.json;
+    let base = state.config.globals.relative_url_root();
+    let topic_url = format!(
+        "{base}/t/{}/{topic_id}",
+        json["slug"].as_str().unwrap_or_default()
+    );
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: base,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let voter = guardian.user().map(|u| (u.id, u.trust_level));
+    let title = crate::html::topic_title_html(
+        &mut conn,
+        &state.i18n,
+        settings,
+        &list,
+        json,
+        &topic_url,
+        voter,
+    )
+    .await?;
+    Ok(format!(
+        r#"<div class="container" id="topic-title" hx-swap-oob="true">{title}</div>"#
+    ))
 }
 
 /// One post as this viewer sees it now, as an out-of-band swap: appended

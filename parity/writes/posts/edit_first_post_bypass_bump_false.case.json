@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, a wiki edited with a bump.",
+          "bypass_bump": "false"
+        }
+      }
+    }
+  ]
+}

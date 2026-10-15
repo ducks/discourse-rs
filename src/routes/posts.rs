@@ -13,6 +13,7 @@ use crate::params;
 use crate::posting::Ctx;
 use crate::posting::create::{self, NewPost, Outcome};
 use crate::posting::revise::{self, Changes};
+use crate::posting::revise_topic::TopicFields;
 use crate::posting::revisions::{self, RevisionResult, Which};
 use crate::pretty_text::Host;
 use crate::session::current::AuthGuardian;
@@ -283,18 +284,32 @@ pub async fn update(
             vec!["param is missing or the value is empty or invalid: post".into()],
         ));
     };
+    // topic_id is what Ember's composer sends along, unread.
     for key in post_params.keys() {
         if !matches!(
             key.as_str(),
-            "raw" | "edit_reason" | "original_text" | "raw_old"
+            "raw"
+                | "edit_reason"
+                | "original_text"
+                | "raw_old"
+                | "topic_id"
+                | "locale"
+                | "category_id"
+                | "bypass_bump"
         ) {
-            return Err(Unsupported("posts#update fields beyond raw and edit_reason").into());
+            return Err(Unsupported(
+                "posts#update fields beyond raw, edit_reason, locale and category_id",
+            )
+            .into());
         }
     }
-    for key in ["title", "image_sizes", "bypass_bump"] {
-        if p.contains_key(key) {
-            return Err(Unsupported("posts#update title, image sizes and bypass_bump").into());
-        }
+    if p.get("image_sizes").is_some_and(|v| match v {
+        Value::Object(m) => !m.is_empty(),
+        Value::Null => false,
+        Value::String(s) => !s.is_empty(),
+        _ => true,
+    }) {
+        return Err(Unsupported("posts#update image_sizes (process_post's image sizes)").into());
     }
     let Ok(post_id) = id.parse::<i32>() else {
         return Ok(super::topics::not_found_response(&state));
@@ -310,13 +325,22 @@ pub async fn update(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    let exists: Option<(Option<i32>, bool, chrono::NaiveDateTime)> = sqlx::query_as(
-        "SELECT user_id, deleted_at IS NOT NULL, created_at FROM posts WHERE id = $1",
+    type Found = (
+        Option<i32>,
+        bool,
+        chrono::NaiveDateTime,
+        i32,
+        i32,
+        Option<String>,
+    );
+    let exists: Option<Found> = sqlx::query_as(
+        "SELECT user_id, deleted_at IS NOT NULL, created_at, topic_id, post_number, locale \
+             FROM posts WHERE id = $1",
     )
     .bind(post_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let Some((author, deleted, created_at)) = exists else {
+    let Some((author, deleted, created_at, topic_id, post_number, locale)) = exists else {
         return Ok(super::topics::not_found_response(&state));
     };
     if deleted {
@@ -342,7 +366,13 @@ pub async fn update(
     if !can_edit {
         return Ok(super::search::invalid_access(&state));
     }
-    let raw = post_params.get("raw").and_then(params::scalar);
+    // changes[:raw] is always there: none sent is a blank raw.
+    let raw = Some(
+        post_params
+            .get("raw")
+            .and_then(params::scalar)
+            .unwrap_or_default(),
+    );
     let original_text = post_params
         .get("original_text")
         .or_else(|| post_params.get("raw_old"))
@@ -360,13 +390,87 @@ pub async fn update(
             ));
         }
     }
+    // changes[:locale]: always sent, so a post with a locale loses it
+    // when none comes.
+    let new_locale = post_params
+        .get("locale")
+        .and_then(params::scalar)
+        .filter(|l| !l.is_empty());
+    if new_locale != locale {
+        return Err(Unsupported("changing a post's locale").into());
+    }
+    // A first post takes the title and category as posts#create does.
+    let mut topic = TopicFields::default();
+    if post_number == 1 {
+        let (topic_title, topic_category): (String, Option<i32>) =
+            sqlx::query_as("SELECT title, category_id FROM topics WHERE id = $1")
+                .bind(topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if let Some(title) = p.get("title").filter(|v| !v.is_null()) {
+            let title =
+                params::scalar(title).ok_or(Unsupported("posts#update title of another shape"))?;
+            if title != topic_title
+                && !super::topic_update::can_edit_topic(&mut conn, &settings, &guardian, topic_id)
+                    .await?
+            {
+                return Ok(super::search::invalid_access(&state));
+            }
+            topic.title = Some(title);
+        }
+        if let Some(category) = post_params.get("category_id").filter(|v| !v.is_null()) {
+            let category = params::scalar(category)
+                .ok_or(Unsupported("posts#update category_id of another shape"))?;
+            let category_id = crate::ruby::to_i(&category) as i32;
+            if category_id != topic_category.unwrap_or(0) {
+                if !super::topic_update::can_edit_topic(&mut conn, &settings, &guardian, topic_id)
+                    .await?
+                {
+                    return Ok(super::search::invalid_access(&state));
+                }
+                let exists: bool =
+                    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+                        .bind(category_id)
+                        .fetch_one(&mut *conn)
+                        .await?;
+                if !exists && category_id != 0 {
+                    return Ok(json_error(
+                        StatusCode::UNPROCESSABLE_ENTITY,
+                        vec![ctx.t("category.errors.not_found")],
+                    ));
+                }
+                if !crate::posting::revise_topic::can_move_topic_to_category(
+                    &mut conn,
+                    &settings,
+                    &guardian,
+                    category_id,
+                )
+                .await?
+                {
+                    return Ok(super::search::invalid_access(&state));
+                }
+            }
+            topic.category_id = Some(category_id);
+        }
+    }
+    // bypass_bump, for those who may update bumped_at.
+    let bypass_bump = match p
+        .get("bypass_bump")
+        .or_else(|| post_params.get("bypass_bump"))
+    {
+        Some(v) if guardian.is_staff() || guardian.has_trust_level(4) => {
+            let v = params::scalar(v).ok_or(Unsupported("bypass_bump of another shape"))?;
+            crate::ruby::cast_boolean(Some(&v)) == Some(true)
+        }
+        _ => false,
+    };
     drop(conn);
     let changes = Changes {
         raw,
         edit_reason: post_params.get("edit_reason").and_then(params::scalar),
-        force_new_version: false,
-        skip_validations: false,
-        skip_revision: false,
+        topic,
+        bypass_bump,
+        ..Default::default()
     };
     match revise::revise(&state.pool, &ctx, &guardian, post_id, changes).await? {
         revise::Outcome::Invalid(errors) => {

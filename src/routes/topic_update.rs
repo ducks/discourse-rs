@@ -333,7 +333,7 @@ async fn category_change_error(
 }
 
 /// `guardian.can_edit?(topic)` for a topic that exists.
-async fn can_edit_topic(
+pub(crate) async fn can_edit_topic(
     conn: &mut PgConnection,
     s: &SiteSettings,
     guardian: &Guardian,

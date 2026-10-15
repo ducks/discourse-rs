@@ -581,6 +581,7 @@ async fn trigger_post_action(
                     force_new_version: false,
                     skip_validations: true,
                     skip_revision: true,
+                    ..Default::default()
                 },
             )
             .await?;
