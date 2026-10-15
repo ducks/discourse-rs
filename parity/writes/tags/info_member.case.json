@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (3, 1, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/tag/1/info.json"},
+    {"method": "GET", "path": "/tag/2/info.json"}
+  ]
+}

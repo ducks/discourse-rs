@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at, description) VALUES (9601, 'how-to', 'how-to', 1, now(), now(), NULL)",
+    "UPDATE tags SET description = 'Step by step', description_cooked = '<p>Step by step</p>' WHERE id = 1",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (4, 1, now(), now())",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kinds', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 0, 1, now(), now())",
+    "INSERT INTO category_tag_groups (category_id, tag_group_id, created_at, updated_at) VALUES (2, 9601, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/tag/1/info.json"},
+    {"method": "GET", "path": "/tag/howto/info.json"},
+    {"method": "GET", "path": "/tag/1/settings.json"},
+    {"method": "PUT", "path": "/tag/1/settings.json", "params": {"tag_settings": {"name": "How To", "slug": "how-to-guides", "description": "Step by *step*", "removed_synonym_ids": [9601], "new_synonyms": [{"id": 2}]}}},
+    {"method": "PUT", "path": "/tag/1/settings.json", "params": {"tag_settings": {"slug": "Not A Slug"}}},
+    {"method": "GET", "path": "/tag/999/info.json"}
+  ]
+}

@@ -1,0 +1,491 @@
+{
+  "name": "info_and_settings",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/1/info.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/howto/info.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/1/settings.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/1/settings.json",
+      "params": {
+        "tag_settings": {
+          "name": "How To",
+          "slug": "how-to-guides",
+          "description": "Step by *step*",
+          "removed_synonym_ids": [
+            9601
+          ],
+          "new_synonyms": [
+            {
+              "id": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/1/settings.json",
+      "params": {
+        "tag_settings": {
+          "slug": "Not A Slug"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/tag/999/info.json"
+    }
+  ],
+  "started_at": "2026-10-14T23:42:02.668612",
+  "transaction_started_at": "2026-10-14T23:42:01.540509",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 2,
+            "name": "Site Feedback",
+            "color": "808281",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "thought_balloon",
+            "slug": "site-feedback",
+            "topic_count": 1,
+            "post_count": 1,
+            "position": 1,
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "topic_url": "/t/about-the-site-feedback-category/1",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": false,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          },
+          {
+            "id": 4,
+            "name": "General",
+            "color": "25AAE2",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "blue_book",
+            "slug": "general",
+            "topic_count": 3,
+            "post_count": 6,
+            "position": 3,
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+            "topic_url": "/t/about-the-general-category/3",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": true,
+            "subcategory_count": 1,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          }
+        ],
+        "tag_info": {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "topic_count": 2,
+          "staff": false,
+          "description": "Step by step",
+          "description_cooked": "<p>Step by step</p>",
+          "synonyms": [
+            {
+              "id": 9601,
+              "text": "how-to",
+              "name": "how-to",
+              "slug": "how-to",
+              "description": null,
+              "count": 0,
+              "pm_only": false,
+              "target_tag": {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            }
+          ],
+          "tag_group_names": [
+            "Kinds"
+          ],
+          "category_restricted": true,
+          "category_ids": [
+            2,
+            4
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 2,
+            "name": "Site Feedback",
+            "color": "808281",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "thought_balloon",
+            "slug": "site-feedback",
+            "topic_count": 1,
+            "post_count": 1,
+            "position": 1,
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "topic_url": "/t/about-the-site-feedback-category/1",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": false,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          },
+          {
+            "id": 4,
+            "name": "General",
+            "color": "25AAE2",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "blue_book",
+            "slug": "general",
+            "topic_count": 3,
+            "post_count": 6,
+            "position": 3,
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+            "topic_url": "/t/about-the-general-category/3",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": true,
+            "subcategory_count": 1,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          }
+        ],
+        "tag_info": {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "topic_count": 2,
+          "staff": false,
+          "description": "Step by step",
+          "description_cooked": "<p>Step by step</p>",
+          "synonyms": [
+            {
+              "id": 9601,
+              "text": "how-to",
+              "name": "how-to",
+              "slug": "how-to",
+              "description": null,
+              "count": 0,
+              "pm_only": false,
+              "target_tag": {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            }
+          ],
+          "tag_group_names": [
+            "Kinds"
+          ],
+          "category_restricted": true,
+          "category_ids": [
+            2,
+            4
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 2,
+            "name": "Site Feedback",
+            "color": "808281",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "thought_balloon",
+            "slug": "site-feedback",
+            "topic_count": 1,
+            "post_count": 1,
+            "position": 1,
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "topic_url": "/t/about-the-site-feedback-category/1",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": false,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          },
+          {
+            "id": 4,
+            "name": "General",
+            "color": "25AAE2",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "blue_book",
+            "slug": "general",
+            "topic_count": 3,
+            "post_count": 6,
+            "position": 3,
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+            "topic_url": "/t/about-the-general-category/3",
+            "read_restricted": false,
+            "permission": 1,
+            "notification_level": 1,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": true,
+            "subcategory_count": 1,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          }
+        ],
+        "tag_settings": {
+          "id": 1,
+          "name": "howto",
+          "locale": null,
+          "slug": "howto",
+          "description": "Step by step",
+          "description_cooked": "<p>Step by step</p>",
+          "synonyms": [
+            {
+              "id": 9601,
+              "name": "how-to"
+            }
+          ],
+          "tag_group_names": [
+            "Kinds"
+          ],
+          "tag_groups": [
+            {
+              "id": 9601,
+              "name": "Kinds"
+            }
+          ],
+          "category_restricted": true,
+          "can_edit": true,
+          "can_admin": true,
+          "category_ids": [
+            2,
+            4
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Slug is invalid"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hn6cA7T8bha+UsrNndqKqvn6M0I=",
+            "created_at": "2026-10-14T23:42:01.974378",
+            "rotated_at": "2026-10-14T23:42:01.97334",
+            "updated_at": "2026-10-14T23:42:01.974378",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "hn6cA7T8bha+UsrNndqKqvn6M0I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:42:02.675768",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hn6cA7T8bha+UsrNndqKqvn6M0I=",
+            "created_at": "2026-10-14T23:42:01.974378",
+            "rotated_at": "2026-10-14T23:42:01.97334",
+            "updated_at": "2026-10-14T23:42:01.974378",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "hn6cA7T8bha+UsrNndqKqvn6M0I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at, description) VALUES (9601, 'how-to', 'how-to', 1, now(), now(), NULL)",
+    "UPDATE tags SET description = 'Step by step', description_cooked = '<p>Step by step</p>' WHERE id = 1",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (4, 1, now(), now())",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Kinds', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 0, 1, now(), now())",
+    "INSERT INTO category_tag_groups (category_id, tag_group_id, created_at, updated_at) VALUES (2, 9601, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "54e06aa8fafc07705fcdce0f08b15a08fe2701641901774449402de800e57df5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "name": "bulk_create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/tags/bulk_create.json",
+      "params": {
+        "tag_names": [
+          "New One",
+          "howto",
+          "",
+          "a-name-far-longer-than-twenty",
+          "!!!",
+          "none",
+          "new-one"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/tags/bulk_create.json",
+      "params": {
+        "tag_names": "not-a-list"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/tags/bulk_create.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T23:42:00.402936",
+  "transaction_started_at": "2026-10-14T23:41:58.257804",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "created": [
+          "new-one"
+        ],
+        "existing": [
+          "howto"
+        ],
+        "failed": {
+          "a-name-far-longer-than-twenty": "Tag is too long (max 20 characters).",
+          "!!!": "Invalid tag name.",
+          "none": "Name is invalid",
+          "new-one": "Name has already been taken"
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Tag names Invalid parameters. Please provide an array of tag names."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Tag names Invalid parameters. Please provide an array of tag names."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "tag_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "tag_id": 3,
+          "version": 3,
+          "raw_data": "new-one",
+          "search_data": "'new':2A 'new-on':1A 'one':3A"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tags": {
+      "inserted": [
+        {
+          "id": 3,
+          "name": "new-one",
+          "slug": "new-one",
+          "locale": null,
+          "created_at": "2026-10-14T23:42:00.45924",
+          "updated_at": "2026-10-14T23:42:00.45924",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5PiedNuvSMDpFbGiY4850fFn8ok=",
+            "created_at": "2026-10-14T23:41:58.699331",
+            "rotated_at": "2026-10-14T23:41:58.698433",
+            "updated_at": "2026-10-14T23:41:58.699331",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "5PiedNuvSMDpFbGiY4850fFn8ok=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:42:00.417925",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5PiedNuvSMDpFbGiY4850fFn8ok=",
+            "created_at": "2026-10-14T23:41:58.699331",
+            "rotated_at": "2026-10-14T23:41:58.698433",
+            "updated_at": "2026-10-14T23:41:58.699331",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "5PiedNuvSMDpFbGiY4850fFn8ok=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "tags": 3
+  },
+  "recorded_from": {
+    "case": "baab4c8174ad104696b933d9ff149f179ad34d07aa6b62c74237c1a8489c9cbf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

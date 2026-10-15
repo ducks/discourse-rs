@@ -1,0 +1,183 @@
+{
+  "name": "tags_cleanup_synonyms",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-15T01:15:33.567036",
+  "transaction_started_at": "2026-10-15T01:15:30.191231",
+  "responses": [],
+  "changes": {
+    "tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "name": "stale",
+          "slug": "",
+          "locale": null,
+          "created_at": "2026-10-14T01:15:30.191231",
+          "updated_at": "2026-10-14T01:15:30.191231",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 9503,
+          "name": "grouped",
+          "slug": "",
+          "locale": null,
+          "created_at": "2026-10-14T01:15:30.191231",
+          "updated_at": "2026-10-14T01:15:30.191231",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 9504,
+          "name": "abandoned",
+          "slug": "",
+          "locale": null,
+          "created_at": "2026-10-14T01:15:30.191231",
+          "updated_at": "2026-10-14T01:15:30.191231",
+          "description": null,
+          "target_tag_id": null,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        },
+        {
+          "id": 9505,
+          "name": "stale-syn",
+          "slug": "",
+          "locale": null,
+          "created_at": "2026-10-14T01:15:30.191231",
+          "updated_at": "2026-10-14T01:15:30.191231",
+          "description": null,
+          "target_tag_id": 9501,
+          "pm_topic_count": 0,
+          "staff_topic_count": 0,
+          "description_cooked": null,
+          "public_topic_count": 0,
+          "description_cooked_version": null
+        }
+      ],
+      "updated": []
+    },
+    "topic_tags": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 5,
+          "tag_id": 9505,
+          "topic_id": 35,
+          "created_at": "2026-10-15T01:15:30.191231",
+          "updated_at": "2026-10-15T01:15:30.191231"
+        }
+      ],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "tags: [\"abandoned\", \"grouped\", \"stale\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-15T01:15:33.61194",
+          "ip_address": null,
+          "updated_at": "2026-10-15T01:15:33.61194",
+          "category_id": null,
+          "custom_type": "deleted_unused_tags",
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "automatically_clean_unused_tags": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, created_at, updated_at, pm_topic_count, public_topic_count, staff_topic_count) VALUES (9501, 'stale', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9502, 'fresh', now(), now(), 0, 0, 0), (9503, 'grouped', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9504, 'abandoned', now() - interval '1 day', now() - interval '1 day', 0, 0, 0)",
+    "INSERT INTO tags (id, name, created_at, updated_at, target_tag_id) VALUES (9505, 'stale-syn', now() - interval '1 day', now() - interval '1 day', 9501)",
+    "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (35, 9505, now(), now())",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 603)"
+  ],
+  "enqueue": [
+    [
+      "clean_up_tags",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9505,
+        "payload": "{\"id\":9505,\"name\":\"stale-syn\",\"slug\":\"9505-tag\",\"topic_count\":0,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9501,
+        "payload": "{\"id\":9501,\"name\":\"stale\",\"slug\":\"9501-tag\",\"topic_count\":0,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9503,
+        "payload": "{\"id\":9503,\"name\":\"grouped\",\"slug\":\"9503-tag\",\"topic_count\":0,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9504,
+        "payload": "{\"id\":9504,\"name\":\"abandoned\",\"slug\":\"9504-tag\",\"topic_count\":0,\"staff\":false,\"description\":null,\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_destroyed",
+        "event_type": "tag"
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "cd7e963e5f0a9079a78e06b9bcaf83b9c6a0575aca7650320afdb44652563013",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

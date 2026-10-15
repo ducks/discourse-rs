@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_updated')",
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now()), (9602, 'manual', 'manual', NULL, now(), now())"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/tag/1/settings.json", "params": {"tag_settings": {"name": "How To Guides", "description": "Step by *step*, see https://example.com/howto", "removed_synonym_ids": [9601], "new_synonyms": [{"id": 9602}]}}},
+    {"method": "PUT", "path": "/tag/1/settings.json", "params": {"tag_settings": {"slug": "custom-slug"}}},
+    {"method": "GET", "path": "/tag/1/settings.json"}
+  ]
+}

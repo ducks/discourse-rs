@@ -279,9 +279,13 @@ async fn tag_pages_render_html() {
     let (status, _, html) = get(&db.pool, "/tag/howto/1").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<title>Topics tagged howto - Discourse</title>"));
-    assert!(html.contains(
-        r#"<h1 class="tag-heading"><a href="/tag/howto/1" class="discourse-tag">howto</a></h1>"#
-    ));
+    // The tag's navigation (Ember draws no heading): its drop selected,
+    // the pills under the tag, and the info button with its hidden panel.
+    assert!(!html.contains(r#"class="tag-heading""#));
+    assert!(html.contains(r#"tag-drop has-selection tag-howto"#));
+    assert!(html.contains(r#"href="/tag/howto/1/l/latest""#));
+    assert!(html.contains(r#"id="show-tag-info""#));
+    assert!(html.contains(r#"<section class="tag-info discovery-heading " hidden>"#));
     assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
     assert!(!html.contains("welcome-to-discourse"));
 

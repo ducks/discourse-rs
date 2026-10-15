@@ -265,6 +265,16 @@ pub async fn options(
 /// look up (quoted users and topics, hashtags, uploads), then, with those
 /// resolved, for the result.
 pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<String, CookError> {
+    markdown_with(host, raw, opts, true).await
+}
+
+/// `markdown`, with features.onebox as given.
+async fn markdown_with(
+    host: &Host,
+    raw: &str,
+    opts: &MarkdownOptions,
+    onebox: bool,
+) -> Result<String, CookError> {
     use render::context::{Hashtag, Lookups, TopicInfo, Upload};
 
     let mut conn = host.pool.acquire().await?;
@@ -290,6 +300,7 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     render_settings.topic_id = opts.topic_id;
     render_settings.post_id = opts.post_id;
     render_settings.force_quote_link = opts.force_quote_link;
+    render_settings.onebox = onebox;
     // censored and watched-words are among chat's features too.
     let watched = watched_words(&mut conn, &settings).await?;
     render_settings.censored = watched.censored;
@@ -363,7 +374,22 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
 /// What the post processor adds after (oneboxes, image sizes) is not part
 /// of it.
 pub async fn cook(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<String, CookError> {
-    let html = markdown(host, raw, opts).await?;
+    cook_with(host, raw, opts, true).await
+}
+
+/// `PrettyText.cook(raw, features: { onebox: false })`: links stay links
+/// (HasCookedTagDescription::COOK_OPTIONS).
+pub async fn cook_without_onebox(host: &Host, raw: &str) -> Result<String, CookError> {
+    cook_with(host, raw, &MarkdownOptions::default(), false).await
+}
+
+async fn cook_with(
+    host: &Host,
+    raw: &str,
+    opts: &MarkdownOptions,
+    onebox: bool,
+) -> Result<String, CookError> {
+    let html = markdown_with(host, raw, opts, onebox).await?;
     let mut conn = host.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
@@ -538,6 +564,7 @@ pub fn render_settings(
         force_quote_link: false,
         post_id: None,
         chat: false,
+        onebox: true,
         censored: Vec::new(),
         watched_replace: Vec::new(),
         watched_link: Vec::new(),

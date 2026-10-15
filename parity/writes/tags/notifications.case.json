@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted) VALUES (3, 41, 1, NULL, false) ON CONFLICT (user_id, topic_id) DO UPDATE SET notification_level = 1, notifications_reason_id = NULL"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/tag/2/notifications.json"},
+    {"method": "PUT", "path": "/tag/2/notifications.json", "params": {"tag_notification": {"notification_level": 3}}},
+    {"method": "GET", "path": "/tag/2/notifications.json"},
+    {"method": "PUT", "path": "/tag/9601/notifications.json", "params": {"tag_notification": {"notification_level": 2}}},
+    {"method": "PUT", "path": "/tag/2/notifications.json", "params": {"tag_notification": {"notification_level": 0}}},
+    {"method": "GET", "path": "/tag/guide/notifications.json"},
+    {"method": "PUT", "path": "/tag/guide/notifications.json", "params": {"tag_notification": {"notification_level": 1}}}
+  ]
+}

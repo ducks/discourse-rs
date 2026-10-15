@@ -133,26 +133,29 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
         .await?;
     }
 
-    // Tag.rebake_old(250) and TagLocalization.rebake_old(250): a
-    // description is cooked without oneboxes, which is not ported; none
-    // is NULL.
+    // Tag.rebake_old(250) and TagLocalization.rebake_old(250): each
+    // description cooked without oneboxes, a blank one NULL.
+    let host = crate::pretty_text::Host::from_state(state);
     for table in ["tags", "tag_localizations"] {
-        let with_text: bool = sqlx::query_scalar(&format!(
-            "SELECT EXISTS (SELECT 1 FROM {table} WHERE (description_cooked_version IS NULL \
-               OR description_cooked_version < 1) AND COALESCE(TRIM(description), '') <> '')"
+        let rows: Vec<(i32, Option<String>)> = sqlx::query_as(&format!(
+            "SELECT id, description FROM {table} WHERE description_cooked_version IS NULL \
+               OR description_cooked_version < 1 ORDER BY ctid LIMIT 250"
         ))
-        .fetch_one(&mut *conn)
+        .fetch_all(&mut *conn)
         .await?;
-        if with_text {
-            return Err(Unsupported("cooking tag descriptions (features: onebox off)").into());
+        for (id, description) in rows {
+            let cooked = match description.as_deref().filter(|d| !d.trim().is_empty()) {
+                Some(d) => Some(crate::pretty_text::cook_without_onebox(&host, d).await?),
+                None => None,
+            };
+            sqlx::query(&format!(
+                "UPDATE {table} SET description_cooked = $2, description_cooked_version = 1 WHERE id = $1"
+            ))
+            .bind(id)
+            .bind(cooked)
+            .execute(&mut *conn)
+            .await?;
         }
-        sqlx::query(&format!(
-            "UPDATE {table} SET description_cooked = NULL, description_cooked_version = 1 \
-             WHERE id IN (SELECT id FROM {table} WHERE description_cooked_version IS NULL \
-               OR description_cooked_version < 1 LIMIT 250)"
-        ))
-        .execute(&mut *conn)
-        .await?;
     }
 
     // min_new_topics_time: the creation of the max_new_topics'th newest

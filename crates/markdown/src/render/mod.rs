@@ -121,6 +121,10 @@ pub struct RenderSettings {
     /// details off. The other features chat leaves out (poll, checklist,
     /// footnotes, policy) are off in the settings it cooks with.
     pub chat: bool,
+    /// features.onebox: standalone links marked as onebox candidates (off
+    /// for tag descriptions, HasCookedTagDescription::COOK_OPTIONS).
+    #[serde(default = "onebox_default")]
+    pub onebox: bool,
     /// `censoredRegexp` (serialized_regexps_for_action(:censor)).
     #[serde(default)]
     pub censored: Vec<watched_words::Censored>,
@@ -231,7 +235,9 @@ pub fn render(
         if let Some(what) = linkify::run(&mut root, linkify, &md) {
             return Err(Unsupported(what));
         }
-        onebox::run(&mut root);
+        if settings.onebox {
+            onebox::run(&mut root);
+        }
     }
     if settings.typographer && settings.chat {
         typographer::markdown_it_apply(&mut root);
@@ -299,4 +305,8 @@ fn chat_engine(mut md: MarkdownIt) -> MarkdownIt {
     linkify::add(&mut md);
     chat_html::add(&mut md);
     md
+}
+
+fn onebox_default() -> bool {
+    true
 }

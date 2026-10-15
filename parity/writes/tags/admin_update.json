@@ -1,0 +1,288 @@
+{
+  "name": "admin_update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/tag/2.json",
+      "params": {
+        "tag": {
+          "name": " Guides  Plus ",
+          "description": "All the **guides** for https://example.com/page"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/1.json",
+      "params": {
+        "tag": {
+          "description": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/tag/howto.json",
+      "params": {
+        "tag": {
+          "name": "HowTo"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:41:50.019871",
+  "transaction_started_at": "2026-10-14T23:41:48.348586",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tag": {
+          "id": 2,
+          "name": "guides-plus",
+          "slug": "guides-plus",
+          "description": "All the **guides** for https://example.com/page"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag": {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "description": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag": {
+          "id": 1,
+          "name": "howto",
+          "slug": "howto",
+          "description": ""
+        }
+      }
+    }
+  ],
+  "changes": {
+    "tag_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "tag_id": 2,
+            "version": 3,
+            "raw_data": "guide",
+            "search_data": "'guid':1A"
+          },
+          "after": {
+            "locale": "en",
+            "tag_id": 2,
+            "version": 3,
+            "raw_data": "guides-plus",
+            "search_data": "'guid':2A 'guides-plus':1A 'plus':3A"
+          }
+        }
+      ]
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-09-30T10:46:34.670451",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 2,
+            "name": "guides-plus",
+            "slug": "guides-plus",
+            "locale": null,
+            "created_at": "2026-09-30T10:46:34.670451",
+            "updated_at": "2026-10-14T23:41:52.094766",
+            "description": "All the **guides** for https://example.com/page",
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": "<p>All the <strong>guides</strong> for <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\">https://example.com/page</a></p>",
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          }
+        },
+        {
+          "before": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-10-14T23:41:52.187992",
+            "description": "",
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 301,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rHT5jsXWn8223OVQsfFVb4QIPcw=",
+            "created_at": "2026-10-14T23:41:48.786196",
+            "rotated_at": "2026-10-14T23:41:48.784855",
+            "updated_at": "2026-10-14T23:41:48.786196",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "rHT5jsXWn8223OVQsfFVb4QIPcw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 301,
+            "seen_at": "2026-10-14T23:41:50.030245",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rHT5jsXWn8223OVQsfFVb4QIPcw=",
+            "created_at": "2026-10-14T23:41:48.786196",
+            "rotated_at": "2026-10-14T23:41:48.784855",
+            "updated_at": "2026-10-14T23:41:48.786196",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "rHT5jsXWn8223OVQsfFVb4QIPcw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "guides-plus",
+          "admin_only": true,
+          "created_at": "2026-10-14T23:41:52.124911",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:41:52.124911",
+          "category_id": null,
+          "custom_type": "renamed_tag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "guide",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 2,
+        "payload": "{\"id\":2,\"name\":\"guides-plus\",\"slug\":\"guides-plus\",\"topic_count\":2,\"staff\":false,\"description\":\"All the **guides** for https://example.com/page\",\"description_cooked\":\"\\u003cp\\u003eAll the \\u003cstrong\\u003eguides\\u003c/strong\\u003e for \\u003ca href=\\\"https://example.com/page\\\" rel=\\\"noopener nofollow ugc\\\"\\u003ehttps://example.com/page\\u003c/a\\u003e\\u003c/p\\u003e\"}",
+        "web_hook_id": 9001,
+        "event_name": "tag_updated",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "remap_hashtag",
+      {
+        "remaps": [
+          {
+            "type": "tag",
+            "id": 2,
+            "old_ref": "guide"
+          }
+        ]
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 1,
+        "payload": "{\"id\":1,\"name\":\"howto\",\"slug\":\"howto\",\"topic_count\":2,\"staff\":false,\"description\":\"\",\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_updated",
+        "event_type": "tag"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 1,
+        "payload": "{\"id\":1,\"name\":\"howto\",\"slug\":\"howto\",\"topic_count\":2,\"staff\":false,\"description\":\"\",\"description_cooked\":null}",
+        "web_hook_id": 9001,
+        "event_name": "tag_updated",
+        "event_type": "tag"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) SELECT 9001, id FROM web_hook_event_types WHERE name IN ('tag_updated', 'tag_created', 'tag_destroyed')"
+  ],
+  "recorded_from": {
+    "case": "26ad29f8a51e9cbe2a4e201e6a0d37e316b687672bcf99de03581dcdc8861d8e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

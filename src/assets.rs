@@ -140,6 +140,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/vendor/moment/moment-timezone-with-data-10-year-range.min.js"),
     ),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
+    ("tag-info.js", JS, include_str!("../static/js/tag-info.js")),
     ("oneboxes.js", JS, include_str!("../static/js/oneboxes.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
     ("lightbox.js", JS, include_str!("../static/js/lightbox.js")),
