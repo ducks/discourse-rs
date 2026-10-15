@@ -1,0 +1,483 @@
+{
+  "name": "url_terms",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Futm%3D1"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=%22https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Fx%22"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=reply%20https%3A%2F%2Fexample.com%2Fdocs%2Fpage%23top"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=http%3A%2F%2Fx.com%2Fa%7Cb%3Fc"
+    },
+    {
+      "method": "GET",
+      "path": "/search.json?q=https%3A%2F%2Fexample.com%2Fdocs%2Fpage%3Fa%3Db"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=https%3A%2F%2Fexample.com%2Fdocs%3Fx&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
+    }
+  ],
+  "started_at": "2026-10-15T15:32:46.328036",
+  "transaction_started_at": "2026-10-15T15:32:44.376402",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "https://example.com/docs/page?utm=1",
+          "search_log_id": 259,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            36
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "\"https://example.com/docs/page?x\"",
+          "search_log_id": 260,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            36
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "reply https://example.com/docs/page#top",
+          "search_log_id": 261,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "http://x.com/a|b?c",
+          "search_log_id": 262,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [
+          {
+            "id": 36,
+            "name": "User1",
+            "username": "user1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "created_at": "2026-09-30T07:28:29.079Z",
+            "like_count": 1,
+            "blurb": "Reply one from user1, also long enough to pass the minimum length check.",
+            "post_number": 2,
+            "topic_id": 35
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": false,
+            "last_read_post_number": 2,
+            "unread": 0,
+            "new_posts": 3,
+            "unread_posts": 3,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "notification_level": 2,
+            "bookmarked": true,
+            "liked": false,
+            "tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "tags_descriptions": {},
+            "category_id": 4,
+            "has_accepted_answer": false
+          }
+        ],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "https://example.com/docs/page?a=b",
+          "search_log_id": 263,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [
+            36
+          ],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "posts": [],
+        "users": [],
+        "categories": [],
+        "tags": [],
+        "groups": [],
+        "grouped_search_result": {
+          "more_posts": null,
+          "more_users": null,
+          "more_categories": null,
+          "term": "https://example.com/docs?x",
+          "search_log_id": 264,
+          "more_full_page_results": null,
+          "can_create_topic": true,
+          "error": null,
+          "extra": {},
+          "post_ids": [],
+          "user_ids": [],
+          "category_ids": [],
+          "tag_ids": [],
+          "group_ids": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "search_logs": {
+      "inserted": [
+        {
+          "id": 259,
+          "term": "https://example.com/docs/page?utm=1",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.356157",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 260,
+          "term": "\"https://example.com/docs/page?x\"",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.536292",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 261,
+          "term": "reply https://example.com/docs/page#top",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.64268",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 262,
+          "term": "http://x.com/a|b?c",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.716628",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 263,
+          "term": "https://example.com/docs/page?a=b",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.787269",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 2,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        },
+        {
+          "id": 264,
+          "term": "https://example.com/docs?x",
+          "crawler": false,
+          "user_id": 3,
+          "created_at": "2026-10-15T15:32:46.90308",
+          "ip_address": null,
+          "session_id": null,
+          "user_agent": null,
+          "search_type": 1,
+          "likely_crawler": false,
+          "search_result_id": null,
+          "search_result_type": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 335,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "F+KT61b0e7Q6R/lANXNSauobws8=",
+            "created_at": "2026-10-15T15:32:45.095867",
+            "rotated_at": "2026-10-15T15:32:45.093654",
+            "updated_at": "2026-10-15T15:32:45.095867",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "F+KT61b0e7Q6R/lANXNSauobws8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 335,
+            "seen_at": "2026-10-15T15:32:46.339751",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "F+KT61b0e7Q6R/lANXNSauobws8=",
+            "created_at": "2026-10-15T15:32:45.095867",
+            "rotated_at": "2026-10-15T15:32:45.093654",
+            "updated_at": "2026-10-15T15:32:45.095867",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "F+KT61b0e7Q6R/lANXNSauobws8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "search_logs": 259
+  },
+  "setup": [
+    "UPDATE post_search_data SET search_data = search_data || to_tsvector('english', 'https://example.com/docs/page') WHERE post_id = 36"
+  ],
+  "recorded_from": {
+    "case": "b4cc4eb265939ca81274e31f4e1de2a83cb0863632f6a2e726bea6d68e5a31dd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

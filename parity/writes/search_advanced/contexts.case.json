@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=4"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=34"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=3"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=999"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&context=category&context_id=4abc"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20%23site-feedback&search_context%5Btype%5D=category&search_context%5Bid%5D=4"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=tag&search_context%5Bid%5D=guide"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=tag&search_context%5Bid%5D=HowTo"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=tag&search_context%5Bid%5D=nothing"},
+    {"method": "GET", "path": "/search/query.json?term=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=4&skip_context=true"},
+    {"method": "GET", "path": "/search.json?q=fixture&context=category&context_id=4"},
+    {"method": "GET", "path": "/search.json?q=fixture&context=tag&context_id=howto"},
+    {"method": "GET", "path": "/search.json?q=fixture&context=user&context_id=user0"},
+    {"method": "GET", "path": "/search.json?q=reply&context=topic&context_id=35"},
+    {"method": "GET", "path": "/search.json?q=parity&context=private_messages&context_id=user1"},
+    {"method": "GET", "path": "/search.json?q=fixture&context=category&context_id=3"},
+    {"method": "GET", "path": "/search.json?q=fixture&context=category&context_id=4&skip_context=true"},
+    {"method": "GET", "path": "/search.json?q=fixture&search_context%5Btype%5D=category&search_context%5Bid%5D=34"}
+  ]
+}

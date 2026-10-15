@@ -35,6 +35,21 @@ pub struct ShowParams {
     search_type: Option<String>,
     expanded: Option<String>,
     skip_context: Option<String>,
+    #[serde(rename = "search_context[type]")]
+    context_type: Option<String>,
+    #[serde(rename = "search_context[id]")]
+    context_id_nested: Option<String>,
+}
+
+/// The params lookup_search_context reads, from either action.
+#[derive(Default)]
+struct ContextParams {
+    search_context: Option<String>,
+    context_type: Option<String>,
+    context_id_nested: Option<String>,
+    context: Option<String>,
+    context_id: Option<String>,
+    skip_context: Option<String>,
 }
 
 #[derive(Deserialize, Default)]
@@ -351,17 +366,6 @@ async fn show_response(
         crate::bus::page_position(&state.bus).await?
     };
     let term = params.q.clone().unwrap_or_default();
-    // The page's route searches with the context whenever it has a
-    // context_id (FullPageSearchRoute#model reads skip_context off the
-    // wrong object), so only a page without a term can carry one.
-    let page_context_only = !json
-        && params.search_context.is_none()
-        && (term.is_empty() || params.context_id.is_none());
-    if (params.search_context.is_some() || params.context.is_some() || params.context_id.is_some())
-        && !page_context_only
-    {
-        return Err(Unsupported("search contexts (user, topic, category, tag)").into());
-    }
     let search_type = crate::search_view::SearchType::parse(params.search_type.as_deref());
     if !json && search_type == crate::search_view::SearchType::CategoriesTags {
         return Err(Unsupported(
@@ -395,13 +399,46 @@ async fn show_response(
         }
         page = n.max(1);
     }
+    let context = match lookup_search_context(
+        &state,
+        &guardian,
+        &ContextParams {
+            search_context: params.search_context.clone(),
+            context_type: params.context_type.clone(),
+            context_id_nested: params.context_id_nested.clone(),
+            context: params.context.clone(),
+            context_id: params.context_id.clone(),
+            skip_context: params.skip_context.clone(),
+        },
+    )
+    .await?
+    {
+        Ok(context) => context,
+        Err(refused) if json => return Ok(refused),
+        Err(_) => {
+            return Err(Unsupported(
+                "the full-page search's error page for a search context it refuses",
+            )
+            .into());
+        }
+    };
     let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
     if let Some(refused) = rate_limit_search(&state, &guardian, &ip_address).await? {
         return Ok(refused);
     }
+    let mut type_filter = Some(TypeFilter::Topic);
+    let context = match context {
+        Some((context, forced)) => {
+            if forced.is_some() {
+                type_filter = forced;
+            }
+            Some(context)
+        }
+        None => None,
+    };
     let args = SearchArgs {
         term: term.clone(),
-        type_filter: Some(TypeFilter::Topic),
+        type_filter,
         full_page: true,
         page,
         blurb_length: 300,
@@ -409,7 +446,9 @@ async fn show_response(
         user_agent,
         session_id,
         log: true,
-        context: None,
+        context,
+        search_for_id: false,
+        restrict_to_archetype: None,
     };
     let doc = match run(&state, &guardian, &args).await? {
         Ok(doc) => doc,
@@ -561,24 +600,23 @@ pub(crate) async fn run_query(
     if term.contains('\0') {
         return Ok(Err(invalid_parameters(state, "string contains null byte")));
     }
-    if params
-        .search_for_id
-        .as_deref()
-        .is_some_and(|v| !v.is_empty())
+    let looked_up = match lookup_search_context(
+        state,
+        guardian,
+        &ContextParams {
+            search_context: params.search_context.clone(),
+            context_type: params.context_type.clone(),
+            context_id_nested: params.context_id_nested.clone(),
+            context: params.context.clone(),
+            context_id: params.context_id.clone(),
+            skip_context: params.skip_context.clone(),
+        },
+    )
+    .await?
     {
-        return Err(Unsupported("search_for_id (topic id and URL lookup)").into());
-    }
-    let looked_up = match lookup_search_context(state, guardian, params).await? {
         Ok(context) => context,
         Err(refused) => return Ok(Err(refused)),
     };
-    if params
-        .restrict_to_archetype
-        .as_deref()
-        .is_some_and(|v| !v.is_empty())
-    {
-        return Err(Unsupported("restrict_to_archetype").into());
-    }
     let mut type_filter = match params.type_filter.as_deref().filter(|t| !t.is_empty()) {
         None => None,
         Some("topic") => Some(TypeFilter::Topic),
@@ -612,6 +650,14 @@ pub(crate) async fn run_query(
         session_id,
         log: true,
         context,
+        search_for_id: params
+            .search_for_id
+            .as_deref()
+            .is_some_and(|v| !v.is_empty()),
+        restrict_to_archetype: params
+            .restrict_to_archetype
+            .clone()
+            .filter(|v| !v.is_empty()),
     };
     run(state, guardian, &args).await
 }
@@ -623,7 +669,7 @@ pub(crate) async fn run_query(
 async fn lookup_search_context(
     state: &AppState,
     guardian: &Guardian,
-    params: &QueryParams,
+    params: &ContextParams,
 ) -> Result<Result<Option<(SearchContext, Option<TypeFilter>)>, Response>, AppError> {
     if params.skip_context.as_deref() == Some("true") {
         return Ok(Ok(None));
@@ -663,11 +709,59 @@ async fn lookup_search_context(
         let type_filter = (kind == "private_messages").then_some(TypeFilter::PrivateMessages);
         return Ok(Ok(Some((SearchContext::User(user_id), type_filter))));
     }
-    if kind != "topic" {
-        return Err(Unsupported("search contexts (category, tag)").into());
-    }
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if kind == "category" {
+        // Category.find_by(id: id.to_i), then can_see_category?.
+        let row: Option<(i32, bool, bool)> = sqlx::query_as(
+            "SELECT id, read_restricted, \
+                    btrim(COALESCE(email_in, '')) <> '' AND email_in_allow_strangers \
+             FROM categories WHERE id = $1",
+        )
+        .bind(crate::ruby::to_i(&id))
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some((category_id, read_restricted, strangers_mail_in)) = row else {
+            return Ok(Err(invalid_access(state)));
+        };
+        let admin_sees_all = guardian.is_admin()
+            && !settings
+                .get("suppress_secured_categories_from_admin")?
+                .truthy();
+        let staged_mail_in = guardian.user().is_some_and(|u| u.staged) && strangers_mail_in;
+        if read_restricted
+            && !admin_sees_all
+            && !staged_mail_in
+            && !guardian
+                .secure_category_ids(&mut conn, &settings)
+                .await?
+                .contains(&category_id)
+        {
+            return Ok(Err(invalid_access(state)));
+        }
+        return Ok(Ok(Some((SearchContext::Category(category_id), None))));
+    }
+    if kind == "tag" {
+        // A tag hidden from the viewer is no context; Tag.where_name(id).first,
+        // then can_see_tag?.
+        let hidden = crate::tagging::hidden_tag_names(&mut conn, guardian).await?;
+        if hidden.contains(&id) {
+            return Ok(Err(invalid_access(state)));
+        }
+        let tag: Option<(i32, String)> = sqlx::query_as(
+            "SELECT id, name FROM tags WHERE lower(tags.name) IN ($1) ORDER BY tags.id LIMIT 1",
+        )
+        .bind(id.to_lowercase())
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some((tag_id, name)) = tag else {
+            return Ok(Err(invalid_access(state)));
+        };
+        if !settings.get("tagging_enabled")?.truthy() || hidden.contains(&name) {
+            return Ok(Err(invalid_access(state)));
+        }
+        return Ok(Ok(Some((SearchContext::Tag(tag_id), None))));
+    }
     // `to_i`: the leading digits, 0 without any.
     let digits: String = id
         .trim_start()

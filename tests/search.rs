@@ -273,13 +273,13 @@ async fn renders_a_results_page() {
     assert!(html.contains(
         r#"<div class="search-context"><label><input name="searchContext" type="checkbox">Search this topic</label></div>"#
     ));
-    // With a term the route searches in the context, which isn't ported.
+    // With a term the page searches, in the context unless skipped.
     let (status, _, _) = get(
         &db.pool,
         "/search?q=fixture&context=topic&context_id=35&skip_context=true",
     )
     .await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(status, StatusCode::OK);
 
     // The users type lists the matching users; categories & tags is
     // refused.

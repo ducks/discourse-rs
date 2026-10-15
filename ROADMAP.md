@@ -1239,10 +1239,15 @@ generate_theme_screenshot_thumbnails (171).
     /search.json's 403. Refused: the full-page /search's HTML 403 page
     for such a search, and type_filter=all_topics for an anonymous
     search, which Rails fails on
-    143g. `feat/search-advanced-context` M: the category and tag
-    contexts on /search/query, every context on the full-page /search
-    (a context in the page's query), search_for_id, restrict_to_archetype, URLs in
-    terms (query strings stripped)
+    143g. ~~`feat/search-advanced-context`~~ (done) M: the category
+    and tag contexts on /search/query, every context on the full-page
+    /search (a context in the page's query, as its preloaded search),
+    search_for_id (a topic id or a topics#show URL on this site, as
+    Discourse.route_for recognizes it), restrict_to_archetype, URLs in
+    terms (prepare_data's query string stripping, through Ruby 3.4's
+    RFC3986 parser rules); the search menu names a tag page's context
+    tag. Refused: the full-page /search's HTML error pages for a context
+    it rejects (their JSON is ported)
     143h. `feat/search-advanced-rest` M: the full-page search's
     categories & tags type (Category.search, tags/filter/search), user
     search by groups among reviewers (user_search.rs:187), the
