@@ -1,0 +1,237 @@
+{
+  "name": "ww_create_tag_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "kitten"
+        ],
+        "action_key": "tag",
+        "replacement": "howto,no-such-tag"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "kitten"
+        ],
+        "action_key": "tag"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "kitten"
+        ],
+        "action_key": "tag",
+        "replacement": "howto,guide"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "puppy"
+        ],
+        "action_key": "tag",
+        "replacement_tags": [
+          {
+            "name": "none"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:35:53.938951",
+  "transaction_started_at": "2026-10-14T23:35:52.225987",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Replacement tag list is invalid",
+          "Watched words is invalid"
+        ],
+        "error_type": "record_invalid"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Replacement tag list is invalid",
+          "Watched words is invalid"
+        ],
+        "error_type": "record_invalid"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 1,
+            "word": "kitten",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitten)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "howto,guide",
+            "action": "tag",
+            "case_sensitive": false,
+            "watched_word_group_id": 1
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [],
+          "censor": [],
+          "require_approval": [],
+          "flag": [],
+          "link": [],
+          "replace": [],
+          "tag": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitten)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "silence": []
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name is invalid"
+        ],
+        "error_type": "record_invalid"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 298,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "created_at": "2026-10-14T23:35:52.961112",
+            "rotated_at": "2026-10-14T23:35:52.959755",
+            "updated_at": "2026-10-14T23:35:52.961112",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 298,
+            "seen_at": "2026-10-14T23:35:53.946621",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "created_at": "2026-10-14T23:35:52.961112",
+            "rotated_at": "2026-10-14T23:35:52.959755",
+            "updated_at": "2026-10-14T23:35:52.961112",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 105,
+          "context": "tag",
+          "details": "tag → kitten",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T23:35:54.134304",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:35:54.134304",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_word_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 6,
+          "created_at": "2026-10-14T23:35:54.11174",
+          "updated_at": "2026-10-14T23:35:54.11174"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": false,
+          "word": "kitten",
+          "action": 6,
+          "created_at": "2026-10-14T23:35:54.100128",
+          "updated_at": "2026-10-14T23:35:54.124522",
+          "replacement": "howto,guide",
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "watched_word_groups": 1,
+    "watched_words": 1
+  },
+  "recorded_from": {
+    "case": "eac276a00cb22b1f2e56e45744e510432bc5c0639fefa752f69b2348b74f8421",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

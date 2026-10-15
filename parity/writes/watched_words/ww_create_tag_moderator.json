@@ -1,0 +1,187 @@
+{
+  "name": "ww_create_tag_moderator",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "kitten"
+        ],
+        "action_key": "tag",
+        "replacement_tags": [
+          {
+            "name": "brand-new"
+          },
+          {
+            "id": 2,
+            "name": "guide"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T23:35:57.692031",
+  "transaction_started_at": "2026-10-14T23:35:54.967843",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 1,
+            "word": "kitten",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitten)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "guide",
+            "action": "tag",
+            "case_sensitive": false,
+            "watched_word_group_id": 1
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [],
+          "censor": [],
+          "require_approval": [],
+          "flag": [],
+          "link": [],
+          "replace": [],
+          "tag": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(kitten)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 298,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bPT6BHBqbdpUZYdnFSFEh5ygkIg=",
+            "created_at": "2026-10-14T23:35:56.261368",
+            "rotated_at": "2026-10-14T23:35:56.260032",
+            "updated_at": "2026-10-14T23:35:56.261368",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bPT6BHBqbdpUZYdnFSFEh5ygkIg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 298,
+            "seen_at": "2026-10-14T23:35:57.70151",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bPT6BHBqbdpUZYdnFSFEh5ygkIg=",
+            "created_at": "2026-10-14T23:35:56.261368",
+            "rotated_at": "2026-10-14T23:35:56.260032",
+            "updated_at": "2026-10-14T23:35:56.261368",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bPT6BHBqbdpUZYdnFSFEh5ygkIg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 105,
+          "context": "tag",
+          "details": "tag → kitten",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T23:35:57.780419",
+          "ip_address": null,
+          "updated_at": "2026-10-14T23:35:57.780419",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 5,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_word_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 6,
+          "created_at": "2026-10-14T23:35:57.7572",
+          "updated_at": "2026-10-14T23:35:57.7572"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": false,
+          "word": "kitten",
+          "action": 6,
+          "created_at": "2026-10-14T23:35:57.742022",
+          "updated_at": "2026-10-14T23:35:57.773275",
+          "replacement": "guide",
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "watched_word_groups": 1,
+    "watched_words": 1
+  },
+  "settings": {
+    "create_tag_allowed_groups": "1"
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (2, 5, 3, now(), now()), (3, 5, 3, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "9bf42f0906e34d246ee28e07e01530aa7da5c87755da63ce60373a46f0b912f1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
