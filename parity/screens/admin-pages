@@ -9,3 +9,15 @@
 /admin/users/list/suspended as=admin
 /admin/users/1/admin as=admin mask=.relative-date
 /admin/users/3/user1 as=admin mask=.relative-date
+# The site settings pages (90g3).
+/admin/site_settings/category/required as=admin
+/admin/site_settings/category/basic as=admin
+/admin/site_settings/category/branding as=admin
+/admin/site_settings/category/login as=admin
+/admin/site_settings/category/users as=admin
+/admin/site_settings/category/posting as=admin
+/admin/site_settings/category/email as=admin
+/admin/site_settings/category/files as=admin
+/admin/site_settings/category/trust as=admin
+/admin/site_settings/category/security as=admin
+/admin/site_settings/category/all_results?filter=contact as=admin

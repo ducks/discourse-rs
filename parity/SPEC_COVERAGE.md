@@ -59,7 +59,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | UploadsController#create | 6 | 10 | 2 | 8 |
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
 | ReviewablesController#perform | 3 | 2 | 1 | 16 |
-| Admin::SiteSettingsController#update | 13 | 3 | 2 | 22 |
+| Admin::SiteSettingsController#update | 14 | 3 | 2 | 21 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
@@ -102,7 +102,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (71 sections)** | **434** | **308** | **212** | **515** |
+| **All (71 sections)** | **435** | **308** | **212** | **514** |
 
 ## Cases added from this inventory
 
@@ -824,7 +824,7 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
 | 248 | admin > sets the value when the param is present (title) | covered | setting_string (title itself is Unsupported "settings whose change handlers write") |
-| 254 | admin > bulk updates settings | unported | Unsupported "bulk site setting updates" |
+| 254 | admin > bulk updates settings | covered | bulk_update, bulk_update_invalid |
 | 271 | admin > error for hard deprecated settings | covered | setting_hard_deprecated (new) |
 | 282 | admin > works for soft deprecated settings | needs-harness | stub_deprecated_settings!(override: true); no real soft deprecation in SETTINGS |
 | 291 | admin > not a configurable setting (clear_cache!) with update_existing_user | covered | setting_unknown (with update_existing_user the port hits Unsupported "backfilling user preferences") |

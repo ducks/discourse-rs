@@ -804,7 +804,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .put(admin_badges::update)
                 .delete(admin_badges::destroy),
         )
-        .route("/admin/site_settings", get(admin_site_settings::index))
+        .route("/admin/site_settings", get(admin_pages::site_settings_root))
+        .route(
+            "/admin/site_settings/category/{category}",
+            get(admin_pages::site_settings_category),
+        )
         .route("/admin/site_settings.json", get(admin_site_settings::index))
         .route(
             "/admin/site_settings/{id}",
@@ -2052,6 +2056,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-dashboard.js", get(asset))
         .route("/assets/admin-users.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
+        .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))
         .route("/assets/chartjs-adapter-moment.min.js", get(asset))

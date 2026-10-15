@@ -39,45 +39,69 @@ pub async fn update(
         return Ok(super::topics::not_found_response(&state));
     }
     let id = id.strip_suffix(".json").unwrap_or(&id).to_string();
-    if id == "bulk_update" {
-        return Err(Unsupported("bulk site setting updates").into());
-    }
-    // `!!params[:update_existing_user]`
-    let backfill = match p.get("update_existing_user") {
-        None | Some(Value::Null) | Some(Value::Bool(false)) => false,
-        Some(_) => true,
+    // `!!value`: anything but nil and false, so a form's "false" is true.
+    let truthy = |v: Option<&Value>| !matches!(v, None | Some(Value::Null | Value::Bool(false)));
+    // (name, params value.to_s, backfill) for each setting.
+    let updates: Vec<(String, String, bool)> = if id == "bulk_update" {
+        // params[:settings].to_unsafe_h: { name => { value:, backfill: } }
+        let Some(Value::Object(map)) = p.get("settings") else {
+            return Err(Unsupported("a bulk site setting update without settings").into());
+        };
+        map.iter()
+            .map(|(name, config)| {
+                (
+                    name.clone(),
+                    config
+                        .get("value")
+                        .and_then(params::scalar)
+                        .unwrap_or_default(),
+                    truthy(config.get("backfill")),
+                )
+            })
+            .collect()
+    } else {
+        vec![(
+            id.clone(),
+            p.get(&id).and_then(params::scalar).unwrap_or_default(),
+            truthy(p.get("update_existing_user")),
+        )]
     };
-    if backfill && !site_setting_update::SIDEBAR_DEFAULTS.contains(&id.as_str()) {
+    // The backfill only applies to default user preferences.
+    if updates.iter().any(|(name, _, backfill)| {
+        *backfill
+            && name.starts_with("default_")
+            && !site_setting_update::SIDEBAR_DEFAULTS.contains(&name.as_str())
+    }) {
         return Err(Unsupported("backfilling user preferences (update_existing_user)").into());
     }
-    // params[id].to_s
-    let raw = p.get(&id).and_then(params::scalar).unwrap_or_default();
+    // One transaction: a setting refused rolls back the ones before it, as
+    // the service's save step does.
     let mut tx = state.pool.begin().await?;
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-    let outcome = site_setting_update::update(
-        &mut tx,
-        &state.bus,
-        &state.site_setting_defs,
-        &settings,
-        &state.i18n,
-        &guardian,
-        &id,
-        &raw,
-        backfill,
-    )
-    .await?;
-    Ok(match outcome {
-        Outcome::Done => {
-            tx.commit().await?;
-            StatusCode::NO_CONTENT.into_response()
-        }
-        Outcome::Invalid(message) => (
-            StatusCode::UNPROCESSABLE_ENTITY,
-            Json(json!({ "errors": [message] })),
+    for (name, raw, backfill) in &updates {
+        let outcome = site_setting_update::update(
+            &mut tx,
+            &state.bus,
+            &state.site_setting_defs,
+            &settings,
+            &state.i18n,
+            &guardian,
+            name,
+            raw,
+            *backfill,
         )
-            .into_response(),
-    })
+        .await?;
+        if let Outcome::Invalid(message) = outcome {
+            return Ok((
+                StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({ "errors": [message] })),
+            )
+                .into_response());
+        }
+    }
+    tx.commit().await?;
+    Ok(StatusCode::NO_CONTENT.into_response())
 }
 
 /// `SiteSettingUpdateExistingUsers.user_options`' settings.
@@ -217,6 +241,35 @@ pub async fn index(
         Json(json!({ "site_settings": site_settings, "default_theme": default_theme }))
             .into_response(),
     )
+}
+
+/// The index's document with no filters: every setting and the default
+/// theme, as the admin site settings page loads it (SiteSetting.findAll).
+pub async fn document(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+) -> Result<(Vec<Value>, Value), AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let cx = crate::admin_site_settings::Context {
+        defs: &state.site_setting_defs,
+        settings,
+        i18n: &state.i18n,
+        globals: &state.config.globals,
+        base_path: state.config.globals.relative_url_root(),
+        urls: &urls,
+    };
+    let filters = crate::admin_site_settings::Filters {
+        categories: None,
+        plugin: None,
+        names: None,
+    };
+    let site_settings = crate::admin_site_settings::all_settings(&mut *conn, &cx, &filters).await?;
+    let default_theme = default_theme(&mut *conn, settings).await?;
+    Ok((site_settings, default_theme))
 }
 
 /// BasicThemeSerializer for Theme.find_default: its description is the

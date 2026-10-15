@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/bulk_update.json",
+      "params": {
+        "settings": {
+          "short_site_description": {
+            "value": "hello"
+          },
+          "min_post_length": {
+            "value": "15"
+          }
+        }
+      }
+    }
+  ]
+}
