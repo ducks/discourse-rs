@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {"search_default_sort_order": 3, "prioritize_solved_topics_in_search": true},
+  "setup": [
+    "UPDATE topics SET views = id * 10 WHERE id >= 34",
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, created_at, updated_at) VALUES (41, 46, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Arelevance"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aoldest"},
+    {"method": "GET", "path": "/search/query.json?term=ab"},
+    {"method": "GET", "path": "/search.json?q=fixture"}
+  ]
+}

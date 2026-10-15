@@ -274,10 +274,71 @@ impl Search<'_> {
             ));
         }
 
-        if !is_topic_search {
-            self.sort_by_relevance(&mut q, run, aggregate)?;
-        }
+        self.apply_order(&mut q, run, aggregate, !is_topic_search)?;
         Ok(q)
+    }
+
+    /// `apply_order`: the term's order, else relevance (but in a topic);
+    /// a plugin's order (topic voting's votes) replaces what came before.
+    fn apply_order(
+        &self,
+        q: &mut Query,
+        run: &Run,
+        aggregate: bool,
+        allow_relevance: bool,
+    ) -> Result<(), SearchError> {
+        let in_title = run.adv.in_title;
+        let pick = |agg: &str, plain: &str| {
+            if aggregate {
+                agg.to_string()
+            } else {
+                plain.to_string()
+            }
+        };
+        let order = run.adv.order.as_deref();
+        let set: Option<String> = match order {
+            Some("latest") if in_title => Some("topics.bumped_at DESC".into()),
+            Some("latest") => Some(pick("MAX(posts.created_at) DESC", "posts.created_at DESC")),
+            Some("oldest") if in_title => Some("topics.bumped_at ASC".into()),
+            Some("oldest") => Some(pick("MAX(posts.created_at) ASC", "posts.created_at ASC")),
+            Some("latest_topic") => Some(pick(
+                "MAX(topics.created_at) DESC",
+                "topics.created_at DESC",
+            )),
+            Some("oldest_topic") => {
+                Some(pick("MAX(topics.created_at) ASC", "topics.created_at ASC"))
+            }
+            Some("views") => Some(pick("MAX(topics.views) DESC", "topics.views DESC")),
+            Some("likes") => Some(pick("MAX(posts.like_count) DESC", "posts.like_count DESC")),
+            Some("read") if self.guardian.user_id().is_some() => {
+                let uid = self.guardian.user_id().unwrap_or_default();
+                q.join(&format!(
+                    "JOIN topic_users tu ON tu.topic_id = posts.topic_id AND tu.user_id = {uid}"
+                ));
+                q.and("NOT (tu.last_visited_at IS NULL)");
+                Some(pick(
+                    "MAX(tu.last_visited_at) DESC",
+                    "tu.last_visited_at DESC",
+                ))
+            }
+            _ => None,
+        };
+        match set {
+            // reorder and order alike: nothing is ordered before a term's
+            // order (a topic's post order is only for a term without one).
+            Some(o) => q.orders = vec![o],
+            None if allow_relevance => self.sort_by_relevance(q, run, aggregate)?,
+            None => {}
+        }
+        // Search.advanced_orders
+        if order == Some("votes") && self.settings.get("topic_voting_enabled")?.truthy() {
+            q.orders = vec![
+                "COALESCE((SELECT dvtvc.votes_count FROM topic_voting_topic_vote_count dvtvc \
+                 WHERE dvtvc.topic_id = topics.id), 0) DESC"
+                    .into(),
+            ];
+        }
+        Ok(())
     }
 
     /// `sort_by_relevance` for the default type filter.
@@ -306,9 +367,23 @@ impl Search<'_> {
                 .get("category_search_priority_high_weight")?
                 .to_f(),
         );
+        // search_rank_sort_priorities, highest first: discourse-solved's
+        // solved topics with prioritize_solved_topics_in_search, then
+        // closed, then archived.
+        let solved = if self.settings.get("solved_enabled")?.truthy()
+            && self
+                .settings
+                .get("prioritize_solved_topics_in_search")?
+                .truthy()
+        {
+            "WHEN EXISTS (SELECT 1 FROM discourse_solved_solved_topics \
+             WHERE discourse_solved_solved_topics.topic_id = topics.id) THEN 1.1 "
+        } else {
+            ""
+        };
         let category_priority_weights = format!(
             "(CASE categories.search_priority WHEN 3 THEN {low} WHEN 4 THEN {high} ELSE 1.0 END \
-             * CASE WHEN topics.closed THEN 0.9 WHEN topics.archived THEN 0.85 ELSE 1.0 END)"
+             * CASE {solved}WHEN topics.closed THEN 0.9 WHEN topics.archived THEN 0.85 ELSE 1.0 END)"
         );
         q.orders.push(wrap(
             "(CASE categories.search_priority WHEN 5 THEN 3 WHEN 2 THEN 1 ELSE 2 END)".into(),
@@ -726,13 +801,25 @@ impl Search<'_> {
         results: &mut Results,
     ) -> Result<(), SearchError> {
         let (limit, offset) = (run.limit, run.offset);
-        let q = self.posts_query(run, true).await?;
-        let inner = q.to_sql(
-            "topics.id, min(posts.post_number) post_number",
-            true,
-            limit,
-            offset,
-        );
+        // Likes are not aggregated: each matching post with its likes.
+        let order = run.adv.order.clone();
+        let inner = if order.as_deref() == Some("likes") {
+            let q = self.posts_query(run, false).await?;
+            q.to_sql("topics.id, posts.post_number", false, limit, offset)
+        } else {
+            let q = self.posts_query(run, true).await?;
+            let min_or_max = if order.as_deref() == Some("latest") {
+                "max"
+            } else {
+                "min"
+            };
+            q.to_sql(
+                &format!("topics.id, {min_or_max}(posts.post_number) post_number"),
+                true,
+                limit,
+                offset,
+            )
+        };
         let sql = format!(
             "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
                     posts.like_count, psd.raw_data, psd.version \

@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET like_count = id WHERE topic_id >= 34",
+    "UPDATE topics SET views = id * 10 WHERE id >= 34",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) SELECT id, id - 30, now(), now() FROM topics WHERE id >= 34 ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count",
+    "UPDATE topic_users SET last_visited_at = NULL WHERE user_id = 3",
+    "INSERT INTO topic_users (user_id, topic_id, last_visited_at) VALUES (3, 35, '2026-10-02'), (3, 41, '2026-10-03'), (3, 37, '2026-10-01') ON CONFLICT (user_id, topic_id) DO UPDATE SET last_visited_at = EXCLUDED.last_visited_at"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Alatest"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20l"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aoldest"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3ALatest_Topic"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aoldest_topic"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aviews"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Alikes"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Aread"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20r"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Avotes"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Anonsense"},
+    {"method": "GET", "path": "/search/query.json?term=order%3Alatest"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Atitle%20order%3Alatest"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Atitle%20order%3Aoldest"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20order%3Alatest&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=reply%20order%3Alikes&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20order%3Alikes%20in%3Aall-posts"},
+    {"method": "GET", "path": "/search.json?q=fixture%20order%3Alikes"},
+    {"method": "GET", "path": "/search.json?q=fixture%20order%3Alatest&page=1"}
+  ]
+}
