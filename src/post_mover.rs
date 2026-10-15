@@ -11,9 +11,11 @@
 //! A first post is not moved but copied, as PostCreator writes a reply as
 //! its author (`create_first_post`).
 //!
-//! Refused: moving to or between messages (the whisper left behind and
-//! the participants), tags on the new topic (189), a
-//! copied first post with polls or reactions, votes moving with a merge.
+//! Moving to a message (`move_to_pm`) leaves a whisper behind, allows the
+//! mover and the posts' authors in, and adds the named participants.
+//!
+//! Refused: tags on the new topic (189), a copied first post with polls
+//! or reactions, votes moving with a merge.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -106,6 +108,11 @@ struct Mover<'a, 'b> {
     creator_jobs: Vec<(&'static str, Value, Option<i64>)>,
     /// `freeze_original`: the posts are copied, the original left closed.
     freeze: bool,
+    /// `move_to_pm`: the posts go to a message, with a whisper left behind.
+    move_to_pm: bool,
+    participants: Option<String>,
+    /// The moved posts' authors, in order (`posts.pluck(:user_id)`).
+    moving_users: Vec<Option<i32>>,
     /// The ids asked for (`@post_ids`).
     post_ids: Vec<i32>,
 }
@@ -121,9 +128,6 @@ pub async fn move_posts(
     let user_id = guardian
         .user_id()
         .ok_or(Unsupported("moving posts anonymously"))?;
-    if args.move_to_pm {
-        return Err(Unsupported("moving posts to a message (its whisper and participants)").into());
-    }
     if ctx.config.rate_limits && args.destination_topic_id.is_none() && args.title.is_some() {
         return Err(Unsupported("the topic rate limits of a split's new topic").into());
     }
@@ -147,6 +151,9 @@ pub async fn move_posts(
         creator_jobs: Vec::new(),
         freeze: args.freeze_original,
         post_ids: args.post_ids.clone(),
+        move_to_pm: args.move_to_pm,
+        participants: args.participants.clone(),
+        moving_users: Vec::new(),
     };
     if let Some(destination_id) = args.destination_topic_id {
         mover.move_to_topic(pool, destination_id).await
@@ -185,9 +192,6 @@ impl Mover<'_, '_> {
         {
             return Ok(Moved::InvalidParameters("Discourse::InvalidParameters"));
         }
-        if topic.private_message() {
-            return Err(Unsupported("moving posts into a message").into());
-        }
         self.topic_merged(&mut conn).await?;
         drop(conn);
         let mut tx = pool.begin().await?;
@@ -200,6 +204,12 @@ impl Mover<'_, '_> {
         deferred.enqueue(&mut tx).await?;
         tx.commit().await?;
         let mut conn = pool.acquire().await?;
+        if self.move_to_pm
+            && let Some(participants) = self.participants.clone().filter(|p| !p.is_empty())
+        {
+            self.add_allowed_users(pool, destination_id, &participants)
+                .await?;
+        }
         self.enqueue_jobs(&mut conn, destination_id).await?;
         Ok(Moved::Done(destination_id))
     }
@@ -337,13 +347,13 @@ impl Mover<'_, '_> {
             &TopicInput {
                 title: &title,
                 category_id,
-                private_message: false,
+                private_message: self.move_to_pm,
             },
             Some(&Persisted {
                 topic_id: 0,
                 author_admin,
                 check_title: true,
-                check_category: true,
+                check_category: !self.move_to_pm,
             }),
         )
         .await?;
@@ -353,7 +363,17 @@ impl Mover<'_, '_> {
         if s.get("slug_generation_method")?.to_s() != "ascii" {
             return Err(Unsupported("slug_generation_method other than ascii").into());
         }
-        let category_id = category_id.unwrap_or(s.get("uncategorized_category_id")?.to_i() as i32);
+        // ensure_topic_has_a_category, for a regular topic.
+        let category_id = if self.move_to_pm {
+            None
+        } else {
+            Some(category_id.unwrap_or(s.get("uncategorized_category_id")?.to_i() as i32))
+        };
+        let archetype = if self.move_to_pm {
+            "private_message"
+        } else {
+            "regular"
+        };
         let slug = slug_for(&title, &s.get("default_locale")?.to_s())?;
         let fancy = fancy_title(&title, EmojiEscape::from_settings(s)?)?;
         let slow_mode: Option<i32> =
@@ -365,7 +385,7 @@ impl Mover<'_, '_> {
         let topic_id: i32 = sqlx::query_scalar(
             "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, category_id, \
                                  archetype, created_at, updated_at, bumped_at, slow_mode_seconds) \
-             VALUES ($1, $2, $3, $4, $4, $5, 'regular', $6, clock_timestamp(), clock_timestamp(), \
+             VALUES ($1, $2, $3, $4, $4, $5, $8, $6, clock_timestamp(), clock_timestamp(), \
                      COALESCE($7, 0)) \
              RETURNING id",
         )
@@ -376,8 +396,12 @@ impl Mover<'_, '_> {
         .bind(category_id)
         .bind(created_at)
         .bind(slow_mode)
+        .bind(archetype)
         .fetch_one(&mut *conn)
         .await?;
+        let Some(category_id) = category_id else {
+            return Ok(Ok(topic_id));
+        };
         crate::topic_timer::inherit_auto_close_from_category(
             &mut *conn,
             ctx,
@@ -422,6 +446,8 @@ impl Mover<'_, '_> {
             .bind(self.original_id)
             .execute(&mut *conn)
             .await?;
+        self.ensure_acting_user_is_allowed_in_destination(conn, dest.id)
+            .await?;
         // posts: by the given ids, no small actions, no empty raw, by
         // creation.
         let posts: Vec<MovePost> = sqlx::query_as(
@@ -448,6 +474,7 @@ impl Mover<'_, '_> {
         .fetch_all(&mut *conn)
         .await?;
         let moving: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        self.moving_users = posts.iter().map(|p| p.user_id).collect();
         let full_move = preventing.iter().all(|id| moving.contains(id));
         let mut first_post_number_moved = if posts[0].post_number == 1 {
             posts.get(1).map(|p| p.post_number)
@@ -581,6 +608,7 @@ impl Mover<'_, '_> {
             };
             self.store_movement(conn, dest, post, new_id, new_number, full_move)
                 .await?;
+            self.allow_poster(conn, dest.id, post).await?;
         }
         Ok(())
     }
@@ -667,6 +695,7 @@ impl Mover<'_, '_> {
                     self.move_post(conn, dest, post, &move_map, &reply_count)
                         .await?
                 };
+                self.allow_poster(conn, dest.id, post).await?;
                 self.store_movement(conn, dest, post, new_id, new_number, full_move)
                     .await?;
             }
@@ -960,8 +989,12 @@ impl Mover<'_, '_> {
                 .bind(author)
                 .fetch_one(&mut *conn)
                 .await?;
-        let _ = author_admin_or_mod;
         let topic_id = dest.id;
+        let private_message: bool =
+            sqlx::query_scalar("SELECT archetype = 'private_message' FROM topics WHERE id = $1")
+                .bind(topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
         let cooked = crate::pretty_text::cook(
             ctx.host,
             &post.raw,
@@ -1050,8 +1083,33 @@ impl Mover<'_, '_> {
             .execute(&mut *conn)
             .await?;
         }
-        // UserActionManager.post_created: nothing for a first post.
-        if post_number != 1 {
+        // UserActionManager.post_created: nothing for a first post; in a
+        // message a row per allowed user.
+        if post_number != 1 && private_message {
+            let allowed: Vec<i32> = sqlx::query_scalar(
+                "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
+            )
+            .bind(topic_id)
+            .fetch_all(&mut *conn)
+            .await?;
+            for allowed_user in allowed {
+                let action = if allowed_user == author {
+                    crate::posting::user_actions::NEW_PRIVATE_MESSAGE
+                } else {
+                    crate::posting::user_actions::GOT_PRIVATE_MESSAGE
+                };
+                crate::posting::log_user_action_by(
+                    &mut *conn,
+                    action,
+                    allowed_user,
+                    author,
+                    topic_id,
+                    new_id,
+                    created_at,
+                )
+                .await?;
+            }
+        } else if post_number != 1 {
             crate::posting::log_user_action(
                 &mut *conn,
                 crate::posting::user_actions::REPLY,
@@ -1109,7 +1167,7 @@ impl Mover<'_, '_> {
                 )],
             )
             .await?;
-        } else {
+        } else if !private_message {
             let replying_level: Option<i32> = sqlx::query_scalar(
                 "SELECT notification_level_when_replying FROM user_options WHERE user_id = $1",
             )
@@ -1163,27 +1221,31 @@ impl Mover<'_, '_> {
         .await?
         .rows_affected()
             > 0;
-        crate::badge_granter::queue_user_change(&mut *conn, s, author).await?;
-        let _ = first;
+        if first || !private_message {
+            crate::badge_granter::queue_user_change(&mut *conn, s, author).await?;
+        }
         let column = if post_number == 1 {
             "topic_count"
         } else {
             "post_count"
         };
-        sqlx::query(&format!(
-            "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
-        ))
-        .bind(author)
-        .execute(&mut *conn)
-        .await?;
-        sqlx::query(
-            "UPDATE users SET last_posted_at = $2, updated_at = clock_timestamp() \
-             WHERE id = $1 AND last_posted_at IS DISTINCT FROM $2",
-        )
-        .bind(author)
-        .bind(created_at)
-        .execute(&mut *conn)
-        .await?;
+        // UserStatCountUpdater.increment! and last_posted_at skip messages.
+        if !private_message {
+            sqlx::query(&format!(
+                "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
+            ))
+            .bind(author)
+            .execute(&mut *conn)
+            .await?;
+            sqlx::query(
+                "UPDATE users SET last_posted_at = $2, updated_at = clock_timestamp() \
+                 WHERE id = $1 AND last_posted_at IS DISTINCT FROM $2",
+            )
+            .bind(author)
+            .bind(created_at)
+            .execute(&mut *conn)
+            .await?;
+        }
         crate::upload_references::link_post_uploads(
             &mut *conn,
             s,
@@ -1226,6 +1288,16 @@ impl Mover<'_, '_> {
             &[TopicUserAttr::Bookmarked(bookmarked)],
         )
         .await?;
+        if private_message {
+            crate::posting::create::message_posted(
+                &mut *conn,
+                ctx,
+                topic_id,
+                author,
+                author_admin_or_mod,
+            )
+            .await?;
+        }
         // After PostCreator's transaction: publish (replies only), the
         // category's latest, post_created's web hooks; its jobs later.
         if post_number != 1 {
@@ -1294,11 +1366,13 @@ impl Mover<'_, '_> {
             json!({"post_id": new_id}),
             None,
         ));
-        self.creator_jobs.push((
-            "notify_mailing_list_subscribers",
-            json!({"post_id": new_id}),
-            Some(s.get("email_time_window_mins")?.to_i() * 60),
-        ));
+        if !private_message {
+            self.creator_jobs.push((
+                "notify_mailing_list_subscribers",
+                json!({"post_id": new_id}),
+                Some(s.get("email_time_window_mins")?.to_i() * 60),
+            ));
+        }
         // The copy takes what the original had.
         sqlx::query("UPDATE email_logs SET post_id = $2 WHERE post_id = $1")
             .bind(post.id)
@@ -1517,10 +1591,11 @@ impl Mover<'_, '_> {
             )
         };
 
-        let kind = if self.creating_new_topic {
-            "new_topic"
-        } else {
-            "existing_topic"
+        let kind = match (self.creating_new_topic, self.move_to_pm) {
+            (true, false) => "new_topic",
+            (true, true) => "new_message",
+            (false, false) => "existing_topic",
+            (false, true) => "existing_message",
         };
         let count = posts.len() as i64;
         let form = if count == 1 { "one" } else { "other" };
@@ -1534,20 +1609,18 @@ impl Mover<'_, '_> {
         // PostCreator extracts the small action's links, and this extracts
         // them again; their titles are crawled once the move commits.
         let crawl_before: Vec<i64> = crawl_job_ids(&mut *conn).await?;
-        let post_id = small_action::add_with_message(
-            &mut *conn,
-            ctx,
-            &SmallAction {
-                user_id: self.user_id,
-                topic_id: self.original_id,
-                action_code: "split_topic",
-                bump: false,
-                who: None,
-            },
-            Some(&message),
-            false,
-        )
-        .await?;
+        let action = SmallAction {
+            user_id: self.user_id,
+            topic_id: self.original_id,
+            action_code: "split_topic",
+            bump: false,
+            who: None,
+        };
+        let post_id = if self.move_to_pm {
+            small_action::add_whisper(&mut *conn, ctx, &action, &message).await?
+        } else {
+            small_action::add_with_message(&mut *conn, ctx, &action, Some(&message), false).await?
+        };
         if let Some(n) = first_post_number_moved {
             sqlx::query(
                 "UPDATE posts SET post_number = $2, sort_order = $2, updated_at = clock_timestamp() \
@@ -1565,7 +1638,10 @@ impl Mover<'_, '_> {
                 .execute(&mut *conn)
                 .await?;
         }
-        // TopicLink.extract_from(new_post)
+        // TopicLink.extract_from(new_post), which skips whispers.
+        if self.move_to_pm {
+            return Ok(());
+        }
         let (cooked, user_id): (String, i32) =
             sqlx::query_as("SELECT cooked, user_id FROM posts WHERE id = $1")
                 .bind(post_id)
@@ -1749,7 +1825,9 @@ impl Mover<'_, '_> {
         Ok(())
     }
 
-    /// `watch_new_topic`: the new topic's author watches it.
+    /// `watch_new_topic`: the new topic's author watches it; a new
+    /// message's posters keep their level from the original message, or
+    /// watch it when it came from a topic.
     async fn watch_new_topic(
         &self,
         conn: &mut PgConnection,
@@ -1759,28 +1837,139 @@ impl Mover<'_, '_> {
             .bind(topic_id)
             .fetch_one(&mut *conn)
             .await?;
-        let Some(owner) = owner else {
-            return Ok(());
+        let levels: Vec<(i32, i32)> = if !self.move_to_pm {
+            owner
+                .map(|o| (o, notification_levels::WATCHING))
+                .into_iter()
+                .collect()
+        } else if self.original_archetype == "private_message" {
+            sqlx::query_as(
+                "SELECT user_id, notification_level FROM topic_users \
+                 WHERE topic_id = $1 AND user_id = ANY($2) ORDER BY id",
+            )
+            .bind(self.original_id)
+            .bind(
+                self.moving_users
+                    .iter()
+                    .flatten()
+                    .copied()
+                    .collect::<Vec<i32>>(),
+            )
+            .fetch_all(&mut *conn)
+            .await?
+        } else {
+            let mut users: Vec<i32> = Vec::new();
+            for user_id in self.moving_users.iter().flatten() {
+                if !users.contains(user_id) {
+                    users.push(*user_id);
+                }
+            }
+            users
+                .into_iter()
+                .map(|u| (u, notification_levels::WATCHING))
+                .collect()
         };
+        for (user_id, level) in levels {
+            let reason = if owner == Some(user_id) {
+                notification_reasons::CREATED_TOPIC
+            } else {
+                notification_reasons::CREATED_POST
+            };
+            change_topic_user(
+                &mut *conn,
+                user_id,
+                topic_id,
+                &[TopicUserAttr::NotificationLevel(level, reason)],
+            )
+            .await?;
+            crate::bus::publish_notification_level_change(
+                self.ctx.bus,
+                &mut *conn,
+                user_id,
+                topic_id,
+                level,
+                Some(reason),
+            )
+            .await?;
+        }
+        Ok(())
+    }
+
+    /// `ensure_acting_user_is_allowed_in_destination`: moving into a
+    /// message the mover isn't in adds and watches them.
+    async fn ensure_acting_user_is_allowed_in_destination(
+        &self,
+        conn: &mut PgConnection,
+        topic_id: i32,
+    ) -> Result<(), AppError> {
+        if !self.move_to_pm || self.user_id < 0 {
+            return Ok(());
+        }
+        let archetype: String = sqlx::query_scalar("SELECT archetype FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+        if archetype != "private_message" || !allow_user(conn, topic_id, self.user_id).await? {
+            return Ok(());
+        }
         change_topic_user(
             &mut *conn,
-            owner,
+            self.user_id,
             topic_id,
             &[TopicUserAttr::NotificationLevel(
                 notification_levels::WATCHING,
-                notification_reasons::CREATED_TOPIC,
+                notification_reasons::USER_CHANGED,
             )],
         )
         .await?;
         crate::bus::publish_notification_level_change(
             self.ctx.bus,
             &mut *conn,
-            owner,
+            self.user_id,
             topic_id,
             notification_levels::WATCHING,
-            Some(notification_reasons::CREATED_TOPIC),
+            Some(notification_reasons::USER_CHANGED),
         )
         .await?;
+        Ok(())
+    }
+
+    /// A post moved into a message: its author is allowed in.
+    async fn allow_poster(
+        &self,
+        conn: &mut PgConnection,
+        topic_id: i32,
+        post: &MovePost,
+    ) -> Result<(), AppError> {
+        if self.move_to_pm
+            && let Some(user_id) = post.user_id
+        {
+            allow_user(conn, topic_id, user_id).await?;
+        }
+        Ok(())
+    }
+
+    /// `add_allowed_users(participants)`: the named users allowed in the
+    /// destination message, then the topic saved.
+    async fn add_allowed_users(
+        &self,
+        pool: &PgPool,
+        topic_id: i32,
+        usernames: &str,
+    ) -> Result<(), AppError> {
+        let names: Vec<&str> = usernames.split(',').collect();
+        let mut tx = pool.begin().await?;
+        let users: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM users WHERE username = ANY($1) ORDER BY id")
+                .bind(&names)
+                .fetch_all(&mut *tx)
+                .await?;
+        for user_id in users {
+            allow_user(&mut tx, topic_id, user_id).await?;
+        }
+        crate::posting::revise_topic::save_as_is(&mut tx, self.ctx, self.guardian, topic_id)
+            .await?;
+        tx.commit().await?;
         Ok(())
     }
 
@@ -1895,4 +2084,23 @@ async fn copy_post_revisions(
     .execute(conn)
     .await?;
     Ok(())
+}
+
+/// A user allowed in a message unless already; true when added.
+async fn allow_user(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    user_id: i32,
+) -> Result<bool, sqlx::Error> {
+    let inserted = sqlx::query(
+        "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) \
+         SELECT $1, $2, clock_timestamp(), clock_timestamp() \
+         WHERE NOT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2)",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .execute(conn)
+    .await?
+    .rows_affected();
+    Ok(inserted > 0)
 }

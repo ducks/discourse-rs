@@ -13,6 +13,5 @@
         "title": "Parity fixture: moved and renamed"
       }
     }
-  ],
-  "not_yet": "the category change whisper: PostCreator for whispers (add_moderator_post with post_type whisper) is not ported"
+  ]
 }

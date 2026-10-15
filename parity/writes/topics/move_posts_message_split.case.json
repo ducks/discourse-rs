@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/move-posts.json",
+      "params": {
+        "post_ids": [
+          "49"
+        ],
+        "title": "Parity fixture: a reply split from a message",
+        "archetype": "private_message"
+      }
+    }
+  ]
+}

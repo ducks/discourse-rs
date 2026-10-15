@@ -13,6 +13,7 @@ use serde_json::{Map, Value, json};
 use sqlx::{PgConnection, PgPool};
 
 use super::search_index::{self, BaseUrls};
+use super::small_action;
 use super::text::{EmojiEscape, TitleOptions, clean_title, fancy_title, slug_for};
 use super::validate::{self, Persisted, TopicInput};
 use super::{Ctx, next_draft_sequence};
@@ -434,16 +435,35 @@ pub async fn apply(
                     errors = save_errors;
                     errored = true;
                 }
+                // create_small_action_for_category_change: a whisper
+                // naming both categories.
                 if !errored
-                    && old_category.is_some()
-                    && new_category.is_some()
+                    && let (Some(from), Some(to)) = (old_category, new_category)
                     && s.get("create_post_for_category_and_tag_changes")?.truthy()
                     && !s.get("whispers_allowed_groups")?.to_s().is_empty()
                 {
-                    return Err(Unsupported(
-                        "the category change whisper (create_post_for_category_and_tag_changes)",
+                    let from = category_slug_ref(&mut *conn, from).await?;
+                    let to = category_slug_ref(&mut *conn, to).await?;
+                    let raw = ctx
+                        .i18n
+                        .t_with(
+                            "topic_category_changed",
+                            &[("from", &format!("#{from}")), ("to", &format!("#{to}"))],
+                        )
+                        .ok_or(Unsupported("topic_category_changed"))?;
+                    small_action::add_whisper(
+                        &mut *conn,
+                        ctx,
+                        &small_action::SmallAction {
+                            user_id: p.editor_id,
+                            topic_id,
+                            action_code: "category_changed",
+                            bump: false,
+                            who: None,
+                        },
+                        &raw,
                     )
-                    .into());
+                    .await?;
                 }
             }
         }
@@ -1498,4 +1518,19 @@ pub async fn save_as_is(
         return Err(Unsupported("a topic save! that raises RecordInvalid").into());
     }
     Ok(())
+}
+
+/// `Category#slug_ref`: `parent:slug` for a subcategory, else its slug.
+async fn category_slug_ref(conn: &mut PgConnection, category_id: i32) -> Result<String, AppError> {
+    let (slug, parent_slug): (String, Option<String>) = sqlx::query_as(
+        "SELECT c.slug, p.slug FROM categories c LEFT JOIN categories p ON p.id = c.parent_category_id \
+         WHERE c.id = $1",
+    )
+    .bind(category_id)
+    .fetch_one(conn)
+    .await?;
+    Ok(match parent_slug {
+        Some(parent) => format!("{parent}:{slug}"),
+        None => slug,
+    })
 }
