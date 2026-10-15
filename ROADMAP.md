@@ -922,10 +922,9 @@ Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
-edits (started), 189 tags writes (the composer refuses tags), 193 the
-user pages (preferences first, split 193a-f), 143 advanced search (the
-search menu's `#`, `@` and `in:` suggestions run searches the port
-refuses), 131 avatars (done).
+edits (188a-188i2 done; 188i3-188i5, the edge cases, wait), 189 tags
+writes (done), 193 the user pages (193a-193d done, 193e and 193f
+underway), 143 advanced search (done, 143a-143i), 131 avatars (done).
 Then 208 multisite, ahead of the other large items: its cost grows with
 every feature written against one AppState, and many forums in one
 process is the port's clearest win for self-hosting.
