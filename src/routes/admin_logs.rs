@@ -24,6 +24,7 @@ pub async fn staff_action_logs(
     if !guardian.is_staff() {
         return Ok(super::topics::not_found_response(&state));
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the staff action logs page")?;
     // Query and body params, as Rails merges them; a repeated query
     // param is already its last value.
     let params = crate::params::parse(uri.query(), &headers, &body);
@@ -105,10 +106,13 @@ fn can_see_ip(guardian: &crate::guardian::Guardian, s: &SiteSettings) -> Result<
 pub async fn screened_emails(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the screened emails page")?;
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     if !guardian.is_admin()
@@ -159,10 +163,13 @@ pub async fn destroy_screened_email(
 pub async fn screened_urls(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the screened URLs page")?;
     let mut conn = state.pool.acquire().await?;
     Ok(Json(crate::screened::urls(&mut conn).await?).into_response())
 }
@@ -179,6 +186,7 @@ pub async fn screened_ip_addresses(
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the screened IP addresses page")?;
     let p = crate::params::parse(uri.query(), &headers, &body);
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -330,6 +338,7 @@ pub async fn search_logs(
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the search logs page")?;
     let p = crate::params::parse(uri.query(), &headers, &body);
     let period = crate::params::string(&p, "period").unwrap_or_else(|| "all".into());
     let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
@@ -356,6 +365,7 @@ pub async fn search_log_term(
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the search log term page")?;
     let p = crate::params::parse(uri.query(), &headers, &body);
     let Some(term) = crate::params::string(&p, "term").filter(|t| !t.is_empty()) else {
         return Ok(super::accounts::param_missing("term"));
@@ -429,6 +439,7 @@ pub async fn email_logs(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the email logs pages")?;
     let p = crate::params::parse(uri.query(), &headers, &body);
     let get = |k: &str| crate::params::string(&p, k);
     let filters = crate::email_logs::Filters {

@@ -597,3 +597,49 @@ async fn the_config_areas_settings_json() {
         .await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
 }
+
+#[tokio::test]
+async fn the_reports_index() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "dashboard_hidden_reports", 8, "visits").await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/reports?filter=sign").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Reports - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-reports\">"));
+    assert!(html.contains("<h2 class=\"admin-reports-group__title\">Engagement</h2>"));
+    assert!(html.contains("href=\"/admin/reports/signups\""));
+    // dashboard_hidden_reports leaves its reports out.
+    assert!(!html.contains("href=\"/admin/reports/visits\""));
+    // The URL's filter fills the input; the group menu lists the groups.
+    assert!(html.contains("value=\"sign\" placeholder=\"Filter reports...\""));
+    assert!(html.contains("<option class=\"d-native-select__option\" value=\"traffic\">"));
+    assert!(html.contains("/admin-reports.js"));
+    // The JSON stays the list.
+    let (status, body) = admin.send(Method::GET, "/admin/reports", "", true).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"reports\":["), "{body}");
+}
+
+#[tokio::test]
+async fn the_admin_pages_not_drawn_yet_are_refused() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    for path in [
+        "/admin/reports/signups",
+        "/admin/logs/staff_action_logs",
+        "/admin/logs/screened_emails",
+        "/admin/logs/screened_ip_addresses",
+        "/admin/logs/screened_urls",
+        "/admin/logs/search_logs",
+        "/admin/email-logs/sent",
+    ] {
+        let (status, _) = admin.page(path).await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
+        // Their JSON is served.
+        let (status, _) = admin.send(Method::GET, path, "", true).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+    }
+}

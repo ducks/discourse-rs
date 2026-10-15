@@ -902,7 +902,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/customize/watched_words/action/{id}/download",
             get(admin_watched_words::download),
         )
-        .route("/admin/reports", get(admin_reports::index))
+        .route("/admin/reports", get(admin_pages::reports_index))
         .route("/admin/reports.json", get(admin_reports::index))
         .route("/admin/reports/bulk", get(admin_reports::bulk))
         .route("/admin/reports/bulk.json", get(admin_reports::bulk))
@@ -2074,6 +2074,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin.js", get(asset))
         .route("/assets/admin-dashboard.js", get(asset))
         .route("/assets/admin-users.js", get(asset))
+        .route("/assets/admin-reports.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))

@@ -178,15 +178,26 @@ pub async fn index(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let list = list_doc(&mut conn, &state, &settings, &guardian).await?;
+    Ok(Json(json!({ "reports": list })).into_response())
+}
+
+/// The index's reports, as the admin reports page lists them.
+pub async fn list_doc(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+) -> Result<Value, AppError> {
     let urls = crate::url::Urls {
         config: &state.config,
-        settings: &settings,
+        settings,
     };
-    let cx = context(&mut conn, &state, &settings, &urls).await?;
+    let cx = context(&mut *conn, state, settings, &urls).await?;
     let viewer = Viewer {
-        guardian: Some(&guardian),
+        guardian: Some(guardian),
     };
-    Ok(Json(json!({ "reports": reports::list(&cx, &viewer)? })).into_response())
+    Ok(json!(reports::list(&cx, &viewer)?))
 }
 
 /// GET /admin/reports/:type(.json)
@@ -201,6 +212,7 @@ pub async fn show(
     if !guardian.is_staff() {
         return Ok(not_found(&state));
     }
+    super::admin_pages::refuse_page(&uri, &headers, "the admin report page (AdminReport)")?;
     let kind = kind.strip_suffix(".json").unwrap_or(&kind).to_string();
     let p = crate::params::parse(uri.query(), &headers, &body);
     let mut conn = state.pool.acquire().await?;

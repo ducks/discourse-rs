@@ -717,9 +717,17 @@ then by what running a forum needs (milestone 6). Briefs:
     admin_groups_json). The /admin/config areas' own settings tabs reuse
     AdminAreaSettings in 90g6. Left: Only show overridden stays in the
     URL's query on these tabs, where Ember keeps it in the component),
-    90g5. `feat/admin-shell-reports-logs`
-    M (/admin/reports and a report's page, /admin/logs: staff actions,
-    screened emails, IPs and URLs, search logs and a term; email logs),
+    90g5. `feat/admin-shell-reports-logs` M, in part (done:
+    /admin/reports, AdminReports from /admin/reports.json less
+    dashboard_hidden_reports, in REPORT_GROUPS' groups, the other core
+    reports and each plugin's, under DFilterControls' text filter and
+    group menu as the URL's `filter` and `group`, with its reset and no
+    results state; the HTML of the pages below is refused where their
+    JSON is still served, instead of answering a page with JSON. Left:
+    a report's page (AdminReport: its period groupings, dates, filters,
+    chart and table modes, export and refresh), /admin/logs: staff
+    actions, screened emails, IPs and URLs, search logs and a term;
+    email logs),
     90g6. `feat/admin-shell-config` L (the /admin/config areas: about,
     content and category management, login, notifications, localization,
     analytics, permalinks, user defaults, trust levels, group
