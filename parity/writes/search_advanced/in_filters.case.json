@@ -1,0 +1,37 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 36",
+    "INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, created_at, updated_at) VALUES (3, 35, 'Post', now(), now())",
+    "INSERT INTO polls (post_id, name, created_at, updated_at) VALUES (36, 'poll', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=in%3Afirst"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20f"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Areplies"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Apinned"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Awiki"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Alikes"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Abookmarks"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aposted"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Acreated"},
+    {"method": "GET", "path": "/search/query.json?term=in%3AMine"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Awatching"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Atracking"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aseen"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aunseen"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Atagged"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Auntagged"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Abots"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Ahuman"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Awhispers"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aregular"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Apolls"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Atitle"},
+    {"method": "GET", "path": "/search/query.json?term=replies%20t"},
+    {"method": "GET", "path": "/search/query.json?term=category%20in%3Aall-posts"},
+    {"method": "GET", "path": "/search/query.json?term=unlisted%20include%3Aunlisted"},
+    {"method": "GET", "path": "/search.json?q=in%3Afirst"},
+    {"method": "GET", "path": "/search.json?q=category%20in%3Aall-posts"}
+  ]
+}

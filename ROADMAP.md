@@ -1172,12 +1172,17 @@ generate_theme_screenshot_thumbnails (171).
     nobody has matches those without a user, as Rails does), `group:`
     (visible groups whose members are visible, by name or id),
     `badge:` (by name or id)
-    143c. `feat/search-advanced-in` M: `in:` over the viewer's posts and
-    topics: title (and `t`), first (and `f`), replies, pinned, wiki,
-    likes, bookmarks, posted, created/mine, watching, tracking, seen,
-    unseen, tagged, untagged, bots, humans, whispers, regular,
-    all-posts, `include:unlisted`; poll's `in:polls`; `tags:` and
-    `-tags:` (`+` for all, `,` for any, synonyms)
+    143c. ~~`feat/search-advanced-in`~~ (done) M: `in:` over the
+    viewer's posts and topics: title (and `t`), first (and `f`),
+    replies, pinned, wiki, likes, bookmarks, posted, created/mine,
+    watching, tracking, seen, unseen, tagged, untagged, bots, humans,
+    whispers, regular, all-posts, `include:unlisted`; poll's
+    `in:polls`; `tags:` and `-tags:` (`+` for all, `,` for any,
+    synonyms). The searches that list posts (in:all-posts, a topic's)
+    load them as ActiveRecord eager-loads them: the distinct ids, then
+    the ordered posts; posts that tie on every sort term come out as
+    Postgres plans that query, on either side. discourse-solved's eager
+    load follows solved_enabled now, where Rails reads it at boot
     143d. `feat/search-advanced-status` S: `status:` open, closed,
     public, archived, noreplies, single_user, solved's solved and
     unsolved; posts_count, min_post_count, min_posts, max_posts,

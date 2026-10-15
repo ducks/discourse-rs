@@ -31,6 +31,13 @@ impl Query {
         self.wheres.push(clause.into());
     }
 
+    /// `joins(string)`: ActiveRecord keeps one of identical joins.
+    pub(super) fn join(&mut self, join: &str) {
+        if !self.joins.iter().any(|j| j == join) {
+            self.joins.push(join.to_string());
+        }
+    }
+
     /// `posts.none` and `where("1 = 0")`: nothing matches.
     pub(super) fn none(&mut self) {
         self.and("1 = 0");
@@ -64,6 +71,40 @@ impl Query {
         sql.push_str(&format!(" LIMIT {limit} OFFSET {offset}"));
         sql
     }
+
+    /// FROM and WHERE with the eager-load joins after the association
+    /// joins (post_search_data and topics, the first two), as
+    /// ActiveRecord orders them.
+    fn eager_from_where(&self, eager: &[&str], extra_where: &str) -> String {
+        let mut sql = String::from(" FROM posts");
+        for (i, join) in self.joins.iter().enumerate() {
+            if i == 2 {
+                for e in eager {
+                    sql.push(' ');
+                    sql.push_str(e);
+                }
+            }
+            sql.push(' ');
+            sql.push_str(join);
+        }
+        sql.push_str(" WHERE ");
+        sql.push_str(
+            &self
+                .wheres
+                .iter()
+                .map(|w| format!("({w})"))
+                .collect::<Vec<_>>()
+                .join(" AND "),
+        );
+        sql.push_str(extra_where);
+        sql
+    }
+}
+
+/// `columns_for_distinct`: an ORDER BY term without its direction.
+fn without_direction(order: &str) -> String {
+    let re = regex::Regex::new(r"(?i)\s+(?:ASC|DESC)\b").expect("static pattern");
+    re.replace_all(order, "").into_owned()
 }
 
 fn id_list(ids: &[i32]) -> String {
@@ -143,7 +184,7 @@ impl Search<'_> {
         q.and(format!("posts.post_type IN ({post_types})"));
         q.and("posts.hidden = FALSE");
         let is_topic_search = run.topic.is_some();
-        if !is_topic_search {
+        if !is_topic_search && !run.adv.include_invisible {
             q.and("topics.visible");
         }
         if pm_topic {
@@ -303,6 +344,41 @@ impl Search<'_> {
                 Filter::CreatedBy => self.created_by_filter(q, &capture).await?,
                 Filter::Group => self.group_filter(q, &capture).await?,
                 Filter::Badge => self.badge_filter(q, &capture).await?,
+                Filter::Tagged => q.and(
+                    "EXISTS (SELECT 1 FROM topic_tags WHERE topic_tags.topic_id = posts.topic_id)",
+                ),
+                Filter::Untagged => {
+                    q.join("LEFT JOIN topic_tags ON topic_tags.topic_id = posts.topic_id");
+                    q.and("topic_tags.id IS NULL");
+                }
+                Filter::Bots => q.and("posts.user_id < 0"),
+                Filter::Humans => q.and("posts.user_id >= 0"),
+                Filter::Whispers => {
+                    if self.guardian.can_see_whispers(self.settings)? {
+                        q.and("posts.post_type = 4");
+                    } else {
+                        q.none();
+                    }
+                }
+                Filter::Regular => q.and("posts.post_type = 1"),
+                Filter::First => q.and("posts.post_number = 1"),
+                Filter::Replies => q.and("posts.post_number > 1"),
+                Filter::Pinned => q.and("topics.pinned_at IS NOT NULL"),
+                Filter::Wiki => q.and("posts.wiki = TRUE"),
+                Filter::Likes
+                | Filter::Bookmarks
+                | Filter::Posted
+                | Filter::Created
+                | Filter::WatchingTracking
+                | Filter::Seen
+                | Filter::Unseen => self.viewer_filter(q, filter, &capture),
+                Filter::Polls => {
+                    if self.settings.get("poll_enabled")?.truthy() {
+                        q.join("INNER JOIN polls ON polls.post_id = posts.id");
+                    }
+                }
+                Filter::Tags => self.tags_filter(q, &capture, true).await?,
+                Filter::NotTags => self.tags_filter(q, &capture, false).await?,
                 _ => return Err(Unsupported("an advanced search filter not ported").into()),
             }
         }
@@ -497,19 +573,92 @@ impl Search<'_> {
         let (limit, offset) = (run.limit, run.offset);
         if let Some(topic) = run.topic {
             let q = self.posts_query(run, false).await?;
-            let sql = q
-                .to_sql(
-                    "posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
-                     posts.like_count, post_search_data.raw_data, post_search_data.version",
-                    false,
-                    limit,
-                    offset,
-                )
-                .replace("{split}", &format!(" AND (posts.topic_id = {})", topic.id));
-            results.posts = sqlx::query_as(&sql).fetch_all(&mut *self.conn).await?;
+            let extra = format!(" AND (posts.topic_id = {})", topic.id);
+            results.posts = self.eager_posts(&q, &extra, limit, offset).await?;
+            return Ok(());
+        }
+        if run.adv.all_posts {
+            let q = self.posts_query(run, false).await?;
+            results.posts = self.eager_posts(&q, "", limit, offset).await?;
             return Ok(());
         }
         self.aggregate_search(run, results).await
+    }
+
+    /// posts_query's posts loaded with posts_eager_loads: the
+    /// `references(:categories)` turns ActiveRecord's includes into
+    /// eager-load joins, so with a limit it picks the distinct ids first and
+    /// loads them in a second, ordered query (ties fall as Postgres plans
+    /// that one), each post once.
+    async fn eager_posts(
+        &mut self,
+        q: &Query,
+        extra_where: &str,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<PostHit>, SearchError> {
+        let mut eager = vec![
+            "LEFT OUTER JOIN categories categories_topics ON categories_topics.id = topics.category_id",
+            "LEFT OUTER JOIN categories parent_categories_categories \
+             ON parent_categories_categories.id = categories_topics.parent_category_id",
+        ];
+        if self.settings.get("tagging_enabled")?.truthy() {
+            eager.push("LEFT OUTER JOIN topic_tags ON topic_tags.topic_id = topics.id");
+            eager.push("LEFT OUTER JOIN tags ON tags.id = topic_tags.tag_id");
+        }
+        // discourse-solved's custom_topic_eager_load
+        if self.settings.get("solved_enabled")?.truthy() {
+            eager.push(
+                "LEFT OUTER JOIN discourse_solved_solved_topics \
+                 ON discourse_solved_solved_topics.topic_id = topics.id",
+            );
+            eager.push(
+                "LEFT OUTER JOIN discourse_solved_topic_answers \
+                 ON discourse_solved_topic_answers.solved_topic_id = discourse_solved_solved_topics.id",
+            );
+        }
+        eager.push("LEFT OUTER JOIN users ON users.id = posts.user_id");
+        let from_where = q.eager_from_where(&eager, extra_where);
+        let order = if q.orders.is_empty() {
+            String::new()
+        } else {
+            format!(" ORDER BY {}", q.orders.join(", "))
+        };
+        let mut columns: Vec<String> = q
+            .orders
+            .iter()
+            .enumerate()
+            .map(|(i, o)| format!("{} AS alias_{i}", without_direction(o)))
+            .collect();
+        columns.push("posts.id".into());
+        let rows = sqlx::query(&format!(
+            "SELECT DISTINCT {}{from_where}{order} LIMIT {limit} OFFSET {offset}",
+            columns.join(", ")
+        ))
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let ids: Vec<i32> = rows
+            .iter()
+            .map(|r| sqlx::Row::try_get::<i32, _>(r, "id"))
+            .collect::<Result<_, _>>()?;
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let loaded: Vec<PostHit> = sqlx::query_as(&format!(
+            "SELECT posts.id, posts.user_id, posts.topic_id, posts.post_number, posts.created_at, \
+                    posts.like_count, post_search_data.raw_data, post_search_data.version\
+             {from_where} AND posts.id IN ({}){order}",
+            id_list(&ids)
+        ))
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out: Vec<PostHit> = Vec::new();
+        for post in loaded {
+            if !out.iter().any(|p| p.id == post.id) {
+                out.push(post);
+            }
+        }
+        Ok(out)
     }
 
     /// `aggregate_search`: one row per topic with its lowest matching post

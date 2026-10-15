@@ -309,7 +309,7 @@ impl Search<'_> {
     pub async fn execute(&mut self, args: &SearchArgs) -> Result<Option<Value>, SearchError> {
         self.check_unported()?;
         let clean = clean_term(&args.term);
-        let adv = advanced::process(&clean, self.settings, self.guardian.user_id().is_some())?;
+        let adv = advanced::process(&clean, self.settings, self.guardian)?;
         let topic_context = args.topic_context;
         // prepare_data: squished (but in a topic), and URLs lose their
         // query string.

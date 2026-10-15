@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Alikes"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Aposted"},
+    {"method": "GET", "path": "/search/query.json?term=fixture%20in%3Awhispers"},
+    {"method": "GET", "path": "/search/query.json?term=unlisted%20include%3Aunlisted"},
+    {"method": "GET", "path": "/search/query.json?term=in%3Apolls"}
+  ]
+}
