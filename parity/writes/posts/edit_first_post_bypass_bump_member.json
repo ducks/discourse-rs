@@ -1,0 +1,557 @@
+{
+  "name": "edit_first_post_bypass_bump_member",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "bypass_bump": "true",
+        "post": {
+          "raw": "First post of a topic with several repliers, a wiki its author edits asking for no bump."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-15T09:47:10.617228",
+  "transaction_started_at": "2026-10-15T09:47:08.758088",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "post": {
+          "id": 35,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-09-30T07:28:28.901Z",
+          "cooked": "<p>First post of a topic with several repliers, a wiki its author edits asking for no bump.</p>",
+          "post_number": 1,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-10-15T09:47:10.767Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 0.2,
+          "yours": true,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 2,
+          "can_edit": true,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": true,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": false,
+          "raw": "First post of a topic with several repliers, a wiki its author edits asking for no bump.",
+          "actions_summary": [
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "draft_sequence": 1,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": true,
+          "last_wiki_edit": "2026-10-15T09:47:10.787Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/1",
+          "reactions": [],
+          "current_user_reaction": null,
+          "reaction_users_count": 0,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null,
+          "can_vote": false
+        }
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 35,
+          "user_id": 2,
+          "created_at": "2026-10-15T09:47:10.787686",
+          "updated_at": "2026-10-15T09:47:10.787686",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.\n- First post of a topic with several repliers, a wiki its author edits asking for\n  no bump.\ncooked:\n- \"<p>First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.</p>\"\n- \"<p>First post of a topic with several repliers, a wiki its author edits asking\n  for no bump.</p>\"\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "search_data": "'bodi':23 'enough':17 'excerpt':26 'first':8 'fixtur':2A 'general':6B 'guid':7C 'long':16 'pariti':1A 'post':9,22 'poster':5A 'real':21 'repli':3A 'replier':15 'sever':14 'topic':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, a wiki its author edits asking for no bump.",
+            "search_data": "'ask':21 'author':19 'bump':24 'edit':20 'first':8 'fixtur':2A 'general':6B 'guid':7C 'pariti':1A 'post':9 'poster':5A 'repli':3A 'replier':15 'sever':14 'topic':12 'wiki':17",
+            "private_message": false
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "wiki": true,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:28.901878",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:28.901913",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:28.901913",
+            "word_count": 19,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:28.917598",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/35@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 35,
+            "raw": "First post of a topic with several repliers, a wiki its author edits asking for no bump.",
+            "wiki": true,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>First post of a topic with several repliers, a wiki its author edits asking for no bump.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 2,
+            "baked_at": "2026-10-15T09:47:10.767324",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:28.901913",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 1,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-15T09:47:10.767623",
+            "word_count": 17,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-15T09:47:10.669818",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/35@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "topic_id": 35,
+            "search_data": "'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B"
+          },
+          "after": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Parity fixture: replies and posters First post of a topic with several repliers, a wiki its author edits asking for no bump.",
+            "topic_id": 35,
+            "search_data": "'ask':19B 'author':17B 'bump':22B 'edit':18B 'first':6B 'fixtur':2A 'pariti':1A 'post':7B 'poster':5A 'repli':3A 'replier':13B 'sever':12B 'topic':10B 'wiki':15B"
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, a wiki its author edits asking for no bump.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-15T09:47:10.839155",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 66,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RbtfgrAbYNvGfnNdLOJ2wKK9qts=",
+            "created_at": "2026-10-15T09:47:09.45417",
+            "rotated_at": "2026-10-15T09:47:09.452203",
+            "updated_at": "2026-10-15T09:47:09.45417",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RbtfgrAbYNvGfnNdLOJ2wKK9qts=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-15T09:47:10.628123",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RbtfgrAbYNvGfnNdLOJ2wKK9qts=",
+            "created_at": "2026-10-15T09:47:09.45417",
+            "rotated_at": "2026-10-15T09:47:09.452203",
+            "updated_at": "2026-10-15T09:47:09.45417",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RbtfgrAbYNvGfnNdLOJ2wKK9qts=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": 1,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 35,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "post_id": 35,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 35
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_revisions": 1
+  },
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "4753685502b877095931fb5775e8f98f1ed09ccbe060f9f965667c8f9cff40cb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

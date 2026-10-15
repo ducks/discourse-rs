@@ -1,0 +1,28 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, moved where its author may not post.",
+          "category_id": "3"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, moved to no category at all.",
+          "category_id": "9999"
+        }
+      }
+    }
+  ]
+}

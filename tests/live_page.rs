@@ -268,3 +268,60 @@ async fn the_stream_stays_uncompressed_for_a_browser_that_accepts_compression() 
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(html.contains("topic-post"));
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_topic_edit_redraws_the_title() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let first: i32 =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1")
+            .bind(TOPIC)
+            .fetch_one(&st.pool)
+            .await
+            .unwrap();
+    sqlx::query(
+        "UPDATE topics SET title = 'A title the topic was renamed to', \
+                    fancy_title = 'A title the topic was renamed to' WHERE id = $1",
+    )
+    .bind(TOPIC)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let from = st.bus.now().await.unwrap();
+    let response = get(&st, &format!("/live?topic={TOPIC}&tail=1&position={from}")).await;
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+
+    // reload_topic: the title block is drawn again with the post.
+    let mut conn = st.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &st.site_setting_defs, &st.config.globals)
+        .await
+        .unwrap();
+    drop(conn);
+    let host = discourse_rs::pretty_text::Host::from_state(&st);
+    let ctx = discourse_rs::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &st.config,
+        i18n: &st.i18n,
+        bus: &st.bus,
+    };
+    let mut extra = serde_json::Map::new();
+    extra.insert("reload_topic".into(), serde_json::json!(true));
+    let mut tx = st.pool.begin().await.unwrap();
+    discourse_rs::bus::publish_post_change(&ctx, &mut tx, first, "revised", extra, true)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(
+        html.contains(r#"<div class="container" id="topic-title" hx-swap-oob="true">"#),
+        "{html}"
+    );
+    assert!(html.contains("A title the topic was renamed to"), "{html}");
+
+    // A plain edit leaves the title alone.
+    publish(&st, first, "revised").await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(!html.contains(r#"id="topic-title""#), "{html}");
+}

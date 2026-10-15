@@ -1,0 +1,39 @@
+{
+  "user": "user1",
+  "settings": {
+    "tl2_post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "raw": "A fresh reply from user1 that will be edited right away.",
+        "topic_id": "35"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/{{responses.0.body.id}}.json",
+      "params": {
+        "post": {
+          "raw": "A fresh reply from user1 that was edited right away, twice."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/{{responses.0.body.id}}.json",
+      "params": {
+        "post": {
+          "raw": "A fresh reply from user1 that was edited right away, then with a reason.",
+          "edit_reason": "a reason"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/{{responses.0.body.id}}/revisions/latest.json"
+    }
+  ]
+}

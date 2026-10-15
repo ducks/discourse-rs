@@ -1,0 +1,30 @@
+{
+  "user": "user1",
+  "settings": {
+    "tl2_post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited and then put back as it was."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, also long enough to pass the minimum length check."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/raw/35/2"
+    }
+  ]
+}

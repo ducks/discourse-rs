@@ -63,13 +63,18 @@
     );
   }
 
-  function setMode(mode) {
+  // canEditTitle: creating a topic, or editing a first post (with its
+  // title, category and tags above the editor).
+  function setMode(mode, firstPost) {
+    var titled = mode === "create-topic" || (mode === "edit" && !!firstPost);
     ["reply", "create-topic", "edit"].forEach(function (m) {
       control.classList.toggle("composer-action-" + m, m === mode);
     });
-    control.classList.toggle("edit-title", mode === "create-topic");
+    control.classList.toggle("edit-title", titled);
     control.classList.toggle("topic", mode === "create-topic");
-    fields.hidden = mode !== "create-topic";
+    fields.hidden = !titled;
+    title.disabled = false;
+    chooser.closest(".category-input").hidden = false;
     actionButton.innerHTML = data["action" + modeName(mode)];
     submit.innerHTML = data["submit" + modeName(mode)];
   }
@@ -130,6 +135,18 @@
       }
     } else if (s.mode === "edit") {
       d.postId = parseInt(s.postId, 10);
+      // A first post's draft keeps the topic fields being edited and what
+      // they were.
+      if (s.topic) {
+        d.title = title.value;
+        var editCategory = chooser.querySelector("summary").dataset.value;
+        d.categoryId = editCategory ? parseInt(editCategory, 10) : null;
+        if (tagChooser) {
+          d.tags = serializedTags();
+        }
+        d.original_title = s.topic.title;
+        d.original_tags = s.topic.tags;
+      }
     } else {
       d.reply_to_post_number = s.replyTo ? parseInt(s.replyTo, 10) : null;
     }
@@ -291,6 +308,54 @@
     );
   });
 
+  // The topic of a first post being edited: what the composer shows and
+  // what Topic.update sends against (original_title, original_tags).
+  function loadTopic(s) {
+    return fetch(base + "/t/" + s.topicId + ".json", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status);
+        }
+        return r.json();
+      })
+      .then(function (topic) {
+        // The topic's tags as it serializes them ({id, name, slug}),
+        // which original_tags sends back.
+        var tags = topic.tags || [];
+        var details = topic.details || {};
+        s.topic = {
+          id: topic.id,
+          slug: topic.slug,
+          title: topic.title,
+          categoryId: topic.category_id,
+          tags: tags,
+          privateMessage: topic.archetype === "private_message",
+          canEdit: !!details.can_edit,
+          canEditTags: !!details.can_edit_tags,
+        };
+        if (state !== s) {
+          return;
+        }
+        title.value = topic.title;
+        // disableTitleInput: editing without the right to edit the topic.
+        title.disabled = !s.topic.canEdit;
+        // canCategorize: never for a message.
+        chooser.closest(".category-input").hidden = s.topic.privateMessage;
+        if (topic.category_id) {
+          selectCategory(topic.category_id);
+          keepCategory(topic.category_id);
+        }
+        setTags(
+          (topic.tags || []).map(function (t) {
+            return typeof t === "string" ? { name: t, id: null } : t;
+          })
+        );
+      });
+  }
+
   function rawToEdit(s) {
     return fetch(base + "/raw/" + s.topicId + "/" + s.postNumber, {
       credentials: "same-origin",
@@ -321,6 +386,15 @@
     s.originalText = draft && "original_text" in draft ? draft.original_text : null;
     if (s.mode === "edit") {
       if (editDraft && String(draft.postId) === String(s.postId)) {
+        if (s.topic && typeof draft.title === "string") {
+          title.value = draft.title;
+          if (draft.categoryId) {
+            selectCategory(draft.categoryId);
+          }
+          if (draft.tags) {
+            setTags(draft.tags);
+          }
+        }
         return Promise.resolve(draft.reply || "");
       }
       return rawToEdit(s).then(function (raw) {
@@ -387,6 +461,11 @@
       selectCategory(opts.category || data.defaultCategory);
       setTags([]);
     }
+    s.firstPost = opts.mode === "edit" && String(opts.postNumber) === "1";
+    if (s.firstPost) {
+      setMode("edit", true);
+      title.disabled = true;
+    }
     control.classList.remove("closed", "draft");
     control.classList.add("open");
     root.style.setProperty("--composer-height", defaultHeight(opts.mode));
@@ -407,9 +486,12 @@
       opts.mode === "create-topic" && !resuming
         ? Promise.resolve(null)
         : fetchDraft(s.draftKey);
-    lookup
-      .then(function (found) {
-        return initialText(s, found);
+    // Editing a first post: the topic's title, category and tags, as
+    // the topic model holds them in Ember.
+    var topicLoad = s.firstPost ? loadTopic(s) : Promise.resolve();
+    Promise.all([lookup, topicLoad])
+      .then(function (results) {
+        return initialText(s, results[0]);
       })
       .then(function (text) {
         if (state !== s) {
@@ -759,6 +841,31 @@
     }
     chooser.querySelectorAll(".category-row").forEach(function (r) {
       r.classList.toggle("is-selected", r === row);
+    });
+  }
+
+  // A topic's category that isn't among those the chooser lists (one
+  // the editor can't post in) stays selected, shown with the topic
+  // title's badge, as Ember's chooser shows its value.
+  function keepCategory(id) {
+    var summary = chooser.querySelector("summary");
+    if (summary.dataset.value === String(id)) {
+      return;
+    }
+    var header = chooser.querySelector(".select-kit-selected-name");
+    var badge = document.querySelector("#topic-title .badge-category__wrapper");
+    header.innerHTML = "";
+    var name = document.createElement("span");
+    name.className = "name";
+    if (badge) {
+      name.appendChild(badge.cloneNode(true));
+    }
+    header.appendChild(name);
+    header.dataset.value = id;
+    summary.dataset.value = id;
+    chooser.classList.add("has-selection");
+    chooser.querySelectorAll(".category-row").forEach(function (r) {
+      r.classList.remove("is-selected");
     });
   }
 
@@ -1223,6 +1330,79 @@
       .join("&");
   }
 
+  // Composer#editPost: a first post's topic fields through Topic.update
+  // (PUT /t, or only its tags through PUT /t/:id/tags without the right
+  // to edit the topic), then the post through PUT /posts. A 409 marks an
+  // edit conflict: saving again overwrites.
+  function editPost(s) {
+    var promise = Promise.resolve(null);
+    if (s.topic && title.value) {
+      var topic = s.topic;
+      if (topic.canEdit) {
+        // The tags only where tagging is on (the topic has none otherwise).
+        var props = { title: title.value };
+        if (tagChooser) {
+          props.tags = serializedTags();
+        }
+        var category = chooser.querySelector("summary").dataset.value;
+        // Topic.update: never a category for a message.
+        if (!topic.privateMessage) {
+          props.category_id = category ? parseInt(category, 10) : null;
+        }
+        if (!s.editConflict) {
+          props.original_title = topic.title;
+          if (tagChooser) {
+            props.original_tags = topic.tags;
+          }
+        }
+        var headers = csrfHeaders();
+        headers["Content-Type"] = "application/json";
+        promise = fetch(base + "/t/" + (topic.slug || "-") + "/" + topic.id, {
+          method: "PUT",
+          headers: headers,
+          credentials: "same-origin",
+          body: JSON.stringify(props),
+        });
+      } else if (topic.canEditTags) {
+        var tagPairs = selectedTags.map(function (t) {
+          return ["tags[]", t.name];
+        });
+        promise = fetch(base + "/t/" + topic.id + "/tags", {
+          method: "PUT",
+          headers: csrfHeaders(),
+          credentials: "same-origin",
+          body: form(tagPairs.length ? tagPairs : [["tags", ""]]),
+        });
+      }
+    }
+    return promise.then(function (topicResponse) {
+      if (topicResponse && !topicResponse.ok) {
+        if (topicResponse.status === 409) {
+          s.editConflict = true;
+        }
+        return topicResponse;
+      }
+      var pairs = [
+        ["post[raw]", textarea.value],
+        ["post[topic_id]", s.topicId],
+      ];
+      if (!s.editConflict && s.originalText !== null && s.originalText !== undefined) {
+        pairs.push(["post[original_text]", s.originalText]);
+      }
+      return fetch(base + "/posts/" + s.postId, {
+        method: "PUT",
+        headers: csrfHeaders(),
+        credentials: "same-origin",
+        body: form(pairs),
+      }).then(function (r) {
+        if (r.status === 409) {
+          s.editConflict = true;
+        }
+        return r;
+      });
+    });
+  }
+
   function save() {
     if (!state) {
       return;
@@ -1233,12 +1413,7 @@
     }
     var request;
     if (state.mode === "edit") {
-      request = fetch(base + "/posts/" + state.postId, {
-        method: "PUT",
-        headers: csrfHeaders(),
-        credentials: "same-origin",
-        body: form([["post[raw]", textarea.value]]),
-      });
+      request = editPost(state);
     } else {
       // The draft goes with the post (PostCreator's draft_key).
       var pairs = [

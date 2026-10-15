@@ -1,10 +1,14 @@
 //! `PostRevisor#revise!` for the fields posts#update sends: the raw and
-//! the edit reason. Topic fields (title, category, tags), owner and wiki
-//! changes are not ported.
+//! the edit reason, and on a first post the title and category, which go
+//! through revise_topic's `update_topic` in the same revision (or on their
+//! own when the post itself stays the same). Owner and wiki changes are
+//! not ported.
 //!
-//! Within the editing grace period Rails keeps the post's original raw in
-//! Redis so the version made later can diff against it. Edits that could
-//! need that cache are refused; the rest match Rails without it.
+//! Within the editing grace period an edit by the last editor goes into
+//! the current version: Rails keeps the post's original raw and cooked in
+//! Redis (here discourse_rs.cached_values, owned_schema's setex) for the
+//! grace period's diff and the version made later, and folds the change
+//! into the current revision (update_revision).
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -23,7 +27,10 @@ use crate::pretty_text::{self, MarkdownOptions};
 use crate::url::Urls;
 use crate::{AppError, Unsupported};
 
+use super::revise_topic::{self, Deferred, TopicFields};
+
 /// What posts#update hands the revisor.
+#[derive(Default)]
 pub struct Changes {
     pub raw: Option<String>,
     pub edit_reason: Option<String>,
@@ -34,6 +41,10 @@ pub struct Changes {
     /// `skip_revision:` the edit goes into the current version: no new
     /// version and no PostRevision (the original kept in Redis).
     pub skip_revision: bool,
+    /// A first post's topic fields (title, category).
+    pub topic: TopicFields,
+    /// `bypass_bump:` no wiki bump.
+    pub bypass_bump: bool,
 }
 
 #[derive(Debug)]
@@ -65,6 +76,93 @@ struct PostRow {
     self_edits: i32,
     reply_to_post_number: Option<i32>,
     locale: Option<String>,
+}
+
+/// `PostRevisor#update_revision`: the current version's revision takes
+/// the change (a field back to where the revision started leaves it); a
+/// revision left empty goes, and the post back to the version before it
+/// (true: that second save is the last, its changes without the cooked).
+async fn update_revision(
+    conn: &mut sqlx::PgConnection,
+    post: &PostRow,
+    editor_id: i32,
+    changes: &[(&str, [Value; 2])],
+) -> Result<bool, AppError> {
+    let revision: Option<(i32, Option<String>, bool)> = sqlx::query_as(
+        "SELECT id, modifications, hidden FROM post_revisions WHERE post_id = $1 AND number = $2",
+    )
+    .bind(post.id)
+    .bind(post.version)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((revision_id, yaml, hidden)) = revision else {
+        return Ok(false);
+    };
+    let mut fields = modifications::load(yaml.as_deref().unwrap_or("--- {}\n"))?;
+    for (field, change) in changes {
+        let new = &change[1];
+        match fields.iter().position(|(f, _)| f == field) {
+            Some(i) => {
+                let old = fields[i].1[0].clone();
+                if ruby_to_s(&old) != ruby_to_s(new) {
+                    fields[i].1 = [old, new.clone()];
+                } else {
+                    fields.remove(i);
+                }
+            }
+            None => fields.push((field.to_string(), change.clone())),
+        }
+    }
+    if fields.is_empty() {
+        sqlx::query("DELETE FROM post_revisions WHERE id = $1")
+            .bind(revision_id)
+            .execute(&mut *conn)
+            .await?;
+        let last_editor: Option<i32> = sqlx::query_scalar(
+            "SELECT COALESCE((SELECT user_id FROM post_revisions WHERE post_id = $1 \
+                              ORDER BY number DESC LIMIT 1), $2)",
+        )
+        .bind(post.id)
+        .bind(post.user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        sqlx::query(
+            "UPDATE posts SET last_editor_id = $2, version = version - 1, \
+                    public_version = public_version - $3, updated_at = clock_timestamp() \
+             WHERE id = $1",
+        )
+        .bind(post.id)
+        .bind(last_editor)
+        .bind(i32::from(!hidden))
+        .execute(&mut *conn)
+        .await?;
+        return Ok(true);
+    }
+    let borrowed: Vec<(&str, [Value; 2])> = fields
+        .iter()
+        .map(|(f, change)| (f.as_str(), change.clone()))
+        .collect();
+    sqlx::query(
+        "UPDATE post_revisions SET user_id = $2, modifications = $3, updated_at = clock_timestamp() \
+         WHERE id = $1",
+    )
+    .bind(revision_id)
+    .bind(editor_id)
+    .bind(modifications::dump(&borrowed)?)
+    .execute(&mut *conn)
+    .await?;
+    Ok(false)
+}
+
+/// Ruby's `to_s` on a revision value: nil is empty.
+fn ruby_to_s(v: &Value) -> String {
+    match v {
+        Value::Null => String::new(),
+        Value::String(s) => s.clone(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => n.to_string(),
+        other => other.to_string(),
+    }
 }
 
 /// `PostRevisor.new(post, topic).revise!(editor, changes)`
@@ -100,6 +198,38 @@ pub async fn revise(
     .bind(post.topic_id)
     .fetch_one(&mut *conn)
     .await?;
+    // revise!: the fields, cleaned.
+    let raw = changes
+        .raw
+        .map(|r| normalize_whitespaces(&r).trim_end().to_string());
+    let edit_reason = changes.edit_reason.filter(|r| !r.trim().is_empty());
+
+    let post_changed = raw.as_ref().is_some_and(|r| *r != post.raw)
+        || edit_reason
+            .as_ref()
+            .is_some_and(|r| Some(r) != post.edit_reason.as_ref());
+    let topic_changed = !changes.topic.is_empty();
+    if topic_changed && post.post_number != 1 {
+        return Err(Unsupported("topic fields revised on a reply").into());
+    }
+    if topic_changed && !post_changed {
+        // should_create_new_version?: topic-only changes always make one.
+        drop(conn);
+        let opts = revise_topic::Opts {
+            bypass_bump: changes.bypass_bump,
+            keep_edit_reason: edit_reason.is_some(),
+            ..Default::default()
+        };
+        return Ok(
+            match revise_topic::revise(pool, ctx, editor, post.topic_id, &changes.topic, opts)
+                .await?
+            {
+                revise_topic::Outcome::Revised => Outcome::Revised,
+                revise_topic::Outcome::Invalid(errors) => Outcome::Invalid(errors),
+                revise_topic::Outcome::RateLimited(refused) => Outcome::RateLimited(refused),
+            },
+        );
+    }
     if post.hidden {
         return Err(Unsupported("editing hidden posts").into());
     }
@@ -114,17 +244,6 @@ pub async fn revise(
     if category_definition && post.post_number == 1 {
         return Err(Unsupported("editing category descriptions").into());
     }
-
-    // revise!: the fields, cleaned.
-    let raw = changes
-        .raw
-        .map(|r| normalize_whitespaces(&r).trim_end().to_string());
-    let edit_reason = changes.edit_reason.filter(|r| !r.trim().is_empty());
-
-    let post_changed = raw.as_ref().is_some_and(|r| *r != post.raw)
-        || edit_reason
-            .as_ref()
-            .is_some_and(|r| Some(r) != post.edit_reason.as_ref());
     if !post_changed {
         // Nothing to revise: only the draft sequence moves on.
         if let Some(editor_id) = post.last_editor_id {
@@ -141,6 +260,17 @@ pub async fn revise(
     if slow_mode_seconds > 0 && !editor.is_staff() {
         return Err(Unsupported("editing in slow mode").into());
     }
+    // The original raw and cooked kept for the grace period, keyed by the
+    // version's time (original_raw_key, original_cooked_key).
+    let version_ms = last_version_at
+        .and_utc()
+        .timestamp_micros()
+        .div_euclid(1000);
+    let raw_key = format!("original_raw_{version_ms}{}", post.id);
+    let cooked_key = format!("original_cooked_{version_ms}{}", post.id);
+    let cached_raw = crate::owned_schema::cached_get(&mut conn, &raw_key).await?;
+    let cached_cooked = crate::owned_schema::cached_get(&mut conn, &cooked_key).await?;
+    let original_raw = cached_raw.clone().unwrap_or_else(|| post.raw.clone());
     // grace_period_edit?
     let elapsed = (revised_at - last_version_at).num_milliseconds() as f64 / 1000.0;
     let mut grace_period_edit = elapsed <= grace as f64;
@@ -150,8 +280,9 @@ pub async fn revise(
         } else {
             s.get("editing_grace_period_max_diff")?.to_i()
         };
-        let size_change = (post.raw.chars().count() as i64 - new_raw.chars().count() as i64).abs();
-        let diff = diff_size(&post.raw, new_raw)
+        let size_change =
+            (original_raw.chars().count() as i64 - new_raw.chars().count() as i64).abs();
+        let diff = diff_size(&original_raw, new_raw)
             .map(|d| d as i64)
             .unwrap_or(i64::MAX);
         if size_change > max_diff || diff > max_diff {
@@ -175,30 +306,17 @@ pub async fn revise(
             || !grace_period_edit
             || changes.force_new_version
             || edit_reason_specified);
-    if !new_version && !changes.skip_revision {
-        return Err(
-            Unsupported("edits within the editing grace period (original kept in Redis)").into(),
-        );
-    }
-    let previous_revision_exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM post_revisions WHERE post_id = $1 AND number = $2)",
-    )
-    .bind(post.id)
-    .bind(post.version - 1)
-    .fetch_one(&mut *conn)
-    .await?;
-    if new_version
+    // use_cached_original_for_created_revision?: the last editor making a
+    // new version with no revision before the one it replaces.
+    let use_cached_original = new_version
         && !edited_by_another
-        && !previous_revision_exists
-        && elapsed <= (grace + 1) as f64
-    {
-        // use_cached_original_for_created_revision? with the cache
-        // possibly still alive.
-        return Err(Unsupported(
-            "new versions within the editing grace period (original kept in Redis)",
+        && !sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS (SELECT 1 FROM post_revisions WHERE post_id = $1 AND number = $2)",
         )
-        .into());
-    }
+        .bind(post.id)
+        .bind(post.version)
+        .fetch_one(&mut *conn)
+        .await?;
 
     // update_post
     let new_raw = raw.clone().unwrap_or_else(|| post.raw.clone());
@@ -321,6 +439,16 @@ pub async fn revise(
         .await?
     };
     errors.extend(poll_errors);
+    // The topic's side, read before the transaction as revise_topic does.
+    let prepared = if topic_changed {
+        Some(
+            revise_topic::prepare(&mut conn, ctx, editor, post.topic_id, &changes.topic)
+                .await?
+                .ok_or(Unsupported("a topic edit slow mode keeps out"))?,
+        )
+    } else {
+        None
+    };
     if !errors.is_empty() {
         // The failed save is rolled back after advance_draft_sequence,
         // whose upsert has taken a draft_sequences id all the same.
@@ -334,6 +462,13 @@ pub async fn revise(
     drop(conn);
 
     let mut tx = pool.begin().await?;
+    // revise_post without a new version: the original kept for the grace
+    // period, unless it already is.
+    if !new_version && cached_raw.is_none() {
+        let ttl = grace + 1;
+        crate::owned_schema::cached_setex(&mut tx, &raw_key, ttl, &post.raw).await?;
+        crate::owned_schema::cached_setex(&mut tx, &cooked_key, ttl, &post.cooked).await?;
+    }
     // The post's validation, where PollsUpdater writes.
     if let Some(plan) = poll_plan {
         crate::plugins::poll::updater::apply(&mut tx, ctx, post.id, plan).await?;
@@ -406,7 +541,43 @@ pub async fn revise(
         .execute(&mut *tx)
         .await?;
     }
-    // create_revision: what changed, in POST_TRACKED_FIELDS order.
+    // update_topic, when topic fields came along.
+    let mut deferred = Deferred::default();
+    let mut topic_diff = Vec::new();
+    let mut new_archetype = archetype.clone();
+    if let Some(prepared) = &prepared {
+        match revise_topic::update_topic(
+            &mut tx,
+            ctx,
+            editor,
+            prepared,
+            &changes.topic,
+            false,
+            &mut deferred,
+        )
+        .await?
+        {
+            Ok((diff, archetype)) => {
+                topic_diff = diff;
+                new_archetype = archetype;
+            }
+            Err(errors) => {
+                tx.rollback().await?;
+                // advance_draft_sequence ran in the rolled back
+                // transaction: its upsert has taken a draft_sequences id
+                // all the same.
+                if editor_user.id > 0 {
+                    sqlx::query("SELECT nextval('draft_sequences_id_seq')")
+                        .execute(pool)
+                        .await?;
+                }
+                return Ok(Outcome::Invalid(errors));
+            }
+        }
+    }
+    let category_changed = topic_diff.iter().any(|(k, _)| *k == "category_id");
+    // create_revision: what changed, in POST_TRACKED_FIELDS order, then
+    // the topic's diff.
     let mut fields: Vec<(&str, [Value; 2])> = Vec::new();
     if raw_changed {
         fields.push(("raw", [json!(post.raw), json!(new_raw)]));
@@ -420,8 +591,31 @@ pub async fn revise(
             [json!(post.edit_reason), json!(new_edit_reason)],
         ));
     }
+    fields.extend(topic_diff.iter().cloned());
+    if use_cached_original {
+        for (field, change) in fields.iter_mut() {
+            match *field {
+                "raw" => {
+                    if let Some(raw) = &cached_raw {
+                        change[0] = json!(raw);
+                    }
+                }
+                "cooked" => {
+                    if let Some(cooked) = &cached_cooked {
+                        change[0] = json!(cooked);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
     let yaml = modifications::dump(&fields)?;
-    // create_or_update_revision: none with skip_revision.
+    // create_or_update_revision: none with skip_revision; within the
+    // grace period the current revision takes the change.
+    let mut revision_dropped = false;
+    if !new_version && !changes.skip_revision {
+        revision_dropped = update_revision(&mut tx, &post, editor_user.id, &fields).await?;
+    }
     let revision_id: i32 = if !new_version {
         0
     } else {
@@ -436,52 +630,34 @@ pub async fn revise(
     .fetch_one(&mut *tx)
     .await?
     };
-    // PostActionNotifier.after_create_post_revision: the author when
-    // someone else edits, and the topic's watchers when a wiki or freely
-    // editable first post changes; told once the edit commits.
-    // None for edits in messages.
-    let notify_disabled = !new_version
-        || archetype == "private_message"
-        || (s.get("disable_system_edit_notifications")?.truthy() && editor_user.id == -1);
-    if !notify_disabled {
-        let mut user_ids: Vec<i32> = Vec::new();
-        if let Some(author) = post.user_id
-            && author != editor_user.id
-        {
-            user_ids.push(author);
-        }
-        if post.post_number == 1 {
-            let unlimited: bool = sqlx::query_scalar(
-                "SELECT COALESCE(c.allow_unlimited_owner_edits_on_first_post, FALSE) \
-                 FROM topics t LEFT JOIN categories c ON c.id = t.category_id WHERE t.id = $1",
-            )
-            .bind(post.topic_id)
-            .fetch_one(&mut *tx)
-            .await?;
-            if post.wiki || unlimited {
-                let watchers: Vec<i32> = sqlx::query_scalar(
-                    "SELECT user_id FROM topic_users WHERE topic_id = $1 AND notification_level = 3 \
-                       AND user_id <> $2 ORDER BY id",
-                )
-                .bind(post.topic_id)
-                .bind(editor_user.id)
-                .fetch_all(&mut *tx)
-                .await?;
-                user_ids.extend(watchers);
-            }
-        }
-        if !user_ids.is_empty() {
-            crate::jobs::enqueue(
-                &mut tx,
-                "notify_post_revision",
-                json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
-            )
-            .await?;
-        }
+    // PostActionNotifier.after_create_post_revision, told once the edit
+    // commits.
+    if new_version
+        && let Some(user_ids) = revise_topic::revision_recipients(
+            &mut tx,
+            ctx,
+            &revise_topic::NotifyRevision {
+                topic_id: post.topic_id,
+                author_id: post.user_id,
+                editor_id: editor_user.id,
+                first_post: post.post_number == 1,
+                wiki: post.wiki,
+                private_message: new_archetype == "private_message",
+                silent: false,
+                category_changed,
+                tags_changed: false,
+            },
+        )
+        .await?
+    {
+        deferred.push(
+            "notify_post_revision",
+            json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
+        );
     }
     // perform_edit: once the new version is saved (create_or_update_revision
     // and its notification are before it).
-    if ctx.config.rate_limits {
+    if ctx.config.rate_limits && new_version {
         let limiter = super::limits::edit_limiter(
             s,
             crate::rate_limiter::LimitUser {
@@ -514,6 +690,9 @@ pub async fn revise(
     }
     // advance_draft_sequence for the (new) last editor.
     next_draft_sequence(&mut tx, editor_user.id, &format!("topic_{}", post.topic_id)).await?;
+    // What Rails sends from after_commit goes out before what revise!
+    // does after its transaction.
+    deferred.enqueue(&mut tx).await?;
     // post_process_post and alert_users, committed with the edit.
     crate::jobs::enqueue(
         &mut tx,
@@ -522,27 +701,44 @@ pub async fn revise(
     )
     .await?;
     // DiscourseEvent :post_edited: post_edited's web hooks (`post.topic&.
-    // trashed?` never holds: a trashed topic is no topic to the post), as
-    // these fields never change the topic (topic_edited).
-    crate::web_hooks::enqueue_post_hooks(
-        &mut tx,
-        &crate::web_hooks::Payloads {
-            settings: s,
-            i18n: ctx.i18n,
-            config: ctx.config,
-        },
-        "post_edited",
-        post.id,
-        crate::topic_view::Held::default(),
-    )
-    .await?;
+    // trashed?` never holds: a trashed topic is no topic to the post), or
+    // topic_edited's for a first post with topic fields.
+    let payloads = crate::web_hooks::Payloads {
+        settings: s,
+        i18n: ctx.i18n,
+        config: ctx.config,
+    };
+    if topic_changed {
+        crate::web_hooks::enqueue_topic_hooks(
+            &mut tx,
+            &payloads,
+            "topic_edited",
+            post.topic_id,
+            None,
+        )
+        .await?;
+    } else {
+        crate::web_hooks::enqueue_post_hooks(
+            &mut tx,
+            &payloads,
+            "post_edited",
+            post.id,
+            crate::topic_view::Held::default(),
+        )
+        .await?;
+    }
+    if category_changed {
+        crate::plugins::topic_category_revised(&mut tx, s, post.topic_id).await?;
+    }
     if editor_user.id != -1 {
         crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
     }
-    // publish_changes; reload_topic only comes with topic edits, refused
-    // above.
-    crate::bus::publish_post_change(ctx, &mut tx, post.id, "revised", Default::default(), false)
-        .await?;
+    // publish_changes: reload_topic when the topic changed.
+    let mut publish = serde_json::Map::new();
+    if !topic_diff.is_empty() {
+        publish.insert("reload_topic".into(), json!(true));
+    }
+    crate::bus::publish_post_change(ctx, &mut tx, post.id, "revised", publish, false).await?;
     // grant_badge
     crate::badge_granter::queue(
         &mut tx,
@@ -555,8 +751,8 @@ pub async fn revise(
 
     // bump_topic, after the transaction as Rails does. should_bump?: a new
     // version that changed the post (every edit that gets this far) of a
-    // wiki first post; bypass_bump is refused by the route.
-    if new_version && post.post_number == 1 && post.wiki {
+    // wiki first post, unless bypass_bump.
+    if new_version && post.post_number == 1 && post.wiki && !changes.bypass_bump {
         let mut tx = pool.begin().await?;
         sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
             .bind(post.topic_id)
@@ -642,16 +838,19 @@ pub async fn revise(
     .bind(highest)
     .execute(&mut *conn)
     .await?;
-    // The post's after_commit search index, when its cooked changed.
-    if cooked != post.cooked {
-        let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(&format!(
-            "SELECT (SELECT name FROM categories WHERE id = $2), {}",
-            super::search_index::topic_tag_names_sql("$1")
-        ))
-        .bind(post.topic_id)
-        .bind(category_id)
-        .fetch_one(&mut *conn)
-        .await?;
+    // The post's after_commit search index, when its last save changed the
+    // cooked.
+    if cooked != post.cooked && !revision_dropped {
+        // The topic as the edit left it.
+        let (topic_title, category_name, tags): (String, Option<String>, Option<String>) =
+            sqlx::query_as(&format!(
+                "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), {} \
+                 FROM topics t WHERE t.id = $1",
+                super::search_index::topic_tag_names_sql("$1")
+            ))
+            .bind(post.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
         search_index::index_post(
             &mut conn,
             s,
@@ -668,11 +867,11 @@ pub async fn revise(
                 category_name: category_name.as_deref(),
                 tag_names: tags.as_deref(),
                 cooked: &cooked,
-                private_message,
+                private_message: new_archetype == "private_message",
             },
         )
         .await?;
     }
-    let _ = (post.self_edits, post.locale);
+    let _ = (post.self_edits, post.locale, topic_title, category_id);
     Ok(Outcome::Revised)
 }

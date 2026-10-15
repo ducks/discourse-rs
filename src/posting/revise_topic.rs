@@ -55,6 +55,9 @@ pub struct Opts {
     pub hidden: bool,
     /// `bypass_rate_limiter:` no EditRateLimiter.
     pub bypass_rate_limiter: bool,
+    /// posts#update sending the post's own edit reason again: kept, where
+    /// a topic-only revision otherwise clears it.
+    pub keep_edit_reason: bool,
 }
 
 #[derive(Debug)]
@@ -174,7 +177,7 @@ impl Deferred {
 /// What revise! reads before its transaction.
 pub struct Prepared {
     topic_id: i32,
-    editor_id: i32,
+    pub(super) editor_id: i32,
     editor_trust_level: i32,
     post: PostRow,
     topic: TopicRow,
@@ -298,9 +301,13 @@ pub enum Applied {
     RateLimited(crate::rate_limiter::LimitExceeded),
 }
 
+/// The topic fields' changes, `[before, after]` by field in tracking
+/// order.
+pub type TopicDiff = Vec<(&'static str, [Value; 2])>;
+
 /// What the transaction changed, for what comes after it.
 pub struct Revised {
-    diff: Vec<(&'static str, [Value; 2])>,
+    diff: TopicDiff,
     archetype: String,
 }
 
@@ -319,14 +326,14 @@ pub async fn apply(
     deferred: &mut Deferred,
 ) -> Result<Applied, AppError> {
     let s = ctx.settings;
-    let (post, topic, topic_id) = (&p.post, &p.topic, p.topic_id);
+    let (post, topic_id) = (&p.post, p.topic_id);
     let self_edit = post.user_id == Some(p.editor_id);
     // update_post: a new version with no post fields changed.
     let public_step = i32::from(!opts.hidden);
     sqlx::query(
         "UPDATE posts SET version = version + 1, public_version = public_version + $2, \
-                last_version_at = $3, edit_reason = NULL, last_editor_id = $4, \
-                self_edits = self_edits + $5, updated_at = clock_timestamp() \
+                last_version_at = $3, edit_reason = CASE WHEN $6 THEN edit_reason END, \
+                last_editor_id = $4, self_edits = self_edits + $5, updated_at = clock_timestamp() \
          WHERE id = $1",
     )
     .bind(post.id)
@@ -334,6 +341,7 @@ pub async fn apply(
     .bind(p.revised_at)
     .bind(p.editor_id)
     .bind(i32::from(self_edit))
+    .bind(opts.keep_edit_reason)
     .execute(&mut *conn)
     .await?;
     let urls = Urls {
@@ -361,7 +369,104 @@ pub async fn apply(
         .await?;
     }
 
-    // update_topic: the field callbacks in tracking order, then the save.
+    let (diff, archetype) =
+        match update_topic(&mut *conn, ctx, editor, p, fields, opts.silent, deferred).await? {
+            Ok(changed) => changed,
+            Err(errors) => return Ok(Applied::Invalid(errors)),
+        };
+
+    // create_revision: post_changes (only edit_reason can change here)
+    // merged with the topic's diff.
+    let mut modifications: Vec<(&str, [Value; 2])> = Vec::new();
+    if post.edit_reason.is_some() && !opts.keep_edit_reason {
+        modifications.push(("edit_reason", [json!(post.edit_reason), Value::Null]));
+    }
+    modifications.extend(diff.iter().cloned());
+    let yaml = modifications::dump(&modifications)?;
+    let revision_id: i32 = sqlx::query_scalar(
+        "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) \
+         SELECT $1, id, version, $3, $4, clock_timestamp(), clock_timestamp() FROM posts WHERE id = $2 \
+         RETURNING id",
+    )
+    .bind(p.editor_id)
+    .bind(post.id)
+    .bind(&yaml)
+    .bind(opts.hidden)
+    .fetch_one(&mut *conn)
+    .await?;
+    if let Some(user_ids) = revision_recipients(
+        &mut *conn,
+        ctx,
+        &NotifyRevision {
+            topic_id,
+            author_id: post.user_id,
+            editor_id: p.editor_id,
+            first_post: true,
+            wiki: post.wiki,
+            private_message: archetype == "private_message",
+            silent: opts.silent,
+            category_changed: modifications.iter().any(|(k, _)| *k == "category_id"),
+            tags_changed: false,
+        },
+    )
+    .await?
+    {
+        deferred.push(
+            "notify_post_revision",
+            json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
+        );
+    }
+    // perform_edit
+    if ctx.config.rate_limits && !opts.bypass_rate_limiter {
+        let limiter = super::limits::edit_limiter(
+            s,
+            crate::rate_limiter::LimitUser {
+                id: p.editor_id,
+                staff: editor.is_staff(),
+            },
+            p.editor_trust_level,
+        )?;
+        if let Err(refused) = limiter.performed(pool, true).await? {
+            return Ok(Applied::RateLimited(refused));
+        }
+    }
+    // revise_topic: the excerpt and a category's description.
+    let excerpt = crate::excerpt::excerpt(
+        &post.cooked,
+        s.get("topic_excerpt_maxlength")?.to_i().max(0) as usize,
+        &crate::excerpt::Options {
+            strip_links: true,
+            image_mode: crate::excerpt::ImageMode::Strip,
+            ..Default::default()
+        },
+    );
+    sqlx::query("UPDATE topics SET excerpt = $2 WHERE id = $1")
+        .bind(topic_id)
+        .bind(excerpt)
+        .execute(&mut *conn)
+        .await?;
+    sync_category_description(&mut *conn, ctx, topic_id, &post.cooked).await?;
+    if !opts.keep_existing_draft {
+        next_draft_sequence(&mut *conn, p.editor_id, &format!("topic_{topic_id}")).await?;
+    }
+    Ok(Applied::Revised(Revised { diff, archetype }))
+}
+
+/// `update_topic`: the tracked fields' callbacks in tracking order, then
+/// the topic's save. The diff and the archetype it ends with, or the
+/// topic's errors (none when a callback refused without saying why).
+#[allow(clippy::type_complexity)]
+pub async fn update_topic(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    editor: &Guardian,
+    p: &Prepared,
+    fields: &TopicFields,
+    silent: bool,
+    deferred: &mut Deferred,
+) -> Result<Result<(TopicDiff, String), Vec<String>>, AppError> {
+    let s = ctx.settings;
+    let (post, topic, topic_id) = (&p.post, &p.topic, p.topic_id);
     let mut diff: Vec<(&'static str, [Value; 2])> = Vec::new();
     let mut new = topic.clone();
     let mut errored = false;
@@ -426,7 +531,7 @@ pub async fn apply(
                     &mut saved,
                     &mut new,
                     category_id,
-                    opts.silent,
+                    silent,
                     post.id,
                     deferred,
                 )
@@ -494,87 +599,9 @@ pub async fn apply(
         errored = !errors.is_empty();
     }
     if errored {
-        return Ok(Applied::Invalid(errors));
+        return Ok(Err(errors));
     }
-
-    // create_revision: post_changes (only edit_reason can change here)
-    // merged with the topic's diff.
-    let mut modifications: Vec<(&str, [Value; 2])> = Vec::new();
-    if post.edit_reason.is_some() {
-        modifications.push(("edit_reason", [json!(post.edit_reason), Value::Null]));
-    }
-    modifications.extend(diff.iter().cloned());
-    let yaml = modifications::dump(&modifications)?;
-    let revision_id: i32 = sqlx::query_scalar(
-        "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) \
-         SELECT $1, id, version, $3, $4, clock_timestamp(), clock_timestamp() FROM posts WHERE id = $2 \
-         RETURNING id",
-    )
-    .bind(p.editor_id)
-    .bind(post.id)
-    .bind(&yaml)
-    .bind(opts.hidden)
-    .fetch_one(&mut *conn)
-    .await?;
-    if let Some(user_ids) = revision_recipients(
-        &mut *conn,
-        ctx,
-        &NotifyRevision {
-            topic_id,
-            author_id: post.user_id,
-            editor_id: p.editor_id,
-            first_post: true,
-            wiki: post.wiki,
-            private_message: new.archetype == "private_message",
-            silent: opts.silent,
-            category_changed: modifications.iter().any(|(k, _)| *k == "category_id"),
-            tags_changed: false,
-        },
-    )
-    .await?
-    {
-        deferred.push(
-            "notify_post_revision",
-            json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
-        );
-    }
-    // perform_edit
-    if ctx.config.rate_limits && !opts.bypass_rate_limiter {
-        let limiter = super::limits::edit_limiter(
-            s,
-            crate::rate_limiter::LimitUser {
-                id: p.editor_id,
-                staff: editor.is_staff(),
-            },
-            p.editor_trust_level,
-        )?;
-        if let Err(refused) = limiter.performed(pool, true).await? {
-            return Ok(Applied::RateLimited(refused));
-        }
-    }
-    // revise_topic: the excerpt and a category's description.
-    let excerpt = crate::excerpt::excerpt(
-        &post.cooked,
-        s.get("topic_excerpt_maxlength")?.to_i().max(0) as usize,
-        &crate::excerpt::Options {
-            strip_links: true,
-            image_mode: crate::excerpt::ImageMode::Strip,
-            ..Default::default()
-        },
-    );
-    sqlx::query("UPDATE topics SET excerpt = $2 WHERE id = $1")
-        .bind(topic_id)
-        .bind(excerpt)
-        .execute(&mut *conn)
-        .await?;
-    sync_category_description(&mut *conn, ctx, topic_id, &post.cooked).await?;
-    if !opts.keep_existing_draft {
-        next_draft_sequence(&mut *conn, p.editor_id, &format!("topic_{topic_id}")).await?;
-    }
-    Ok(Applied::Revised(Revised {
-        diff,
-        archetype: new.archetype,
-    }))
+    Ok(Ok((diff, new.archetype)))
 }
 
 /// revise! after its transaction: the wiki bump, links, reset_highest,
@@ -592,7 +619,7 @@ pub async fn finish(
     let (post, topic_id) = (&p.post, p.topic_id);
     // bump_topic: a wiki first post whose post fields changed (only the
     // edit reason can, here).
-    if !opts.bypass_bump && post.wiki && post.edit_reason.is_some() {
+    if !opts.bypass_bump && post.wiki && post.edit_reason.is_some() && !opts.keep_edit_reason {
         sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
             .bind(topic_id)
             .execute(&mut *conn)

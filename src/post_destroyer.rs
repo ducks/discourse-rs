@@ -577,6 +577,7 @@ async fn mark_for_deletion(
             force_new_version: true,
             skip_validations: true,
             skip_revision: false,
+            ..Default::default()
         },
     )
     .await?;

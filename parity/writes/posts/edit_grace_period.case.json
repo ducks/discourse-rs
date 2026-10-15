@@ -1,0 +1,30 @@
+{
+  "user": "user1",
+  "settings": {
+    "tl2_post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited once so it has a new version."
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited twice within the grace period."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/latest.json"
+    }
+  ]
+}

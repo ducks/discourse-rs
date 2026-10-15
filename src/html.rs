@@ -1946,6 +1946,41 @@ async fn defer_to(
         .unwrap_or(home))
 }
 
+/// The topic's title block (`#topic-title`'s contents): its title,
+/// statuses, category and tags, and discourse-topic-voting's outlet for
+/// `voter` (the viewer's id and trust level, when they may vote).
+pub async fn topic_title_html(
+    conn: &mut sqlx::PgConnection,
+    i18n: &I18n,
+    settings: &SiteSettings,
+    list: &crate::topic_list_view::ListContext<'_>,
+    view: &Value,
+    topic_url: &str,
+    voter: Option<(i32, i32)>,
+) -> Result<String, HtmlError> {
+    let mut title_html = crate::post_view::topic_title(list, view, topic_url);
+    // discourse-topic-voting's topic-title outlet.
+    if view["can_vote"] == serde_json::Value::Bool(true) {
+        let voter = match voter {
+            Some((id, trust_level)) => {
+                let votes =
+                    crate::plugins::topic_voting::UserVotes::load(conn, settings, id, trust_level)
+                        .await?;
+                Some(crate::plugins::topic_voting::view::Voter { votes })
+            }
+            None => None,
+        };
+        title_html.push_str(&crate::plugins::topic_voting::view::title_voting(
+            i18n,
+            list.base_path,
+            settings.get("topic_voting_show_who_voted")?.truthy(),
+            view,
+            voter.as_ref(),
+        ));
+    }
+    Ok(title_html)
+}
+
 /// The topic page from the /t/:id.json document.
 pub async fn topic_page(
     conn: &mut PgConnection,
@@ -1970,34 +2005,17 @@ pub async fn topic_page(
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
-    let mut title_html = crate::post_view::topic_title(&list, view, &topic_url);
-    // discourse-topic-voting's topic-title outlet.
-    if view["can_vote"] == serde_json::Value::Bool(true) {
-        let voter = match site.viewer.as_ref() {
-            Some(v) => {
-                let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = $1")
-                    .bind(&v.username)
-                    .fetch_one(&mut *conn)
-                    .await?;
-                let votes = crate::plugins::topic_voting::UserVotes::load(
-                    conn,
-                    settings,
-                    id,
-                    v.trust_level,
-                )
+    let voter = match site.viewer.as_ref() {
+        Some(v) if view["can_vote"] == serde_json::Value::Bool(true) => {
+            let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = $1")
+                .bind(&v.username)
+                .fetch_one(&mut *conn)
                 .await?;
-                Some(crate::plugins::topic_voting::view::Voter { votes })
-            }
-            None => None,
-        };
-        title_html.push_str(&crate::plugins::topic_voting::view::title_voting(
-            i18n,
-            &base,
-            settings.get("topic_voting_show_who_voted")?.truthy(),
-            view,
-            voter.as_ref(),
-        ));
-    }
+            Some((id, v.trust_level))
+        }
+        _ => None,
+    };
+    let title_html = topic_title_html(conn, i18n, settings, &list, view, &topic_url, voter).await?;
     let post_settings = crate::post_view::PostSettings::load(settings)?;
     let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
     let staff = site.viewer.as_ref().is_some_and(|v| v.staff);

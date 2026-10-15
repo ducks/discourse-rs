@@ -1831,6 +1831,19 @@ impl TopicView<'_> {
                 json!(g.can_view_edit_history(s, &ctx, can_see_post)?),
             );
             p.insert("wiki".into(), json!(post.wiki));
+            // last_wiki_edit: a wiki first post's latest revision.
+            if post.wiki && post.post_number == 1 {
+                let edited: Option<chrono::NaiveDateTime> = sqlx::query_scalar(
+                    "SELECT updated_at FROM post_revisions WHERE post_id = $1 \
+                     ORDER BY number DESC LIMIT 1",
+                )
+                .bind(post.id)
+                .fetch_optional(&mut *self.conn)
+                .await?;
+                if let Some(at) = edited {
+                    p.insert("last_wiki_edit".into(), json!(time_json(at)));
+                }
+            }
             // The first post of the ToS, guidelines and privacy topics.
             if post.post_number == 1 && viewer.ctx.static_doc {
                 p.insert("static_doc".into(), json!(true));

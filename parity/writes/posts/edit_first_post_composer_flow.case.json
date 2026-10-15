@@ -1,0 +1,45 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "params": {
+        "title": "Parity fixture: replies and posters, as the composer saves",
+        "category_id": 4,
+        "tags": [
+          {
+            "id": 2,
+            "name": "guide"
+          }
+        ],
+        "original_title": "Parity fixture: replies and posters",
+        "original_tags": [
+          {
+            "id": 2,
+            "name": "guide",
+            "slug": "guide"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/35.json",
+      "params": {
+        "post": {
+          "raw": "First post of a topic with several repliers, saved by the composer with its new title.",
+          "topic_id": "35",
+          "original_text": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/revisions/latest.json"
+    }
+  ]
+}

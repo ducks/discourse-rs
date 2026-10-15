@@ -1542,10 +1542,13 @@ route table has been made, so this list may be short.
     `feat/topic-edits-rest` L (what 188a-188h still refuse, with the tag
     edits on existing topics folded in from 189; split by dependency, each
     branch stacked on the one before): 188i1.
-    `feat/topic-edits-composer` M (title and category on posts#update,
-    routes/posts.rs; the composer's first-post edit with its title and
+    ~~`feat/topic-edits-composer`~~ (done) M (title and category on
+    posts#update, routes/posts.rs; edits within the editing grace period
+    (the original kept in cached_values as Rails keeps it in Redis,
+    update_revision); the composer's first-post edit with its title and
     category, sending PUT /t then PUT /posts as Ember does, the
-    original_title edit conflict), 188i2. `feat/topic-edits-tags` L
+    original_title edit conflict; the live title redrawn on
+    reload_topic), 188i2. `feat/topic-edits-tags` L
     (PostRevisor's tags field on PUT /t and posts#update through 189's
     `tagging::tag_topic`, `apply` and `after_tags_saved`; PUT
     /t/:id/tags; the edit composer's tags and original_tags; NotifyTagChange
