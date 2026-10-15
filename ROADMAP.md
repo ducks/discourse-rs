@@ -916,15 +916,16 @@ with the viewport, guessing from the user agent without it
 ### Phase 9: what done items still refuse
 
 Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
-47 M, 19 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 10 M,
-9 L). Not counted here: the open items above (90g, 92b), 100 (in Phase
+46 M, 20 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 9 M,
+10 L). Not counted here: the open items above (90g, 92b), 100 (in Phase
 10, after 192) and 101-119.
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
 edits (started), 189 tags writes (the composer refuses tags), 193 the
-user pages (preferences), 143 advanced search (the search menu's `#`,
-`@` and `in:` suggestions run searches the port refuses), 131 avatars.
+user pages (preferences first, split 193a-f), 143 advanced search (the
+search menu's `#`, `@` and `in:` suggestions run searches the port
+refuses), 131 avatars.
 Then the rest of Phase 10's core forum actions (190 categories writes,
 191 external auth, 192 invites), then 100.
 
@@ -1255,7 +1256,9 @@ generate_theme_screenshot_thumbnails (171).
     notification level (routes/user_update.rs:265), another acting
     user's notification level (:257), the profile page's public user
     fields (87b), user tips and redirected_to_top
-    (current_user.rs:1191,1214)
+    (current_user.rs:1191,1214). The keys a preferences tab saves go
+    with 193: the title, primary group and flair group with 193a, tag
+    tracking, sidebar links and the ignore level with 193d
 157. `feat/groups-rest` M: group flair uploads (site.rs:721; groups.rs:32;
     routes/groups.rs:588; group_writes.rs:565;
     routes/admin_groups.rs:1175), group custom fields and associated
@@ -1646,12 +1649,45 @@ route table has been made, so this list may be short.
     group and client filtering, its headers), measured against the
     reference's own poll responses. The port's /bus/events and /bus/poll
     (global positions, its own pages) stay as they are
-193. `feat/user-pages-rest` M: the user pages the port renders as the
+193. `feat/user-pages-rest` L: the user pages the port renders as the
     summary or refuses: preferences (every tab), notifications,
     /u/:username/badges and /activity/topics (97, ListController#topics_by),
     the drafts page, the other view_user_route values
     (routes/users.rs:433), the user badges page (routes/badges.rs:751),
-    voted_by's page (routes/topic_voting.rs:170)
+    voted_by's page (routes/topic_voting.rs:170). Split by how often a
+    member opens each, stacked branches `feat/user-pages-<x>`; what
+    belongs to another item (avatars 131, second factor 155, external
+    auth 191, user status 130, invites 192, exports 200) is refused
+    naming it:
+    193a. `feat/user-pages-prefs` M: /my/* (users#my_redirect, which the
+    user menu and sidebar link to), the preferences shell (the profile
+    header, the preferences navigation, `form-vertical`, Save Changes
+    through PUT /u with each tab's saveAttrNames, Saved!) and its four
+    most used tabs: account (username and its change form, the email
+    list, name, title, primary group and flair group), profile (about
+    me, timezone, location, website, user fields, hide profile, default
+    calendar), notifications and interface; the select-kit combo box
+    and checkbox controls they share; the title, primary group and flair
+    group keys PUT /u refuses (156)
+    193b. `feat/user-pages-notifications` S: /u/:username/notifications
+    and its filters (responses, likes-received, mentions, edits, links,
+    reactions), the Filter By dropdown and Dismiss All
+    193c. `feat/user-pages-activity` M: the activity tabs drawn as the
+    default page today: topics (ListController#topics_by), read,
+    drafts, pending, bookmarks and bookmarks-with-reminders
+    193d. `feat/user-pages-prefs-more` M: preferences emails (with the
+    email change page, /preferences/email, and the secondary emails'
+    menu), tracking (categories and tags; the tag tracking keys PUT /u
+    refuses), users (muted, ignored with its duration modal; the ignore
+    level users#notification_level refuses), navigation menu (sidebar
+    categories and tags; PUT /u's sidebar keys) and tags
+    193e. `feat/user-pages-prefs-security` M: preferences security
+    (password reset request, the auth tokens and logging them out, user
+    API keys), apps, calendar subscriptions, chat's tab; the second
+    factor page as far as 155 allows
+    193f. `feat/user-pages-rest-routes` S: the other view_user_route
+    values, /user-badges/:username's page, /topics/voted-by's page,
+    deleted-posts, invited (192)
 194. `feat/review-pages` M: the review queue's page (routes/review.rs:187),
     the user menu's review tab (routes/user_menu.rs:88;
     notifications.rs:270, pending_reviewables), the staff topic and post
