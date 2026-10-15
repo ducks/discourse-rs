@@ -331,15 +331,58 @@ pub async fn user_show(
 }
 
 /// GET /admin/users/settings: the users pages' settings tab, an
-/// AdminAreaSettings (90g6), not ported yet.
+/// AdminAreaSettings for the users area.
 pub async fn users_settings(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
     if let Some(r) = refuse_non_staff(&state, &guardian) {
         return Ok(r);
     }
-    Err(crate::Unsupported("the admin users settings tab (AdminAreaSettings)").into())
+    let filters = settings_filters(&uri);
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_users").await?;
+    // /admin/config/site_settings.json for `filter_area: "users"`.
+    let area = super::admin_site_settings::config_filters(
+        &state,
+        serde_json::json!({ "filter_area": "users" })
+            .as_object()
+            .ok_or_else(|| std::io::Error::other("params"))?,
+    )
+    .ok_or_else(|| std::io::Error::other("the users settings' filters"))?;
+    let (site_settings, default_theme) =
+        super::admin_site_settings::document(&mut conn, &state, &shell.settings, &area).await?;
+    let (groups, site_categories) = site_lists(&mut conn).await?;
+    let cx = shell.cx(&state);
+    let header_viewer = crate::admin_users_view::HeaderViewer {
+        admin: shell.admin.admin,
+        can_invite_to_forum: shell.admin.can_invite_to_forum,
+    };
+    let page = crate::admin_site_settings_view::Page {
+        settings: &site_settings,
+        default_theme: &default_theme,
+        groups: &groups,
+        categories: &site_categories,
+        filters: &filters,
+        category: "all_results",
+    };
+    let content = format!(
+        "<div class=\"admin-users admin-config-page\">{}<div class=\"admin-container admin-config-page__main-area\"></div></div><div class=\"admin-container admin-config-page__main-area\">{}</div>",
+        crate::admin_users_view::users_header(&cx, &header_viewer, "settings"),
+        crate::admin_site_settings_view::area_settings(&cx, &page)
+    );
+    let main = crate::admin_view::contents("admin-users settings", &content);
+    let title = crate::admin_view::t(&state.i18n, "settings");
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "site-settings.js",
+        StatusCode::OK,
+    )
 }
 
 /// GET /admin/users/:id/:username/badges and /tl3_requirements: the user
@@ -361,9 +404,17 @@ pub async fn site_settings_root(
     AuthGuardian(guardian): AuthGuardian,
     headers: HeaderMap,
     uri: Uri,
+    body: axum::body::Bytes,
 ) -> Result<Response, AppError> {
     if wants_json(&uri, &headers) || !guardian.is_admin() {
-        return super::admin_site_settings::index(State(state), AuthGuardian(guardian), uri).await;
+        return super::admin_site_settings::index(
+            State(state),
+            AuthGuardian(guardian),
+            headers,
+            uri,
+            body,
+        )
+        .await;
     }
     let base = state.config.globals.relative_url_root();
     let query = uri.query().map(|q| format!("?{q}")).unwrap_or_default();
@@ -387,15 +438,7 @@ pub async fn site_settings_category(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    let mut filters = crate::admin_site_settings_view::Filters::default();
-    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
-        match k.as_ref() {
-            "filter" => filters.filter = v.into_owned(),
-            "onlyOverridden" => filters.only_overridden = v == "true",
-            "dependsOn" if !v.is_empty() => filters.depends_on = Some(v.into_owned()),
-            _ => {}
-        }
-    }
+    let filters = settings_filters(&uri);
     let mut conn = state.pool.acquire().await?;
     let shell = Shell::load(
         &mut conn,
@@ -405,8 +448,13 @@ pub async fn site_settings_category(
         "admin_all_site_settings",
     )
     .await?;
-    let (site_settings, default_theme) =
-        super::admin_site_settings::document(&mut conn, &state, &shell.settings).await?;
+    let (site_settings, default_theme) = super::admin_site_settings::document(
+        &mut conn,
+        &state,
+        &shell.settings,
+        &Default::default(),
+    )
+    .await?;
     let categories = crate::admin_site_settings_view::filter(&site_settings, &filters);
     let found = categories
         .iter()
@@ -419,21 +467,7 @@ pub async fn site_settings_category(
         ))
         .into_response());
     }
-    // Site#groups for the group settings' chooser.
-    let groups: Vec<(i64, String)> =
-        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM groups ORDER BY name")
-            .fetch_all(&mut *conn)
-            .await?
-            .into_iter()
-            .map(|(id, name)| (i64::from(id), name))
-            .collect();
-    let site_categories: Vec<(i64, String)> =
-        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM categories ORDER BY id")
-            .fetch_all(&mut *conn)
-            .await?
-            .into_iter()
-            .map(|(id, name)| (i64::from(id), name))
-            .collect();
+    let (groups, site_categories) = site_lists(&mut conn).await?;
     let cx = shell.cx(&state);
     let page = crate::admin_site_settings_view::Page {
         settings: &site_settings,
@@ -447,6 +481,161 @@ pub async fn site_settings_category(
     let main =
         crate::admin_view::contents("admin-site-settings admin-site-settings-category", &content);
     let title = crate::admin_view::t(&state.i18n, "admin.config.site_settings.title");
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "site-settings.js",
+        StatusCode::OK,
+    )
+}
+
+/// The site settings filters in the route's query params.
+fn settings_filters(uri: &Uri) -> crate::admin_site_settings_view::Filters {
+    let mut filters = crate::admin_site_settings_view::Filters::default();
+    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
+        match k.as_ref() {
+            "filter" => filters.filter = v.into_owned(),
+            "onlyOverridden" => filters.only_overridden = v == "true",
+            "dependsOn" if !v.is_empty() => filters.depends_on = Some(v.into_owned()),
+            _ => {}
+        }
+    }
+    filters
+}
+
+/// Site#groups and Site#categories (id, name) for the group and category
+/// settings' choosers.
+async fn site_lists(
+    conn: &mut sqlx::PgConnection,
+) -> Result<(Vec<(i64, String)>, Vec<(i64, String)>), AppError> {
+    let list = |rows: Vec<(i32, String)>| -> Vec<(i64, String)> {
+        rows.into_iter()
+            .map(|(id, name)| (i64::from(id), name))
+            .collect()
+    };
+    let groups = sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM groups ORDER BY name")
+        .fetch_all(&mut *conn)
+        .await?;
+    let categories =
+        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM categories ORDER BY id")
+            .fetch_all(&mut *conn)
+            .await?;
+    Ok((list(groups), list(categories)))
+}
+
+/// GET /admin/groups: the groups list under the admin groups header, as
+/// /groups lists them; its JSON is the empty index's 204.
+pub async fn groups_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if let Some(r) = refuse_non_staff(&state, &guardian) {
+        return Ok(r);
+    }
+    if wants_json(&uri, &headers) {
+        return Ok(StatusCode::NO_CONTENT.into_response());
+    }
+    let p = crate::params::parse(uri.query(), &headers, &[]);
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_groups").await?;
+    // The route's model: store.findAll("group", params), groups#index.
+    let doc = match super::groups::index_doc(
+        &state,
+        &mut conn,
+        &shell.settings,
+        &guardian,
+        &p,
+        crate::mobile::mobile_view(),
+    )
+    .await?
+    {
+        Ok(doc) => doc,
+        Err(refused) => return Ok(refused),
+    };
+    let categories = std::collections::HashMap::new();
+    let list_cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let filter = crate::params::string(&p, "filter").unwrap_or_default();
+    let kind = crate::params::string(&p, "type");
+    let can_create_group = guardian.is_admin()
+        || (shell.settings.get("moderators_manage_groups")?.truthy() && guardian.is_moderator());
+    let list = crate::groups_view::render_index(
+        &list_cx,
+        &crate::groups_view::Index {
+            doc: &doc,
+            filter: &filter,
+            kind: kind.as_deref(),
+            can_create_group,
+        },
+    );
+    let cx = shell.cx(&state);
+    let content =
+        crate::admin_groups_view::render(&cx, crate::admin_groups_view::Tab::Index, &list);
+    let main = crate::admin_view::contents("admin-groups", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.groups.title");
+    shell.render(&state, &uri, &title, main, "groups.js", StatusCode::OK)
+}
+
+/// GET /admin/groups/settings: AdminAreaSettings for the groups category;
+/// its JSON is Admin::SiteSettingsController#index's.
+pub async fn groups_settings(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    if wants_json(&uri, &headers) || !guardian.is_admin() {
+        return super::admin_site_settings::index(
+            State(state),
+            AuthGuardian(guardian),
+            headers,
+            uri,
+            body,
+        )
+        .await;
+    }
+    let filters = settings_filters(&uri);
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_groups").await?;
+    // /admin/config/site_settings.json for `categories: "groups"`.
+    let area = super::admin_site_settings::config_filters(
+        &state,
+        serde_json::json!({ "categories": "groups" })
+            .as_object()
+            .ok_or_else(|| std::io::Error::other("params"))?,
+    )
+    .ok_or_else(|| std::io::Error::other("the groups settings' filters"))?;
+    let (site_settings, default_theme) =
+        super::admin_site_settings::document(&mut conn, &state, &shell.settings, &area).await?;
+    let (groups, site_categories) = site_lists(&mut conn).await?;
+    let cx = shell.cx(&state);
+    let page = crate::admin_site_settings_view::Page {
+        settings: &site_settings,
+        default_theme: &default_theme,
+        groups: &groups,
+        categories: &site_categories,
+        filters: &filters,
+        category: "all_results",
+    };
+    let content = crate::admin_groups_view::render(
+        &cx,
+        crate::admin_groups_view::Tab::Settings,
+        &crate::admin_site_settings_view::area_settings(&cx, &page),
+    );
+    let main = crate::admin_view::contents("admin-groups settings", &content);
+    let title = crate::admin_view::t(&state.i18n, "settings");
     shell.render(
         &state,
         &uri,

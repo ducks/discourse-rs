@@ -196,29 +196,28 @@ pub async fn user_count(
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: Uri,
+    body: Bytes,
 ) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    let query: Vec<(String, String)> = form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
-        .into_owned()
-        .collect();
-    let list = |key: &str| -> Option<Vec<String>> {
-        let values: Vec<String> = query
-            .iter()
-            .filter(|(k, _)| k == key || *k == format!("{key}[]"))
-            .map(|(_, v)| v.clone())
-            .collect();
-        (!values.is_empty()).then_some(values)
-    };
+    let p = params::parse(uri.query(), &headers, &body);
+    // all_settings calls `filter_categories.any?`: a string raises.
+    if p.get("categories")
+        .is_some_and(|v| !v.is_array() && !v.is_null())
+    {
+        return Err(std::io::Error::other(
+            "NoMethodError: undefined method 'any?' for a String (categories)",
+        )
+        .into());
+    }
     let filters = crate::admin_site_settings::Filters {
-        categories: list("categories"),
-        plugin: query
-            .iter()
-            .find(|(k, _)| k == "plugin")
-            .map(|(_, v)| v.clone()),
-        names: list("names"),
+        categories: param_list(&p, "categories"),
+        plugin: params::string(&p, "plugin"),
+        names: param_list(&p, "names"),
+        ..Default::default()
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -243,12 +242,14 @@ pub async fn index(
     )
 }
 
-/// The index's document with no filters: every setting and the default
-/// theme, as the admin site settings page loads it (SiteSetting.findAll).
+/// The settings for the filters and the default theme: with no filters
+/// every setting, as the admin site settings page loads them
+/// (SiteSetting.findAll); a config area's for its own.
 pub async fn document(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
     settings: &SiteSettings,
+    filters: &crate::admin_site_settings::Filters,
 ) -> Result<(Vec<Value>, Value), AppError> {
     let urls = crate::url::Urls {
         config: &state.config,
@@ -262,14 +263,90 @@ pub async fn document(
         base_path: state.config.globals.relative_url_root(),
         urls: &urls,
     };
-    let filters = crate::admin_site_settings::Filters {
-        categories: None,
-        plugin: None,
-        names: None,
-    };
-    let site_settings = crate::admin_site_settings::all_settings(&mut *conn, &cx, &filters).await?;
+    let site_settings = crate::admin_site_settings::all_settings(&mut *conn, &cx, filters).await?;
     let default_theme = default_theme(&mut *conn, settings).await?;
     Ok((site_settings, default_theme))
+}
+
+/// Admin::Config::SiteSettingsController's hidden settings a config area
+/// may show.
+const CONFIG_ALLOWED_HIDDEN: [&str; 3] = [
+    "extended_site_description",
+    "about_banner_image",
+    "community_owner",
+];
+
+/// `Array.wrap(params[key])` of strings, None when blank.
+fn param_list(p: &Map<String, Value>, key: &str) -> Option<Vec<String>> {
+    let values: Vec<String> = match p.get(key) {
+        Some(Value::Array(items)) => items.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v).into_iter().collect(),
+        None => Vec::new(),
+    };
+    (!values.is_empty()).then_some(values)
+}
+
+/// The config areas' filters from their params (`filter_names`,
+/// `filter_area`, `plugin`, `categories`), or None for the
+/// InvalidParameters of a request naming none of them.
+pub fn config_filters(
+    state: &AppState,
+    p: &Map<String, Value>,
+) -> Option<crate::admin_site_settings::Filters> {
+    let present = |key: &str| {
+        p.get(key).is_some_and(|v| match v {
+            Value::Null => false,
+            Value::String(s) => !s.is_empty(),
+            Value::Array(a) => !a.is_empty(),
+            _ => true,
+        })
+    };
+    let area = params::string(p, "filter_area").filter(|a| !a.is_empty());
+    let valid_area = area
+        .as_deref()
+        .is_some_and(|a| crate::admin_site_settings::valid_area(&state.site_setting_defs, a));
+    if !present("plugin") && !present("categories") && !present("filter_names") && !valid_area {
+        return None;
+    }
+    Some(crate::admin_site_settings::Filters {
+        categories: param_list(p, "categories"),
+        plugin: params::string(p, "plugin").filter(|v| !v.is_empty()),
+        names: param_list(p, "filter_names"),
+        include_locale_setting: area.as_deref() == Some("localization"),
+        area,
+        allowed_hidden: Some(
+            CONFIG_ALLOWED_HIDDEN
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        ),
+    })
+}
+
+/// GET /admin/config/site_settings: Admin::Config::SiteSettingsController
+/// #index, a config area's settings.
+pub async fn config_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    let Some(filters) = config_filters(&state, &p) else {
+        return Ok(super::search::invalid_parameters(
+            &state,
+            "Discourse::InvalidParameters",
+        ));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let (site_settings, _) = document(&mut conn, &state, &settings, &filters).await?;
+    Ok(Json(json!({ "site_settings": site_settings })).into_response())
 }
 
 /// BasicThemeSerializer for Theme.find_default: its description is the

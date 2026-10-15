@@ -1,0 +1,139 @@
+{
+  "name": "config_index_groups",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "categories": "groups"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T01:34:06.429602",
+  "transaction_started_at": "2026-10-15T01:34:04.760025",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_settings": [
+          {
+            "setting": "enable_group_directory",
+            "humanized_name": "Enable group directory",
+            "description": "Provide a directory of groups for browsing",
+            "keywords": [],
+            "category": "groups",
+            "primary_area": null,
+            "default": "true",
+            "value": "true",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "bool"
+          },
+          {
+            "setting": "group_in_subject",
+            "humanized_name": "Group in subject",
+            "description": "Set %{optional_pm} in email subject to name of first group in PM, see: <a href='https://meta.discourse.org/t/customize-specific-email-templates/88323' target='_blank'>Customize subject format for standard emails</a>",
+            "keywords": [],
+            "category": "groups",
+            "primary_area": null,
+            "default": "false",
+            "value": "false",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "bool"
+          },
+          {
+            "setting": "enable_category_group_moderation",
+            "humanized_name": "Enable category group moderation",
+            "description": "Allow groups to moderate content in specific categories",
+            "keywords": [],
+            "category": "groups",
+            "primary_area": "group_permissions",
+            "default": "false",
+            "value": "false",
+            "preview": null,
+            "secret": false,
+            "placeholder": null,
+            "mandatory_values": null,
+            "disallowed_groups": null,
+            "requires_confirmation": null,
+            "upcoming_change": null,
+            "themeable": false,
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "depends_behavior": null,
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 52,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LDgr7aSdxCuuKpUlBSAZjJRrhgY=",
+            "created_at": "2026-10-15T01:34:05.526335",
+            "rotated_at": "2026-10-15T01:34:05.520197",
+            "updated_at": "2026-10-15T01:34:05.526335",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "LDgr7aSdxCuuKpUlBSAZjJRrhgY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 52,
+            "seen_at": "2026-10-15T01:34:06.43946",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LDgr7aSdxCuuKpUlBSAZjJRrhgY=",
+            "created_at": "2026-10-15T01:34:05.526335",
+            "rotated_at": "2026-10-15T01:34:05.520197",
+            "updated_at": "2026-10-15T01:34:05.526335",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "LDgr7aSdxCuuKpUlBSAZjJRrhgY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "f0db34588a20425bca93ecdf03268906136f4c410c04fdf7c6087c31c58d0e3e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

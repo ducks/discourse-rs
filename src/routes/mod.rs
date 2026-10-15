@@ -806,6 +806,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/site_settings", get(admin_pages::site_settings_root))
         .route(
+            "/admin/config/site_settings",
+            get(admin_site_settings::config_index),
+        )
+        .route(
+            "/admin/config/site_settings.json",
+            get(admin_site_settings::config_index),
+        )
+        .route(
             "/admin/site_settings/category/{category}",
             get(admin_pages::site_settings_category),
         )
@@ -1913,8 +1921,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/g/{name}/notifications.json",
             post(group_membership::set_notifications),
         )
-        .route("/admin/groups", post(admin_groups::create))
-        .route("/admin/groups.json", post(admin_groups::create))
+        .route(
+            "/admin/groups",
+            get(admin_pages::groups_index).post(admin_groups::create),
+        )
+        .route(
+            "/admin/groups.json",
+            get(admin_pages::groups_index).post(admin_groups::create),
+        )
+        .route("/admin/groups/settings", get(admin_pages::groups_settings))
+        .route(
+            "/admin/groups/settings.json",
+            get(admin_pages::groups_settings),
+        )
         .route(
             "/admin/groups/automatic_membership_count",
             put(admin_groups::automatic_membership_count),

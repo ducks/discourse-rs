@@ -21,3 +21,8 @@
 /admin/site_settings/category/trust as=admin
 /admin/site_settings/category/security as=admin
 /admin/site_settings/category/all_results?filter=contact as=admin
+# The groups pages and the settings tabs (90g4).
+/admin/groups as=admin
+/admin/groups?type=automatic as=admin
+/admin/groups/settings as=admin
+/admin/users/settings as=admin

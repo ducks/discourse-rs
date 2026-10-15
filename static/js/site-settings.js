@@ -1,15 +1,17 @@
-// The admin's site settings page in the browser: the filter
+// The admin's site settings page, and a config area's settings
+// (AdminAreaSettings), in the browser: the filter
 // (AdminSiteSettingsFilterControls: the filter after INPUT_DELAY, Clear,
 // Only show overridden, the mobile view's category menu), each setting's
-// editing (SiteSetting: the save and cancel controls while its value is
-// changed, undo to the default, a setting hidden by a dependency shown
-// once the dependency is met) and the changes banner that saves or
-// discards every changed setting. A setting saves through PUT
-// /admin/site_settings/:name, confirming first when it requires it. The
-// route's filters are the URL's query; the page for them is swapped in
-// as a link's is. Not ported, and saying so when used: the editors of
-// the list, font and JSON settings, and saving a default user preference
-// (its backfill question).
+// editor and its editing (SiteSetting: the save and cancel controls while
+// its value is changed, undo to the default, a setting hidden by a
+// dependency shown once the dependency is met) and the changes banner
+// that saves or discards every changed setting. A setting saves through
+// PUT /admin/site_settings/:name, the banner through bulk_update,
+// confirming first when one requires it. The route's filters are the
+// URL's query; the page for them is swapped in as a link's is. Not
+// ported, and saying so when used: the editors the page says so of, the
+// pickers' dropdowns, uploading, the emoji picker and the backfill
+// question.
 (function () {
   "use strict";
 
@@ -78,8 +80,11 @@
     return t(key + "." + (count === 1 ? "one" : "other"), { count: count });
   }
 
+  // The site settings page, or a config area's settings
+  // (AdminAreaSettings): the admin contents holding the filter controls.
   function page() {
-    return document.querySelector(".admin-contents.admin-site-settings");
+    var controls = document.querySelector(".admin-site-settings-filter-controls");
+    return controls ? controls.closest(".admin-contents") : null;
   }
 
   function base() {

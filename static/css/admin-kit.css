@@ -153,3 +153,41 @@ html.keyboard-visible:not(.ios-device) .dialog-container{height:calc(100% - env(
   height:unset;
   width:50%;
 }
+
+/* base/discourse.scss's .form-horizontal (the settings sections) */
+.form-horizontal input[type="text"],
+.form-horizontal input[type="password"],
+.form-horizontal textarea {
+  margin-bottom: 0;
+}
+
+.form-horizontal .control-group {
+  margin-bottom: 18px;
+}
+
+.form-horizontal .control-group::before,
+.form-horizontal .control-group::after {
+  content: "";
+  display: table;
+}
+
+.form-horizontal .control-group::after {
+  clear: both;
+}
+
+.form-horizontal .control-indent {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.form-horizontal .control-label {
+  margin: 6.5px;
+  float: left;
+  width: 140px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.form-horizontal .controls {
+  margin-left: 160px;
+}
