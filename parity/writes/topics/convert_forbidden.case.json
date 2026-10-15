@@ -1,0 +1,13 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/convert-topic/private.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/t/99999/convert-topic/private.json"
+    }
+  ]
+}

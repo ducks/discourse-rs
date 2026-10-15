@@ -249,9 +249,6 @@ async fn serialize(
     .bind(access.post.id)
     .fetch_all(&mut *conn)
     .await?;
-    if rows.iter().any(|r| r.hidden) {
-        return Err(Unsupported("hidden post revisions").into());
-    }
     #[derive(sqlx::FromRow)]
     struct Latest {
         raw: String,
@@ -355,6 +352,13 @@ async fn serialize(
         .filter(|r| r.revision <= current_revision)
         .count()
         + 1;
+    // Hidden revisions: the neighbours among all of them decide whether
+    // a viewer who can't see hidden revisions gets the diffs at all.
+    let adjacent_previous = all.iter().rfind(|r| r.revision < current_revision);
+    let adjacent_current = all.iter().find(|r| r.revision > current_revision);
+    let previous_side_hidden = previous.hidden || adjacent_previous.is_some_and(|r| r.hidden);
+    let current_hidden = adjacent_current.is_some_and(|r| r.hidden);
+    let suppress = !staff && (previous_side_hidden || current_hidden);
 
     let field = |r: &Flat, k: &str| r.fields.get(k).cloned().unwrap_or(Value::Null);
     for k in [
@@ -365,7 +369,7 @@ async fn serialize(
         "post_type",
         "locale",
     ] {
-        if field(previous, k) != field(current, k) {
+        if !suppress && field(previous, k) != field(current, k) {
             return Err(Unsupported(
                 "revisions changing more than the body, title and edit reason",
             )
@@ -394,8 +398,15 @@ async fn serialize(
     let mut out = Map::new();
     out.insert("created_at".into(), json!(time_json(object.created_at)));
     out.insert("post_id".into(), json!(access.post.id));
-    out.insert("previous_hidden".into(), json!(previous.hidden));
-    out.insert("current_hidden".into(), json!(current.hidden));
+    out.insert(
+        "previous_hidden".into(),
+        json!(if staff {
+            previous.hidden
+        } else {
+            previous_side_hidden
+        }),
+    );
+    out.insert("current_hidden".into(), json!(current_hidden));
     out.insert("first_revision".into(), json!(first_revision));
     out.insert("previous_revision".into(), json!(previous_revision));
     out.insert("current_revision".into(), json!(current_revision));
@@ -414,24 +425,28 @@ async fn serialize(
     }
     let mut diff_error = false;
     let text = |v: Value| v.as_str().unwrap_or("").to_string();
-    match body_changes(
-        &text(field(previous, "cooked")),
-        &text(field(current, "cooked")),
-        &text(field(previous, "raw")),
-        &text(field(current, "raw")),
-    ) {
-        Ok(b) => {
-            out.insert(
+    if suppress {
+        out.insert("body_changes".into(), Value::Null);
+    } else {
+        match body_changes(
+            &text(field(previous, "cooked")),
+            &text(field(current, "cooked")),
+            &text(field(previous, "raw")),
+            &text(field(current, "raw")),
+        ) {
+            Ok(b) => {
+                out.insert(
                 "body_changes".into(),
                 json!({"inline": b.inline, "side_by_side": b.side_by_side, "side_by_side_markdown": b.side_by_side_markdown}),
             );
-        }
-        Err(_) => {
-            out.insert("body_changes".into(), Value::Null);
-            diff_error = true;
+            }
+            Err(_) => {
+                out.insert("body_changes".into(), Value::Null);
+                diff_error = true;
+            }
         }
     }
-    if access.post.post_number == 1 {
+    if access.post.post_number == 1 && !suppress {
         let escape = |v: Value| {
             v.as_str()
                 .map(crate::discourse_diff::escape_html)
@@ -462,7 +477,7 @@ async fn serialize(
         field(previous, "category_id"),
         field(current, "category_id"),
     );
-    if prev_category != cur_category {
+    if !suppress && prev_category != cur_category {
         let secure = guardian.secure_category_ids(&mut *conn, s).await?;
         let mut visible = Vec::new();
         for v in [&prev_category, &cur_category] {
@@ -491,7 +506,7 @@ async fn serialize(
     }
     // The compared fields PostRevisor's track_topic_field adds.
     for k in ["archetype", "featured_link"] {
-        if field(previous, k) != field(current, k) {
+        if !suppress && field(previous, k) != field(current, k) {
             out.insert(
                 format!("{k}_changes"),
                 json!({"previous": field(previous, k), "current": field(current, k)}),

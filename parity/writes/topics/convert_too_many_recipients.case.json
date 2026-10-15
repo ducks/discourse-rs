@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {
+    "max_allowed_message_recipients": 3
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/convert-topic/private.json"
+    }
+  ]
+}

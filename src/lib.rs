@@ -157,6 +157,7 @@ pub mod tags;
 pub mod theme_import;
 pub mod theme_writes;
 pub mod themes;
+pub mod topic_converter;
 pub mod topic_guardian;
 pub mod topic_list;
 pub mod topic_list_view;

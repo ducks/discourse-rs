@@ -81,6 +81,7 @@ mod srv;
 mod stylesheets;
 mod tags;
 mod themes;
+mod topic_convert;
 mod topic_excerpts;
 mod topic_notifications;
 mod topic_status;
@@ -444,6 +445,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
+        // TopicsController#convert_topic; {slug} holds the topic id.
+        .route(
+            "/t/{slug}/convert-topic/{kind}",
+            put(topic_convert::convert),
+        )
         // TopicsController#timer; {slug} holds the topic id.
         .route("/t/{slug}/timer", post(topic_timer::timer))
         .route("/t/{slug}/excerpts", get(topic_excerpts::excerpts))

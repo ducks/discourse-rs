@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/3/convert-topic/private.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/t/40/convert-topic/private.json"
+    }
+  ]
+}

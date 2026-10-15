@@ -1509,7 +1509,7 @@ route table has been made, so this list may be short.
     change_category_to_id with the topic counts, auto watching and
     tracking, notify_category_change, update_topic_upload_security,
     featured topics and reviewables, the category change whisper,
-    safe_revision_errors), 188c. `feat/topic-edits-convert` S (PUT
+    safe_revision_errors), 188c. ~~`feat/topic-edits-convert`~~ (done) S (PUT
     /t/:id/convert-topic/:type, TopicConverter: the archetype and category
     through PostRevisor with a hidden revision, allowed users, user stats,
     the small actions, watching), 188d. `feat/topic-edits-move` L (POST
