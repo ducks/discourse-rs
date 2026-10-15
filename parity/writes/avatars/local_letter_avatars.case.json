@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "settings": {
+    "external_system_avatars_url": "",
+    "show_user_menu_avatars": true
+  },
+  "requests": [
+    { "method": "GET", "path": "/u/user2.json" },
+    { "method": "GET", "path": "/u/admin.json" },
+    { "method": "GET", "path": "/u/system.json" },
+    { "method": "GET", "path": "/latest.json" },
+    { "method": "GET", "path": "/site.json" }
+  ],
+  "ignore": [
+    "/responses/4/body/markdown_additional_options",
+    "/responses/4/body/hashtag_configurations",
+    "/responses/4/body/hashtag_icons",
+    "/responses/4/body/access_control"
+  ]
+}

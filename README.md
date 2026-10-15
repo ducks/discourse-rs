@@ -336,6 +336,17 @@ Letter avatars (`/letter_avatar_proxy/...`, the default
 (`LETTER_AVATAR_CDN`, default `https://avatars.discourse-cdn.com`) and cached
 under `TMP_DIR` (default `tmp`) in `avatar_proxy/`, as Rails does.
 
+With `external_system_avatars_url` blank, `/letter_avatar/...` draws them
+here (src/letter_avatar.rs), cached under `TMP_DIR` in `letter_avatars/`,
+with the font Rails' ImageMagick uses: URW's NimbusSans-Regular as
+OpenType (`LETTER_AVATAR_FONT`, default Debian's fonts-urw-base35 path;
+shell.nix fetches it). The letter is placed as ImageMagick places it and
+rasterized without FreeType's light hinting, so edges that hinting snaps
+to the pixel grid (the overshoot of round letters) differ within a pixel:
+at 48px the mean difference from Rails' is under one level in 255. The
+version in the URL (`LetterAvatar.version`) hashes the renderer and font
+instead of ImageMagick's version, so it differs from Rails'.
+
 ## Serving a backup
 
 ```bash

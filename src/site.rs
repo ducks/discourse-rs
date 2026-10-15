@@ -500,7 +500,14 @@ impl Site<'_> {
             out.insert("privacy_policy_url".into(), json!(url));
         }
         if self.truthy("show_user_menu_avatars")? {
-            return Err(Unsupported("system_user_avatar_template (avatar templates)").into());
+            let urls = crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            };
+            let template =
+                crate::avatar::template_for(&mut *self.conn, &urls, crate::avatar::SYSTEM_USER_ID)
+                    .await?;
+            out.insert("system_user_avatar_template".into(), json!(template));
         }
         if self.guardian.can_lazy_load_categories(self.settings)? {
             out.insert("lazy_load_categories".into(), json!(true));

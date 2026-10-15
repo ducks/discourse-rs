@@ -1,0 +1,249 @@
+{
+  "name": "rename_system_user_with_logo",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/system/preferences/username.json",
+      "params": {
+        "new_username": "sitebot"
+      }
+    }
+  ],
+  "started_at": "2026-10-15T13:45:50.954687",
+  "transaction_started_at": "2026-10-15T13:45:48.244353",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": -1,
+        "username": "sitebot"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 102,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dcSfhjfSN8hXuYYEltnNJsXUDNM=",
+            "created_at": "2026-10-15T13:45:49.327959",
+            "rotated_at": "2026-10-15T13:45:49.325718",
+            "updated_at": "2026-10-15T13:45:49.327959",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "dcSfhjfSN8hXuYYEltnNJsXUDNM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 102,
+            "seen_at": "2026-10-15T13:45:50.966994",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dcSfhjfSN8hXuYYEltnNJsXUDNM=",
+            "created_at": "2026-10-15T13:45:49.327959",
+            "rotated_at": "2026-10-15T13:45:49.325718",
+            "updated_at": "2026-10-15T13:45:49.327959",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "dcSfhjfSN8hXuYYEltnNJsXUDNM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_emails": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": -1,
+            "email": "no_email",
+            "primary": true,
+            "user_id": -1,
+            "created_at": "2026-07-25T05:58:07.794395",
+            "updated_at": "2026-07-25T05:58:28.138073",
+            "normalized_email": "no_email@"
+          },
+          "after": {
+            "id": -1,
+            "email": "no_email",
+            "primary": true,
+            "user_id": -1,
+            "created_at": "2026-07-25T05:58:07.794395",
+            "updated_at": "2026-10-15T13:45:51.405412",
+            "normalized_email": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 21,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "sitebot",
+          "admin_only": false,
+          "created_at": "2026-10-15T13:45:51.423397",
+          "ip_address": null,
+          "updated_at": "2026-10-15T13:45:51.423397",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "system",
+          "target_user_id": -1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "user_id": -1,
+            "version": 3,
+            "raw_data": "system system",
+            "search_data": "'system':1A,2B"
+          },
+          "after": {
+            "locale": "en",
+            "user_id": -1,
+            "version": 3,
+            "raw_data": "sitebot system",
+            "search_data": "'sitebot':1A 'system':2B"
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": -1,
+            "name": "system",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "system",
+            "moderator": true,
+            "created_at": "2026-07-25T05:58:07.835795",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-07-25T05:58:28.767687",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-07-25T05:58:28.636524",
+            "suspended_till": null,
+            "username_lower": "system",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": 34,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": -1,
+            "name": "system",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "sitebot",
+            "moderator": true,
+            "created_at": "2026-07-25T05:58:07.835795",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-15T13:45:51.401079",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-07-25T05:58:28.636524",
+            "suspended_till": null,
+            "username_lower": "sitebot",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": 34,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "update_username",
+      {
+        "user_id": -1,
+        "old_username": "system",
+        "new_username": "sitebot",
+        "avatar_template": "//localhost:3049/images/discourse-logo-sketch-small.png"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "b9499a8cfc3afea17ff171bbfb427597f711d2b0c87ec0530cf488b753a20989",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

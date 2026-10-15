@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {
+    "show_user_menu_avatars": true
+  },
+  "requests": [
+    { "method": "GET", "path": "/site.json" }
+  ],
+  "ignore": [
+    "/responses/0/body/markdown_additional_options",
+    "/responses/0/body/hashtag_configurations",
+    "/responses/0/body/hashtag_icons",
+    "/responses/0/body/access_control"
+  ]
+}

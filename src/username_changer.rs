@@ -150,7 +150,8 @@ async fn validate(
 }
 
 /// `user.avatar_template_url`: the template, absolute, without `http:`.
-fn avatar_template_url(
+async fn avatar_template_url(
+    conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     user_id: i32,
     username: &str,
@@ -160,23 +161,19 @@ fn avatar_template_url(
         config: ctx.config,
         settings: ctx.settings,
     };
-    if user_id == SYSTEM_USER_ID
-        && ctx
-            .settings
-            .get("use_site_small_logo_as_system_avatar")?
-            .truthy()
-        && ctx.settings.get("logo_small")?.to_i() != 0
-    {
-        return Err(
-            Unsupported("renaming the system user with the site logo as its avatar").into(),
-        );
-    }
-    let template =
-        crate::avatar::avatar_template(&urls, user_id, username, uploaded_avatar_id, None)
-            .map_err(|e| match e {
-                crate::avatar::AvatarError::Unsupported(u) => AppError::from(u),
-                other => AppError::from(other),
-            })?;
+    let logo = if user_id == SYSTEM_USER_ID {
+        crate::admin_users::logo_small_url(conn, ctx.settings).await?
+    } else {
+        None
+    };
+    let template = crate::avatar::avatar_template(
+        &urls,
+        user_id,
+        username,
+        uploaded_avatar_id,
+        logo.as_deref(),
+    )
+    .map_err(crate::avatar::AvatarError::into_app)?;
     let absolute = urls.absolute(&template)?;
     Ok(match absolute.get(..5) {
         Some(p) if p.eq_ignore_ascii_case("http:") => absolute[5..].to_string(),
@@ -224,6 +221,7 @@ pub async fn change(
     .bind(&lower)
     .execute(&mut *conn)
     .await?;
+    crate::user_updater::autosave_primary_email(&mut *conn, user.id).await?;
     crate::user_updater::after_save(
         &mut *conn,
         ctx.settings,
@@ -251,7 +249,14 @@ pub async fn change(
     if update == Update::Skip {
         return Ok(Changed::Changed);
     }
-    let avatar_template = avatar_template_url(ctx, user.id, new_username, user.uploaded_avatar_id)?;
+    let avatar_template = avatar_template_url(
+        &mut *conn,
+        ctx,
+        user.id,
+        new_username,
+        user.uploaded_avatar_id,
+    )
+    .await?;
     let args = json!({
         "user_id": user.id,
         "old_username": user.username,

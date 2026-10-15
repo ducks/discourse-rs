@@ -15,6 +15,12 @@ let
     inherit pkgs;
     port = 5442;
   };
+  # The font Rails draws letter avatars with (Debian's fonts-urw-base35,
+  # as on the reference), for LETTER_AVATAR_FONT.
+  letterAvatarFont = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/ArtifexSoftware/urw-base35-fonts/20200910/fonts/NimbusSans-Regular.otf";
+    sha256 = "020ddndnqlyxgc1xgjmvvbvpyrahf4ki0nxq18426m8mg16vw9bw";
+  };
 in
 
 pkgs.mkShell {
@@ -34,6 +40,7 @@ pkgs.mkShell {
 
   shellHook = ''
     ${postgres.shellHook}
+    export LETTER_AVATAR_FONT="${letterAvatarFont}"
 
     echo "discourse-rs: $(rustc --version), $(postgres --version)"
     echo "  db_start / db_stop / db_status   local PostgreSQL"

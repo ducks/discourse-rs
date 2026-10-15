@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/system/preferences/username.json",
+      "params": {
+        "new_username": "sitebot"
+      }
+    }
+  ],
+  "run_jobs": ["update_username"]
+}
