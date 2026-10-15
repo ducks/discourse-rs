@@ -2183,6 +2183,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(user_avatars::show),
         )
         .route(
+            "/user_avatar/{username}/refresh_gravatar",
+            post(user_avatar_writes::refresh_gravatar),
+        )
+        .route(
+            "/user_avatar/{username}/refresh_gravatar.json",
+            post(user_avatar_writes::refresh_gravatar),
+        )
+        .route(
             "/assets/moment-locale/{name}",
             get(crate::moment_locale::serve),
         )

@@ -143,7 +143,7 @@ pub async fn crawl(
             }
             Ok(extract_title(&String::from_utf8_lossy(&body)))
         }
-        Read::Nothing => Ok(None),
+        Read::Nothing | Read::Failed { .. } => Ok(None),
     }
 }
 

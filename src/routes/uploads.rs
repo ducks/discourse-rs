@@ -248,6 +248,7 @@ pub async fn create(
         for_private_message: form.get("for_private_message") == Some("true"),
         for_export: false,
         for_theme: false,
+        gravatar_origin: None,
         skip_validations: false,
     };
     let outcome = uploads::create(

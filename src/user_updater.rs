@@ -9,8 +9,7 @@
 //! upload references and the schedule's do not disturb timings).
 //!
 //! Refused: what failing validations would answer (the errors JSON),
-//! external ids, date of birth, user status,
-//! uploads in the bio, and gravatar downloads.
+//! external ids, date of birth, user status and uploads in the bio.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -914,19 +913,36 @@ pub(crate) async fn after_save(
     }
     // badge_grant
     crate::badge_granter::queue_user_change(conn, s, user_id).await?;
-    // refresh_avatar
-    let attempted: Option<bool> = sqlx::query_scalar(
-        "SELECT last_gravatar_download_attempt IS NOT NULL FROM user_avatars WHERE user_id = $1",
+    // refresh_avatar: `user_avatar || create_user_avatar`, then the
+    // gravatar job until one has run (for a user with an email).
+    let mut avatar: Option<(i32, bool)> = sqlx::query_as(
+        "SELECT id, last_gravatar_download_attempt IS NOT NULL FROM user_avatars WHERE user_id = $1",
     )
     .bind(user_id)
     .fetch_optional(&mut *conn)
     .await?;
-    match attempted {
-        None => return Err(Unsupported("creating a missing user avatar").into()),
-        Some(false) if s.get("automatically_download_gravatars")?.truthy() => {
-            return Err(Unsupported("gravatar downloads").into());
+    if avatar.is_none() {
+        let id: i32 = sqlx::query_scalar(
+            "INSERT INTO user_avatars (user_id, created_at, updated_at) \
+             VALUES ($1, clock_timestamp(), clock_timestamp()) RETURNING id",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        avatar = Some((id, false));
+    }
+    if let Some((avatar_id, false)) = avatar
+        && s.get("automatically_download_gravatars")?.truthy()
+    {
+        let has_email: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM user_emails WHERE user_id = $1 AND \"primary\" AND email <> '')",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if has_email {
+            crate::signup::enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
         }
-        Some(_) => {}
     }
     crate::posting::search_index::index_user(conn, s, user_id, username_lower, name).await
 }

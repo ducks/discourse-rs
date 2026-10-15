@@ -398,12 +398,49 @@ pub async fn create(
         .bind(user_id)
         .execute(&mut *conn)
         .await?;
+    // set_random_avatar: one of selectable_avatars (the uploads that
+    // exist), with the avatar row that holds it.
+    let mut avatar_id: Option<i32> = None;
     if settings
         .get("selectable_avatars_random_on_signup")?
         .truthy()
         && settings.get("selectable_avatars_mode")?.to_s() != "disabled"
     {
-        return Err(Unsupported("random avatars at signup").into());
+        let ids: Vec<i32> = settings
+            .get("selectable_avatars")?
+            .to_s()
+            .split('|')
+            .filter_map(|id| i32::try_from(crate::ruby::to_i(id)).ok())
+            .collect();
+        let existing: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM uploads WHERE id = ANY($1) ORDER BY id")
+                .bind(&ids)
+                .fetch_all(&mut *conn)
+                .await?;
+        if !existing.is_empty() {
+            let upload_id = existing[rand::random::<usize>() % existing.len()];
+            sqlx::query("UPDATE users SET uploaded_avatar_id = $2 WHERE id = $1")
+                .bind(user_id)
+                .bind(upload_id)
+                .execute(&mut *conn)
+                .await?;
+            let id: i32 = sqlx::query_scalar(
+                "INSERT INTO user_avatars (user_id, custom_upload_id, created_at, updated_at) \
+                 VALUES ($1, $2, clock_timestamp(), clock_timestamp()) RETURNING id",
+            )
+            .bind(user_id)
+            .bind(upload_id)
+            .fetch_one(&mut *conn)
+            .await?;
+            crate::upload_references::ensure_exist(
+                &mut *conn,
+                "UserAvatar",
+                id.into(),
+                Some(upload_id.into()),
+            )
+            .await?;
+            avatar_id = Some(id);
+        }
     }
     let joined = ensure_in_trust_level_group(&mut *conn, &payloads, user_id, trust_level).await?;
     default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
@@ -414,13 +451,18 @@ pub async fn create(
     for (key, value) in &custom_fields {
         crate::user_fields::save_custom_field(&mut *conn, user_id, key, value).await?;
     }
-    let avatar_id: i32 = sqlx::query_scalar(
-        "INSERT INTO user_avatars (user_id, created_at, updated_at) VALUES ($1, clock_timestamp(), clock_timestamp()) \
-         RETURNING id",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
+    let avatar_id: i32 = match avatar_id {
+        Some(id) => id,
+        None => {
+            sqlx::query_scalar(
+                "INSERT INTO user_avatars (user_id, created_at, updated_at) VALUES ($1, clock_timestamp(), clock_timestamp()) \
+                 RETURNING id",
+            )
+            .bind(user_id)
+            .fetch_one(&mut *conn)
+            .await?
+        }
+    };
     if settings.get("automatically_download_gravatars")?.truthy() {
         enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
     }
@@ -787,7 +829,7 @@ async fn default_sidebar_links(
 }
 
 /// `refresh_avatar`'s gravatar download, a pending one replaced.
-async fn enqueue_gravatar(
+pub(crate) async fn enqueue_gravatar(
     conn: &mut PgConnection,
     user_id: i32,
     avatar_id: i32,

@@ -1,0 +1,126 @@
+{
+  "name": "refresh_gravatar_unreachable",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_avatar/user1/refresh_gravatar.json"
+    },
+    {
+      "method": "POST",
+      "path": "/user_avatar/user2/refresh_gravatar.json"
+    },
+    {
+      "method": "POST",
+      "path": "/user_avatar/nobody/refresh_gravatar.json"
+    }
+  ],
+  "started_at": "2026-10-15T15:34:10.074442",
+  "transaction_started_at": "2026-10-15T15:34:02.738002",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "gravatar_upload_id": null,
+        "gravatar_avatar_template": null
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 113,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HWrEAZ6I8PE/BQxZCAxNnYSevcc=",
+            "created_at": "2026-10-15T15:34:05.786491",
+            "rotated_at": "2026-10-15T15:34:05.773753",
+            "updated_at": "2026-10-15T15:34:05.786491",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HWrEAZ6I8PE/BQxZCAxNnYSevcc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 113,
+            "seen_at": "2026-10-15T15:34:10.09648",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HWrEAZ6I8PE/BQxZCAxNnYSevcc=",
+            "created_at": "2026-10-15T15:34:05.786491",
+            "rotated_at": "2026-10-15T15:34:05.773753",
+            "updated_at": "2026-10-15T15:34:05.786491",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HWrEAZ6I8PE/BQxZCAxNnYSevcc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_avatars": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.504144",
+            "updated_at": "2026-09-30T06:19:59.161277",
+            "custom_upload_id": null,
+            "gravatar_upload_id": null,
+            "last_gravatar_download_attempt": "2026-09-30T06:19:59.160401"
+          },
+          "after": {
+            "id": 5,
+            "user_id": 3,
+            "created_at": "2026-07-25T05:59:16.504144",
+            "updated_at": "2026-10-15T15:34:10.115785",
+            "custom_upload_id": null,
+            "gravatar_upload_id": null,
+            "last_gravatar_download_attempt": "2026-10-15T15:34:10.114504"
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "gravatar_base_url": "fixtures.localhost:8099",
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "recorded_from": {
+    "case": "0e45d75e039b16ca0090a99d8566c6bd7b95d071938659abb3bb193950b3d708",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

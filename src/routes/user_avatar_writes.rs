@@ -14,6 +14,7 @@ use crate::guardian::Guardian;
 use crate::params;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
+use crate::user_avatar::{ensure_user_avatar, save_uploaded_avatar, save_user_avatar};
 use crate::user_updater::{self, Target};
 use crate::{AppError, AppState, Unsupported};
 
@@ -125,125 +126,6 @@ async fn stop_logo_as_system_avatar(
     )
     .await?
     .map_err(|message| AppError::from(std::io::Error::other(message)))?;
-    Ok(())
-}
-
-/// `user.uploaded_avatar_id = id; user.save!`: the column, then the save's
-/// callbacks that read it (refresh_avatar's rebake of the user's quotes,
-/// the user's upload reference and the user_updated event when it
-/// changed; the primary email's autosave; the rest of after_save).
-async fn save_uploaded_avatar(
-    conn: &mut PgConnection,
-    state: &AppState,
-    settings: &SiteSettings,
-    user: &Target,
-    upload_id: Option<i32>,
-) -> Result<(), AppError> {
-    let before: Option<i32> =
-        sqlx::query_scalar("SELECT uploaded_avatar_id FROM users WHERE id = $1")
-            .bind(user.id)
-            .fetch_one(&mut *conn)
-            .await?;
-    let changed = before != upload_id;
-    if changed {
-        sqlx::query(
-            "UPDATE users SET uploaded_avatar_id = $2, updated_at = clock_timestamp() WHERE id = $1",
-        )
-        .bind(user.id)
-        .bind(upload_id)
-        .execute(&mut *conn)
-        .await?;
-    }
-    user_updater::autosave_primary_email(&mut *conn, user.id).await?;
-    user_updater::after_save(
-        &mut *conn,
-        settings,
-        user.id,
-        user.admin && user.active,
-        &user.username_lower,
-        user.name.as_deref(),
-    )
-    .await?;
-    if !changed {
-        return Ok(());
-    }
-    crate::jobs::enqueue(
-        &mut *conn,
-        "rebake_quoted_posts_for_user",
-        json!({ "user_id": user.id }),
-    )
-    .await?;
-    crate::upload_references::ensure_exist(
-        &mut *conn,
-        "User",
-        user.id.into(),
-        upload_id.map(i64::from),
-    )
-    .await?;
-    // after_update :trigger_user_updated_event, if human?
-    if user.id > 0 {
-        crate::web_hooks::enqueue_user_hooks(
-            &mut *conn,
-            &crate::web_hooks::Payloads {
-                settings,
-                i18n: &state.i18n,
-                config: &state.config,
-            },
-            "user_updated",
-            user.id,
-        )
-        .await?;
-    }
-    Ok(())
-}
-
-/// `user_avatar.save!` with its upload columns set: saved (and its upload
-/// references made again) only when one changed.
-async fn save_user_avatar(
-    conn: &mut PgConnection,
-    user_id: i32,
-    custom: Option<Option<i32>>,
-    gravatar: Option<Option<i32>>,
-) -> Result<(), AppError> {
-    let (id, old_custom, old_gravatar): (i32, Option<i32>, Option<i32>) = sqlx::query_as(
-        "SELECT id, custom_upload_id, gravatar_upload_id FROM user_avatars WHERE user_id = $1",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    let custom = custom.unwrap_or(old_custom);
-    let gravatar = gravatar.unwrap_or(old_gravatar);
-    if custom == old_custom && gravatar == old_gravatar {
-        return Ok(());
-    }
-    sqlx::query(
-        "UPDATE user_avatars SET custom_upload_id = $2, gravatar_upload_id = $3, \
-                updated_at = clock_timestamp() WHERE id = $1",
-    )
-    .bind(id)
-    .bind(custom)
-    .bind(gravatar)
-    .execute(&mut *conn)
-    .await?;
-    let ids: Vec<i64> = [custom, gravatar]
-        .into_iter()
-        .flatten()
-        .map(i64::from)
-        .collect();
-    crate::upload_references::ensure_exist_many(&mut *conn, "UserAvatar", id.into(), &ids).await?;
-    Ok(())
-}
-
-/// `user.create_user_avatar unless user.user_avatar`
-async fn ensure_user_avatar(conn: &mut PgConnection, user_id: i32) -> Result<(), AppError> {
-    sqlx::query(
-        "INSERT INTO user_avatars (user_id, created_at, updated_at) \
-         SELECT $1, clock_timestamp(), clock_timestamp() \
-         WHERE NOT EXISTS (SELECT 1 FROM user_avatars WHERE user_id = $1)",
-    )
-    .bind(user_id)
-    .execute(conn)
-    .await?;
     Ok(())
 }
 
@@ -521,4 +403,60 @@ pub async fn destroy_user_image(
         .await?;
     tx.commit().await?;
     Ok(success())
+}
+
+/// POST /user_avatar/:username/refresh_gravatar(.json)
+/// (UserAvatarsController#refresh_gravatar): the gravatar fetched again,
+/// its upload id and template answered (nulls when there is none).
+pub async fn refresh_gravatar(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
+    axum::extract::Path(username): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let username = username.strip_suffix(".json").unwrap_or(&username);
+    let mut conn = state.pool.acquire().await?;
+    let user: Option<(i32, String)> =
+        sqlx::query_as("SELECT id, username FROM users WHERE username_lower = $1")
+            .bind(username.to_lowercase())
+            .fetch_optional(&mut *conn)
+            .await?;
+    // guardian.ensure_can_edit!(user), before the user is known to exist.
+    let Some((user_id, username)) =
+        user.filter(|(id, _)| guardian.is_me(*id) || guardian.is_staff())
+    else {
+        return Ok(super::search::invalid_access(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    ensure_user_avatar(&mut conn, user_id).await?;
+    let avatar_id: i32 = sqlx::query_scalar("SELECT id FROM user_avatars WHERE user_id = $1")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    crate::user_avatar::update_gravatar(&state, &mut conn, &settings, avatar_id).await?;
+    let gravatar: Option<i32> =
+        sqlx::query_scalar("SELECT gravatar_upload_id FROM user_avatars WHERE id = $1")
+            .bind(avatar_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    Ok(Json(match gravatar {
+        Some(id) => json!({
+            "gravatar_upload_id": id,
+            "gravatar_avatar_template": crate::avatar::class_avatar_template(&urls, &username, Some(id))
+                .map_err(crate::avatar::AvatarError::into_app)?,
+        }),
+        None => json!({ "gravatar_upload_id": null, "gravatar_avatar_template": null }),
+    })
+    .into_response())
 }

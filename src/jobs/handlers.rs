@@ -100,6 +100,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "process_email" => process_email(state, &job.args).await,
         "index_user_fields_for_search" => index_user_fields_for_search(state, &job.args).await,
         "create_avatar_thumbnails" => create_avatar_thumbnails(state, &job.args).await,
+        "update_gravatar" => update_gravatar(state, &job.args).await,
         "Jobs::DiscourseTopicVoting::BackfillBadges" => {
             topic_voting_backfill_badges(state, &job.args).await
         }
@@ -172,6 +173,18 @@ async fn create_avatar_thumbnails(state: &AppState, args: &Value) -> Result<(), 
     let s = settings(state, &mut conn).await?;
     let store = crate::file_store::FileStore::for_site(&state.config, &s)?;
     crate::optimized_images::create_avatar_thumbnails(&mut conn, &s, &store, upload_id).await
+}
+
+/// `Jobs::UpdateGravatar`, outside a transaction as in Rails: the attempt
+/// stays recorded when the download fails.
+async fn update_gravatar(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let (Some(user_id), Some(avatar_id)) = (int_arg(args, "user_id")?, int_arg(args, "avatar_id")?)
+    else {
+        return Ok(());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    crate::user_avatar::update_gravatar_job(state, &mut conn, &s, user_id, avatar_id).await
 }
 
 /// Jobs::AutomaticGroupMembership (group_manager).

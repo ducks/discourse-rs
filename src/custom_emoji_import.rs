@@ -533,6 +533,7 @@ pub async fn preview(
                 for_private_message: false,
                 for_export: false,
                 for_theme: false,
+                gravatar_origin: None,
                 skip_validations: false,
             },
         )

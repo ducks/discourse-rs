@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "settings": {
+    "gravatar_base_url": "fixtures.localhost:8099"
+  },
+  "setup": [
+    "UPDATE user_avatars SET last_gravatar_download_attempt = NULL WHERE user_id = 5"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user3.json",
+      "params": { "name": "User Three" }
+    }
+  ],
+  "run_jobs": ["update_gravatar"]
+}
