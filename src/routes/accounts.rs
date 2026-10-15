@@ -736,6 +736,22 @@ pub async fn password_reset_update(
     } else {
         "password_reset.success_unapproved"
     };
+    // Wizard.user_requires_completion?: the first admin goes to the wizard.
+    let redirect_to = if crate::wizard::requires_completion(
+        &mut tx,
+        &state.site_setting_defs,
+        &settings,
+        user_id,
+    )
+    .await?
+    {
+        Some(format!(
+            "{}/wizard",
+            state.config.globals.relative_url_root()
+        ))
+    } else {
+        None
+    };
     tx.commit().await?;
     let mut response = (
         StatusCode::OK,
@@ -744,7 +760,7 @@ pub async fn password_reset_update(
             "success": true,
             "message": state.i18n.t(message).unwrap_or(""),
             "requires_approval": !can_access,
-            "redirect_to": null,
+            "redirect_to": redirect_to,
         })),
     )
         .into_response();
@@ -1058,9 +1074,6 @@ pub async fn perform_account_activation(
     let session_user = crate::session::current::SessionUser::load(&mut tx, user_id)
         .await?
         .ok_or(crate::Unsupported("a user that vanished"))?;
-    if session_user.admin {
-        return Err(crate::Unsupported("the wizard redirect for admins").into());
-    }
     let ip = crate::remote_ip::remote_ip(&headers, peer)?;
     let user_agent = headers
         .get(header::USER_AGENT)
@@ -1097,9 +1110,25 @@ pub async fn perform_account_activation(
     .await?;
     let auth =
         crate::session::current::auth_cookie(&state.keys, &settings, &session_user, &unhashed)?;
+    // Wizard.user_requires_completion?: the first admin goes to the wizard.
+    let redirect_to = if crate::wizard::requires_completion(
+        &mut tx,
+        &state.site_setting_defs,
+        &settings,
+        user_id,
+    )
+    .await?
+    {
+        Some(format!(
+            "{}/wizard",
+            state.config.globals.relative_url_root()
+        ))
+    } else {
+        None
+    };
     tx.commit().await?;
     let response = with_session_cookie(
-        Json(json!({"success": "OK", "redirect_to": null, "needs_approval": false}))
+        Json(json!({"success": "OK", "redirect_to": redirect_to, "needs_approval": false}))
             .into_response(),
         Some(auth),
     )?;

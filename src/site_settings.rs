@@ -472,6 +472,12 @@ impl Definitions {
         self.index.get(name).map(|&i| &self.list[i])
     }
 
+    /// A setting's place among the definitions (site_settings.yml's order,
+    /// then the plugins').
+    pub fn position(&self, name: &str) -> Option<usize> {
+        self.index.get(name).copied()
+    }
+
     /// `UpcomingChanges.including_css`: upcoming changes whose metadata has
     /// `body_class: true`, enabled or not, sorted by name.
     pub fn upcoming_changes_with_css(&self) -> Vec<&str> {

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/config/design-wizard.json"},
+    {"method": "PUT", "path": "/admin/config/design-wizard.json", "params": {"theme_id": "5", "light_palette_id": "-99", "homepage": "top", "base_font": "comic", "category_page_style": "nope", "search_experience": "", "welcome_banner_location": "sideways"}},
+    {"method": "PUT", "path": "/admin/config/design-wizard.json", "params": {"theme_id": "-1", "light_palette_id": "1", "dark_palette_id": "2"}},
+    {"method": "PUT", "path": "/admin/config/design-wizard.json", "params": {"theme_id": "-1", "light_palette_id": "-1", "dark_palette_id": "-11", "palettes_user_selectable": "true", "base_font": "roboto", "heading_font": "lato", "homepage": "categories", "category_page_style": "categories_only", "enable_welcome_banner": "false", "welcome_banner_location": "below_site_header", "search_experience": "search_field"}},
+    {"method": "GET", "path": "/admin/config/design-wizard.json"},
+    {"method": "PUT", "path": "/admin/config/design-wizard.json", "params": {"theme_id": "-2", "light_palette_id": "3", "dark_palette_id": "4", "palettes_user_selectable": "false", "homepage": "latest", "enable_welcome_banner": "true", "search_experience": "search_icon"}},
+    {"method": "GET", "path": "/admin/config/design-wizard.json"}
+  ]
+}

@@ -37,6 +37,7 @@ pub mod config;
 pub mod current_user;
 pub mod custom_emoji;
 pub mod custom_emoji_import;
+pub mod design_wizard;
 pub mod directory;
 pub mod directory_view;
 pub mod discourse_diff;
@@ -179,6 +180,7 @@ pub mod users;
 pub mod watched_words;
 pub mod web_hooks;
 pub mod wildcard_url;
+pub mod wizard;
 pub mod word_watcher;
 
 use std::sync::Arc;

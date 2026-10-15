@@ -541,9 +541,10 @@ then by what running a forum needs (milestone 6). Briefs:
     (their compile errors), extra_js (ThemeJavascriptCompiler), inline
     scripts (AssetProcessor), migrations, uploads and svg sprites,
     other locales' translations, settings that request a refresh,
-    destroying a theme's own color schemes), 90f. `feat/theme-imports`
-    M, split: 90f1. ~~`feat/theme-imports`~~ (done) M (Admin::
-    ThemesController#import of zip, tar, tar.gz and gz bundles through
+    destroying a theme's own color schemes), 90f.
+    ~~`feat/theme-imports`~~ (done) M, split: 90f1.
+    ~~`feat/theme-imports`~~ (done) M (Admin::ThemesController#import of
+    zip, tar, tar.gz and gz bundles through
     ThemeStore::ZipImporter (Compression's strategies and size budget,
     the root directory stripped, Dir.glob's file order) and
     RemoteTheme.update_theme: assets uploaded for themes, screenshots,
@@ -584,9 +585,27 @@ then by what running a forum needs (milestone 6). Briefs:
     destroyed with the theme; site settings of the objects type read
     through hydrate_objects_setting_value. Refused (171, 187): settings
     YAML that doesn't parse (Psych's message), values of a shape Rails
-    raises on), 90f3.
-    `feat/design-wizard` M (Admin::Config::DesignWizardController's index
-    and update, DesignWizard::Apply; the setup wizard's steps), 90g.
+    raises on), 90f3. ~~`feat/design-wizard`~~ (done) M (the admin
+    design wizard: DesignWizardSerializer over the core themes
+    (DesignWizard::PalettePairs, theme-owned pairs by their " Dark"
+    names, else the built-in pairs, materialized or in memory;
+    ThemeScreenshotThumbnails' generation job queued once an hour per
+    theme; SiteSetting.homepage), DesignWizard::Apply (the contract's
+    messages, palettes_available_to_theme, built-in palettes
+    materialized with create_from_base, the theme's palettes and
+    after_save, built-ins offered, palette selectability, the site
+    settings in definition order with default_theme_id allowed though
+    hidden, the theme's welcome banner and search experience); the
+    setup wizard's JSON (WizardSerializer with its one `setup` step) and
+    step updates (StepUpdater: ensure_changed on the title, the
+    visibility, registration and approval settings with
+    must_approve_users' approval of waiting users, the wizard_step
+    log); Wizard.user_requires_completion? for site.json, account
+    activation and password resets, with its bypass_wizard_check flip
+    past 15 topics. Refused: a step changing the title (164, its
+    welcome topic rewrite) or the locale (167); the
+    generate_theme_screenshot_thumbnails job (171); the wizards' pages
+    (90g)), 90g.
     `feat/admin-shell` L (the
     admin pages' HTML: the port has none; /admin/customize/* and
     /admin/config/* refuse non-JSON requests today), 90h.
@@ -765,8 +784,8 @@ with the viewport, guessing from the user agent without it
 
 Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
 47 M, 19 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 10 M,
-9 L). Not counted here: the open items above (90f3, 90g, 92b), 100
-(in Phase 10, after 192) and 101-119.
+9 L). Not counted here: the open items above (90g, 92b), 100 (in Phase
+10, after 192) and 101-119.
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
@@ -791,9 +810,9 @@ names the refusals it lifts; a reason that appears in many places is
 cited by its main sites.
 
 Already owned elsewhere, so not repeated here: the admin's Ember pages
-(26 "(Ember)" and "admin ... page" refusals) are 90g; the wizards
-(site.rs:566; routes/accounts.rs:1062) are 90f3; MessageBus's own ids
-and positions are 100.
+(28 "(Ember)" and "admin ... page" refusals, the wizards' two
+(routes/wizard.rs:62,163) among them) are 90g; MessageBus's own ids and
+positions are 100.
 
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146), notify_post_revision (137),
@@ -801,7 +820,8 @@ crawl_topic_link (127), index_category_for_search (144),
 rebake_quoted_posts_for_user (135), change_display_name (153),
 update_gravatar and create_avatar_thumbnails (131),
 pull_hotlinked_images and pull_user_profile_hotlinked_images (140),
-refresh_latest_new_feature (173), user_suspension_expired (151).
+refresh_latest_new_feature (173), user_suspension_expired (151),
+generate_theme_screenshot_thumbnails (171).
 
 120. `feat/slug-for` M: topics without a stored slug (`Slug.for`),
     refused wherever a topic is linked (topic_view.rs:292,771;
@@ -1079,7 +1099,7 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     change_display_name job
 154. `feat/signup-rest` M: overlong usernames, staged users, approval
     and must_approve_users (signup.rs:209,226,234;
-    routes/accounts.rs:808), signup with local logins off (signup.rs:249),
+    routes/accounts.rs:824), signup with local logins off (signup.rs:249),
     the validation errors other than the username's and a taken email
     (:289-327), screened emails and IPs (:311; routes/session.rs:398),
     welcome messages (signup.rs:833), automatic groups with titles,
@@ -1103,7 +1123,7 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     user's notification level (:257), the profile page's public user
     fields (87b), user tips and redirected_to_top
     (current_user.rs:1191,1214)
-157. `feat/groups-rest` M: group flair uploads (site.rs:751; groups.rs:32;
+157. `feat/groups-rest` M: group flair uploads (site.rs:721; groups.rs:32;
     routes/groups.rs:588; group_writes.rs:565;
     routes/admin_groups.rs:1175), group custom fields and associated
     groups (routes/admin_groups.rs:224; user_destroyer.rs:472), rewriting
@@ -1157,7 +1177,8 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     (site_setting_update.rs:211,424,438), enum classes, regex and JSON
     schema validations (:534,588; setting_enums.rs:128), plugin settings
     (site_setting_update.rs:163), change handlers that write and custom
-    validations (:177,180), default_* backfills and their user counts
+    validations (:177,180; the setup wizard's title, wizard.rs:345),
+    default_* backfills and their user counts
     (:183; routes/admin_site_settings.rs:51,145,164;
     sidebar_backfill.rs:64), deprecated, upcoming and globally shadowed
     settings (site_setting_update.rs:152,174,186), bulk updates
@@ -1186,7 +1207,8 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     (routes/admin_email_templates.rs:221), theme translations
     (theme_writes.rs:353; routes/themes.rs:1043,1410), MessageFormat
     keys (routes/site_texts.rs:603), the default_locale entry
-    (admin_site_settings.rs:145), slugs by transliteration
+    (admin_site_settings.rs:145) and the setup wizard's locale
+    (wizard.rs:354), slugs by transliteration
     (posting/text.rs:332), moment locales (49). Needs: the reference's
     other locale trees recorded (scripts/record-i18n-tree) and the
     client's
@@ -1221,9 +1243,11 @@ refresh_latest_new_feature (173), user_suspension_expired (151).
     (theme_import.rs:1826,1832), update checks and updates
     (routes/themes.rs:1086; Jobs::CheckOutOfDateThemes,
     theme_import.rs:1856), source changes (routes/themes.rs:2009), the
-    child components about.json names (theme_import.rs:1615,1662).
-    Needs: network (git over http(s) behind FinalDestination's SSRF
-    guard, and over ssh with the deploy key)
+    child components about.json names (theme_import.rs:1615,1662); the
+    design wizard's generate_theme_screenshot_thumbnails job (90f3:
+    an 800x450 webp of each core theme's screenshots). Needs: network
+    (git over http(s) behind FinalDestination's SSRF guard, and over ssh
+    with the deploy key), a webp encoder for the thumbnails
 172. `feat/admin-email-templates-rest` S: updating, showing and reverting
     customized email templates (routes/admin_email_templates.rs:407,444,
     478), unblocked by 90a's override layer
@@ -1356,7 +1380,7 @@ route table has been made, so this list may be short.
     editor (topic voting's toggle)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
-    and associated accounts (site.rs:1263; user_private.rs:130;
+    and associated accounts (site.rs:1233; user_private.rs:130;
     admin_user_show.rs:185; current_user.rs:641,644;
     reports/lists.rs:297), external ids (web_hooks/payloads.rs:95;
     notifications.rs:538; session/api_key.rs:135;
@@ -2007,8 +2031,8 @@ API keys for posting, and grant_moderation! for the first admin's login.
 - [ ] Customize: themes and components, color schemes, site texts
       (translation overrides), sidebar defaults; the `/admin/config` pages.
       Site texts (90a), color schemes (90b), sidebar defaults (90c) and
-      the themes' reads and writes (90d, 90e), imports, exports and
-      setting types (90f1, 90f2) done; left: 90f3, 90g and 169-171
+      the themes' reads and writes (90d, 90e), imports, exports,
+      setting types and the wizards (90f) done; left: 90g and 169-171
 
 ## Not planned
 

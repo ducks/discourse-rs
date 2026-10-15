@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {"title": "Duck Pond"},
+  "requests": [
+    {"method": "GET", "path": "/wizard.json"},
+    {"method": "PUT", "path": "/wizard/steps/setup.json", "params": {"fields": {"title": "Discourse", "default_locale": "en", "login_required": "private", "invite_only": "sign_up", "must_approve_users": "no"}}},
+    {"method": "PUT", "path": "/wizard/steps/setup.json", "params": {"fields": {"title": " Duck Pond ", "default_locale": "en", "login_required": "public", "invite_only": "invite_only", "must_approve_users": "yes"}}},
+    {"method": "PUT", "path": "/wizard/steps/nope.json", "params": {"fields": {"title": "x"}}},
+    {"method": "GET", "path": "/wizard/steps/setup.json"}
+  ]
+}

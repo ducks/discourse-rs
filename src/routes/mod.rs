@@ -96,6 +96,7 @@ pub(crate) mod user_menu;
 mod user_search;
 mod user_update;
 mod users;
+mod wizard;
 
 use axum::Router;
 use axum::routing::{delete, get, post, put};
@@ -1332,6 +1333,20 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/config/welcome-banner/themes-with-setting.json",
             get(themes::welcome_banner_themes),
+        )
+        .route(
+            "/admin/config/design-wizard",
+            get(wizard::design_wizard).put(wizard::update_design_wizard),
+        )
+        .route(
+            "/admin/config/design-wizard.json",
+            get(wizard::design_wizard).put(wizard::update_design_wizard),
+        )
+        .route("/wizard", get(wizard::index))
+        .route("/wizard.json", get(wizard::index))
+        .route(
+            "/wizard/steps/{id}",
+            get(wizard::step_page).put(wizard::update_step),
         )
         .route(
             "/sidebar_sections",

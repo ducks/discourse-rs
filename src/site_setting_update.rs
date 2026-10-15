@@ -481,7 +481,7 @@ pub async fn set(
 
 /// `DbProvider#save`: a new row (even holding the default), else the
 /// value and type when either changed; an unchanged row is not written.
-async fn save_override(
+pub(crate) async fn save_override(
     conn: &mut PgConnection,
     def: &crate::site_settings::Definition,
     db_value: &str,
