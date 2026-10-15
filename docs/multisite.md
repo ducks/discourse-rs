@@ -219,8 +219,9 @@ pg-bus (:63), secret and mailer (:70-80), `MemoryStore::load` (:92), the
 site icons' optimized copies at boot (:94-108, SiteIconManager), the
 worker (:110-120), and at shutdown the rate limit lists saved, deferred
 work drained and counts flushed into one pool (:130-137). Each becomes a
-per-site step; a site that fails to start is either fatal or skipped with
-an error (Rails' `safe_each_connection` keeps going).
+per-site step; a site that fails to start is logged and skipped, its hosts answering
+503, while the others serve (decided 2026-10-15; Rails'
+`safe_each_connection` keeps going too).
 
 Backups and restore: section 2's paths; `database_args`
 (backup_restore/creator.rs:142) already takes the site's pool, and the
