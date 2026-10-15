@@ -23,6 +23,55 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-15, two days of features, and Config behind an Arc
+
+Since the last run main gained the mobile redraw, the header search menu,
+narrow desktop, admin pages, theme imports, topic and tag edits, the user
+pages, advanced search and avatars. The comparison is back to back on
+the same machine and data, not against the numbers above: 83c3f46 (the
+commit of the entry below) and main, both release builds, RAILS_ENV
+production, rate limits off, each on its own fresh db-load of the seed,
+user1, c=16, 5 s. Two of the owner's own processes used about two cores
+throughout. Postgres now runs with fsync, full_page_writes and
+synchronous_commit off (the test speedup); that touches writes, and every
+row here is a read.
+
+The first pass found main 10 to 25% slower on every row and /srv/status
+47% slower. The profile put AppState's clone and drop near the top:
+axum clones the state for each from_fn_with_state layer, three more
+route layers had been added (read-only mode, HTML error pages, the
+permalink constraint), and AppState held Config, a BTreeMap of every
+global setting, by value. perf/arc-config makes it an Arc (and
+pretty_text's Host, which copied it for every cook). The table is after
+that fix:
+
+| endpoint | 83c3f46 (user) | main (user) | change |
+|---|---:|---:|---:|
+| /srv/status | 16131 | 9564 | -41% |
+| /site.json | 2448 | 2223 | -9% |
+| /latest.json | 2645 | 2419 | -9% |
+| /latest | 680 | 530 | -22% |
+| /c/general/4.json | 2410 | 2124 | -12% |
+| /categories.json | 2276 | 2046 | -10% |
+| /t/welcome-to-discourse/5.json | 978 | 903 | -8% |
+| /t/welcome-to-discourse/5 | 153 | 106 | -31% |
+| /u/system.json | 2896 | 2877 | -1% |
+| /search.json?q=Welcome | 2637 | 2261 | -14% |
+| /tag/guide.json | 1615 | 1707 | +6% |
+| /unread.json | 2372 | 2210 | -7% |
+| /new.json | 2227 | 1974 | -11% |
+
+What is left of the per-request cost is spread across the longer
+middleware chain (moving the larger futures between layers, the
+permalink and mobile layers each a few percent), with no single hot spot.
+The HTML rows lost the most: the pages now carry the search menu's data,
+narrow desktop's markup and more scripts. Against the production Rails
+numbers below (2026-10-13, not rerun), main is still about 13 times
+faster on the list and user JSON, 7 to 9 times on the rest of the JSON,
+4 times on /latest and 3 times on /srv/status, but only about 1.4 times
+on the topic page's HTML (106 against 78), which is the slowest page the
+port serves.
+
 ## 2026-10-13, the request limits kept in the process
 
 perf/rate-limiter-storage: Middleware::RequestTracker's limiters (the 10
