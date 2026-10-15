@@ -106,6 +106,7 @@ pub(crate) mod user_menu;
 mod user_notifications;
 mod user_preferences;
 mod user_search;
+mod user_security;
 mod user_update;
 mod users;
 mod users_email;
@@ -2253,6 +2254,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-notifications.js", get(asset))
         .route("/assets/preferences.js", get(asset))
         .route("/assets/prefs-choosers.js", get(asset))
+        .route("/assets/prefs-security.js", get(asset))
         .route("/assets/notifications-page.js", get(asset))
         .route("/assets/user-activity.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))
@@ -2272,6 +2274,61 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));
+    }
+    // The session confirmation and second factor routes under both user
+    // roots, each with its .json twin.
+    for root in ["/u", "/users"] {
+        for ext in ["", ".json"] {
+            router = router
+                .route(
+                    &format!("{root}/trusted-session{ext}"),
+                    get(user_security::trusted_session),
+                )
+                .route(
+                    &format!("{root}/confirm-session{ext}"),
+                    post(user_security::confirm_session),
+                )
+                .route(
+                    &format!("{root}/second_factors{ext}"),
+                    post(user_security::list_second_factors),
+                );
+            for (path, put_route) in [
+                ("second_factor", true),
+                ("security_key", true),
+                ("disable_second_factor", true),
+                ("second_factors_backup", true),
+                ("create_second_factor_security_key", false),
+                ("register_second_factor_security_key", false),
+                ("create_second_factor_totp", false),
+                ("enable_second_factor_totp", false),
+                ("create_passkey", false),
+                ("register_passkey", false),
+            ] {
+                let path = format!("{root}/{path}{ext}");
+                router = if put_route {
+                    router.route(&path, put(user_security::second_factor_write))
+                } else {
+                    router.route(&path, post(user_security::second_factor_write))
+                };
+            }
+        }
+        router = router
+            .route(
+                &format!("{root}/rename_passkey/{{id}}"),
+                put(user_security::second_factor_write),
+            )
+            .route(
+                &format!("{root}/delete_passkey/{{id}}"),
+                delete(user_security::second_factor_write),
+            );
+    }
+    for path in ["/calendar-subscriptions", "/calendar-subscriptions.json"] {
+        router = router.route(
+            path,
+            get(user_security::calendar_subscriptions)
+                .post(user_security::calendar_subscriptions)
+                .delete(user_security::calendar_subscriptions),
+        );
     }
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.

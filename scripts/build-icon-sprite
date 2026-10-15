@@ -236,6 +236,13 @@ ICONS=(
   desktop
   bell-slash
   play
+  fab-linux
+  fab-android
+  fab-windows
+  fab-chrome
+  question
+  caret-down
+  caret-up
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

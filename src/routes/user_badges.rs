@@ -458,6 +458,12 @@ pub async fn put_user_tail(
             super::user_avatar_writes::select(state.0, guardian.0, username, headers, uri, body)
                 .await
         }
+        "remove-password" | "remove-password.json" => {
+            super::user_security::remove_password(
+                state.0, guardian.0, username, headers, peer, uri, body,
+            )
+            .await
+        }
         "notification_level" | "notification_level.json" => {
             super::user_update::notification_level(
                 state.0, guardian.0, username, headers, uri, body,

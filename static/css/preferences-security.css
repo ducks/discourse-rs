@@ -1,0 +1,53 @@
+/*
+ * The security, apps, calendar, second factor and chat preferences:
+ * their rules in the reference compiled stylesheet the port sheets lacked.
+ */
+:root { --form-kit-gutter-x: 1rem; --form-kit-gutter-y: 1rem; --form-kit-max-input: 75ch; --form-kit-large-input: 325px; --form-kit-medium-input: 200px; --form-kit-small-input: 75px; }
+.user-preferences .pref-auth-tokens .auth-token-icon { color: var(--primary-medium); font-size: 2.25em; float: left; margin-right: 10px; }
+.user-preferences .pref-auth-tokens .auth-token-first { font-size: 1.1em; }
+.user-preferences .pref-auth-tokens .auth-token-first .auth-token-device { font-weight: bold; }
+.user-preferences .pref-auth-tokens .auth-token-second { color: var(--primary-medium); }
+.user-preferences .pref-auth-tokens .auth-token-second .active { color: var(--success); font-weight: bold; }
+.user-preferences .pref-auth-tokens .auth-token-dropdown { float: right; }
+.user-preferences .pref-auth-tokens .auth-token-dropdown .btn, .user-preferences .pref-auth-tokens .auth-token-dropdown .btn:hover { background: transparent; }
+.user-preferences .pref-auth-tokens .auth-token-dropdown .btn .d-icon, .user-preferences .pref-auth-tokens .auth-token-dropdown .btn:hover .d-icon { color: var(--primary-high); }
+.user-preferences .pref-passkeys .row, .user-preferences .pref-auth-tokens .row, .user-preferences .pref-user-api-keys .row { border-top: 1px solid var(--content-border-color); padding: 0.5em 0; margin: 0.5em 0; }
+.user-preferences .pref-passkeys .row:last-child, .user-preferences .pref-auth-tokens .row:last-child, .user-preferences .pref-user-api-keys .row:last-child { border-bottom: 1px solid var(--content-border-color); }
+.user-preferences .pref-passkeys__add { margin-top: 1em; }
+.user-preferences .pref-second-factor { margin-top: 0.5em; }
+.btn-link { background: transparent; border: 0; padding: 0; }
+.btn-link:not(.btn-flat) { color: var(--tertiary); }
+.discourse-no-touch .btn-link:hover, .discourse-no-touch .btn-link.btn-hover, .no-ember .btn-link:hover, .no-ember .btn-link.btn-hover { background-color: transparent; color: var(--tertiary-hover); border: 0; }
+.confirm-session__instructions { margin-bottom: 0.5em; }
+.confirm-session form { margin: 1.5em 0; }
+.confirm-session__fine-print { font-size: var(--font-down-1); color: var(--primary-medium); max-width: 600px; }
+.confirm-session__reset { font-size: var(--font-down-1); color: var(--primary-medium); }
+.user-preferences .form-vertical:has(.calendar-subscriptions) { width: 750px; }
+.calendar-subscriptions__description { color: var(--primary-medium); margin-bottom: 1em; }
+.calendar-subscriptions__warning { display: flex; align-items: center; gap: 0.5em; margin-bottom: 1em; }
+.calendar-subscriptions__urls { margin-top: 1em; }
+.calendar-subscriptions__actions { display: flex; gap: 0.5em; margin-top: 1em; }
+.calendar-subscription-url { padding: 0.75em 1em; margin-bottom: 0.75em; border: 1px solid var(--primary-low); border-radius: var(--d-border-radius); background: var(--secondary); }
+.calendar-subscription-url__header { margin-bottom: 0.5em; }
+.calendar-subscription-url__label { font-weight: bold; }
+.calendar-subscription-url__description { color: var(--primary-medium); font-size: var(--font-down-1); margin-left: 0.25em; }
+.calendar-subscription-url__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em; }
+.second-factor .second-factor-item { width: auto; display: flex; gap: 1em; justify-content: space-between; border-top: 1px solid var(--content-border-color); margin: 0.25em 0; padding: 0.25em 0; align-items: center; }
+.second-factor .second-factor-item .select-kit .select-kit-header { background: transparent; }
+.second-factor .second-factor-item .select-kit .select-kit-header:hover .d-icon, .second-factor .second-factor-item .select-kit.is-expanded .select-kit-header .d-icon { color: var(--primary-high); }
+.second-factor .-actions { display: flex; align-items: center; }
+.user-preferences .pref-passkeys .row .row-passkey__name { font-weight: bold; }
+.user-preferences .pref-passkeys .row .row-passkey__created-date, .user-preferences .pref-passkeys .row .row-passkey__used-date { color: var(--primary-medium); }
+.user-preferences .pref-passkeys .passkey-options-dropdown .btn, .user-preferences .pref-passkeys .passkey-options-dropdown .btn:hover { background: transparent; }
+.user-preferences .pref-passkeys .passkey-options-dropdown .btn .d-icon, .user-preferences .pref-passkeys .passkey-options-dropdown .btn:hover .d-icon { color: var(--primary-high); }
+.user-preferences .pref-user-api-keys .user-api-key { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5em; }
+.user-preferences .pref-user-api-keys .user-api-key__info { flex: 1; min-width: 200px; }
+.user-preferences .pref-user-api-keys .user-api-key__name { font-size: 1.1em; font-weight: bold; }
+.user-preferences .pref-user-api-keys .user-api-key__dates { color: var(--primary-medium); }
+.user-preferences .pref-user-api-keys .user-api-key__scopes-toggle { width: 100%; margin-top: 0.5em; }
+.user-preferences .pref-user-api-keys .user-api-key__scopes-toggle a { color: var(--tertiary); cursor: pointer; }
+.user-preferences .pref-user-api-keys .user-api-key__scopes-toggle a .d-icon { margin-right: 0.25em; }
+.user-preferences .pref-user-api-keys .user-api-key__scopes-list { width: 100%; margin: 0.5em 0 0 1.5em; padding: 0; list-style: disc; color: var(--primary-medium); }
+.user-preferences .pref-passkeys .row { display: flex; justify-content: space-between; align-items: flex-start; }
+.calendar-subscriptions__active-status { display: flex; align-items: center; gap: 0.5em; color: var(--success); font-weight: bold; margin-bottom: 1em; }
+blockquote { background: var(--d-post-aside-background); border-left: var(--d-post-aside-border-left); }

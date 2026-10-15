@@ -67,7 +67,7 @@ pub(super) fn bad_csrf() -> Response {
         .into_response()
 }
 
-fn is_xhr_or_json(headers: &HeaderMap, path: &str) -> bool {
+pub(super) fn is_xhr_or_json(headers: &HeaderMap, path: &str) -> bool {
     path.ends_with(".json")
         || headers
             .get("x-requested-with")

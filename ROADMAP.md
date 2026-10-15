@@ -1367,7 +1367,11 @@ generate_theme_screenshot_thumbnails (171).
     HTML (:64), password reset with second factors
     (routes/accounts.rs:580), the login-required 2FA redirect
     (enforce_second_factor), confirming an email change with second
-    factors (routes/users_email.rs:391)
+    factors (routes/users_email.rs:404), the second factor page's and
+    the security tab's writes (adding, editing and removing
+    authenticators, security keys, backup codes and passkeys:
+    routes/user_security.rs:297), confirming a session with a passkey
+    (:163)
 156. `feat/user-profile-rest` M: featured topics (users.rs:678;
     current_user.rs:709), the title, primary group and flair group
     (user_updater.rs:296), PUT /u's custom fields, external ids,
@@ -1817,7 +1821,7 @@ route table has been made, so this list may be short.
     status (130), associated accounts and revoking them (191), exporting
     one's data (200), featuring a topic (156), the email change page and
     the alternate emails' actions (193d, since done), logging out a
-    device (193e),
+    device (193e, since done),
     subscribing to push notifications (186), chat's notification sounds
     (162), choosing a theme or color palette (169), hiding composer
     toolbar buttons and the bio's rich editor (196, drawn in markdown
@@ -1870,10 +1874,19 @@ route table has been made, so this list may be short.
     level and acting_user_id) and navigation menu (PUT /u's sidebar
     keys). Refused, naming their items: confirming an email change with
     second factors (155), finding the user by external id (191)
-    193e. `feat/user-pages-prefs-security` M: preferences security
-    (password reset request, the auth tokens and logging them out, user
-    API keys), apps, calendar subscriptions, chat's tab; the second
-    factor page as far as 155 allows
+    193e. ~~`feat/user-pages-prefs-security`~~ (done) M: preferences
+    security (the password reset request, removing a password once
+    another login method exists, the passkeys list, the recently used
+    devices with Show all, AuthTokenModal and logging one or all out
+    through users#revoke_auth_token, UserApiKeys with revoke and undo),
+    ConfirmSession (users#trusted_session and #confirm_session with a
+    password), apps, calendar subscriptions (CalendarSubscriptionsController
+    and its bookmarks feed URLs), chat's tab (its FormKit form with the
+    custom reactions' emoji pickers), and the second factor page behind a
+    confirmed session (users#list_second_factors). Refused, naming their
+    items: managing second factors and passkeys and confirming a session
+    with a passkey (155), the ForgotPassword modal a reset code opens
+    (196), the MCP authorizations list
     193f. `feat/user-pages-rest-routes` S: the other view_user_route
     values, /user-badges/:username's page, /topics/voted-by's page,
     deleted-posts, invited (192)
@@ -1896,7 +1909,8 @@ route table has been made, so this list may be short.
     the login, signup and logout dialogs (79c), the Edit Directory
     Columns modal (74), BookmarkModal (editing a bookmark from the
     bookmarks tab, 193c), the message composer (resuming a message draft
-    from the drafts tab, 193c). Split when started
+    from the drafts tab, 193c), the ForgotPassword modal a password
+    reset code opens (from the security tab, 193e). Split when started
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters; the topic_ids and state list
     filters (routes/list.rs:54; topic_query.rs:368)

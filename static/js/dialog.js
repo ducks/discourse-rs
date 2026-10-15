@@ -10,6 +10,11 @@
 //   Discourse.dialog.deleteConfirm({ ... })           Delete (btn-danger)
 //                                                     and Cancel
 //   Discourse.dialog.popupAjaxError(text)             an ajax error's alert
+//   Discourse.dialog.dialog({ title, bodyHtml, type })  a body of its own
+//                                                     (no footer for type
+//                                                     "notice"), returning
+//                                                     the holder
+//   Discourse.dialog.close()
 //
 // rendered as DialogHolder renders them into #dialog-holder, closed by
 // its buttons, the close button, the overlay or Escape (the last three
@@ -110,22 +115,28 @@
     if (options.message) {
       html += '<div class="dialog-body"><p>' + options.message + "</p></div>";
     }
-    html += '<div class="dialog-footer">';
-    var actions = [];
-    if (options.buttons) {
-      options.buttons.forEach(function (b) {
-        html += button(b.class || "btn-default", b.label, b.icon);
-        actions.push(b.action || null);
-      });
-    } else {
-      html += button(options.confirmClass || "btn-primary", options.confirmLabel || s.ok_value || "OK");
-      actions.push(options.didConfirm || null);
-      if (options.cancel) {
-        html += button("btn-default", options.cancelLabel || s.cancel || "Cancel");
-        actions.push("cancel");
-      }
+    if (options.bodyHtml) {
+      html += '<div class="dialog-body">' + options.bodyHtml + "</div>";
     }
-    html += "</div></div>";
+    var actions = [];
+    if (options.type !== "notice") {
+      html += '<div class="dialog-footer">';
+      if (options.buttons) {
+        options.buttons.forEach(function (b) {
+          html += button(b.class || "btn-default", b.label, b.icon);
+          actions.push(b.action || null);
+        });
+      } else {
+        html += button(options.confirmClass || "btn-primary", options.confirmLabel || s.ok_value || "OK");
+        actions.push(options.didConfirm || null);
+        if (options.cancel) {
+          html += button("btn-default", options.cancelLabel || s.cancel || "Cancel");
+          actions.push("cancel");
+        }
+      }
+      html += "</div>";
+    }
+    html += "</div>";
     holder.innerHTML = html;
     var root = document.querySelector(".discourse-root") || document.body;
     root.appendChild(holder);
@@ -153,9 +164,18 @@
         close(true);
       });
     });
+    return holder;
   }
 
   Discourse.dialog = {
+    // A bodyComponent dialog: bodyHtml as its body, no footer for a
+    // notice; returns the holder for the body's own handlers.
+    dialog: function (options) {
+      return show(options);
+    },
+    close: function () {
+      close(false);
+    },
     alert: function (options) {
       show(typeof options === "string" ? { message: options } : options);
     },

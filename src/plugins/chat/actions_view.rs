@@ -130,7 +130,15 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
 /// What static/js/emoji-picker.js draws the picker with: its strings
 /// (chat.emoji_picker.*) and the url of a standard emoji's image.
 fn emoji_picker_template(tb: &Toolbar) -> String {
-    let t = tb.t;
+    picker_template(tb.t, tb.base_path, tb.emojis)
+}
+
+/// The picker's template for another page that opens it.
+pub(crate) fn picker_template(
+    t: &dyn Fn(&str) -> String,
+    base_path: &str,
+    emojis: &crate::emojis::Emojis,
+) -> String {
     let mut labels = serde_json::Map::new();
     for key in [
         "favorites",
@@ -153,8 +161,8 @@ fn emoji_picker_template(tb: &Toolbar) -> String {
     }
     format!(
         "<template class=\"emoji-picker-template\" data-base-path=\"{}\" data-emoji-url=\"{}\" data-labels=\"{}\"><div class=\"emoji-picker-icons\">{}{}{}{}</div></template>",
-        escape(tb.base_path),
-        escape(&tb.emojis.url_template(tb.base_path)),
+        escape(base_path),
+        escape(&emojis.url_template(base_path)),
         escape(&Value::Object(labels).to_string()),
         d_icon("magnifying-glass", Some("-left")),
         d_icon("trash-can", None),

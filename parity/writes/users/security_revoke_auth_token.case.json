@@ -1,0 +1,35 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_auth_tokens (id, user_id, auth_token, prev_auth_token, user_agent, auth_token_seen, client_ip, rotated_at, created_at, updated_at, seen_at) VALUES (9701, 3, 'other-device-token-193e', 'other-device-token-193e', 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0.0.0', TRUE, '10.0.0.7', now(), now(), now(), now())",
+    "INSERT INTO user_auth_tokens (id, user_id, auth_token, prev_auth_token, user_agent, auth_token_seen, client_ip, rotated_at, created_at, updated_at, seen_at) VALUES (9702, 4, 'user2-device-token-193e', 'user2-device-token-193e', 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0.0.0', TRUE, '10.0.0.8', now(), now(), now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/user1/preferences/revoke-auth-token.json",
+      "params": {
+        "token_id": "9702"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/user1/preferences/revoke-auth-token.json",
+      "params": {
+        "token_id": "9701"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/user2/preferences/revoke-auth-token.json",
+      "params": {
+        "token_id": "9702"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/user1/preferences/revoke-auth-token.json",
+      "params": {}
+    }
+  ]
+}

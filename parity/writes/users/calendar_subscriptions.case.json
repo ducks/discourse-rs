@@ -1,0 +1,35 @@
+{
+  "user": "user1",
+  "ignore": [
+    "/responses/1/body/urls/bookmarks",
+    "/responses/4/body/urls/bookmarks"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/calendar-subscriptions.json"
+    },
+    {
+      "method": "POST",
+      "path": "/calendar-subscriptions.json",
+      "params": {}
+    },
+    {
+      "method": "GET",
+      "path": "/calendar-subscriptions.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/calendar-subscriptions.json"
+    },
+    {
+      "method": "POST",
+      "path": "/calendar-subscriptions.json",
+      "params": {}
+    },
+    {
+      "method": "GET",
+      "path": "/calendar-subscriptions.json"
+    }
+  ]
+}
