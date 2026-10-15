@@ -604,13 +604,13 @@ async fn approve(
             // are extracted (validate_polls(true)), refused below when
             // there are any.
             "is_poll" => {}
-            "tags" if value.as_array().is_none_or(Vec::is_empty) => {}
+            // create_options: a tag object by its name.
+            "tags" if value.is_null() || value.is_array() => {}
             _ if value.is_null() => {}
             _ => {
-                return Err(Unsupported(
-                    "approving a queued post with tags, an email or plugin fields",
-                )
-                .into());
+                return Err(
+                    Unsupported("approving a queued post with an email or plugin fields").into(),
+                );
             }
         }
     }
@@ -650,6 +650,16 @@ async fn approve(
             reply_to_post_number: int("reply_to_post_number").map(|n| n as i32),
             typing_duration_msecs: int("typing_duration_msecs"),
             composer_open_duration_msecs: int("composer_open_duration_msecs"),
+            tags: {
+                let param = crate::tagging::parse_param(payload.get("tags"))?;
+                let names = crate::tagging::queued_names(param.as_ref())?;
+                (!names.is_empty()).then_some(crate::tagging::TagsParam::Names(names))
+            },
+            creator_guardian: if performer.admin || performer.moderator {
+                Some(Guardian::for_user(&mut *conn, performer).await?)
+            } else {
+                None
+            },
             skip_validations: true,
             reviewed_queued_post: true,
             ..Default::default()

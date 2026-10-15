@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9601, 'how-to', 'how-to', 1, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic tagged with a synonym of another tag",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags with a synonym, which resolves to its target tag.",
+        "tags": ["how-to", "guide"]
+      }
+    }
+  ]
+}

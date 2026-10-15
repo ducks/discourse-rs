@@ -39,6 +39,9 @@ mod types {
     pub const REACTION: i32 = 25;
 }
 
+/// `TagUser.notification_levels[:watching_first_post]`
+const WATCHING_FIRST_POST_LEVEL: i32 = 4;
+
 const COLLAPSED: [i32; 4] = [
     types::REPLIED,
     types::POSTED,
@@ -547,14 +550,6 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .await?;
 
     if new_record && post.post_number == 1 {
-        let tags: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = $1)")
-                .bind(post.topic_id)
-                .fetch_one(&mut *conn)
-                .await?;
-        if tags {
-            return Err(Unsupported("first post alerts for tagged topics").into());
-        }
         let mut watchers: Vec<i32> = sqlx::query_scalar(
             "SELECT DISTINCT user_id FROM category_users WHERE category_id = $1 AND notification_level = 4 \
              ORDER BY user_id",
@@ -562,6 +557,11 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .bind(post.category_id)
         .fetch_all(&mut *conn)
         .await?;
+        // tag_watchers: watching the first post of one of its tags.
+        watchers.extend(
+            crate::tagging::tag_watchers(&mut *conn, post.topic_id, WATCHING_FIRST_POST_LEVEL)
+                .await?,
+        );
         watchers.extend(group_watchers.iter().copied());
         // In a message, only those who can see it.
         if private_message {

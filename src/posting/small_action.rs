@@ -509,17 +509,15 @@ async fn index_message(
     private_message: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
-    let (title, category_name, tags): (String, Option<String>, Option<String>) = sqlx::query_as(
-        "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), \
-           (SELECT string_agg(name, ' ') FROM (SELECT g.name FROM topic_tags tt JOIN tags g ON g.id = tt.tag_id \
-              WHERE tt.topic_id = t.id \
-            UNION ALL SELECT x.name FROM tags x WHERE x.target_tag_id IN \
-              (SELECT tag_id FROM topic_tags WHERE topic_id = t.id)) n) \
-         FROM topics t WHERE t.id = $1",
-    )
-    .bind(topic_id)
-    .fetch_one(&mut *conn)
-    .await?;
+    let (title, category_name, tags): (String, Option<String>, Option<String>) =
+        sqlx::query_as(&format!(
+            "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), {} \
+             FROM topics t WHERE t.id = $1",
+            super::search_index::topic_tag_names_sql("t.id")
+        ))
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
     let urls = crate::url::Urls {
         config: ctx.config,
         settings: s,

@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "settings": {
+    "pm_tags_allowed_for_groups": "1|2|12"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged message from user1 to user2",
+        "raw": "Hello user2, this message carries a tag, which members of trust level two may add to messages.",
+        "archetype": "private_message",
+        "target_recipients": "user2",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

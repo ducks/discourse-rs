@@ -1,0 +1,850 @@
+{
+  "name": "topic_tags_staff_category",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic in the read restricted staff category",
+        "category": 3,
+        "raw": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+        "tags": [
+          "howto"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T22:38:43.563687",
+  "transaction_started_at": "2026-10-14T22:38:42.527376",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 53,
+        "name": "Admin",
+        "username": "admin",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+        "created_at": "2026-10-14T22:38:43.778Z",
+        "cooked": "<p>The first post of a topic in the staff category, whose tags count for staff and not the public.</p>",
+        "post_number": 1,
+        "post_type": 1,
+        "posts_count": 1,
+        "updated_at": "2026-10-14T22:38:43.778Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 0,
+        "readers_count": 0,
+        "score": 0,
+        "yours": true,
+        "topic_id": 45,
+        "topic_slug": "a-tagged-topic-in-the-read-restricted-staff-category",
+        "display_username": "Admin",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": true,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": true,
+        "can_wiki": true,
+        "user_title": null,
+        "bookmarked": false,
+        "raw": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+        "actions_summary": [
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": true,
+        "admin": true,
+        "staff": true,
+        "user_id": 1,
+        "draft_sequence": 1,
+        "hidden": false,
+        "trust_level": 4,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "reviewable_id": null,
+        "reviewable_score_count": 0,
+        "reviewable_score_pending_count": 0,
+        "post_url": "/t/a-tagged-topic-in-the-read-restricted-staff-category/45/1",
+        "reactions": [],
+        "current_user_reaction": null,
+        "reaction_users_count": 0,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null,
+        "can_vote": false
+      }
+    }
+  ],
+  "changes": {
+    "categories": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "icon": null,
+            "name": "Staff",
+            "slug": "staff",
+            "color": "E45735",
+            "emoji": "shield",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 2,
+            "topic_id": 2,
+            "posts_day": 0,
+            "created_at": "2026-07-25T05:58:16.208772",
+            "name_lower": "staff",
+            "post_count": 3,
+            "posts_week": 0,
+            "posts_year": 3,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 0,
+            "updated_at": "2026-09-27T21:01:16.908706",
+            "description": "<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>",
+            "posts_month": 0,
+            "topic_count": 2,
+            "topics_week": 0,
+            "topics_year": 2,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 0,
+            "latest_post_id": 7,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 6,
+            "read_restricted": true,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          },
+          "after": {
+            "id": 3,
+            "icon": null,
+            "name": "Staff",
+            "slug": "staff",
+            "color": "E45735",
+            "emoji": "shield",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 2,
+            "topic_id": 2,
+            "posts_day": 0,
+            "created_at": "2026-07-25T05:58:16.208772",
+            "name_lower": "staff",
+            "post_count": 3,
+            "posts_week": 0,
+            "posts_year": 3,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 0,
+            "updated_at": "2026-09-27T21:01:16.908706",
+            "description": "<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>",
+            "posts_month": 0,
+            "topic_count": 3,
+            "topics_week": 0,
+            "topics_year": 2,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 0,
+            "latest_post_id": 53,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 45,
+            "read_restricted": true,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          }
+        }
+      ]
+    },
+    "category_featured_topics": {
+      "inserted": [
+        {
+          "id": 59,
+          "rank": 0,
+          "topic_id": 45,
+          "created_at": "2026-10-14T22:38:43.738362",
+          "updated_at": "2026-10-14T22:38:43.738362",
+          "category_id": 3
+        },
+        {
+          "id": 60,
+          "rank": 1,
+          "topic_id": 6,
+          "created_at": "2026-10-14T22:38:43.739916",
+          "updated_at": "2026-10-14T22:38:43.739916",
+          "category_id": 3
+        },
+        {
+          "id": 61,
+          "rank": 2,
+          "topic_id": 4,
+          "created_at": "2026-10-14T22:38:43.741399",
+          "updated_at": "2026-10-14T22:38:43.741399",
+          "category_id": 3
+        }
+      ],
+      "deleted": [
+        {
+          "id": 3,
+          "rank": 0,
+          "topic_id": 6,
+          "created_at": "2026-07-25T05:58:28.564578",
+          "updated_at": "2026-07-25T05:58:28.564578",
+          "category_id": 3
+        },
+        {
+          "id": 4,
+          "rank": 1,
+          "topic_id": 4,
+          "created_at": "2026-07-25T05:58:28.566252",
+          "updated_at": "2026-07-25T05:58:28.566252",
+          "category_id": 3
+        }
+      ],
+      "updated": []
+    },
+    "category_tag_stats": {
+      "inserted": [
+        {
+          "id": 4,
+          "tag_id": 1,
+          "category_id": 3,
+          "topic_count": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "topic_45"
+        },
+        {
+          "id": 2,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "new_topic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+          "search_data": "'categori':9A,21 'count':24 'first':13 'howto':11C 'post':14 'public':30 'read':6A 'restrict':7A 'staff':8A,10B,20,26 'tag':2A,23 'topic':3A,17 'whose':22",
+          "private_message": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T22:38:43.809083",
+          "updated_at": "2026-10-14T22:38:43.809083",
+          "drafts_saved": 0,
+          "writing_device": "unknown",
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>The first post of a topic in the staff category, whose tags count for staff and not the public.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-14T22:38:43.778365",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T22:38:43.778457",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T22:38:43.778457",
+          "word_count": 19,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T22:38:43.806047",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tags": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 2,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          },
+          "after": {
+            "id": 1,
+            "name": "howto",
+            "slug": "howto",
+            "locale": null,
+            "created_at": "2026-09-30T07:28:29.481344",
+            "updated_at": "2026-09-30T07:28:29.481344",
+            "description": null,
+            "target_tag_id": null,
+            "pm_topic_count": 0,
+            "staff_topic_count": 3,
+            "description_cooked": null,
+            "public_topic_count": 2,
+            "description_cooked_version": 1
+          }
+        }
+      ]
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A tagged topic in the read restricted staff category The first post of a topic in the staff category, whose tags count for staff and not the public.",
+          "topic_id": 45,
+          "search_data": "'categori':9A,19B 'count':22B 'first':11B 'post':12B 'public':28B 'read':6A 'restrict':7A 'staff':8A,18B,24B 'tag':2A,21B 'topic':3A,15B 'whose':20B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_tags": {
+      "inserted": [
+        {
+          "id": 5,
+          "tag_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T22:38:43.711357",
+          "updated_at": "2026-10-14T22:38:43.711357"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T22:38:43.813873",
+          "last_visited_at": "2026-10-14T22:38:43.754752",
+          "first_visited_at": "2026-10-14T22:38:43.754752",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T22:38:43.753497"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "a-tagged-topic-in-the-read-restricted-staff-category",
+          "score": null,
+          "title": "A tagged topic in the read restricted staff category",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+          "subtype": null,
+          "user_id": 1,
+          "visible": true,
+          "archived": false,
+          "archetype": "regular",
+          "bumped_at": "2026-10-14T22:38:43.778457",
+          "pinned_at": null,
+          "created_at": "2026-10-14T22:38:43.708312",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T22:38:43.822631",
+          "word_count": 19,
+          "category_id": 3,
+          "external_id": null,
+          "fancy_title": "A tagged topic in the read restricted staff category",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T22:38:43.778457",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 1,
+          "created_at": "2026-10-14T22:38:43.708312",
+          "updated_at": "2026-10-14T22:38:43.762895",
+          "action_type": 4,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 294,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "h3JiLCZUXyirOM3rqQriLL6EeQc=",
+            "created_at": "2026-10-14T22:38:42.922339",
+            "rotated_at": "2026-10-14T22:38:42.921351",
+            "updated_at": "2026-10-14T22:38:42.922339",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "h3JiLCZUXyirOM3rqQriLL6EeQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 294,
+            "seen_at": "2026-10-14T22:38:43.571686",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "h3JiLCZUXyirOM3rqQriLL6EeQc=",
+            "created_at": "2026-10-14T22:38:42.922339",
+            "rotated_at": "2026-10-14T22:38:42.921351",
+            "updated_at": "2026-10-14T22:38:42.922339",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "h3JiLCZUXyirOM3rqQriLL6EeQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 7,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-14T22:38:43.838653",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-14T22:38:43.778457",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "notify_mailing_list_subscribers in 600s",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "category_featured_topics": 59,
+    "category_tag_stats": 4,
+    "draft_sequences": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_tags": 5,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "recorded_from": {
+    "case": "f80811bbdf3b1cb2be59e6e82a6faa28b5e807254e996e9eea2c96858bbf08ec",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

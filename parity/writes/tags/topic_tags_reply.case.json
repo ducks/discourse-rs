@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that sends tags along, which a reply does not use for anything at all.",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

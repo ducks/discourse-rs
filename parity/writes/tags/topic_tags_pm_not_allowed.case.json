@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged message user1 may not tag",
+        "raw": "Hello user2, this message carries a tag, which no member may add to messages on this site.",
+        "archetype": "private_message",
+        "target_recipients": "user2",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

@@ -448,26 +448,6 @@ pub fn matches(text: &str, compiled: &[Compiled], all: bool) -> Result<Vec<Strin
     Ok(found)
 }
 
-/// Whether a tag word matches `text` (TopicCreator's
-/// `word_watcher.word_matches?` over "#{title} #{raw}"). Tagging the topic
-/// isn't ported, so a match is refused by the caller.
-pub async fn tag_word_matches(
-    conn: &mut PgConnection,
-    s: &SiteSettings,
-    text: &str,
-) -> Result<bool, AppError> {
-    for w in words_for_action(conn, s, TAG).await? {
-        let re = ruby_regex(&w.regexp(true), w.case_sensitive, w.regex)?;
-        if re
-            .is_match(text)
-            .map_err(|_| Unsupported("watched word regexp backtracking limit"))?
-        {
-            return Ok(true);
-        }
-    }
-    Ok(false)
-}
-
 /// `WatchedWordsValidator`'s message for blocked words, or None.
 pub fn blocked_message(i18n: &crate::i18n::I18n, matches: &[String]) -> Option<String> {
     match matches {

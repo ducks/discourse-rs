@@ -644,13 +644,10 @@ pub async fn revise(
     .await?;
     // The post's after_commit search index, when its cooked changed.
     if cooked != post.cooked {
-        let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(
-            "SELECT (SELECT name FROM categories WHERE id = $2), \
-               (SELECT string_agg(name, ' ') FROM (SELECT t.name FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
-                  WHERE tt.topic_id = $1 \
-                UNION ALL SELECT s.name FROM tags s WHERE s.target_tag_id IN \
-                  (SELECT tag_id FROM topic_tags WHERE topic_id = $1)) n)",
-        )
+        let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(&format!(
+            "SELECT (SELECT name FROM categories WHERE id = $2), {}",
+            super::search_index::topic_tag_names_sql("$1")
+        ))
         .bind(post.topic_id)
         .bind(category_id)
         .fetch_one(&mut *conn)

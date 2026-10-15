@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "tag_topic_allowed_groups": "1|2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic from a member who may not tag topics",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags though only staff may tag topics on this site.",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic user1 tags with tag objects from the chooser",
+        "category": 4,
+        "raw": "The first post of a topic tagged with an existing tag by id and a new one user1 may not create.",
+        "tags": [{"id": 2, "name": "guide"}, {"name": "Brand New"}]
+      }
+    }
+  ]
+}

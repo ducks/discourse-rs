@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Staff only', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 3, 1, now(), now()), (9601, 0, 3, now(), now())",
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9602, 'manual', 'manual', 2, now(), now())",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9311, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, NULL, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"This topic was queued with a tag its author may no longer use.\", \"tags\": [\"howto\", \"guide\", \"Not Yet\"], \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000, \"title\": \"A queued topic whose tag is now for staff\"}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9311, 9311, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9311, 9311, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9311/perform/approve_post",
+      "params": {
+        "version": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Pick one', now(), now(), true)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now()), (2, 9601, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with two tags from a one per topic group",
+        "category": 4,
+        "raw": "The first post of a topic tagged with both tags of a group that allows one of them per topic.",
+        "tags": ["howto", "guide"]
+      }
+    }
+  ]
+}

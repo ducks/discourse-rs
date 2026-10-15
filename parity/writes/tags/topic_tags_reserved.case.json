@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "An admin's topic tagged with a reserved tag name",
+        "category": 4,
+        "raw": "The first post of a topic the admin tags with none, a name no tag may have, and a new tag.",
+        "tags": ["none", "fresh-one"]
+      }
+    }
+  ]
+}

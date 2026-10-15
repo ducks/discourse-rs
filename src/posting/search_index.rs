@@ -94,6 +94,20 @@ pub async fn index_post(
     Ok(())
 }
 
+/// The indexer's tag names for the topic `topic` (an SQL expression), as
+/// a subquery: `topic.tags.select(:id, :name)`, which Postgres reads
+/// through topic_tags' (topic_id, tag_id) index, so by tag id; then the
+/// names of their synonyms, in the table's order; space separated.
+pub fn topic_tag_names_sql(topic: &str) -> String {
+    format!(
+        "(SELECT string_agg(name, ' ' ORDER BY part, ord) FROM ( \
+           SELECT tg.name, 0 AS part, tt.tag_id::bigint AS ord FROM topic_tags tt \
+             JOIN tags tg ON tg.id = tt.tag_id WHERE tt.topic_id = {topic} \
+           UNION ALL SELECT s.name, 1, row_number() OVER (ORDER BY s.ctid) FROM tags s \
+             WHERE s.target_tag_id IN (SELECT tag_id FROM topic_tags WHERE topic_id = {topic})) n)"
+    )
+}
+
 /// `SearchIndexer.index(post, force: true)` from the post's rows: its
 /// topic's title, category name and tags (with their synonyms), the
 /// topic's row too for a first post. A post without its topic is not
@@ -114,16 +128,14 @@ pub async fn reindex_post(
         category_name: Option<String>,
         tag_names: Option<String>,
     }
-    let row: Option<Row> = sqlx::query_as(
+    let row: Option<Row> = sqlx::query_as(&format!(
         "SELECT p.topic_id, p.post_number, p.cooked, t.title, \
                 t.archetype = 'private_message' AS private_message, \
                 (SELECT name FROM categories WHERE id = t.category_id) AS category_name, \
-                (SELECT string_agg(name, ' ') FROM (SELECT tg.name FROM topic_tags tt JOIN tags tg ON tg.id = tt.tag_id \
-                   WHERE tt.topic_id = t.id \
-                 UNION ALL SELECT s.name FROM tags s WHERE s.target_tag_id IN \
-                   (SELECT tag_id FROM topic_tags WHERE topic_id = t.id)) n) AS tag_names \
+                {} AS tag_names \
          FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
-    )
+        topic_tag_names_sql("t.id")
+    ))
     .bind(post_id)
     .fetch_optional(&mut *conn)
     .await?;

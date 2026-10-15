@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A tagged topic in the read restricted staff category",
+        "category": 3,
+        "raw": "The first post of a topic in the staff category, whose tags count for staff and not the public.",
+        "tags": ["howto"]
+      }
+    }
+  ]
+}

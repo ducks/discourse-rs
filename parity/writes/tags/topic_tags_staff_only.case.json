@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO tag_groups (id, name, created_at, updated_at, one_per_topic) VALUES (9601, 'Staff only', now(), now(), false)",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (1, 9601, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 3, 1, now(), now()), (9601, 0, 3, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic tagged with a tag only staff may use",
+        "category": 4,
+        "raw": "The first post of a topic user1 tags with a tag everyone sees but only staff may use.",
+        "tags": ["howto", "guide"]
+      }
+    }
+  ]
+}

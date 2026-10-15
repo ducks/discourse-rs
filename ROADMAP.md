@@ -1152,7 +1152,7 @@ generate_theme_screenshot_thumbnails (171).
     (search_logs.rs:60), the index_category_for_search job
 145. `feat/post-alert-rest` M: group and @here mentions
     (jobs/post_alert.rs:300,303), nested replies (:276), links to topics
-    (:408), first post alerts for tagged topics (:556), linked
+    (:408), linked
     notifications and their consolidation (:714;
     notification_create.rs:230), staged users (jobs/post_alert.rs:733),
     mentions in flagged messages and warnings (:330), post_alert's
@@ -1558,9 +1558,10 @@ route table has been made, so this list may be short.
     (jobs/cleanup.rs:340). Split by dependency, each branch stacked on the
     one before. PUT /t's tag edits (PostRevisor's tags field, PUT
     /t/:id/tags, the edit composer's tags, NotifyTagChange) go with 188,
-    whose PostRevisor calls 189a's `tagging::tag_topic`: 189a.
-    `feat/tags-writes-topics` L (posts#create's `tags`, as names or
-    `{id, name}` objects: reject_too_many_tags, TopicCreator#valid?'s
+    whose PostRevisor calls 189a's `tagging::tag_topic`, `apply` and
+    `after_tags_saved`: 189a. ~~`feat/tags-writes-topics`~~ (done) L
+    (posts#create's `tags`, as names or `{id, name}` objects, queued
+    and approved posts' tags too: reject_too_many_tags, TopicCreator#valid?'s
     validate_category_tags, DiscourseTagging.tag_topic_by_names with
     can_tag?, tags_for_saving and clean_tag, synonyms resolving to their
     target, readonly, hidden and permitted tags, filter_allowed_tags for
