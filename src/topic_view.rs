@@ -2546,21 +2546,22 @@ impl TopicView<'_> {
             category_id: topic.category_id,
             definitions,
         };
+        // One TopicQuery for every list, so the user's scope is read once.
+        let mut query = TopicQuery {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            guardian: self.guardian,
+            options: Default::default(),
+            filter: Default::default(),
+            category: Default::default(),
+            tags: Default::default(),
+            user: Default::default(),
+        };
         if self.guardian.is_authenticated() {
             let max_age = self
                 .settings
                 .get("suggested_topics_unread_max_days_old")?
                 .to_i();
-            let mut query = TopicQuery {
-                conn: &mut *self.conn,
-                settings: self.settings,
-                guardian: self.guardian,
-                options: Default::default(),
-                filter: Default::default(),
-                category: Default::default(),
-                tags: Default::default(),
-                user: Default::default(),
-            };
             let unified_new = self
                 .guardian
                 .upcoming_change_enabled(&mut *query.conn, self.settings, "enable_unified_new")
@@ -2609,35 +2610,14 @@ impl TopicView<'_> {
         }
         let left = limit - builder.results.len() as i64;
         if left > 0 {
-            let random = self
-                .random_suggested(topic, &builder.excluded, left)
+            // `random_suggested`, through TopicQuery's stand-in for it.
+            let random = query
+                .random_suggested(topic.category_id, &builder.excluded, left)
                 .await?;
             builder.add(random, false);
         }
         builder.results.truncate(limit.max(0) as usize);
         self.suggested_items(&builder.results).await
-    }
-
-    /// `random_suggested`, through TopicQuery's stand-in for it.
-    async fn random_suggested(
-        &mut self,
-        topic: &TopicRow,
-        excluded: &[i32],
-        count: i64,
-    ) -> Result<Vec<TopicRow>, TopicViewError> {
-        let mut query = TopicQuery {
-            conn: &mut *self.conn,
-            settings: self.settings,
-            guardian: self.guardian,
-            options: Default::default(),
-            filter: Default::default(),
-            category: Default::default(),
-            tags: Default::default(),
-            user: Default::default(),
-        };
-        Ok(query
-            .random_suggested(topic.category_id, excluded, count)
-            .await?)
     }
 }
 

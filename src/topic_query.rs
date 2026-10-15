@@ -158,6 +158,8 @@ pub struct TagScope {
 /// login-only filters read, fetched once per list.
 #[derive(Debug, Clone, Default)]
 pub struct UserScope {
+    /// Read for this query's user: the lists run after it reuse it.
+    loaded: bool,
     /// `TopicUser.notification_levels[:muted]` tag_users rows.
     muted_tag_ids: Vec<i32>,
     watched_precedence_over_muted: bool,
@@ -291,7 +293,7 @@ impl TopicQuery<'_> {
         self.filter = filter;
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
-        self.user = self.user_scope().await?;
+        self.load_user_scope().await?;
         let per_page = self.per_page();
         let topics = match &self.filter {
             Filter::Top(_) | Filter::Unseen | Filter::Votes => {
@@ -503,6 +505,15 @@ impl TopicQuery<'_> {
         })
     }
 
+    /// user_scope once per TopicQuery: a topic's suggested lists run
+    /// several queries for the same user.
+    async fn load_user_scope(&mut self) -> Result<(), TopicQueryError> {
+        if !self.user.loaded {
+            self.user = self.user_scope().await?;
+        }
+        Ok(())
+    }
+
     /// The user's muting, new-topic and tracking inputs, in two queries.
     async fn user_scope(&mut self) -> Result<UserScope, TopicQueryError> {
         let Some(uid) = self.user_id() else {
@@ -529,6 +540,7 @@ impl TopicQuery<'_> {
             Vec::new()
         };
         Ok(UserScope {
+            loaded: true,
             muted_tag_ids,
             watched_precedence_over_muted: row.0.unwrap_or(false),
             treat_as_new_topic_start_date: self
@@ -830,7 +842,7 @@ impl TopicQuery<'_> {
         self.filter = filter.clone();
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
-        self.user = self.user_scope().await?;
+        self.load_user_scope().await?;
         let category_first = topic_category_id
             .map(|id| format!("CASE WHEN topics.category_id = {id} THEN 0 ELSE 1 END, "))
             .unwrap_or_default();
@@ -898,7 +910,7 @@ impl TopicQuery<'_> {
         self.options.no_definitions = true;
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
-        self.user = self.user_scope().await?;
+        self.load_user_scope().await?;
         let excluded = exclude
             .iter()
             .map(|id| id.to_string())
@@ -937,7 +949,7 @@ impl TopicQuery<'_> {
         self.filter = Filter::New;
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
-        self.user = self.user_scope().await?;
+        self.load_user_scope().await?;
         let new_clause = format!(
             "{} AND {} AND dismissed_topic_users.id IS NULL",
             self.new_filter(),
