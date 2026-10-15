@@ -17,9 +17,6 @@ use crate::{AppError, Unsupported};
 /// `Upload::SHA1_LENGTH`
 const SHA1_LENGTH: usize = 40;
 
-/// `RailsMultisite::ConnectionManagement.current_db`
-const CURRENT_DB: &str = "default";
-
 /// An upload url and the sha1 it carries, as each_upload_url yields them.
 #[derive(Debug, PartialEq)]
 pub struct UploadUrl {
@@ -185,7 +182,7 @@ pub fn each_upload_url(html: &str, hostname: &str, store: &FileStore) -> Vec<Upl
             continue;
         }
         let patterns = [
-            src.contains(&format!("/uploads/{CURRENT_DB}/")),
+            src.contains(&format!("/uploads/{}/", store.db())),
             src.contains("/original/"),
             src.contains("/optimized/"),
         ];

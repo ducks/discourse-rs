@@ -501,7 +501,7 @@ pub async fn storage_stats(
     }
     let public = &config.public_dir;
     // LocalBackupStore.base_directory makes the directory if need be.
-    let backups_dir = public.join("backups").join("default");
+    let backups_dir = public.join("backups").join(&config.site.db);
     std::fs::create_dir_all(&backups_dir)?;
     let mut files: Vec<(u64, NaiveDateTime)> = Vec::new();
     for entry in std::fs::read_dir(&backups_dir)? {
@@ -519,7 +519,7 @@ pub async fn storage_stats(
     }
     let used: u64 = files.iter().map(|f| f.0).sum();
     let latest = files.iter().map(|f| f.1).max();
-    let uploads_dir = public.join("uploads").join("default");
+    let uploads_dir = public.join("uploads").join(&config.site.db);
     let uploads_free_at = if uploads_dir.exists() {
         uploads_dir
     } else {

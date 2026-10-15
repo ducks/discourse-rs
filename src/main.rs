@@ -31,7 +31,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         )
         .init();
 
-    let config = Config::from_env()?;
+    let mut config = Config::from_env()?;
     discourse_rs::readonly::force_from_globals(&config.globals);
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
@@ -46,6 +46,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         }
         None => None,
     };
+    config.site.multisite = specs.is_some();
     if let Some(spec) = specs.iter().flatten().next() {
         return Err(format!(
             "multisite.yml: site {}: only the default site is served yet",

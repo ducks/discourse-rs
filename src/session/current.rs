@@ -43,6 +43,15 @@ impl Keys {
         }
     }
 
+    /// The keys for requests to `host` under multisite
+    /// (RailsMultisite::CookieSalt).
+    pub fn for_host(&self, host: Option<&str>) -> Keys {
+        Keys {
+            codec: Codec::for_host(&self.secret_key_base, host),
+            secret_key_base: self.secret_key_base.clone(),
+        }
+    }
+
     /// A random secret for a process started without one: sessions work
     /// but die with the process, and Rails cookies are not readable.
     pub fn ephemeral() -> Keys {

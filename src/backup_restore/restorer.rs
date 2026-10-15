@@ -19,7 +19,7 @@ use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 
 use super::creator::{Log, OperationRunning, database_args, logs_markdown};
-use super::store::{CURRENT_DB, LocalBackupStore};
+use super::store::LocalBackupStore;
 use crate::config::RailsEnv;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
@@ -273,7 +273,7 @@ impl Restore<'_> {
             .config
             .tmp_dir
             .join("restores")
-            .join(CURRENT_DB)
+            .join(&self.state.config.site.db)
             .join(timestamp);
         self.log
             .log(&format!(
@@ -848,7 +848,7 @@ impl Restore<'_> {
             .config
             .public_dir
             .join("uploads")
-            .join(CURRENT_DB);
+            .join(&self.state.config.site.db);
         if let Err(e) = copy_tree(&tmp_uploads_path, &target) {
             return Err(error(format!("Failed to copy uploads.\n{e}")));
         }
@@ -921,7 +921,7 @@ impl Restore<'_> {
         };
         let base_url = urls.base_url()?;
         let asset_host = urls.asset_host().map(str::to_string);
-        let upload_path = format!("/uploads/{CURRENT_DB}/");
+        let upload_path = format!("/uploads/{}/", self.state.config.site.db);
         if let Some(old) = metadata_value(pool, "base_url").await?
             && old != base_url
         {
@@ -949,7 +949,7 @@ impl Restore<'_> {
                 self.remap(&old_host, &new_host, &settings).await?;
             }
         }
-        if previous_db_name != CURRENT_DB {
+        if previous_db_name != self.state.config.site.db {
             self.remap(
                 &format!("/uploads/{previous_db_name}/"),
                 &upload_path,

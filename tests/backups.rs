@@ -70,7 +70,7 @@ async fn merged_chunks_become_a_listed_backup() {
     let mut config = recorded_config();
     config.public_dir = scratch_public("merge");
     let st = state(db.pool.clone(), config).await;
-    let store = LocalBackupStore::at(&st.config.public_dir).unwrap();
+    let store = LocalBackupStore::at(&st.config.public_dir, &st.config.site.db).unwrap();
     for (n, part) in [(1, "part one, "), (2, "part two")] {
         let path = store.chunk_path("abc-123", "uploaded.tar.gz", &n.to_string());
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();

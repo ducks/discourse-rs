@@ -44,15 +44,19 @@ impl Scalar {
 
 pub type Map = BTreeMap<String, Scalar>;
 
+/// `authenticated_encrypted_cookie_salt`
+pub const SALT: &str = "authenticated encrypted cookie";
+
 /// The AES key `ActiveSupport::KeyGenerator` derives for encrypted cookies.
 pub fn derive_key(secret_key_base: &str) -> [u8; 32] {
+    derive_key_with_salt(secret_key_base, SALT)
+}
+
+/// The key for another salt: RailsMultisite::CookieSalt appends the
+/// request's host (`"#{salt} #{host}"`).
+pub fn derive_key_with_salt(secret_key_base: &str, salt: &str) -> [u8; 32] {
     let mut key = [0u8; 32];
-    pbkdf2::pbkdf2_hmac::<sha1::Sha1>(
-        secret_key_base.as_bytes(),
-        b"authenticated encrypted cookie",
-        1000,
-        &mut key,
-    );
+    pbkdf2::pbkdf2_hmac::<sha1::Sha1>(secret_key_base.as_bytes(), salt.as_bytes(), 1000, &mut key);
     key
 }
 
@@ -100,6 +104,15 @@ impl Codec {
     pub fn new(secret_key_base: &str) -> Codec {
         Codec {
             key: derive_key(secret_key_base),
+        }
+    }
+
+    /// Under multisite: the salt with the request's host appended, an
+    /// empty one when no host picked the site (/srv/status).
+    pub fn for_host(secret_key_base: &str, host: Option<&str>) -> Codec {
+        let salt = format!("{SALT} {}", host.unwrap_or(""));
+        Codec {
+            key: derive_key_with_salt(secret_key_base, &salt),
         }
     }
 

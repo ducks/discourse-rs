@@ -9,9 +9,6 @@ use serde_json::{Value, json};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
 
-/// RailsMultisite::ConnectionManagement.current_db of a single site.
-pub const CURRENT_DB: &str = "default";
-
 /// BackupRestore::BackupFile
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BackupFile {
@@ -42,8 +39,8 @@ pub struct LocalBackupStore {
 impl LocalBackupStore {
     /// `LocalBackupStore.base_directory`: `public/backups/<db>`, made when
     /// missing.
-    pub fn base_directory(public_dir: &Path) -> std::io::Result<PathBuf> {
-        let dir = public_dir.join("backups").join(CURRENT_DB);
+    pub fn base_directory(public_dir: &Path, db: &str) -> std::io::Result<PathBuf> {
+        let dir = public_dir.join("backups").join(db);
         std::fs::create_dir_all(&dir)?;
         Ok(dir)
     }
@@ -54,12 +51,13 @@ impl LocalBackupStore {
         if location != "local" {
             return Err(Unsupported("the S3 backup store").into());
         }
-        Self::at(&state.config.public_dir)
+        Self::at(&state.config.public_dir, &state.config.site.db)
     }
 
-    pub fn at(public_dir: &Path) -> Result<Self, AppError> {
+    /// The store of the site `db` (its `current_db`).
+    pub fn at(public_dir: &Path, db: &str) -> Result<Self, AppError> {
         Ok(Self {
-            base_directory: Self::base_directory(public_dir)?,
+            base_directory: Self::base_directory(public_dir, db)?,
         })
     }
 
@@ -286,7 +284,7 @@ mod tests {
     #[test]
     fn lists_newest_first_and_only_archives() {
         let public = scratch("list");
-        let store = LocalBackupStore::at(&public).unwrap();
+        let store = LocalBackupStore::at(&public, "default").unwrap();
         touch(store.directory(), "old.tar.gz", 3 * 86400);
         touch(store.directory(), "new.sql.gz", 60);
         touch(store.directory(), "mid.tgz", 86400);
@@ -317,7 +315,7 @@ mod tests {
     #[test]
     fn merges_chunks_in_order() {
         let public = scratch("merge");
-        let store = LocalBackupStore::at(&public).unwrap();
+        let store = LocalBackupStore::at(&public, "default").unwrap();
         for (n, part) in [(1, "first "), (2, "second")] {
             let path = store.chunk_path("id-1", "up.tar.gz", &n.to_string());
             std::fs::create_dir_all(path.parent().unwrap()).unwrap();

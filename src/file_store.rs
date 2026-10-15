@@ -11,9 +11,6 @@ use crate::config::Config;
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::url::{UrlError, Urls};
 
-/// `RailsMultisite::ConnectionManagement.current_db`
-const CURRENT_DB: &str = "default";
-
 /// Why the store cannot be had.
 #[derive(Debug)]
 pub enum StoreError {
@@ -68,6 +65,8 @@ pub enum FileStore {
 #[derive(Debug, Clone)]
 pub struct LocalStore {
     public_dir: PathBuf,
+    /// `RailsMultisite::ConnectionManagement.current_db`
+    db: String,
     /// `Discourse.base_path`
     base_path: String,
     /// `relative_base_url`: the base path and `uploads/<db>`.
@@ -89,9 +88,11 @@ impl FileStore {
         }
         let urls = Urls { config, settings };
         let base_path = config.globals.relative_url_root().to_string();
-        let relative_base_url = format!("{base_path}/uploads/{CURRENT_DB}");
+        let db = config.site.db.clone();
+        let relative_base_url = format!("{base_path}/uploads/{db}");
         Ok(FileStore::Local(LocalStore {
             public_dir: config.public_dir.clone(),
+            db,
             absolute_base_url: format!("{}{relative_base_url}", urls.base_url_no_prefix()?),
             absolute_base_cdn_url: config
                 .globals
@@ -114,7 +115,7 @@ impl FileStore {
                 let asset_host = cdn_base
                     .strip_suffix(&s.relative_base_url)
                     .unwrap_or(cdn_base);
-                if url.starts_with(&format!("/uploads/{CURRENT_DB}/")) {
+                if url.starts_with(&format!("/uploads/{}/", s.db)) {
                     return format!("{asset_host}{url}");
                 }
                 let base = s
@@ -129,9 +130,10 @@ impl FileStore {
     /// A local store for `base_url` (`http://host`), no base path or CDN.
     #[cfg(test)]
     pub(crate) fn test_local(base_url: &str) -> FileStore {
-        let relative_base_url = format!("/uploads/{CURRENT_DB}");
+        let relative_base_url = "/uploads/default".to_string();
         FileStore::Local(LocalStore {
             public_dir: PathBuf::from("public"),
+            db: "default".into(),
             base_path: String::new(),
             absolute_base_url: format!("{base_url}{relative_base_url}"),
             absolute_base_cdn_url: None,
@@ -147,6 +149,14 @@ impl FileStore {
         }
     }
 
+    /// `RailsMultisite::ConnectionManagement.current_db`: the site whose
+    /// uploads these are.
+    pub fn db(&self) -> &str {
+        match self {
+            FileStore::Local(s) => &s.db,
+        }
+    }
+
     /// `relative_base_url`
     pub fn relative_base_url(&self) -> &str {
         match self {
@@ -158,8 +168,9 @@ impl FileStore {
     /// (`prefix_path`: `/uploads/<db>/...` for the local store).
     pub fn path_for_kind(&self, kind: &str, id: i32, sha1: &str, extension: &str) -> String {
         match self {
-            FileStore::Local(_) => format!(
-                "/uploads/{CURRENT_DB}/{}",
+            FileStore::Local(s) => format!(
+                "/uploads/{}/{}",
+                s.db,
                 get_path_for(kind, id, sha1, extension)
             ),
         }
