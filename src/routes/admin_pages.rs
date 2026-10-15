@@ -646,9 +646,74 @@ pub async fn groups_settings(
     )
 }
 
+/// GET /admin/reports: the reports index, filtered by the URL's `filter`
+/// and `group` as DFilterControls keeps them; its JSON the list.
+pub async fn reports_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if wants_json(&uri, &headers) || !guardian.is_staff() {
+        return super::admin_reports::index(State(state), AuthGuardian(guardian)).await;
+    }
+    let mut filter = String::new();
+    let mut group = String::from("all");
+    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
+        match k.as_ref() {
+            "filter" => filter = v.into_owned(),
+            "group" => group = v.into_owned(),
+            _ => {}
+        }
+    }
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_all_reports").await?;
+    let list =
+        super::admin_reports::list_doc(&mut conn, &state, &shell.settings, &guardian).await?;
+    let reports = list.as_array().cloned().unwrap_or_default();
+    let hidden_setting = shell.settings.get("dashboard_hidden_reports")?.to_s();
+    let hidden: Vec<&str> = hidden_setting
+        .split('|')
+        .filter(|v| !v.is_empty())
+        .collect();
+    let cx = shell.cx(&state);
+    let content = crate::admin_reports_view::index(
+        &cx,
+        &reports,
+        &hidden,
+        &crate::admin_reports_view::Filters {
+            filter: &filter,
+            group: &group,
+        },
+    );
+    let main = crate::admin_view::contents("admin-reports", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.reports.title");
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "admin-reports.js",
+        StatusCode::OK,
+    )
+}
+
 /// A request for JSON rather than a page: `.json`, XHR, or an Accept the
 /// format negotiation reads as JSON.
-fn wants_json(uri: &Uri, headers: &HeaderMap) -> bool {
+/// An admin page not drawn yet: refused, where its JSON is served.
+pub(super) fn refuse_page(
+    uri: &Uri,
+    headers: &HeaderMap,
+    what: &'static str,
+) -> Result<(), AppError> {
+    if wants_json(uri, headers) {
+        Ok(())
+    } else {
+        Err(crate::Unsupported(what).into())
+    }
+}
+
+pub(super) fn wants_json(uri: &Uri, headers: &HeaderMap) -> bool {
     uri.path().ends_with(".json")
         || headers
             .get("x-requested-with")

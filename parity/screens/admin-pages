@@ -26,3 +26,8 @@
 /admin/groups?type=automatic as=admin
 /admin/groups/settings as=admin
 /admin/users/settings as=admin
+# The reports index (90g5).
+/admin/reports as=admin
+/admin/reports?filter=sign as=admin
+/admin/reports?group=traffic as=admin
+/admin/reports?filter=zzzzz as=admin

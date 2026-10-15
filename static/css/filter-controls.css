@@ -94,3 +94,16 @@
   color: var(--primary-medium);
   margin: 0 .5rem;
 }
+
+.d-filter-controls__no-results {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+
+.d-filter-controls__no-results .btn {
+  align-self: center;
+}
