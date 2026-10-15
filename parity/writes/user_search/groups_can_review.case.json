@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {"enable_category_group_moderation": true},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0",
+    "INSERT INTO category_moderation_groups (category_id, group_id, created_at, updated_at) VALUES (4, 12, now(), now())"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/u/search/users.json?term=u&groups=trust_level_1&can_review=true" },
+    { "method": "GET", "path": "/u/search/users.json?term=&groups=trust_level_1&can_review=true&last_seen_users=true" }
+  ]
+}

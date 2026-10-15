@@ -271,10 +271,9 @@ async fn hidden_profiles_send_visitors_to_the_front_page() {
 }
 
 #[tokio::test]
-async fn searching_by_name_is_refused() {
+async fn searching_by_name_filters_the_directory() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let (status, _) = Client::anonymous(st).page("/u?name=user").await;
-    // UserSearch is not ported: the refusal, as the JSON route's.
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(status, StatusCode::OK);
 }

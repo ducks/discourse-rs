@@ -1217,10 +1217,15 @@ generate_theme_screenshot_thumbnails (171).
     RFC3986 parser rules); the search menu names a tag page's context
     tag. Refused: the full-page /search's HTML error pages for a context
     it rejects (their JSON is ported)
-    143h. `feat/search-advanced-rest` M: the full-page search's
-    categories & tags type (Category.search, tags/filter/search), user
-    search by groups among reviewers (user_search.rs:187), the
-    directory's search by name (directory.rs:343)
+    143h. ~~`feat/search-advanced-rest`~~ (done) M: the full-page
+    search's categories & tags type (Category.search over the site's
+    categories, then /tags/filter/search, as searchCategoryTag), user
+    search by groups among reviewers (one join, as ActiveRecord keeps
+    it) and a `groups` param given as a string, the directory's search
+    by name (UserSearch with searchable user fields, staged users while
+    the directory is on, the viewer listed with their matches); the
+    port's category page heading rule no longer styles the search
+    page's headings
     143i. `feat/search-advanced-panel` M: the full-page search's
     advanced filters panel as Ember renders it (search-advanced-options:
     the category and tag choosers, posted by, in, status, posted

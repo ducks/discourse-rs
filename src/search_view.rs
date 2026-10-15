@@ -106,6 +106,10 @@ pub struct SearchView<'a> {
     /// type.
     pub doc: Option<&'a Value>,
     pub users: &'a [Value],
+    /// The categories & tags type's categories (Category.search) and tags
+    /// (id, name, slug; /tags/filter/search).
+    pub categories: &'a [crate::topic_list_view::ListCategory],
+    pub tags: &'a [(i32, String, Option<String>)],
     pub page: i64,
     pub avatar_size: i64,
     /// `${location.protocol}//${location.host}${getURL("/")}`.
@@ -238,7 +242,8 @@ pub fn render(cx: &ListContext, v: &SearchView) -> String {
     } else {
         Vec::new()
     };
-    let result_count = posts.len() as i64 + v.users.len() as i64;
+    let result_count =
+        posts.len() as i64 + v.users.len() as i64 + v.categories.len() as i64 + v.tags.len() as i64;
     let has_results = result_count > 0;
     let no_sort_q = escape(&clean_term(v.q, v.default_order).0);
     if has_results {
@@ -296,11 +301,14 @@ pub fn render(cx: &ListContext, v: &SearchView) -> String {
     } else {
         out.push_str("<div class=\"loading-container\">");
         if has_results {
-            out.push_str("<div class=\"user-items\">");
-            for user in v.users {
-                out.push_str(&user_item(cx, v, user));
+            out.push_str(&categories_and_tags(cx, v));
+            if !v.users.is_empty() {
+                out.push_str("<div class=\"user-items\">");
+                for user in v.users {
+                    out.push_str(&user_item(cx, v, user));
+                }
+                out.push_str("</div>");
             }
-            out.push_str("</div>");
         } else if v.search_active {
             out.push_str(&format!("<h3>{}</h3>", escape(&t(cx, "search.no_results"))));
         }
@@ -446,6 +454,47 @@ pub fn entry(cx: &ListContext, v: &SearchView, post: &Value, topic: &Value) -> S
 }
 
 /// The users type's `DUserLink.fps-user-item`.
+/// The categories & tags type's results: dCategoryLink with
+/// fps-category-item, then each tag linking to `/tag/:slug/:id`
+/// (translateResults).
+fn categories_and_tags(cx: &ListContext, v: &SearchView) -> String {
+    let mut out = String::new();
+    if !v.categories.is_empty() {
+        out.push_str(&format!(
+            "<h4 class=\"category-heading\">{}</h4><div class=\"category-items\">",
+            escape(&t(cx, "search.categories"))
+        ));
+        for category in v.categories {
+            out.push_str(&category_badge_html(cx, category, true, false).replacen(
+                "class=\"badge-category__wrapper \"",
+                "class=\"badge-category__wrapper  fps-category-item\"",
+                1,
+            ));
+        }
+        out.push_str("</div>");
+    }
+    if !v.tags.is_empty() {
+        out.push_str(&format!(
+            "<h4 class=\"tag-heading\">{}</h4><div class=\"tag-items\">",
+            escape(&t(cx, "search.tags"))
+        ));
+        for (id, name, slug) in v.tags {
+            let slug = slug
+                .clone()
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| format!("{id}-tag"));
+            out.push_str(&format!(
+                "<div class=\"fps-tag-item\"><a href=\"{}/tag/{}/{id}\">{}</a></div>",
+                cx.base_path,
+                escape(&slug),
+                escape(name)
+            ));
+        }
+        out.push_str("</div>");
+    }
+    out
+}
+
 fn user_item(cx: &ListContext, v: &SearchView, user: &Value) -> String {
     let username = s(&user["username"]);
     let name = s(&user["name"]);
