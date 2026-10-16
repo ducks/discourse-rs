@@ -464,6 +464,11 @@ pub fn cached(
     response
 }
 
+/// Every asset's name; each needs its /assets/<name> route.
+pub fn names() -> impl Iterator<Item = &'static str> {
+    ASSETS.iter().map(|(name, _, _)| *name)
+}
+
 /// GET /assets/<name>
 pub fn serve(name: &str, query: Option<&str>, headers: &HeaderMap) -> Response {
     let Some((_, content_type, body)) = ASSETS.iter().find(|(n, _, _)| *n == name) else {
