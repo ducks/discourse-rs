@@ -305,6 +305,16 @@
       checkEmail(event.target.closest(".pref-email"));
       return;
     }
+    var connect = event.target.closest(".pref-associated-accounts .connect-account");
+    if (connect) {
+      connectAccount(connect.dataset.provider);
+      return;
+    }
+    var revoke = event.target.closest(".pref-associated-accounts .revoke-account");
+    if (revoke) {
+      revokeAccount(revoke);
+      return;
+    }
     if (event.target.closest(".use-current-timezone")) {
       useCurrentTimezone();
       return;
@@ -810,6 +820,44 @@
       })
       .catch(function () {
         label.replaceWith(button);
+      });
+  }
+
+  // connectAccount: LoginMethod#doLogin({reconnect: true}), a form posted
+  // to the provider's /auth path with the page's token.
+  function connectAccount(provider) {
+    var f = document.createElement("form");
+    f.method = "post";
+    f.action = base() + "/auth/" + encodeURIComponent(provider);
+    [["authenticity_token", csrf()], ["reconnect", "true"]].forEach(function (pair) {
+      var input = document.createElement("input");
+      input.type = "hidden";
+      input.name = pair[0];
+      input.value = pair[1];
+      f.appendChild(input);
+    });
+    document.body.appendChild(f);
+    f.submit();
+  }
+
+  // revokeAccount: the account removed, its row then shows connect.
+  function revokeAccount(button) {
+    var username = form().dataset.username;
+    button.disabled = true;
+    ajax("POST", "/u/" + encodeURIComponent(username) + "/preferences/revoke-account", {
+      provider_name: button.dataset.provider,
+    })
+      .then(function (result) {
+        if (result && result.success === "OK") {
+          location.reload();
+        } else {
+          button.disabled = false;
+          Discourse.dialog.alert(escape((result && result.message) || ""));
+        }
+      })
+      .catch(function (e) {
+        button.disabled = false;
+        popupAjaxError(e);
       });
   }
 

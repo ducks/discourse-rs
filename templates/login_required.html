@@ -16,6 +16,34 @@
     })();
   </script>
   {% endif %}
+  {#- The flash an external login left (auth-complete.js). -#}
+  <div class="alert alert-error login-flash" role="alert" hidden></div>
+  <script>
+    (function () {
+      var flash = null;
+      try {
+        flash = sessionStorage.getItem("discourse-login-flash");
+        sessionStorage.removeItem("discourse-login-flash");
+      } catch (e) {}
+      if (flash) {
+        var el = document.querySelector(".login-flash");
+        el.textContent = flash;
+        el.hidden = false;
+      }
+    })();
+  </script>
+  {% if !external_logins.is_empty() %}
+  {#- login-buttons: each posts to /auth/:provider, as LoginMethod#doLogin
+      does, with the page's token. -#}
+  <div id="login-buttons" class="login-buttons">
+    {%- for b in external_logins %}
+    <form class="login-button-form" method="post" action="{{ base_path }}/auth/{{ b.name }}" hx-boost="false">
+      <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+      <button type="submit" class="btn btn-social {{ b.name }}">{{ b.icon|safe }}<span class="btn-social-title">{{ b.title }}</span></button>
+    </form>
+    {%- endfor %}
+  </div>
+  {% endif %}
   {% if local_logins %}
   {#- POST /session answers 200 with an `error` for refused logins, as Rails
       does, so the script reads the body rather than the status. -#}

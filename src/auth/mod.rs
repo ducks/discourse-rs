@@ -9,6 +9,8 @@
 
 use serde_json::{Value, json};
 
+pub mod managed;
+pub mod oauth2;
 use sqlx::PgConnection;
 
 use crate::AppError;

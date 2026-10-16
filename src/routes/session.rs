@@ -639,7 +639,30 @@ pub async fn destroy(
             redirect_url = Some(format!("{base_path}/login-required"));
         }
     }
-    let redirect_url = redirect_url.unwrap_or_else(|| format!("{base_path}/"));
+    let mut redirect_url = redirect_url.unwrap_or_else(|| format!("{base_path}/"));
+    // before_session_destroy: openid-connect's RP-initiated logout.
+    if let Some(session) = &incoming.session {
+        let http = crate::auth::oauth2::Http {
+            fetcher: crate::final_destination::Fetcher {
+                settings: &settings,
+                urls: Urls {
+                    config: &state.config,
+                    settings: &settings,
+                },
+            },
+            user_agent: crate::schema::user_agent(),
+        };
+        if let Some(url) = crate::plugins::openid_connect::logout_redirect(
+            &mut conn,
+            &settings,
+            &http,
+            session.user.id,
+        )
+        .await?
+        {
+            redirect_url = url;
+        }
+    }
     log_off(
         &state,
         &mut conn,

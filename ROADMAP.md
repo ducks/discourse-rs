@@ -1776,14 +1776,15 @@ route table has been made, so this list may be short.
     /emails, the user and the admin view, the report), auth_immediately,
     logout with only external logins. Refused: invites through
     DiscourseConnect (192), suspended users at its login, unstaging a
-    staged user, `admin`/`moderator` in a payload (the staff groups'
-    refresh), validation messages other than the email's in sync_sso
-    191b. `feat/external-auth-oauth` M: the OmniAuth request and
+    staged user, validation messages other than the email's in sync_sso
+    191b. ~~`feat/external-auth-oauth`~~ (done) M: the OmniAuth request and
     callback phases (/auth/:provider, the confirmation page,
     /auth/failure), discourse-oauth2-basic and discourse-openid-connect,
     connecting and revoking accounts (/associate/:token,
     preferences/revoke-account, the account tab), the login page's
-    buttons
+    buttons, the authentication_data cookie read once (auth-complete),
+    OIDC's RP-initiated logout. Refused: a provider's description as
+    the bio, groups linked to a provider's groups, invite-only sites
     191c. `feat/external-auth-signup` M: signing up with the
     authentication the callback kept (users#create, UserAuthenticator,
     LoginActivator), the client's authentication_data handling

@@ -71,6 +71,8 @@
     <script src="{{ crate::assets::url(base_path, "floating-ui.core.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.dom.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "float.js") }}"></script>
+    {#- An external login's outcome (the authentication_data cookie). -#}
+    <script src="{{ crate::assets::url(base_path, "auth-complete.js") }}" data-admin-not-allowed="{{ chrome.t("login.admin_not_allowed_from_ip_address") }}" data-awaiting-activation="{{ chrome.t("login.awaiting_activation") }}" data-awaiting-approval="{{ chrome.t("login.awaiting_approval") }}" data-not-allowed="{{ chrome.t("login.not_allowed_from_ip_address") }}" data-requires-invite="{{ chrome.t("login.requires_invite") }}" data-disallow-totp="{{ chrome.t("login.omniauth_disallow_totp") }}"></script>
     {#- The mobile view's nav menu; loaded in both views, so a redraw in the
         other layout (page.js) brings no head of its own. -#}
     <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>

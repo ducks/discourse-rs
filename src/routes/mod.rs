@@ -46,6 +46,7 @@ mod login_required;
 mod messages;
 mod not_found;
 mod notifications;
+mod omniauth;
 mod permalinks;
 mod pm_invite;
 mod post_actions;
@@ -1938,6 +1939,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/users/confirm-admin/{token}",
             get(admin_users::confirm_admin).post(admin_users::confirm_admin),
+        )
+        .route(
+            "/auth/{provider}",
+            get(omniauth::request).post(omniauth::request),
+        )
+        .route(
+            "/auth/{provider}/callback",
+            get(omniauth::callback).post(omniauth::callback),
+        )
+        .route(
+            "/associate/{token}",
+            get(omniauth::connect_info).post(omniauth::connect),
         )
         .route("/session/sso", get(discourse_connect::sso))
         .route("/session/sso_login", get(discourse_connect::sso_login))

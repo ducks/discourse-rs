@@ -1,0 +1,9 @@
+{% extends "no_ember.html" %}
+{% block content %}
+{#- users/omniauth_callbacks/failure.html.erb: the flash error (HTML). -#}
+<div id="simple-container">
+    <div class='alert alert-error'>
+      {{ error|safe }}
+    </div>
+</div>
+{% endblock %}

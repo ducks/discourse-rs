@@ -1,0 +1,67 @@
+{
+  "name": "oidc_nonce_mismatch",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oidc"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "started_at": "2026-10-16T02:44:36.265551",
+  "transaction_started_at": "2026-10-16T02:44:35.052984",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=oidc-client&nonce=f478405166357bd811f90274658fa83653c5bd9e6848e26296b7f4d705b9debb&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=0146dab46a1ed0d32df5ad3c745a7b6284484efb7eae6f46...",
+      "headers": {
+        "Location": "/authorize?client_id=oidc-client&nonce=f478405166357bd811f90274658fa83653c5bd9e6848e26296b7f4d705b9debb&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=0146dab46a1ed0d32df5ad3c745a7b6284484efb7eae6f46"
+      }
+    },
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=invalid_credentials&strategy=oidc"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "openid_connect_discovery_document": "http://fixtures.localhost:8099/.well-known/openid-configuration",
+    "openid_connect_client_id": "oidc-client",
+    "openid_connect_client_secret": "oidc-secret",
+    "openid_connect_enabled": true
+  },
+  "remote": {
+    "/.well-known/openid-configuration": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"issuer\":\"http://fixtures.localhost:8099\",\"authorization_endpoint\":\"http://fixtures.localhost:8099/authorize\",\"token_endpoint\":\"http://fixtures.localhost:8099/token\",\"userinfo_endpoint\":\"http://fixtures.localhost:8099/userinfo\"}"
+    },
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"access-4\",\"id_token\":\"eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vZml4dHVyZXMubG9jYWxob3N0OjgwOTkiLCJhdWQiOiJvaWRjLWNsaWVudCIsInN1YiI6InN1Yi0xIiwiZXhwIjo0MTAyNDQ0ODAwLCJub25jZSI6Im5vdC10aGUtbm9uY2UifQ.c2ln\"}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "55c99e2d32098f19e00a75253f776b2e5586b795cdea98031f4da953eb67cbd0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

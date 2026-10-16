@@ -358,6 +358,94 @@ pub fn save_attrs(
     out
 }
 
+/// The account tab's associated accounts: each enabled login with the
+/// user's account (and a revoke button) or a connect button, once the
+/// accounts are loaded (the user's own page), else the check email button.
+fn associated_accounts(p: &Prefs<'_>) -> Result<String, AppError> {
+    let cx = p.cx;
+    let mut out = format!(
+        "<div class=\"control-group pref-associated-accounts\" data-setting-name=\"user-associated-accounts\"><label class=\"control-label\">{}</label>",
+        escape(&t(cx, "user.associated_accounts.title"))
+    );
+    let Some(accounts) = p.u["associated_accounts"].as_array() else {
+        out.push_str(&format!(
+            "<div class=\"controls\">{}</div></div>",
+            button(
+                "btn-default check-email",
+                Some("envelope"),
+                Some(&ta(cx, "admin.users.check_email.text")),
+                &format!(
+                    " title=\"{}\"",
+                    escape(&ta(cx, "admin.users.check_email.title"))
+                )
+            )
+        ));
+        return Ok(out);
+    };
+    out.push_str("<table class=\"associated-accounts\"><tbody>");
+    for method in crate::auth::enabled(p.s)? {
+        let account = accounts.iter().find(|a| a["name"] == method.name);
+        let dashed = method.name.replace('_', "-");
+        // prettyName: no provider here overrides it.
+        let pretty = cx
+            .i18n
+            .t(&format!("js.login.{}.name", method.name))
+            .unwrap_or(method.name)
+            .to_string();
+        let name = match (method.provider_url)(p.s)? {
+            Some(url) => format!(
+                "<a href=\"{}\" rel=\"noopener noreferrer\" target=\"_blank\">{}</a>",
+                escape(&url),
+                escape(&pretty)
+            ),
+            None => escape(&pretty),
+        };
+        let description = account
+            .and_then(|a| a["description"].as_str())
+            .unwrap_or_default();
+        let icon_html = icon(method.icon.unwrap_or("user"), None);
+        match account {
+            Some(_) => {
+                out.push_str(&format!(
+                    "<tr class=\"{dashed} account-connected\"><td class=\"associated-account__icon\">{icon_html}</td><td><div class=\"associated-account__name\">{name}</div><div class=\"associated-account__description\">{}</div></td><td class=\"associated-account__actions\">",
+                    escape(description)
+                ));
+                if (method.can_revoke)(p.s)? {
+                    out.push_str(&button(
+                        "btn-danger no-text revoke-account",
+                        Some("trash-can"),
+                        None,
+                        &format!(
+                            " title=\"{}\" data-provider=\"{}\"",
+                            escape(&t(cx, "user.associated_accounts.revoke")),
+                            escape(method.name)
+                        ),
+                    ));
+                }
+                out.push_str("</td></tr>");
+            }
+            None => {
+                out.push_str(&format!(
+                    "<tr class=\"{dashed}\"><td class=\"associated-account__icon {dashed}\">{icon_html}</td><td><div class=\"associated-account__name\">{name}</div><div class=\"associated-account__description\"></div></td><td class=\"associated-account__actions\">"
+                ));
+                if (method.can_connect)(p.s)? {
+                    out.push_str(&button(
+                        "btn-primary connect-account",
+                        Some("plug"),
+                        Some(&t(cx, "user.associated_accounts.connect")),
+                        &format!(" data-provider=\"{}\"", escape(method.name)),
+                    ));
+                } else {
+                    out.push_str(&escape(&t(cx, "user.associated_accounts.not_connected")));
+                }
+                out.push_str("</td></tr>");
+            }
+        }
+    }
+    out.push_str("</tbody></table></div>");
+    Ok(out)
+}
+
 /// A DButton.
 pub(crate) fn button(
     class: &str,
@@ -725,7 +813,7 @@ pub fn account(p: &Prefs, a: &Account) -> Result<(String, Map<String, Value>), A
         && u["is_anonymous"] != true
         && crate::site::external_logins_enabled(p.s)?
     {
-        return Err(Unsupported("the associated accounts of external logins (191)").into());
+        out.push_str(&associated_accounts(p)?);
     }
 
     if p.setting("enable_names")? {
