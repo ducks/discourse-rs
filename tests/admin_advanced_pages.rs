@@ -272,6 +272,106 @@ async fn the_api_keys_pages() {
 }
 
 #[tokio::test]
+async fn the_email_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let tabs =
+        |active: &str| format!("<li class=\"active\"><a class=\"active\" href=\"{active}\">");
+    // The settings tab: the email area's settings, titled twice.
+    let (status, html) = admin.page("/admin/email").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Email settings - Email settings - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-contents admin-email settings\">"));
+    assert!(html.contains(&tabs("/admin/email")));
+    assert!(html.contains("<li><a href=\"/admin/email/server-settings\">Server settings</a></li>"));
+    assert!(html.contains("data-setting=\"notification_email\""));
+    assert!(html.contains("/site-settings.js"));
+    assert!(html.contains("/admin-email.js"));
+    // The server settings: the delivery method's empty cell and the test.
+    let (status, html) = admin.page("/admin/email/server-settings").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Email settings - Admin - "), "{html}");
+    assert!(html.contains(&tabs("/admin/email/server-settings")));
+    assert!(
+        html.contains("<table class=\"table\"><tbody><tr><th>Delivery method</th><td></td></tr>")
+    );
+    assert!(html.contains("<input placeholder=\"email address to test\" type=\"text\">"));
+    // The summary preview: a week back, for the viewer, its html shown.
+    let (status, html) = admin.page("/admin/email/preview-digest").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(&tabs("/admin/email/preview-digest")));
+    let week_ago = (discourse_rs::clock::now() - chrono::Duration::days(7))
+        .format("%Y-%m-%d")
+        .to_string();
+    assert!(
+        html.contains(&format!("data-value=\"{week_ago}\"")),
+        "{html}"
+    );
+    assert!(html.contains("<span class=\"formatted-selection\">admin</span>"));
+    assert!(
+        html.contains("<iframe srcdoc=\"&lt;!DOCTYPE html&gt;"),
+        "{html}"
+    );
+    assert!(html.contains("<span>html</span> | <a class=\"show-text-link\" href>text</a>"));
+    // The advanced test.
+    let (status, html) = admin.page("/admin/email/advanced-test").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<textarea class=\"email-body\" name=\"email\"></textarea>"));
+    // The templates, by title, filtered as the URL says.
+    let (status, html) = admin.page("/admin/email/templates").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(&tabs("/admin/email/templates")));
+    let first = html
+        .find("data-template-id=\"user_notifications.account_exists\"")
+        .unwrap();
+    let second = html
+        .find("data-template-id=\"user_notifications.account_created\"")
+        .unwrap();
+    assert!(
+        first < second,
+        "Account already exists, then Account Created"
+    );
+    let (_, html) = admin.page("/admin/email/templates?filter=zzzz").await;
+    assert!(html.contains(
+        "<div class=\"d-filter-controls__no-results\"><p>No templates match your filters.</p>"
+    ));
+    assert!(!html.contains("email-templates-list__row"));
+    // The JSON stays.
+    let (status, _) = admin.send(Method::GET, "/admin/email.json", "", true).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, body) = admin
+        .send(Method::GET, "/admin/email/server-settings.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains("\"delivery_method\""), "{body}");
+    let (status, body) = admin
+        .send(Method::GET, "/admin/email/templates.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"email_templates\":"), "{body}");
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            &format!("/admin/email/preview-digest.json?last_seen_at={week_ago}&username=admin"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains("\"html_content\""), "{body}");
+    // Not for members.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/email/preview-digest")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn the_web_hooks_pages() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;

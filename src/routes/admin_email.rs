@@ -168,10 +168,21 @@ fn sender_ctx<'a>(
 pub async fn preview_digest(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
+    }
+    if html_request(&uri, &headers) {
+        return super::admin_email_pages::page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin_email_view::Tab::PreviewDigest,
+        )
+        .await;
     }
     let p = params::parse_query(uri.query().unwrap_or(""));
     let Some(last_seen_at) = required(&p, "last_seen_at") else {
@@ -180,6 +191,21 @@ pub async fn preview_digest(
     let Some(username) = required(&p, "username") else {
         return Ok(super::accounts::param_missing("username"));
     };
+    match digest_preview(&state, &last_seen_at, &username).await? {
+        Some(preview) => Ok(axum::Json(preview).into_response()),
+        None => Ok(super::search::invalid_parameters(
+            &state,
+            "Discourse::InvalidParameters",
+        )),
+    }
+}
+
+/// The preview-digest document for the user (None for no such user).
+pub(super) async fn digest_preview(
+    state: &AppState,
+    last_seen_at: &str,
+    username: &str,
+) -> Result<Option<serde_json::Value>, AppError> {
     let mut tx = state.pool.begin().await?;
     let s = crate::site_settings::SiteSettings::load(
         &mut tx,
@@ -187,14 +213,12 @@ pub async fn preview_digest(
         &state.config.globals,
     )
     .await?;
-    let Some((user_id, email, at)) = digest_target(&mut tx, &last_seen_at, &username).await? else {
-        return Ok(super::search::invalid_parameters(
-            &state,
-            "Discourse::InvalidParameters",
-        ));
+    let Some((user_id, email, at)) = digest_target(&mut tx, last_seen_at, username).await? else {
+        return Ok(None);
     };
-    let host = crate::pretty_text::Host::from_state(&state);
-    let ctx = sender_ctx(&state, &host, &s);
+    let last_seen_at = last_seen_at.to_string();
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = sender_ctx(state, &host, &s);
     let built = crate::email::digest::build(
         &mut tx,
         &ctx,
@@ -222,11 +246,10 @@ pub async fn preview_digest(
     };
     let html = crate::email::sender::renderer_html(&ctx, &html_part)?;
     tx.commit().await?;
-    Ok(axum::Json(json!({
+    Ok(Some(json!({
         "html_content": html,
         "text_content": unescape_html(&text),
-    }))
-    .into_response())
+    })))
 }
 
 /// POST /admin/email/send-digest(.json): that digest, without its
@@ -302,12 +325,10 @@ pub async fn send_digest(
     Ok(axum::Json(json!({"success": "OK"})).into_response())
 }
 
-/// The admin email pages are Ember's; their routes answer JSON only.
-fn refuse_html(uri: &Uri, headers: &HeaderMap) -> Result<(), AppError> {
-    if super::wants_json(uri.query(), headers) || uri.path().ends_with(".json") {
-        return Ok(());
-    }
-    Err(Unsupported("the admin email pages (Ember)").into())
+/// A page load rather than the page's script asking for JSON: the
+/// email pages (crate::routes::admin_email_pages) answer it.
+pub(super) fn html_request(uri: &Uri, headers: &HeaderMap) -> bool {
+    !super::wants_json(uri.query(), headers) && !uri.path().ends_with(".json")
 }
 
 fn post_pairs(p: &serde_json::Map<String, serde_json::Value>) -> Vec<(String, String)> {
@@ -317,7 +338,7 @@ fn post_pairs(p: &serde_json::Map<String, serde_json::Value>) -> Vec<(String, St
 }
 
 /// GET /admin/email(.json): an empty action, rendered for JSON as no
-/// content.
+/// content; the page is the email settings tab.
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -327,7 +348,16 @@ pub async fn index(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&uri, &headers)?;
+    if html_request(&uri, &headers) {
+        return super::admin_email_pages::page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin_email_view::Tab::Settings,
+        )
+        .await;
+    }
     Ok(axum::http::StatusCode::NO_CONTENT.into_response())
 }
 
@@ -336,10 +366,27 @@ pub async fn index(
 pub async fn server_settings(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
+    if html_request(&uri, &headers) {
+        return super::admin_email_pages::page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin_email_view::Tab::ServerSettings,
+        )
+        .await;
+    }
+    Ok(axum::Json(server_settings_document(&state)).into_response())
+}
+
+/// The server settings' document.
+pub(super) fn server_settings_document(state: &AppState) -> serde_json::Value {
     let (method, settings) = match &state.mailer {
         // ActionMailer's :test delivery, which has no settings.
         crate::email::Mailer::Memory(_) => ("test", Vec::new()),
@@ -351,7 +398,7 @@ pub async fn server_settings(
         .filter(|(name, _)| *name != "password")
         .map(|(name, value)| json!({"name": name, "value": value}))
         .collect();
-    Ok(axum::Json(json!({"delivery_method": method, "settings": settings})).into_response())
+    json!({"delivery_method": method, "settings": settings})
 }
 
 /// `GlobalSetting.smtp_settings`, as production hands it to ActionMailer:
@@ -482,8 +529,15 @@ pub async fn advanced_test_get(
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    if guardian.0.is_admin() {
-        refuse_html(&uri, &headers)?;
+    if guardian.0.is_admin() && html_request(&uri, &headers) {
+        return super::admin_email_pages::page(
+            &state.0,
+            &guardian.0,
+            &headers,
+            &uri,
+            crate::admin_email_view::Tab::AdvancedTest,
+        )
+        .await;
     }
     advanced_test(state, guardian, headers, uri, body).await
 }

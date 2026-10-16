@@ -316,6 +316,128 @@
     details.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
+  // EmailGroupUserChooser for one user (details.email-group-user-chooser):
+  // the filter as it opens, /u/search/users as it is typed, and the row
+  // chosen as the selection, its username in data-value, firing `change`
+  // on the details. data-caret names the caret's icon (angle-down, then
+  // angle-up while open).
+  var searchTimer = null;
+  function searchUsers(chooser, term) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      ajax("GET", "/u/search/users.json?include_groups=false&limit=6&term=" + encodeURIComponent(term))
+        .then(function (result) {
+          var body = chooser.querySelector(".select-kit-body");
+          var list = body.querySelector(".select-kit-collection");
+          if (!list) {
+            list = document.createElement("div");
+            list.className = "select-kit-collection";
+            list.setAttribute("role", "listbox");
+            body.appendChild(list);
+          }
+          list.innerHTML = (result.users || [])
+            .map(function (u) {
+              return (
+                '<div class="select-kit-row email-group-user-chooser-row" role="option" tabindex="0" data-value="' +
+                escapeHtml(u.username) +
+                '"><img alt="" class="avatar" height="24" width="24" src="' +
+                escapeHtml(String(u.avatar_template || "").replace("{size}", "24")) +
+                '"><span class="identifier">' +
+                escapeHtml(u.username) +
+                '</span><span class="name">' +
+                escapeHtml(u.name || "") +
+                "</span></div>"
+              );
+            })
+            .join("");
+        })
+        .catch(function () {});
+    }, 300);
+  }
+
+  function setCaret(chooser) {
+    var caret = chooser.dataset.caret;
+    var svg = caret && chooser.querySelector("summary .angle-icon");
+    if (svg) {
+      var name = chooser.open ? "angle-up" : caret;
+      svg.setAttribute("class", "fa d-icon d-icon-" + name + " svg-icon fa-width-auto svg-string angle-icon");
+      svg.querySelector("use").setAttribute("href", "#" + name);
+    }
+  }
+
+  document.addEventListener(
+    "toggle",
+    function (event) {
+      var chooser = event.target;
+      if (!chooser.matches || !chooser.matches(".admin-contents details.email-group-user-chooser")) {
+        return;
+      }
+      chooser.classList.toggle("is-expanded", chooser.open);
+      setCaret(chooser);
+      var body = chooser.querySelector(".select-kit-body");
+      if (!chooser.open) {
+        body.innerHTML = "";
+        return;
+      }
+      var value = chooser.dataset.value;
+      body.innerHTML =
+        '<div class="select-kit-filter multi-select-filter email-group-user-chooser-filter is-expanded"><input autocapitalize="off" autocomplete="off" autocorrect="off" class="filter-input" name="filter-input-search" placeholder="' +
+        escapeHtml(chooser.dataset.placeholder || "") +
+        '" spellcheck="false" tabindex="0" type="search"></div>' +
+        (value
+          ? '<div class="selected-content"><button aria-label="' +
+            escapeHtml((chooser.dataset.deleteLabel || "%{name}").replace("%{name}", value)) +
+            '" class="btn btn-default selected-choice tag-choice" data-name="' +
+            escapeHtml(value) +
+            '" data-value="' +
+            escapeHtml(value) +
+            '" type="button">' +
+            icon("xmark") +
+            '<span class="d-button-label">' +
+            escapeHtml(value) +
+            "</span></button></div>"
+          : "");
+      body.querySelector(".filter-input").focus();
+    },
+    true
+  );
+
+  // The selected user's choice, clicked: no one chosen.
+  document.addEventListener("click", function (event) {
+    var choice = event.target.closest(".admin-contents .email-group-user-chooser .selected-choice");
+    if (!choice) {
+      return;
+    }
+    var chooser = choice.closest(".email-group-user-chooser");
+    chooser.dataset.value = "";
+    chooser.classList.remove("has-selection");
+    chooser.querySelector(".formatted-selection").textContent = chooser.dataset.none || "";
+    chooser.querySelector("summary").dataset.name = "";
+    choice.parentNode.remove();
+    chooser.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  document.addEventListener("input", function (event) {
+    var input = event.target.closest(".admin-contents .email-group-user-chooser .filter-input");
+    if (input) {
+      searchUsers(input.closest(".email-group-user-chooser"), input.value);
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var row = event.target.closest(".admin-contents .email-group-user-chooser .select-kit-row");
+    if (!row) {
+      return;
+    }
+    var chooser = row.closest(".email-group-user-chooser");
+    chooser.dataset.value = row.dataset.value;
+    chooser.classList.add("has-selection");
+    chooser.querySelector(".formatted-selection").textContent = row.dataset.value;
+    chooser.querySelector("summary").dataset.name = row.dataset.value;
+    chooser.open = false;
+    chooser.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
   // DMultiSelect (src/admin_ui.rs multi_select_trigger): the menu with its
   // search and results from the loader the page registers for the
   // trigger's class; a result chosen joins the selection, a selected item

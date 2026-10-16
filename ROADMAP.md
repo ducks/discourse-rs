@@ -767,8 +767,15 @@ then by what running a forum needs (milestone 6). Briefs:
     (the URL and secret checks, the event chooser, the category, tag and
     group filters), and a hook's events page (the status filter, ping,
     redeliver and redeliver failed, an event's request and response, the
-    new events the bus brings). Left: email server settings,
-    preview and templates, problem checks, badges, installed plugins),
+    new events the bus brings); `feat/admin-shell-email`: /admin/email
+    with its tabs (the email area's settings; the server settings with
+    the test email; the summary preview with DatePickerPast, the single
+    user's EmailGroupUserChooser, Refresh, the html and text toggle and
+    sending it; the advanced test's run; the templates' list with
+    DFilterControls and the overridden toggle). Left: the email
+    template editor (DEditor with its heading and list menus, the
+    interpolation keys, and the save, which needs translation overrides,
+    as 90g7's site texts do), problem checks, badges, installed plugins),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.

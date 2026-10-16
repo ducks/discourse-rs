@@ -526,8 +526,9 @@ pub fn new(cx: &AdminCx, scopes: &Value) -> String {
 /// the body as it opens.
 fn user_chooser(cx: &AdminCx) -> String {
     format!(
-        "<div class=\"form-kit__control-custom\"><details class=\"select-kit multi-select user-chooser email-group-user-chooser\" data-placeholder=\"{}\"><summary class=\"select-kit-header multi-select-header\" data-name=\"\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details></div>",
+        "<div class=\"form-kit__control-custom\"><details class=\"select-kit multi-select user-chooser email-group-user-chooser\" data-placeholder=\"{}\"{}><summary class=\"select-kit-header multi-select-header\" data-name=\"\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details></div>",
         escape(&t(cx.i18n, "admin.api.user_placeholder")),
+        crate::admin_ui::chooser_labels(cx),
         escape(&t(cx.i18n, "select_kit.default_header_text")),
         icon("plus", Some("angle-icon"))
     )
