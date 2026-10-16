@@ -90,3 +90,9 @@
 /admin/config/flags/new as=admin
 /admin/config/flags/settings as=admin
 /admin/config/flags/3 as=admin
+# The permalinks and user fields pages (90g6).
+/admin/config/permalinks as=admin
+/admin/config/permalinks/new as=admin
+/admin/config/permalinks/settings as=admin
+/admin/config/user-fields as=admin
+/admin/config/user-fields/new as=admin

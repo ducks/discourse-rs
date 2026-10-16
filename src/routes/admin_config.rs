@@ -1,14 +1,15 @@
-//! The /admin/config areas whose page is only their settings (90g6):
-//! each area's settings.gjs, a DPageHeader with its breadcrumbs over
-//! AdminAreaSettings for the area's `filter_area` or `categories`. Their
-//! JSON is Admin::Config::SiteSettingsController#index, as Rails routes
-//! the paths there.
+//! The /admin/config areas as pages (90g6). Those that are only their
+//! settings: each area's settings.gjs, a DPageHeader with its breadcrumbs
+//! over AdminAreaSettings for the area's `filter_area` or `categories`,
+//! their JSON Admin::Config::SiteSettingsController#index as Rails routes
+//! the paths there. And the pages of the flags and the permalinks, which
+//! their controllers' routes hand an HTML request.
 
 use axum::Router;
 use axum::body::Bytes;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri};
-use axum::response::Response;
+use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use serde_json::json;
 
@@ -418,4 +419,192 @@ pub(super) async fn flags_page(
     );
     let main = crate::admin_view::contents(classes, &format!("{content}{strings}"));
     shell.render(state, uri, &title, main, script, StatusCode::OK)
+}
+
+/// A permalinks page: the list, its settings tab, a new permalink or a
+/// permalink's form.
+pub(super) enum PermalinksPage {
+    List,
+    Settings,
+    New,
+    Edit(i32),
+}
+
+/// GET /admin/config/permalinks and under it, as the page
+/// (adminPermalinks): the header and the tab's outlet; the forms without
+/// the header, as the reference draws them. The list's `filter` (what
+/// admin-config.js asks for as the field changes) draws only the results.
+pub(super) async fn permalinks_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    page: PermalinksPage,
+) -> Result<Response, AppError> {
+    use crate::admin_config_view as view;
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_permalinks").await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &shell.settings,
+    };
+    let base_path = shell.site.base_path.clone();
+    let site_origin = urls.base_url_no_prefix()?;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let cx = shell.cx(state);
+    let query = crate::params::parse_query(uri.query().unwrap_or(""));
+    let filter = crate::params::string(&query, "filter").filter(|f| !f.is_empty());
+    let mut serialized = Vec::new();
+    let (classes, outlet, header, script) = match page {
+        PermalinksPage::List => {
+            for p in crate::permalinks::filter_by(&mut conn, filter.as_deref()).await? {
+                serialized
+                    .push(crate::permalinks::serialize(&mut conn, &urls, &base_path, &p).await?);
+            }
+            if filter.is_some() {
+                // The results a filter leaves, for the script to swap in.
+                let html = view::permalinks_results(&cx, &list, &site_origin, &serialized);
+                return Ok(axum::response::Html(html).into_response());
+            }
+            (
+                "admin-config admin-permalinks",
+                view::permalinks_list(&cx, &list, &site_origin, &serialized),
+                view::permalinks_header(&cx, view::PermalinksTab::Permalinks),
+                "admin-config.js",
+            )
+        }
+        PermalinksPage::Settings => (
+            "admin-config admin-permalinks settings",
+            super::admin_advanced::area_settings(
+                &mut conn,
+                state,
+                &shell,
+                uri,
+                json!({ "filter_area": "permalinks" }),
+            )
+            .await?,
+            view::permalinks_header(&cx, view::PermalinksTab::Settings),
+            "site-settings.js",
+        ),
+        PermalinksPage::New => (
+            "admin-config admin-permalinks new",
+            view::permalink_form(&cx, None),
+            String::new(),
+            "admin-config.js",
+        ),
+        PermalinksPage::Edit(id) => {
+            // The route's model: store.find, its 404 the page's.
+            let Some(p) = crate::permalinks::find(&mut conn, id).await? else {
+                return Ok(super::topics::not_found_response(state));
+            };
+            let pl = crate::permalinks::serialize(&mut conn, &urls, &base_path, &p).await?;
+            (
+                "admin-config admin-permalinks edit",
+                view::permalink_form(&cx, Some(&pl)),
+                String::new(),
+                "admin-config.js",
+            )
+        }
+    };
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-config-strings",
+        &[
+            "admin.permalink.delete_confirm",
+            "admin.permalink.copy_success",
+            "generic_error",
+            "form_kit.errors_summary_title.one",
+            "form_kit.errors_summary_title.other",
+            "form_kit.errors.required",
+        ],
+    );
+    let content = format!("{}{strings}", view::permalinks_page(&header, &outlet));
+    let main = crate::admin_view::contents(classes, &content);
+    let title = crate::admin_view::t(cx.i18n, "admin.config.permalinks.title");
+    shell.render(state, uri, &title, main, script, StatusCode::OK)
+}
+
+/// A user fields page: the list, a new field, or a field's edit.
+pub(super) enum UserFieldsPage {
+    List,
+    New,
+    Edit(i32),
+}
+
+/// GET /admin/config/user-fields, /new and /:id/edit as the page
+/// (adminUserFields): the header over the list or the form.
+pub(super) async fn user_fields_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    page: UserFieldsPage,
+) -> Result<Response, AppError> {
+    use crate::admin_config_view as view;
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_user_fields").await?;
+    let cx = shell.cx(state);
+    let t = |k: &str| crate::admin_view::t(cx.i18n, k);
+    let section = t("admin.user_fields.title");
+    let with_header = matches!(page, UserFieldsPage::List);
+    let (classes, outlet, title) = match page {
+        UserFieldsPage::List => {
+            let mut fields = Vec::new();
+            for f in crate::user_fields::all(&mut conn).await? {
+                fields.push(crate::user_fields::serialize(&mut conn, &f).await?);
+            }
+            // sortedUserFields
+            fields.sort_by_key(|f| f["position"].as_i64().unwrap_or_default());
+            (
+                "admin-config admin-user-fields",
+                view::user_fields_list(&cx, &fields),
+                section,
+            )
+        }
+        UserFieldsPage::New => (
+            "admin-config admin-user-fields new",
+            view::user_field_form(&cx, None),
+            format!("{} - {section}", t("admin.user_fields.new_header")),
+        ),
+        UserFieldsPage::Edit(id) => {
+            let Some(field) = crate::user_fields::find(&mut conn, id).await? else {
+                return Ok(super::topics::not_found_response(state));
+            };
+            let field = crate::user_fields::serialize(&mut conn, &field).await?;
+            (
+                "admin-config admin-user-fields edit",
+                view::user_field_form(&cx, Some(&field)),
+                format!("{} - {section}", t("admin.user_fields.edit_header")),
+            )
+        }
+    };
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-config-strings",
+        &[
+            "admin.user_fields.delete_confirm",
+            "admin.user_fields.requirement.confirmation",
+            "admin.config_areas.user_fields.delete_successful",
+            "admin.config_areas.user_fields.save_successful",
+            "form_kit.errors_summary_title.one",
+            "form_kit.errors_summary_title.other",
+            "form_kit.errors.required",
+            "select_kit.filter_placeholder",
+        ],
+    );
+    let content = format!(
+        "{}{strings}",
+        view::user_fields_page(&cx, with_header, &outlet)
+    );
+    let main = crate::admin_view::contents(classes, &content);
+    shell.render(state, uri, &title, main, "admin-config.js", StatusCode::OK)
 }

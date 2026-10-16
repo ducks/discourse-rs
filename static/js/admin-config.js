@@ -140,7 +140,9 @@
   // --- AdminFlagsForm --------------------------------------------------------
 
   function form() {
-    return document.querySelector(".admin-contents.admin-config.flags form[data-flag-form]");
+    return document.querySelector(
+      ".admin-contents.admin-config form.form-kit[data-flag-form], .admin-contents.admin-config form.form-kit[data-permalink-form], .admin-contents.admin-config form.form-kit[data-user-field-form]"
+    );
   }
 
   var submitted = false;
@@ -148,11 +150,15 @@
   function fieldValue(container) {
     var type = container.dataset.controlType;
     if (type === "custom") {
+      var list = container.querySelector(".value-list");
+      if (list) {
+        return valueListValues(list);
+      }
       var details = container.querySelector("details.multi-select");
       var value = details.querySelector("summary").dataset.value;
       return value ? value.split(",") : [];
     }
-    var control = container.querySelector("input, textarea");
+    var control = container.querySelector("input, textarea, select");
     return control.value;
   }
 
@@ -314,6 +320,14 @@
     var get = function (name) {
       return el.querySelector("[name='" + name + "']");
     };
+    if (el.dataset.userFieldForm !== undefined) {
+      saveUserField(el);
+      return;
+    }
+    if (el.dataset.permalinkForm !== undefined) {
+      savePermalink(el, get);
+      return;
+    }
     var data = {
       name: get("name").value,
       description: get("description").value,
@@ -329,6 +343,512 @@
         go("/admin/config/flags");
       }, ui().failed);
   }, true);
+
+  // --- the permalinks --------------------------------------------------------
+
+  // TYPE_TO_FIELD_MAP
+  var PERMALINK_FIELDS = {
+    topic: "topicId",
+    post: "postId",
+    category: "categoryId",
+    tag: "tagName",
+    user: "userId",
+    external_url: "externalUrl",
+  };
+
+  function savePermalink(el, get) {
+    var type = get("permalinkType").value;
+    var field = get(PERMALINK_FIELDS[type]);
+    var data = {
+      permalink: {
+        url: get("url").value,
+        permalink_type: type,
+        permalink_type_value: field ? field.value : "",
+      },
+    };
+    var id = el.dataset.permalinkId;
+    ui()
+      .ajax(id ? "PUT" : "POST", id ? "/admin/permalinks/" + id : "/admin/permalinks", data)
+      .then(function () {
+        go("/admin/config/permalinks");
+      }, ui().failed);
+  }
+
+  // The type's own field in place of the last type's.
+  document.addEventListener("change", function (event) {
+    var select = event.target.closest && event.target.closest("form[data-permalink-form] select[name=permalinkType]");
+    if (!select) {
+      return;
+    }
+    var el = select.closest("form");
+    var fields = JSON.parse(el.dataset.typeFields || "{}");
+    Object.keys(PERMALINK_FIELDS).forEach(function (type) {
+      var old = el.querySelector(".form-kit__field[data-name='" + PERMALINK_FIELDS[type] + "']");
+      if (old) {
+        old.remove();
+      }
+    });
+    var holder = document.createElement("div");
+    holder.innerHTML = fields[select.value] || "";
+    if (holder.firstChild) {
+      el.querySelector(".form-kit__field[data-name='permalinkType']").after(holder.firstChild);
+    }
+    validate(el, "permalinkType");
+  });
+
+  function permalinksPage() {
+    return document.querySelector(".admin-contents.admin-config.admin-permalinks");
+  }
+
+  var filterTimer = null;
+
+  // DFilterControls over Permalink.findAll(filter): the server's results
+  // for the text, after INPUT_DELAY.
+  function loadPermalinks(root, filter) {
+    var reset = root.querySelector(".d-filter-controls > .d-filter-controls__reset");
+    if (reset) {
+      reset.disabled = !filter;
+    }
+    fetch(ui().base() + "/admin/config/permalinks?filter=" + encodeURIComponent(filter || ""), {
+      credentials: "same-origin",
+      headers: { Accept: "text/html" },
+    })
+      .then(function (response) {
+        return response.text();
+      })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var fresh = filter ? doc.body.firstElementChild : doc.querySelector(".permalink-results");
+        var current = root.querySelector(".permalink-results, .d-filter-controls__no-results");
+        if (current && fresh) {
+          current.replaceWith(fresh);
+        }
+      });
+  }
+
+  document.addEventListener("input", function (event) {
+    var root = permalinksPage();
+    var input = root && event.target.closest(".d-filter-controls__input");
+    if (!input) {
+      return;
+    }
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(function () {
+      loadPermalinks(root, input.value);
+    }, 250);
+  });
+
+  document.addEventListener("click", function (event) {
+    var root = permalinksPage();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var target = event.target;
+    if (target.closest(".d-filter-controls__reset")) {
+      var input = root.querySelector(".d-filter-controls__input");
+      input.value = "";
+      loadPermalinks(root, "");
+      return;
+    }
+    var row = target.closest(".admin-permalink-item");
+    if (!row) {
+      return;
+    }
+    if (target.closest(".--overview .btn-flat")) {
+      // copyUrl: the URL's text to the clipboard, and its toast.
+      var text = row.querySelector(".admin-permalink-item__url").textContent;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(function () {});
+      }
+      ui().toast(t("admin.permalink.copy_success"));
+      return;
+    }
+    if (target.closest(".admin-permalink-item__edit")) {
+      go("/admin/config/permalinks/" + row.dataset.permalinkId);
+    }
+  });
+
+  // The row's menu: destroyRecord after the delete confirmation.
+  ui().menus(function (trigger, content) {
+    var row = trigger.closest(".admin-permalink-item");
+    if (!row) {
+      return;
+    }
+    content.addEventListener("click", function (event) {
+      if (!event.target.closest(".admin-permalink-item__delete")) {
+        return;
+      }
+      Discourse.float.close("permalink-menu");
+      Discourse.dialog.deleteConfirm({
+        title: t("admin.permalink.delete_confirm"),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/permalinks/" + row.dataset.permalinkId)
+            .then(
+              function () {
+                var body = row.parentNode;
+                row.remove();
+                if (!body.children.length) {
+                  reload();
+                }
+              },
+              function () {
+                Discourse.dialog.alert(t("generic_error"));
+              }
+            );
+        },
+      });
+    });
+  });
+
+  // --- the user fields -------------------------------------------------------
+
+  function userFieldsPage() {
+    return document.querySelector(".admin-contents.admin-config.admin-user-fields");
+  }
+
+  function userFieldPath(id) {
+    return "/admin/config/user_fields" + (id ? "/" + id : "");
+  }
+
+  document.addEventListener("click", function (event) {
+    var root = userFieldsPage();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var row = event.target.closest(".admin-user_field-item");
+    if (row && event.target.closest(".admin-user_field-item__edit")) {
+      go("/admin/config/user-fields/" + row.dataset.userFieldId + "/edit");
+      return;
+    }
+    if (event.target.closest("[data-user-field-cancel]")) {
+      go("/admin/config/user-fields");
+    }
+  });
+
+  // AdminUserFieldItem's menu: the field swaps positions with its
+  // neighbour (both saved), or is deleted after the confirmation.
+  ui().menus(function (trigger, content) {
+    var row = trigger.closest(".admin-user_field-item");
+    if (!row) {
+      return;
+    }
+    content.addEventListener("click", function (event) {
+      var button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+      Discourse.float.close("user_field-menu");
+      if (button.classList.contains("admin-user_field-item__delete")) {
+        Discourse.dialog.deleteConfirm({
+          title: t("admin.user_fields.delete_confirm"),
+          didConfirm: function () {
+            ui()
+              .ajax("DELETE", userFieldPath(row.dataset.userFieldId))
+              .then(function () {
+                ui().toast(t("admin.config_areas.user_fields.delete_successful"));
+                reload();
+              }, ui().failed);
+          },
+        });
+        return;
+      }
+      var up = button.classList.contains("admin-user_field-item__move-up");
+      var other = up ? row.previousElementSibling : row.nextElementSibling;
+      if (!other) {
+        return;
+      }
+      Promise.all([
+        ui().ajax("PUT", userFieldPath(other.dataset.userFieldId), {
+          user_field: { position: row.dataset.position },
+        }),
+        ui().ajax("PUT", userFieldPath(row.dataset.userFieldId), {
+          user_field: { position: other.dataset.position },
+        }),
+      ]).then(reload, ui().failed);
+    });
+  });
+
+  function userFieldForm() {
+    return document.querySelector("form[data-user-field-form]");
+  }
+
+  // setRequirement and setEditable: the checkboxes the requirement and
+  // Editable decide.
+  function syncPreferences(el) {
+    var requirement = (el.querySelector("input[name=requirement]:checked") || {}).value;
+    var editable = el.querySelector("input[name=editable]");
+    var signup = el.querySelector("input[name=show_on_signup]");
+    editable.disabled = requirement === "for_all_users";
+    // showOnSignupDisabled: `editable` false, not merely unset.
+    var editableFalse = editable.dataset.touched !== undefined ? !editable.checked : el.dataset.editableFalse !== undefined;
+    signup.disabled = requirement !== "optional" || editableFalse;
+    [editable, signup].forEach(function (box) {
+      box.closest(".form-kit__field").classList.toggle("is-disabled", box.disabled);
+    });
+  }
+
+  document.addEventListener("change", function (event) {
+    var el = userFieldForm();
+    if (!el || !el.contains(event.target)) {
+      return;
+    }
+    var target = event.target;
+    if (target.name === "field_type") {
+      var hasOptions = target.value === "dropdown" || target.value === "multiselect";
+      var options = el.querySelector(".form-kit__field[data-name='options']");
+      if (hasOptions && !options) {
+        var holder = document.createElement("div");
+        holder.innerHTML = el.dataset.optionsField;
+        el.querySelector(".form-kit__field[data-name='description']").after(holder.firstChild);
+      } else if (!hasOptions && options) {
+        options.remove();
+      }
+      validate(el, "field_type");
+      return;
+    }
+    if (target.name === "requirement") {
+      var editable = el.querySelector("input[name=editable]");
+      var signup = el.querySelector("input[name=show_on_signup]");
+      if (target.value === "for_all_users") {
+        editable.checked = true;
+        signup.checked = true;
+      } else if (target.value === "on_signup") {
+        signup.checked = true;
+      }
+      syncPreferences(el);
+      return;
+    }
+    if (target.name === "editable") {
+      target.dataset.touched = "";
+      if (!target.checked) {
+        el.querySelector("input[name=show_on_signup]").checked = true;
+      }
+      syncPreferences(el);
+    }
+  });
+
+  function saveUserField(el) {
+    var get = function (name) {
+      return el.querySelector("[name='" + name + "']");
+    };
+    var requirement = (el.querySelector("input[name=requirement]:checked") || {}).value;
+    var data = {
+      field_type: get("field_type").value,
+      name: get("name").value,
+      description: get("description").value,
+      requirement: requirement,
+      editable: get("editable").checked,
+      show_on_profile: get("show_on_profile").checked,
+      show_on_signup: get("show_on_signup").checked,
+      show_on_user_card: get("show_on_user_card").checked,
+      searchable: get("searchable").checked,
+    };
+    var list = el.querySelector(".form-kit__field[data-name='options'] .value-list");
+    if (list) {
+      data.options = valueListValues(list);
+    }
+    var id = el.dataset.userFieldId;
+    var send = function () {
+      ui()
+        .ajax(id ? "PUT" : "POST", userFieldPath(id), { user_field: data })
+        .then(function () {
+          el.dataset.requirement = requirement;
+          go("/admin/config/user-fields");
+          ui().toast(t("admin.config_areas.user_fields.save_successful"));
+        }, ui().failed);
+    };
+    if (requirement === "for_all_users" && el.dataset.requirement !== "for_all_users") {
+      Discourse.dialog.yesNoConfirm({
+        message: t("admin.user_fields.requirement.confirmation"),
+        didConfirm: send,
+      });
+      return;
+    }
+    send();
+  }
+
+  // --- ValueList ---------------------------------------------------------------
+
+  function valueListValues(list) {
+    return Array.prototype.map.call(list.querySelectorAll(".values .value-input"), function (input) {
+      return input.value;
+    });
+  }
+
+  function drawValueList(list, values) {
+    var small = function (cls, name) {
+      return '<button class="btn no-text btn-icon ' + cls + '" type="button">' + ui().icon(name) + '<span aria-hidden="true">​</span></button>';
+    };
+    var old = list.querySelector(".values");
+    if (old) {
+      old.remove();
+    }
+    if (!values.length) {
+      return;
+    }
+    var html =
+      '<div class="values">' +
+      values
+        .map(function (v, i) {
+          return (
+            '<div class="value" data-index="' +
+            i +
+            '">' +
+            small("btn-default remove-value-btn btn-small", "xmark") +
+            '<input class="value-input" title="' +
+            escapeHtml(v) +
+            '" value="' +
+            escapeHtml(v) +
+            '" type="text">' +
+            (values.length > 1
+              ? small("btn-default shift-up-value-btn btn-small", "arrow-up") +
+                small("btn-default shift-down-value-btn btn-small", "arrow-down")
+              : "") +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>";
+    list.insertAdjacentHTML("afterbegin", html);
+  }
+
+  function changeValues(list, values) {
+    drawValueList(list, values);
+    var el = list.closest("form");
+    if (el) {
+      validate(el, "options");
+    }
+  }
+
+  // The ComboBox's body: the filter, and (allowAny) the typed value to
+  // add.
+  function drawAdder(details) {
+    var body = details.querySelector(".select-kit-body");
+    var input = body.querySelector(".filter-input");
+    var text = input ? input.value : "";
+    body.innerHTML =
+      '<div class="select-kit-filter is-expanded"><input class="filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
+      escapeHtml(t("select_kit.filter_placeholder")) +
+      '" spellcheck="false" tabindex="0" type="search">' +
+      ui().icon("magnifying-glass").replace("svg-icon", "svg-icon filter-icon") +
+      '</div><ul aria-live="polite" class="select-kit-collection" role="menu">' +
+      (text.trim()
+        ? '<li aria-checked="false" role="menuitemradio" data-index="0" data-name="' +
+          escapeHtml(text) +
+          '" data-value="' +
+          escapeHtml(text) +
+          '" title="' +
+          escapeHtml(text) +
+          '" tabindex="0" class="select-kit-row is-highlighted"><span class="name">' +
+          escapeHtml(text) +
+          "</span></li>"
+        : "") +
+      "</ul>";
+    var again = body.querySelector(".filter-input");
+    again.value = text;
+    again.focus();
+    float(details);
+  }
+
+  function closeAdder(details) {
+    details.open = false;
+    details.classList.remove("is-expanded");
+    var body = details.querySelector(".select-kit-body");
+    body.innerHTML = "";
+    body.removeAttribute("style");
+  }
+
+  function addValue(details, value) {
+    var list = details.closest(".value-list");
+    var values = valueListValues(list);
+    // addUniqueValueToArray
+    if (value && values.indexOf(value) === -1) {
+      values.push(value);
+    }
+    closeAdder(details);
+    changeValues(list, values);
+  }
+
+  document.addEventListener("click", function (event) {
+    var list = event.target.closest && event.target.closest("form[data-user-field-form] .value-list");
+    document.querySelectorAll("form[data-user-field-form] details.value-list-adder[open]").forEach(function (d) {
+      if (!d.contains(event.target)) {
+        closeAdder(d);
+      }
+    });
+    if (!list) {
+      return;
+    }
+    var button = event.target.closest(".remove-value-btn, .shift-up-value-btn, .shift-down-value-btn");
+    if (button) {
+      var values = valueListValues(list);
+      var index = Number(button.closest(".value").dataset.index);
+      if (button.classList.contains("remove-value-btn")) {
+        values.splice(index, 1);
+      } else {
+        // shift wraps around the ends.
+        var to = index + (button.classList.contains("shift-up-value-btn") ? -1 : 1);
+        if (to > values.length - 1) {
+          to = 0;
+        } else if (to < 0) {
+          to = values.length - 1;
+        }
+        values.splice(to, 0, values.splice(index, 1)[0]);
+      }
+      changeValues(list, values);
+      return;
+    }
+    var details = event.target.closest("details.value-list-adder");
+    if (!details) {
+      return;
+    }
+    event.preventDefault();
+    var row = event.target.closest(".select-kit-row");
+    if (row) {
+      addValue(details, row.dataset.value);
+      return;
+    }
+    if (event.target.closest(".select-kit-filter")) {
+      return;
+    }
+    if (details.open) {
+      closeAdder(details);
+    } else {
+      details.open = true;
+      details.classList.add("is-expanded");
+      drawAdder(details);
+    }
+  });
+
+  document.addEventListener("input", function (event) {
+    var input = event.target.closest && event.target.closest("details.value-list-adder .filter-input");
+    if (input) {
+      drawAdder(input.closest("details"));
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    var input = event.target.closest && event.target.closest("details.value-list-adder .filter-input");
+    if (input && event.key === "Enter") {
+      event.preventDefault();
+      addValue(input.closest("details"), input.value.trim() ? input.value : "");
+    } else if (input && event.key === "Escape") {
+      closeAdder(input.closest("details"));
+    }
+  });
+
+  // A value edited in place (changeValue on focusout).
+  document.addEventListener(
+    "focusout",
+    function (event) {
+      var input = event.target.closest && event.target.closest("form[data-user-field-form] .value-list .value-input");
+      if (input) {
+        input.title = input.value;
+      }
+    },
+    true
+  );
 
   // --- select-kit's MultiSelect ---------------------------------------------
 
@@ -507,5 +1027,10 @@
     submitted = false;
     order = [];
     ui().strings("admin-config-strings");
+    // AdminUserFieldsForm's _focusName
+    var name = document.querySelector("form[data-user-field-form] .user-field-name");
+    if (name) {
+      name.focus();
+    }
   });
 })();

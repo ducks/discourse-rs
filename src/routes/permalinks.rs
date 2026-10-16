@@ -240,6 +240,16 @@ pub async fn index(
         return Ok(r);
     }
     if !json_request(&headers, &uri) {
+        if uri.path().starts_with("/admin/config/") {
+            return super::admin_config::permalinks_page(
+                &state,
+                &guardian,
+                &headers,
+                &uri,
+                super::admin_config::PermalinksPage::List,
+            )
+            .await;
+        }
         return Err(Unsupported("the admin permalinks page").into());
     }
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
@@ -288,6 +298,16 @@ pub async fn show_admin(
         return Ok(r);
     }
     if !json_request(&headers, &uri) {
+        if uri.path().starts_with("/admin/config/") {
+            use super::admin_config::PermalinksPage;
+            let page = match id.as_str() {
+                "new" => PermalinksPage::New,
+                "settings" => PermalinksPage::Settings,
+                other => PermalinksPage::Edit(id_of(other)),
+            };
+            return super::admin_config::permalinks_page(&state, &guardian, &headers, &uri, page)
+                .await;
+        }
         return Err(Unsupported("the admin permalinks page").into());
     }
     let mut conn = state.pool.acquire().await?;
