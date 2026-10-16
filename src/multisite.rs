@@ -295,14 +295,7 @@ impl Shared {
 /// database.
 pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn Error>> {
     let db = config.site.db.clone();
-    // A request waits up to 5 s for a connection, ActiveRecord's
-    // checkout_timeout, rather than sqlx's 30.
-    let pool = PgPoolOptions::new()
-        .max_connections(config.site.pool)
-        .acquire_timeout(std::time::Duration::from_secs(5))
-        .idle_timeout(IDLE_TIMEOUT)
-        .connect(&config.site.database_url)
-        .await?;
+    let pool = connect_pool(&config.site.database_url, config.site.pool).await?;
 
     let report = crate::schema::verify(&mut *pool.acquire().await?).await?;
     tracing::info!(
@@ -367,6 +360,25 @@ pub async fn shut_down(state: &AppState) -> Result<(), Box<dyn Error>> {
 /// How long a pool keeps a connection nobody uses, so an idle site holds
 /// few.
 pub const IDLE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
+
+/// Prepared statements each connection keeps, ActiveRecord's
+/// `statement_limit`. sqlx's default of 100 is fewer than one topic page
+/// runs, which then re-plans every statement on every request.
+pub const STATEMENT_CACHE_CAPACITY: usize = 1000;
+
+/// A site's pool: `max` connections to `database_url`, each keeping
+/// STATEMENT_CACHE_CAPACITY prepared statements.
+pub async fn connect_pool(database_url: &str, max: u32) -> Result<PgPool, sqlx::Error> {
+    let options: PgConnectOptions = database_url.parse()?;
+    // A request waits up to 5 s for a connection, ActiveRecord's
+    // checkout_timeout, rather than sqlx's 30.
+    PgPoolOptions::new()
+        .max_connections(max)
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .idle_timeout(IDLE_TIMEOUT)
+        .connect_with(options.statement_cache_capacity(STATEMENT_CACHE_CAPACITY))
+        .await
+}
 
 /// Every site started: the default (whose failure stops the process),
 /// then each multisite.yml entry, one that fails logged and served as 503

@@ -97,7 +97,9 @@ impl TestDb {
 
         let pool = PgPoolOptions::new()
             .max_connections(4)
-            .connect_with(opts)
+            .connect_with(
+                opts.statement_cache_capacity(discourse_rs::multisite::STATEMENT_CACHE_CAPACITY),
+            )
             .await
             .expect("connecting to the cloned test database");
         discourse_rs::owned_schema::migrate(&pool)
