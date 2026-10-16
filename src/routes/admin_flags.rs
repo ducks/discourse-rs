@@ -6,7 +6,8 @@
 //! controller only maps a `:message` model), success with
 //! `Discourse.request_refresh!`.
 //!
-//! Refused: the Ember admin pages (an HTML request).
+//! An HTML GET is the Ember page (crate::routes::admin_config); a write
+//! that is not a JSON request is refused.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -150,18 +151,41 @@ pub async fn empty(
     if let Err(r) = admin(&state, &guardian) {
         return Ok(*r);
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return super::admin_config::flags_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            super::admin_config::FlagsPage::List,
+        )
+        .await;
+    }
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
+/// GET /admin/config/flags/:id: the edit (or new, or settings) page, its
+/// JSON the empty action.
 pub async fn empty_member(
-    state: State<AppState>,
-    guardian: AuthGuardian,
-    Path(_id): Path<String>,
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
-    empty(state, guardian, headers, uri).await
+    if let Err(r) = admin(&state, &guardian) {
+        return Ok(*r);
+    }
+    if !json_request(&headers, &uri) {
+        use super::admin_config::FlagsPage;
+        let page = match id.as_str() {
+            "new" => FlagsPage::New,
+            "settings" => FlagsPage::Settings,
+            _ => FlagsPage::Edit(id),
+        };
+        return super::admin_config::flags_page(&state, &guardian, &headers, &uri, page).await;
+    }
+    Ok(StatusCode::NO_CONTENT.into_response())
 }
 
 struct Request {

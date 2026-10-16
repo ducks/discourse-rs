@@ -4,6 +4,7 @@ pub mod accounts;
 pub mod admin_api_keys_view;
 pub mod admin_backups_view;
 pub mod admin_badges;
+pub mod admin_config_view;
 pub mod admin_confirmation;
 pub mod admin_dashboard;
 pub mod admin_dashboard_headlines;

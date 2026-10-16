@@ -154,7 +154,17 @@
 
   // DMenu: the trigger's content is the template beside it; its buttons
   // are handled by the page's own click listener on the menu content.
+  // One listener for every page script's callback: two listeners would
+  // open a menu and close it again on the same click.
+  var menuCallbacks = [];
   function menus(onOpen) {
+    if (onOpen) {
+      menuCallbacks.push(onOpen);
+    }
+    if (menuCallbacks.listening) {
+      return;
+    }
+    menuCallbacks.listening = true;
     document.addEventListener("click", function (event) {
       var trigger = event.target.closest(".fk-d-menu__trigger[data-identifier]");
       if (!trigger || !trigger.closest(".admin-contents") || !Discourse.float) {
@@ -181,9 +191,9 @@
           trigger.classList.remove("-expanded");
         },
       });
-      if (onOpen) {
-        onOpen(trigger, content, menu);
-      }
+      menuCallbacks.forEach(function (fn) {
+        fn(trigger, content, menu);
+      });
     });
   }
 

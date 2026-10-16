@@ -152,3 +152,46 @@ async fn the_config_areas_that_are_their_settings() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_flags_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/flags").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Moderation - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-config flags\">"));
+    assert!(html.contains(
+        "admin-flags__header-add-flag\" title=\"Add flag\" data-href=\"/admin/config/flags/new\""
+    ));
+    assert!(html.contains("<li class=\"active admin-flags-tabs__flags\">"));
+    assert!(
+        html.contains(
+            "<tr class=\"d-table__row admin-flag-item off_topic saved\" data-flag-id=\"3\""
+        )
+    );
+    // A system flag can't be edited; notify_user can't move.
+    assert!(html.contains("admin-flag-item__edit\" disabled=\"\""));
+    assert_eq!(html.matches("flag-menu-trigger").count(), 5, "{html}");
+    assert!(html.contains("/admin-config.js"));
+    // The settings tab.
+    let (_, html) = admin.page("/admin/config/flags/settings").await;
+    assert!(html.contains("<div class=\"admin-contents admin-config flags settings\">"));
+    assert!(html.contains("<title>Flags Settings - Admin - "));
+    assert!(html.contains("content-body admin-config-area__settings"));
+    // The forms, without the header.
+    let (_, html) = admin.page("/admin/config/flags/new").await;
+    assert!(html.contains("<div class=\"admin-contents admin-config flags new\"><div class=\"admin-container admin-config-page__main-area\"><a class=\"active btn btn-transparent back-button\" href=\"/admin/config/flags\">"), "{html}");
+    assert!(html.contains("<h3 class=\"admin-config-area-card__title\">Add flag</h3>"));
+    assert!(html.contains("name=\"enabled\" type=\"checkbox\" checked=\"\""));
+    let (_, html) = admin.page("/admin/config/flags/3").await;
+    assert!(html.contains("<title>Edit Flag - Admin - "));
+    assert!(html.contains("<h3 class=\"admin-config-area-card__title\">Edit flag</h3>"));
+    assert!(html.contains("value=\"Off-Topic\""));
+    // The JSON stays the empty action.
+    let (status, _) = admin
+        .send(Method::GET, "/admin/config/flags.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+}

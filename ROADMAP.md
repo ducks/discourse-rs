@@ -755,8 +755,11 @@ then by what running a forum needs (milestone 6). Briefs:
     security, spam, developer, rate limits, onebox, files, search,
     experimental and GIFs; a locale list setting drawn as Ember's
     compact list, whose chooser, as the other list settings', is still
-    refused when opened. Left: about, content and category
-    management, login, permalinks, user fields, watched words, flags,
+    refused when opened. Then feat/admin-shell-config-flags: the flags
+    list with its toggles, edit and its menu's move and delete, the
+    settings tab, and the new and edit forms with FormKit's validation,
+    counters and the applies-to MultiSelect. Left: about, content and
+    category management, login, permalinks, user fields, watched words,
     logo, fonts, emoji, welcome banner, MCP, upcoming changes, what's
     new), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
