@@ -126,9 +126,32 @@ req/s (p50 202 against 75 ms), its JSON 455 against 482, /latest 292
 against 309; /latest.json and /srv/status were swamped by a load spike
 to 25 during those runs and are left out.
 
-Not changed here, because they are the multisite work's (the
-middleware chain) or for later: the compression level or moving the SVG
-sprite out of every page; four SiteSettings::load and three or four
+perf/svg-sprite then serves the chrome's icon sprite (116 KB, 222
+symbols) as Discourse does, a year-cached /svg-sprite/... script, in
+place of inlining it in every page. Against perf/statement-cache, fresh
+seed, user1, c=16, three alternating 5 s runs, medians (load 8 to 15):
+
+| endpoint | page (raw / brotli) | req/s | p50 ms |
+|---|---|---:|---:|
+| /t/welcome-to-discourse/5, inline | 204 KB / 50 KB | 351 | 43.7 |
+| /t/welcome-to-discourse/5, script | 88 KB / 16 KB | 409 | 38.6 |
+| /latest, inline | 184 KB / 47 KB | 496 | 31.8 |
+| /latest, script | 68 KB / 13 KB | 606 | 25.8 |
+
+(The scripts/bench run alongside had a disturbance in its JSON rows,
+the topic JSON at 101 and 94 req/s on both sides, so it is left out.)
+First contentful paint in Chromium is the same with a warm cache and
+about 20 ms later on a first visit, which fetches the script; the
+symbols exist at DOMContentLoaded and every page of
+parity/screens/pages renders pixel-identical.
+
+The three steps were measured in different sessions under different
+loads, so each compares only with its own baseline: queries and chrome
+about +3%, the statement cache 2.7 times, the sprite +17% on the
+logged-in topic page.
+
+Not changed here, because they are the middleware chain's or for
+later: the compression level; four SiteSettings::load and three or four
 readonly-mode reads per request across the middleware; the ping sqlx's
 test_before_acquire sends on each of a request's pool acquisitions (2
 or 3 empty statements per request); the job worker sharing the request
