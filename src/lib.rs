@@ -1,6 +1,7 @@
 pub mod about;
 pub mod about_view;
 pub mod accounts;
+pub mod admin_api_keys_view;
 pub mod admin_backups_view;
 pub mod admin_badges;
 pub mod admin_confirmation;
@@ -9,6 +10,7 @@ pub mod admin_dashboard_headlines;
 pub mod admin_dashboard_traffic;
 pub mod admin_dashboard_view;
 pub mod admin_flags;
+pub mod admin_form_kit;
 pub mod admin_groups_view;
 pub mod admin_reports_view;
 pub mod admin_site_settings;

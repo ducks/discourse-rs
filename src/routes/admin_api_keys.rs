@@ -207,7 +207,16 @@ pub async fn index(
     if let Some(r) = admin_only(&state, &guardian) {
         return Ok(r);
     }
-    refuse_html(&uri, &headers)?;
+    if !wants_json(&uri, &headers) {
+        // adminApi's index route goes on to the keys.
+        if !uri.path().trim_end_matches('/').ends_with("/keys") {
+            let base = state.config.globals.relative_url_root();
+            return Ok(
+                axum::response::Redirect::to(&format!("{base}/admin/api/keys")).into_response(),
+            );
+        }
+        return page(&state, &guardian, &headers, &uri, Page::Index).await;
+    }
     let q = crate::params::parse_query(uri.query().unwrap_or_default());
     let offset = q
         .get("offset")
@@ -227,6 +236,17 @@ pub async fn index(
         config: &state.config,
         settings: &settings,
     };
+    let keys = keys_doc(&mut conn, &urls, offset, limit).await?;
+    Ok(Json(json!({"keys": keys, "offset": offset, "limit": limit})).into_response())
+}
+
+/// The index's keys (BasicApiKeySerializer).
+async fn keys_doc(
+    conn: &mut PgConnection,
+    urls: &Urls<'_>,
+    offset: i64,
+    limit: i64,
+) -> Result<Vec<Value>, AppError> {
     let rows: Vec<KeyRow> = sqlx::query_as(&format!(
         "SELECT {KEY_COLUMNS} FROM api_keys WHERE NOT hidden \
          ORDER BY revoked_at DESC NULLS FIRST, created_at DESC OFFSET $1 LIMIT $2"
@@ -237,7 +257,6 @@ pub async fn index(
     .await?;
     let mut keys = Vec::with_capacity(rows.len());
     for k in &rows {
-        // BasicApiKeySerializer
         keys.push(json!({
             "id": k.id,
             "truncated_key": k.truncated_key,
@@ -246,25 +265,95 @@ pub async fn index(
             "created_at": time(k.created_at),
             "last_used_at": k.last_used_at.map(crate::topic_list::time_json),
             "revoked_at": k.revoked_at.map(crate::topic_list::time_json),
-            "user": basic_user(&mut conn, &urls, k.user_id).await?,
-            "created_by": basic_user(&mut conn, &urls, k.created_by_id).await?,
+            "user": basic_user(&mut *conn, urls, k.user_id).await?,
+            "created_by": basic_user(&mut *conn, urls, k.created_by_id).await?,
         }));
     }
-    Ok(Json(json!({"keys": keys, "offset": offset, "limit": limit})).into_response())
+    Ok(keys)
 }
 
-/// GET /admin/api/keys/scopes(.json): every resource's scopes, by
-/// resource name.
-pub async fn scopes(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-    headers: HeaderMap,
-    uri: Uri,
+fn wants_json(uri: &Uri, headers: &HeaderMap) -> bool {
+    super::wants_json(uri.query(), headers) || uri.path().ends_with(".json")
+}
+
+/// Which API keys page.
+enum Page {
+    Index,
+    Settings,
+    New,
+    Show(i32),
+}
+
+/// The API keys pages: the index's keys (its first page, as
+/// store.findAll loads them), a key, the scopes for the new key's form,
+/// or the user_api settings.
+async fn page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    page: Page,
 ) -> Result<Response, AppError> {
-    if let Some(r) = admin_only(&state, &guardian) {
-        return Ok(r);
-    }
-    refuse_html(&uri, &headers)?;
+    use crate::admin_api_keys_view::{self as view, Tab};
+    let mut conn = state.pool.acquire().await?;
+    let shell =
+        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_api_keys")
+            .await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &shell.settings,
+    };
+    let cx = shell.cx(state);
+    let (tab, content) = match page {
+        Page::Index => {
+            let keys = keys_doc(&mut conn, &urls, 0, INDEX_LIMIT).await?;
+            (Tab::Index, view::list(&cx, &keys))
+        }
+        Page::Show(id) => {
+            let Some(k) = find(&mut conn, id).await? else {
+                return Ok(super::topics::not_found_response(state));
+            };
+            let key = key_json(&mut conn, &urls, &k, None).await?;
+            (Tab::Show, view::show(&cx, &key))
+        }
+        Page::New => (Tab::New, view::new(&cx, &scopes_doc())),
+        Page::Settings => (
+            Tab::Settings,
+            super::admin_advanced::area_settings(
+                &mut conn,
+                state,
+                &shell,
+                uri,
+                json!({ "categories": "user_api" }),
+            )
+            .await?,
+        ),
+    };
+    let main = format!("{}{}", view::strings(&cx), view::render(&cx, tab, &content));
+    let (classes, title, script) = match tab {
+        Tab::Index => (
+            "admin-api admin-api-keys",
+            Some("admin.config.api_keys.title"),
+            "admin-api-keys.js",
+        ),
+        Tab::Show => ("admin-api admin-api-keys", None, "admin-api-keys.js"),
+        Tab::New => ("admin-api admin-api-keys new", None, "admin-api-keys.js"),
+        Tab::Settings => (
+            "admin-api admin-api-keys settings",
+            Some("settings"),
+            "site-settings.js",
+        ),
+    };
+    let main = crate::admin_view::contents(classes, &main);
+    // The key and new routes have no title token: the page is Admin's.
+    let title = title
+        .map(|k| crate::admin_view::t(&state.i18n, k))
+        .unwrap_or_default();
+    shell.render(state, uri, &title, main, script, StatusCode::OK)
+}
+
+/// ApiKeysNew's scopes: /admin/api/keys/scopes.json's.
+fn scopes_doc() -> Value {
     let mut resources: Vec<&(String, Vec<(String, api_key_scopes::Mapping)>)> =
         api_key_scopes::scope_mappings().iter().collect();
     resources.sort_by(|a, b| a.0.cmp(&b.0));
@@ -288,10 +377,26 @@ pub async fn scopes(
             ),
         );
     }
-    Ok(Json(json!({"scopes": out})).into_response())
+    Value::Object(out)
 }
 
-/// GET /admin/api/keys/:id(.json)
+/// GET /admin/api/keys/scopes(.json): every resource's scopes, by
+/// resource name.
+pub async fn scopes(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    refuse_html(&uri, &headers)?;
+    Ok(Json(json!({"scopes": scopes_doc()})).into_response())
+}
+
+/// GET /admin/api/keys/:id(.json): the key; as a page the key's, or the
+/// new key's form and the settings tab, whose paths this matches too.
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -302,7 +407,17 @@ pub async fn show(
     if let Some(r) = admin_only(&state, &guardian) {
         return Ok(r);
     }
-    refuse_html(&uri, &headers)?;
+    if !wants_json(&uri, &headers) {
+        let page_for = match id.as_str() {
+            "new" => Page::New,
+            "settings" => Page::Settings,
+            id => match id.parse::<i32>() {
+                Ok(id) => Page::Show(id),
+                Err(_) => return Ok(super::topics::not_found_response(&state)),
+            },
+        };
+        return page(&state, &guardian, &headers, &uri, page_for).await;
+    }
     let mut conn = state.pool.acquire().await?;
     let settings = settings(&state, &mut conn).await?;
     let urls = Urls {

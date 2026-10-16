@@ -210,6 +210,71 @@
     };
   }
 
+  // toasts.success: DDefaultToast for three seconds.
+  function toast(text) {
+    var section = document.querySelector("section.fk-d-toasts");
+    if (!section) {
+      section = document.createElement("section");
+      section.className = "fk-d-toasts";
+      document.body.appendChild(section);
+    }
+    var output = document.createElement("output");
+    output.className = "fk-d-toast";
+    output.setAttribute("role", "status");
+    output.innerHTML =
+      '<div class="fk-d-default-toast -success"><div class="fk-d-default-toast__icon-container">' +
+      icon("check") +
+      '</div><div class="fk-d-default-toast__main-container"><div class="fk-d-default-toast__texts"><div class="fk-d-default-toast__message"></div></div></div><div class="fk-d-default-toast__close-container"><button class="btn no-text btn-icon btn-transparent" type="button">' +
+      icon("xmark") +
+      '<span aria-hidden="true">&#8203;</span></button></div></div>';
+    output.querySelector(".fk-d-default-toast__message").textContent = text;
+    section.appendChild(output);
+    var close = function () {
+      output.remove();
+    };
+    output.querySelector("button").addEventListener("click", close);
+    setTimeout(close, 3000);
+  }
+
+  // DNativeSelectOption: the chosen option is the --selected one.
+  document.addEventListener("change", function (event) {
+    var select = event.target.closest(".admin-contents select.d-native-select");
+    if (!select) {
+      return;
+    }
+    Array.prototype.forEach.call(select.options, function (option) {
+      option.classList.toggle("--selected", option.selected);
+    });
+  });
+
+  // DButton's @route: the button goes to its route's path.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("button[data-href]");
+    if (button && !button.disabled) {
+      window.location = base() + button.dataset.href;
+    }
+  });
+
+  // DTooltip: the icon's content (the template inside the trigger) shown
+  // on hover or click.
+  function tooltipFor(trigger) {
+    var template = trigger.querySelector("template.d-tooltip-content");
+    if (!template || !Discourse.float) {
+      return;
+    }
+    Discourse.float.showTooltip(trigger, {
+      identifier: trigger.dataset.identifier,
+      content: template.innerHTML,
+    });
+  }
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(".admin-contents .fk-d-tooltip__trigger");
+    if (trigger) {
+      event.preventDefault();
+      tooltipFor(trigger);
+    }
+  });
+
   Discourse.adminUi = {
     t: t,
     strings: loadStrings,
@@ -220,5 +285,6 @@
     icon: icon,
     menus: menus,
     subscribe: subscribe,
+    toast: toast,
   };
 })();
