@@ -2,7 +2,7 @@
 //! anyone but an admin): the hooks' CRUD, their events, a ping and the
 //! redeliveries.
 //!
-//! Refused: the Ember pages (an HTML request).
+//! The pages themselves as HTML (crate::admin_web_hooks_view).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -118,6 +118,189 @@ async fn rendered(
     .into_response())
 }
 
+/// Which web hooks page.
+enum Page {
+    Index,
+    New,
+    Show(String),
+    Edit(String),
+}
+
+/// The web hooks pages: the index's document (its first page and extras),
+/// with a hook's for its events and edit pages.
+async fn page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    which: Page,
+) -> Result<Response, AppError> {
+    use crate::admin_web_hooks_view as view;
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(state));
+    }
+    let mut conn = state.pool.acquire().await?;
+    let shell =
+        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_webhooks")
+            .await?;
+    let settings = &shell.settings;
+    let hook_cx = Cx {
+        settings,
+        i18n: &state.i18n,
+        guardian,
+        base_path: state.config.globals.relative_url_root(),
+    };
+    let index = admin::index(&mut conn, &hook_cx, 0).await?;
+    let cx = shell.cx(state);
+    let mut extra = String::new();
+    // The hook WebhooksForm saves, for the script.
+    let mut attrs = String::new();
+    let (classes, content) = match which {
+        Page::Index => ("admin-api admin-web-hooks", view::list(&cx, &index)),
+        Page::Show(id) => {
+            let hook = match fetch(state, &mut conn, &id).await? {
+                Ok(h) => h,
+                Err(r) => return Ok(r),
+            };
+            let a = Associations::load(&mut conn, hook.id).await?;
+            let (_, body) = admin::rooted(&mut conn, &hook_cx, &hook, &a).await?;
+            let status = form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+                .find(|(k, _)| k == "status")
+                .map(|(_, v)| v.into_owned())
+                .filter(|v| !v.is_empty());
+            let events =
+                admin::list_events(&mut conn, hook_cx.base_path, &hook, 0, status.as_deref())
+                    .await?;
+            (
+                "admin-api admin-web-hooks",
+                view::show(&cx, &body, &events, status.as_deref()),
+            )
+        }
+        Page::New | Page::Edit(_) => {
+            let (hook, categories) = match &which {
+                Page::Edit(id) => {
+                    let hook = match fetch(state, &mut conn, id).await? {
+                        Ok(h) => h,
+                        Err(r) => return Ok(r),
+                    };
+                    let a = Associations::load(&mut conn, hook.id).await?;
+                    attrs = format!(" data-web-hook-id=\"{}\"", hook.id);
+                    let (categories, body) = admin::rooted(&mut conn, &hook_cx, &hook, &a).await?;
+                    (Some(body), categories)
+                }
+                _ => (None, Value::Array(Vec::new())),
+            };
+            let categories: Vec<(String, String)> = categories
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|c| {
+                    (
+                        c["id"].as_i64().unwrap_or(0).to_string(),
+                        c["name"].as_str().unwrap_or_default().to_string(),
+                    )
+                })
+                .collect();
+            let group_ids: Vec<i32> = hook
+                .as_ref()
+                .and_then(|h| h["group_ids"].as_array())
+                .into_iter()
+                .flatten()
+                .filter_map(|v| v.as_i64().and_then(|i| i32::try_from(i).ok()))
+                .collect();
+            // updateGroupsFilter: Site's groups, in its order (by name).
+            let groups: Vec<(String, String)> = sqlx::query_as::<_, (i32, String)>(
+                "SELECT id, name FROM groups WHERE id = ANY($1) ORDER BY name",
+            )
+            .bind(&group_ids)
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .map(|(id, name)| (id.to_string(), name))
+            .collect();
+            let list_categories = crate::topic_list_view::categories(&mut conn).await?;
+            let list = crate::topic_list_view::ListContext {
+                i18n: &state.i18n,
+                base_path: &shell.site.base_path,
+                now: crate::clock::now(),
+                categories: &list_categories,
+                expand_all_pinned: false,
+                member_trust_level: None,
+                settings: crate::topic_list_view::ListSettings::load(settings)?,
+            };
+            let form = view::form(
+                &cx,
+                &list,
+                &view::FormData {
+                    hook: hook.as_ref(),
+                    extras: &index["extras"],
+                    categories,
+                    groups,
+                    tagging_enabled: settings.get("tagging_enabled")?.truthy(),
+                },
+            );
+            // CategorySelector's rows and the choosers' strings for
+            // prefs-choosers.js.
+            let allowed = guardian.allowed_category_ids(&mut conn, settings).await?;
+            let rows: Vec<(i32, i32)> =
+                sqlx::query_as("SELECT id, topic_count FROM categories WHERE id = ANY($1)")
+                    .bind(&allowed)
+                    .fetch_all(&mut *conn)
+                    .await?;
+            let chooser: Vec<crate::composer_view::ChooserCategory> = rows
+                .into_iter()
+                .map(|(id, topic_count)| crate::composer_view::ChooserCategory {
+                    id: i64::from(id),
+                    topic_count: i64::from(topic_count),
+                    description_text: None,
+                    minimum_required_tags: 0,
+                })
+                .collect();
+            let base = &shell.site.base_path;
+            let username = guardian
+                .user()
+                .map(|u| u.username.clone())
+                .unwrap_or_default();
+            extra.push_str(&crate::preferences_view::tracking::category_rows(
+                &list,
+                &crate::preferences_view::tracking::SiteCategories { allowed: &chooser },
+            ));
+            extra.push_str(&crate::preferences_view::users::choosers_strings(
+                &list,
+                settings,
+                &username,
+                None,
+                (
+                    &crate::assets::url(base, "moment.min.js"),
+                    &crate::assets::url(base, "moment-timezone-with-data-10-year-range.min.js"),
+                ),
+            )?);
+            extra.push_str(&format!(
+                "<script src=\"{}\"></script>",
+                crate::assets::url(base, "prefs-choosers.js")
+            ));
+            let classes = if matches!(which, Page::New) {
+                "admin-api admin-web-hooks new"
+            } else {
+                "admin-api admin-web-hooks edit"
+            };
+            (classes, form)
+        }
+    };
+    let main = format!(
+        "{}{}{extra}",
+        view::strings(&cx),
+        view::render(
+            &cx,
+            &content,
+            !classes.ends_with(" new") && !classes.ends_with(" edit")
+        )
+    );
+    let main = crate::admin_ui::contents(classes, &attrs, &main);
+    // No route of these has a title token.
+    shell.render(state, uri, "", main, "admin-web-hooks.js", StatusCode::OK)
+}
+
 /// GET /admin/api/web_hooks(.json)
 pub async fn index(
     State(state): State<AppState>,
@@ -125,6 +308,9 @@ pub async fn index(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    if !json_request(&headers, &uri) {
+        return page(&state, &guardian, &headers, &uri, Page::Index).await;
+    }
     let admitted = match admit(&state, &guardian, &headers, &uri, &[], None)? {
         Ok(a) => a,
         Err(r) => return Ok(r),
@@ -149,6 +335,14 @@ pub async fn show(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    if !json_request(&headers, &uri) {
+        let which = if id == "new" {
+            Page::New
+        } else {
+            Page::Show(id)
+        };
+        return page(&state, &guardian, &headers, &uri, which).await;
+    }
     if let Err(r) = admit(&state, &guardian, &headers, &uri, &[], None)? {
         return Ok(r);
     }
@@ -167,9 +361,13 @@ pub async fn show(
 pub async fn edit(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    if !json_request(&headers, &uri) {
+        return page(&state, &guardian, &headers, &uri, Page::Edit(id)).await;
+    }
     if let Err(r) = admit(&state, &guardian, &headers, &uri, &[], None)? {
         return Ok(r);
     }

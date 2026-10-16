@@ -23,6 +23,7 @@ pub mod admin_user_view;
 pub mod admin_users;
 pub mod admin_users_view;
 pub mod admin_view;
+pub mod admin_web_hooks_view;
 pub mod age_words;
 pub mod anonymous_cache;
 pub mod archived_messages;

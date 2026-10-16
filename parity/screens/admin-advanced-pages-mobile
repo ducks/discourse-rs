@@ -6,3 +6,5 @@
 /admin/api/keys as=admin mask=.relative-date,.key>.d-table__value-wrapper
 /admin/api/keys/new as=admin
 /admin/api/keys/settings as=admin
+/admin/api/web_hooks as=admin
+/admin/api/web_hooks/new as=admin

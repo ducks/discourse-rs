@@ -761,7 +761,13 @@ then by what running a forum needs (milestone 6). Briefs:
     new key's FormKit form (EmailGroupUserChooser for a single user, the
     granular scopes' table, the required checks, the generated key with
     its copy button; no header, as the reference draws it on load), and
-    the user_api settings tab. Left: web hooks, email server settings,
+    the user_api settings tab; `feat/admin-shell-web-hooks`:
+    /admin/api/web_hooks with WebhooksList (the delivery status label,
+    the row's DMenu with delete), WebhooksForm for a new hook and an edit
+    (the URL and secret checks, the event chooser, the category, tag and
+    group filters), and a hook's events page (the status filter, ping,
+    redeliver and redeliver failed, an event's request and response, the
+    new events the bus brings). Left: email server settings,
     preview and templates, problem checks, badges, installed plugins),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar

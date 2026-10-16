@@ -11,3 +11,7 @@
 /admin/api/keys as=admin mask=.relative-date,.key>.d-table__value-wrapper
 /admin/api/keys/new as=admin
 /admin/api/keys/settings as=admin
+# Web hooks (90g8). A fresh install has none, so only the list and the
+# new hook's form; a hook's own pages are in tests/admin_advanced_pages.
+/admin/api/web_hooks as=admin
+/admin/api/web_hooks/new as=admin
