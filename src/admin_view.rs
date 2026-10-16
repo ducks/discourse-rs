@@ -1060,7 +1060,7 @@ pub fn panel(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
         ));
     }
     out.push_str("</div>");
-    out.push_str(crate::sidebar::FOOTER);
+    out.push_str(&crate::sidebar::footer(cx.i18n, false));
     Ok(out)
 }
 

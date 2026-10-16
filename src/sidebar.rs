@@ -211,13 +211,40 @@ fn sections(site: &Value, cx: &Context) -> Result<String, SettingError> {
     }
     out.push_str(cx.plugin_sections);
     out.push_str("</div>");
-    out.push_str(FOOTER);
+    out.push_str(&footer(cx.i18n, cx.member.is_some()));
     Ok(out)
 }
 
-/// The footer. Its only anonymous action, keyboard shortcuts, opens a modal
-/// that is not ported, so its bar is empty.
-pub(crate) const FOOTER: &str = "<div class=\"sidebar-footer-wrapper\"><div class=\"sidebar-footer-container\"><div class=\"sidebar-footer-actions\"></div></div></div>";
+/// SidebarFooter: on the main panel a member's add section button, and in
+/// the desktop view the keyboard shortcuts button. The modals both open
+/// are not ported; sidebar.js says so when they are clicked.
+pub(crate) fn footer(i18n: &I18n, add_section: bool) -> String {
+    let button = |class: &str, icon_name: &str, key: &str| {
+        let label = escape(i18n.t(&format!("js.{key}")).unwrap_or(key));
+        format!(
+            "<button aria-label=\"{label}\" class=\"btn no-text btn-icon btn-flat sidebar-footer-actions-button {class}\" title=\"{label}\" type=\"button\">{}<span aria-hidden=\"true\"> &#8203; </span></button>",
+            icon(icon_name, None)
+        )
+    };
+    let mut actions = String::new();
+    if add_section {
+        actions.push_str(&button(
+            "add-section",
+            "plus",
+            "sidebar.sections.custom.add",
+        ));
+    }
+    if !crate::mobile::mobile_view() {
+        actions.push_str(&button(
+            "sidebar-footer-actions-keyboard-shortcuts",
+            "keyboard",
+            "keyboard_shortcuts_help.title",
+        ));
+    }
+    format!(
+        "<div class=\"sidebar-footer-wrapper\"><div class=\"sidebar-footer-container\"><div class=\"sidebar-footer-actions\">{actions}</div></div></div>"
+    )
+}
 
 /// The member's links that carry counts (Topics, their categories and
 /// tags), each with an out-of-band swap that replaces it on the page: the
@@ -1312,6 +1339,23 @@ fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn the_footer_has_its_buttons() {
+        let i18n = I18n::vendored().unwrap();
+        let member = footer(&i18n, true);
+        assert!(
+            member.contains(
+                "sidebar-footer-actions-button add-section\" title=\"Add custom section\""
+            )
+        );
+        assert!(
+            member.contains(
+                "sidebar-footer-actions-keyboard-shortcuts\" title=\"Keyboard Shortcuts\""
+            )
+        );
+        assert!(!footer(&i18n, false).contains("add-section"));
+    }
 
     #[test]
     fn categories_sort_parents_before_children() {

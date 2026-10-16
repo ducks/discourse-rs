@@ -129,7 +129,71 @@
       setSidebarShown(false);
     }
     applyCollapsed(document);
+    revealActiveLink();
   });
+
+  // SidebarFooter's buttons open modals not ported yet.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest && event.target.closest(".sidebar-footer-actions-button");
+    if (!button) {
+      return;
+    }
+    var what = button.classList.contains("add-section")
+      ? "adding a custom sidebar section"
+      : "the keyboard shortcuts help";
+    var error = document.getElementById("page-error");
+    if (error) {
+      error.textContent = "Not ported yet: " + what + ".";
+      error.hidden = false;
+    }
+  });
+
+  // SectionLink's revealLink for a panel that scrolls its active link
+  // into view (the admin panel's scrollActiveLinkIntoView): the link's
+  // item, when the scrolled sections don't show all of it.
+  function revealActiveLink() {
+    var link = document.querySelector(
+      "#d-sidebar .sidebar-sections.admin-panel .sidebar-section-link.active"
+    );
+    var item = link && link.closest(".sidebar-section-link-wrapper");
+    if (!item) {
+      return;
+    }
+    // Ember reveals the link as it is inserted, while every section is
+    // still drawn open; the collapsed ones close after, which leaves the
+    // scroll where that put it (or at its end).
+    var closed = Array.prototype.slice.call(
+      document.querySelectorAll("#d-sidebar .sidebar-sections.admin-panel .sidebar-section-content[hidden]")
+    );
+    closed.forEach(function (content) {
+      content.hidden = false;
+    });
+    if (!fullyVisible(item)) {
+      item.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+    closed.forEach(function (content) {
+      content.hidden = true;
+    });
+  }
+
+  // isFullyScrolledIntoView
+  function fullyVisible(element) {
+    var rect = element.getBoundingClientRect();
+    var node = element.parentElement;
+    var scrolled = false;
+    while (node && node !== document.body) {
+      var overflow = getComputedStyle(node).overflowY;
+      if ((overflow === "auto" || overflow === "scroll") && node.scrollHeight > node.clientHeight) {
+        scrolled = true;
+        var bounds = node.getBoundingClientRect();
+        if (rect.top < bounds.top || rect.bottom > bounds.bottom) {
+          return false;
+        }
+      }
+      node = node.parentElement;
+    }
+    return scrolled || (rect.top >= 0 && rect.bottom <= window.innerHeight);
+  }
 
   // HamburgerDropdownWrapper's CLOSE_ON_CLICK_SELECTORS: following a link
   // closes the menu.

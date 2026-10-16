@@ -48,3 +48,7 @@
 /admin/reports/users_by_trust_level as=admin wait=2500
 /admin/reports/topics as=admin wait=2500
 /admin/reports/posters_by_member_type as=admin wait=2500
+# The config areas that are their settings (90g6).
+/admin/config/localization as=admin
+/admin/config/trust-levels as=admin
+/admin/config/developer as=admin
