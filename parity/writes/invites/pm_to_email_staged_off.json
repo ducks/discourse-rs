@@ -1,0 +1,81 @@
+{
+  "name": "pm_to_email_staged_off",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message for someone without an account",
+        "raw": "Hello there, this message goes to an email address that has no account yet.",
+        "archetype": "private_message",
+        "target_recipients": "stranger@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:45.002732",
+  "transaction_started_at": "2026-10-16T06:14:43.626275",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry, you cannot send personal messages to email."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UPy74bHgo6xFwmO6nszWxPedqYA=",
+            "created_at": "2026-10-16T06:14:44.157725",
+            "rotated_at": "2026-10-16T06:14:44.156223",
+            "updated_at": "2026-10-16T06:14:44.157725",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "UPy74bHgo6xFwmO6nszWxPedqYA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:45.010297",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UPy74bHgo6xFwmO6nszWxPedqYA=",
+            "created_at": "2026-10-16T06:14:44.157725",
+            "rotated_at": "2026-10-16T06:14:44.156223",
+            "updated_at": "2026-10-16T06:14:44.157725",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "UPy74bHgo6xFwmO6nszWxPedqYA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_staged_users": false
+  },
+  "recorded_from": {
+    "case": "7e9c8830574b31b0274f6956a024f8c952eceb21bb963dff4b97ba4c4b6cc8f1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

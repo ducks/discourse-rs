@@ -734,7 +734,20 @@ impl Alerter<'_> {
             return Ok(false);
         }
         if user.staged {
-            return Err(Unsupported("notifying staged users").into());
+            // notify_users leaves staged users out of a message's
+            // notifications; notify_pm_users gives them its own.
+            if post.archetype == "private_message" && notification_type != types::PRIVATE_MESSAGE {
+                return Ok(false);
+            }
+            let mirror: bool = sqlx::query_scalar(
+                "SELECT COALESCE((SELECT mailinglist_mirror FROM categories WHERE id = $1), FALSE)",
+            )
+            .bind(post.category_id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if mirror {
+                return Ok(false);
+            }
         }
         // The notifier muted or ignored by the user (staff can't be).
         let notifier = opts.user_id.or(post.user_id);

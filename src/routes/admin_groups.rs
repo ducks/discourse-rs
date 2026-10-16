@@ -586,6 +586,8 @@ pub async fn add_members(
         Ok(u) => u,
         Err(key) => return Ok(super::search::invalid_parameters(&state, &key)),
     };
+    // Emails of no user become invites to the group.
+    let mut emails_to_invite: Vec<String> = Vec::new();
     if let Some(emails) = params::string(&req.p, "emails").filter(|e| !e.is_empty()) {
         for email in emails.split(',') {
             let user: Option<(i32, String)> = sqlx::query_as(
@@ -597,13 +599,28 @@ pub async fn add_members(
             .await?;
             match user {
                 Some(u) => users.push(u),
-                None => {
-                    return Err(Unsupported("adding members by email (invites)").into());
-                }
+                None => emails_to_invite.push(email.to_string()),
             }
         }
     }
-    if users.is_empty() {
+    if !emails_to_invite.is_empty()
+        && !crate::invites::can_invite_to_forum(
+            &mut tx,
+            &req.settings,
+            &guardian,
+            Some(std::slice::from_ref(&group)),
+        )
+        .await?
+    {
+        return Ok(json_error(vec![
+            state
+                .i18n
+                .t("groups.errors.cannot_add_emails")
+                .unwrap_or_default()
+                .to_string(),
+        ]));
+    }
+    if users.is_empty() && emails_to_invite.is_empty() {
         let message = state
             .i18n
             .t("groups.errors.usernames_or_emails_required")
@@ -631,7 +648,7 @@ pub async fn add_members(
     .bind(&ids)
     .fetch_all(&mut *tx)
     .await?;
-    if !already.is_empty() && already.len() == users.len() {
+    if !already.is_empty() && already.len() == users.len() && emails_to_invite.is_empty() {
         already.sort();
         let count = already.len() as i64;
         let form = if count == 1 { "one" } else { "other" };
@@ -677,9 +694,68 @@ pub async fn add_members(
         )
         .await?;
     }
+    // Invite.generate(current_user, email:, group_ids:, skip_email:)
+    let skip_email = params::string(&req.p, "skip_email").as_deref() == Some("true")
+        || (req.p.contains_key("notify_users") && !notify);
+    if !emails_to_invite.is_empty() {
+        let inviter = crate::invites::Inviter::load(&mut tx, acting)
+            .await?
+            .ok_or(Unsupported("an inviter who is gone"))?;
+        let limits = crate::invites::Limits {
+            pool: &state.pool,
+            enabled: state.config.rate_limits,
+        };
+        for email in &emails_to_invite {
+            let opts = crate::invites::Generate {
+                email: Some(email.clone()),
+                group_ids: vec![group.id],
+                skip_email,
+                ..crate::invites::Generate::default()
+            };
+            match crate::invites::generate(
+                &mut tx,
+                &req.settings,
+                &state.i18n,
+                &limits,
+                &inviter,
+                &opts,
+            )
+            .await?
+            {
+                crate::invites::Generated::Invite(_) => {}
+                crate::invites::Generated::RateLimited(refused) => {
+                    tx.commit().await?;
+                    let max = req.settings.get("max_invites_per_day")?.to_i();
+                    let form = if max == 1 { "one" } else { "other" };
+                    return Ok(json_error(vec![
+                        state
+                            .i18n
+                            .t_with(
+                                &format!("invite.rate_limit.{form}"),
+                                &[
+                                    ("count", &max.to_string()),
+                                    ("time_left", &refused.time_left(&state.i18n)),
+                                ],
+                            )
+                            .unwrap_or_default(),
+                    ]));
+                }
+                crate::invites::Generated::UserExists(_)
+                | crate::invites::Generated::Invalid(_) => {
+                    return Err(Unsupported(
+                        "an invite to a group that fails to save (a 500 in Rails)",
+                    )
+                    .into());
+                }
+            }
+        }
+    }
     tx.commit().await?;
     let usernames: Vec<String> = uniq.into_iter().map(|(_, n)| n).collect();
-    Ok(Json(json!({ "success": "OK", "usernames": usernames, "emails": [] })).into_response())
+    Ok(
+        Json(json!({ "success": "OK", "usernames": usernames, "emails": emails_to_invite }))
+            .into_response(),
+    )
 }
 
 /// DELETE /groups/:id/members(.json), DELETE /admin/groups/:id/members

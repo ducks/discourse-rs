@@ -423,6 +423,7 @@ pub async fn create(
             active: authenticated,
             approved: false,
             moderator: false,
+            staged: false,
             locale: Some(s.locale.filter(|l| !l.is_empty()).unwrap_or("en")),
             ip: Some(s.ip),
             custom_fields: &custom_fields,
@@ -528,6 +529,7 @@ pub struct NewUser<'a> {
     /// `ReviewableUser.set_approved_fields!(user, system)`
     pub approved: bool,
     pub moderator: bool,
+    pub staged: bool,
     pub locale: Option<&'a str>,
     /// `ip_address` and `registration_ip_address`.
     pub ip: Option<&'a str>,
@@ -552,9 +554,9 @@ pub async fn insert_user(
     let trust_level = u.trust_level;
     let user_id: i32 = sqlx::query_scalar(
         "INSERT INTO users (username, username_lower, name, active, approved, approved_by_id, approved_at, \
-                            moderator, trust_level, ip_address, registration_ip_address, locale, created_at, updated_at) \
+                            moderator, staged, trust_level, ip_address, registration_ip_address, locale, created_at, updated_at) \
          VALUES ($1, $2, $3, $4, $5, CASE WHEN $5 THEN -1 END, CASE WHEN $5 THEN clock_timestamp() END, \
-                 $6, $7, $8::inet, $8::inet, $9, clock_timestamp(), clock_timestamp()) \
+                 $6, $10, $7, $8::inet, $8::inet, $9, clock_timestamp(), clock_timestamp()) \
          RETURNING id",
     )
     .bind(u.username)
@@ -566,6 +568,7 @@ pub async fn insert_user(
     .bind(trust_level)
     .bind(u.ip)
     .bind(u.locale)
+    .bind(u.staged)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(
@@ -636,8 +639,11 @@ pub async fn insert_user(
         }
     }
     let joined = ensure_in_trust_level_group(&mut *conn, payloads, user_id, trust_level).await?;
-    default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
-    default_sidebar_links(&mut *conn, settings, user_id).await?;
+    // Staged users get no default preferences or sidebar links.
+    if !u.staged {
+        default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
+        default_sidebar_links(&mut *conn, settings, user_id).await?;
+    }
     // after_save: save_custom_fields (HasCustomFields, included first),
     // refresh_avatar (the avatar row and its gravatar job), then the
     // search index.

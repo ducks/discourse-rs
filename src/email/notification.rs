@@ -4,7 +4,7 @@
 //!
 //! The views (email/notification, email/_post, layouts/email_template and
 //! the default EmailStyle template) are reproduced as Rails renders them,
-//! Erubi's line trimming included. Messages, staged recipients, context
+//! Erubi's line trimming included. Messages, context
 //! posts, in-reply-to excerpts, translation overrides, private_email and
 //! the daily limit notice are refused.
 
@@ -174,8 +174,19 @@ pub async fn build(
     .bind(req.user_id)
     .fetch_one(&mut *conn)
     .await?;
+    // A staged user's email keeps the subject of the email that started
+    // the topic.
     if user.staged {
-        return Err(Unsupported("emails to staged users").into());
+        let incoming: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM incoming_emails ie JOIN posts p ON p.id = ie.post_id \
+             WHERE p.topic_id = $1 AND p.post_number = 1)",
+        )
+        .bind(post.topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if incoming {
+            return Err(Unsupported("emails to staged users of a topic started by email").into());
+        }
     }
     if s.get("private_email")?.truthy() {
         return Err(Unsupported("private_email").into());
@@ -241,7 +252,13 @@ pub async fn build(
         req.notification_type
     };
     let template = if pm {
-        let group = if group_name.is_some() { "_group" } else { "" };
+        let group = if group_name.is_some() {
+            "_group"
+        } else if user.staged {
+            "_staged"
+        } else {
+            ""
+        };
         format!("user_notifications.user_{notification_type}_pm{group}")
     } else {
         format!("user_notifications.user_{notification_type}")
@@ -400,7 +417,11 @@ pub async fn build(
     );
 
     // The views.
-    let first_footer_classes = if user.suspended { "" } else { "highlight" };
+    let first_footer_classes = if user.suspended || user.staged {
+        ""
+    } else {
+        "highlight"
+    };
     let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
     let avatar = crate::avatar::avatar_template(
         &urls,
@@ -515,7 +536,8 @@ pub async fn build(
         Some(p) => vec![("base_url", &base_url), ("url", &url), ("participants", p)],
         None => vec![("base_url", &base_url), ("url", &url)],
     };
-    let respond_instructions = if user.suspended {
+    // include_respond_instructions: not for the suspended or staged.
+    let respond_instructions = if user.suspended || user.staged {
         match &participants {
             Some(p) => t(
                 ctx,
@@ -536,11 +558,16 @@ pub async fn build(
         } else {
             "unsubscribe_link"
         };
-    let unsubscribe_instructions = t(
-        ctx,
-        unsubscribe_key_name,
-        &[("unsubscribe_url", &unsubscribe_url)],
-    )?;
+    // add_unsubscribe_link: not for staged users.
+    let unsubscribe_instructions = if user.staged {
+        String::new()
+    } else {
+        t(
+            ctx,
+            unsubscribe_key_name,
+            &[("unsubscribe_url", &unsubscribe_url)],
+        )?
+    };
 
     // subject (use_site_subject)
     // subject_pm: a group message's first group (its full name when it
@@ -658,8 +685,10 @@ pub async fn build(
     ];
     body_args.extend(template_args.iter().copied());
     let mut text = t(ctx, &format!("{template}.text_body_template"), &body_args)?;
-    text.push('\n');
-    text.push_str(&unsubscribe_instructions);
+    if !unsubscribe_instructions.is_empty() {
+        text.push('\n');
+        text.push_str(&unsubscribe_instructions);
+    }
 
     // html_part: the instructions cooked into the notification view, then
     // the layout around it.
@@ -674,10 +703,12 @@ pub async fn build(
     } else {
         notification_html
     };
-    html = html.replace(
-        "%{unsubscribe_instructions}",
-        &cook(unsubscribe_instructions.clone()).await?,
-    );
+    let unsubscribe_html = if unsubscribe_instructions.is_empty() {
+        String::new()
+    } else {
+        cook(unsubscribe_instructions.clone()).await?
+    };
+    html = html.replace("%{unsubscribe_instructions}", &unsubscribe_html);
     let preview_html = match &preview {
         Some(p) if !p.trim().is_empty() => cook(p.clone()).await?,
         _ => String::new(),
@@ -722,11 +753,13 @@ pub async fn build(
     if let Some(p) = preview.as_ref().filter(|p| !p.trim().is_empty()) {
         headers.push(("X-Discourse-Email-Preview".into(), p.clone()));
     }
-    headers.push(("List-Unsubscribe".into(), format!("<{unsubscribe_url}>")));
-    headers.push((
-        "List-Unsubscribe-Post".into(),
-        "List-Unsubscribe=One-Click".into(),
-    ));
+    if !user.staged {
+        headers.push(("List-Unsubscribe".into(), format!("<{unsubscribe_url}>")));
+        headers.push((
+            "List-Unsubscribe-Post".into(),
+            "List-Unsubscribe=One-Click".into(),
+        ));
+    }
     headers.push(("X-Discourse-Post-Id".into(), post.id.to_string()));
     headers.push(("X-Discourse-Topic-Id".into(), post.topic_id.to_string()));
     if let Some(tags) = &show_tags_in_subject {

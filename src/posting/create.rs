@@ -145,6 +145,9 @@ struct TopicPlan {
     pm_recipients: Option<Vec<i32>>,
     /// A message's allowed groups, in id order.
     pm_groups: Vec<super::group_messages::AllowedGroup>,
+    /// Emails of no user among a message's recipients: a staged user is
+    /// created for each (TopicCreator#add_emails), at its place in the list.
+    pm_staged: Vec<(usize, String)>,
     slow_mode_seconds: Option<i32>,
     all_topics_wiki: bool,
     /// A message's subtype.
@@ -212,6 +215,7 @@ async fn regular_topic_plan(
         category_id: Some(category_id),
         pm_recipients: None,
         pm_groups: Vec::new(),
+        pm_staged: Vec::new(),
         slow_mode_seconds: slow_mode,
         all_topics_wiki,
         subtype: None,
@@ -395,7 +399,12 @@ pub async fn create(
     }
     // The recipients: their number, and whether they take messages from
     // the sender (UserCommScreener).
-    if let Some(names) = &args.pm_recipients
+    // target_usernames: the recipients other than emails.
+    let usernames: Option<Vec<String>> = args
+        .pm_recipients
+        .as_ref()
+        .map(|names| names.iter().filter(|n| !n.contains('@')).cloned().collect());
+    if let Some(names) = &usernames
         && !names.is_empty()
         && !args.skip_validations
         && !guardian.is_staff()
@@ -489,6 +498,7 @@ pub async fn create(
                 category_id: None,
                 pm_recipients: None,
                 pm_groups: Vec::new(),
+                pm_staged: Vec::new(),
                 slow_mode_seconds: None,
                 all_topics_wiki: false,
                 subtype: args.subtype.clone(),
@@ -644,15 +654,30 @@ pub async fn create(
     // TopicCreator#process_private_message: the recipients, each one the
     // sender may message, in id order (find_each).
     if new_pm {
-        let names = args.pm_recipients.clone().unwrap_or_default();
+        let names = usernames.clone().unwrap_or_default();
+        let emails: Vec<String> = args
+            .pm_recipients
+            .iter()
+            .flatten()
+            .filter(|n| n.contains('@'))
+            .cloned()
+            .collect();
         let base = "activerecord.errors.models.topic.attributes.base";
-        if names.is_empty() && args.pm_groups.is_empty() {
+        if names.is_empty() && emails.is_empty() && args.pm_groups.is_empty() {
             return Ok(Outcome::Invalid(vec![
                 ctx.t(&format!("{base}.no_user_selected")),
             ]));
         }
-        if names.iter().any(|n| n.contains('@')) {
-            return Err(Unsupported("messages to email addresses").into());
+        // can_send_private_messages_to_email?
+        if !emails.is_empty()
+            && !(s.get("enable_staged_users")?.truthy()
+                && guardian.is_authenticated()
+                && guardian.in_setting_groups(s, "personal_message_enabled_groups")?
+                && guardian.in_setting_groups(s, "send_email_messages_allowed_groups")?)
+        {
+            return Ok(Outcome::Invalid(vec![
+                ctx.t(&format!("{base}.send_to_email_disabled")),
+            ]));
         }
         #[derive(sqlx::FromRow)]
         struct Target {
@@ -690,6 +715,55 @@ pub async fn create(
                 ctx.t(&format!("{base}.target_user_not_found")),
             ]));
         }
+        // add_emails: the user with each email (any of theirs), else a
+        // staged user to create; each one the sender may message.
+        let mut recipient_ids: Vec<i32> = targets.iter().map(|t| t.id).collect();
+        let mut staged: Vec<(usize, String)> = Vec::new();
+        for email in &emails {
+            let found: Option<Target> = sqlx::query_as(
+                "SELECT u.id, o.allow_private_messages, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
+                        (u.admin OR u.moderator) AS staff \
+                 FROM users u LEFT JOIN user_options o ON o.user_id = u.id \
+                 WHERE u.id IN (SELECT user_id FROM user_emails WHERE lower(email) = lower($1)) \
+                 ORDER BY u.id LIMIT 1",
+            )
+            .bind(email)
+            .fetch_optional(&mut *conn)
+            .await?;
+            match found {
+                Some(t) => {
+                    let ok = sender_can
+                        && (guardian.is_staff() || t.allow_private_messages.unwrap_or(true))
+                        && (guardian.is_staff() || !t.suspended)
+                        && (!guardian.is_silenced() || t.staff);
+                    if !ok && !args.skip_validations {
+                        return Ok(Outcome::Invalid(vec![
+                            ctx.t(&format!("{base}.cant_send_pm")),
+                        ]));
+                    }
+                    if !recipient_ids.contains(&t.id) {
+                        recipient_ids.push(t.id);
+                    }
+                }
+                // A new staged user takes messages unless the sender is
+                // silenced or may not send any.
+                None => {
+                    if !sender_can && !args.skip_validations {
+                        return Ok(Outcome::Invalid(vec![
+                            ctx.t(&format!("{base}.cant_send_pm")),
+                        ]));
+                    }
+                    if guardian.is_silenced() && !args.skip_validations {
+                        return Ok(Outcome::Invalid(vec![
+                            ctx.t(&format!("{base}.cant_send_pm")),
+                        ]));
+                    }
+                    if !staged.iter().any(|(_, e)| e == email) {
+                        staged.push((recipient_ids.len() + staged.len(), email.clone()));
+                    }
+                }
+            }
+        }
         // add_groups: each group the sender may message (unless
         // skip_validations), all of them found.
         let groups = super::group_messages::find(&mut conn, &args.pm_groups).await?;
@@ -716,7 +790,8 @@ pub async fn create(
             ]));
         }
         if let Some(plan) = plan.as_mut() {
-            plan.pm_recipients = Some(targets.iter().map(|t| t.id).collect());
+            plan.pm_recipients = Some(recipient_ids);
+            plan.pm_staged = staged;
             plan.pm_groups = groups;
         }
     }
@@ -1584,6 +1659,16 @@ async fn create_topic(
             ])));
         }
     }
+    // process_private_message's add_emails: the staged users, before the
+    // topic is saved, at their place among the recipients.
+    let mut recipients = plan.pm_recipients.clone();
+    if let Some(list) = recipients.as_mut() {
+        for (position, email) in &plan.pm_staged {
+            let id = crate::routes::create_staged_user(&mut *conn, ctx.i18n, s, ctx.config, email)
+                .await?;
+            list.insert((*position).min(list.len()), id);
+        }
+    }
     let slug = slug_for(&plan.title, &s.get("default_locale")?.to_s())?;
     let fancy_title = crate::posting::text::fancy_title(
         &plan.title,
@@ -1650,7 +1735,7 @@ async fn create_topic(
         return Ok(Err(TopicRefused::RateLimited(refused)));
     }
     // process_private_message: the recipients, then the sender.
-    if let Some(recipients) = &plan.pm_recipients {
+    if let Some(recipients) = &recipients {
         let mut allowed = recipients.clone();
         if !allowed.contains(&user_id) {
             allowed.push(user_id);

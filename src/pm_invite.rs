@@ -23,6 +23,9 @@ pub enum Invited {
     User(i32),
     /// `topic.invite` returned false: `failed_json`.
     Failed,
+    /// No user has that email: `Invite.generate` to it, when the
+    /// inviter may invite by email.
+    ByEmail,
     /// `Topic::UserExists` or `Topic::NotAllowed`: its message.
     Refused(String),
     RateLimited(LimitExceeded),
@@ -65,8 +68,12 @@ pub async fn invite(
     let s = ctx.settings;
     let inviter = guardian.user().ok_or(Unsupported("inviting anonymously"))?;
     let Some(target) = find_by_username_or_email(&mut *conn, username_or_email).await? else {
-        if username_or_email.contains('@') {
-            return Err(Unsupported("inviting to messages by email (Invite.generate)").into());
+        // `username_or_email =~ /\A.+@.+\z/`: the caller invites by email
+        // when the guardian may.
+        static EMAILISH: std::sync::LazyLock<regex::Regex> =
+            std::sync::LazyLock::new(|| regex::Regex::new(r"(?s)\A.+@.+\z").unwrap());
+        if EMAILISH.is_match(username_or_email) {
+            return Ok(Invited::ByEmail);
         }
         return Ok(Invited::Failed);
     };

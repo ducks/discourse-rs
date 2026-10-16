@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "enable_staged_users": false
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message for someone without an account",
+        "raw": "Hello there, this message goes to an email address that has no account yet.",
+        "archetype": "private_message",
+        "target_recipients": "stranger@example.com"
+      }
+    }
+  ]
+}

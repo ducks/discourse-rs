@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message for a member and a stranger",
+        "raw": "Hello both, this message goes to a member and to an email address without an account.",
+        "archetype": "private_message",
+        "target_recipients": "user1,stranger.two@example.com"
+      }
+    }
+  ]
+}

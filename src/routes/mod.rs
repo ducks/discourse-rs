@@ -71,6 +71,7 @@ mod chat_pages;
 mod color_schemes;
 mod impersonate;
 mod invite_redeem;
+pub(crate) use invite_redeem::create_staged_user;
 mod invites;
 mod onebox;
 mod polls;
