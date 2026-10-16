@@ -556,6 +556,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/session/login-code/verify.json",
             post(invite_redeem::verify_login_code),
         )
+        .route("/invites/upload_csv", post(invites::upload_csv))
+        .route("/invites/upload_csv.json", post(invites::upload_csv))
         .route("/invites/retrieve", get(invites::retrieve))
         .route("/invites/retrieve.json", get(invites::retrieve))
         .route("/invites/create-multiple", post(invites::create_multiple))

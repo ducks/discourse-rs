@@ -1,0 +1,815 @@
+{
+  "name": "upload_csv",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/upload_csv.json",
+      "params": {
+        "file": {
+          "fixture": "invites_bulk.csv"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T07:58:58.321594",
+  "transaction_started_at": "2026-10-16T07:58:54.635371",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-16T07:59:00.067326",
+          "email_type": "invite",
+          "message_id": "87586031-b514-4709-9ffd-9a6b0cab5100@localhost",
+          "to_address": "bulk1@example.com",
+          "updated_at": "2026-10-16T07:59:00.067326",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        },
+        {
+          "id": 2,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-16T07:59:00.104167",
+          "email_type": "invite",
+          "message_id": "567f85c8-1934-4fed-af1a-16c70fd4a8f3@localhost",
+          "to_address": "bulk2@example.com",
+          "updated_at": "2026-10-16T07:59:00.104167",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-16T07:58:58.437679",
+          "prev_value": null,
+          "updated_at": "2026-10-16T07:58:58.437679",
+          "acting_user_id": 1,
+          "target_user_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 2,
+          "group_id": 9001,
+          "created_at": "2026-10-16T07:58:54.635371",
+          "updated_at": "2026-10-16T07:58:54.635371",
+          "first_unread_pm_at": "2026-10-16T07:58:54.635371",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-09-26T07:58:54.635371",
+            "flair_icon": null,
+            "updated_at": "2026-09-26T07:58:54.635371",
+            "user_count": 0,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-09-26T07:58:54.635371",
+            "flair_icon": null,
+            "updated_at": "2026-09-26T07:58:54.635371",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 1,
+          "created_at": "2026-10-16T07:58:58.400955",
+          "updated_at": "2026-10-16T07:58:58.400955"
+        },
+        {
+          "id": 2,
+          "group_id": 9001,
+          "invite_id": 2,
+          "created_at": "2026-10-16T07:58:58.449119",
+          "updated_at": "2026-10-16T07:58:58.449119"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "bulk1@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T07:58:58.387886",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T07:58:58.376516",
+          "invite_key": "VXZvdGyWJh",
+          "updated_at": "2026-10-16T07:58:58.387886",
+          "description": null,
+          "email_token": "5e17dea94f88cc3a69f25834e9b188c9",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 4,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        },
+        {
+          "id": 2,
+          "admin": false,
+          "email": "bulk2@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T07:58:58.446496",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T07:58:58.444268",
+          "invite_key": "9RZV1JUmK8",
+          "updated_at": "2026-10-16T07:58:58.446496",
+          "description": null,
+          "email_token": "3375eea298ba919811f3908d9bff289e",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 4,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). Skipped Invites for Emails: user0@example.com Failed Invites for Emails: bad-email Here's the log: [2026-10-16 07:58:58 +0000] Invalid Email 'bad-email [2026-10-16 07:58:58 +0000] Invalid Group 'nogroup' for 'bulk2@example.com' [2026-10-16 07:58:58 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'",
+          "search_data": "'+0000':48,60,72 '-10':43,55,67 '-16':44,56,68 '07':45,57,69 '1':17,23 '2':14,19 '2026':42,54,66 '58':46,47,58,59,70,71 '9999':76 'bad':36,52 'bad-email':35,51 'bulk':1A,8 'bulk2@example.com':65,78 'email':29,34,37,50,53 'error':6A,24 'fail':31 'file':11 'group':62 'id':75 'invalid':49,61,73 'invit':3A,10,15,27,32 'log':41 'mail':16 'nogroup':63 'process':4A,13 'skip':18,26 'topic':74 'user':2A,9 'user0@example.com':30 'warn':20",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-16T07:58:59.899236",
+          "updated_at": "2026-10-16T07:58:59.899236",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).\n\nSkipped Invites for Emails:\n\n``` text\nuser0@example.com\n```\n\nFailed Invites for Emails:\n\n``` text\nbad-email\n```\n\nHere's the log:\n\n``` text\n[2026-10-16 07:58:58 +0000] Invalid Email 'bad-email\n[2026-10-16 07:58:58 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-10-16 07:58:58 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n```",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).</p>\n<p>Skipped Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">user0@example.com\n</code></pre>\n<p>Failed Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">bad-email\n</code></pre>\n<p>Here’s the log:</p>\n<pre><code class=\"lang-plaintext\">[2026-10-16 07:58:58 +0000] Invalid Email 'bad-email\n[2026-10-16 07:58:58 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-10-16 07:58:58 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n</code></pre>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-16T07:58:59.837168",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-16T07:58:59.837271",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T07:58:59.837271",
+          "word_count": 79,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-16T07:58:59.896743",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-16T07:58:59.798034",
+          "updated_at": "2026-10-16T07:58:59.798034"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-16T07:58:59.799365",
+          "updated_at": "2026-10-16T07:58:59.799365"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "topic_id": 35,
+          "invite_id": 1,
+          "created_at": "2026-10-16T07:58:58.395735",
+          "updated_at": "2026-10-16T07:58:58.395735"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Bulk user invite processed with errors Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). Skipped Invites for Emails: user0@example.com Failed Invites for Emails: bad-email Here's the log: [",
+          "topic_id": 45,
+          "search_data": "'1':17B,23B '2':14B,19B 'bad':36B 'bad-email':35B 'bulk':1A,8B 'email':29B,34B,37B 'error':6A,24B 'fail':31B 'file':11B 'invit':3A,10B,15B,27B,32B 'log':41B 'mail':16B 'process':4A,13B 'skip':18B,26B 'user':2A,9B 'user0@example.com':30B 'warn':20B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-16T07:58:59.816349",
+          "first_visited_at": "2026-10-16T07:58:59.816349",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T07:58:59.815602"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-16T07:58:59.906935",
+          "last_visited_at": "2026-10-16T07:58:59.807291",
+          "first_visited_at": "2026-10-16T07:58:59.807291",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T07:58:59.806075"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "bulk-user-invite-processed-with-errors",
+          "score": null,
+          "title": "Bulk user invite processed with errors",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). \nSkipped Invites for Emails: \nuser0@example.com\n\nFailed Invites for Emails: \nbad-email\n\nHere’s the log: \n[2026-10-16 07:&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-16T07:58:59.837271",
+          "pinned_at": null,
+          "created_at": "2026-10-16T07:58:59.795013",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T07:58:59.912264",
+          "word_count": 79,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Bulk user invite processed with errors",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-16T07:58:59.837271",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-16T07:58:59.795013",
+          "updated_at": "2026-10-16T07:58:59.826293",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 1,
+          "created_at": "2026-10-16T07:58:59.795013",
+          "updated_at": "2026-10-16T07:58:59.832321",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 365,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sC20tm598cdx6FO/d8zs4kqIdvI=",
+            "created_at": "2026-10-16T07:58:56.224279",
+            "rotated_at": "2026-10-16T07:58:56.218473",
+            "updated_at": "2026-10-16T07:58:56.224279",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sC20tm598cdx6FO/d8zs4kqIdvI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 365,
+            "seen_at": "2026-10-16T07:58:58.337092",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sC20tm598cdx6FO/d8zs4kqIdvI=",
+            "created_at": "2026-10-16T07:58:56.224279",
+            "rotated_at": "2026-10-16T07:58:56.218473",
+            "updated_at": "2026-10-16T07:58:56.224279",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sC20tm598cdx6FO/d8zs4kqIdvI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bulk_invite",
+      {
+        "invites": [
+          {
+            "email": "bulk1@example.com",
+            "groups": "testers",
+            "topic_id": "35"
+          },
+          {
+            "email": "user0@example.com",
+            "groups": "testers"
+          },
+          {
+            "email": "bad-email"
+          },
+          {
+            "email": "bulk2@example.com",
+            "groups": "nogroup;testers",
+            "topic_id": "9999"
+          }
+        ],
+        "current_user_id": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_logs": 1,
+    "group_histories": 1,
+    "group_users": 68,
+    "invited_groups": 1,
+    "invites": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_invites": 1,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "jobs_from_jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 1,
+        "invite_to_topic": null
+      }
+    ],
+    [
+      "invite_email",
+      {
+        "invite_id": 2,
+        "invite_to_topic": null
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "bulk1@example.com"
+        ],
+        [
+          "Message-ID",
+          "<87586031-b514-4709-9ffd-9a6b0cab5100@localhost>"
+        ],
+        [
+          "Subject",
+          "Admin (admin) invited you to join localhost"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ad1d944c645_1cc6bf283547b"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Admin (admin) invited you to join\n\n> **Discourse**\n>\n> \n\nIf you're interested, click the link below:\n\nhttp://localhost:3050/invites/VXZvdGyWJh\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to join</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\"><strong>Discourse</strong></p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3050/invites/VXZvdGyWJh\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3050/invites/VXZvdGyWJh</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    },
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "bulk2@example.com"
+        ],
+        [
+          "Message-ID",
+          "<567f85c8-1934-4fed-af1a-16c70fd4a8f3@localhost>"
+        ],
+        [
+          "Subject",
+          "Admin (admin) invited you to join localhost"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ad1d94418820_1cc6bf283557c"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Admin (admin) invited you to join\n\n> **Discourse**\n>\n> \n\nIf you're interested, click the link below:\n\nhttp://localhost:3050/invites/9RZV1JUmK8\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to join</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\"><strong>Discourse</strong></p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3050/invites/9RZV1JUmK8\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3050/invites/9RZV1JUmK8</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "faefa50266ff23fd7f87b507cabe2ce3978efb72941c55ebc34dbfa844e03c28",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

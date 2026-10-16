@@ -1190,3 +1190,102 @@ pub(crate) async fn invited_doc(
         },
     })))
 }
+
+/// `InvitesController::ALLOWED_BULK_INVITE_COLUMNS`
+const BULK_COLUMNS: [&str; 4] = ["email", "groups", "topic_id", "locale"];
+
+/// POST /invites/upload_csv(.json): InvitesController#upload_csv, an
+/// admin's CSV of invites queued for Jobs::BulkInvite.
+pub async fn upload_csv(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    request: axum::extract::Request,
+) -> Result<Response, AppError> {
+    let path = request.uri().path().to_string();
+    let form = super::uploads::read_form(request, &state).await?;
+    if !csrf_ok(&state, &headers, &form.fields, &path, "POST") {
+        return Ok(bad_csrf());
+    }
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    // ensure_can_bulk_invite_to_forum!
+    if !guardian.is_admin() {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let Some((_, bytes)) = form.file else {
+        return Err(Unsupported("upload_csv without a file (a 500 in Rails)").into());
+    };
+    let Some(rows) = crate::admin_badges::csv_rows(&bytes)? else {
+        return Err(Unsupported("a malformed invites CSV (CSV::MalformedCSVError)").into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let max = s.get("max_bulk_invites")?.to_i().max(0) as usize;
+    let mut header: Option<Vec<String>> = None;
+    // With a header row, only its known columns (and user fields).
+    let mut valid: Option<Vec<String>> = None;
+    let mut invites: Vec<Value> = Vec::new();
+    for row in rows {
+        if header.is_none() {
+            if row.first().cloned().flatten().as_deref() == Some("email") {
+                header = Some(row.iter().map(|c| c.clone().unwrap_or_default()).collect());
+                let mut columns: Vec<String> = BULK_COLUMNS.iter().map(|c| c.to_string()).collect();
+                let fields: Vec<String> = sqlx::query_scalar("SELECT name FROM user_fields")
+                    .fetch_all(&mut *conn)
+                    .await?;
+                columns.extend(fields);
+                valid = Some(columns);
+                continue;
+            }
+            header = Some(vec!["email".into(), "groups".into(), "topic_id".into()]);
+        }
+        let present = |v: &Option<String>| v.as_deref().is_some_and(|v| !crate::ruby::is_blank(v));
+        if !row.first().is_some_and(present) {
+            continue;
+        }
+        let mut invite = Map::new();
+        for (key, value) in header.iter().flatten().zip(row.iter()) {
+            if present(value) && valid.as_ref().is_none_or(|v| v.contains(key)) {
+                invite.insert(key.clone(), json!(value));
+            }
+        }
+        invites.push(Value::Object(invite));
+        if invites.len() >= max {
+            break;
+        }
+    }
+    if invites.is_empty() {
+        return Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "failed": "FAILED",
+                "errors": [state.i18n.t("bulk_invite.error").unwrap_or_default()],
+            })),
+        )
+            .into_response());
+    }
+    let count = invites.len();
+    crate::jobs::enqueue(
+        &mut conn,
+        crate::bulk_invite::BULK_INVITE,
+        json!({"invites": invites, "current_user_id": user_id}),
+    )
+    .await?;
+    if count >= max {
+        let max = max.to_string();
+        return Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "failed": "FAILED",
+                "errors": [state
+                    .i18n
+                    .t_with("bulk_invite.max_rows", &[("max_bulk_invites", &max)])
+                    .unwrap_or_default()],
+            })),
+        )
+            .into_response());
+    }
+    Ok(success())
+}
