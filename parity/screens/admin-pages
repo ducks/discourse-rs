@@ -43,3 +43,24 @@
 /admin/email-logs/bounced as=admin
 /admin/email-logs/received as=admin
 /admin/email-logs/rejected as=admin
+# The report page (90g5): the chrome, a table, the charts, posters by
+# member type with its members, a report that doesn't exist.
+/admin/reports/signups as=admin wait=2500
+/admin/reports/signups?mode=table as=admin wait=2500
+/admin/reports/users_by_trust_level as=admin wait=2500
+/admin/reports/topics as=admin wait=2500
+/admin/reports/topics?chart_grouping=weekly&start_date=2026-07-01&end_date=2026-10-01 as=admin wait=2500
+/admin/reports/site_traffic as=admin wait=2500
+/admin/reports/trust_level_growth as=admin wait=2500
+/admin/reports/posters_by_member_type as=admin wait=2500
+/admin/reports/top_traffic_sources as=admin wait=2500
+/admin/reports/post_edits as=admin wait=2500
+/admin/reports/nonexistent_xyz as=admin wait=2500
+/admin/reports/trust_level_pipeline as=admin wait=2500
+/admin/reports/moderators_activity as=admin wait=2500
+/admin/reports/topics?filters=%7B%22category%22%3A4%7D as=admin wait=2500
+/admin/reports/signups?filters=%7B%22group%22%3A1%7D as=admin wait=2500
+# Masked: the related users' dates, which the reference draws in the
+# browser's zone.
+/admin/reports/signups?start_date=2026-07-01&end_date=2026-07-31 as=admin wait=2500 mask=.relative-date
+/admin/reports/signups?mode=table&start_date=2026-07-01&end_date=2026-07-31 as=admin wait=2500

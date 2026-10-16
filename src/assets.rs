@@ -58,6 +58,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/preferences-security.css"),
     include_str!("../static/css/file-uploader.css"),
     include_str!("../static/css/date-time-input.css"),
+    include_str!("../static/css/segmented-control.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),
@@ -254,6 +255,16 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "admin-api-keys.js",
         JS,
         include_str!("../static/js/admin-api-keys.js"),
+    ),
+    (
+        "admin-report-charts.js",
+        JS,
+        include_str!("../static/js/admin-report-charts.js"),
+    ),
+    (
+        "admin-report.js",
+        JS,
+        include_str!("../static/js/admin-report.js"),
     ),
     ("dialog.js", JS, include_str!("../static/js/dialog.js")),
     (

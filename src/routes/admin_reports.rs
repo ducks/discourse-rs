@@ -212,7 +212,9 @@ pub async fn show(
     if !guardian.is_staff() {
         return Ok(not_found(&state));
     }
-    super::admin_pages::refuse_page(&uri, &headers, "the admin report page (AdminReport)")?;
+    if !super::admin_pages::wants_json(&uri, &headers) {
+        return page(&state, &guardian, &kind, &headers, &uri).await;
+    }
     let kind = kind.strip_suffix(".json").unwrap_or(&kind).to_string();
     let p = crate::params::parse(uri.query(), &headers, &body);
     let mut conn = state.pool.acquire().await?;
@@ -330,4 +332,235 @@ async fn bulk_reports(
         }
     }
     Ok(Ok(list))
+}
+
+/// `$.param`'s strings for a filter value, as the bulk request sends the
+/// route's filters.
+fn param_value(v: &Value) -> Value {
+    match v {
+        Value::Null => json!(""),
+        Value::Bool(b) => json!(b.to_string()),
+        Value::Number(n) => json!(n.to_string()),
+        Value::String(_) => v.clone(),
+        Value::Array(a) => Value::Array(a.iter().map(param_value).collect()),
+        Value::Object(m) => {
+            Value::Object(m.iter().map(|(k, v)| (k.clone(), param_value(v))).collect())
+        }
+    }
+}
+
+/// `moment(value, "YYYY-MM-DD")` formatted back, the value itself when
+/// it isn't a date.
+fn route_date(v: &str) -> String {
+    NaiveDate::parse_from_str(v, "%Y-%m-%d")
+        .map(|d| d.format("%Y-%m-%d").to_string())
+        .unwrap_or_else(|_| v.to_string())
+}
+
+/// GET /admin/reports/:type as the page (adminReports.show): the route's
+/// model from its query params, the report as AdminReport loads it
+/// (ReportLoader's bulk request with `_buildPayload`'s data), drawn by
+/// crate::admin_report_view.
+async fn page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    kind: &str,
+    headers: &HeaderMap,
+    uri: &Uri,
+) -> Result<Response, AppError> {
+    let mut query: Map<String, Value> = Map::new();
+    for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
+        query.insert(k.into_owned(), Value::String(v.into_owned()));
+    }
+    let param = |key: &str| {
+        query
+            .get(key)
+            .and_then(Value::as_str)
+            .filter(|v| !v.is_empty())
+            .map(str::to_string)
+    };
+    let mut conn = state.pool.acquire().await?;
+    let shell =
+        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_all_reports")
+            .await?;
+    let mode = param("mode");
+    // The route's redirect: site traffic is the legacy page views report
+    // while those are used.
+    if kind == "site_traffic" && shell.settings.get("use_legacy_pageviews")?.truthy() {
+        let mut to = format!(
+            "{}/admin/reports/consolidated_page_views",
+            shell.site.base_path
+        );
+        if let Some(m) = &mode {
+            to.push_str(&format!(
+                "?mode={}",
+                form_urlencoded::byte_serialize(m.as_bytes()).collect::<String>()
+            ));
+        }
+        return Ok(axum::response::Redirect::to(&to).into_response());
+    }
+    let custom_filters = match param("filters") {
+        None => None,
+        Some(raw) => match serde_json::from_str::<Value>(&raw) {
+            Ok(Value::Object(m)) => Some(m),
+            Ok(Value::Null) => None,
+            _ => {
+                return Err(
+                    Unsupported("a report page whose filters param isn't a JSON object").into(),
+                );
+            }
+        },
+    };
+    let chart_grouping = param("chart_grouping");
+    let today = crate::clock::now().date_naive();
+    let start_date = param("start_date")
+        .map(|v| route_date(&v))
+        .unwrap_or_else(|| {
+            let d = today - Duration::days(1);
+            d.checked_sub_months(chrono::Months::new(1))
+                .unwrap_or(d)
+                .format("%Y-%m-%d")
+                .to_string()
+        });
+    let end_date = param("end_date")
+        .map(|v| route_date(&v))
+        .unwrap_or_else(|| today.format("%Y-%m-%d").to_string());
+    // reportOptions.table.limit
+    let limit = if kind == "top_referred_topics" {
+        10
+    } else {
+        50
+    };
+    let mut payload = Map::new();
+    payload.insert("facets".into(), json!(["prev_period"]));
+    payload.insert("start_date".into(), json!(start_date));
+    payload.insert("end_date".into(), json!(end_date));
+    payload.insert("limit".into(), json!(limit.to_string()));
+    if let Some(f) = custom_filters.as_ref().filter(|f| !f.is_empty()) {
+        payload.insert("filters".into(), param_value(&Value::Object(f.clone())));
+    }
+    if guardian.is_admin() {
+        payload.insert("include_related_items".into(), json!("true"));
+    }
+    let mut requested = Map::new();
+    requested.insert(kind.to_string(), Value::Object(payload));
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &shell.settings,
+    };
+    let report = {
+        let cx = context(&mut conn, state, &shell.settings, &urls).await?;
+        let viewer = Viewer {
+            guardian: Some(guardian),
+        };
+        // A failed request (a type the controller doesn't look up, params
+        // it refuses) leaves the component without a model.
+        match bulk_reports(&mut conn, state, &cx, &viewer, &requested).await? {
+            Ok(list) => list.into_iter().find(|r| r["type"] == kind),
+            Err(_) => None,
+        }
+    };
+    let filter_types: Vec<String> = report
+        .as_ref()
+        .and_then(|r| r["available_filters"].as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|f| f["type"].as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default();
+    let categories = if filter_types
+        .iter()
+        .any(|t| t == "category" || t == "category_list")
+    {
+        super::search::advanced_panel(state, &mut conn, &shell.settings, guardian)
+            .await?
+            .categories
+    } else {
+        Vec::new()
+    };
+    let groups: Vec<(i64, String)> = if filter_types.iter().any(|t| t == "group") {
+        // Site#groups, without everyone.
+        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM groups WHERE id > 0 ORDER BY name")
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .map(|(id, name)| (i64::from(id), name))
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let hidden = shell
+        .settings
+        .get("dashboard_hidden_reports")?
+        .to_s()
+        .split('|')
+        .any(|v| !v.is_empty() && v == kind);
+    // The route's backLink: the dashboard when the page came from there.
+    let base = shell.site.base_path.clone();
+    let from_dashboard = headers
+        .get("hx-current-url")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.split_once("://"))
+        .and_then(|(_, rest)| rest.find('/').map(|i| rest[i..].to_string()))
+        .map(|rest| {
+            let rest = rest.split('#').next().unwrap_or_default().to_string();
+            let (path, q) = rest.split_once('?').unwrap_or((&rest, ""));
+            (path.to_string(), q.to_string())
+        })
+        .filter(|(path, _)| {
+            let path = path.strip_prefix(base.as_str()).unwrap_or(path);
+            path == "/admin" || path == "/admin/"
+        });
+    let back = match from_dashboard {
+        Some((_, q)) => crate::admin_report_view::Back {
+            label_key: "admin.reports.back_to_dashboard",
+            href: if q.is_empty() {
+                "/admin".into()
+            } else {
+                format!("/admin?{q}")
+            },
+        },
+        None => crate::admin_report_view::Back {
+            label_key: "admin.reports.back",
+            href: "/admin/reports".into(),
+        },
+    };
+    let all_categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &all_categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let cx = shell.cx(state);
+    let content = crate::admin_report_view::ReportPage {
+        kind,
+        report: report.as_ref(),
+        mode: mode.as_deref(),
+        chart_grouping: chart_grouping.as_deref(),
+        start_date: &start_date,
+        end_date: &end_date,
+        custom_filters: custom_filters.as_ref(),
+        hidden,
+        admin: guardian.is_admin(),
+        back,
+        groups: &groups,
+        categories: &categories,
+        limit,
+    }
+    .render(&cx, &list);
+    let main = crate::admin_view::contents("admin-reports", &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.reports.title");
+    shell.render(
+        state,
+        uri,
+        &title,
+        main,
+        "admin-report.js",
+        axum::http::StatusCode::OK,
+    )
 }

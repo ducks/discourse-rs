@@ -6,12 +6,14 @@
     pages' actions confirm and report with. -#}
 <script src="{{ crate::assets::url(base_path, "admin.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>
-{%- if script == "admin-dashboard.js" %}
-{#- The dashboard's charts: Chart.js with its moment adapter, as
-    Discourse's chart-js-bundle loads them. -#}
+{%- if script == "admin-dashboard.js" || script == "admin-report.js" %}
+{#- The reports' charts: Chart.js with its moment adapter, as
+    Discourse's chart-js-bundle loads them, and the chart code the
+    dashboard and the report page share. -#}
 <script src="{{ crate::assets::url(base_path, "moment.min.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "chart.umd.min.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "chartjs-adapter-moment.min.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "admin-report-charts.js") }}"></script>
 {%- endif %}
 {%- if !script.is_empty() %}
 <script src="{{ crate::assets::url(base_path, script) }}"></script>
