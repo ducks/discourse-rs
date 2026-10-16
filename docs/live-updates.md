@@ -29,9 +29,10 @@ The same as the JSON API:
 - an admin API key in `Api-Key` (with `Api-Username` or `Api-User-Id` for
   an all-users key). Granular scopes do not cover `/bus`, so use a key
   without scopes;
-- a user API key in `User-Api-Key`, with the `read` or `write` scope. The
-  `message_bus` and `notifications` scopes match only Rails'
-  `/message-bus/.../poll` path, so they do not cover `/bus`.
+- a user API key in `User-Api-Key`, with the `message_bus`,
+  `notifications`, `read` or `write` scope. The `message_bus` and
+  `notifications` scopes cover `GET /bus/events` and `/bus/poll` as they
+  cover Rails' `/message-bus/.../poll`, so existing keys keep working.
 
 No credentials subscribes as an anonymous viewer.
 

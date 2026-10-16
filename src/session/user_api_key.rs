@@ -66,14 +66,20 @@ static REVOKE: LazyLock<Regex> = LazyLock::new(|| route("/user-api-key/revoke"))
 static BOOKMARKS: LazyLock<Regex> = LazyLock::new(|| route(r"/(?:u|users)/[%\w.\-]+?/bookmarks"));
 static MESSAGE_BUS_POLL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\A/message-bus/.*/poll").unwrap());
+static BUS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\A/bus/(?:events|poll)\z").unwrap());
 
 impl Request<'_> {
     fn is(&self, method: Method, pattern: &Regex) -> bool {
         *self.method == method && pattern.is_match(self.path)
     }
 
-    /// `actions: "message_bus"`: `request.fullpath =~ %r{\A/message-bus/.*/poll}`.
+    /// `actions: "message_bus"`: `request.fullpath =~ %r{\A/message-bus/.*/poll}`,
+    /// and the port's own `GET /bus/events` and `/bus/poll`, which carry
+    /// what the MessageBus poll carries in Rails.
     fn message_bus_poll(&self) -> bool {
+        if *self.method == Method::GET && BUS.is_match(self.path) {
+            return true;
+        }
         let fullpath = match self.query {
             Some(q) if !q.is_empty() => format!("{}?{q}", self.path),
             _ => self.path.to_string(),
@@ -292,4 +298,37 @@ async fn update_last_used(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn permits(scope: &str, method: Method, path: &str, query: Option<&str>) -> bool {
+        let r = Request {
+            method: &method,
+            path,
+            query,
+            id_param: None,
+        };
+        scope_permits(scope, &r).unwrap()
+    }
+
+    #[test]
+    fn message_bus_scopes_reach_the_bus() {
+        for scope in ["message_bus", "notifications"] {
+            assert!(permits(
+                scope,
+                Method::GET,
+                "/bus/events",
+                Some("channels=/latest")
+            ));
+            assert!(permits(scope, Method::GET, "/bus/poll", Some("position=1")));
+            assert!(permits(scope, Method::POST, "/message-bus/abc/poll", None));
+            assert!(!permits(scope, Method::POST, "/bus/poll", None));
+            assert!(!permits(scope, Method::GET, "/bus/other", None));
+            assert!(!permits(scope, Method::GET, "/latest.json", None));
+        }
+        assert!(!permits("session_info", Method::GET, "/bus/events", None));
+    }
 }
