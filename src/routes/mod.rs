@@ -2388,6 +2388,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-api-keys.js", get(asset))
         .route("/assets/admin-web-hooks.js", get(asset))
         .route("/assets/admin-email.js", get(asset))
+        .route("/assets/admin-problem-checks.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))

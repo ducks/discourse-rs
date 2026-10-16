@@ -274,6 +274,48 @@ async fn the_api_keys_pages() {
 }
 
 #[tokio::test]
+async fn the_problem_checks_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    sqlx::query(
+        "INSERT INTO problem_check_trackers (id, identifier, target, last_run_at, last_success_at, last_problem_at, ignored_at) VALUES \
+         (1, 'email_sending_failures', '__NULL__', now(), now(), NULL, NULL), \
+         (2, 'upcoming_change_stale', 'voice_enabled', now(), NULL, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/problem-checks").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Problem checks - Problem checks - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-problem-checks admin-config-page\">"));
+    assert!(html.contains("<table class=\"d-table admin-problem-checks__items\">"));
+    // A passing check, its target blank, to ignore.
+    assert!(html.contains("<tr class=\"d-table__row --passing\"><td class=\"d-table__cell --overview\"><div class=\"status-label --success\">"));
+    assert!(html.contains("data-problem-check-id=\"1\" data-action=\"ignore\""));
+    // A failing, ignored one with its target, to watch.
+    assert!(html.contains("<div class=\"status-label --critical\">"));
+    assert!(html.contains("</div>voice_enabled</td>"));
+    assert!(html.contains("data-problem-check-id=\"2\" data-action=\"watch\""));
+    assert!(html.contains("/admin-problem-checks.js"));
+    // The JSON stays.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/problem_checks.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("[{\"id\":1,"), "{body}");
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/problem-checks")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn the_email_pages() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;

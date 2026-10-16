@@ -785,10 +785,11 @@ then by what running a forum needs (milestone 6). Briefs:
     the test email; the summary preview with DatePickerPast, the single
     user's EmailGroupUserChooser, Refresh, the html and text toggle and
     sending it; the advanced test's run; the templates' list with
-    DFilterControls and the overridden toggle). Left: the email
-    template editor (DEditor with its heading and list menus, the
-    interpolation keys, and the save, which needs translation overrides,
-    as 90g7's site texts do), problem checks, badges, installed plugins),
+    DFilterControls and the overridden toggle);
+    `feat/admin-shell-problem-checks`: /admin/problem-checks with
+    ProblemChecksList and ProblemCheckItem (ignore, watch). Left: the
+    email template editor (moved to 90g7, with site texts' translation
+    overrides), badges, installed plugins),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.

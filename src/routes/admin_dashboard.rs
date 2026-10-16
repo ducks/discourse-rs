@@ -89,6 +89,7 @@ pub async fn problems(
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
     if !guardian.is_staff() {
@@ -102,11 +103,43 @@ pub async fn index(
         return Ok(super::search::invalid_access(&state));
     }
     let mut conn = state.pool.acquire().await?;
-    let trackers = problem_checks::all_trackers(&mut conn).await?;
-    Ok(Json(Value::Array(
-        trackers.iter().map(problem_checks::tracker_json).collect(),
-    ))
-    .into_response())
+    let trackers: Vec<Value> = problem_checks::all_trackers(&mut conn)
+        .await?
+        .iter()
+        .map(problem_checks::tracker_json)
+        .collect();
+    // The page: /admin/problem-checks loaded in the browser.
+    if uri.path().starts_with("/admin/problem-checks")
+        && super::admin_email::html_request(&uri, &headers)
+    {
+        let shell = super::admin_pages::Shell::load(
+            &mut conn,
+            &state,
+            &guardian,
+            &headers,
+            "admin_problem_checks",
+        )
+        .await?;
+        let cx = shell.cx(&state);
+        let main = format!(
+            "{}{}",
+            crate::admin_ui::strings(&cx, "admin-problem-checks-strings", &["generic_error"]),
+            crate::admin_problem_checks_view::render(&cx, &trackers)
+        );
+        let main = crate::admin_ui::contents("admin-problem-checks", "", &main);
+        // The reference titles it twice.
+        let title = crate::admin_view::t(&state.i18n, "admin.config.problem_checks.title");
+        let title = format!("{title} - {title}");
+        return shell.render(
+            &state,
+            &uri,
+            &title,
+            main,
+            "admin-problem-checks.js",
+            StatusCode::OK,
+        );
+    }
+    Ok(Json(Value::Array(trackers)).into_response())
 }
 
 fn admin_only(state: &AppState, guardian: &Guardian) -> Option<Response> {
