@@ -460,7 +460,9 @@ pub async fn set(
         Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
         other => other.to_s(),
     };
-    save_override(&mut *conn, def, &db_value).await?;
+    // A string set to nil is kept as NULL (to_db_value's implicit cast).
+    let nil = raw.is_null() && matches!(def.data_type, DataType::String | DataType::Username);
+    save_override_value(&mut *conn, def, (!nil).then_some(db_value.as_str())).await?;
     let previous = settings.get(name)?;
     if def.client && *previous != stored {
         let published = match &stored {
@@ -486,6 +488,16 @@ pub(crate) async fn save_override(
     def: &crate::site_settings::Definition,
     db_value: &str,
 ) -> Result<(), sqlx::Error> {
+    save_override_value(conn, def, Some(db_value)).await
+}
+
+/// `save_override` of a value that may be nil (a string setting set to
+/// nil keeps a NULL value).
+pub(crate) async fn save_override_value(
+    conn: &mut PgConnection,
+    def: &crate::site_settings::Definition,
+    db_value: Option<&str>,
+) -> Result<(), sqlx::Error> {
     let row: Option<(Option<String>, i32)> =
         sqlx::query_as("SELECT value, data_type FROM site_settings WHERE name = $1")
             .bind(&def.name)
@@ -504,7 +516,7 @@ pub(crate) async fn save_override(
             .await?;
         }
         Some((value, data_type))
-            if value.as_deref() == Some(db_value) && data_type == def.data_type as i32 => {}
+            if value.as_deref() == db_value && data_type == def.data_type as i32 => {}
         Some(_) => {
             sqlx::query(
                 "UPDATE site_settings SET value = $2, data_type = $3, updated_at = clock_timestamp() WHERE name = $1",

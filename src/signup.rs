@@ -647,6 +647,27 @@ pub async fn insert_user(
     .await?;
     // after_commit: user_created's web hooks.
     crate::web_hooks::enqueue_user_hooks(&mut *conn, payloads, "user_created", user_id).await?;
+    // discourse-patreon's user_created: a patron's reward groups.
+    if settings.get("patreon_enabled")?.truthy() {
+        let store = |key: &'static str| {
+            sqlx::query_scalar::<_, Option<String>>(
+                "SELECT value FROM plugin_store_rows WHERE plugin_name = 'discourse-patreon' AND key = $1",
+            )
+            .bind(key)
+        };
+        let filters = store("filters").fetch_optional(&mut *conn).await?.flatten();
+        let patrons = store("users").fetch_optional(&mut *conn).await?.flatten();
+        let has_filters = filters
+            .and_then(|f| serde_json::from_str::<Value>(&f).ok())
+            .is_some_and(|f| f.as_object().is_some_and(|m| !m.is_empty()));
+        let is_patron = patrons
+            .and_then(|p| serde_json::from_str::<Value>(&p).ok())
+            .and_then(|p| p.as_object().cloned())
+            .is_some_and(|m| m.values().any(|v| v.as_str() == Some(email)));
+        if has_filters && is_patron {
+            return Err(Unsupported("Patreon reward groups for a new patron").into());
+        }
+    }
     // The group users' after_commit (GroupManager#sync_add_side_effects),
     // after the user's: the groups' counts, so user_created's payload has
     // them as they were.

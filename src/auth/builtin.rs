@@ -57,6 +57,7 @@ pub fn is_builtin(name: &str) -> bool {
             | "discourse_id"
             | "microsoft_office365"
             | "amazon"
+            | "patreon"
     )
 }
 
@@ -178,6 +179,19 @@ pub fn client(s: &SiteSettings, name: &str) -> Result<Client, AppError> {
             "https://api.amazon.com/auth/o2/token",
             BasicAuth,
         )?,
+        "patreon" => client_of(
+            s,
+            "patreon_client_id",
+            "patreon_client_secret",
+            "https://www.patreon.com",
+            "https://www.patreon.com/oauth2/authorize",
+            if patreon_v2(s)? {
+                "https://www.patreon.com/api/oauth2/token"
+            } else {
+                "https://api.patreon.com/oauth2/token"
+            },
+            RequestBody,
+        )?,
         _ => return Err(Unsupported("an unknown built-in login").into()),
     })
 }
@@ -274,9 +288,30 @@ pub fn authorize_params(
             // The scope setting replaces the strategy's own.
             out.push(("scope".into(), setting(s, "login_with_amazon_scope")?));
         }
+        "patreon" => {
+            // The API version's authorize params replace the strategy's.
+            out.push(("response_type".into(), "code".into()));
+            if patreon_v2(s)? {
+                out.push((
+                    "scope".into(),
+                    "identity identity[email] campaigns campaigns.members campaigns.members[email]"
+                        .into(),
+                ));
+            }
+        }
         _ => return Err(Unsupported("an unknown built-in login").into()),
     }
     Ok(out)
+}
+
+/// `Patreon::ApiVersion.current` is V2.
+fn patreon_v2(s: &SiteSettings) -> Result<bool, AppError> {
+    Ok(setting(s, "patreon_api_version")? == "2")
+}
+
+/// `provider_ignores_state`: Patreon's hidden setting.
+pub fn ignores_state(s: &SiteSettings, name: &str) -> Result<bool, AppError> {
+    Ok(name == "patreon" && s.get("patreon_login_ignore_state")?.truthy())
 }
 
 /// GoogleOauth2#get_scope: commas and spaces split it; scopes other than
@@ -299,27 +334,23 @@ fn google_scope(raw: &str) -> String {
         .join(" ")
 }
 
-/// The strategy's `callback_url` where it isn't Discourse's
-/// `base_url_no_prefix + callback_path`: Discord, LinkedIn, Microsoft and
-/// Amazon add `script_name` again (twice under a subfolder, as they do),
-/// Amazon from REDIRECT_URL_ORIGIN when set.
+/// The strategy's `callback_url`. Discord, LinkedIn, Microsoft, Amazon
+/// and Patreon add `script_name` to a callback path that has it already;
+/// OmniauthBypassMiddleware's compat patch takes the doubled one out, so
+/// every one is the origin, the subfolder and the callback path. Amazon's
+/// origin is REDIRECT_URL_ORIGIN when set.
 pub fn callback_url(
     name: &str,
     base_url_no_prefix: &str,
     script_name: &str,
 ) -> Result<String, AppError> {
-    let callback_path = format!("{script_name}/auth/{name}/callback");
-    Ok(match name {
-        "discord" | "linkedin_oidc" | "microsoft_office365" => {
-            format!("{base_url_no_prefix}{script_name}{callback_path}")
-        }
+    let origin = match name {
         "amazon" => {
-            let origin = std::env::var("REDIRECT_URL_ORIGIN")
-                .unwrap_or_else(|_| base_url_no_prefix.to_string());
-            format!("{origin}{script_name}{callback_path}")
+            std::env::var("REDIRECT_URL_ORIGIN").unwrap_or_else(|_| base_url_no_prefix.to_string())
         }
-        _ => format!("{base_url_no_prefix}{callback_path}"),
-    })
+        _ => base_url_no_prefix.to_string(),
+    };
+    Ok(format!("{origin}{script_name}/auth/{name}/callback"))
 }
 
 /// What the callback phase needs before the state check: Facebook's
@@ -416,6 +447,11 @@ pub async fn build_access_token(
                 ("client_secret".to_string(), client.client_secret.clone()),
             ];
             http.get_token(client, &code, redirect, &extra).await
+        }
+        "patreon" => {
+            // options.redirect_uri: Discourse.base_url's callback.
+            let redirect = format!("{}/auth/patreon/callback", http.fetcher.urls.base_url()?);
+            http.get_token(client, &code, &redirect, &[]).await
         }
         _ => http.get_token(client, &code, callback, &[]).await,
     }
@@ -822,6 +858,61 @@ pub async fn auth_hash(
                 extra,
             }
         }
+        "patreon" => {
+            // client.request(:get, identity_url, parse: :json): JSON
+            // whatever the content type, an error status raising.
+            let url = if patreon_v2(http.fetcher.settings)? {
+                "https://www.patreon.com/api/oauth2/v2/identity?fields%5Buser%5D=email,full_name,is_email_verified"
+            } else {
+                "https://api.patreon.com/oauth2/api/current_user"
+            };
+            let fetched = fetch!(
+                http.request(
+                    client.final_destination,
+                    client.timeout,
+                    reqwest::Method::GET,
+                    url,
+                    &[("Authorization".into(), format!("Bearer {}", token.token))],
+                    None,
+                )
+                .await?
+            );
+            if fetched.status >= 400 {
+                return Ok(Err(Failure::new(
+                    "invalid_credentials",
+                    format!("request to {url} failed: {}", fetched.status),
+                )));
+            }
+            let raw_info: Value = serde_json::from_str(&fetched.body)
+                .map(crate::auth::oauth2::snaky)
+                .map_err(|_| {
+                    Unsupported("a Patreon identity that is not JSON (JSON::ParserError)")
+                })?;
+            let data = at(&raw_info, "data");
+            let attributes = at(data, "attributes");
+            if !attributes.is_object() {
+                return Err(Unsupported(
+                    "a Patreon identity without its attributes (NoMethodError)",
+                )
+                .into());
+            }
+            let mut info = Map::new();
+            info.insert("email".into(), at(attributes, "email").clone());
+            info.insert(
+                "email_verified".into(),
+                at(attributes, "is_email_verified").clone(),
+            );
+            info.insert("name".into(), at(attributes, "full_name").clone());
+            let mut extra = Map::new();
+            extra.insert("raw_info".into(), raw_info.clone());
+            AuthHash {
+                provider: name.into(),
+                uid: ruby_to_s(at(data, "id")),
+                info,
+                credentials: credentials(token),
+                extra,
+            }
+        }
         _ => return Err(Unsupported("an unknown built-in login").into()),
     };
     Ok(Ok(hash))
@@ -1091,6 +1182,7 @@ pub async fn after_authenticate(
         ),
         "microsoft_office365" => s.get("microsoft_auth_email_verified")?.truthy(),
         "amazon" => s.get("login_with_amazon_email_verified")?.truthy(),
+        "patreon" => truthy(auth.info.get("email_verified")),
         _ => true,
     };
     // GithubAuthenticator#find_user_by_email: any verified address.
@@ -1193,7 +1285,7 @@ mod tests {
     fn callback_urls() {
         assert_eq!(
             callback_url("discord", "https://f.x", "/forum").unwrap(),
-            "https://f.x/forum/forum/auth/discord/callback"
+            "https://f.x/forum/auth/discord/callback"
         );
         assert_eq!(
             callback_url("github", "https://f.x", "/forum").unwrap(),

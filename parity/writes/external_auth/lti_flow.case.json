@@ -1,0 +1,75 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "lti_client_ids": "client-a|client-b",
+    "lti_authorization_endpoint": "https://lms.example/auth",
+    "lti_platform_issuer_id": "https://lms.example",
+    "lti_platform_public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA58yj51OjZwcUjuO1PB7H\nk62v6/YAjNHl4POiF22D4cRoxsWTQH2CD4zLEpqJJDk06YUThcjD64KXupPEvJ5K\nq4FP4EgllCSyhLn3baBbwlpmvQmF83t6cLEf7oB8tzIV+vehwt5Z0Rwkc+RreVEg\nB7sGgOybipbR6FIQJqpFM+hnl4Wj7nE4t9SAxalNBaCscN6A7xGirCh3P71PyoA8\nThdB7Sow8Yy5xSNvufycI78UxiBV7HDz4FJ75YAMOIVBGVWsgyIEz1DXXgyZOP8K\nOK/9fYYK4pryole6evKo05lTF9TOYM+7/zx6cFMFGvxJc8v8P6vxfpCupmhpBXd5\nlwIDAQAB\n-----END PUBLIC KEY-----\n",
+    "lti_enabled": true
+  },
+  "keep_headers": [
+    "Location",
+    "Content-Type"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/lti"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Flms.example&login_hint=u%27s+hint&target_link_uri=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Fother.example&login_hint=u1&target_link_uri=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Flms.example"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Flms.example&login_hint=u1&target_link_uri=%2Flatest&client_id=client-z"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Flms.example&login_hint=u1&target_link_uri=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/initiate?iss=https%3A%2F%2Flms.example&login_hint=u1&target_link_uri=%2Flatest&client_id=client-b&lti_message_hint=m"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/callback?samesite=true&state=not-the-state&id_token=a.b.c"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/callback?samesite=true&state={{responses.6.headers.Location|state_param}}&id_token=a.b.c"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/callback?samesite=true&id_token=a.b.c"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/callback?samesite=true&error=access_denied&error_description=Denied"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/lti/callback?state=abc"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/lti/callback?state=abc&id_token=x"
+    }
+  ],
+  "ignore": [
+    "/responses/1/body",
+    "/responses/6/headers/Location",
+    "/responses/6/body",
+    "/responses/12/body"
+  ]
+}

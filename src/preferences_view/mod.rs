@@ -428,7 +428,8 @@ fn associated_accounts(p: &Prefs<'_>) -> Result<String, AppError> {
                 out.push_str(&format!(
                     "<tr class=\"{dashed}\"><td class=\"associated-account__icon {dashed}\">{icon_html}</td><td><div class=\"associated-account__name\">{name}</div><div class=\"associated-account__description\"></div></td><td class=\"associated-account__actions\">"
                 ));
-                if (method.can_connect)(p.s)? {
+                // discourse-lti hides its connect button: the platform starts it.
+                if method.name != "lti" && (method.can_connect)(p.s)? {
                     out.push_str(&button(
                         "btn-primary connect-account",
                         Some("plug"),
