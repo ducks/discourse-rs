@@ -264,6 +264,11 @@
   // overridden, nothing otherwise.
   function syncRow(row) {
     var value = currentValue(row);
+    // SiteSetting#preview with the buffered value.
+    var preview = row.querySelector(".setting-value > .preview[data-template]");
+    if (preview) {
+      preview.innerHTML = preview.dataset.template.replace(/\{\{value\}\}/g, value);
+    }
     var dirty = value !== row.dataset.value;
     var overridden = value !== row.dataset.default;
     row.classList.toggle("--dirty", dirty);
