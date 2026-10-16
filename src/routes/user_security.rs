@@ -159,11 +159,32 @@ pub async fn confirm_session(
             return Ok(incorrect());
         }
     }
-    if credential {
-        return Err(Unsupported("confirming the session with a passkey (155)").into());
-    }
     let mut session = load_forum_session(&state, &headers);
     let session_id = session.server_session_id();
+    if credential {
+        let rp = crate::webauthn::RelyingParty::new(&state.config, &settings)?;
+        let passkey = crate::webauthn::authenticate(
+            &mut conn,
+            &rp,
+            &session_id,
+            Some(user.id),
+            p.get("publicKeyCredential"),
+            &[crate::webauthn::FIRST_FACTOR],
+        )
+        .await?;
+        if let Err(e) = passkey {
+            // rescue SecurityKeyError: render_json_error(err.message, 401)
+            let cookie = session.set_cookie(&state, &settings)?;
+            return super::accounts::with_session_cookie(
+                (
+                    StatusCode::UNAUTHORIZED,
+                    Json(json!({ "errors": [e.message(&state.i18n)] })),
+                )
+                    .into_response(),
+                cookie,
+            );
+        }
+    }
     crate::session::server::set(
         &mut conn,
         &session_id,
@@ -245,7 +266,7 @@ pub async fn second_factors(
     );
     let keys: Vec<Key> = sqlx::query_as(
         "SELECT id, user_id, credential_id, public_key, factor_type, enabled, name, last_used \
-         FROM user_security_keys WHERE user_id = $1 AND factor_type = 0 ORDER BY created_at",
+         FROM user_security_keys WHERE user_id = $1 AND enabled AND factor_type = 0 ORDER BY created_at",
     )
     .bind(i64::from(user_id))
     .fetch_all(&mut *conn)
@@ -291,9 +312,10 @@ pub async fn second_factors(
     })
 }
 
-/// The second factor and passkey writes, all 155's: refused after the
-/// filters Rails runs first (login, then the confirmed session where
-/// check_confirmed_session applies).
+/// The second factor and passkey writes, after the filters Rails runs
+/// first (login, then the confirmed session where check_confirmed_session
+/// applies): the security key and passkey ones here, the authenticator
+/// and backup code ones refused.
 pub async fn second_factor_write(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -310,21 +332,284 @@ pub async fn second_factor_write(
     let Some(user_id) = guardian.user_id() else {
         return Ok(super::login_required::not_logged_in(&state));
     };
-    let unconfirmed_ok = path.contains("create_passkey") || path.contains("rename_passkey");
+    // The action: the segment after /u or /users, less .json; the id after
+    // it for rename_passkey and delete_passkey.
+    let mut segments = path.trim_start_matches('/').split('/').skip(1);
+    let action = segments
+        .next()
+        .unwrap_or_default()
+        .trim_end_matches(".json")
+        .to_string();
+    let id = segments
+        .next()
+        .map(|s| s.trim_end_matches(".json").to_string());
+    let unconfirmed_ok = action == "create_passkey" || action == "rename_passkey";
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut session = load_forum_session(&state, &headers);
     if !unconfirmed_ok {
-        let mut conn = state.pool.acquire().await?;
-        let settings =
-            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
         if local_logins_off(&settings)? {
             return Ok(super::topics::not_found_response(&state));
         }
-        let mut session = load_forum_session(&state, &headers);
         let session_id = session.server_session_id();
         if !session_is_trusted(&mut conn, &session_id, user_id).await? {
-            return Ok(super::search::invalid_access(&state));
+            let cookie = session.set_cookie(&state, &settings)?;
+            return super::accounts::with_session_cookie(
+                super::search::invalid_access(&state),
+                cookie,
+            );
         }
     }
-    Err(Unsupported("managing second factors and passkeys (155)").into())
+    let response = match action.as_str() {
+        "create_second_factor_security_key" => {
+            create_webauthn(&state, &settings, &mut conn, &mut session, user_id, false).await?
+        }
+        "create_passkey" => {
+            if !settings.get("enable_passkeys")?.truthy() {
+                return Ok(super::topics::not_found_response(&state));
+            }
+            create_webauthn(&state, &settings, &mut conn, &mut session, user_id, true).await?
+        }
+        "register_second_factor_security_key" | "register_passkey" => {
+            let passkey = action == "register_passkey";
+            if passkey && !settings.get("enable_passkeys")?.truthy() {
+                return Ok(super::topics::not_found_response(&state));
+            }
+            for required in ["name", "attestation", "clientData"] {
+                if params::string(&p, required).is_none_or(|v| v.trim().is_empty()) {
+                    return Ok(super::accounts::param_missing(required));
+                }
+            }
+            let rp = crate::webauthn::RelyingParty::new(&state.config, &settings)?;
+            let session_id = session.server_session_id();
+            let factor_type = if passkey {
+                crate::webauthn::FIRST_FACTOR
+            } else {
+                crate::webauthn::SECOND_FACTOR
+            };
+            let registered =
+                crate::webauthn::register(&mut conn, &rp, &session_id, user_id, &p, factor_type)
+                    .await?;
+            match (registered, passkey) {
+                (Ok(_), false) => success(),
+                (Ok(key), true) => Json(json!({
+                    "success": "OK",
+                    "id": key.id,
+                    "name": key.name,
+                }))
+                .into_response(),
+                // failed_json.merge(error:)
+                (Err(e), false) => {
+                    Json(json!({ "failed": "FAILED", "error": e.message(&state.i18n) }))
+                        .into_response()
+                }
+                // render_json_error(err.message, status: 401)
+                (Err(e), true) => (
+                    StatusCode::UNAUTHORIZED,
+                    Json(json!({ "errors": [e.message(&state.i18n)] })),
+                )
+                    .into_response(),
+            }
+        }
+        "rename_passkey" => {
+            if !settings.get("enable_passkeys")?.truthy() {
+                return Ok(super::topics::not_found_response(&state));
+            }
+            // params.require(:id), params.require(:name)
+            let Some(name) = params::string(&p, "name").filter(|n| !n.trim().is_empty()) else {
+                return Ok(super::accounts::param_missing("name"));
+            };
+            let id = id.as_deref().map(crate::ruby::to_i).unwrap_or(0);
+            if name.chars().count() > 300 {
+                return Err(
+                    Unsupported("a passkey name over 300 characters (RecordInvalid)").into(),
+                );
+            }
+            let renamed = sqlx::query(
+                "UPDATE user_security_keys SET name = $3, updated_at = clock_timestamp() \
+                 WHERE id = $1 AND user_id = $2 AND enabled",
+            )
+            .bind(id)
+            .bind(i64::from(user_id))
+            .bind(&name)
+            .execute(&mut *conn)
+            .await?;
+            if renamed.rows_affected() == 0 {
+                return Ok(super::search::invalid_parameters(&state, "id"));
+            }
+            success()
+        }
+        "delete_passkey" => {
+            if !settings.get("enable_passkeys")?.truthy() {
+                return Ok(super::topics::not_found_response(&state));
+            }
+            let id = id.as_deref().map(crate::ruby::to_i).unwrap_or(0);
+            delete_passkey(&state, &mut conn, user_id, id).await?
+        }
+        "security_key" => {
+            // update_security_key
+            let id = params::string(&p, "id")
+                .map(|v| crate::ruby::to_i(&v))
+                .unwrap_or(0);
+            let exists: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM user_security_keys \
+                 WHERE id = $1 AND user_id = $2 AND enabled)",
+            )
+            .bind(id)
+            .bind(i64::from(user_id))
+            .fetch_one(&mut *conn)
+            .await?;
+            if !exists {
+                return Ok(super::search::invalid_parameters(
+                    &state,
+                    "Discourse::InvalidParameters",
+                ));
+            }
+            if let Some(name) = params::string(&p, "name").filter(|n| !n.trim().is_empty()) {
+                if name.chars().count() > 300 {
+                    return Err(Unsupported(
+                        "a security key name over 300 characters (RecordInvalid)",
+                    )
+                    .into());
+                }
+                sqlx::query(
+                    "UPDATE user_security_keys SET name = $2, updated_at = clock_timestamp() \
+                     WHERE id = $1",
+                )
+                .bind(id)
+                .bind(&name)
+                .execute(&mut *conn)
+                .await?;
+            }
+            if params::string(&p, "disable").as_deref() == Some("true") {
+                sqlx::query(
+                    "UPDATE user_security_keys SET enabled = false, updated_at = clock_timestamp() \
+                     WHERE id = $1",
+                )
+                .bind(id)
+                .execute(&mut *conn)
+                .await?;
+            }
+            success()
+        }
+        _ => return Err(Unsupported("managing authenticators and backup codes (155c)").into()),
+    };
+    let cookie = session.set_cookie(&state, &settings)?;
+    super::accounts::with_session_cookie(response, cookie)
+}
+
+/// #create_second_factor_security_key and #create_passkey: a challenge
+/// staged, with what navigator.credentials.create needs.
+async fn create_webauthn(
+    state: &AppState,
+    settings: &SiteSettings,
+    conn: &mut PgConnection,
+    session: &mut crate::session::forum::ForumSession,
+    user_id: i32,
+    passkey: bool,
+) -> Result<Response, AppError> {
+    let factor_type = if passkey {
+        crate::webauthn::FIRST_FACTOR
+    } else {
+        // all_security_keys.count >= MAX_KEYS_PER_USER
+        let count: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM user_security_keys WHERE user_id = $1")
+                .bind(i64::from(user_id))
+                .fetch_one(&mut *conn)
+                .await?;
+        if count >= 50 {
+            let error = state
+                .i18n
+                .t("login.too_many_security_keys")
+                .unwrap_or_default();
+            return Ok((
+                StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({ "errors": [error] })),
+            )
+                .into_response());
+        }
+        crate::webauthn::SECOND_FACTOR
+    };
+    let session_id = session.server_session_id();
+    let challenge =
+        crate::webauthn::stage_challenge(&mut *conn, &session_id, Some(user_id)).await?;
+    let rp = crate::webauthn::RelyingParty::new(&state.config, settings)?;
+    let secure_id = crate::webauthn::secure_identifier(&mut *conn, user_id).await?;
+    let existing: Vec<String> = sqlx::query_scalar(
+        "SELECT credential_id FROM user_security_keys WHERE user_id = $1 AND enabled \
+         AND factor_type = $2 ORDER BY id",
+    )
+    .bind(i64::from(user_id))
+    .bind(factor_type)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut out = Map::new();
+    out.insert("success".into(), json!("OK"));
+    out.insert("challenge".into(), json!(challenge));
+    out.insert("rp_id".into(), json!(rp.id));
+    out.insert("rp_name".into(), json!(rp.name));
+    out.insert(
+        "supported_algorithms".into(),
+        json!(crate::webauthn::SUPPORTED_ALGORITHMS),
+    );
+    out.insert("user_secure_id".into(), json!(secure_id));
+    out.insert(
+        if passkey {
+            "existing_passkey_credential_ids"
+        } else {
+            "existing_active_credential_ids"
+        }
+        .into(),
+        json!(existing),
+    );
+    Ok(Json(Value::Object(out)).into_response())
+}
+
+/// #delete_passkey: the user's own key by id (any factor type), unless it
+/// is the last passkey of a user with no password and no associated
+/// account.
+async fn delete_passkey(
+    state: &AppState,
+    conn: &mut PgConnection,
+    user_id: i32,
+    id: i64,
+) -> Result<Response, AppError> {
+    let key: Option<i32> = sqlx::query_scalar(
+        "SELECT factor_type FROM user_security_keys WHERE id = $1 AND user_id = $2 AND enabled",
+    )
+    .bind(id)
+    .bind(i64::from(user_id))
+    .fetch_optional(&mut *conn)
+    .await?;
+    if key == Some(crate::webauthn::FIRST_FACTOR) {
+        let (passkeys, password): (i64, bool) = sqlx::query_as(
+            "SELECT (SELECT count(*) FROM user_security_keys WHERE user_id = $1 AND enabled \
+                     AND factor_type = 1), \
+                    EXISTS (SELECT 1 FROM user_passwords WHERE user_id = $1)",
+        )
+        .bind(i64::from(user_id))
+        .fetch_one(&mut *conn)
+        .await?;
+        let accounts = crate::auth::associated_accounts(&mut *conn, &state.i18n, user_id)
+            .await?
+            .as_array()
+            .is_some_and(|a| !a.is_empty());
+        if passkeys == 1 && !password && !accounts {
+            return Ok(Json(json!({
+                "success": false,
+                "message": state.i18n.t("user.cannot_remove_all_auth").unwrap_or_default(),
+            }))
+            .into_response());
+        }
+    }
+    if key.is_some() {
+        sqlx::query("DELETE FROM user_security_keys WHERE id = $1")
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(success())
 }
 
 /// PUT /u/:username/remove-password(.json)

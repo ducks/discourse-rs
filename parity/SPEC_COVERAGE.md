@@ -1239,9 +1239,9 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 3471 | success by username and password | covered | session_login_timezone (new) |
 | 3496 | timezone param sets user_option timezone | covered | session_login_timezone (new) |
 | 3513 | password expired > expired error | recordable | session_login_expired_password (setup SQL user_passwords.password_expired_at) |
-| 3546 | security key only > blank params | needs-harness | webauthn credential + challenge fixtures |
-| 3566 | security key only > invalid params | needs-harness | webauthn |
-| 3589 | security key only > valid > logs in | needs-harness | webauthn |
+| 3546 | security key only > blank params | covered | session_login_security_key_refusals (new, matches) |
+| 3566 | security key only > invalid params | covered | session_login_security_key_refusals (new, matches) |
+| 3589 | security key only > valid > logs in | needs-harness | the challenge is random; tests/webauthn.rs signs with the reference's recorded credential |
 | 3626 | security key disabled in background, TOTP on | covered | session_login_security_key_staged (new, matches: the staged challenge, then TOTP with a key enrolled) |
 | 3651 | TOTP > token missing > missing-second-factor error | covered | session_login_second_factor_needed (new, matches) |
 | 3663 | TOTP > invalid TOTP token | covered | session_login_totp_invalid (new) |

@@ -1465,7 +1465,13 @@ generate_theme_screenshot_thumbnails (171).
     confirmed_2fa for a DiscourseConnect provider login,
     second_factor_remaining_backup_codes, the login page's second
     factor step
-    155b. `feat/second-factor-webauthn` M: security keys and passkeys
+    155b. ~~`feat/second-factor-webauthn`~~ (done) M: security keys and
+    passkeys (DiscourseWebauthn's authentication and registration, the
+    cose gem's algorithms): as the second factor at login, on the 2FA
+    page and with an invite login code, passkey login, confirming the
+    session with a passkey, creating, registering, renaming, disabling
+    and deleting keys and passkeys, the login page's security key step
+    and passkey button
     155c. `feat/second-factor-pages` M: the 2FA page's HTML, password
     reset, enforce_second_factor, the email change, the security tab's
     and second factor page's writes

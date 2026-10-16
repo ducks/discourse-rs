@@ -1,0 +1,62 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9311, 3, 'nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=', 'pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=', 0, true, 'key one', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "ignore": [
+    "/responses/0/body/challenge",
+    "/responses/1/body/challenge",
+    "/responses/2/body/challenge",
+    "/responses/3/body/challenge"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": "000000"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": {
+          "credentialId": "bm9wZQ==",
+          "signature": "",
+          "clientData": "",
+          "authenticatorData": ""
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": {
+          "credentialId": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=",
+          "signature": "",
+          "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0=",
+          "authenticatorData": ""
+        }
+      }
+    }
+  ]
+}

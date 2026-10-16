@@ -1966,9 +1966,16 @@ pub async fn verify_login_code(
     if let Some((id, _, _)) = matched {
         let enabled = crate::second_factor::Enabled::load(&mut tx, &s, id).await?;
         if enabled.any() {
-            let token = string("second_factor_token").filter(|t| !t.trim().is_empty());
+            // missing_second_factor_params?: a code or an assertion.
+            let present = match p.get("second_factor_token") {
+                Some(Value::String(t)) => !t.trim().is_empty(),
+                Some(Value::Object(m)) => !m.is_empty(),
+                Some(Value::Array(a)) => !a.is_empty(),
+                Some(Value::Null) | None => false,
+                Some(_) => true,
+            };
             let mut session = crate::session::forum::load_forum_session(&state, &headers);
-            let Some(token) = token else {
+            if !present {
                 // login_code_second_factor_info
                 let mut out = serde_json::Map::new();
                 out.insert("second_factor_required".into(), json!(true));
@@ -1997,7 +2004,7 @@ pub async fn verify_login_code(
                     Json(Value::Object(out)).into_response(),
                     cookie,
                 );
-            };
+            }
             // rate_limit_second_factor!(matched_user)
             let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
                 .bind(id)
@@ -2016,17 +2023,11 @@ pub async fn verify_login_code(
                 tx.commit().await?;
                 return Ok(refused.into_response(&state.i18n));
             }
-            let outcome = crate::second_factor::authenticate(
-                &mut tx,
-                &state.i18n,
-                id,
-                &enabled,
-                string("second_factor_method").as_deref(),
-                Some(token.as_str()),
-                crate::clock::now().timestamp(),
-                crate::second_factor::backup_code_iterations(state.config.rails_env),
-            )
-            .await?;
+            let rp = crate::webauthn::RelyingParty::new(&state.config, &s)?;
+            let attempt = crate::second_factor::Attempt::new(&p, &state.config, &rp, &mut session);
+            let outcome =
+                crate::second_factor::authenticate(&mut tx, &state.i18n, id, &enabled, attempt)
+                    .await?;
             if let Err(failure) = outcome {
                 let failure = if enabled.security_keys {
                     let session_id = session.server_session_id();

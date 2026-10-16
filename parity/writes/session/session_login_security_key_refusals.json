@@ -1,0 +1,141 @@
+{
+  "name": "session_login_security_key_refusals",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": "000000"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": {
+          "credentialId": "bm9wZQ==",
+          "signature": "",
+          "clientData": "",
+          "authenticatorData": ""
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_method": "3",
+        "second_factor_token": {
+          "credentialId": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=",
+          "signature": "",
+          "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0=",
+          "authenticatorData": ""
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T21:20:59.071052",
+  "transaction_started_at": "2026-10-16T21:20:57.114673",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "The selected two-factor method is invalid.",
+        "reason": "invalid_second_factor_method",
+        "backup_enabled": false,
+        "security_key_enabled": true,
+        "totp_enabled": false,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null,
+        "allowed_credential_ids": [
+          "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
+        ],
+        "challenge": "30cbb50bb340225b41bfc8131e3779ca793faa3e1648434655a4a63108f2"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "The provided public key is invalid.",
+        "reason": "invalid_security_key",
+        "backup_enabled": false,
+        "security_key_enabled": true,
+        "totp_enabled": false,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null,
+        "allowed_credential_ids": [
+          "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
+        ],
+        "challenge": "8a00a4185b4f7da3204a192a10cd92a61ded585dc26937f0d12a8d50c27f"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "A security key with the provided credential ID could not be found.",
+        "reason": "invalid_security_key",
+        "backup_enabled": false,
+        "security_key_enabled": true,
+        "totp_enabled": false,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null,
+        "allowed_credential_ids": [
+          "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
+        ],
+        "challenge": "54f491ad7d06cc669c28bbf8339d22db40b98907c4e9e697a6e407a4fdea"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "The webauthn type provided was invalid. Valid types are webauthn.get and webauthn.create.",
+        "reason": "invalid_security_key",
+        "backup_enabled": false,
+        "security_key_enabled": true,
+        "totp_enabled": false,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null,
+        "allowed_credential_ids": [
+          "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
+        ],
+        "challenge": "b7a82f68dffccdf31765839e656da42de3b0816cbfdfd5d6d379e745dcdf"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9311, 3, 'nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=', 'pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=', 0, true, 'key one', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "recorded_from": {
+    "case": "e3cbf6750d596b0801e7f0362034b1732f6865d03f6739522522a0ff56edfd6a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

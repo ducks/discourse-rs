@@ -1,0 +1,59 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9312, 3, 'HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=', 'pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=', 1, true, 'Passkey', now() - interval '1 day', now() - interval '1 day')",
+    "UPDATE users SET secure_identifier = '71ef7f3c7b45b36a6eda60bf79ff73f1dad4b59e' WHERE id = 3"
+  ],
+  "ignore": [
+    "/responses/0/body/challenge"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/passkey/challenge.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/passkey/auth.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/session/passkey/auth.json",
+      "params": {
+        "publicKeyCredential": {
+          "credentialId": "bm9wZQ==",
+          "signature": "",
+          "clientData": "",
+          "authenticatorData": ""
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/passkey/auth.json",
+      "params": {
+        "publicKeyCredential": {
+          "credentialId": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=",
+          "signature": "",
+          "clientData": "",
+          "authenticatorData": "",
+          "userHandle": "c29tZW9uZQ=="
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/passkey/auth.json",
+      "params": {
+        "publicKeyCredential": {
+          "credentialId": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=",
+          "signature": "",
+          "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoibm9wZSJ9",
+          "authenticatorData": "",
+          "userHandle": "NzFlZjdmM2M3YjQ1YjM2YTZlZGE2MGJmNzlmZjczZjFkYWQ0YjU5ZQ=="
+        }
+      }
+    }
+  ]
+}

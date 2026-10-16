@@ -1,0 +1,85 @@
+{
+  "note": "Recorded from the reference (development: origin http://localhost:3000, rp_id localhost) through Chromium virtual authenticator (CDP WebAuthn, ctap2). user1 (id 3).",
+  "secure_identifier": "71ef7f3c7b45b36a6eda60bf79ff73f1dad4b59e",
+  "security_key": {
+    "challenge": "db27014c2943ffba695a424f611f828e1a763850e08dcbe266338ddfa4d1",
+    "register_params": {
+      "name": "key one",
+      "attestation": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2NFAAAAAQAAAAAAAAAAAAAAAAAAAAAAIJxCEKm+TGCHAPv3+tqMEmKTa/3F6p9LXXlOBAVj2MPJpQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
+      "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWkdJeU56QXhOR015T1RRelptWmlZVFk1TldFME1qUm1OakV4WmpneU9HVXhZVGMyTXpnMU1HVXdPR1JqWW1VeU5qWXpNemhrWkdaaE5HUXgiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9"
+    },
+    "register_response": {
+      "success": "OK"
+    },
+    "login_challenge": "defd7049a89ea5ac2f5f8953e5b5bdaa395b7f5733f23f888e58d0cb9cbe",
+    "assertion": {
+      "signature": "MEYCIQDbvLVvgGeD6K0bydq8wDQUTr2uwXPLF9KkMGfwJHUYngIhAJye32kr0VgdGYQIH+XqwGQz8DTG9Gk0uOZpEEeobrsZ",
+      "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWkdWbVpEY3dORGxoT0RsbFlUVmhZekptTldZNE9UVXpaVFZpTldKa1lXRXpPVFZpTjJZMU56TXpaakl6WmpnNE9HVTFPR1F3WTJJNVkySmwiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2MBAAAAAg==",
+      "credentialId": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
+    },
+    "row": {
+      "id": 1,
+      "user_id": 3,
+      "credential_id": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=",
+      "public_key": "pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
+      "factor_type": 0,
+      "enabled": true,
+      "name": "key one",
+      "last_used": "2026-10-16T19:48:24.699228",
+      "created_at": "2026-10-16T19:48:24.076587",
+      "updated_at": "2026-10-16T19:48:24.700159"
+    }
+  },
+  "passkey": {
+    "challenge": "ad9af93705241b8109ee371f6d1a99ba0a15359db65ed58c4cddbb5fa9e3",
+    "register_params": {
+      "name": "Passkey",
+      "attestation": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2NFAAAAAQAAAAAAAAAAAAAAAAAAAAAAIB57wkiFae9TWcz6r8mmiYCJJmUHwVbiBw2EJhkquwrBpQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=",
+      "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWVdRNVlXWTVNemN3TlRJME1XSTRNVEE1WldVek56Rm1ObVF4WVRrNVltRXdZVEUxTXpVNVpHSTJOV1ZrTlRoak5HTmtaR0ppTldaaE9XVXoiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9"
+    },
+    "register_response": {
+      "success": "OK",
+      "id": 2,
+      "name": "Passkey"
+    },
+    "login_challenge": "8a90800063e2bc752c876310de799cfcbc6501c876a77f5ba67e8b486933",
+    "assertion": {
+      "signature": "MEUCIQDaFpLQxbOlsDNxJsanLfyQJOZ/m77t9v8RwJ8YIyAoIQIgIha2gjfZsPaMLHytkHS9ufeNLlcVtGwwJOjHzG/bVIE=",
+      "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiT0dFNU1EZ3dNREEyTTJVeVltTTNOVEpqT0RjMk16RXdaR1UzT1RsalptTmlZelkxTURGak9EYzJZVGMzWmpWaVlUWTNaVGhpTkRnMk9UTXoiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2UsIm90aGVyX2tleXNfY2FuX2JlX2FkZGVkX2hlcmUiOiJkbyBub3QgY29tcGFyZSBjbGllbnREYXRhSlNPTiBhZ2FpbnN0IGEgdGVtcGxhdGUuIFNlZSBodHRwczovL2dvby5nbC95YWJQZXgifQ==",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2MFAAAAAg==",
+      "credentialId": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=",
+      "userHandle": "NzFlZjdmM2M3YjQ1YjM2YTZlZGE2MGJmNzlmZjczZjFkYWQ0YjU5ZQ=="
+    },
+    "row": {
+      "id": 2,
+      "user_id": 3,
+      "credential_id": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=",
+      "public_key": "pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=",
+      "factor_type": 1,
+      "enabled": true,
+      "name": "Passkey",
+      "last_used": "2026-10-16T19:48:24.993061",
+      "created_at": "2026-10-16T19:48:24.197816",
+      "updated_at": "2026-10-16T19:48:24.993486"
+    }
+  },
+  "credentials": [
+    {
+      "credentialId": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=",
+      "isResidentCredential": true,
+      "rpId": "localhost",
+      "privateKey": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiidHxCWF6kpYI4FjrM+m3lPI1gkWpOwlX+VHGIFWE32hRANCAAS+hb/qTIAWLqPTnPWubV2A0Snj1my5hnRGd9OtueYMyqxvAnd5gF4DFK3qQCuWBi6Xtc9GM7NReRrDp06qyJb9",
+      "userHandle": "NzFlZjdmM2M3YjQ1YjM2YTZlZGE2MGJmNzlmZjczZjFkYWQ0YjU5ZQ==",
+      "signCount": 2
+    },
+    {
+      "credentialId": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=",
+      "isResidentCredential": false,
+      "rpId": "localhost",
+      "privateKey": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDHNE65wS0gJmqrD19XqsX+cyW5sThV5e0wb05dRXuw6hRANCAASX1pH36KkkP9GkurkGtwYGdYyXfpyfGPb+UKFJP/0w5f2x3fp6cEZuoD2kWtAyx4Ffkqz4w1yOvV31BMbhJy7K",
+      "userHandle": "NzFlZjdmM2M3YjQ1YjM2YTZlZGE2MGJmNzlmZjczZjFkYWQ0YjU5ZQ==",
+      "signCount": 2
+    }
+  ]
+}
