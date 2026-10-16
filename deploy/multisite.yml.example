@@ -1,0 +1,24 @@
+# /etc/discourse-rs/multisite.yml: the forums served besides the default
+# one (DATABASE_URL, DISCOURSE_HOSTNAME), read when
+# DISCOURSE_MULTISITE_CONFIG_PATH names this file. Rails' shape: a db key
+# per site, which names its uploads (public/uploads/<key>) and backups
+# (public/backups/<key>). `default` is the env's site and may not be used.
+# Each site has its own database; no two share one. See docs/multisite.md.
+#
+# A site that fails to start is logged and its hosts answer 503 until a
+# restart brings it up; the others serve.
+
+second:
+  database: discourse_second
+  # Optional, as libpq takes them: a host starting with / is a socket
+  # directory; what is left out falls to PGHOST, PGUSER and the like.
+  host: /run/postgresql
+  #port: 5432
+  #username: discourse-rs
+  #password:
+  # Connections the site's pool may open (DISCOURSE_DB_POOL, else 10).
+  pool: 5
+  # The first is the site's hostname in its URLs and mail; all of them
+  # reach it. Each needs a Caddy site block.
+  host_names:
+    - second.example.com

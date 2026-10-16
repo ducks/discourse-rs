@@ -1,5 +1,8 @@
 # Caddy sets X-Forwarded-For from the connection and drops a client's own
-# value, which is what discourse-rs reads as the request's IP.
+# value, which is what discourse-rs reads as the request's IP. It passes the
+# Host through, which picks the site under multisite: list every host name
+# of every site (DISCOURSE_HOSTNAME and multisite.yml's host_names) on the
+# site line, e.g. `forum.example.com, second.example.com {`.
 forum.example.com {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8080

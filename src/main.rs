@@ -6,7 +6,7 @@ use std::time::Duration;
 use axum::ServiceExt;
 use discourse_rs::config::Config;
 use discourse_rs::i18n::I18n;
-use discourse_rs::multisite::{self, Shared, Sites};
+use discourse_rs::multisite::{self, Shared};
 use discourse_rs::site_settings::Definitions;
 use tracing_subscriber::EnvFilter;
 
@@ -31,7 +31,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         )
         .init();
 
-    let mut config = Config::from_env()?;
+    let config = Config::from_env()?;
     discourse_rs::readonly::force_from_globals(&config.globals);
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
@@ -46,14 +46,6 @@ async fn run() -> Result<(), Box<dyn Error>> {
         }
         None => None,
     };
-    config.site.multisite = specs.is_some();
-    if let Some(spec) = specs.iter().flatten().next() {
-        return Err(format!(
-            "multisite.yml: site {}: only the default site is served yet",
-            spec.db
-        )
-        .into());
-    }
 
     // Rails keeps secret_key_base in redis when it is not configured; a
     // process without one gets a random secret, so sessions work but do
@@ -78,11 +70,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
 
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
-    let default = multisite::boot(&shared, config).await?;
-    let sites = match specs {
-        None => Sites::single(default),
-        Some(_) => Sites::multisite(vec![default])?,
-    };
+    let sites = multisite::boot_all(&shared, config, specs).await?;
     tracing::info!(addr = %listener.local_addr()?, "listening");
 
     // A worker per site beside the web server unless DISCOURSE_RS_JOBS=off,

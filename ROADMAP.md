@@ -925,7 +925,7 @@ so a member can use the port without telling it from Rails. 188 topic
 edits (188a-188i2 done; 188i3-188i5, the edge cases, wait), 189 tags
 writes (done), 193 the user pages (done, 193a-193f), 143 advanced
 search (done, 143a-143i), 131 avatars (done).
-Then 208 multisite (208a-208c done), ahead of the other large items: its cost grows with
+Then 208 multisite (done, 208a-208d), ahead of the other large items: its cost grows with
 every feature written against one AppState, and many forums in one
 process is the port's clearest win for self-hosting.
 Then the rest of Phase 10's core forum actions (190 categories writes,
