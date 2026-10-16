@@ -1,0 +1,1093 @@
+{
+  "name": "invite_link_new_user",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/invites/Fixture900"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso?return_path=%2F"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.1.headers.Location|sso_nonce}}",
+          "external_id": "ext-invite-1",
+          "email": "newbie@example.com",
+          "username": "invited person",
+          "name": "Invited Person"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "started_at": "2026-10-16T09:21:10.462395",
+  "transaction_started_at": "2026-10-16T09:21:09.774518",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "invited_by": {
+          "id": 3,
+          "username": "user1",
+          "name": "User1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "title": null
+        },
+        "email": null,
+        "hidden_email": false,
+        "username": "",
+        "is_invite_link": true,
+        "email_verified_by_link": false
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/sso?sso=bm9uY2U9NjIxNmMzODUxZTZjYmNmZTc3NzRhMzYyZmZmODU0YjgmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNTAlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=5b8f2cfe5e74119efcfedae336f6b88f4cdf165c67949e4703f89d0027c26a84"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/t/parity-fixture-replies-and-posters/35"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "current_user": {
+          "id": 6,
+          "username": "invited_person",
+          "name": "Invited Person",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/i/7c8e57/{size}.png",
+          "unread_notifications": 0,
+          "unread_high_priority_notifications": 0,
+          "all_unread_notifications_count": 0,
+          "read_first_notification": false,
+          "admin": false,
+          "notification_channel_position": null,
+          "do_not_disturb_channel_position": 0,
+          "moderator": false,
+          "staff": false,
+          "whisperer": false,
+          "title": null,
+          "any_posts": false,
+          "trust_level": 0,
+          "can_send_private_email_messages": false,
+          "can_send_private_messages": false,
+          "can_upload_avatar": true,
+          "can_edit": true,
+          "no_password": true,
+          "can_post_anonymously": false,
+          "can_ignore_users": false,
+          "can_edit_tags": false,
+          "can_delete_all_posts_and_topics": false,
+          "custom_fields": {},
+          "muted_category_ids": [],
+          "indirectly_muted_category_ids": [],
+          "regular_category_ids": [],
+          "tracked_category_ids": [],
+          "watched_first_post_category_ids": [],
+          "watched_category_ids": [],
+          "watched_tags": [],
+          "watching_first_post_tags": [],
+          "tracked_tags": [],
+          "muted_tags": [],
+          "regular_tags": [],
+          "dismissed_banner_key": null,
+          "is_anonymous": false,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0,
+          "new_personal_messages_notifications_count": 0,
+          "read_faq": false,
+          "previous_visit_at": null,
+          "seen_notification_id": 0,
+          "flair_group_id": null,
+          "can_create_topic": true,
+          "can_set_topic_timer": false,
+          "link_posting_access": "full",
+          "external_id": "ext-invite-1",
+          "top_category_ids": [],
+          "groups": [
+            {
+              "id": 9001,
+              "name": "testers",
+              "has_messages": false
+            },
+            {
+              "id": 10,
+              "name": "trust_level_0",
+              "has_messages": false
+            }
+          ],
+          "needs_required_fields_check": false,
+          "second_factor_enabled": false,
+          "ignored_users": [],
+          "do_not_disturb_until": null,
+          "can_review": false,
+          "draft_count": 0,
+          "pending_posts_count": 0,
+          "grouped_unread_notifications": {},
+          "display_sidebar_tags": true,
+          "sidebar_tags": [],
+          "sidebar_category_ids": [
+            2,
+            4
+          ],
+          "sidebar_sections": [
+            {
+              "id": 1,
+              "title": "Community",
+              "links": [
+                {
+                  "id": 1,
+                  "name": "Topics",
+                  "value": "/latest",
+                  "icon": "layer-group",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 2,
+                  "name": "My posts",
+                  "value": "/my/activity",
+                  "icon": "user",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 3,
+                  "name": "My messages",
+                  "value": "/my/messages",
+                  "icon": "inbox",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 4,
+                  "name": "Review",
+                  "value": "/review",
+                  "icon": "flag",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 5,
+                  "name": "Admin",
+                  "value": "/admin",
+                  "icon": "wrench",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 6,
+                  "name": "Invite",
+                  "value": "/new-invite",
+                  "icon": "paper-plane",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 7,
+                  "name": "Users",
+                  "value": "/u",
+                  "icon": "users",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 8,
+                  "name": "About",
+                  "value": "/about",
+                  "icon": "circle-info",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 9,
+                  "name": "FAQ",
+                  "value": "/faq",
+                  "icon": "circle-question",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 10,
+                  "name": "Groups",
+                  "value": "/g",
+                  "icon": "user-group",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 11,
+                  "name": "Badges",
+                  "value": "/badges",
+                  "icon": "certificate",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 12,
+                  "name": "Filter",
+                  "value": "/filter",
+                  "icon": "filter",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                }
+              ],
+              "slug": "community",
+              "public": true,
+              "section_type": "community",
+              "locale": null
+            }
+          ],
+          "unified_new_enabled": true,
+          "can_view_raw_email": false,
+          "login_method": "local",
+          "can_localize_content": false,
+          "is_impersonating": false,
+          "impersonation_expires_at": null,
+          "has_joinable_public_channels": true,
+          "can_use_templates": false,
+          "votes_exceeded": false,
+          "votes_count": 0,
+          "votes_left": 2,
+          "vote_limit": 2,
+          "can_create_poll": false,
+          "user_option": {
+            "mailing_list_mode": false,
+            "external_links_in_new_tab": false,
+            "enable_quoting": true,
+            "enable_smart_lists": true,
+            "enable_markdown_monospace_font": true,
+            "dynamic_favicon": false,
+            "automatically_unpin_topics": true,
+            "likes_notifications_disabled": false,
+            "hide_profile_and_presence": false,
+            "hide_profile": false,
+            "hide_presence": false,
+            "title_count_mode": "notifications",
+            "timezone": null,
+            "skip_new_user_tips": false,
+            "default_calendar": "none_selected",
+            "bookmark_auto_delete_preference": 3,
+            "notify_on_linked_posts": true,
+            "should_be_redirected_to_top": false,
+            "treat_as_new_topic_start_date": "2026-10-16T09:21:10.499Z",
+            "sidebar_link_to_filtered_list": false,
+            "sidebar_show_count_of_new_items": false,
+            "composition_mode": 1,
+            "interface_color_mode": 1,
+            "show_original_content": false,
+            "send_shortcut": "enter",
+            "automatically_translate": true,
+            "understood_languages": [],
+            "hidden_composer_toolbar_buttons": [],
+            "show_thread_title_prompts": true,
+            "chat_channel_list_filter": "all",
+            "chat_channel_list_sort": "alphabetical",
+            "chat_channel_list_sort_starred": "alphabetical",
+            "chat_channel_list_sort_dms": "priority",
+            "chat_channel_list_filter_starred": "all",
+            "chat_channel_list_filter_dms": "all",
+            "chat_announce_new_messages": true,
+            "chat_new_message_sound": false,
+            "chat_header_indicator_preference": "all_new",
+            "chat_separate_sidebar_mode": "default",
+            "chat_send_shortcut": "enter",
+            "chat_quick_reaction_type": "frequent",
+            "chat_quick_reactions_custom": null
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "newbie@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 6,
+          "confirmed": false,
+          "created_at": "2026-10-16T09:21:10.511932",
+          "token_hash": "723de487cfc36fc7e2b446162682e57699f70185caed0f415562dd8f7757e26c",
+          "updated_at": "2026-10-16T09:21:10.511932"
+        },
+        {
+          "id": 14,
+          "email": "newbie@example.com",
+          "scope": 1,
+          "expired": false,
+          "user_id": 6,
+          "confirmed": true,
+          "created_at": "2026-10-16T09:21:10.645429",
+          "token_hash": "970da67c152f812f6a7d53f184b12814261d670fcb845d4c6f57d312eddf69b1",
+          "updated_at": "2026-10-16T09:21:10.653167"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-16T09:21:10.615946",
+          "prev_value": null,
+          "updated_at": "2026-10-16T09:21:10.615946",
+          "acting_user_id": 3,
+          "target_user_id": 6
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 69,
+          "owner": false,
+          "user_id": 6,
+          "group_id": 10,
+          "created_at": "2026-10-16T09:21:10.531942",
+          "updated_at": "2026-10-16T09:21:10.531942",
+          "first_unread_pm_at": "2026-10-16T09:21:09.774518",
+          "notification_level": 3
+        },
+        {
+          "id": 70,
+          "owner": false,
+          "user_id": 6,
+          "group_id": 9001,
+          "created_at": "2026-10-16T09:21:10.61391",
+          "updated_at": "2026-10-16T09:21:10.61391",
+          "first_unread_pm_at": "2026-10-16T09:21:09.774518",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-09-26T09:21:09.774518",
+            "flair_icon": null,
+            "updated_at": "2026-09-26T09:21:09.774518",
+            "user_count": 0,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-09-26T09:21:09.774518",
+            "flair_icon": null,
+            "updated_at": "2026-09-26T09:21:09.774518",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        },
+        {
+          "before": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 5,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 6,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "invited_users": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 6,
+          "invite_id": 900,
+          "created_at": "2026-10-16T09:21:10.602082",
+          "updated_at": "2026-10-16T09:21:10.623698",
+          "redeemed_at": "2026-10-16T09:21:10.600648"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "admin": false,
+            "email": null,
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T09:21:09.774518",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T09:21:09.774518",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-13T09:21:09.774518",
+            "description": "for the book club",
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 5
+          },
+          "after": {
+            "id": 900,
+            "admin": false,
+            "email": null,
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T09:21:09.774518",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T09:21:09.774518",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-13T09:21:09.774518",
+            "description": "for the book club",
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 1,
+            "max_redemptions_allowed": 5
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"display_username\":\"invited_person\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-16T09:21:10.625068",
+          "updated_at": "2026-10-16T09:21:10.625068",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 8
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "sidebar_section_links": {
+      "inserted": [
+        {
+          "id": 28,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T09:21:09.774518",
+          "updated_at": "2026-10-16T09:21:09.774518",
+          "linkable_id": 3,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 29,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T09:21:09.774518",
+          "updated_at": "2026-10-16T09:21:09.774518",
+          "linkable_id": 2,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 30,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T09:21:09.774518",
+          "updated_at": "2026-10-16T09:21:09.774518",
+          "linkable_id": 4,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "single_sign_on_records": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 6,
+          "created_at": "2026-10-16T09:21:10.56673",
+          "updated_at": "2026-10-16T09:21:10.56673",
+          "external_id": "ext-invite-1",
+          "last_payload": "email=newbie%40example.com&external_id=ext-invite-1&name=Invited+Person&nonce=6216c3851e6cbcfe7774a362fff854b8&username=invited+person",
+          "external_name": "Invited Person",
+          "external_email": "newbie@example.com",
+          "external_username": "invited person",
+          "external_avatar_url": null,
+          "external_card_background_url": null,
+          "external_profile_background_url": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/session/sso_login",
+          "action": "generate",
+          "user_id": 6,
+          "client_ip": "127.0.0.1",
+          "auth_token": "LpwsNFlmS29yVPCVcsJY7YVNQ78=",
+          "created_at": "2026-10-16T09:21:10.677608",
+          "user_agent": null,
+          "user_auth_token_id": 365
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 365,
+          "seen_at": "2026-10-16T09:21:10.694602",
+          "user_id": 6,
+          "client_ip": "127.0.0.1",
+          "auth_token": "LpwsNFlmS29yVPCVcsJY7YVNQ78=",
+          "created_at": "2026-10-16T09:21:10.675236",
+          "rotated_at": "2026-10-16T09:21:10.674468",
+          "updated_at": "2026-10-16T09:21:10.675236",
+          "user_agent": null,
+          "auth_token_seen": true,
+          "prev_auth_token": "LpwsNFlmS29yVPCVcsJY7YVNQ78=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_avatars": {
+      "inserted": [
+        {
+          "id": 8,
+          "user_id": 6,
+          "created_at": "2026-10-16T09:21:10.549437",
+          "updated_at": "2026-10-16T09:21:10.549437",
+          "custom_upload_id": null,
+          "gravatar_upload_id": null,
+          "last_gravatar_download_attempt": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_emails": {
+      "inserted": [
+        {
+          "id": 6,
+          "email": "newbie@example.com",
+          "primary": true,
+          "user_id": 6,
+          "created_at": "2026-10-16T09:21:10.502273",
+          "updated_at": "2026-10-16T09:21:10.502273",
+          "normalized_email": "newbie@example.com"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_options": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "timezone": null,
+          "theme_ids": [],
+          "chat_sound": null,
+          "email_level": 1,
+          "homepage_id": null,
+          "seen_popups": null,
+          "chat_enabled": true,
+          "enable_defer": false,
+          "hide_profile": false,
+          "email_digests": true,
+          "hide_presence": false,
+          "send_shortcut": 0,
+          "text_size_key": 0,
+          "text_size_seq": 0,
+          "theme_key_seq": 0,
+          "dark_scheme_id": null,
+          "enable_quoting": true,
+          "color_scheme_id": null,
+          "dynamic_favicon": false,
+          "composition_mode": 1,
+          "default_calendar": 0,
+          "notify_on_solved": true,
+          "ai_ask_ai_default": true,
+          "email_in_reply_to": false,
+          "mailing_list_mode": false,
+          "auto_image_caption": false,
+          "chat_send_shortcut": 0,
+          "enable_smart_lists": true,
+          "skip_new_user_tips": false,
+          "chat_email_frequency": 1,
+          "digest_after_minutes": 10080,
+          "email_messages_level": 0,
+          "interface_color_mode": 1,
+          "title_count_mode_key": 0,
+          "understood_languages": [],
+          "ai_search_discoveries": true,
+          "show_original_content": false,
+          "allow_private_messages": true,
+          "chat_channel_list_sort": 0,
+          "chat_new_message_sound": false,
+          "email_previous_replies": 2,
+          "include_tl0_in_digests": false,
+          "notify_on_linked_posts": true,
+          "oldest_search_log_date": null,
+          "policy_email_frequency": 0,
+          "automatically_translate": true,
+          "enable_allowed_pm_users": false,
+          "push_notification_level": 1,
+          "chat_channel_list_filter": 0,
+          "chat_quick_reaction_type": 0,
+          "discourse_rewind_enabled": true,
+          "event_reminder_preference": 0,
+          "external_links_in_new_tab": false,
+          "hide_profile_and_presence": false,
+          "last_redirected_to_top_at": null,
+          "show_thread_title_prompts": true,
+          "automatically_unpin_topics": true,
+          "chat_announce_new_messages": true,
+          "chat_channel_list_sort_dms": 2,
+          "chat_separate_sidebar_mode": 0,
+          "new_topic_duration_minutes": 2880,
+          "chat_quick_reactions_custom": null,
+          "ignore_channel_wide_mention": null,
+          "like_notification_frequency": 1,
+          "mailing_list_mode_frequency": 1,
+          "chat_channel_list_filter_dms": 0,
+          "only_chat_push_notifications": null,
+          "auto_track_topics_after_msecs": 300000,
+          "discourse_rewind_dismissed_at": null,
+          "sidebar_link_to_filtered_list": false,
+          "watched_precedence_over_muted": false,
+          "chat_channel_list_sort_starred": 0,
+          "enable_markdown_monospace_font": true,
+          "bookmark_auto_delete_preference": 3,
+          "discourse_rewind_share_publicly": false,
+          "dismissed_dm_retention_reminder": null,
+          "hidden_composer_toolbar_buttons": [],
+          "sidebar_show_count_of_new_items": false,
+          "chat_channel_list_filter_starred": 0,
+          "chat_header_indicator_preference": 0,
+          "notification_level_when_assigned": 3,
+          "notification_level_when_replying": 2,
+          "dismissed_channel_retention_reminder": null,
+          "enable_upcoming_change_available_notifications": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_profiles": {
+      "inserted": [
+        {
+          "views": 0,
+          "bio_raw": null,
+          "user_id": 6,
+          "website": null,
+          "location": null,
+          "bio_cooked": null,
+          "featured_topic_id": null,
+          "bio_cooked_version": null,
+          "dismissed_banner_key": null,
+          "granted_title_badge_id": null,
+          "card_background_upload_id": null,
+          "profile_background_upload_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "user_id": 6,
+          "version": 3,
+          "raw_data": "invited_person invited person",
+          "search_data": "'invited':1A,3B 'person':2A,4B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "read_faq": null,
+          "new_since": "2026-10-16T09:21:10.515438",
+          "time_read": 0,
+          "post_count": 0,
+          "draft_count": 0,
+          "likes_given": 0,
+          "topic_count": 0,
+          "bounce_score": 0,
+          "days_visited": 0,
+          "flags_agreed": 0,
+          "flags_ignored": 0,
+          "likes_received": 0,
+          "topics_entered": 0,
+          "first_unread_at": "2026-10-16T09:21:09.774518",
+          "flags_disagreed": 0,
+          "post_edits_count": null,
+          "posts_read_count": 0,
+          "first_unread_pm_at": "2026-10-16T09:21:09.774518",
+          "digest_attempted_at": null,
+          "pending_posts_count": 0,
+          "distinct_badge_count": 0,
+          "first_post_created_at": null,
+          "reset_bounce_score_after": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [
+        {
+          "id": 6,
+          "name": "Invited Person",
+          "admin": false,
+          "title": null,
+          "views": 0,
+          "active": true,
+          "locale": null,
+          "staged": false,
+          "approved": false,
+          "username": "invited_person",
+          "moderator": false,
+          "created_at": "2026-10-16T09:21:10.499661",
+          "flag_level": 0,
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-16T09:21:10.572283",
+          "approved_at": null,
+          "trust_level": 0,
+          "last_seen_at": null,
+          "suspended_at": null,
+          "date_of_birth": null,
+          "first_seen_at": null,
+          "silenced_till": null,
+          "approved_by_id": null,
+          "flair_group_id": null,
+          "last_posted_at": null,
+          "suspended_till": null,
+          "username_lower": "invited_person",
+          "last_emailed_at": null,
+          "primary_group_id": null,
+          "previous_visit_at": null,
+          "secure_identifier": null,
+          "uploaded_avatar_id": null,
+          "seen_notification_id": 0,
+          "last_seen_reviewable_id": null,
+          "registration_ip_address": "127.0.0.1",
+          "required_fields_version": null,
+          "group_locked_trust_level": null,
+          "manual_locked_trust_level": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "update_gravatar in 1s",
+      {
+        "user_id": 6,
+        "avatar_id": 8
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_tokens": 13,
+    "group_histories": 1,
+    "group_users": 69,
+    "invited_users": 1,
+    "notifications": 53,
+    "sidebar_section_links": 28,
+    "single_sign_on_records": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 365,
+    "user_avatars": 8,
+    "user_emails": 6,
+    "users": 6
+  },
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL), (904, 'Fixture904', 'user2@example.com', 3, now() - interval '1 day', now() - interval '1 day', 4, 1, 0, now() + interval '60 days', 'abcdefabcdefabcdefabcdefabcdefab', NULL, NULL), (905, 'Fixture905', NULL, 3, now() - interval '1 day', now() - interval '1 day', 0, 5, 0, now() + interval '30 days', NULL, NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days'), (901, 35, 905, now() - interval '1 day', now() - interval '1 day'), (902, 35, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days'), (901, 9001, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "fragment": [
+    "<h1>",
+    "</p>"
+  ],
+  "recorded_from": {
+    "case": "1c71d70ee049db470077347f156b5bf6d38bc84831f09ed9dfa72bf859828d77",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
