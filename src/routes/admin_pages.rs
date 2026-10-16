@@ -906,6 +906,43 @@ pub async fn search_logs_page(
     shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
 }
 
+/// An email logs tab as a page, from its JSON; the URL's filters fill
+/// their inputs.
+pub async fn email_logs_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    tab: crate::admin_logs_view::EmailTab,
+    doc: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_email_logs").await?;
+    let categories = std::collections::HashMap::new();
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let filters: Vec<(String, String)> =
+        form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+            .into_owned()
+            .collect();
+    let rows = doc.as_array().cloned().unwrap_or_default();
+    let cx = shell.cx(state);
+    let mut content = crate::admin_logs_view::email_header(&cx, tab);
+    content.push_str(&crate::admin_logs_view::email_logs(
+        &cx, &list, tab, &rows, &filters,
+    ));
+    let main = crate::admin_view::contents(&format!("admin-email-logs {}", tab.key()), &content);
+    let title = crate::admin_view::t(&state.i18n, "admin.config.email_logs.title");
+    shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
+}
+
 /// An admin page not drawn yet: refused, where its JSON is served.
 pub(super) fn refuse_page(
     uri: &Uri,

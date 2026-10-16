@@ -847,3 +847,365 @@ pub fn search_logs(
 fn urlencoding(v: &str) -> String {
     form_urlencoded::byte_serialize(v.as_bytes()).collect()
 }
+
+/// An email logs column header: its key and colspan.
+type Header = (&'static str, Option<u8>);
+/// An email logs filter: its param and placeholder key.
+type FilterInput = (&'static str, &'static str);
+
+/// The email logs' tabs.
+#[derive(Clone, Copy, PartialEq)]
+pub enum EmailTab {
+    Sent,
+    Skipped,
+    Bounced,
+    Received,
+    Rejected,
+}
+
+impl EmailTab {
+    pub fn key(self) -> &'static str {
+        match self {
+            EmailTab::Sent => "sent",
+            EmailTab::Skipped => "skipped",
+            EmailTab::Bounced => "bounced",
+            EmailTab::Received => "received",
+            EmailTab::Rejected => "rejected",
+        }
+    }
+
+    /// The tab's headers (key, colspan) and filters (param, placeholder).
+    fn columns(self) -> (Vec<Header>, Vec<FilterInput>) {
+        let user = ("user", "admin.email.logs.filters.user_placeholder");
+        let address = ("address", "admin.email.logs.filters.address_placeholder");
+        let kind = ("type", "admin.email.logs.filters.type_placeholder");
+        let from = (
+            "from",
+            "admin.email.incoming_emails.filters.from_placeholder",
+        );
+        let to = ("to", "admin.email.incoming_emails.filters.to_placeholder");
+        let subject = (
+            "subject",
+            "admin.email.incoming_emails.filters.subject_placeholder",
+        );
+        match self {
+            EmailTab::Sent => (
+                vec![
+                    ("admin.email.user", None),
+                    ("admin.email.to_address", None),
+                    ("admin.email.email_type", None),
+                    ("admin.email.reply_key", None),
+                    ("admin.email.post_link_with_smtp", None),
+                ],
+                vec![
+                    user,
+                    address,
+                    kind,
+                    (
+                        "reply_key",
+                        "admin.email.logs.filters.reply_key_placeholder",
+                    ),
+                ],
+            ),
+            EmailTab::Skipped => (
+                vec![
+                    ("admin.email.user", None),
+                    ("admin.email.to_address", None),
+                    ("admin.email.email_type", None),
+                    ("admin.email.skipped_reason", None),
+                ],
+                vec![user, address, kind],
+            ),
+            EmailTab::Bounced => (
+                vec![
+                    ("admin.email.user", None),
+                    ("admin.email.to_address", None),
+                    ("admin.email.bounced", Some(2)),
+                ],
+                vec![user, address, kind],
+            ),
+            EmailTab::Received => (
+                vec![
+                    ("admin.email.incoming_emails.from_address", None),
+                    ("admin.email.incoming_emails.to_addresses", None),
+                    ("admin.email.incoming_emails.subject", None),
+                ],
+                vec![from, to, subject],
+            ),
+            EmailTab::Rejected => (
+                vec![
+                    ("admin.email.incoming_emails.from_address", None),
+                    ("admin.email.incoming_emails.to_addresses", None),
+                    ("admin.email.incoming_emails.subject", None),
+                    ("admin.email.incoming_emails.error", Some(2)),
+                ],
+                vec![
+                    from,
+                    to,
+                    subject,
+                    (
+                        "error",
+                        "admin.email.incoming_emails.filters.error_placeholder",
+                    ),
+                ],
+            ),
+        }
+    }
+}
+
+/// admin-email-logs.gjs's header with the five tabs.
+pub fn email_header(cx: &AdminCx, tab: EmailTab) -> String {
+    let base = cx.base_path;
+    let i18n = cx.i18n;
+    let title = t(i18n, "admin.config.email_logs.title");
+    let mut tabs = String::new();
+    for each in [
+        EmailTab::Sent,
+        EmailTab::Skipped,
+        EmailTab::Bounced,
+        EmailTab::Received,
+        EmailTab::Rejected,
+    ] {
+        let href = match each {
+            EmailTab::Sent => format!("{base}/admin/email-logs"),
+            other => format!("{base}/admin/email-logs/{}", other.key()),
+        };
+        tabs.push_str(&nav_item(
+            &href,
+            &t(
+                i18n,
+                &format!("admin.config.email_logs.sub_pages.{}.title", each.key()),
+            ),
+            each == tab,
+        ));
+    }
+    PageHeader {
+        crumbs: vec![
+            Crumb {
+                label: t(i18n, "admin_title"),
+                path: "/admin",
+            },
+            Crumb {
+                label: title.clone(),
+                path: "/admin/email-logs",
+            },
+        ],
+        title,
+        actions: String::new(),
+        description: Some(escape(&t(
+            i18n,
+            "admin.config.email_logs.header_description",
+        ))),
+        learn_more_url: None,
+        tabs: Some(tabs),
+    }
+    .render(cx)
+}
+
+/// dFormatDate: the tiny date with its full date as the title.
+fn format_date(list: &ListContext, at: &Value) -> String {
+    age(list, at)
+}
+
+fn email_user(cx: &AdminCx, log: &Value) -> String {
+    let user = &log["user"];
+    if user.is_object() {
+        format!(
+            "<span class=\"email-logs-user\"><a href=\"{}/admin/users/{}/{}\">{} {}</a></span>",
+            cx.base_path,
+            value_text(&user["id"]),
+            escape(s(&user["username"])),
+            avatar(user),
+            escape(s(&user["username"]))
+        )
+    } else {
+        "&mdash;".into()
+    }
+}
+
+/// One log's row, as the tab's template draws it.
+fn email_row(cx: &AdminCx, list: &ListContext, tab: EmailTab, log: &Value) -> String {
+    let i18n = cx.i18n;
+    let id = value_text(&log["id"]);
+    let date = format_date(list, &log["created_at"]);
+    let to = escape(s(&log["to_address"]));
+    match tab {
+        EmailTab::Sent => {
+            let mut address = String::new();
+            if log["bounced"] == Value::Bool(true) {
+                address.push_str(&format!(
+                    "<span title=\"{}\">{}</span> ",
+                    escape(&t(i18n, "admin.email.bounced")),
+                    icon("arrow-rotate-right", None)
+                ));
+            }
+            address.push_str(&format!("<a href=\"mailto:{to}\" title=\"TO\">{to}</a>"));
+            let ccs: Vec<&str> = log["cc_addresses"]
+                .as_array()
+                .map(|a| a.iter().filter_map(|v| v.as_str()).collect())
+                .unwrap_or_default();
+            // CC_ADDRESS_DISPLAY_THRESHOLD: two, the rest behind See more.
+            for cc in ccs.iter().take(2) {
+                address.push_str(&format!(
+                    " <a href=\"mailto:{c}\" title=\"CC\">{c}</a>",
+                    c = escape(cc)
+                ));
+            }
+            if ccs.len() > 2 {
+                let more: String = ccs[2..]
+                    .iter()
+                    .map(|cc| {
+                        format!(
+                            "<li><span><a href=\"mailto:{c}\" title=\"CC\">{c}</a></span></li>",
+                            c = escape(cc)
+                        )
+                    })
+                    .collect();
+                address.push_str(&format!(
+                    " <button class=\"fk-d-tooltip__trigger email-log-cc-more\" type=\"button\"><span class=\"fk-d-tooltip__trigger-container\">{}</span></button><template class=\"email-log-cc-addresses\"><ul>{more}</ul></template>",
+                    escape(&t(i18n, "admin.email.logs.email_addresses.see_more"))
+                ));
+            }
+            let mut post = String::new();
+            if let Some(url) = log["post_url"].as_str() {
+                post.push_str(&format!(
+                    "<a href=\"{}\">{}</a><div>{}</div>",
+                    escape(url),
+                    escape(s(&log["post_description"])),
+                    escape(
+                        &t(i18n, "admin.email.logs.post_id")
+                            .replace("%{post_id}", &value_text(&log["post_id"]))
+                    )
+                ));
+            }
+            let smtp = escape(s(&log["smtp_transaction_response"]));
+            format!(
+                "<tr class=\"sent-email-item\" data-test-email-log-row-id=\"{id}\"><td class=\"sent-email-date\">{date}</td><td class=\"sent-email-username\">{}</td><td class=\"sent-email-address\">{address}</td><td class=\"sent-email-type\">{}</td><td class=\"sent-email-reply-key\"><span class=\"reply-key\" title=\"{k}\">{k}</span></td><td class=\"sent-email-post-link-with-smtp-response\">{post}<code title=\"{smtp}\">{smtp}</code></td></tr>",
+                email_user(cx, log),
+                escape(s(&log["email_type"])),
+                k = escape(s(&log["reply_key"])),
+            )
+        }
+        EmailTab::Skipped => format!(
+            "<tr data-test-email-log-row-id=\"{id}\"><td>{date}</td><td>{}</td><td><a href=\"mailto:{to}\">{to}</a></td><td>{}</td><td><div class=\"overflow-ellipsis\" title=\"{r}\">{r}</div></td></tr>",
+            email_user(cx, log),
+            escape(s(&log["email_type"])),
+            r = escape(s(&log["skipped_reason"])),
+        ),
+        EmailTab::Bounced => format!(
+            "<tr data-test-email-log-row-id=\"{id}\"><td>{date}</td><td>{}</td><td><a href=\"mailto:{to}\">{to}</a></td><td>{}</td><td class=\"email-details\">{}</td></tr>",
+            email_user(cx, log),
+            escape(s(&log["email_type"])),
+            if log["has_bounce_key"] == Value::Bool(true) {
+                format!(
+                    "<a href=\"\" class=\"incoming-email-link\" title=\"{}\">{}</a>",
+                    escape(&t(i18n, "admin.email.details_title")),
+                    icon("circle-info", None)
+                )
+            } else {
+                String::new()
+            },
+        ),
+        EmailTab::Received | EmailTab::Rejected => {
+            let tos = log["to_addresses"]
+                .as_array()
+                .map(|a| {
+                    a.iter()
+                        .filter_map(|v| v.as_str())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                })
+                .unwrap_or_default();
+            let subject = escape(s(&log["subject"]));
+            let subject_cell = match (tab, log["post_url"].as_str()) {
+                (EmailTab::Received, Some(url)) => {
+                    format!("<a href=\"{}\">{subject}</a>", escape(url))
+                }
+                _ => subject,
+            };
+            let mut row = format!(
+                "<tr data-test-email-log-row-id=\"{id}\"><td>{date}</td><td>{}</td><td>{}</td><td>{subject_cell}</td>",
+                escape(s(&log["from_address"])),
+                escape(&tos),
+            );
+            if tab == EmailTab::Rejected {
+                row.push_str(&format!(
+                    "<td><a class=\"incoming-email-link\" href=\"\">{}</a></td>",
+                    escape(s(&log["error"]))
+                ));
+            }
+            row.push_str("</tr>");
+            row
+        }
+    }
+}
+
+/// EmailLogsList: the headers, a filter input each, the logs or none,
+/// and the load-more sentinel.
+pub fn email_logs(
+    cx: &AdminCx,
+    list: &ListContext,
+    tab: EmailTab,
+    logs: &[Value],
+    filters: &[(String, String)],
+) -> String {
+    let i18n = cx.i18n;
+    let (headers, filter_columns) = tab.columns();
+    let mut out = String::from(
+        "<div class=\"admin-container\"><div><div class=\"horizontal-scroll-sync__container\"><div class=\"horizontal-scroll-sync__top-scroll\"><div class=\"horizontal-scroll-sync__fake-content\"></div></div><div class=\"horizontal-scroll-sync__content\"><table class=\"table email-list\"><thead><tr>",
+    );
+    out.push_str(&format!(
+        "<th>{}</th>",
+        escape(&t(i18n, "admin.email.sent_at"))
+    ));
+    for (key, colspan) in &headers {
+        out.push_str(&format!(
+            "<th{}>{}</th>",
+            colspan
+                .map(|c| format!(" colspan=\"{c}\""))
+                .unwrap_or_default(),
+            escape(&t(i18n, key))
+        ));
+    }
+    out.push_str(&format!(
+        "</tr></thead><tbody><tr class=\"filters\"><td><span class=\"sr-only\">{}</span></td>",
+        escape(&t(i18n, "admin.email.logs.filters.title"))
+    ));
+    for (name, placeholder) in &filter_columns {
+        let value = filters
+            .iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.as_str())
+            .unwrap_or_default();
+        out.push_str(&format!(
+            "<td><input placeholder=\"{}\" data-filter=\"{name}\" value=\"{}\" type=\"text\"></td>",
+            escape(&t(i18n, placeholder)),
+            escape(value)
+        ));
+    }
+    // The sent tab's empty alignment cell.
+    if tab == EmailTab::Sent {
+        out.push_str("<td></td>");
+    }
+    out.push_str("</tr>");
+    if logs.is_empty() {
+        out.push_str(&format!(
+            "<tr><td colspan=\"6\">{}</td></tr>",
+            escape(&t(i18n, "admin.email.logs.none"))
+        ));
+    }
+    for log in logs {
+        out.push_str(&email_row(cx, list, tab, log));
+    }
+    out.push_str("</tbody></table></div></div>");
+    // A full page of 50 may have more.
+    if logs.len() >= 50 {
+        out.push_str(
+            "<div aria-hidden=\"true\" class=\"load-more-sentinel\" data-offset=\"0\"></div>",
+        );
+    } else {
+        out.push_str("<div aria-hidden=\"true\" class=\"load-more-sentinel\"></div>");
+    }
+    out.push_str("</div><div class=\"loading-container\"></div></div>");
+    out
+}

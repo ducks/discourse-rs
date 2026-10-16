@@ -1013,6 +1013,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/logs/screened_emails/{id}",
             delete(admin_logs::destroy_screened_email),
         )
+        .route("/admin/email-logs", get(admin_logs::email_logs_index))
         .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
         .route(
             "/admin/email-logs/incoming/{id}",

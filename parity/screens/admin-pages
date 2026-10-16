@@ -37,3 +37,9 @@
 /admin/logs/screened_ip_addresses as=admin mask=.relative-date
 /admin/logs/screened_urls as=admin
 /admin/logs/search_logs as=admin mask=.top-date-string
+# The email logs (90g5).
+/admin/email-logs as=admin mask=.relative-date
+/admin/email-logs/skipped as=admin mask=.relative-date
+/admin/email-logs/bounced as=admin
+/admin/email-logs/received as=admin
+/admin/email-logs/rejected as=admin

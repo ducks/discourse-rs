@@ -98,7 +98,16 @@
     }, { root: null, threshold: 0 });
     observer.observe(content);
     syncWidth();
-    return observer;
+    // dOnResize: the content's size (its first report too) syncs the
+    // width again, after the intersection's report.
+    var resize = new ResizeObserver(syncWidth);
+    resize.observe(content);
+    return {
+      disconnect: function () {
+        observer.disconnect();
+        resize.disconnect();
+      },
+    };
   }
 
   Discourse.onPage(function () {

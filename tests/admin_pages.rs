@@ -630,7 +630,6 @@ async fn the_admin_pages_not_drawn_yet_are_refused() {
     for path in [
         "/admin/reports/signups",
         "/admin/logs/search_logs/term?term=foo",
-        "/admin/email-logs/sent",
     ] {
         let (status, _) = admin.page(path).await;
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
@@ -683,5 +682,52 @@ async fn the_logs_pages() {
         let (status, body) = admin.send(Method::GET, path, "", true).await;
         assert_eq!(status, StatusCode::OK, "{path}");
         assert!(body.starts_with('['), "{path}: {body}");
+    }
+}
+
+#[tokio::test]
+async fn the_email_logs_pages() {
+    let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO email_logs (to_address, email_type, user_id, created_at, updated_at) VALUES ('user1@example.com', 'digest', 3, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/email-logs").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-email-logs sent\">"));
+    assert!(html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/email-logs\">"));
+    assert!(
+        html.contains("<a href=\"mailto:user1@example.com\" title=\"TO\">user1@example.com</a>"),
+        "{html}"
+    );
+    assert!(html.contains("data-filter=\"reply_key\""));
+    // The sent tab's own path serves only its JSON.
+    let (status, _) = admin.page("/admin/email-logs/sent").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, body) = admin
+        .send(Method::GET, "/admin/email-logs/sent", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with('['), "{body}");
+    for (path, class) in [
+        ("/admin/email-logs/skipped", "skipped"),
+        ("/admin/email-logs/bounced", "bounced"),
+        ("/admin/email-logs/received", "received"),
+        ("/admin/email-logs/rejected", "rejected"),
+    ] {
+        let (status, html) = admin.page(path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert!(
+            html.contains(&format!("admin-contents admin-email-logs {class}")),
+            "{path}"
+        );
+        assert!(
+            html.contains("<table class=\"table email-list\">"),
+            "{path}"
+        );
     }
 }

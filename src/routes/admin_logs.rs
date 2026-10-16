@@ -503,7 +503,11 @@ pub async fn email_logs(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    super::admin_pages::refuse_page(&uri, &headers, "the email logs pages")?;
+    let page = !super::admin_pages::wants_json(&uri, &headers);
+    // The sent tab's page is /admin/email-logs: /sent serves only JSON.
+    if page && which == List::Sent {
+        return Ok(super::topics::not_found_response(&state));
+    }
     let p = crate::params::parse(uri.query(), &headers, &body);
     let get = |k: &str| crate::params::string(&p, k);
     let filters = crate::email_logs::Filters {
@@ -537,7 +541,79 @@ pub async fn email_logs(
         user_cx: &user_cx,
         i18n: &state.i18n,
     };
-    Ok(Json(crate::email_logs::list(&mut conn, &cx, which, &filters).await?).into_response())
+    let doc = crate::email_logs::list(&mut conn, &cx, which, &filters).await?;
+    if page {
+        drop(conn);
+        let tab = match which {
+            List::Sent => crate::admin_logs_view::EmailTab::Sent,
+            List::Skipped => crate::admin_logs_view::EmailTab::Skipped,
+            List::Bounced => crate::admin_logs_view::EmailTab::Bounced,
+            List::Received => crate::admin_logs_view::EmailTab::Received,
+            List::Rejected => crate::admin_logs_view::EmailTab::Rejected,
+        };
+        return super::admin_pages::email_logs_page(&state, &guardian, &headers, &uri, tab, &doc)
+            .await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// GET /admin/email-logs: the sent tab's page (its JSON has no index
+/// action).
+pub async fn email_logs_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() || super::admin_pages::wants_json(&uri, &headers) {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let get = |k: &str| crate::params::string(&p, k);
+    let filters = crate::email_logs::Filters {
+        offset: get("offset"),
+        user: get("user"),
+        address: get("address"),
+        email_type: get("type"),
+        smtp_transaction_response: None,
+        reply_key: get("reply_key"),
+        from: None,
+        to: None,
+        subject: None,
+        error: None,
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let user_cx = crate::admin_user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx = crate::email_logs::Context {
+        user_cx: &user_cx,
+        i18n: &state.i18n,
+    };
+    let doc =
+        crate::email_logs::list(&mut conn, &cx, crate::email_logs::List::Sent, &filters).await?;
+    drop(conn);
+    super::admin_pages::email_logs_page(
+        &state,
+        &guardian,
+        &headers,
+        &uri,
+        crate::admin_logs_view::EmailTab::Sent,
+        &doc,
+    )
+    .await
 }
 
 /// GET /admin/email-logs/incoming/:id(.json): admins.

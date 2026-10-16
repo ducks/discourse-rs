@@ -328,6 +328,111 @@
     }
   });
 
+  // The email logs: EmailLogsList's filters after INPUT_DELAY (the URL's
+  // query, the page for it swapped in with the input still focused), the
+  // next 50 at the sentinel, the CC addresses past two in a tooltip.
+  function emailPage() {
+    return document.querySelector(".admin-contents.admin-email-logs");
+  }
+
+  var emailTimer = null;
+  var refocus = null;
+  document.addEventListener("input", function (event) {
+    var input = event.target.closest(".admin-email-logs .email-list .filters input[data-filter]");
+    if (!input) {
+      return;
+    }
+    clearTimeout(emailTimer);
+    emailTimer = setTimeout(function () {
+      var params = new URLSearchParams(location.search);
+      input.value ? params.set(input.dataset.filter, input.value) : params.delete(input.dataset.filter);
+      params.delete("offset");
+      refocus = input.dataset.filter;
+      history.replaceState(history.state, "", location.pathname + (params.toString() ? "?" + params : ""));
+      go(params);
+    }, 250);
+  });
+
+  function emailLoadMore(root) {
+    var sentinel = root.querySelector(".load-more-sentinel[data-offset]");
+    if (!sentinel || sentinel.dataset.loading) {
+      return;
+    }
+    sentinel.dataset.loading = "1";
+    var tbody = root.querySelector(".email-list tbody");
+    var offset = tbody.querySelectorAll("tr[data-test-email-log-row-id]").length;
+    var params = new URLSearchParams(location.search);
+    params.set("offset", String(offset));
+    fetch(location.pathname + "?" + params.toString(), { credentials: "same-origin" })
+      .then(function (response) {
+        return response.text();
+      })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var rows = doc.querySelectorAll(".email-list tbody tr[data-test-email-log-row-id]");
+        rows.forEach(function (row) {
+          tbody.appendChild(document.importNode(row, true));
+        });
+        if (rows.length < 50) {
+          sentinel.removeAttribute("data-offset");
+        }
+        delete sentinel.dataset.loading;
+      });
+  }
+
+  Discourse.onPage(function () {
+    var root = emailPage();
+    if (!root) {
+      return;
+    }
+    if (refocus) {
+      var input = root.querySelector('.email-list .filters input[data-filter="' + refocus + '"]');
+      refocus = null;
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }
+    var sentinel = root.querySelector(".load-more-sentinel");
+    if (!sentinel || !("IntersectionObserver" in window)) {
+      return;
+    }
+    var observer = new IntersectionObserver(
+      function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) {
+          emailLoadMore(root);
+        }
+      },
+      { rootMargin: "0px 0px 250px 0px" }
+    );
+    observer.observe(sentinel);
+    return function () {
+      observer.disconnect();
+    };
+  });
+
+  document.addEventListener("click", function (event) {
+    var root = emailPage();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    if (event.target.closest(".incoming-email-link")) {
+      event.preventDefault();
+      unsupported("the incoming email modal");
+      return;
+    }
+    var more = event.target.closest(".email-log-cc-more");
+    if (more && Discourse.float) {
+      var template = more.parentElement.querySelector("template.email-log-cc-addresses");
+      Discourse.float.menu(more, {
+        identifier: "email-log-cc-addresses",
+        placement: "right-start",
+        arrow: true,
+        content: template.content.cloneNode(true),
+      });
+    }
+  });
+
   // The search logs: the period and the search type refilter.
   document.addEventListener("click", function (event) {
     var root = document.querySelector(".admin-contents.admin-search-logs");
