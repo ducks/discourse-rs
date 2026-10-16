@@ -787,9 +787,19 @@ then by what running a forum needs (milestone 6). Briefs:
     sending it; the advanced test's run; the templates' list with
     DFilterControls and the overridden toggle);
     `feat/admin-shell-problem-checks`: /admin/problem-checks with
-    ProblemChecksList and ProblemCheckItem (ignore, watch). Left: the
-    email template editor (moved to 90g7, with site texts' translation
-    overrides), badges, installed plugins),
+    ProblemChecksList and ProblemCheckItem (ignore, watch);
+    `feat/admin-shell-badges`: /admin/badges with AdminBadges (New, Bulk
+    award, Group settings' EditBadgeGroupings modal), AdminBadgesList's
+    filter, AdminBadgesShow's FormKit form (the status question, a system
+    badge's read-only texts, the icon or image choice with DIconGridPicker
+    and the badge image's upload, the query section with its preview
+    modal under enable_badge_sql, the grouping menu, the post header
+    checkbox's dependency, submit and delete), AdminBadgesAward's CSV
+    upload, and the badges settings tab. Left: the email template editor
+    (moved to 90g7, with site texts' translation overrides),
+    /svg-sprite/picker-search (SvgSprite.all_icons with the settings,
+    badge, group, plugin and theme icons; the icon grid shows the page
+    error until then), installed plugins),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.

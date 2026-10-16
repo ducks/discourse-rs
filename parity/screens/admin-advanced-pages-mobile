@@ -14,3 +14,9 @@
 /admin/email/advanced-test as=admin
 /admin/email/templates as=admin
 /admin/problem-checks as=admin mask=.admin-problem-checks__items>tbody
+/admin/badges as=admin
+/admin/badges/settings as=admin
+/admin/badges/1 as=admin
+/admin/badges/new as=admin
+/admin/badges/award/new as=admin
+/admin/badges/award/1 as=admin

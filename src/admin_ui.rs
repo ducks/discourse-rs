@@ -182,7 +182,6 @@ pub fn menu(class: &str, identifier: &str, icon_name: &str, title: &str, content
     )
 }
 
-/// DPageSubheader with its title, actions and description (HTML).
 /// The attributes admin-ui.js's EmailGroupUserChooser reads: the header
 /// with no one chosen, and its choice's Delete label (`%{name}` left).
 pub fn chooser_labels(cx: &AdminCx) -> String {
@@ -193,7 +192,8 @@ pub fn chooser_labels(cx: &AdminCx) -> String {
     )
 }
 
-/// An empty title draws no heading.
+/// DPageSubheader with its title, actions and description (HTML). An
+/// empty title draws no heading.
 pub fn subheader(title: &str, actions: &str, description: Option<&str>) -> String {
     let mut out =
         String::from("<div class=\"d-page-subheader\"><div class=\"d-page-subheader__title-row\">");
