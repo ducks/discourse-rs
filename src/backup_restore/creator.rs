@@ -14,7 +14,7 @@ use std::process::Stdio;
 use serde_json::json;
 use tokio::io::{AsyncBufReadExt, BufReader};
 
-use super::store::{CURRENT_DB, LocalBackupStore};
+use super::store::LocalBackupStore;
 use crate::config::RailsEnv;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
@@ -226,7 +226,7 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
             .bind(user_id)
             .fetch_optional(&mut *conn)
             .await?;
-    let has_local_uploads = has_local_uploads(&state.config.public_dir);
+    let has_local_uploads = has_local_uploads(&state.config.public_dir, &state.config.site.db);
     let with_uploads = if opts.with_uploads == Some(false) {
         false
     } else {
@@ -237,7 +237,7 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
         .config
         .tmp_dir
         .join("backups")
-        .join(CURRENT_DB)
+        .join(&state.config.site.db)
         .join(&timestamp);
     let archive_directory = store.directory().to_path_buf();
     let title = parameterize(&settings.get("title")?.to_s());
@@ -291,8 +291,8 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
     })
 }
 
-fn has_local_uploads(public_dir: &Path) -> bool {
-    std::fs::read_dir(public_dir.join("uploads").join(CURRENT_DB))
+fn has_local_uploads(public_dir: &Path, db: &str) -> bool {
+    std::fs::read_dir(public_dir.join("uploads").join(db))
         .map(|mut d| d.next().is_some())
         .unwrap_or(false)
 }
@@ -391,9 +391,19 @@ impl Run<'_> {
             ("cdn_url", cdn_url),
             ("s3_base_url", None),
             ("s3_cdn_url", None),
-            ("db_name", Some(CURRENT_DB.to_string())),
+            ("db_name", Some(self.state.config.site.db.clone())),
             // Rails.configuration.multisite, a boolean in a string column.
-            ("multisite", Some("f".to_string())),
+            (
+                "multisite",
+                Some(
+                    if self.state.config.site.multisite {
+                        "t"
+                    } else {
+                        "f"
+                    }
+                    .to_string(),
+                ),
+            ),
         ] {
             sqlx::query("INSERT INTO backup_metadata (name, value) VALUES ($1, $2)")
                 .bind(name)
@@ -515,8 +525,8 @@ impl Run<'_> {
         )
         .await?;
         self.log.log("Archiving uploads...").await;
-        if has_local_uploads(&self.state.config.public_dir) {
-            let upload_directory = format!("uploads/{CURRENT_DB}");
+        if has_local_uploads(&self.state.config.public_dir, &self.state.config.site.db) {
+            let upload_directory = format!("uploads/{}", self.state.config.site.db);
             let exclude = format!("--exclude={upload_directory}/optimized");
             let mut args = vec!["--append", "--dereference"];
             if !self.settings.get("include_thumbnails_in_backups")?.truthy() {

@@ -28,23 +28,26 @@ struct Site {
     dispatcher: Dispatcher,
 }
 
-/// The second site's host name.
+/// The second site's host names.
 const B_HOST: &str = "b.example";
+const B_OTHER_HOST: &str = "b2.example";
 
 /// Two sites behind one dispatcher, each with its config from `make`:
 /// `a` the default (test.localhost), `b` the multisite.yml entry `second`
-/// (b.example).
+/// (b.example and b2.example).
 async fn two_sites(make: impl Fn() -> Config) -> (Site, Site) {
     let db_a = TestDb::new().await;
     let db_b = TestDb::new().await;
     let mut config_a = make();
     config_a.site.database_url = db_a.url();
+    config_a.site.multisite = true;
     let mut config_b = make();
     config_b.site = SiteConfig {
         db: "second".into(),
         database_url: db_b.url(),
-        host_names: vec![B_HOST.into()],
+        host_names: vec![B_HOST.into(), B_OTHER_HOST.into()],
         pool: 4,
+        multisite: true,
     };
     let a = state(db_a.pool.clone(), config_a).await;
     let b = other_site(&a, db_b.pool.clone(), config_b).await;
@@ -615,4 +618,234 @@ async fn jobs_run_on_their_own_site() {
         .await
         .unwrap();
     assert_eq!(queued, 1);
+}
+
+/// RailsMultisite::CookieSalt: the cookie key's salt is
+/// `"authenticated encrypted cookie <host>"`, so a session cookie works
+/// only on the host name it was set for, even another name of its site.
+#[tokio::test]
+async fn a_cookie_is_keyed_to_its_host() {
+    use discourse_rs::session::cookie::{Codec, SALT, derive_key, derive_key_with_salt};
+    let (_a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let mut on_b = Client::new(&b, "127.0.0.1");
+    on_b.login("user1").await;
+    assert_eq!(
+        on_b.get("/session/current.json").await.status,
+        StatusCode::OK
+    );
+    let token = on_b
+        .cookies
+        .iter()
+        .find(|(n, _)| n == "_t")
+        .map(|(_, v)| v.clone())
+        .unwrap();
+    let secret = &b.st.keys.secret_key_base;
+    assert_eq!(
+        derive_key_with_salt(secret, &format!("{SALT} b.example")),
+        derive_key_with_salt(secret, "authenticated encrypted cookie b.example")
+    );
+    assert_ne!(
+        derive_key_with_salt(secret, &format!("{SALT} b.example")),
+        derive_key(secret)
+    );
+    assert!(
+        Codec::for_host(secret, Some(B_HOST))
+            .decrypt("_t", &token)
+            .is_ok()
+    );
+    assert!(Codec::new(secret).decrypt("_t", &token).is_err());
+    assert!(
+        Codec::for_host(secret, Some(B_OTHER_HOST))
+            .decrypt("_t", &token)
+            .is_err()
+    );
+    let reply = on_b
+        .send(
+            Method::GET,
+            "/session/current.json",
+            &[("host", B_OTHER_HOST)],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+}
+
+/// Scratch directories for a test's PUBLIC_DIR and TMP_DIR, shared by
+/// both sites as multisite shares them.
+fn scratch(name: &str) -> (std::path::PathBuf, std::path::PathBuf) {
+    let base = std::env::temp_dir().join(format!(
+        "discourse-rs-multisite-{}-{name}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&base);
+    (base.join("public"), base.join("tmp"))
+}
+
+/// A site's uploads live at `uploads/<db>` (FileStore::BaseStore's
+/// upload_path), its URLs say so, and only those count as its own.
+#[tokio::test]
+async fn uploads_live_under_the_sites_db_key() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    for (site, db) in [(&a, "default"), (&b, "second")] {
+        let store =
+            discourse_rs::file_store::FileStore::for_site(&site.st.config, &settings(site).await)
+                .unwrap();
+        assert_eq!(store.db(), db);
+        assert_eq!(store.relative_base_url(), format!("/uploads/{db}"));
+        assert_eq!(
+            store.path_for_kind("original", 7, &"a".repeat(40), ".png"),
+            format!("/uploads/{db}/original/1X/{}.png", "a".repeat(40))
+        );
+    }
+}
+
+/// A site's backup is its own: `backups/<db>`, its uploads from
+/// `uploads/<db>`, `db_name` and `multisite` in its metadata; restored
+/// on another site, its upload URLs are remapped to that site's db key.
+#[tokio::test]
+async fn backups_are_per_site_and_restore_across_sites() {
+    use discourse_rs::backup_restore::{creator, restorer};
+    let (public, tmp) = scratch("backups");
+    let make = || {
+        let mut cfg = common::recorded_config();
+        cfg.public_dir = public.clone();
+        cfg.tmp_dir = tmp.clone();
+        cfg
+    };
+    let (a, b) = two_sites(make).await;
+    for db in ["default", "second"] {
+        let dir = public.join("uploads").join(db).join("original/1X");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(format!("{db}.png")), db).unwrap();
+    }
+    let sha1 = "b".repeat(40);
+    sqlx::query(
+        "INSERT INTO uploads (user_id, original_filename, filesize, width, height, url, sha1, \
+         extension, created_at, updated_at) \
+         VALUES (-1, 'second.png', 6, 1, 1, '/uploads/second/original/1X/second.png', $1, 'png', now(), now())",
+    )
+    .bind(&sha1)
+    .execute(&b.db.pool)
+    .await
+    .unwrap();
+
+    let backup = creator::run(
+        &b.st,
+        1,
+        creator::Options {
+            with_uploads: Some(true),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
+    assert!(backup.success, "{:#?}", backup.logs);
+    let archive = public.join("backups/second").join(&backup.filename);
+    let listing = std::process::Command::new("tar")
+        .arg("-tzf")
+        .arg(&archive)
+        .output()
+        .unwrap();
+    let entries = String::from_utf8_lossy(&listing.stdout).into_owned();
+    assert!(entries.contains("uploads/second/original/1X/second.png"));
+    assert!(!entries.contains("uploads/default"));
+    let dump = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!(
+            "tar -xzOf '{}' dump.sql.gz | gzip -dc",
+            archive.display()
+        ))
+        .output()
+        .unwrap();
+    let sql = String::from_utf8_lossy(&dump.stdout);
+    assert!(sql.contains("\tdb_name\tsecond\n"));
+    assert!(sql.contains("\tmultisite\tt\n"));
+    assert!(
+        !public
+            .join("backups/default")
+            .join(&backup.filename)
+            .exists()
+    );
+
+    // The default site restores the second's backup.
+    std::fs::create_dir_all(public.join("backups/default")).unwrap();
+    std::fs::copy(
+        &archive,
+        public.join("backups/default").join(&backup.filename),
+    )
+    .unwrap();
+    let outcome = restorer::run(
+        &a.st,
+        1,
+        restorer::Options {
+            filename: Some(backup.filename.clone()),
+            client_id: None,
+            disable_emails: true,
+        },
+    )
+    .await
+    .unwrap();
+    assert!(outcome.success, "{:#?}", outcome.logs);
+    let url: String = sqlx::query_scalar("SELECT url FROM uploads WHERE sha1 = $1")
+        .bind(&sha1)
+        .fetch_one(&a.db.pool)
+        .await
+        .unwrap();
+    assert_eq!(url, "/uploads/default/original/1X/second.png");
+    assert!(
+        public
+            .join("uploads/default/original/1X/second.png")
+            .exists()
+    );
+    assert!(
+        public
+            .join("uploads/second/original/1X/second.png")
+            .exists()
+    );
+    let _ = std::fs::remove_dir_all(public.parent().unwrap());
+}
+
+async fn last_job_performed(site: &Site) -> Option<String> {
+    let mut conn = site.db.pool.acquire().await.unwrap();
+    discourse_rs::owned_schema::cached_get(
+        &mut conn,
+        discourse_rs::problem_checks::LAST_JOB_PERFORMED_KEY,
+    )
+    .await
+    .unwrap()
+}
+
+/// Each site's worker keeps its own scheduled state: the first site's
+/// runs its scheduled jobs at once, the next waits out its stagger, and
+/// what one runs is recorded in its own database only.
+#[tokio::test]
+async fn scheduled_jobs_run_per_site_worker() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let (stop_a, stopped_a) = tokio::sync::oneshot::channel::<()>();
+    let (stop_b, stopped_b) = tokio::sync::oneshot::channel::<()>();
+    let worker_a = tokio::spawn(discourse_rs::jobs::work(
+        a.st.clone(),
+        async {
+            stopped_a.await.ok();
+        },
+        std::time::Duration::ZERO,
+    ));
+    let worker_b = tokio::spawn(discourse_rs::jobs::work(
+        b.st.clone(),
+        async {
+            stopped_b.await.ok();
+        },
+        std::time::Duration::from_secs(3600),
+    ));
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(60);
+    while last_job_performed(&a).await.is_none() {
+        assert!(tokio::time::Instant::now() < deadline, "a ran nothing");
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    }
+    assert_eq!(last_job_performed(&b).await, None);
+    stop_a.send(()).ok();
+    stop_b.send(()).ok();
+    worker_a.await.unwrap();
+    worker_b.await.unwrap();
+    assert_eq!(last_job_performed(&b).await, None);
 }

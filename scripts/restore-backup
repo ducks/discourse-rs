@@ -8,20 +8,47 @@
 # PUBLIC_DIR. Extensions the dump expects (hstore, pg_trgm, unaccent,
 # vector) must be installable, which shell.nix's Postgres provides.
 #
+# For a site of a multisite process (docs/multisite.md), --site names its
+# db key and --public the PUBLIC_DIR the sites share: the backup's
+# uploads/<old db> lands at <public>/uploads/<site>, and when the names
+# differ, /uploads/<old db>/ is rewritten to /uploads/<site>/ in the dump,
+# as Rails' UploadsRestorer remaps it. The archive is unpacked in
+# [dest-dir] then.
+#
 # discourse-rs refuses to start if the database is behind the vendored
 # schema. If that happens, vendor Discourse at the backup's version:
 #   scripts/vendor-discourse <checkout> $(scripts/discourse-commit-for-migration <checkout> <version>)
 #
-# Usage: scripts/restore-backup [--force] <backup.tar.gz> <dbname> [dest-dir]
+# Usage: scripts/restore-backup [--force] [--site <key> --public <dir>] <backup.tar.gz> <dbname> [dest-dir]
 set -euo pipefail
 
+usage="usage: $0 [--force] [--site <key> --public <dir>] <backup.tar.gz> <dbname> [dest-dir]"
 force=0
-if [ "${1:-}" = "--force" ]; then
-  force=1
-  shift
+site=""
+public=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --force)
+      force=1
+      shift
+      ;;
+    --site)
+      site="${2:?$usage}"
+      shift 2
+      ;;
+    --public)
+      public="${2:?$usage}"
+      shift 2
+      ;;
+    *) break ;;
+  esac
+done
+if [ $# -lt 2 ] || { [ -n "$site" ] && [ -z "$public" ]; } || { [ -z "$site" ] && [ -n "$public" ]; }; then
+  echo "$usage" >&2
+  exit 64
 fi
-if [ $# -lt 2 ]; then
-  echo "usage: $0 [--force] <backup.tar.gz> <dbname> [dest-dir]" >&2
+if [ -n "$site" ] && ! [[ $site =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "--site: a db key of letters, digits, _ and -" >&2
   exit 64
 fi
 
@@ -50,6 +77,23 @@ if [ ! -f "$dest/dump.sql.gz" ]; then
   exit 1
 fi
 
+# The backup's own db key: its uploads folder (the archive has one).
+old_db=""
+if [ -d "$dest/uploads" ]; then
+  folders=("$dest"/uploads/*/)
+  if [ "${#folders[@]}" -gt 1 ]; then
+    echo "$archive: the uploads directory holds several folders" >&2
+    exit 1
+  fi
+  if [ -d "${folders[0]}" ]; then
+    old_db="$(basename "${folders[0]}")"
+  fi
+fi
+remap=(cat)
+if [ -n "$site" ] && [ -n "$old_db" ] && [ "$old_db" != "$site" ]; then
+  remap=(sed "s|/uploads/$old_db/|/uploads/$site/|g")
+fi
+
 version="$(sed -n 's/.*"version" *: *\([0-9]*\).*/\1/p' "$dest/meta.json" 2>/dev/null || true)"
 createdb "$db"
 # Like BackupRestore::DatabaseRestorer: the public schema and the extensions
@@ -59,10 +103,28 @@ createdb "$db"
 psql -X -q -v ON_ERROR_STOP=1 -d "$db" -c "CREATE EXTENSION IF NOT EXISTS hstore; CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS unaccent; CREATE EXTENSION IF NOT EXISTS vector;"
 gunzip -c "$dest/dump.sql.gz" \
   | sed -E '/^(CREATE SCHEMA public;|COMMENT ON SCHEMA public|CREATE EXTENSION|COMMENT ON EXTENSION|SET transaction_timeout|\\restrict|\\unrestrict)/d; /EXECUTE FUNCTION discourse_functions\./d' \
+  | "${remap[@]}" \
   | psql -X -q -v ON_ERROR_STOP=1 -d "$db" -o /dev/null
 
 tables="$(psql -X -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
 topics="$(psql -X -d "$db" -Atc "SELECT count(*) FROM topics")"
-uploads="$(find "$dest/uploads" -type f 2>/dev/null | wc -l)"
-echo "restored $db from $archive: $tables tables, $topics topics, $uploads upload files, backup version ${version:-unknown}"
-echo "run with: PUBLIC_DIR=$dest DATABASE_URL=<url to $db>"
+if [ -z "$site" ]; then
+  uploads="$(find "$dest/uploads" -type f 2>/dev/null | wc -l)"
+  echo "restored $db from $archive: $tables tables, $topics topics, $uploads upload files, backup version ${version:-unknown}"
+  echo "run with: PUBLIC_DIR=$dest DATABASE_URL=<url to $db>"
+  exit 0
+fi
+
+target="$public/uploads/$site"
+if [ -n "$old_db" ]; then
+  if [ -e "$target" ] && [ "$force" -ne 1 ]; then
+    echo "$target exists; pass --force to replace it" >&2
+    exit 1
+  fi
+  mkdir -p "$public/uploads"
+  rm -rf "$target"
+  mv "$dest/uploads/$old_db" "$target"
+fi
+uploads="$(find "$target" -type f 2>/dev/null | wc -l)"
+echo "restored $db from $archive as site $site: $tables tables, $topics topics, $uploads upload files at $target${old_db:+ (from uploads/$old_db)}, backup version ${version:-unknown}"
+echo "multisite.yml entry: $site: {database: $db, host_names: [<host>]}; PUBLIC_DIR=$public"

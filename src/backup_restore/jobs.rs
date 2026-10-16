@@ -116,7 +116,7 @@ pub async fn backup_chunks_merger(state: &AppState, args: &Value) -> Result<(), 
         return Err(invalid_parameters("chunks"));
     }
     // LocalBackupStore.base_directory, whatever backup_location says.
-    let local = LocalBackupStore::at(&state.config.public_dir)?;
+    let local = LocalBackupStore::at(&state.config.public_dir, &state.config.site.db)?;
     store::merge_chunks(&local, filename, identifier, chunks)?;
     let mut conn = state.pool.acquire().await?;
     let settings =

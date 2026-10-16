@@ -193,6 +193,7 @@ impl SiteSpec {
                 database_url: self.database_url(),
                 host_names: self.host_names.clone(),
                 pool: self.pool.unwrap_or(process.site.pool),
+                multisite: true,
             },
             ..process.clone()
         }
@@ -362,17 +363,20 @@ pub async fn shut_down(state: &AppState) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-struct Entry {
-    state: AppState,
-    router: Router,
-}
-
 /// The process's sites and how a request finds its own.
 pub struct Sites {
-    /// The default site first.
-    entries: Vec<Entry>,
-    /// host name -> entry
+    /// Every site's state, the default first.
+    states: Vec<AppState>,
+    /// A router per host name: under multisite each host has its own
+    /// cookie key (RailsMultisite::CookieSalt), so its own AppState.
+    routers: Vec<Router>,
+    /// host name -> router
     by_host: HashMap<String, usize>,
+    /// The default site's router for its first host name.
+    default_router: usize,
+    /// The default site's router for /srv/status on an unknown host,
+    /// whose cookie salt names no host.
+    no_host_router: usize,
     /// Under multisite.yml: the Host picks the site, an unknown one is not
     /// found. Otherwise every request is the one site's.
     multisite: bool,
@@ -385,11 +389,11 @@ impl Sites {
     /// One site, whatever the host (no multisite.yml).
     pub fn single(state: AppState) -> Sites {
         Sites {
-            entries: vec![Entry {
-                router: crate::app(state.clone()),
-                state,
-            }],
+            routers: vec![crate::app(state.clone())],
+            states: vec![state],
             by_host: HashMap::new(),
+            default_router: 0,
+            no_host_router: 0,
             multisite: false,
             asset_hostnames: HashSet::new(),
         }
@@ -416,20 +420,24 @@ impl Sites {
                 .map(str::to_string)
                 .collect();
         }
+        let for_host = |state: &AppState, host: Option<&str>| {
+            let mut state = state.clone();
+            state.keys = Arc::new(state.keys.for_host(host));
+            crate::app(state)
+        };
+        let mut routers = vec![for_host(default, None)];
         let mut by_host = HashMap::new();
-        for (i, state) in states.iter().enumerate() {
+        for state in &states {
             for host in state.config.hostnames() {
-                by_host.insert(host.to_string(), i);
+                by_host.insert(host.to_string(), routers.len());
+                routers.push(for_host(state, Some(host)));
             }
         }
         Ok(Sites {
-            entries: states
-                .into_iter()
-                .map(|state| Entry {
-                    router: crate::app(state.clone()),
-                    state,
-                })
-                .collect(),
+            default_router: by_host[default.config.hostname()],
+            no_host_router: 0,
+            routers,
+            states,
             by_host,
             multisite: true,
             asset_hostnames,
@@ -438,17 +446,17 @@ impl Sites {
 
     /// Every site's state, the default first.
     pub fn states(&self) -> impl Iterator<Item = &AppState> {
-        self.entries.iter().map(|e| &e.state)
+        self.states.iter()
     }
 
     pub fn into_service(self) -> Dispatcher {
         Dispatcher(Arc::new(self))
     }
 
-    /// The site for a request, None for a host no site has.
+    /// The router for a request, None for a host no site has.
     fn pick(&self, request: &mut Request<Body>) -> Option<usize> {
         if !self.multisite {
-            return Some(0);
+            return Some(self.default_router);
         }
         let mut host = request_host(request)?;
         // ConnectionManagement#host: a request to an asset host names its
@@ -468,11 +476,15 @@ impl Sites {
             // `with_hostname(params[:hostname])`: the path's hostname picks
             // the site, the default when no site has it.
             Some(&i) => Some(match path_hostname(path) {
-                Some(named) => self.by_host.get(named).copied().unwrap_or(0),
+                Some(named) => self
+                    .by_host
+                    .get(named)
+                    .copied()
+                    .unwrap_or(self.default_router),
                 None => i,
             }),
             // DiscoursePatches' db_lookup.
-            None if path == "/srv/status" => Some(0),
+            None if path == "/srv/status" => Some(self.no_host_router),
             None => None,
         }
     }
@@ -551,7 +563,7 @@ impl Service<Request<Body>> for Dispatcher {
 
     fn call(&mut self, mut request: Request<Body>) -> Self::Future {
         match self.0.pick(&mut request) {
-            Some(i) => Either::Left(self.0.entries[i].router.clone().oneshot(request)),
+            Some(i) => Either::Left(self.0.routers[i].clone().oneshot(request)),
             None => Either::Right(ready(Ok(not_found()))),
         }
     }

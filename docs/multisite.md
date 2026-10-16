@@ -301,3 +301,15 @@ own docs), so every site on one Postgres shares publish throughput.
   through.
 - 208b: one job worker per site; site N's scheduled jobs first run
   N × 10 s after startup.
+- 208c: under multisite every host name gets its own router over its
+  site's state with its own cookie key (salt
+  `"authenticated encrypted cookie <host>"`), and /srv/status on an
+  unknown host the default site's with the salt Rails gets for no host
+  (a trailing space). Without multisite.yml the salt is unchanged.
+- 208c: a backup's `multisite` metadata is `t` under multisite.yml, as
+  Rails writes `Rails.configuration.multisite`.
+- 208c: scripts/restore-backup takes `--site <key> --public <dir>`; the
+  backup's db key is its uploads folder's name, and the dump's
+  `/uploads/<old>/` is rewritten with sed before loading (Rails remaps
+  the loaded tables with DbHelper.remap; the same result for these
+  URLs).

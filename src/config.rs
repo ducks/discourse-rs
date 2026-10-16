@@ -54,6 +54,9 @@ pub struct SiteConfig {
     /// GlobalSetting db_pool's role: DISCOURSE_DB_POOL, else 10; a
     /// multisite.yml entry's `pool`.
     pub pool: u32,
+    /// `Rails.configuration.multisite`: the process runs under a
+    /// multisite.yml (every site, the default included).
+    pub multisite: bool,
 }
 
 impl Default for SiteConfig {
@@ -63,6 +66,7 @@ impl Default for SiteConfig {
             database_url: String::new(),
             host_names: Vec::new(),
             pool: 10,
+            multisite: false,
         }
     }
 }
