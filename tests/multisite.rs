@@ -949,3 +949,28 @@ async fn the_connection_budget_warns_past_max_connections() {
         warnings[0]
     );
 }
+
+/// A site's pool keeps ActiveRecord's 1000 prepared statements per
+/// connection: more than a topic page runs, which sqlx's default of 100
+/// made re-plan on every request.
+#[tokio::test]
+async fn site_pools_keep_a_thousand_prepared_statements() {
+    let db = TestDb::new().await;
+    let pool = discourse_rs::multisite::connect_pool(&db.url(), 1)
+        .await
+        .unwrap();
+    let mut conn = pool.acquire().await.unwrap();
+    for i in 0..150 {
+        let _: i32 = sqlx::query_scalar(&format!("SELECT {i}::int"))
+            .fetch_one(&mut *conn)
+            .await
+            .unwrap();
+    }
+    let prepared: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_prepared_statements")
+        .fetch_one(&mut *conn)
+        .await
+        .unwrap();
+    assert!(prepared >= 150, "{prepared} prepared statements kept");
+    drop(conn);
+    pool.close().await;
+}
