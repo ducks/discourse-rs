@@ -120,7 +120,7 @@ async fn the_backups_pages() {
     assert_eq!(status, StatusCode::OK, "{html}");
     assert!(html.contains("<title>Backups - Admin - "), "{html}");
     assert!(html.contains("<div class=\"admin-contents backups\" data-read-only=\"false\""));
-    assert!(html.contains("<button class=\"admin-backups__start d-page-action-button btn-small btn-primary btn btn-icon-text\" title=\"Create a backup\" type=\"button\">"), "{html}");
+    assert!(html.contains("<button class=\"btn btn-icon-text d-page-action-button btn-small btn-primary admin-backups__start\" title=\"Create a backup\" type=\"button\">"), "{html}");
     assert!(html.contains("admin-backups__toggle-read-only"));
     assert!(html.contains(
         "<li class=\"active admin-backups-tabs__files\"><a class=\"active\" href=\"/admin/backups\">Backup files</a></li>"
@@ -207,4 +207,66 @@ async fn the_backups_logs_since_the_operation_started() {
         "<pre>[2026-10-01 00:00:01] Dumping the public schema of the database...\n[2026-10-01 00:00:01] &lt;b&gt;\n</pre>"
     ), "{html}");
     assert!(!html.contains("old line"));
+}
+
+#[tokio::test]
+async fn the_api_keys_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // No keys yet: the empty list.
+    let (status, html) = admin.page("/admin/api/keys").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>API keys - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-api admin-api-keys\">"));
+    assert!(html.contains(
+        "<span class=\"admin-config-area-empty-list__title\">You don't have any API keys yet.</span>"
+    ));
+    let (status, _) = admin
+        .send(
+            Method::POST,
+            "/admin/api/keys.json",
+            "key[description]=Parity+key&key[scope_mode]=global",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, html) = admin.page("/admin/api/keys").await;
+    assert!(html.contains("<table class=\"d-table admin-api_keys__items\">"));
+    assert!(html.contains("Parity key"));
+    assert!(html.contains("data-href=\"/admin/api/keys/new\""));
+    assert!(html.contains("<li class=\"active admin-api-keys-tabs__index\">"));
+    // The key's page: no tabs, Admin's title.
+    let (status, html) = admin.page("/admin/api/keys/1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Admin - "), "{html}");
+    assert!(html.contains("<div class=\"api-key api-key-show\" data-api-key-id=\"1\""));
+    assert!(!html.contains("d-nav-submenu"));
+    assert!(html.contains("api-key-show__revoke"));
+    // The new key's form, without the header.
+    let (status, html) = admin.page("/admin/api/keys/new").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-api admin-api-keys new\">"));
+    assert!(!html.contains("d-page-header"));
+    assert!(html.contains(
+        "<select class=\"d-native-select form-kit__control-select\" id=\"control-scope_mode-input\" name=\"scope_mode\">"
+    ));
+    assert!(html.contains("data-scope-id=\"topics:write\""));
+    // The settings tab.
+    let (status, html) = admin.page("/admin/api/keys/settings").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Settings - Admin - "), "{html}");
+    assert!(html.contains("data-setting=\"user_api_key_allowed_groups\""));
+    // /admin/api goes on to the keys; the JSON stays.
+    let (status, location) = admin.page("/admin/api").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/api/keys");
+    let (status, body) = admin
+        .send(Method::GET, "/admin/api/keys/1.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"key\":"), "{body}");
+    // A missing key's page.
+    let (status, _) = admin.page("/admin/api/keys/99").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
 }

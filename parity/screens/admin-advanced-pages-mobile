@@ -3,3 +3,6 @@
 /admin/backups as=admin
 /admin/backups/logs as=admin
 /admin/backups/settings as=admin
+/admin/api/keys as=admin mask=.relative-date,.key>.d-table__value-wrapper
+/admin/api/keys/new as=admin
+/admin/api/keys/settings as=admin

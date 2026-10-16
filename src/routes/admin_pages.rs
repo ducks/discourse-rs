@@ -130,10 +130,15 @@ impl Shell {
             viewer: self.site.viewer,
             bus_position: self.site.bus_position,
             chrome: self.site.chrome,
-            page_title: format!(
-                "{title} - {}",
+            // A route without a title token leaves Admin's alone.
+            page_title: if title.is_empty() {
                 crate::admin_view::t(&state.i18n, "admin_title")
-            ),
+            } else {
+                format!(
+                    "{title} - {}",
+                    crate::admin_view::t(&state.i18n, "admin_title")
+                )
+            },
             main,
             script,
         };

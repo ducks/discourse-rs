@@ -21,6 +21,8 @@ pub struct Button<'a> {
     pub disabled: bool,
     /// Extra attributes, already escaped (` data-x="y"`).
     pub attrs: String,
+    /// `@route`'s path (under the base path), which admin-ui.js follows.
+    pub href: Option<&'a str>,
 }
 
 impl Button<'_> {
@@ -31,15 +33,21 @@ impl Button<'_> {
             _ => "",
         };
         let no_text = if self.label.is_none() { " no-text" } else { "" };
-        let mut out = format!(
-            "<button class=\"{} btn{no_text}{content}\"",
-            escape(self.class)
-        );
+        // dConcatClass's own classes, then the invocation's.
+        let class = if self.class.is_empty() {
+            String::new()
+        } else {
+            format!(" {}", escape(self.class))
+        };
+        let mut out = format!("<button class=\"btn{no_text}{content}{class}\"");
         if self.disabled {
             out.push_str(" disabled=\"\"");
         }
         if let Some(title) = &self.title {
             out.push_str(&format!(" title=\"{}\"", escape(title)));
+        }
+        if let Some(href) = self.href {
+            out.push_str(&format!(" data-href=\"{}\"", escape(href)));
         }
         out.push_str(&format!(" type=\"button\"{}>", self.attrs));
         if let Some(name) = self.icon {
@@ -83,8 +91,9 @@ pub enum Action<'a> {
 /// ones are their own list items).
 pub fn actions(cx: &AdminCx, identifier: &str, actions: &[Action]) -> String {
     let button = |b: &Button, kind: &str| {
+        let class = format!("d-page-action-button btn-small btn-{kind} {}", b.class);
         Button {
-            class: &format!("{} d-page-action-button btn-small btn-{kind}", b.class),
+            class: class.trim_end(),
             ..b.clone()
         }
         .render()
@@ -117,16 +126,24 @@ pub fn actions(cx: &AdminCx, identifier: &str, actions: &[Action]) -> String {
                     );
                 }
             };
-            let first = b.class.split_whitespace().next().unwrap_or_default();
+            // A route button goes by itself; the others click their
+            // hidden twin.
+            let attrs = match b.class.split_whitespace().next() {
+                Some(first) if b.href.is_none() => {
+                    format!(" data-page-action=\"{}\"", escape(first))
+                }
+                _ => String::new(),
+            };
+            let class = format!(
+                "d-page-action-button btn-small btn-transparent btn-{} {}",
+                if danger { "danger" } else { "default" },
+                b.class
+            );
             format!(
                 "<li class=\"dropdown-menu__item d-page-action-list-item\">{}</li>",
                 Button {
-                    class: &format!(
-                        "{} d-page-action-button btn-small btn-transparent btn-{}",
-                        b.class,
-                        if danger { "danger" } else { "default" }
-                    ),
-                    attrs: format!(" data-page-action=\"{}\"", escape(first)),
+                    class: class.trim_end(),
+                    attrs,
                     ..b.clone()
                 }
                 .render()
@@ -135,12 +152,11 @@ pub fn actions(cx: &AdminCx, identifier: &str, actions: &[Action]) -> String {
         .collect();
     let hidden: String = actions
         .iter()
-        .filter(|a| !matches!(a, Action::Wrapped(_)))
         .map(|a| match a {
-            Action::Primary(b) => button(b, "primary"),
-            Action::Default(b) => button(b, "default"),
-            Action::Danger(b) => button(b, "danger"),
-            Action::Wrapped(_) => String::new(),
+            Action::Primary(b) if b.href.is_none() => button(b, "primary"),
+            Action::Default(b) if b.href.is_none() => button(b, "default"),
+            Action::Danger(b) if b.href.is_none() => button(b, "danger"),
+            _ => String::new(),
         })
         .collect();
     let hidden = if hidden.is_empty() {
@@ -241,6 +257,109 @@ pub fn contents(classes: &str, attrs: &str, inner: &str) -> String {
     )
 }
 
+/// `dFormatDate` (format medium, with its title; `leaveAgo` the
+/// medium-with-ago format): autoUpdatingRelativeAge's span, its text
+/// relativeAgeMedium's. Dates are UTC here, the browser's zone in Ember.
+pub fn format_date(cx: &AdminCx, at: chrono::DateTime<chrono::Utc>, leave_ago: bool) -> String {
+    use chrono::Datelike;
+    let now = crate::clock::now();
+    let fmt = |at: chrono::DateTime<chrono::Utc>, key: &str| {
+        crate::pretty_text::render::local_dates::format_utc(at, &t(cx.i18n, key))
+            .unwrap_or_default()
+    };
+    let distance = ((now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
+    let text = if distance < 60 {
+        t(cx.i18n, "now")
+    } else if distance > 432_000 {
+        if at.year() == now.year() {
+            fmt(at, "dates.tiny.date_month")
+        } else {
+            fmt(at, "dates.medium.date_year")
+        }
+    } else {
+        let minutes = (distance as f64 / 60.0).round() as i64;
+        let (unit, count) = match minutes {
+            1..=55 => ("x_minutes", minutes),
+            56..=89 => ("x_hours", 1),
+            90..=1409 => ("x_hours", (minutes as f64 / 60.0).round() as i64),
+            1410..=2519 => ("x_days", 1),
+            _ => ("x_days", (minutes as f64 / 1440.0).round() as i64),
+        };
+        let key = if leave_ago {
+            "dates.medium_with_ago"
+        } else {
+            "dates.medium"
+        };
+        crate::admin_view::t_count(cx.i18n, &format!("{key}.{unit}"), count, &[])
+    };
+    format!(
+        "<span class='relative-date date' title='{}' data-time='{}' data-format='{}'>{}</span>",
+        escape(&fmt(at, "dates.long_with_year")),
+        at.timestamp_millis(),
+        if leave_ago {
+            "medium-with-ago"
+        } else {
+            "medium"
+        },
+        escape(&text)
+    )
+}
+
+/// A JSON time, for format_date.
+pub fn time(v: &Value) -> Option<chrono::DateTime<chrono::Utc>> {
+    v.as_str()
+        .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+        .map(|d| d.with_timezone(&chrono::Utc))
+}
+
+/// `dAvatar user imageSize="small"`: the 24 pixel avatar titled with the
+/// username.
+pub fn avatar(user: &Value) -> String {
+    crate::post_view::avatar_img(
+        user["avatar_template"].as_str().unwrap_or_default(),
+        24,
+        &format!(
+            " title=\"{}\"",
+            escape(user["username"].as_str().unwrap_or_default())
+        ),
+    )
+}
+
+/// AdminConfigAreaEmptyList: the empty label (HTML) and the CTA button
+/// to its route.
+pub fn empty_list(
+    cx: &AdminCx,
+    cta_class: &str,
+    cta_label: &str,
+    href: &str,
+    empty: &str,
+) -> String {
+    format!(
+        "<div class=\"admin-config-area-empty-list\"><span class=\"admin-config-area-empty-list__title\">{}</span>{}</div>",
+        t(cx.i18n, empty),
+        Button {
+            class: &format!(
+                "btn-default btn-small admin-config-area-empty-list__cta-button {cta_class}"
+            ),
+            label: tr(cx, cta_label),
+            href: Some(href),
+            ..Default::default()
+        }
+        .render()
+    )
+}
+
+/// BackButton: the link back with its label.
+pub fn back_button(cx: &AdminCx, path: &str, label_key: &str) -> String {
+    format!(
+        "<a class=\"btn btn-transparent back-button\" href=\"{}{}\">{}{}</a>",
+        cx.base_path,
+        escape(path),
+        icon("chevron-left", None),
+        escape(&t(cx.i18n, label_key))
+    )
+}
+
 /// `humanSize` (admin/helpers/human-size): I18n.toHumanSize.
 pub fn human_size(cx: &AdminCx, bytes: i64) -> String {
     let units = ["", "kb", "mb", "gb", "tb"];
@@ -293,7 +412,7 @@ mod tests {
         };
         assert!(
             b.render()
-                .starts_with("<button class=\"x btn btn-icon-text\"")
+                .starts_with("<button class=\"btn btn-icon-text x\"")
         );
         let b = Button {
             class: "x",
@@ -302,7 +421,7 @@ mod tests {
             ..Default::default()
         };
         let html = b.render();
-        assert!(html.starts_with("<button class=\"x btn no-text btn-icon\" disabled=\"\""));
+        assert!(html.starts_with("<button class=\"btn no-text btn-icon x\" disabled=\"\""));
         assert!(html.contains("<span aria-hidden=\"true\">\u{200b}</span>"));
         let b = Button {
             class: "x",
@@ -311,7 +430,7 @@ mod tests {
         };
         assert_eq!(
             b.render(),
-            "<button class=\"x btn\" type=\"button\"><span class=\"d-button-label\">&lt;Go&gt;</span></button>"
+            "<button class=\"btn x\" type=\"button\"><span class=\"d-button-label\">&lt;Go&gt;</span></button>"
         );
     }
 }

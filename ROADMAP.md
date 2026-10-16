@@ -753,7 +753,15 @@ then by what running a forum needs (milestone 6). Briefs:
     the restore notice; /admin/backups/logs with BackupRestore.logs (the
     bus backlog since start_logs_message_id, now saved as an operation
     starts) and the lines the bus brings; /admin/backups/settings as
-    AdminAreaSettings. Left: API keys, web hooks, email server settings,
+    AdminAreaSettings; `feat/admin-shell-api-keys`: /admin/api (on to the
+    keys), /admin/api/keys with ApiKeysList and ApiKeyItem (the empty
+    list, the revoked label, the row's revoke and undo revoke), a key's
+    page (ApiKeysShow: the description's inline edit, revoke, undo,
+    delete, the scopes with their tooltips and Allowed URLs modal), the
+    new key's FormKit form (EmailGroupUserChooser for a single user, the
+    granular scopes' table, the required checks, the generated key with
+    its copy button; no header, as the reference draws it on load), and
+    the user_api settings tab. Left: web hooks, email server settings,
     preview and templates, problem checks, badges, installed plugins),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
