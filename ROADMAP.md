@@ -744,9 +744,18 @@ then by what running a forum needs (milestone 6). Briefs:
     upcoming changes, what's new), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
     palettes, site texts, email style, form templates, embedding, robots
-    txt), 90g8. `feat/admin-shell-advanced` M (backups and their logs,
-    API keys, web hooks, email server settings, preview and templates,
-    problem checks, badges, installed plugins), 90g9.
+    txt), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    an area: `feat/admin-shell-backups`: /admin/backups with
+    AdminBackupsActions (backup through the StartBackup modal, cancel,
+    rollback, the read-only and archive mode toggles with their
+    confirmations), the files' table with the download link email and the
+    row's DMenu (restore, delete), UppyBackupUploader's resumable chunks,
+    the restore notice; /admin/backups/logs with BackupRestore.logs (the
+    bus backlog since start_logs_message_id, now saved as an operation
+    starts) and the lines the bus brings; /admin/backups/settings as
+    AdminAreaSettings. Left: API keys, web hooks, email server settings,
+    preview and templates, problem checks, badges, installed plugins),
+    90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.
     ~~`feat/template-client-strings`~~ (done) M (the templates' and

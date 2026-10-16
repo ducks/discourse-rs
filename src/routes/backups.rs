@@ -88,8 +88,9 @@ fn backup_id(raw: &str) -> Option<(String, Option<String>)> {
     Some((c[1].to_string(), c.get(2).map(|m| m.as_str().to_string())))
 }
 
-/// GET /admin/backups(.json) and /admin/backups/settings: the store's files
-/// (BackupFileSerializer), newest first. The page is Ember's.
+/// GET /admin/backups(.json) and /admin/backups/settings(.json): the
+/// store's files (BackupFileSerializer), newest first; as a page the
+/// backup files or the settings tab.
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -100,7 +101,12 @@ pub async fn index(
         return Ok(r);
     }
     if !uri.path().ends_with(".json") && !super::wants_json(uri.query(), &headers) {
-        return Err(Unsupported("the admin backups pages (Ember)").into());
+        let tab = if uri.path().trim_end_matches('/').ends_with("/settings") {
+            crate::admin_backups_view::Tab::Settings
+        } else {
+            crate::admin_backups_view::Tab::Files
+        };
+        return page(&state, &guardian, &headers, &uri, tab).await;
     }
     let settings = settings(&state).await?;
     let store = LocalBackupStore::create(&state, &settings)?;
@@ -108,16 +114,121 @@ pub async fn index(
     Ok(Json(Value::Array(files)).into_response())
 }
 
-/// GET /admin/backups/logs: the logs page (Ember's, with the operation's
-/// status and logs preloaded).
+/// GET /admin/backups/logs: the logs page, with the operation's status and
+/// the logs since it started.
 pub async fn logs(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
     if let Some(r) = admin_only(&state, &guardian) {
         return Ok(r);
     }
-    Err(Unsupported("the admin backups logs page (Ember)").into())
+    page(
+        &state,
+        &guardian,
+        &headers,
+        &uri,
+        crate::admin_backups_view::Tab::Logs,
+    )
+    .await
+}
+
+/// The backups pages: what the route preloads (operations_status and the
+/// logs), then the tab's content. Every tab has the header's actions,
+/// which admin-backups.js handles; the settings tab's editors are
+/// site-settings.js's.
+async fn page(
+    state: &AppState,
+    guardian: &Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    tab: crate::admin_backups_view::Tab,
+) -> Result<Response, AppError> {
+    use crate::admin_backups_view::{Status, Tab};
+    let mut conn = state.pool.acquire().await?;
+    let shell =
+        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_backups")
+            .await?;
+    let mut status = Status::from_json(
+        &backup_restore::operations_status(state, &mut conn, &shell.settings).await?,
+    );
+    status.enable_backups = shell.settings.get("enable_backups")?.truthy();
+    status.site_archived = shell.settings.get("site_archived")?.truthy();
+    status.local_storage = shell.settings.get("backup_location")?.to_s() == "local";
+    status.read_only = crate::readonly::mode(&mut conn).await?.readonly;
+    let cx = shell.cx(state);
+    let content = match tab {
+        Tab::Files => {
+            let store = LocalBackupStore::create(state, &shell.settings)?;
+            let files: Vec<Value> = store.files()?.iter().map(store::BackupFile::json).collect();
+            crate::admin_backups_view::index(&cx, &status, &files)
+        }
+        Tab::Logs => {
+            let user_id = guardian.user_id().unwrap_or_default();
+            let logs = backup_restore::logs(state, &mut conn, user_id).await?;
+            crate::admin_backups_view::logs(&cx, &status, &logs)
+        }
+        Tab::Settings => {
+            super::admin_advanced::area_settings(
+                &mut conn,
+                state,
+                &shell,
+                uri,
+                json!({ "categories": "backups" }),
+            )
+            .await?
+        }
+    };
+    // The strings first: their #dialog-strings (with Yes and No) is the
+    // one dialog.js finds.
+    let mut main = format!(
+        "{}{}",
+        crate::admin_backups_view::strings(&cx),
+        crate::admin_backups_view::render(&cx, tab, &status, &content)
+    );
+    let (classes, title, script) = match tab {
+        Tab::Files => ("backups", "admin.backups.title", "admin-backups.js"),
+        Tab::Logs => (
+            "backups logs",
+            "admin.backups.menu.logs",
+            "admin-backups.js",
+        ),
+        Tab::Settings => (
+            "backups settings",
+            "admin.backups.settings",
+            "site-settings.js",
+        ),
+    };
+    if tab == Tab::Settings {
+        main.push_str(&format!(
+            "<script src=\"{}\"></script>",
+            crate::assets::url(&shell.site.base_path, "admin-backups.js")
+        ));
+    }
+    // StartBackup's warning and checkbox, and the toggles' states.
+    let s3_uploads = shell.settings.get("enable_s3_uploads")?.truthy();
+    let include_s3 = shell
+        .settings
+        .get("include_s3_uploads_in_backups")?
+        .truthy();
+    let attrs = format!(
+        " data-read-only=\"{}\" data-site-archived=\"{}\" data-s3-warning=\"{}\" data-can-manage-uploads=\"{}\"",
+        status.read_only,
+        status.site_archived,
+        s3_uploads && !include_s3,
+        !s3_uploads || include_s3
+    );
+    let main = crate::admin_ui::contents(classes, &attrs, &main);
+    let mut title = crate::admin_view::t(&state.i18n, title);
+    if tab != Tab::Files {
+        title = format!(
+            "{title} - {}",
+            crate::admin_view::t(&state.i18n, "admin.backups.title")
+        );
+    }
+    shell.render(state, uri, &title, main, script, StatusCode::OK)
 }
 
 /// GET /admin/backups/status(.json): `BackupRestore.operations_status`.

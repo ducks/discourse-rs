@@ -492,7 +492,7 @@ pub async fn site_settings_category(
 }
 
 /// The site settings filters in the route's query params.
-fn settings_filters(uri: &Uri) -> crate::admin_site_settings_view::Filters {
+pub(super) fn settings_filters(uri: &Uri) -> crate::admin_site_settings_view::Filters {
     let mut filters = crate::admin_site_settings_view::Filters::default();
     for (k, v) in form_urlencoded::parse(uri.query().unwrap_or("").as_bytes()) {
         match k.as_ref() {
@@ -507,7 +507,7 @@ fn settings_filters(uri: &Uri) -> crate::admin_site_settings_view::Filters {
 
 /// Site#groups and Site#categories (id, name) for the group and category
 /// settings' choosers.
-async fn site_lists(
+pub(super) async fn site_lists(
     conn: &mut sqlx::PgConnection,
 ) -> Result<(Vec<(i64, String)>, Vec<(i64, String)>), AppError> {
     let list = |rows: Vec<(i32, String)>| -> Vec<(i64, String)> {

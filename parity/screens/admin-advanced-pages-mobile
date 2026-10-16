@@ -1,0 +1,5 @@
+# The advanced and customize admin pages (90g8, 90g7) in the mobile view;
+# see parity/screens/admin-advanced-pages.
+/admin/backups as=admin
+/admin/backups/logs as=admin
+/admin/backups/settings as=admin

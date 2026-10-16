@@ -1,5 +1,6 @@
 mod about;
 mod accounts;
+mod admin_advanced;
 mod admin_api_keys;
 mod admin_badges;
 mod admin_dashboard;
@@ -2377,6 +2378,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-reports.js", get(asset))
         .route("/assets/admin-logs.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
+        .route("/assets/admin-ui.js", get(asset))
+        .route("/assets/admin-backups.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))

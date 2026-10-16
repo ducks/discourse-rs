@@ -196,6 +196,7 @@
       var content = template.content.firstElementChild.cloneNode(true);
       var menu = Discourse.float.menu(trigger, {
         identifier: trigger.dataset.identifier,
+        mainClass: trigger.dataset.identifier + "-content",
         content: content,
       });
       content.addEventListener("click", function (e) {

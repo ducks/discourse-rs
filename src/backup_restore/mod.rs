@@ -70,6 +70,7 @@ pub(crate) async fn keep_running(
 ) -> Result<impl std::future::Future<Output = ()> + use<>, sqlx::Error> {
     let mut conn = state.pool.acquire().await?;
     mark_as_running(&mut conn).await?;
+    save_start_logs_position(state, &mut conn).await?;
     clear_shutdown_signal(&mut conn).await?;
     drop(conn);
     let pool = state.pool.clone();
@@ -125,6 +126,50 @@ pub(crate) async fn keep_running(
             std::future::pending::<()>().await;
         }
     })
+}
+
+/// `start_logs_message_id_key`
+const START_LOGS_KEY: &str = "start_logs_message_id";
+
+/// `save_start_logs_message_id`: where the bus is as an operation starts,
+/// so the logs page shows only the logs since.
+async fn save_start_logs_position(
+    state: &AppState,
+    conn: &mut PgConnection,
+) -> Result<(), sqlx::Error> {
+    let position = match state.bus.now().await {
+        Ok(p) => p.to_string(),
+        Err(e) => {
+            tracing::error!("reading the bus position for the backup logs: {e}");
+            return Ok(());
+        }
+    };
+    crate::owned_schema::cached_setex(conn, START_LOGS_KEY, FOREVER, &position).await
+}
+
+/// `BackupRestore.logs`: the log lines published since the last operation
+/// started, oldest first. Each line is published to the admin who started
+/// the operation (MessageBus's user_ids), so it is that admin's backlog
+/// read here rather than the channel's whole one.
+pub async fn logs(
+    state: &AppState,
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Vec<Value>, AppError> {
+    let start = crate::owned_schema::cached_get(conn, START_LOGS_KEY)
+        .await?
+        .and_then(|p| p.parse::<pg_bus::Position>().ok())
+        .unwrap_or(pg_bus::Position::START);
+    let filter = pg_bus::Filter {
+        channels: vec![LOGS_CHANNEL.to_string()],
+        tags: vec![crate::bus::user_tag(user_id)],
+    };
+    let messages = state
+        .bus
+        .backlog(start, &filter, 1000)
+        .await
+        .map_err(|e| std::io::Error::other(e.to_string()))?;
+    Ok(messages.into_iter().map(|m| m.data).collect())
 }
 
 /// `can_rollback?`: a table left in the `backup` schema by a restore.
