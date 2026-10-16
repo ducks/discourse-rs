@@ -696,7 +696,7 @@ async fn create_user_from_invite(
 }
 
 /// `User#activate`: a signup token made and confirmed.
-async fn activate(
+pub(crate) async fn activate(
     conn: &mut PgConnection,
     state: &AppState,
     s: &SiteSettings,
@@ -915,10 +915,9 @@ async fn visible_topic_path(
 /// `ensure_invites_allowed`: local logins, DiscourseConnect or an
 /// enabled auth provider.
 fn invites_allowed(s: &SiteSettings) -> Result<bool, AppError> {
-    if s.get("enable_local_logins")?.truthy() || s.get("enable_discourse_connect")?.truthy() {
-        return Ok(true);
-    }
-    Err(Unsupported("invites with only external logins (Discourse.enabled_auth_providers)").into())
+    Ok(s.get("enable_local_logins")?.truthy()
+        || s.get("enable_discourse_connect")?.truthy()
+        || !crate::auth::enabled(s)?.is_empty())
 }
 
 /// `post_process_invite(user)` and the topic notifications, after a
@@ -1030,9 +1029,22 @@ pub async fn perform_accept_invitation(
     if s.get("enable_discourse_connect")?.truthy() {
         return Ok(not_found());
     }
-    if invites::email_code_enabled(&mut tx, &s, &guardian).await? && guardian.is_anonymous() {
-        // server_session[:authentication] is external auth's (not ported).
+    let session_id =
+        crate::session::forum::load_forum_session(&state, &headers).server_session_id();
+    let authenticated_externally = guardian.is_anonymous()
+        && crate::session::server::get(&mut tx, &session_id, "authentication")
+            .await?
+            .is_some_and(|v| v.as_object().is_some_and(|m| !m.is_empty()));
+    if invites::email_code_enabled(&mut tx, &s, &guardian).await?
+        && guardian.is_anonymous()
+        && !authenticated_externally
+    {
         return Ok(not_found());
+    }
+    if authenticated_externally {
+        return Err(
+            Unsupported("accepting an invite with an external login (UserAuthenticator)").into(),
+        );
     }
     let not_found_json = || {
         json_status(
@@ -1243,6 +1255,21 @@ pub(crate) async fn show_info(
     // show_invite
     let invite_email = invite.email.clone();
     let mut email = invite_email.as_deref().map(obfuscate);
+    // The external login the callback kept: its email shown when it is
+    // the invite's.
+    let mut different_external_email = false;
+    let mut verified_by_authentication = false;
+    if let Some(data @ Value::Object(_)) =
+        crate::session::server::get(&mut *conn, session_id, "authentication").await?
+    {
+        let auth = crate::auth::managed::AuthResult::from_session_data(&data);
+        if invite_email == auth.email() {
+            email = invite_email.clone();
+            verified_by_authentication = auth.email_valid;
+        } else {
+            different_external_email = true;
+        }
+    }
     let code = invites::email_code_enabled(&mut *conn, s, guardian).await?;
     let verified_by_link =
         !code && invite.email_token.is_some() && t_param == invite.email_token.as_deref();
@@ -1295,7 +1322,10 @@ pub(crate) async fn show_info(
     info.insert("username".into(), json!(username));
     info.insert("is_invite_link".into(), json!(invite.is_invite_link()));
     info.insert("email_verified_by_link".into(), json!(verified_by_link));
-    if verified_by_link {
+    if different_external_email {
+        info.insert("different_external_email".into(), json!(true));
+    }
+    if verified_by_link || verified_by_authentication {
         let staged: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM users u JOIN user_emails e ON e.user_id = u.id \
              WHERE u.staged AND lower(e.email) = lower($1))",
@@ -1499,6 +1529,12 @@ async fn accept_page(
         .await?
         && s.get("enable_local_logins_via_email")?.truthy()
         && s.get("enable_local_logins")?.truthy();
+    if !s.get("enable_discourse_connect")?.truthy() && !crate::auth::enabled(s)?.is_empty() {
+        return Err(Unsupported(
+            "the invite page with external logins (LoginButtons, social_login_available)",
+        )
+        .into());
+    }
     let full_name = s.get("full_name_requirement")?.to_s();
     let section = crate::invite_page_view::render(&crate::invite_page_view::InviteView {
         t: &t,

@@ -13,7 +13,7 @@
 //!
 //! Strategies ported: discourse-oauth2-basic's, discourse-openid-connect's
 //! and the OAuth2 ones Discourse ships (auth/builtin.rs). Refused: the
-//! others, and invite-only sites' invite check.
+//! others.
 
 use askama::Template;
 use axum::body::Bytes;
@@ -1394,6 +1394,32 @@ fn valid_origin(
     Ok(Some(out))
 }
 
+/// `invite_required?` on an invite-only site: unless the login started
+/// on the page of an invite that can still be redeemed
+/// (`Discourse.route_for(@origin)` as invites#show).
+async fn invite_required(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    origin_path: &str,
+) -> Result<bool, AppError> {
+    let base = base_path(state);
+    let path = origin_path.split(['?', '#']).next().unwrap_or_default();
+    let Some(path) = path.strip_prefix(base.as_str()) else {
+        return Ok(true);
+    };
+    // `get "invites/:id" => "invites#show"`: one segment, no format.
+    let Some(key) = path
+        .strip_prefix("/invites/")
+        .filter(|k| !k.is_empty() && !k.contains(['/', '.']))
+    else {
+        return Ok(true);
+    };
+    let Some(invite) = crate::invites::Invite::find_by_key(&mut *conn, key).await? else {
+        return Ok(true);
+    };
+    Ok(!invite.redeemable(&mut *conn).await?)
+}
+
 /// GET or POST /auth/:provider/callback
 #[allow(clippy::too_many_arguments)]
 pub async fn callback(
@@ -1651,8 +1677,10 @@ pub async fn callback(
             user_id,
         )
         .await?;
-    } else if settings.get("invite_only")?.truthy() {
-        return Err(Unsupported("external logins on invite-only sites (192)").into());
+    } else if settings.get("invite_only")?.truthy()
+        && invite_required(&mut tx, &state, &origin_path).await?
+    {
+        result.requires_invite = true;
     } else {
         crate::session::server::set(
             &mut tx,

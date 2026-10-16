@@ -1867,7 +1867,7 @@ route table has been made, so this list may be short.
     allowlist, a suspended user's message, the email RecordInvalid
     failure, groups linked to a provider's groups, the associate page,
     Discourse ID's revoke endpoint and revoking its account
-192. ~~`feat/invites`~~ (done, 192a-f) L: InvitesController (/invites, invite links,
+192. ~~`feat/invites`~~ (done, 192a-g) L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email
     addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
@@ -1926,6 +1926,19 @@ route table has been made, so this list may be short.
     create_admin_grant_confirmation: a new user starts as a moderator,
     an existing one is granted moderation, an admin invite logs the
     grant and asks the inviter to confirm admin by email)
+    192g. ~~`feat/invites-external`~~ (done) S, after 191: redeeming the
+    invite a visitor came from through DiscourseConnect
+    (validate_invitation! and redeem_invitation in sso_login: the user
+    activated, logged on and sent to the invite's topic), OmniAuth's
+    invite_required? on invite-only sites (requires_invite unless the
+    login started on a redeemable invite's page), the kept external
+    login's email on the invite's info (different_external_email),
+    invites allowed with only external logins. Refused: accepting an
+    invite with an external login (UserAuthenticator in
+    create_user_from_invite: the provider's overrides, the account,
+    avatar and profile, the session's authenticated_with_oauth), the
+    invite page with external logins enabled (LoginButtons,
+    social_login_available)
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a
     compatibility layer, not a gap in the port's own pages, which get
     live updates over pg-bus's /bus already (MessageBus on pg-bus, so

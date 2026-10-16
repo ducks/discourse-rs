@@ -1,0 +1,68 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL), (904, 'Fixture904', 'user2@example.com', 3, now() - interval '1 day', now() - interval '1 day', 4, 1, 0, now() + interval '60 days', 'abcdefabcdefabcdefabcdefabcdefab', NULL, NULL), (905, 'Fixture905', NULL, 3, now() - interval '1 day', now() - interval '1 day', 0, 5, 0, now() + interval '30 days', NULL, NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days'), (901, 35, 905, now() - interval '1 day', now() - interval '1 day'), (902, 35, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days'), (901, 9001, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "user.id",
+    "oauth2_json_username_path": "user.login",
+    "oauth2_json_name_path": "user.name",
+    "oauth2_json_email_path": "user.mail",
+    "oauth2_send_auth_header": false,
+    "oauth2_enabled": true,
+    "invite_only": true
+  },
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "body": "access_token=access-2&token_type=bearer"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"user\":{\"id\":\"abc-7\",\"login\":\"brand new\",\"name\":\"\",\"mail\":\"New.Person@Example.com\"}}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic?origin=%2Ft%2Fwelcome%2F5"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/invites/Fixture900"
+    },
+    {
+      "method": "GET",
+      "path": "/invites/Fixture901"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

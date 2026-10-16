@@ -2,11 +2,11 @@
 //! DiscourseConnect provider. /session/sso sends the browser to the
 //! provider with a signed nonce; the provider sends it back to
 //! /session/sso_login with the signed user, who is found or created
-//! (crate::discourse_connect) and logged on.
+//! (crate::discourse_connect) and logged on, redeeming the invite the
+//! visitor came from.
 //!
-//! Refused: redeeming an invite through DiscourseConnect (192), suspended
-//! users (the staff reason's sanitizing, as the password login refuses
-//! it).
+//! Refused: suspended users (the staff reason's sanitizing, as the
+//! password login refuses it).
 
 use askama::Template;
 use axum::extract::State;
@@ -152,6 +152,84 @@ struct SsoErrorPage {
 
 /// `render_sso_error(text:, status:)`: session/sso_login.html.erb in the
 /// no_ember layout (the text is HTML).
+/// `validate_invitation!(sso)`: the invite the server session kept from
+/// the invite page, or the Invite::ValidationFailed message.
+async fn validate_invitation(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    session_id: &str,
+    sso: &discourse_connect::Sso,
+) -> Result<Result<Option<crate::invites::Invite>, String>, AppError> {
+    let key = match crate::session::server::get(&mut *conn, session_id, "invite-key").await? {
+        Some(serde_json::Value::String(key)) => key,
+        Some(serde_json::Value::Null) | None => return Ok(Ok(None)),
+        Some(other) => other.to_string(),
+    };
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let base_url = urls.base_url()?;
+    let site_name = settings.get("title")?.to_s();
+    let t_with =
+        |key: &str, args: &[(&str, &str)]| state.i18n.t_with(key, args).unwrap_or_default();
+    let Some(invite) = crate::invites::Invite::find_by_key(&mut *conn, &key).await? else {
+        return Ok(Err(t_with("invite.not_found", &[("base_url", &base_url)])));
+    };
+    if invite.redeemable(&mut *conn).await? {
+        if invite.is_email_invite() && sso.get("email") != invite.email() {
+            return Ok(Err(t(state, "invite.not_matching_email")));
+        }
+    } else if invite.expired() {
+        return Ok(Err(t_with("invite.expired", &[("base_url", &base_url)])));
+    } else if invite.redeemed(&mut *conn).await? {
+        return Ok(Err(t_with(
+            "invite.not_found_template",
+            &[("site_name", &site_name), ("base_url", &base_url)],
+        )));
+    }
+    Ok(Ok(Some(invite)))
+}
+
+/// `redeem_invitation(invite, sso, user)`: InviteRedeemer for the
+/// DiscourseConnect user, then the session's invite forgotten. Err is
+/// the page's text: Invite::UserExists's message, or invite_redeem_failed
+/// for the RecordInvalid and RecordNotSaved it rescues.
+#[allow(clippy::too_many_arguments)]
+async fn redeem_invitation(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    session_id: &str,
+    sso: &discourse_connect::Sso,
+    invite: &crate::invites::Invite,
+    user_id: i32,
+    ip: &str,
+) -> Result<Result<(), String>, AppError> {
+    use super::invite_redeem::{RedeemArgs, Redeemed};
+    let args = RedeemArgs {
+        email: sso.get("email").map(str::to_string),
+        username: sso.get("username").map(str::to_string),
+        name: sso.get("name").map(str::to_string),
+        ip: Some(ip.to_string()),
+        redeeming_user: Some(user_id),
+        ..RedeemArgs::default()
+    };
+    if let Redeemed::Failed(message) =
+        super::invite_redeem::redeem(&mut *conn, state, settings, invite, &args).await?
+    {
+        let exists = t(state, "invite.existing_user_already_redemeed");
+        return Ok(Err(if message == exists {
+            message
+        } else {
+            t(state, "discourse_connect.invite_redeem_failed")
+        }));
+    }
+    crate::session::server::delete(&mut *conn, session_id, "invite-key").await?;
+    Ok(Ok(()))
+}
+
 async fn sso_error(
     state: &AppState,
     settings: &SiteSettings,
@@ -319,12 +397,13 @@ pub async fn sso_login(
     let mut return_path = store.return_path(&mut tx, nonce).await?;
     store.expire(&mut tx, nonce).await?;
     // validate_invitation!: the invite a visitor came from.
-    if crate::session::server::get(&mut tx, &session_id, "invite-key")
-        .await?
-        .is_some()
-    {
-        return Err(Unsupported("redeeming an invite through DiscourseConnect (192)").into());
-    }
+    let invite = match validate_invitation(&mut tx, &state, &settings, &session_id, &sso).await? {
+        Ok(invite) => invite,
+        Err(text) => {
+            tx.commit().await?;
+            return sso_error(&state, &settings, &uri, 400, &text).await;
+        }
+    };
     let cx = discourse_connect::Ctx {
         settings: &settings,
         i18n: &state.i18n,
@@ -383,7 +462,37 @@ pub async fn sso_login(
     }
     let base_path = state.config.globals.relative_url_root().to_string();
     let mut cookies: Vec<String> = Vec::new();
+    // An invite to redeem when the user has redeemed none yet (the same
+    // user visiting an invite link again keeps theirs).
+    let invite = match invite {
+        Some(invite) => {
+            let redeemed_one: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM invited_users WHERE user_id = $1)",
+            )
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            (!redeemed_one).then_some(invite)
+        }
+        None => None,
+    };
     if settings.get("must_approve_users")?.truthy() && !user.approved {
+        if let Some(invite) = &invite
+            && let Err(text) = redeem_invitation(
+                &mut tx,
+                &state,
+                &settings,
+                &session_id,
+                &sso,
+                invite,
+                user_id,
+                &ip,
+            )
+            .await?
+        {
+            tx.commit().await?;
+            return sso_error(&state, &settings, &uri, 412, &text).await;
+        }
         tx.commit().await?;
         let not_approved = settings.get("discourse_connect_not_approved_url")?.to_s();
         if !not_approved.trim().is_empty() {
@@ -397,6 +506,69 @@ pub async fn sso_login(
             &t(&state, "discourse_connect.account_not_approved"),
         )
         .await;
+    } else if let Some(invite) = &invite {
+        if let Err(text) = redeem_invitation(
+            &mut tx,
+            &state,
+            &settings,
+            &session_id,
+            &sso,
+            invite,
+            user_id,
+            &ip,
+        )
+        .await?
+        {
+            tx.commit().await?;
+            return sso_error(&state, &settings, &uri, 412, &text).await;
+        }
+        // user.activate: the provider vouches for the account, so no
+        // activation email.
+        let email: String =
+            sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
+                .bind(user_id)
+                .fetch_one(&mut *tx)
+                .await?;
+        super::invite_redeem::activate(&mut tx, &state, &settings, user_id, &email).await?;
+        if incoming.guardian.user_id() != Some(user_id) {
+            if verbose {
+                tracing::warn!(
+                    "Verbose SSO log: User was logged on\n\n{}",
+                    sso.diagnostics()
+                );
+            }
+            cookies.push(
+                crate::session::login::log_on_user(
+                    &state,
+                    &settings,
+                    &mut tx,
+                    &headers,
+                    peer,
+                    uri.path(),
+                    user_id,
+                    false,
+                )
+                .await?,
+            );
+        }
+        // path(topic.relative_url), the base path given twice as Rails does.
+        let topic: Option<(i32, Option<String>)> = sqlx::query_as(
+            "SELECT t.id, t.slug FROM topic_invites ti JOIN topics t ON t.id = ti.topic_id \
+             WHERE ti.invite_id = $1 AND t.deleted_at IS NULL ORDER BY ti.id LIMIT 1",
+        )
+        .bind(invite.id)
+        .fetch_optional(&mut *tx)
+        .await?;
+        return_path = match topic {
+            Some((id, slug)) => {
+                let slug = slug
+                    .filter(|s| !s.is_empty())
+                    .map(|s| format!("{s}/"))
+                    .unwrap_or_default();
+                format!("{base_path}{base_path}/t/{slug}{id}")
+            }
+            None => format!("{base_path}/"),
+        };
     } else if !user.active {
         // UserActivator#finish: EmailActivator, its message kept for the
         // account-created page.
