@@ -661,6 +661,7 @@ async fn update_site_settings(
             base_path: ctx.config.globals.relative_url_root(),
             urls: &urls,
         },
+        true,
     )
     .await?;
     for def in ctx.host.site_setting_defs.iter() {

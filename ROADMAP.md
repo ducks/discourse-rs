@@ -1784,7 +1784,15 @@ route table has been made, so this list may be short.
     Refused: a description change, which revises the definition post
     (revise_category_definition, the `not_yet` case
     categories/update_description), changing the plugin category types,
-    discourse-ai's translation of a renamed category)
+    discourse-ai's translation of a renamed category), 190d.
+    ~~`feat/categories-destroy`~~ (done) M (DELETE /categories/:id: the
+    guardian's can_delete with chat's check, the category_destroyed
+    payload taken inside HasDestroyedWebHook's around callback, the
+    dependents in declaration order (topic voting's setting archiving
+    votes), the definition trashed (VoteRelease), general_category_id and
+    the category site settings cleared after all_settings measured the
+    upload settings, the deletion published and logged. Refused: a
+    category with a chat channel or embeddable hosts)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

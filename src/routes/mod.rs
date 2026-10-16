@@ -391,7 +391,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/category/{category_id}/slug.json",
             put(categories::update_slug).get(permalinks::category_redirect),
         )
-        .route("/categories/{id}", put(categories::update))
+        .route(
+            "/categories/{id}",
+            put(categories::update).delete(categories::destroy),
+        )
         // discourse-reactions' CustomReactionsController.
         .route(
             "/discourse-reactions/posts/{post_id}/custom-reactions/{reaction}/toggle",

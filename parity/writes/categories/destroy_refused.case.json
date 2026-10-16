@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/categories/4.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/categories/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/categories/2.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/categories/999.json"
+    }
+  ]
+}

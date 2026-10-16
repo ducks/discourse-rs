@@ -2857,3 +2857,270 @@ impl Record {
         self.values.insert(key.to_string(), value);
     }
 }
+
+/// `Category#destroy`: the category_destroyed web hook's payload taken
+/// first (HasDestroyedWebHook), the `dependent:` associations in their
+/// declaration order, the row, then the after_destroy callbacks (the
+/// definition trashed, the site settings naming it cleared, the
+/// deletion published) and the hooks enqueued. The category's chat
+/// channel (Chat::Channel#destroy) is refused.
+pub async fn destroy(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<(), AppError> {
+    let channel: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM chat_channels WHERE chatable_type = 'Category' AND chatable_id = $1)",
+    )
+    .bind(id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if channel {
+        return Err(Unsupported("destroying a category's chat channel").into());
+    }
+    let embeddable: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM embeddable_hosts WHERE category_id = $1)")
+            .bind(id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if embeddable {
+        return Err(Unsupported("destroying a category's embeddable hosts").into());
+    }
+    // Searchable's and HasCustomFields' dependents (included before
+    // HasDestroyedWebHook's around_destroy).
+    for sql in [
+        "DELETE FROM category_search_data WHERE category_id = $1",
+        "DELETE FROM category_custom_fields WHERE category_id = $1",
+    ] {
+        sqlx::query(sql).bind(id).execute(&mut *conn).await?;
+    }
+    let payload = if crate::web_hooks::active(&mut *conn, "category_destroyed").await? {
+        // ensure_can_delete! memoized has_children? on the category.
+        let system = crate::web_hooks::system_guardian(conn).await?;
+        let pre = crate::category_serializer::Preloaded {
+            has_children: Some(crate::category_serializer::has_children(&mut *conn, id).await?),
+            ..Default::default()
+        };
+        let mut json =
+            crate::category_serializer::serialize(conn, &cx.ser(), cx.settings, &system, id, &pre)
+                .await?;
+        if let Value::Object(m) = &mut json {
+            m.remove("can_edit");
+            m.remove("notification_level");
+            m.remove("available_groups");
+        }
+        Some(crate::web_hooks::to_json(&json))
+    } else {
+        None
+    };
+    let topic: Option<(i32, bool, bool)> = sqlx::query_as(
+        "SELECT t.id, t.closed, t.archived FROM categories c \
+         JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL WHERE c.id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    // The model's own dependent associations in declaration order, then
+    // the plugins'.
+    for sql in [
+        "DELETE FROM category_localizations WHERE category_id = $1",
+        "DELETE FROM category_groups WHERE category_id = $1",
+        "DELETE FROM category_moderation_groups WHERE category_id = $1",
+        "DELETE FROM category_posting_review_groups WHERE category_id = $1",
+        "DELETE FROM topic_timers WHERE category_id = $1",
+        "DELETE FROM upload_references WHERE target_type = 'Category' AND target_id = $1",
+        "DELETE FROM category_settings WHERE category_id = $1",
+        "DELETE FROM categories_web_hooks WHERE category_id = $1",
+        "DELETE FROM category_tags WHERE category_id = $1",
+        "DELETE FROM category_tag_groups WHERE category_id = $1",
+        "DELETE FROM category_required_tag_groups WHERE category_id = $1",
+        "DELETE FROM sidebar_section_links WHERE linkable_type = 'Category' AND linkable_id = $1",
+        "DELETE FROM category_form_templates WHERE category_id = $1",
+    ] {
+        sqlx::query(sql).bind(id).execute(&mut *conn).await?;
+    }
+    // topic voting's category setting: before_destroy archive_votes.
+    let voting: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topic_voting_category_settings WHERE category_id = $1)",
+    )
+    .bind(id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if voting {
+        sqlx::query(
+            "UPDATE topic_voting_votes SET archive = true FROM topics \
+             WHERE topics.category_id = $1 AND topic_voting_votes.topic_id = topics.id",
+        )
+        .bind(id)
+        .execute(&mut *conn)
+        .await?;
+        sqlx::query("DELETE FROM topic_voting_category_settings WHERE category_id = $1")
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+    }
+    sqlx::query("DELETE FROM categories WHERE id = $1")
+        .bind(id)
+        .execute(&mut *conn)
+        .await?;
+    if let Some(payload) = payload {
+        let mut opts = Map::new();
+        opts.insert("id".into(), json!(id));
+        opts.insert("payload".into(), json!(payload));
+        crate::web_hooks::enqueue_hooks(&mut *conn, "category", "category_destroyed", opts).await?;
+    }
+    // after_destroy: trash_category_definition (Topic#trash!: its
+    // category is gone, so no count moves).
+    if let Some((topic_id, closed, archived)) = topic {
+        let tagged: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = $1)")
+                .bind(topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let embed: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = $1 AND deleted_at IS NULL)",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if tagged || embed {
+            return Err(Unsupported("trashing a tagged or embedded category definition").into());
+        }
+        if cx.settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+            return Err(Unsupported("the boards plugin's topic_trashed sync").into());
+        }
+        sqlx::query("UPDATE topics SET deleted_at = now(), deleted_by_id = NULL WHERE id = $1")
+            .bind(topic_id)
+            .execute(&mut *conn)
+            .await?;
+        if crate::plugins::topic_voting::enabled(cx.settings)? {
+            crate::plugins::topic_voting::lifecycle::topic_trashed(
+                &mut *conn, topic_id, closed, archived,
+            )
+            .await?;
+        }
+    }
+    // clear_related_site_settings, then remove_site_settings.
+    if cx.settings.get("general_category_id")?.to_i() == i64::from(id) {
+        set_setting(conn, cx, "general_category_id", json!(-1)).await?;
+    }
+    remove_site_settings(conn, cx, id).await?;
+    cx.bus
+        .publish(
+            &mut *conn,
+            "/categories",
+            &json!({ "deleted_categories": [id] }),
+            None,
+        )
+        .await?;
+    crate::bus::clear_anon_cache(cx.bus, &mut *conn).await?;
+    Ok(())
+}
+
+/// `SiteSetting.set(name, value)`
+async fn set_setting(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    name: &str,
+    value: Value,
+) -> Result<(), AppError> {
+    match crate::site_setting_update::set(
+        &mut *conn,
+        cx.bus,
+        cx.settings,
+        &cx.host.site_setting_defs,
+        &cx.host.i18n,
+        name,
+        &value,
+    )
+    .await?
+    {
+        Ok(_) => Ok(()),
+        Err(_) => Err(Unsupported("a site setting a category deletion cannot clear").into()),
+    }
+}
+
+/// `remove_site_settings`: `SiteSetting.all_settings` (measuring the
+/// upload settings' images on the way), then each category setting
+/// naming the category set to blank.
+async fn remove_site_settings(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    id: i32,
+) -> Result<(), AppError> {
+    let urls = crate::url::Urls {
+        config: &cx.host.config,
+        settings: cx.settings,
+    };
+    let acx = crate::admin_site_settings::Context {
+        defs: &cx.host.site_setting_defs,
+        settings: cx.settings,
+        i18n: &cx.host.i18n,
+        globals: &cx.host.config.globals,
+        base_path: cx.host.config.globals.relative_url_root(),
+        urls: &urls,
+    };
+    crate::admin_site_settings::fix_upload_dimensions(&mut *conn, &acx, false).await?;
+    let mut names = Vec::new();
+    for def in cx.host.site_setting_defs.iter() {
+        if !matches!(def.data_type, crate::site_settings::DataType::Category)
+            || crate::admin_site_settings::is_hidden(&acx, def)?
+        {
+            continue;
+        }
+        if crate::ruby::to_i(&cx.settings.get(&def.name)?.to_s()) == i64::from(id) {
+            names.push(def.name.clone());
+        }
+    }
+    for name in names {
+        set_setting(conn, cx, &name, json!("")).await?;
+    }
+    Ok(())
+}
+
+/// `StaffActionLogger#log_category_deletion` from what was read before
+/// the category went: its creation time, name, permissions (always
+/// empty, the groups destroyed with it), parent and url.
+pub struct Deleted {
+    pub details: String,
+    pub context: String,
+}
+
+impl Deleted {
+    pub async fn read(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<Deleted, AppError> {
+        let (name, parent): (String, Option<i32>) =
+            sqlx::query_as("SELECT name, parent_category_id FROM categories WHERE id = $1")
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let mut details = format!(
+            "created_at: {}\nname: {name}\npermissions: {{}}",
+            created_at_to_s(conn, id).await?
+        );
+        if let Some(parent) = parent {
+            let parent_name: Option<String> =
+                sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
+                    .bind(parent)
+                    .fetch_optional(&mut *conn)
+                    .await?;
+            if let Some(p) = parent_name {
+                details.push_str(&format!("\nparent_category: {p}"));
+            }
+        }
+        let context = url(conn, cx.host.config.globals.relative_url_root(), id).await?;
+        Ok(Deleted { details, context })
+    }
+
+    pub async fn log(
+        &self,
+        conn: &mut PgConnection,
+        acting_user_id: i32,
+        id: i32,
+    ) -> Result<(), AppError> {
+        insert_history(
+            conn,
+            "delete_category",
+            acting_user_id,
+            id,
+            &self.details,
+            &self.context,
+        )
+        .await
+    }
+}
