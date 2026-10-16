@@ -23,6 +23,96 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-16, the topic page's queries, and where its time goes
+
+perf/topic-page-queries and perf/topic-page-chrome (ROADMAP 201,
+extended to the whole topic page). Release builds of main (61c1428) and
+of each branch, each on its own fresh db-load of the seed, RAILS_ENV
+production, rate limits off, user1, c=16, 5 s, in one scripts/bench run
+(it alternates per endpoint). The machine was shared with another
+agent's builds throughout (load 9 to 18 on 16 cores), so absolute
+numbers are below the 2026-10-15 ones; compare within a table only.
+
+What the profile showed for the logged-in topic page (perf on the
+server and on the Postgres backends, c7b2fa8, which serves it at the
+same rate as main): of the CPU each request costs, Postgres took about
+56 ms and the server 21 ms (brotli at level 5 about 8 ms of it, the
+page being 200 KB of which the inline SVG sprite is 116 KB). 64% of
+Postgres's time was planning. The page runs 114 distinct statements
+and sqlx keeps 100 prepared statements per connection, so walking the
+page in order evicts every statement before its next use: each query is
+parsed and planned again on every request. The JSON (64 distinct
+statements) and /latest (74) fit, which is why the logged-in HTML topic
+page alone sat near 100 req/s; the anonymous page (89 queries) serves
+about 390.
+
+The branches cut the page's queries (the per-post rows in one query
+each, Site's per-category reads, the solved list keys, repeated reads
+of site_setting_groups, user_options, the TopicQuery user scope and the
+list categories); the documents are unchanged:
+
+| queries per request (user1) | main | queries | chrome |
+|---|---:|---:|---:|
+| /t/welcome-to-discourse/5 | 169 | 153 | 143 |
+| /t/welcome-to-discourse/5.json | 92 | 85 | 79 |
+| /t/parity-fixture-replies-and-posters/35 (5 posts) | 187 | 155 | 145 |
+| /latest | 111 | 100 | 96 |
+| /site.json | 47 | 38 | 38 |
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | main (user) | 5350 | 2.9 | 5 | 0 |
+| /srv/status | queries (user) | 5316 | 2.9 | 5 | 0 |
+| /srv/status | chrome (user) | 5271 | 2.9 | 5.2 | 0 |
+| /latest.json | main (user) | 1465 | 10.6 | 17 | 0 |
+| /latest.json | queries (user) | 1552 | 10 | 15.5 | 0 |
+| /latest.json | chrome (user) | 1493 | 10.4 | 17.4 | 0 |
+| /latest | main (user) | 359 | 43.5 | 81.6 | 0 |
+| /latest | queries (user) | 331 | 47.5 | 90.9 | 0 |
+| /latest | chrome (user) | 382 | 40.8 | 72.8 | 0 |
+| /t/welcome-to-discourse/5.json | main (user) | 567 | 28 | 46 | 0 |
+| /t/welcome-to-discourse/5.json | queries (user) | 571 | 27.9 | 46.8 | 0 |
+| /t/welcome-to-discourse/5.json | chrome (user) | 583 | 26.9 | 49.7 | 0 |
+| /t/welcome-to-discourse/5 | main (user) | 99 | 163.4 | 207.3 | 0 |
+| /t/welcome-to-discourse/5 | queries (user) | 100 | 162.2 | 201.8 | 0 |
+| /t/welcome-to-discourse/5 | chrome (user) | 103 | 161.3 | 196.7 | 0 |
+
+Four more alternating 5 s runs of the topic rows (medians): the page
+100.5, 101.9 and 102.7 req/s (p50 163.9, 160.4, 159.9 ms), the JSON
+571, 586 and 599 req/s. While the statement cache thrashes, fewer
+queries help little: the page still runs 114 distinct statements and
+stays bound by re-planning.
+
+The same three binaries with `statement-cache-capacity=1000` in
+DATABASE_URL (sqlx's per-connection cache; Rails keeps 1000 per
+connection), three alternating runs each, medians:
+
+| endpoint | main | queries | chrome |
+|---|---:|---:|---:|
+| /t/welcome-to-discourse/5 | 253 | 260 | 264 |
+| /t/welcome-to-discourse/5.json | 568 | 582 | 576 |
+| /latest | 360 | 370 | 378 |
+| /latest.json | 1441 | 1476 | 1475 |
+| /srv/status | 5255 | 5275 | 5271 |
+
+The cache alone takes the topic page from 100 to 253 req/s; with it,
+the branches add 3 to 5% on the HTML pages. What is left on the
+topic page then: Postgres 11 to 13 ms a request (custom plans are still
+built for the parameterized statements: planning is 27% of it;
+plan_cache_mode=force_generic_plan per session took about a tenth off),
+the server 15 ms, half of it brotli (the same page without
+Accept-Encoding: 345 against 265 req/s).
+
+Not changed here, because they are the multisite work's (the pool
+construction, the middleware chain): the statement cache capacity on
+the pool's connect options; the compression level or moving the SVG
+sprite out of every page; four SiteSettings::load and three or four
+readonly-mode reads per request across the middleware; the ping sqlx's
+test_before_acquire sends on each of a request's pool acquisitions (2
+or 3 empty statements per request); the job worker sharing the request
+pool, whose badge backfill runs dozens of distinct statements through
+the same per-connection caches.
+
 ## 2026-10-15, two days of features, and Config behind an Arc
 
 Since the last run main gained the mobile redraw, the header search menu,

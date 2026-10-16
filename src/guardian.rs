@@ -31,6 +31,34 @@ pub struct GuardianUser {
     /// `@secure_category_ids ||=`: read once per request, shared by the
     /// guardian's clones.
     pub secure_category_ids: std::sync::Arc<std::sync::OnceLock<Vec<i32>>>,
+    pub setting_groups: SettingGroups,
+}
+
+/// site_setting_groups, the group lists that gate upcoming changes: read
+/// once per request, shared by the guardian's clones.
+#[derive(Debug, Clone, Default)]
+pub struct SettingGroups(std::sync::Arc<std::sync::OnceLock<Vec<(String, String)>>>);
+
+impl SettingGroups {
+    /// The group list of `name`'s row, None without one.
+    pub async fn get(
+        &self,
+        conn: &mut PgConnection,
+        name: &str,
+    ) -> Result<Option<String>, sqlx::Error> {
+        if self.0.get().is_none() {
+            let rows: Vec<(String, String)> =
+                sqlx::query_as("SELECT name, group_ids FROM site_setting_groups")
+                    .fetch_all(conn)
+                    .await?;
+            let _ = self.0.set(rows);
+        }
+        Ok(self
+            .0
+            .get()
+            .and_then(|rows| rows.iter().find(|(n, _)| n == name))
+            .map(|(_, groups)| groups.clone()))
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -64,6 +92,7 @@ impl Guardian {
                 group_ids,
                 silenced,
                 secure_category_ids: Default::default(),
+                setting_groups: Default::default(),
             }),
         })
     }
@@ -489,12 +518,16 @@ impl Guardian {
         if !settings.get(name)?.truthy() {
             return Ok(false);
         }
-        let groups: Option<Option<String>> =
-            sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
-                .bind(name)
-                .fetch_optional(&mut *conn)
-                .await?;
-        match groups.flatten() {
+        let groups: Option<String> = match &self.user {
+            Some(u) => u.setting_groups.get(conn, name).await?,
+            None => {
+                sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
+                    .bind(name)
+                    .fetch_optional(&mut *conn)
+                    .await?
+            }
+        };
+        match groups {
             Some(list) => {
                 let ids: Vec<i64> = list
                     .split('|')
