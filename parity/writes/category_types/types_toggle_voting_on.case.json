@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "category_types": [
+          "discussion",
+          "ideas"
+        ]
+      }
+    }
+  ]
+}

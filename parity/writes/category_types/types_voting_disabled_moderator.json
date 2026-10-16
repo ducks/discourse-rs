@@ -1,0 +1,102 @@
+{
+  "name": "types_voting_disabled_moderator",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "category_types": [
+          "discussion",
+          "ideas"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Mod Ideas",
+        "color": "F1592A",
+        "text_color": "FFFFFF",
+        "category_type": "ideas"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T03:50:42.645192",
+  "transaction_started_at": "2026-10-16T03:50:39.563309",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Category type 'Ideas' requires the 'Topic Voting' plugin to be enabled. Ask an administrator to enable it or create this category."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Category type 'Ideas' requires the 'Topic Voting' plugin to be enabled. Ask an administrator to enable it or create this category."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5GWqGnm5sL4Y9m8BWvoexPvY87s=",
+            "created_at": "2026-10-16T03:50:40.702819",
+            "rotated_at": "2026-10-16T03:50:40.699921",
+            "updated_at": "2026-10-16T03:50:40.702819",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "5GWqGnm5sL4Y9m8BWvoexPvY87s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T03:50:42.662077",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5GWqGnm5sL4Y9m8BWvoexPvY87s=",
+            "created_at": "2026-10-16T03:50:40.702819",
+            "rotated_at": "2026-10-16T03:50:40.699921",
+            "updated_at": "2026-10-16T03:50:40.702819",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "5GWqGnm5sL4Y9m8BWvoexPvY87s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "moderators_manage_categories": "true",
+    "topic_voting_enabled": "false"
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "92a7936d0d56ba8130048e58ad2314582d8b95190e4052ea237a97f5b6a3f690",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

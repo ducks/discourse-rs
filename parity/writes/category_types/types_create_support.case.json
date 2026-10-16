@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Support",
+        "color": "F1592A",
+        "text_color": "FFFFFF",
+        "category_type": "support",
+        "category_type_settings": {},
+        "custom_fields": {
+          "solved_topics_auto_close_hours": "24"
+        }
+      }
+    }
+  ]
+}

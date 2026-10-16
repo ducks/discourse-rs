@@ -5,7 +5,7 @@
 //! (`Categories::Types::Base.metadata`) and its resolved configuration
 //! schema.
 //!
-//! Configuring a category as a type (the category creator) isn't ported.
+//! Configuring a category as a type is crate::category_type_config.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -16,19 +16,19 @@ use crate::{AppError, Unsupported};
 
 /// A registered type.
 #[derive(Clone, Copy, PartialEq)]
-enum Type {
+pub(crate) enum Type {
     Discussion,
     Events,
     Support,
     Ideas,
 }
 
-const TYPES: [Type; 4] = [Type::Discussion, Type::Events, Type::Support, Type::Ideas];
+pub(crate) const TYPES: [Type; 4] = [Type::Discussion, Type::Events, Type::Support, Type::Ideas];
 
 /// One setting a type's schema configures.
-struct SiteSettingConfig {
-    key: &'static str,
-    default: Value,
+pub(crate) struct SiteSettingConfig {
+    pub(crate) key: &'static str,
+    pub(crate) default: Value,
     type_name: Option<&'static str>,
     label: Option<String>,
     choices: Option<Value>,
@@ -36,9 +36,9 @@ struct SiteSettingConfig {
 }
 
 /// A category setting or custom field a type's schema declares.
-struct FieldConfig {
-    key: &'static str,
-    default: Value,
+pub(crate) struct FieldConfig {
+    pub(crate) key: &'static str,
+    pub(crate) default: Value,
     type_name: &'static str,
     subtype: Option<&'static str>,
     label: String,
@@ -57,11 +57,11 @@ struct SiteTextConfig {
 }
 
 #[derive(Default)]
-struct Schema {
+pub(crate) struct Schema {
     general: Vec<(&'static str, Value)>,
-    site_settings: Vec<SiteSettingConfig>,
-    category_settings: Vec<FieldConfig>,
-    category_custom_fields: Vec<FieldConfig>,
+    pub(crate) site_settings: Vec<SiteSettingConfig>,
+    pub(crate) category_settings: Vec<FieldConfig>,
+    pub(crate) category_custom_fields: Vec<FieldConfig>,
     site_texts: Vec<SiteTextConfig>,
 }
 
@@ -100,7 +100,7 @@ impl Registry<'_> {
         self.cx.i18n.t(key).unwrap_or(key).to_string()
     }
 
-    fn id(t: Type) -> &'static str {
+    pub(crate) fn id(t: Type) -> &'static str {
         match t {
             Type::Discussion => "discussion",
             Type::Events => "events",
@@ -120,7 +120,7 @@ impl Registry<'_> {
 
     /// The plugin a type enables (`enables_plugin?`): its humanized name
     /// and `plugin_enabled?`.
-    fn plugin(&self, t: Type) -> Result<Option<(&'static str, bool)>, AppError> {
+    pub(crate) fn plugin(&self, t: Type) -> Result<Option<(&'static str, bool)>, AppError> {
         let on =
             |name: &str| -> Result<bool, AppError> { Ok(self.cx.settings.get(name)?.truthy()) };
         Ok(match t {
@@ -134,7 +134,11 @@ impl Registry<'_> {
         })
     }
 
-    async fn schema(&self, conn: &mut PgConnection, t: Type) -> Result<Option<Schema>, AppError> {
+    pub(crate) async fn schema(
+        &self,
+        conn: &mut PgConnection,
+        t: Type,
+    ) -> Result<Option<Schema>, AppError> {
         let general = |name: String, emoji: &str| {
             vec![
                 ("name", json!(name)),

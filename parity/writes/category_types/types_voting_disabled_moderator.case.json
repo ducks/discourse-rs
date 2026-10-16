@@ -1,0 +1,32 @@
+{
+  "user": "user2",
+  "settings": {
+    "moderators_manage_categories": "true",
+    "topic_voting_enabled": "false"
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "category_types": [
+          "discussion",
+          "ideas"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Mod Ideas",
+        "color": "F1592A",
+        "text_color": "FFFFFF",
+        "category_type": "ideas"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, '2026-10-08 00:00:00', '2026-10-08 00:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "category_types": [
+          "discussion"
+        ],
+        "custom_fields": {}
+      }
+    }
+  ]
+}
