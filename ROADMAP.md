@@ -1867,7 +1867,7 @@ route table has been made, so this list may be short.
     allowlist, a suspended user's message, the email RecordInvalid
     failure, groups linked to a provider's groups, the associate page,
     Discourse ID's revoke endpoint and revoking its account
-192. `feat/invites` L: InvitesController (/invites, invite links,
+192. ~~`feat/invites`~~ (done, 192a-f) L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email
     addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
