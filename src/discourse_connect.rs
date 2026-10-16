@@ -816,7 +816,14 @@ pub async fn lookup_or_create_user(
         .fetch_one(&mut *conn)
         .await?;
         if blank || s.get("discourse_connect_overrides_bio")?.truthy() {
-            save_bio(conn, cx, user_id, bio).await?;
+            save_bio(
+                conn,
+                cx.settings,
+                &crate::pretty_text::Host::from_state(cx.state),
+                user_id,
+                bio,
+            )
+            .await?;
         }
     }
     if let Some(website) = sso.get("website") {
@@ -874,11 +881,11 @@ fn valid_locale(locale: &str) -> bool {
 /// save, the hotlinked images pulled after the grace period.
 pub(crate) async fn save_bio(
     conn: &mut PgConnection,
-    cx: &Ctx<'_>,
+    s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     user_id: i32,
     bio: &str,
 ) -> Result<(), AppError> {
-    let s = cx.settings;
     let before: Option<String> =
         sqlx::query_scalar("SELECT bio_raw FROM user_profiles WHERE user_id = $1")
             .bind(user_id)
@@ -901,8 +908,7 @@ pub(crate) async fn save_bio(
             omit_nofollow: trust_level >= 3 && !s.get("tl3_links_no_follow")?.truthy(),
             ..Default::default()
         };
-        let host = crate::pretty_text::Host::from_state(cx.state);
-        Some(crate::pretty_text::cook(&host, bio, &opts).await?)
+        Some(crate::pretty_text::cook(host, bio, &opts).await?)
     };
     sqlx::query(
         "UPDATE user_profiles SET bio_raw = $2, bio_cooked = $3, \

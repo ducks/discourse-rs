@@ -912,3 +912,227 @@ async fn google_reads_groups_through_the_service_account() {
     .unwrap();
     assert_eq!(names, ["Engineering", "Support"]);
 }
+
+/// The fake Twitter's view of a signed request.
+#[derive(Default)]
+struct Tweeter {
+    /// Each request's path and its Authorization params.
+    seen: Vec<(String, Vec<(String, String)>)>,
+}
+
+type SharedTweeter = Arc<Mutex<Tweeter>>;
+
+/// RFC 5849's escaping.
+fn rfc3986(s: &str) -> String {
+    s.bytes()
+        .map(|b| match b {
+            b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => {
+                (b as char).to_string()
+            }
+            _ => format!("%{b:02X}"),
+        })
+        .collect()
+}
+
+/// The header's params, and whether its signature holds for the
+/// request as the consumer addressed it (https://api.x.com).
+fn check_signature(
+    method: &str,
+    url: &str,
+    query: &[(String, String)],
+    header: &str,
+    token_secret: &str,
+) -> (Vec<(String, String)>, bool) {
+    use base64::Engine;
+    use hmac::{Hmac, Mac};
+    let params: Vec<(String, String)> = header
+        .trim_start_matches("OAuth ")
+        .split(", ")
+        .filter_map(|p| p.split_once('='))
+        .map(|(k, v)| {
+            let v = v.trim_matches('"');
+            (
+                k.to_string(),
+                form_urlencoded::parse(format!("v={}", v.replace('+', "%2B")).as_bytes())
+                    .next()
+                    .unwrap()
+                    .1
+                    .into_owned(),
+            )
+        })
+        .collect();
+    let signature = params
+        .iter()
+        .find(|(k, _)| k == "oauth_signature")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_default();
+    let mut signed: Vec<(String, String)> = params
+        .iter()
+        .filter(|(k, _)| k != "oauth_signature")
+        .chain(query.iter())
+        .map(|(k, v)| (rfc3986(k), rfc3986(v)))
+        .collect();
+    signed.sort();
+    let normalized = signed
+        .iter()
+        .map(|(k, v)| format!("{k}={v}"))
+        .collect::<Vec<_>>()
+        .join("&");
+    let base = format!("{method}&{}&{}", rfc3986(url), rfc3986(&normalized));
+    let key = format!("{}&{}", rfc3986("tw-secret"), rfc3986(token_secret));
+    let mut mac = Hmac::<sha1::Sha1>::new_from_slice(key.as_bytes()).unwrap();
+    mac.update(base.as_bytes());
+    let expected = base64::engine::general_purpose::STANDARD.encode(mac.finalize().into_bytes());
+    (params, expected == signature)
+}
+
+fn auth_header(headers: &HeaderMap) -> String {
+    headers
+        .get(header::AUTHORIZATION)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_string()
+}
+
+async fn tw_request_token(
+    State(p): State<SharedTweeter>,
+    headers: HeaderMap,
+) -> (StatusCode, String) {
+    let (params, ok) = check_signature(
+        "POST",
+        "https://api.x.com/oauth/request_token",
+        &[],
+        &auth_header(&headers),
+        "",
+    );
+    p.lock()
+        .unwrap()
+        .seen
+        .push(("request_token".into(), params));
+    if !ok {
+        return (StatusCode::UNAUTHORIZED, String::new());
+    }
+    (
+        StatusCode::OK,
+        "oauth_token=req-tok&oauth_token_secret=req-sec&oauth_callback_confirmed=true".into(),
+    )
+}
+
+async fn tw_access_token(
+    State(p): State<SharedTweeter>,
+    headers: HeaderMap,
+) -> (StatusCode, String) {
+    let (params, ok) = check_signature(
+        "POST",
+        "https://api.x.com/oauth/access_token",
+        &[],
+        &auth_header(&headers),
+        "req-sec",
+    );
+    p.lock().unwrap().seen.push(("access_token".into(), params));
+    if !ok {
+        return (StatusCode::UNAUTHORIZED, String::new());
+    }
+    (
+        StatusCode::OK,
+        "oauth_token=acc-tok&oauth_token_secret=acc-sec&user_id=99&screen_name=birdie".into(),
+    )
+}
+
+async fn tw_verify(
+    State(p): State<SharedTweeter>,
+    headers: HeaderMap,
+    axum::extract::Query(q): axum::extract::Query<Vec<(String, String)>>,
+) -> (StatusCode, Json<Value>) {
+    let (params, ok) = check_signature(
+        "GET",
+        "https://api.x.com/1.1/account/verify_credentials.json",
+        &q,
+        &auth_header(&headers),
+        "acc-sec",
+    );
+    p.lock().unwrap().seen.push(("verify".into(), params));
+    if !ok {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"errors": []})));
+    }
+    (
+        StatusCode::OK,
+        Json(json!({
+            "screen_name": "birdie",
+            "name": "Birdie",
+            "email": "birdie@example.com",
+            "description": "",
+            "location": null,
+        })),
+    )
+}
+
+#[tokio::test]
+async fn twitter_signs_each_step_and_leaves_signup_data() {
+    let db = TestDb::new().await;
+    let shared: SharedTweeter = Arc::new(Mutex::new(Tweeter::default()));
+    let app = Router::new()
+        .route("/oauth/request_token", post(tw_request_token))
+        .route("/oauth/access_token", post(tw_access_token))
+        .route("/1.1/account/verify_credentials.json", get(tw_verify))
+        .with_state(shared.clone());
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    let mut config = config(RailsEnv::Test, &[]);
+    config.auth_provider_hosts = vec![("https://api.x.com".into(), base)];
+    let state = state(db.pool.clone(), config).await;
+    for (k, v) in [
+        ("twitter_consumer_key", "tw-key"),
+        ("twitter_consumer_secret", "tw-secret"),
+        ("enable_twitter_logins", "t"),
+        ("auth_require_interaction", "f"),
+    ] {
+        set(&state, k, v).await;
+    }
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let start = browser.get("/auth/twitter?lang=fr").await;
+    assert_eq!(start.status, StatusCode::FOUND, "{}", start.body);
+    assert_eq!(
+        start.location(),
+        "https://api.x.com/oauth/authenticate?lang=fr&oauth_token=req-tok"
+    );
+    let back = browser
+        .get("/auth/twitter/callback?oauth_token=req-tok&oauth_verifier=ver-1")
+        .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    {
+        let seen = &shared.lock().unwrap().seen;
+        let names: Vec<&str> = seen.iter().map(|(n, _)| n.as_str()).collect();
+        assert_eq!(names, ["request_token", "access_token", "verify"]);
+        let get = |i: usize, k: &str| {
+            seen[i]
+                .1
+                .iter()
+                .find(|(n, _)| n == k)
+                .map(|(_, v)| v.clone())
+        };
+        assert_eq!(
+            get(0, "oauth_callback").as_deref(),
+            Some("http://test.localhost/auth/twitter/callback?lang=fr")
+        );
+        assert_eq!(get(1, "oauth_verifier").as_deref(), Some("ver-1"));
+        assert_eq!(get(1, "oauth_token").as_deref(), Some("req-tok"));
+        assert_eq!(get(2, "oauth_token").as_deref(), Some("acc-tok"));
+    }
+    let data = browser.authentication_data();
+    assert_eq!(data["email"], "birdie@example.com");
+    assert_eq!(data["username"], "birdie");
+    assert_eq!(data["email_valid"], true);
+    // The request token was taken from the session: a replay has none.
+    let replay = browser
+        .get("/auth/twitter/callback?oauth_token=req-tok&oauth_verifier=ver-1")
+        .await;
+    assert_eq!(
+        replay.location(),
+        "/auth/failure?message=invalid_credentials&strategy=twitter"
+    );
+}

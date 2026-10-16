@@ -368,6 +368,19 @@ module RecordRemoteHosts
   end
 end
 Faraday::Connection.prepend(RecordRemoteHosts)
+# The oauth gem (Twitter) reaches its site through Net::HTTP: the site
+# itself moved, the request paths kept.
+require "oauth"
+module RecordRemoteOAuthHosts
+  def site
+    s = super
+    REMOTE_HOSTS.each do |from, to|
+      return "http://fixtures.localhost:8099#{to}#{s.delete_prefix(from)}" if s.start_with?(from)
+    end
+    s
+  end
+end
+OAuth::Consumer.prepend(RecordRemoteOAuthHosts)
 
 cases.each do |c|
   ENQUEUED.clear

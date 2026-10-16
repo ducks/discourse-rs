@@ -378,6 +378,7 @@ pub async fn user_by_email(conn: &mut PgConnection, email: &str) -> Result<Optio
 pub async fn after_authenticate(
     conn: &mut PgConnection,
     s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     auth: &AuthHash,
     behaviour: &Behaviour,
     existing_account: Option<i32>,
@@ -479,7 +480,7 @@ pub async fn after_authenticate(
     }
     if let Some(user) = user_id {
         retrieve_avatar(conn, s, user, auth.info_str("image").as_deref()).await?;
-        retrieve_profile(conn, user, &auth.info).await?;
+        retrieve_profile(conn, s, host, user, &auth.info).await?;
     }
     let mut result = AuthResult::default();
     result.set_email(auth.info_str("email"));
@@ -541,6 +542,8 @@ pub async fn retrieve_avatar(
 /// location where the profile has none.
 pub async fn retrieve_profile(
     conn: &mut PgConnection,
+    s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     user_id: i32,
     info: &Map<String, Value>,
 ) -> Result<(), AppError> {
@@ -549,8 +552,19 @@ pub async fn retrieve_profile(
     if bio.is_none() && location.is_none() {
         return Ok(());
     }
-    if bio.is_some() {
-        return Err(Unsupported("a provider's description as the bio (cooking it)").into());
+    if let Some(bio) = bio {
+        let Value::String(bio) = bio else {
+            return Err(Unsupported("a provider's description that is not a string").into());
+        };
+        let current: Option<String> =
+            sqlx::query_scalar("SELECT bio_raw FROM user_profiles WHERE user_id = $1")
+                .bind(user_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        // `bio_raw = bio if bio_raw.blank?`, cooked as the profile saves.
+        if current.as_deref().is_none_or(|b| b.trim().is_empty()) {
+            crate::discourse_connect::save_bio(&mut *conn, s, host, user_id, bio).await?;
+        }
     }
     if let Some(Value::String(location)) = location {
         sqlx::query(

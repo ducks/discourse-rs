@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "settings": {
+    "twitter_consumer_key": "tw-key",
+    "twitter_consumer_secret": "tw-secret",
+    "enable_twitter_logins": true
+  },
+  "setup": [
+    "DELETE FROM problem_check_trackers"
+  ],
+  "remote_hosts": {
+    "https://api.x.com": ""
+  },
+  "remote": {
+    "/oauth/request_token": {
+      "status": 401,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}"
+    }
+  },
+  "requests": [],
+  "enqueue": [
+    ["run_problem_check", {"check_identifier": "twitter_login", "target": "__NULL__"}]
+  ],
+  "run_jobs": ["run_problem_check"]
+}

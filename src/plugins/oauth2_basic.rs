@@ -402,6 +402,7 @@ fn email_verified(s: &SiteSettings, auth: &AuthHash) -> Result<bool, AppError> {
 pub async fn after_authenticate(
     conn: &mut sqlx::PgConnection,
     s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     i18n: &crate::i18n::I18n,
     http: &Http<'_>,
     mut auth: AuthHash,
@@ -457,9 +458,15 @@ pub async fn after_authenticate(
         can_connect: s.get("oauth2_allow_association_change")?.truthy(),
         user_by_email: None,
     };
-    let mut result =
-        crate::auth::managed::after_authenticate(conn, s, &auth, &behaviour, existing_account)
-            .await?;
+    let mut result = crate::auth::managed::after_authenticate(
+        conn,
+        s,
+        host,
+        &auth,
+        &behaviour,
+        existing_account,
+    )
+    .await?;
     if let Some(details) = fetched {
         result.user_field_values = Some(details.user_field_values);
         if provides_groups(s)? {

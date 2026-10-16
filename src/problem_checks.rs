@@ -9,9 +9,9 @@
 //! `image_magick` and `landlock` never fire, since the port runs no
 //! external commands (images are drawn in src/images.rs), and
 //! `email_polling_errored_recently` and `github_onebox_backoff` neither,
-//! since the port polls no mailbox and never backs off GitHub. What would
-//! need the network (`twitter_login`'s health check, a group's SMTP
-//! credentials) is refused when it would run.
+//! since the port polls no mailbox and never backs off GitHub.
+//! `twitter_login` asks Twitter for a request token, as Rails does. A
+//! group's SMTP credentials check is refused when it would run.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -489,7 +489,15 @@ pub async fn call(
             {
                 return none;
             }
-            Err(Unsupported("checking Twitter's login health (an outbound request)").into())
+            let consumer = crate::auth::twitter::Consumer {
+                key: env.setting("twitter_consumer_key")?.to_s(),
+                secret: env.setting("twitter_consumer_secret")?.to_s(),
+            };
+            let http = crate::auth::twitter::http(env.settings, env.config);
+            if crate::auth::twitter::healthy(&http, &consumer).await? {
+                return none;
+            }
+            Ok(problem(&[]))
         }
         "watched_words" => {
             // Every action's regexps compile, or the port can't tell an

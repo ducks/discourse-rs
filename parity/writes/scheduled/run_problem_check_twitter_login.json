@@ -1,0 +1,105 @@
+{
+  "name": "run_problem_check_twitter_login",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-16T05:38:18.659236",
+  "transaction_started_at": "2026-10-16T05:38:15.13437",
+  "responses": [],
+  "changes": {
+    "admin_notices": {
+      "inserted": [
+        {
+          "id": 35,
+          "details": {
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 1,
+          "created_at": "2026-10-16T05:38:18.843721",
+          "identifier": "twitter_login",
+          "updated_at": "2026-10-16T05:38:18.843721"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [
+        {
+          "id": 70,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "base_path": ""
+          },
+          "identifier": "twitter_login",
+          "ignored_at": null,
+          "last_run_at": "2026-10-16T05:38:18.831898",
+          "next_run_at": "2026-10-17T05:38:18.815834",
+          "last_problem_at": "2026-10-16T05:38:18.831898",
+          "last_success_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "admin_notices": 35,
+    "problem_check_trackers": 70
+  },
+  "settings": {
+    "twitter_consumer_key": "tw-key",
+    "twitter_consumer_secret": "tw-secret",
+    "enable_twitter_logins": true
+  },
+  "setup": [
+    "DELETE FROM problem_check_trackers"
+  ],
+  "enqueue": [
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "twitter_login",
+        "target": "__NULL__"
+      }
+    ]
+  ],
+  "remote": {
+    "/oauth/request_token": {
+      "status": 401,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}"
+    }
+  },
+  "remote_hosts": {
+    "https://api.x.com": ""
+  },
+  "jobs_from_jobs": [
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "twitter_login",
+        "target": "__NULL__",
+        "retry_count": 1
+      }
+    ],
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "twitter_login",
+        "target": "__NULL__",
+        "retry_count": 2
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "cb21672560b0ae9d01084219b99242703de3ea0b1b43c0fb15fb4f50e7f2ad01",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

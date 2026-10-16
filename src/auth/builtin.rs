@@ -1038,6 +1038,7 @@ fn github_emails(auth: &AuthHash) -> Vec<Value> {
 pub async fn after_authenticate(
     conn: &mut PgConnection,
     s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     i18n: &crate::i18n::I18n,
     http: &Http<'_>,
     mut auth: AuthHash,
@@ -1118,9 +1119,15 @@ pub async fn after_authenticate(
         can_connect: name != "amazon" || s.get("login_with_amazon_user_can_connect")?.truthy(),
         user_by_email,
     };
-    let mut result =
-        crate::auth::managed::after_authenticate(conn, s, &auth, &behaviour, existing_account)
-            .await?;
+    let mut result = crate::auth::managed::after_authenticate(
+        conn,
+        s,
+        host,
+        &auth,
+        &behaviour,
+        existing_account,
+    )
+    .await?;
     if name == "github" && result.user_id.is_none() {
         // A secondary address the domain rules allow.
         for candidate in github_emails(&auth) {
