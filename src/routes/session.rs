@@ -83,7 +83,7 @@ pub(super) fn render_empty() -> Response {
     ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], "").into_response()
 }
 
-fn json_response(body: serde_json::Value) -> Response {
+pub(super) fn json_response(body: serde_json::Value) -> Response {
     ([(header::CACHE_CONTROL, NO_STORE)], Json(body)).into_response()
 }
 
@@ -353,7 +353,7 @@ pub async fn create(
             return Ok(refused.into_response(&state.i18n));
         }
     }
-    let Some(mut user) = user else {
+    let Some(user) = user else {
         return Ok(invalid_credentials(&state));
     };
     let Some(check) = token::confirm_password(&mut conn, user.id, password).await? else {
@@ -405,61 +405,95 @@ pub async fn create(
     }
     // authenticate_second_factor
     let enabled = crate::second_factor::Enabled::load(&mut conn, &settings, user.id).await?;
+    let params = crate::params::parse(uri.query(), &headers, &body);
+    let rp = crate::webauthn::RelyingParty::new(&state.config, &settings)?;
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let attempt = crate::second_factor::Attempt::new(&params, &state.config, &rp, &mut session);
     let used_2fa_method = match crate::second_factor::authenticate(
         &mut conn,
         &state.i18n,
         user.id,
         &enabled,
-        param(&form, "second_factor_method"),
-        param(&form, "second_factor_token"),
-        crate::clock::now().timestamp(),
-        crate::second_factor::backup_code_iterations(state.config.rails_env),
+        attempt,
     )
     .await?
     {
         Ok(used) => used,
         Err(failure) => {
-            let mut cookie = None;
             let failure = if enabled.security_keys {
-                let mut session = crate::session::forum::load_forum_session(&state, &headers);
                 let session_id = session.server_session_id();
-                let failure = crate::second_factor::stage_failure(
+                crate::second_factor::stage_failure(
                     &mut conn,
                     &session_id,
                     user.id,
                     &enabled,
                     failure,
                 )
-                .await?;
-                cookie = session.set_cookie(&state, &settings)?;
-                failure
+                .await?
             } else {
                 failure
             };
+            let cookie = session.set_cookie(&state, &settings)?;
             return super::accounts::with_session_cookie(json_response(failure), cookie);
         }
     };
     // confirmed_2fa_during_login: a second factor other than a backup code.
     let confirmed_2fa = used_2fa_method.is_some_and(|m| m != crate::second_factor::BACKUP_CODES);
     // user.active && user.email_confirmed?
-    let email_confirmed = match &email {
+    let email_confirmed = email_confirmed(&mut conn, user.id, email.as_deref()).await?;
+    if !user.active || !email_confirmed {
+        return Ok(not_activated(&state, email.as_deref()));
+    }
+    complete_login(
+        &state,
+        &settings,
+        conn,
+        &headers,
+        peer,
+        &uri,
+        user,
+        param(&form, "timezone"),
+        confirmed_2fa,
+    )
+    .await
+}
+
+/// `not_activated(user)`
+pub(super) fn not_activated(state: &AppState, email: Option<&str>) -> Response {
+    json_response(json!({
+        "error": state.i18n.t("login.not_activated")
+            .unwrap_or("You can't log in yet. We sent an activation email to you. Please follow the instructions in the email to activate your account."),
+        "reason": "not_activated",
+        "sent_to_email": email,
+        "current_email": email,
+    }))
+}
+
+/// `user.email_confirmed?`: a confirmed token for the primary email, no
+/// tokens at all, or the email DiscourseConnect vouched for.
+pub(super) async fn email_confirmed(
+    conn: &mut sqlx::PgConnection,
+    user_id: i32,
+    email: Option<&str>,
+) -> Result<bool, sqlx::Error> {
+    Ok(match email {
         Some(email) => {
             let confirmed: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM email_tokens WHERE user_id = $1 AND email = $2 AND confirmed)",
             )
-            .bind(user.id)
+            .bind(user_id)
             .bind(email)
             .fetch_one(&mut *conn)
             .await?;
             let any_tokens: bool =
                 sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM email_tokens WHERE user_id = $1)")
-                    .bind(user.id)
+                    .bind(user_id)
                     .fetch_one(&mut *conn)
                     .await?;
             let sso_email: Option<Option<String>> = sqlx::query_scalar(
                 "SELECT external_email FROM single_sign_on_records WHERE user_id = $1",
             )
-            .bind(user.id)
+            .bind(user_id)
             .fetch_optional(&mut *conn)
             .await?;
             confirmed
@@ -469,21 +503,26 @@ pub async fn create(
                     .is_some_and(|e| e.to_lowercase() == email.to_lowercase())
         }
         None => false,
-    };
-    if !user.active || !email_confirmed {
-        return Ok(json_response(json!({
-            "error": state.i18n.t("login.not_activated")
-                .unwrap_or("You can't log in yet. We sent an activation email to you. Please follow the instructions in the email to activate your account."),
-            "reason": "not_activated",
-            "sent_to_email": email,
-            "current_email": email,
-        })));
-    }
+    })
+}
 
-    // login(user): timezone, log_on_user, UserSerializer.
-    crate::accounts::update_timezone_if_missing(&mut conn, user.id, param(&form, "timezone"))
-        .await?;
-    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+/// `login(user, passkey_login:, second_factor_auth_result:)`: timezone,
+/// log_on_user, then the DiscourseConnect provider request waiting on the
+/// login or UserSerializer.
+#[allow(clippy::too_many_arguments)]
+pub(super) async fn complete_login(
+    state: &AppState,
+    settings: &SiteSettings,
+    mut conn: sqlx::pool::PoolConnection<sqlx::Postgres>,
+    headers: &HeaderMap,
+    peer: Option<std::net::SocketAddr>,
+    uri: &axum::http::Uri,
+    mut user: SessionUser,
+    timezone: Option<&str>,
+    confirmed_2fa: bool,
+) -> Result<Response, AppError> {
+    crate::accounts::update_timezone_if_missing(&mut conn, user.id, timezone).await?;
+    let ip = crate::remote_ip::remote_ip(headers, peer)?;
     let user_agent = headers
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())
@@ -517,7 +556,7 @@ pub async fn create(
     crate::web_hooks::enqueue_user_hooks(
         &mut conn,
         &crate::web_hooks::Payloads {
-            settings: &settings,
+            settings,
             i18n: &state.i18n,
             config: &state.config,
         },
@@ -525,11 +564,11 @@ pub async fn create(
         user.id,
     )
     .await?;
-    let cookie = current::auth_cookie(&state.keys, &settings, &user, &unhashed)?;
+    let cookie = current::auth_cookie(&state.keys, settings, &user, &unhashed)?;
 
     // `if payload = cookies.delete(:sso_payload)`: the DiscourseConnect
     // provider request the login page was shown for, answered now.
-    if let Some(payload) = current::cookie(&headers, "sso_payload") {
+    if let Some(payload) = current::cookie(headers, "sso_payload") {
         let payload = form_urlencoded::parse(format!("v={payload}").as_bytes())
             .next()
             .map(|(_, v)| v.into_owned())
@@ -544,10 +583,10 @@ pub async fn create(
             ),
         ];
         let mut response = super::discourse_connect::provider_after_login(
-            &state,
-            &settings,
-            &headers,
-            &uri,
+            state,
+            settings,
+            headers,
+            uri,
             user.id,
             &payload,
             cookies,
@@ -567,7 +606,7 @@ pub async fn create(
     let guardian = crate::guardian::Guardian::for_user(&mut conn, &user).await?;
     let urls = Urls {
         config: &state.config,
-        settings: &settings,
+        settings,
     };
     let profile = crate::users::User::find_active(&mut conn, &user.username)
         .await?
@@ -576,7 +615,7 @@ pub async fn create(
         ))?;
     let doc = crate::users::Users {
         conn: &mut conn,
-        settings: &settings,
+        settings,
         i18n: &state.i18n,
         guardian: &guardian,
         urls: &urls,

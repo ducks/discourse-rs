@@ -35,7 +35,7 @@ pbkdf2 = "0.12"
 pg-bus = { version = "20261005.0.0", features = ["axum"] }
 rand = "0.8"
 regex = "1"
-rsa = "0.9"
+rsa = { version = "0.9", features = ["sha2"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
@@ -63,6 +63,10 @@ grass = { version = "0.13.4", default-features = false }
 libc = "0.2"
 # Sign in with Apple: the ES256 client secret.
 p256 = { version = "0.13", default-features = false, features = ["ecdsa", "pem", "pkcs8", "std"] }
+p384 = { version = "0.13", default-features = false, features = ["ecdsa", "std"] }
+p521 = { version = "0.13", default-features = false, features = ["ecdsa", "std"] }
+ed25519-dalek = "2"
+ciborium = "0.2"
 
 [dev-dependencies]
 http-body-util = "0.1"

@@ -1,6 +1,7 @@
 //! `SecondFactorManager#authenticate_second_factor` (app/models/concerns/
 //! second_factor_manager.rb): the method chosen, then the TOTP code (ROTP's
-//! verify) or a backup code. Security keys and passkeys are refused.
+//! verify), a backup code, or a security key's or passkey's assertion
+//! (crate::webauthn).
 
 use hmac::{Hmac, Mac};
 use serde_json::{Map, Value, json};
@@ -111,21 +112,59 @@ pub fn backup_code_iterations(env: RailsEnv) -> u32 {
     if env == RailsEnv::Test { 10 } else { 64_000 }
 }
 
+/// What a request offers as its second factor: `params[:second_factor_method]`
+/// and `params[:second_factor_token]` (a code, or a security key's or
+/// passkey's assertion), with what checking them reads.
+pub struct Attempt<'a> {
+    pub method: Option<String>,
+    pub token: Option<&'a Value>,
+    pub now: i64,
+    pub backup_iterations: u32,
+    /// The relying party and the server session a webauthn challenge was
+    /// staged in.
+    pub rp: &'a crate::webauthn::RelyingParty,
+    pub session: &'a mut crate::session::forum::ForumSession,
+}
+
+impl<'a> Attempt<'a> {
+    /// An attempt from a request's params.
+    pub fn new(
+        params: &'a Map<String, Value>,
+        config: &crate::config::Config,
+        rp: &'a crate::webauthn::RelyingParty,
+        session: &'a mut crate::session::forum::ForumSession,
+    ) -> Self {
+        Self {
+            method: crate::params::string(params, "second_factor_method"),
+            token: params.get("second_factor_token"),
+            now: crate::clock::now().timestamp(),
+            backup_iterations: backup_code_iterations(config.rails_env),
+            rp,
+            session,
+        }
+    }
+}
+
 /// `authenticate_second_factor(params, server_session)`: the failure
 /// payload, or the method that went through (None when the user has no
-/// second factor to ask for). A TOTP's last_used and a backup code's
-/// spending are written here, as Rails writes them before it goes on.
-#[allow(clippy::too_many_arguments)]
+/// second factor to ask for). A TOTP's last_used, a backup code's
+/// spending and a security key's last_used are written here, as Rails
+/// writes them before it goes on.
 pub async fn authenticate(
     conn: &mut PgConnection,
     i18n: &I18n,
     user_id: i32,
     enabled: &Enabled,
-    method: Option<&str>,
-    token: Option<&str>,
-    now: i64,
-    backup_iterations: u32,
+    attempt: Attempt<'_>,
 ) -> Result<Result<Option<i64>, Value>, AppError> {
+    let Attempt {
+        method,
+        token,
+        now,
+        backup_iterations,
+        rp,
+        session,
+    } = attempt;
     let method = method.filter(|m| !m.trim().is_empty());
     if !enabled.security_keys
         && !enabled.totp
@@ -134,7 +173,7 @@ pub async fn authenticate(
     {
         return Ok(Ok(None));
     }
-    let method = method.map(crate::ruby::to_i);
+    let method = method.as_deref().map(crate::ruby::to_i);
     let Some(method @ (TOTP | BACKUP_CODES | SECURITY_KEY | PASSKEY)) = method else {
         return Ok(Err(enabled.failure(
             i18n,
@@ -149,14 +188,44 @@ pub async fn authenticate(
             "not_enabled_second_factor_method",
         )));
     }
-    let token = token.unwrap_or_default();
+    let code = token.and_then(crate::params::scalar).unwrap_or_default();
     let ok = match method {
-        TOTP => authenticate_totp(conn, user_id, token, now).await?,
-        BACKUP_CODES => authenticate_backup_code(conn, user_id, token, backup_iterations).await?,
-        SECURITY_KEY => {
-            return Err(Unsupported("security keys as a second factor (webauthn)").into());
+        TOTP => authenticate_totp(conn, user_id, &code, now).await?,
+        BACKUP_CODES => authenticate_backup_code(conn, user_id, &code, backup_iterations).await?,
+        _ => {
+            // authenticate_security_key / authenticate_passkey: the
+            // assertion against the user's keys of that factor type.
+            let factor_type = if method == SECURITY_KEY {
+                crate::webauthn::SECOND_FACTOR
+            } else {
+                crate::webauthn::FIRST_FACTOR
+            };
+            let session_id = session.server_session_id();
+            return Ok(
+                match crate::webauthn::authenticate(
+                    conn,
+                    rp,
+                    &session_id,
+                    Some(user_id),
+                    token,
+                    &[factor_type],
+                )
+                .await?
+                {
+                    Ok(_) => Ok(Some(method)),
+                    Err(e) => {
+                        // invalid_security_key_result(err.message)
+                        let mut failure = enabled.failure(
+                            i18n,
+                            "login.invalid_security_key",
+                            "invalid_security_key",
+                        );
+                        failure["error"] = json!(e.message(i18n));
+                        Err(failure)
+                    }
+                },
+            );
         }
-        _ => return Err(Unsupported("passkeys as a second factor (webauthn)").into()),
     };
     if ok {
         return Ok(Ok(Some(method)));

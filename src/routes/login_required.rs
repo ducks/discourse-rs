@@ -266,6 +266,11 @@ pub struct LoginRequiredPage {
     /// The enabled external logins' buttons (login-buttons).
     pub external_logins: Vec<LoginButton>,
     pub csrf_token: String,
+    /// enable_passkeys: the passkey login button.
+    pub passkeys: bool,
+    /// The security key and passkey buttons' icons, inlined.
+    pub key_icon: String,
+    pub user_icon: String,
 }
 
 /// An external login's button (the login-buttons component).
@@ -358,6 +363,9 @@ pub async fn login_page(
         discourse_connect: settings.get("enable_discourse_connect")?.truthy(),
         external_logins: login_buttons(state, settings)?,
         csrf_token,
+        passkeys: settings.get("enable_passkeys")?.truthy(),
+        key_icon: crate::svg_sprite::raw_svg("key")?,
+        user_icon: crate::svg_sprite::raw_svg("user")?,
     };
     let mut response = (
         [(

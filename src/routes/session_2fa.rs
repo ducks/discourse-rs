@@ -78,11 +78,6 @@ pub async fn show(
                 .ok_or(Unsupported("a second factor challenge without its user"))?;
             let enabled =
                 crate::second_factor::Enabled::load(&mut conn, &settings, user_id).await?;
-            if enabled.security_keys || enabled.passkeys {
-                return Err(
-                    Unsupported("security keys and passkeys on the 2FA page (webauthn)").into(),
-                );
-            }
             let mut json = Map::new();
             json.insert("totp_enabled".into(), json!(enabled.totp));
             json.insert("backup_enabled".into(), json!(enabled.backup));
@@ -93,8 +88,21 @@ pub async fn show(
                     .cloned()
                     .unwrap_or(json!([])),
             );
-            json.insert("security_keys_enabled".into(), json!(false));
-            json.insert("passkeys_enabled".into(), json!(false));
+            if enabled.security_keys || enabled.passkeys {
+                crate::webauthn::stage_challenge(&mut conn, &session_id, Some(user_id)).await?;
+                json.extend(
+                    crate::webauthn::allowed_credentials(
+                        &mut conn,
+                        &session_id,
+                        user_id,
+                        &enabled,
+                        enabled.passkeys,
+                    )
+                    .await?,
+                );
+            }
+            json.insert("security_keys_enabled".into(), json!(enabled.security_keys));
+            json.insert("passkeys_enabled".into(), json!(enabled.passkeys));
             if let Some(description) = challenge.get("description") {
                 json.insert("description".into(), description.clone());
             }
@@ -185,19 +193,11 @@ pub async fn perform(
             }
         }
         let enabled = crate::second_factor::Enabled::load(&mut conn, &settings, user_id).await?;
-        let method_param = text("second_factor_method");
-        let token = text("second_factor_token");
-        let outcome = crate::second_factor::authenticate(
-            &mut conn,
-            &state.i18n,
-            user_id,
-            &enabled,
-            method_param.as_deref(),
-            token.as_deref(),
-            crate::clock::now().timestamp(),
-            crate::second_factor::backup_code_iterations(state.config.rails_env),
-        )
-        .await?;
+        let rp = crate::webauthn::RelyingParty::new(&state.config, &settings)?;
+        let attempt = crate::second_factor::Attempt::new(&p, &state.config, &rp, &mut session);
+        let outcome =
+            crate::second_factor::authenticate(&mut conn, &state.i18n, user_id, &enabled, attempt)
+                .await?;
         match outcome {
             Err(failure) => {
                 // to_h.slice(:ok, :error, :reason).merge(failed_json)

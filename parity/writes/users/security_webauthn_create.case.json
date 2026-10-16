@@ -1,0 +1,57 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET secure_identifier = '71ef7f3c7b45b36a6eda60bf79ff73f1dad4b59e' WHERE id = 3"
+  ],
+  "ignore": [
+    "/responses/0/body/challenge",
+    "/responses/3/body/challenge"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/create_passkey.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_security_key.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_security_key.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/register_second_factor_security_key.json",
+      "params": {
+        "name": "key one",
+        "attestation": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2NFAAAAAQAAAAAAAAAAAAAAAAAAAAAAIJxCEKm+TGCHAPv3+tqMEmKTa/3F6p9LXXlOBAVj2MPJpQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
+        "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWkdJeU56QXhOR015T1RRelptWmlZVFk1TldFME1qUm1OakV4WmpneU9HVXhZVGMyTXpnMU1HVXdPR1JqWW1VeU5qWXpNemhrWkdaaE5HUXgiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/register_passkey.json",
+      "params": {
+        "name": "key one",
+        "attestation": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2NFAAAAAQAAAAAAAAAAAAAAAAAAAAAAIJxCEKm+TGCHAPv3+tqMEmKTa/3F6p9LXXlOBAVj2MPJpQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
+        "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWkdJeU56QXhOR015T1RRelptWmlZVFk1TldFME1qUm1OakV4WmpneU9HVXhZVGMyTXpnMU1HVXdPR1JqWW1VeU5qWXpNemhrWkdaaE5HUXgiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/register_second_factor_security_key.json",
+      "params": {
+        "name": "key one",
+        "clientData": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWkdJeU56QXhOR015T1RRelptWmlZVFk1TldFME1qUm1OakV4WmpneU9HVXhZVGMyTXpnMU1HVXdPR1JqWW1VeU5qWXpNemhrWkdaaE5HUXgiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9"
+      }
+    }
+  ]
+}

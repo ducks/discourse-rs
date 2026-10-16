@@ -227,7 +227,7 @@ fn parse_query(query: &[u8]) -> Result<Vec<(String, String)>, AppError> {
 /// Ruby's `Base64.decode64` (`unpack1("m")`): characters outside the
 /// alphabet skipped, decoding up to the padding, a lone trailing
 /// character dropped.
-fn decode64(s: &str) -> Vec<u8> {
+pub(crate) fn decode64(s: &str) -> Vec<u8> {
     use base64::Engine;
     let mut clean: String = s
         .chars()

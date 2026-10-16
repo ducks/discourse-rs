@@ -44,6 +44,13 @@
     {%- endfor %}
   </div>
   {% endif %}
+  {% if local_logins && passkeys %}
+  {#- login-buttons' PasskeyLoginButton: the passkey ceremony, then POST
+      /session/passkey/auth. -#}
+  <div class="login-buttons passkey-login">
+    <button type="button" class="btn btn-icon-text btn-social passkey-login-button">{{ user_icon|safe }}<span class="d-button-label">{{ chrome.t("login.passkey.name") }}</span></button>
+  </div>
+  {% endif %}
   {% if local_logins %}
   {#- POST /session answers 200 with an `error` for refused logins, as Rails
       does, so the script reads the body rather than the status. -#}
@@ -70,6 +77,12 @@
              type="text" autocapitalize="off" autocorrect="off" autocomplete="one-time-code"
              inputmode="numeric" maxlength="32" disabled>
       <p hidden><a class="toggle-second-factor-method" href>{{ chrome.t("login.second_factor_backup") }}</a></p>
+      {#- SecurityKeyForm: the key's ceremony, or another way in. -#}
+      <div id="security-key" hidden data-description="{{ chrome.t("login.security_key_description") }}"
+           data-not-allowed="{{ chrome.t("login.security_key_not_allowed_error") }}">
+        <button type="button" class="btn btn-icon-text btn-large btn-primary" id="security-key-authenticate-button">{{ key_icon|safe }}<span class="d-button-label">{{ chrome.t("login.security_key_authenticate") }}</span></button>
+        <p><a class="toggle-second-factor-method" href hidden>{{ chrome.t("login.security_key_alternative") }}</a></p>
+      </div>
     </div>
     <p class="login-error" role="alert" hidden></p>
     <button type="submit">Log in</button>
@@ -99,44 +112,178 @@
         return;
       }
       var error = document.querySelector(".login-error");
+      var factor = document.getElementById("second-factor");
+      // A failed security key answer stages a new challenge.
+      if (body.challenge) {
+        factor.dataset.challenge = body.challenge;
+        factor.dataset.allowed = JSON.stringify(body.allowed_credential_ids || []);
+      }
       // login.js's localLogin: the first answer naming a second factor
       // shows its form instead of the error.
-      var factor = document.getElementById("second-factor");
-      if (body.totp_enabled && factor.hidden) {
+      if ((body.totp_enabled || body.security_key_enabled) && factor.hidden) {
         factor.hidden = false;
         var form = factor.closest("form");
         form.querySelector("[name=login]").readOnly = true;
         form.querySelector("[name=password]").readOnly = true;
         form.querySelector("[name=second_factor_method]").disabled = false;
-        var token = document.getElementById("login-second-factor");
-        token.disabled = false;
-        token.required = true;
-        token.focus();
-        factor.querySelector(".toggle-second-factor-method").parentNode.hidden =
-          !body.backup_enabled;
+        factor.dataset.totp = body.totp_enabled ? "1" : "";
+        factor.dataset.backup = body.backup_enabled ? "1" : "";
+        factor.querySelector("#security-key .toggle-second-factor-method").hidden =
+          !body.multiple_second_factor_methods;
+        if (body.security_key_enabled) {
+          showSecurityKey(true);
+        } else {
+          showToken("1");
+        }
         error.hidden = true;
         return;
       }
       error.textContent = body.error || "Could not log in.";
       error.hidden = false;
     }
+    // The authenticator app or backup code field, method 1 or 2.
+    function showToken(method) {
+      var factor = document.getElementById("second-factor");
+      showSecurityKey(false);
+      factor.closest("form").querySelector("[name=second_factor_method]").value = method;
+      var which = method === "2" ? "backup" : "totp";
+      factor.querySelector("h3").textContent = factor.dataset[which + "Title"];
+      factor.querySelector(".second-factor__description").textContent =
+        factor.dataset[which + "Description"];
+      var toggle = factor.querySelector(":scope > p > .toggle-second-factor-method");
+      toggle.textContent = factor.dataset[which + "Link"];
+      toggle.parentNode.hidden = !(factor.dataset.totp && factor.dataset.backup);
+      var token = document.getElementById("login-second-factor");
+      token.hidden = false;
+      token.disabled = false;
+      token.required = true;
+      token.value = "";
+      token.inputMode = method === "2" ? "text" : "numeric";
+      token.focus();
+    }
+    // SecurityKeyForm, method 3.
+    function showSecurityKey(on) {
+      var factor = document.getElementById("second-factor");
+      var key = document.getElementById("security-key");
+      key.hidden = !on;
+      if (!on) return;
+      factor.closest("form").querySelector("[name=second_factor_method]").value = "3";
+      factor.querySelector("h3").textContent = factor.dataset.totpTitle;
+      factor.querySelector(".second-factor__description").textContent = key.dataset.description;
+      factor.querySelector(":scope > p > .toggle-second-factor-method").parentNode.hidden = true;
+      var token = document.getElementById("login-second-factor");
+      token.hidden = true;
+      token.disabled = true;
+      token.required = false;
+    }
+    function toBuffer(s) {
+      return Uint8Array.from(s, function (c) { return c.charCodeAt(0); });
+    }
+    function toBase64(b) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(b)));
+    }
+    // getWebauthnCredential / getPasskeyCredential: the assertion as
+    // DiscourseWebauthn reads it.
+    function assertion(credential) {
+      var out = {
+        signature: toBase64(credential.response.signature),
+        clientData: toBase64(credential.response.clientDataJSON),
+        authenticatorData: toBase64(credential.response.authenticatorData),
+        credentialId: toBase64(credential.rawId),
+      };
+      if (credential.response.userHandle) {
+        out.userHandle = toBase64(credential.response.userHandle);
+      }
+      return out;
+    }
+    function showError(text) {
+      var error = document.querySelector(".login-error");
+      error.textContent = text;
+      error.hidden = false;
+    }
     (function () {
       var factor = document.getElementById("second-factor");
       if (!factor) return;
-      factor.querySelector(".toggle-second-factor-method").addEventListener("click", function (e) {
+      factor.querySelector(":scope > p > .toggle-second-factor-method").addEventListener("click", function (e) {
         e.preventDefault();
         var method = factor.closest("form").querySelector("[name=second_factor_method]");
-        var backup = method.value === "1";
-        method.value = backup ? "2" : "1";
-        var which = backup ? "backup" : "totp";
-        factor.querySelector("h3").textContent = factor.dataset[which + "Title"];
-        factor.querySelector(".second-factor__description").textContent =
-          factor.dataset[which + "Description"];
-        this.textContent = factor.dataset[which + "Link"];
-        var token = document.getElementById("login-second-factor");
-        token.value = "";
-        token.inputMode = backup ? "text" : "numeric";
-        token.focus();
+        showToken(method.value === "1" ? "2" : "1");
+      });
+      factor.querySelector("#security-key .toggle-second-factor-method").addEventListener("click", function (e) {
+        e.preventDefault();
+        showToken(factor.dataset.totp ? "1" : "2");
+      });
+      document.getElementById("security-key-authenticate-button").addEventListener("click", function () {
+        var form = factor.closest("form");
+        var allowed = JSON.parse(factor.dataset.allowed || "[]");
+        navigator.credentials.get({ publicKey: {
+          challenge: toBuffer(factor.dataset.challenge || ""),
+          allowCredentials: allowed.map(function (id) {
+            return { id: toBuffer(atob(id)), type: "public-key" };
+          }),
+          timeout: 60000,
+          userVerification: "discouraged",
+        } }).then(function (credential) {
+          form.querySelectorAll("input.security-key-token").forEach(function (i) { i.remove(); });
+          var fields = assertion(credential);
+          Object.keys(fields).forEach(function (k) {
+            var input = document.createElement("input");
+            input.type = "hidden";
+            input.className = "security-key-token";
+            input.name = "second_factor_token[" + k + "]";
+            input.value = fields[k];
+            form.appendChild(input);
+          });
+          form.requestSubmit();
+        }).catch(function (err) {
+          showError(err.name === "NotAllowedError"
+            ? document.getElementById("security-key").dataset.notAllowed
+            : String(err.message || err));
+        });
+      });
+    })();
+    (function () {
+      var button = document.querySelector(".passkey-login-button");
+      if (!button) return;
+      var csrf = "{{ csrf_token }}";
+      button.addEventListener("click", function () {
+        var headers = { "X-CSRF-Token": csrf, "X-Requested-With": "XMLHttpRequest" };
+        fetch("{{ base_path }}/session/passkey/challenge.json", { headers: headers })
+          .then(function (r) { return r.json(); })
+          .then(function (resp) {
+            return navigator.credentials.get({ publicKey: {
+              challenge: toBuffer(resp.challenge),
+              userVerification: "required",
+            } });
+          })
+          .then(function (credential) {
+            var fields = assertion(credential);
+            var body = new URLSearchParams();
+            Object.keys(fields).forEach(function (k) {
+              body.append("publicKeyCredential[" + k + "]", fields[k]);
+            });
+            return fetch("{{ base_path }}/session/passkey/auth.json", {
+              method: "POST",
+              headers: headers,
+              body: body,
+            });
+          })
+          .then(function (r) {
+            return r.text().then(function (text) {
+              loggedIn({ detail: { successful: r.ok, xhr: { responseText: text } } });
+              if (!r.ok) {
+                var body = {};
+                try { body = JSON.parse(text); } catch (_) {}
+                showError((body.errors || [])[0] || "Could not log in.");
+              }
+            });
+          })
+          .catch(function (err) {
+            if (err && err.name === "AbortError") return;
+            showError(err && err.name === "NotAllowedError"
+              ? document.getElementById("security-key").dataset.notAllowed
+              : String((err && err.message) || err));
+          });
       });
     })();
   </script>

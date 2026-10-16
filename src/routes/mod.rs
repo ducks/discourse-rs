@@ -84,6 +84,7 @@ mod reactions;
 mod required_fields;
 mod session;
 mod session_2fa;
+mod session_passkey;
 mod sidebar_sections;
 mod site;
 mod site_texts;
@@ -2022,6 +2023,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/session/2fa.json",
             get(session_2fa::show).post(session_2fa::perform),
         )
+        .route(
+            "/session/passkey/challenge",
+            get(session_passkey::challenge),
+        )
+        .route(
+            "/session/passkey/challenge.json",
+            get(session_passkey::challenge),
+        )
+        .route("/session/passkey/auth", post(session_passkey::login))
+        .route("/session/passkey/auth.json", post(session_passkey::login))
         .route(
             "/u/confirm-admin/{token}",
             get(admin_users::confirm_admin).post(admin_users::confirm_admin),

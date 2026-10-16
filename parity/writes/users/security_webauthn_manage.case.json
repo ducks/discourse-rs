@@ -1,0 +1,80 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9311, 3, 'nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=', 'pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=', 0, true, 'key one', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9312, 3, 'HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=', 'pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=', 1, true, 'Passkey', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9313, 2, 'b3RoZXIta2V5', 'pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=', 1, true, 'Theirs', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/rename_passkey/9312.json",
+      "params": {
+        "name": "Laptop"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/rename_passkey/9313.json",
+      "params": {
+        "name": "Mine now"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/security_key.json",
+      "params": {
+        "id": "9311",
+        "name": "Yubi"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "publicKeyCredential": {
+          "credentialId": "bm9wZQ==",
+          "signature": "",
+          "clientData": "",
+          "authenticatorData": ""
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/security_key.json",
+      "params": {
+        "id": "9311",
+        "name": "Yubi",
+        "disable": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/security_key.json",
+      "params": {
+        "id": "9313",
+        "name": "Not mine"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/delete_passkey/9313.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/u/delete_passkey/9312.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    }
+  ]
+}

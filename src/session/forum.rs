@@ -10,7 +10,7 @@ use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
 
 /// The `_forum_session` cookie's content, created when absent.
-pub(crate) struct ForumSession {
+pub struct ForumSession {
     pub(crate) map: Map,
     pub(crate) changed: bool,
 }
