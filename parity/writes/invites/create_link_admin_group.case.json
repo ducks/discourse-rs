@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "max_redemptions_allowed": "50",
+        "group_ids": "9001",
+        "expires_at": "2026-12-31T00:00:00.000Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "quiet@example.com",
+        "skip_email": true
+      }
+    }
+  ]
+}

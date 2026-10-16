@@ -1,0 +1,80 @@
+{
+  "name": "create_multiple_too_many",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/create-multiple.json",
+      "params": {
+        "email": [
+          "one@example.com",
+          "two@example.com"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:14.006884",
+  "transaction_started_at": "2026-10-16T04:45:12.586644",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Request failed because number of emails exceeded the maximum (1)."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yWPL4wNw3YTAEh6s57JSNbJJF60=",
+            "created_at": "2026-10-16T04:45:13.015744",
+            "rotated_at": "2026-10-16T04:45:13.014552",
+            "updated_at": "2026-10-16T04:45:13.015744",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yWPL4wNw3YTAEh6s57JSNbJJF60=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:14.015589",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yWPL4wNw3YTAEh6s57JSNbJJF60=",
+            "created_at": "2026-10-16T04:45:13.015744",
+            "rotated_at": "2026-10-16T04:45:13.014552",
+            "updated_at": "2026-10-16T04:45:13.015744",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yWPL4wNw3YTAEh6s57JSNbJJF60=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_api_invites": 1
+  },
+  "recorded_from": {
+    "case": "393276e58f466ac5cdf3b6763e2c46f64236b3c57ca6576d84cf54e5e8ed01d3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

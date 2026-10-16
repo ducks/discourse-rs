@@ -1,0 +1,77 @@
+{
+  "name": "create_existing_user_shown",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "user0@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:44:52.659955",
+  "transaction_started_at": "2026-10-16T04:44:51.50781",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "There's no need to invite <b>user0@example.com</b>, they already have an account!"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6nr7LUW71vBefjXuUZCUbj6soH0=",
+            "created_at": "2026-10-16T04:44:51.939167",
+            "rotated_at": "2026-10-16T04:44:51.938273",
+            "updated_at": "2026-10-16T04:44:51.939167",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6nr7LUW71vBefjXuUZCUbj6soH0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:44:52.668419",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6nr7LUW71vBefjXuUZCUbj6soH0=",
+            "created_at": "2026-10-16T04:44:51.939167",
+            "rotated_at": "2026-10-16T04:44:51.938273",
+            "updated_at": "2026-10-16T04:44:51.939167",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6nr7LUW71vBefjXuUZCUbj6soH0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "hide_email_address_taken": false
+  },
+  "recorded_from": {
+    "case": "73103f28b67bd8a85bcc7da5bb73ea275474cb493557c8045bd7e02193e1dd7e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

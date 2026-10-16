@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/invited/expired.json"
+    }
+  ]
+}

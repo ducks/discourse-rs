@@ -139,7 +139,7 @@ fn levenshtein(a: &str, b: &str) -> usize {
 
 /// `ScreenedEmail.should_block?(email)`: the latest hundred screened
 /// emails within the Levenshtein distance; the match recorded.
-async fn should_block(
+pub(crate) async fn should_block(
     conn: &mut PgConnection,
     s: &SiteSettings,
     email: &str,

@@ -1,0 +1,155 @@
+{
+  "name": "reinvite_trashed_email",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "friend@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:46:30.005644",
+  "transaction_started_at": "2026-10-16T04:46:28.715097",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "invite_key": "z3VUz48AML",
+        "link": "http://localhost:3050/invites/z3VUz48AML",
+        "description": null,
+        "email": "friend@example.com",
+        "domain": null,
+        "emailed": true,
+        "can_delete_invite": true,
+        "custom_message": null,
+        "created_at": "2026-10-16T04:46:30.056Z",
+        "updated_at": "2026-10-16T04:46:30.056Z",
+        "expires_at": "2027-01-14T04:46:30.050Z",
+        "expired": false,
+        "grants_admin": false,
+        "grants_moderator": false,
+        "topics": [],
+        "groups": []
+      }
+    }
+  ],
+  "changes": {
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "friend@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T04:46:30.056169",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T04:46:30.05012",
+          "invite_key": "z3VUz48AML",
+          "updated_at": "2026-10-16T04:46:30.056169",
+          "description": null,
+          "email_token": "d6896737c206c9bfd4bac5b32edba6c9",
+          "deleted_by_id": null,
+          "invited_by_id": 3,
+          "custom_message": null,
+          "emailed_status": 3,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [
+        {
+          "id": 901,
+          "admin": false,
+          "email": "friend@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-14T04:46:28.715097",
+          "deleted_at": "2026-10-15T04:46:28.715097",
+          "expires_at": "2026-12-15T04:46:28.715097",
+          "invite_key": "Fixture901",
+          "updated_at": "2026-10-14T04:46:28.715097",
+          "description": null,
+          "email_token": "0123456789abcdef0123456789abcdef",
+          "deleted_by_id": 3,
+          "invited_by_id": 3,
+          "custom_message": "Come along",
+          "emailed_status": 4,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "QfndH/uiKZSLonoJWMlEx512sO0=",
+            "created_at": "2026-10-16T04:46:29.123576",
+            "rotated_at": "2026-10-16T04:46:29.122498",
+            "updated_at": "2026-10-16T04:46:29.123576",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "QfndH/uiKZSLonoJWMlEx512sO0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:46:30.014551",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "QfndH/uiKZSLonoJWMlEx512sO0=",
+            "created_at": "2026-10-16T04:46:29.123576",
+            "rotated_at": "2026-10-16T04:46:29.122498",
+            "updated_at": "2026-10-16T04:46:29.123576",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "QfndH/uiKZSLonoJWMlEx512sO0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 1,
+        "invite_to_topic": null
+      }
+    ]
+  ],
+  "next_ids": {
+    "invites": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')",
+    "UPDATE invites SET deleted_at = now() - interval '1 day', deleted_by_id = 3 WHERE id = 901"
+  ],
+  "recorded_from": {
+    "case": "9c5c0a3737a811fd03fa3dab71b803eeba1b6015f1a8330b4410dde710831d1c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

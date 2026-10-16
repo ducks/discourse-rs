@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "invite_email"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "boss@example.com",
+        "is_admin": "true"
+      }
+    }
+  ]
+}

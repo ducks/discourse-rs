@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/destroy-all-expired.json",
+      "params": {
+        "username": "nobody"
+      }
+    }
+  ]
+}

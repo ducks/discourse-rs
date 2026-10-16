@@ -70,6 +70,7 @@ mod chat;
 mod chat_pages;
 mod color_schemes;
 mod impersonate;
+mod invites;
 mod onebox;
 mod polls;
 mod reactions;
@@ -520,6 +521,38 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/t/{slug}/change-owner.json",
             post(change_owner::change_owner),
+        )
+        // InvitesController
+        .route("/invites", post(invites::create).delete(invites::destroy))
+        .route(
+            "/invites.json",
+            post(invites::create).delete(invites::destroy),
+        )
+        .route(
+            "/invites/{id}",
+            put(invites::update).delete(invites::destroy),
+        )
+        .route("/invites/retrieve", get(invites::retrieve))
+        .route("/invites/retrieve.json", get(invites::retrieve))
+        .route("/invites/create-multiple", post(invites::create_multiple))
+        .route(
+            "/invites/create-multiple.json",
+            post(invites::create_multiple),
+        )
+        .route(
+            "/invites/destroy-all-expired",
+            post(invites::destroy_all_expired),
+        )
+        .route(
+            "/invites/destroy-all-expired.json",
+            post(invites::destroy_all_expired),
+        )
+        .route("/invites/reinvite", post(invites::resend_invite))
+        .route("/invites/reinvite.json", post(invites::resend_invite))
+        .route("/invites/reinvite-all", post(invites::resend_all_invites))
+        .route(
+            "/invites/reinvite-all.json",
+            post(invites::resend_all_invites),
         )
         .route("/t/{slug}/invite", post(pm_invite::invite))
         .route("/t/{slug}/invite.json", post(pm_invite::invite))

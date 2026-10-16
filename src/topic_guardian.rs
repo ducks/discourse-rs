@@ -44,6 +44,9 @@ pub struct TopicCtx {
     pub unlimited_owner_edits: bool,
     /// The category has non-automatic groups (whose owners may invite).
     pub manual_groups: bool,
+    /// One of those groups the viewer may edit as an owner, or as a
+    /// moderator managing groups (`can_edit_group?`, admins aside).
+    pub manual_group_editable: bool,
     /// The viewer is in `topic.all_allowed_users` (directly or by group).
     pub pm_member: bool,
     /// A pending flag on a post of this PM (opens it to moderators).
@@ -122,6 +125,12 @@ impl TopicCtx {
                     COALESCE(c.allow_unlimited_owner_edits_on_first_post, FALSE) AS unlimited_owner_edits, \
                     EXISTS (SELECT 1 FROM category_groups cg JOIN groups g ON g.id = cg.group_id \
                             WHERE cg.category_id = c.id AND NOT g.automatic) AS manual_groups, \
+                    EXISTS (SELECT 1 FROM category_groups cg JOIN groups g ON g.id = cg.group_id \
+                            LEFT JOIN group_users mgu ON mgu.group_id = g.id AND mgu.user_id = $3 \
+                            WHERE cg.category_id = c.id AND NOT g.automatic \
+                            AND (COALESCE(mgu.owner, FALSE) OR ($8 AND g.id <> 1 \
+                                 AND (g.visibility_level <> 4 OR COALESCE(mgu.owner, FALSE))))) \
+                        AS manual_group_editable, \
                     (EXISTS (SELECT 1 FROM topic_allowed_users tau WHERE tau.topic_id = t.id AND tau.user_id = $3) \
                      OR EXISTS (SELECT 1 FROM topic_allowed_groups tag JOIN group_users gu ON gu.group_id = tag.group_id \
                                 WHERE tag.topic_id = t.id AND gu.user_id = $3)) AS pm_member, \
@@ -136,6 +145,10 @@ impl TopicCtx {
         );
         let static_docs: Vec<i32> = static_docs.into_iter().map(|id| id as i32).collect();
         let can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
+        // can_admin_group? for a moderator: moderators_manage_groups.
+        let moderator_manages = guardian.is_moderator()
+            && !guardian.is_admin()
+            && settings.get("moderators_manage_groups")?.truthy();
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
             .bind(staged)
@@ -144,6 +157,7 @@ impl TopicCtx {
             .bind(uncategorized)
             .bind(&static_docs)
             .bind(can_create_topic)
+            .bind(moderator_manages)
             .fetch_optional(conn)
             .await?)
     }
@@ -509,14 +523,11 @@ impl Guardian {
         }
         if topic.read_restricted == Some(true) {
             // category.groups.where(automatic: false).any? { can_edit_group? }:
-            // admins may; owners of a manual group may (not ported).
+            // admins may, as may owners of a manual group.
             if !topic.manual_groups {
                 return Ok(false);
             }
-            if self.is_admin() {
-                return Ok(true);
-            }
-            return Err(Unsupported("inviting to restricted categories (group ownership)").into());
+            return Ok(self.is_admin() || topic.manual_group_editable);
         }
         Ok(true)
     }

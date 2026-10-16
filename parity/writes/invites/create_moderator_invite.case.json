@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "is_moderator": true,
+        "max_redemptions_allowed": 9
+      }
+    }
+  ]
+}

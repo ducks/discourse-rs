@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "max_redemptions_allowed": 5,
+        "description": "For friends"
+      }
+    }
+  ]
+}

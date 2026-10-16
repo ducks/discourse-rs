@@ -1874,7 +1874,30 @@ route table has been made, so this list may be short.
     sites (reviewable_user.rs:52), inviting to restricted categories
     (topic_guardian.rs:519), invalidating invites on password reset
     (routes/accounts.rs:662), the profile's invites pages
-    (/u/:username/invited: routes/users.rs:173)
+    (/u/:username/invited: routes/users.rs:173). Split in the order a
+    member meets them, stacked branches `feat/invites-<x>`:
+    192a. ~~`feat/invites-create`~~ (done) M: POST /invites, PUT and
+    DELETE /invites/:id, /invites/retrieve, create-multiple,
+    destroy-all-expired, reinvite and reinvite-all (Invite.generate with
+    the model's validations, the invites-per-day, reinvite and
+    admin-invite limiters, InviteSerializer), Jobs::InviteEmail
+    (InviteMailer's four templates), users#invited's JSON (pending,
+    expired and redeemed lists, search, counts), inviting to restricted
+    categories as an owner of one of their groups (topic_guardian.rs)
+    192b. `feat/invites-redeem` M: GET /invites/:id (JSON, the preloaded
+    invite_info, no_ember's errors), PUT /invites/show/:id
+    (InviteRedeemer for a new or signed-in user, its welcome message,
+    activation email or password instructions, topic notifications), the
+    login code for an invite (/session/login-code with invite_key),
+    redeeming on activation (EmailToken.confirm), invalidating on
+    password reset, invite-only ReviewableUser, invite codes at signup
+    192c. `feat/invites-elsewhere` M: adding group members by email,
+    inviting to a message by email (Topic#invite), messages to email
+    addresses (TopicCreator#add_emails, staged users)
+    192d. `feat/invites-pages` M: the accept page (invites/show) and the
+    profile's Invited tab (user-invited/show) in Ember's markup
+    192e. `feat/invites-bulk` S: POST /invites/upload_csv,
+    Jobs::BulkInvite and ProcessBulkInviteEmails
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a
     compatibility layer, not a gap in the port's own pages, which get
     live updates over pg-bus's /bus already (MessageBus on pg-bus, so

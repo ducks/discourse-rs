@@ -1,0 +1,80 @@
+{
+  "name": "create_restricted_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "topic_id": 4,
+        "email": "staffer@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:20.940768",
+  "transaction_started_at": "2026-10-16T04:45:17.221644",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Invite was not saved because the specified topic is inaccessible. Add one of the following groups: testers."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q1VA6AtUrBk+lj1Q1ziCUFqbD14=",
+            "created_at": "2026-10-16T04:45:17.946757",
+            "rotated_at": "2026-10-16T04:45:17.944853",
+            "updated_at": "2026-10-16T04:45:17.946757",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "q1VA6AtUrBk+lj1Q1ziCUFqbD14=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:20.95394",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "q1VA6AtUrBk+lj1Q1ziCUFqbD14=",
+            "created_at": "2026-10-16T04:45:17.946757",
+            "rotated_at": "2026-10-16T04:45:17.944853",
+            "updated_at": "2026-10-16T04:45:17.946757",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "q1VA6AtUrBk+lj1Q1ziCUFqbD14=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (3, 9001, 1, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "c84acb051fb6441e3e65efe9894cec981ed9a8a6eee7224e43c49269c7fdb83d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

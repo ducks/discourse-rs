@@ -68,6 +68,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
+        crate::invite_mailer::INVITE_EMAIL => {
+            crate::invite_mailer::invite_email(state, &job.args).await
+        }
         "admin_confirmation_email" => admin_confirmation_email(state, &job.args).await,
         crate::backup_restore::jobs::DOWNLOAD_BACKUP_EMAIL => {
             crate::backup_restore::jobs::download_backup_email(state, &job.args).await

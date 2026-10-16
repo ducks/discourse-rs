@@ -1,0 +1,270 @@
+{
+  "name": "update_link_to_email",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/invites/900.json",
+      "params": {
+        "email": "reader@example.com",
+        "max_redemptions_allowed": 1
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:46:44.435587",
+  "transaction_started_at": "2026-10-16T04:46:43.179569",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 900,
+        "invite_key": "Fixture900",
+        "link": "http://localhost:3050/invites/Fixture900",
+        "description": "for the book club",
+        "email": "reader@example.com",
+        "domain": null,
+        "emailed": true,
+        "can_delete_invite": true,
+        "custom_message": null,
+        "created_at": "2026-10-13T04:46:43.179Z",
+        "updated_at": "2026-10-16T04:46:44.476Z",
+        "expires_at": "2026-11-15T04:46:43.179Z",
+        "expired": false,
+        "grants_admin": false,
+        "grants_moderator": false,
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5
+          }
+        ],
+        "groups": [
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-16T04:46:44.550663",
+          "email_type": "invite",
+          "message_id": "a778a626-2dcf-4f62-9ad9-7efd490c5652@localhost",
+          "to_address": "reader@example.com",
+          "updated_at": "2026-10-16T04:46:44.550663",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "admin": false,
+            "email": null,
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T04:46:43.179569",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T04:46:43.179569",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-13T04:46:43.179569",
+            "description": "for the book club",
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 5
+          },
+          "after": {
+            "id": 900,
+            "admin": false,
+            "email": "reader@example.com",
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T04:46:43.179569",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T04:46:43.179569",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-16T04:46:44.476296",
+            "description": "for the book club",
+            "email_token": "18cc887ee30fee7d4d4406779c8bf2f3",
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 4,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CXVPSPEanD3Fs6OUWjeWTkCNJIE=",
+            "created_at": "2026-10-16T04:46:43.573459",
+            "rotated_at": "2026-10-16T04:46:43.572326",
+            "updated_at": "2026-10-16T04:46:43.573459",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CXVPSPEanD3Fs6OUWjeWTkCNJIE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:46:44.444149",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CXVPSPEanD3Fs6OUWjeWTkCNJIE=",
+            "created_at": "2026-10-16T04:46:43.573459",
+            "rotated_at": "2026-10-16T04:46:43.572326",
+            "updated_at": "2026-10-16T04:46:43.573459",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CXVPSPEanD3Fs6OUWjeWTkCNJIE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 900,
+        "invite_to_topic": null
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_logs": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "reader@example.com"
+        ],
+        [
+          "Message-ID",
+          "<a778a626-2dcf-4f62-9ad9-7efd490c5652@localhost>"
+        ],
+        [
+          "Subject",
+          "User1 (user1) invited you to join localhost"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ad1ac3484bee_1bddef288335c"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "User1 (user1) invited you to join\n\n> **Discourse**\n>\n> \n\nIf you're interested, click the link below:\n\nhttp://localhost:3050/invites/Fixture900\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>User1 (user1) invited you to join</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\"><strong>Discourse</strong></p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3050/invites/Fixture900\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3050/invites/Fixture900</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "5490b8123763a22cb69303bd3cffe74800fe5fc89cdb52ddd29d9c1df044878d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
