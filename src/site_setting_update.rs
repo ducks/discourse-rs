@@ -6,8 +6,8 @@
 //! Ported for core's and the bundled plugins' settings of the plain types
 //! (string, integer, float, bool, enum with listed choices), a plugin
 //! setting's change running the handlers of the plugins the port
-//! implements (crate::plugins::site_setting_changed). Refused: enabling a
-//! bundled plugin the port does not implement (unless the reference has
+//! has started (crate::plugins::site_setting_changed). Refused: enabling a
+//! bundled plugin the port has not started (unless the reference has
 //! it on by default), themeable and upcoming change settings, the other
 //! types (lists, uploads, groups,
 //! categories, objects...), settings with a validator class or a custom
@@ -237,15 +237,15 @@ pub async fn update(
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
     }
     // A plugin's enabled setting turned on: the plugin's behaviour, which
-    // the port has only for the plugins it implements (and runs the
+    // the port has only for the plugins it has started porting (and runs the
     // plugins the reference enables by default with, as their default).
     if let Some(plugin) = &def.plugin
         && defs.enabled_setting_of(plugin) == Some(name)
         && new_value.truthy()
         && !def.default.truthy()
-        && !crate::plugins::IMPLEMENTED.contains(&plugin.as_str())
+        && !crate::plugins::STARTED.contains(&plugin.as_str())
     {
-        return Err(Unsupported("enabling a bundled plugin the port does not implement").into());
+        return Err(Unsupported("enabling a bundled plugin the port has not started").into());
     }
     // SiteSetting::Update#save: default user preferences log whether
     // existing users were updated; #backfill enqueues the sidebar job.

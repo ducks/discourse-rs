@@ -330,7 +330,7 @@ async fn a_plugins_enabled_setting() {
     .await
     .unwrap();
     assert_eq!(dismissed, 0, "the retention reminders show again");
-    // Not implemented here: refused, the setting left off.
+    // Not started here: refused, the setting left off.
     let (status, _) = admin
         .send(
             Method::PUT,

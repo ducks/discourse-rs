@@ -279,11 +279,13 @@ pub async fn user_content_deleting(
     Ok(())
 }
 
-/// The bundled plugins (their plugin.rb names) whose behaviour the port
-/// has, in src/plugins or the markdown crate. Enabling another one is
-/// refused (crate::site_setting_update), unless the reference has it on
-/// by default.
-pub const IMPLEMENTED: &[&str] = &[
+/// The bundled plugins (their plugin.rb names) the port has started, in
+/// src/plugins or the markdown crate. Started is not done: a plugin is
+/// done only when it has all of the reference plugin's features (ROADMAP
+/// item 210). Enabling a plugin not listed here is refused
+/// (crate::site_setting_update), unless the reference has it on by
+/// default.
+pub const STARTED: &[&str] = &[
     "chat",
     "checklist",
     "discourse-apple-auth",
