@@ -1157,6 +1157,7 @@ impl Mover<'_, '_> {
         self.defer_new_crawl_jobs(conn, &crawl_before).await?;
         // track_topic
         change_topic_user(
+            self.ctx.bus,
             &mut *conn,
             author,
             topic_id,
@@ -1170,6 +1171,7 @@ impl Mover<'_, '_> {
         crate::posting::record_timing(&mut *conn, topic_id, author, post_number, 5000).await?;
         if staged {
             change_topic_user(
+                self.ctx.bus,
                 &mut *conn,
                 author,
                 topic_id,
@@ -1188,6 +1190,7 @@ impl Mover<'_, '_> {
             .await?
             .flatten();
             crate::posting::auto_notification(
+                self.ctx.bus,
                 &mut *conn,
                 author,
                 topic_id,
@@ -1294,6 +1297,7 @@ impl Mover<'_, '_> {
         .fetch_one(&mut *conn)
         .await?;
         change_topic_user(
+            self.ctx.bus,
             &mut *conn,
             author,
             topic_id,
@@ -1952,19 +1956,11 @@ impl Mover<'_, '_> {
                 notification_reasons::CREATED_POST
             };
             change_topic_user(
-                &mut *conn,
-                user_id,
-                topic_id,
-                &[TopicUserAttr::NotificationLevel(level, reason)],
-            )
-            .await?;
-            crate::bus::publish_notification_level_change(
                 self.ctx.bus,
                 &mut *conn,
                 user_id,
                 topic_id,
-                level,
-                Some(reason),
+                &[TopicUserAttr::NotificationLevel(level, reason)],
             )
             .await?;
         }
@@ -1989,6 +1985,7 @@ impl Mover<'_, '_> {
             return Ok(());
         }
         change_topic_user(
+            self.ctx.bus,
             &mut *conn,
             self.user_id,
             topic_id,
@@ -1996,15 +1993,6 @@ impl Mover<'_, '_> {
                 notification_levels::WATCHING,
                 notification_reasons::USER_CHANGED,
             )],
-        )
-        .await?;
-        crate::bus::publish_notification_level_change(
-            self.ctx.bus,
-            &mut *conn,
-            self.user_id,
-            topic_id,
-            notification_levels::WATCHING,
-            Some(notification_reasons::USER_CHANGED),
         )
         .await?;
         Ok(())

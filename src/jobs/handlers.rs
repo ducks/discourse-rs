@@ -1398,8 +1398,10 @@ async fn group_pm_update_summary(state: &AppState, args: &Value) -> Result<(), A
             .unwrap_or_default();
         return Err(std::io::Error::other(message).into());
     }
-    crate::posting::group_messages::apply_default_levels(&mut tx, group_id, topic_id, author, true)
-        .await?;
+    crate::posting::group_messages::apply_default_levels(
+        &state.bus, &mut tx, group_id, topic_id, author, true,
+    )
+    .await?;
     let tracking: Vec<i32> = sqlx::query_scalar(
         "SELECT users.id FROM users INNER JOIN group_users ON users.id = group_users.user_id \
          WHERE group_users.group_id = $1 AND group_users.notification_level = 2 ORDER BY users.id",

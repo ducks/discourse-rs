@@ -1038,6 +1038,7 @@ pub async fn create(
     .await?;
     // track_topic
     change_topic_user(
+        ctx.bus,
         &mut tx,
         user.id,
         topic_id,
@@ -1053,6 +1054,7 @@ pub async fn create(
     // the level is left as the topic user was made.
     if user.staged {
         change_topic_user(
+            ctx.bus,
             &mut tx,
             user.id,
             topic_id,
@@ -1071,6 +1073,7 @@ pub async fn create(
         .await?
         .flatten();
         super::auto_notification(
+            ctx.bus,
             &mut tx,
             user.id,
             topic_id,
@@ -1168,6 +1171,7 @@ pub async fn create(
     .fetch_one(&mut *tx)
     .await?;
     change_topic_user(
+        ctx.bus,
         &mut tx,
         user.id,
         topic_id,
@@ -1787,6 +1791,7 @@ async fn create_topic(
     }
     // set_author_notification_level: watch it.
     change_topic_user(
+        ctx.bus,
         conn,
         user_id,
         topic_id,
@@ -1810,6 +1815,7 @@ async fn create_topic(
     };
     for &recipient in allowed.iter().filter(|&&u| u != -1 && u != user_id) {
         change_topic_user(
+            ctx.bus,
             conn,
             recipient,
             topic_id,
@@ -1834,8 +1840,15 @@ async fn create_topic(
                     .unwrap_or_default(),
             ])));
         }
-        super::group_messages::apply_default_levels(conn, group.id, topic_id, Some(user_id), false)
-            .await?;
+        super::group_messages::apply_default_levels(
+            ctx.bus,
+            conn,
+            group.id,
+            topic_id,
+            Some(user_id),
+            false,
+        )
+        .await?;
     }
     // UserActionManager.topic_created: the row of the other kind goes; the
     // topic's (or the message's, with GOT_PRIVATE_MESSAGE for each

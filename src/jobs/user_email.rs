@@ -388,6 +388,7 @@ async fn send_user_email(
         .cloned()
         .unwrap_or(Value::Null);
     let built = notification::build(
+        posting.bus,
         &mut *conn,
         ctx,
         &Request {

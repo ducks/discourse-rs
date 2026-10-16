@@ -119,6 +119,7 @@ struct Recipient {
 
 /// `user_notifications.user_<type>` (`UserNotifications.<email_type>`).
 pub async fn build(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     ctx: &super::sender::Ctx<'_>,
     req: &Request<'_>,
@@ -469,6 +470,7 @@ pub async fn build(
 
     // TopicUser.change(last_emailed_post_number), and post.unsubscribe_url.
     crate::posting::change_topic_user(
+        bus,
         &mut *conn,
         req.user_id,
         post.topic_id,

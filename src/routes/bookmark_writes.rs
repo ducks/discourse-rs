@@ -123,7 +123,9 @@ async fn handle(
             bookmark_manager::update(&mut tx, &ctx, user_id, bookmark_id, &fields).await?
         }
         Action::TogglePin => bookmark_manager::toggle_pin(&mut tx, user_id, bookmark_id).await?,
-        Action::Destroy => bookmark_manager::destroy(&mut tx, user_id, bookmark_id).await?,
+        Action::Destroy => {
+            bookmark_manager::destroy(&state.bus, &mut tx, user_id, bookmark_id).await?
+        }
     };
     let ok = |body: Value| (StatusCode::OK, Json(body)).into_response();
     Ok(match outcome {

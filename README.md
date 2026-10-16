@@ -349,6 +349,14 @@ at 48px the mean difference from Rails' is under one level in 255. The
 version in the URL (`LetterAvatar.version`) hashes the renderer and font
 instead of ImageMagick's version, so it differs from Rails'.
 
+## Live updates
+
+Live updates go over pg-bus at `GET /bus/events` (server-sent events) and
+`GET /bus/poll` (long poll), with Discourse's channel names and payloads.
+MessageBus's `/message-bus/:client_id/poll` is not served: clients
+subscribe through /bus instead, see
+[docs/live-updates.md](docs/live-updates.md).
+
 ## Serving a backup
 
 ```bash

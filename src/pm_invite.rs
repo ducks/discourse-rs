@@ -192,6 +192,7 @@ pub async fn invite(
     .await?;
     // TopicUser.change: watching, so they hear of new posts.
     change_topic_user(
+        ctx.bus,
         &mut *conn,
         target,
         topic_id,
@@ -199,15 +200,6 @@ pub async fn invite(
             notification_levels::WATCHING,
             notification_reasons::USER_CHANGED,
         )],
-    )
-    .await?;
-    crate::bus::publish_notification_level_change(
-        ctx.bus,
-        &mut *conn,
-        target,
-        topic_id,
-        notification_levels::WATCHING,
-        Some(notification_reasons::USER_CHANGED),
     )
     .await?;
     // The small action, unless the message's author (not the inviter) is
@@ -532,7 +524,7 @@ pub async fn group_pm_alert(
         );
     }
     crate::posting::group_messages::apply_default_levels(
-        &mut *conn, group_id, topic_id, author, true,
+        ctx.bus, &mut *conn, group_id, topic_id, author, true,
     )
     .await?;
     let tracking: Vec<i32> = sqlx::query_scalar(

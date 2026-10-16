@@ -100,6 +100,7 @@ pub async fn can_send_to(
 /// already) gets their group level on the message (TopicNotifier, so the
 /// reason is user_changed); watching first post tracks.
 pub async fn apply_default_levels(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     group_id: i32,
     topic_id: i32,
@@ -136,6 +137,7 @@ pub async fn apply_default_levels(
             _ => notification_levels::TRACKING,
         };
         change_topic_user(
+            bus,
             conn,
             user_id,
             topic_id,

@@ -164,7 +164,9 @@ pub enum TopicUserAttr {
 
 /// `TopicUser.change(user_id, topic_id, attrs)`: update the row, or create
 /// it (`create_missing_record`) with the category/tag/auto-track level.
+/// Whenever that sets a level, `notification_level_change` tells the user.
 pub async fn change_topic_user(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
@@ -203,10 +205,36 @@ pub async fn change_topic_user(
     .execute(&mut *conn)
     .await?
     .rows_affected();
-    if updated > 0 {
-        return Ok(());
+    let level = if updated > 0 {
+        level
+    } else {
+        create_missing_record(conn, user_id, topic_id, attrs, level).await?
+    };
+    // create_missing_record fills in attrs' level, so the level it picks is
+    // announced too; a reason of 0 is none.
+    if let Some((l, reason)) = level {
+        crate::bus::publish_notification_level_change(
+            bus,
+            conn,
+            user_id,
+            topic_id,
+            l,
+            Some(reason).filter(|r| *r != 0),
+        )
+        .await?;
     }
+    Ok(())
+}
 
+/// `TopicUser.create_missing_record`: the row, with the level given or the
+/// one it picks, which it returns.
+async fn create_missing_record(
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+    attrs: &[TopicUserAttr],
+    level: Option<(i32, i32)>,
+) -> Result<Option<(i32, i32)>, AppError> {
     let mut columns: Vec<String> = Vec::new();
     let mut values: Vec<String> = Vec::new();
     for a in attrs {
@@ -258,7 +286,7 @@ pub async fn change_topic_user(
     .bind(topic_id)
     .execute(&mut *conn)
     .await?;
-    Ok(())
+    Ok(level)
 }
 
 /// `create_missing_record`'s level without one given: the watched or
@@ -350,6 +378,7 @@ async fn missing_record_level(
 
 /// `TopicUser.auto_notification`
 pub async fn auto_notification(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
@@ -368,6 +397,7 @@ pub async fn auto_notification(
     .await?;
     if should_change {
         change_topic_user(
+            bus,
             conn,
             user_id,
             topic_id,

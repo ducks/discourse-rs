@@ -206,6 +206,7 @@ pub async fn change_owner(
             notification_levels::TRACKING
         };
         change_topic_user(
+            ctx.bus,
             &mut *conn,
             new_owner.id,
             topic.id,
@@ -213,15 +214,6 @@ pub async fn change_owner(
                 TopicUserAttr::NotificationLevel(level, notification_reasons::USER_CHANGED),
                 TopicUserAttr::Posted(true),
             ],
-        )
-        .await?;
-        crate::bus::publish_notification_level_change(
-            ctx.bus,
-            &mut *conn,
-            new_owner.id,
-            topic.id,
-            level,
-            Some(notification_reasons::USER_CHANGED),
         )
         .await?;
 
