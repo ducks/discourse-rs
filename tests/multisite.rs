@@ -532,6 +532,36 @@ async fn a_path_hostname_picks_the_site() {
         "{}",
         location(&reply)
     );
+    let reply = client.get("/svg-sprite/b.example/svg-1-0.js").await;
+    assert_eq!(reply.status, StatusCode::FOUND);
+    assert!(
+        location(&reply).contains("/svg-sprite/b.example/svg-1-"),
+        "{}",
+        location(&reply)
+    );
+    // The current version is served, cached for a year.
+    let current = location(&reply);
+    let path = &current[current.find("/svg-sprite/").unwrap()..];
+    let reply = client.get(path).await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert_eq!(
+        reply.headers[header::CACHE_CONTROL],
+        "max-age=31556952, public, immutable"
+    );
+    assert!(
+        reply.body.starts_with("window.__svg_sprite = \"")
+            && reply.body.contains("<symbol id=\\\"bars\\\""),
+        "{}",
+        &reply.body[..80]
+    );
+    // Pages load it rather than inline it.
+    let page = client.get("/latest").await;
+    assert!(
+        page.body
+            .contains("<script src=\"/svg-sprite/test.localhost/svg-"),
+        "no sprite script"
+    );
+    assert!(!page.body.contains("<symbol id=\"bars\""), "sprite inlined");
     // The user_avatar route's shape is checked in multisite::tests.
 }
 

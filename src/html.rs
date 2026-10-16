@@ -251,6 +251,9 @@ pub struct Chrome {
     /// base path, and `autohighlight_all_code`.
     pub highlight_js_path: String,
     pub autohighlight_all_code: bool,
+    /// The chrome sprite's script with the base path
+    /// (crate::svg_sprite::chrome_path); empty inlines the sprite.
+    pub svg_sprite_path: String,
     /// What the cooked decorators read (cooked.js): the site settings
     /// that gate them and their strings, as JSON for a script element.
     pub cooked_config: String,
@@ -788,6 +791,14 @@ impl Site {
             )
         );
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
+        self.chrome.svg_sprite_path = format!(
+            "{}{}",
+            self.base_path,
+            crate::svg_sprite::chrome_path(
+                &urls.current_hostname()?,
+                settings.get("default_theme_id")?.to_i(),
+            )
+        );
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
         self.chrome.text_size = settings.get("default_text_size")?.to_s();
         // The member's options the chrome reads: text size, local dates and
