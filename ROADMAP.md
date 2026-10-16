@@ -795,11 +795,20 @@ then by what running a forum needs (milestone 6). Briefs:
     and the badge image's upload, the query section with its preview
     modal under enable_badge_sql, the grouping menu, the post header
     checkbox's dependency, submit and delete), AdminBadgesAward's CSV
-    upload, and the badges settings tab. Left: the email template editor
-    (moved to 90g7, with site texts' translation overrides),
+    upload, and the badges settings tab; `feat/admin-shell-plugins`:
+    /admin/plugins(.json) and /admin/plugins/:plugin_id(.json) from
+    vendor/discourse/config/admin_plugins.json (scripts/record-admin-plugins;
+    `enabled` read from each plugin's setting), the installed plugins list
+    (DFilterControls with the status dropdown, the enabled switch, the
+    settings links), and a plugin's settings page in
+    AdminPluginConfigPage. Left: the email template editor (moved to
+    90g7, with site texts' translation overrides),
     /svg-sprite/picker-search (SvgSprite.all_icons with the settings,
     badge, group, plugin and theme icons; the icon grid shows the page
-    error until then), installed plugins),
+    error until then), the configuration nav plugins' own admin pages
+    (refused as a page: chat, AI, automation, data explorer and the
+    rest the recording marks), saving a plugin's settings (the site
+    settings update refuses plugin settings)),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.
