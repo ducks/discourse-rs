@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/poll_enabled.json",
+      "params": {
+        "poll_enabled": "false"
+      }
+    }
+  ]
+}
