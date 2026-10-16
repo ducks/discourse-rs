@@ -1915,8 +1915,13 @@ route table has been made, so this list may be short.
     refreshes the staff groups. Left: the invite modals (create, edit,
     bulk) and the avatar picker while signing up, which say they are
     not ported; invites past the first page (DLoadMore)
-    192e. `feat/invites-bulk` S: POST /invites/upload_csv,
-    Jobs::BulkInvite and ProcessBulkInviteEmails
+    192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
+    (the header row or the email, groups, topic_id columns,
+    max_bulk_invites), Jobs::BulkInvite (groups by name the admin may
+    edit, the topic, existing users added to the groups, the
+    bulk_invite_succeeded or _failed message with its log) and
+    ProcessBulkInviteEmails. Refused: user fields and locales in the CSV
+    (staged users for them), the bulk upload modal on the Invites tab
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a
     compatibility layer, not a gap in the port's own pages, which get
     live updates over pg-bus's /bus already (MessageBus on pg-bus, so

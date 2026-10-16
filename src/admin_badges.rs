@@ -854,7 +854,7 @@ pub enum Csv {
     Malformed(usize),
 }
 
-/// One row's first field as Ruby's CSV parses it (strict, quote `"`,
+/// Rows as Ruby's CSV parses them (strict, quote `"`,
 /// comma separated): None for an empty unquoted field. `Err` is the
 /// malformation.
 struct Rows<'a> {
@@ -863,7 +863,7 @@ struct Rows<'a> {
 }
 
 enum Row {
-    First(Option<String>),
+    Fields(Vec<Option<String>>),
     Malformed,
 }
 
@@ -887,7 +887,7 @@ impl Rows<'_> {
     /// The next row, None at the end.
     fn next_row(&mut self) -> Option<Row> {
         self.chars.peek()?;
-        let mut first: Option<Option<String>> = None;
+        let mut fields: Vec<Option<String>> = Vec::new();
         loop {
             // A field.
             let mut value: Option<String> = None;
@@ -937,14 +937,37 @@ impl Rows<'_> {
                     value = Some(text);
                 }
             }
-            if first.is_none() {
-                first = Some(value);
-            }
+            fields.push(value);
             if ended_row {
-                return Some(Row::First(first.flatten()));
+                return Some(Row::Fields(fields));
             }
         }
     }
+}
+
+/// `CSV.foreach(file, encoding: "bom|utf-8")`: each row's fields (None
+/// for an empty unquoted one); None when a row is malformed.
+pub fn csv_rows(bytes: &[u8]) -> Result<Option<Vec<Vec<Option<String>>>>, AppError> {
+    let text =
+        std::str::from_utf8(bytes).map_err(|_| Unsupported("CSV files that aren't UTF-8"))?;
+    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
+    let sep = match text.find(['\r', '\n']) {
+        Some(i) if text[i..].starts_with("\r\n") => "\r\n",
+        Some(i) if text[i..].starts_with('\r') => "\r",
+        _ => "\n",
+    };
+    let mut rows = Rows {
+        chars: text.chars().peekable(),
+        sep,
+    };
+    let mut out = Vec::new();
+    while let Some(row) = rows.next_row() {
+        match row {
+            Row::Malformed => return Ok(None),
+            Row::Fields(fields) => out.push(fields),
+        }
+    }
+    Ok(Some(out))
 }
 
 /// `CSV.foreach(file) { |row| row.first&.strip }` as the mass award
@@ -974,7 +997,7 @@ pub fn read_csv(bytes: &[u8]) -> Result<Csv, AppError> {
         line += 1;
         let first = match row {
             Row::Malformed => return Ok(Csv::Malformed(line)),
-            Row::First(first) => first,
+            Row::Fields(fields) => fields.into_iter().next().flatten(),
         };
         let Some(first) = first else {
             continue;

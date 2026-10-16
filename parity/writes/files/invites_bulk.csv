@@ -1,0 +1,5 @@
+email,groups,topic_id
+bulk1@example.com,testers,35
+user0@example.com,testers,
+bad-email,,
+bulk2@example.com,nogroup;testers,9999

@@ -536,6 +536,11 @@ fn unrandom(s: &str) -> String {
         regex::Regex::new(r"/u/password-reset/[0-9a-f]{32}\b").unwrap()
     });
     let s = RESET_TOKEN.replace_all(&s, "/u/password-reset/<hex>");
+    // Jobs::BulkInvite's log lines, stamped `[Time.now]` to the second.
+    static LOG_TIME: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000\]").unwrap()
+    });
+    let s = LOG_TIME.replace_all(&s, "[<log time>]");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");

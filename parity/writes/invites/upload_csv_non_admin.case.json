@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/upload_csv.json",
+      "params": {
+        "file": {
+          "fixture": "invites_bulk_plain.csv"
+        }
+      }
+    }
+  ]
+}

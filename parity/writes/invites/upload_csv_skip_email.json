@@ -1,0 +1,472 @@
+{
+  "name": "upload_csv_skip_email",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/upload_csv.json",
+      "params": {
+        "file": {
+          "fixture": "invites_bulk_plain.csv"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T07:59:06.380214",
+  "transaction_started_at": "2026-10-16T07:59:05.191913",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 2,
+          "created_at": "2026-10-16T07:59:06.425291",
+          "updated_at": "2026-10-16T07:59:06.425291"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "plain1@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T07:59:06.411844",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T07:59:06.409171",
+          "invite_key": "N3SRcsm4rV",
+          "updated_at": "2026-10-16T07:59:06.411844",
+          "description": null,
+          "email_token": "4a9adb31f901e2aae88bc1c0a69953d9",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        },
+        {
+          "id": 2,
+          "admin": false,
+          "email": "plain2@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T07:59:06.422339",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T07:59:06.418552",
+          "invite_key": "nAhcMisnCM",
+          "updated_at": "2026-10-16T07:59:06.422339",
+          "description": null,
+          "email_token": "a264f47f0a79d87a50fa14ad10f1689d",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Your bulk user invite file was processed, 2 invites mailed, 0 skipped and 0 warning(s). Skipped Invites for Emails:",
+          "search_data": "'0':16,19 '2':13 'bulk':1A,7 'email':25 'file':10 'invit':3A,9,14,23 'mail':15 'process':4A,12 'skip':17,22 'success':5A 'user':2A,8 'warn':20",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-16T07:59:06.496698",
+          "updated_at": "2026-10-16T07:59:06.496698",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Your bulk user invite file was processed, 2 invites mailed, 0 skipped and 0 warning(s).\n\nSkipped Invites for Emails:\n\n``` text\n\n```\n\n``` text\n\n```",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Your bulk user invite file was processed, 2 invites mailed, 0 skipped and 0 warning(s).</p>\n<p>Skipped Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">\n</code></pre>\n<pre><code class=\"lang-plaintext\">\n</code></pre>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-16T07:59:06.467837",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-16T07:59:06.467894",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T07:59:06.467894",
+          "word_count": 22,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-16T07:59:06.494757",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-16T07:59:06.442863",
+          "updated_at": "2026-10-16T07:59:06.442863"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-16T07:59:06.444696",
+          "updated_at": "2026-10-16T07:59:06.444696"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Bulk user invite processed successfully Your bulk user invite file was processed, 2 invites mailed, 0 skipped and 0 warning(s). Skipped Invites for Emails:",
+          "topic_id": 45,
+          "search_data": "'0':16B,19B '2':13B 'bulk':1A,7B 'email':25B 'file':10B 'invit':3A,9B,14B,23B 'mail':15B 'process':4A,12B 'skip':17B,22B 'success':5A 'user':2A,8B 'warn':20B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-16T07:59:06.454311",
+          "first_visited_at": "2026-10-16T07:59:06.454311",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T07:59:06.453716"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-16T07:59:06.499503",
+          "last_visited_at": "2026-10-16T07:59:06.449598",
+          "first_visited_at": "2026-10-16T07:59:06.449598",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T07:59:06.448861"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "bulk-user-invite-processed-successfully",
+          "score": null,
+          "title": "Bulk user invite processed successfully",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Your bulk user invite file was processed, 2 invites mailed, 0 skipped and 0 warning(s). \nSkipped Invites for Emails:",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-16T07:59:06.467894",
+          "pinned_at": null,
+          "created_at": "2026-10-16T07:59:06.439761",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T07:59:06.502056",
+          "word_count": 22,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Bulk user invite processed successfully",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-16T07:59:06.467894",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-16T07:59:06.439761",
+          "updated_at": "2026-10-16T07:59:06.459683",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 1,
+          "created_at": "2026-10-16T07:59:06.439761",
+          "updated_at": "2026-10-16T07:59:06.463877",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 365,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AH7JyFYt9enNqlJasgUjDEkrpMM=",
+            "created_at": "2026-10-16T07:59:05.555878",
+            "rotated_at": "2026-10-16T07:59:05.554895",
+            "updated_at": "2026-10-16T07:59:05.555878",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "AH7JyFYt9enNqlJasgUjDEkrpMM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 365,
+            "seen_at": "2026-10-16T07:59:06.389653",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AH7JyFYt9enNqlJasgUjDEkrpMM=",
+            "created_at": "2026-10-16T07:59:05.555878",
+            "rotated_at": "2026-10-16T07:59:05.554895",
+            "updated_at": "2026-10-16T07:59:05.555878",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "AH7JyFYt9enNqlJasgUjDEkrpMM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bulk_invite",
+      {
+        "invites": [
+          {
+            "email": "plain1@example.com"
+          },
+          {
+            "email": "plain2@example.com",
+            "groups": "testers"
+          }
+        ],
+        "current_user_id": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "invited_groups": 1,
+    "invites": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "settings": {
+    "skip_email_bulk_invites": true
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "jobs_from_jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "b59be2a88baabca09b235c9c27729ab6b5560f612136eb4aede10e0760a9671c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
