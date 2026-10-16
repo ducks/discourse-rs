@@ -1,0 +1,80 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "keep_headers": ["Location"],
+  "fragment": ["<h1>", "</p>"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "the-wrong-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "ext-1",
+          "email": "someone@example.com"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login?sso=not%20base64!&sig=abc",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""}
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "not-the-nonce",
+          "external_id": "ext-1",
+          "email": "someone@example.com"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "",
+          "email": "someone@example.com"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "ext-1",
+          "email": "someone@example.com"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login?sso=abc"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location"
+  ]
+}

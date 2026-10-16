@@ -85,15 +85,12 @@ impl Payloads<'_> {
     /// emails for its admin scope, the SSO external id.
     pub async fn user(&self, conn: &mut PgConnection, user_id: i32) -> Result<Value, AppError> {
         let full = self.user_serializer(&mut *conn, user_id).await?;
-        let sso: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
-        )
-        .bind(user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if sso {
-            return Err(Unsupported("external_id in web hook payloads (DiscourseConnect)").into());
-        }
+        // include_external_id?: the system user's admin scope and a record.
+        let external_id: Option<String> =
+            sqlx::query_scalar("SELECT external_id FROM single_sign_on_records WHERE user_id = $1")
+                .bind(user_id)
+                .fetch_optional(&mut *conn)
+                .await?;
         let (email, secondary): (Option<String>, Vec<String>) = sqlx::query_as(
             "SELECT (SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\" LIMIT 1), \
                     ARRAY(SELECT email FROM user_emails WHERE user_id = $1 AND NOT \"primary\" ORDER BY ctid)",
@@ -102,10 +99,20 @@ impl Payloads<'_> {
         .fetch_one(&mut *conn)
         .await?;
         let mut out = Map::new();
+        // The subclass's own attribute comes after UserSerializer's, before
+        // its associations.
+        let mut external_id = external_id;
         for (key, value) in full {
             if USER_LEFT_OUT.contains(&key.as_str()) || key == "email" || key == "secondary_emails"
             {
                 continue;
+            }
+            if matches!(
+                key.as_str(),
+                "invited_by" | "groups" | "user_option" | "featured_user_badge_ids"
+            ) && let Some(id) = external_id.take()
+            {
+                out.insert("external_id".into(), json!(id));
             }
             let after_avatar = key == "avatar_template";
             out.insert(key, value);
@@ -113,6 +120,9 @@ impl Payloads<'_> {
                 out.insert("email".into(), json!(email));
                 out.insert("secondary_emails".into(), json!(secondary));
             }
+        }
+        if let Some(id) = external_id {
+            out.insert("external_id".into(), json!(id));
         }
         Ok(Value::Object(out))
     }

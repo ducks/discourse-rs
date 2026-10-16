@@ -129,14 +129,19 @@ pub async fn resolve(
                     .fetch_optional(&mut *conn)
                     .await?
             }
-            (None, None) => {
-                if header(headers, "api-user-external-id").is_some() {
-                    return Err(
-                        Unsupported("API requests by external id (DiscourseConnect)").into(),
-                    );
+            (None, None) => match header(headers, "api-user-external-id") {
+                // SingleSignOnRecord.find_by(external_id:).user
+                Some(external_id) => {
+                    sqlx::query_as(&format!(
+                        "{select} WHERE id = (SELECT user_id FROM single_sign_on_records \
+                         WHERE external_id = $1 LIMIT 1)"
+                    ))
+                    .bind(external_id)
+                    .fetch_optional(&mut *conn)
+                    .await?
                 }
-                None
-            }
+                None => None,
+            },
         },
     };
     let Some(user) = user else {

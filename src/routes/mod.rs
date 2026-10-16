@@ -31,6 +31,7 @@ pub(crate) mod composer;
 mod deleted_posts;
 mod directory;
 mod directory_columns;
+mod discourse_connect;
 mod do_not_disturb;
 mod drafts;
 mod email;
@@ -1240,6 +1241,27 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/trust_level_lock.json",
             put(admin_users::trust_level_lock),
         )
+        .route(
+            "/admin/users/{user_id}/sso_record",
+            delete(discourse_connect::destroy_sso_record),
+        )
+        .route(
+            "/admin/users/{user_id}/sso_record.json",
+            delete(discourse_connect::destroy_sso_record),
+        )
+        .route(
+            "/admin/users/{user_id}/delete_associated_accounts",
+            put(discourse_connect::delete_associated_accounts),
+        )
+        .route(
+            "/admin/users/{user_id}/delete_associated_accounts.json",
+            put(discourse_connect::delete_associated_accounts),
+        )
+        .route("/admin/users/sync_sso", post(discourse_connect::sync_sso))
+        .route(
+            "/admin/users/sync_sso.json",
+            post(discourse_connect::sync_sso),
+        )
         .route("/admin/users/{user_id}/log_out", post(admin_users::log_out))
         .route(
             "/admin/users/{user_id}/log_out.json",
@@ -1934,6 +1956,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/users/confirm-admin/{token}",
             get(admin_users::confirm_admin).post(admin_users::confirm_admin),
         )
+        .route("/session/sso", get(discourse_connect::sso))
+        .route("/session/sso_login", get(discourse_connect::sso_login))
+        .route(
+            "/session/sso_provider",
+            get(discourse_connect::sso_provider),
+        )
         .route("/session/csrf", get(session::csrf))
         .route("/session/csrf.json", get(session::csrf))
         .route("/session/current", get(session::current))
@@ -2306,6 +2334,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
     // The session confirmation and second factor routes under both user
     // roots, each with its .json twin.
     for root in ["/u", "/users"] {
+        // users#show by external id: `.json` stays on the id (the route's
+        // `[^/]+` takes it) and asks for JSON.
+        router = router
+            .route(
+                &format!("{root}/by-external/{{external_id}}"),
+                get(users::show_by_external),
+            )
+            .route(
+                &format!("{root}/by-external/{{external_provider}}/{{external_id}}"),
+                get(users::show_by_external),
+            );
         for ext in ["", ".json"] {
             router = router
                 .route(

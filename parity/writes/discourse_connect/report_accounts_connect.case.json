@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at) VALUES (9491, 3, 'ext-r1', 'x', now(), now()), (9492, 4, 'ext-r2', 'x', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/associated_accounts_by_provider.json"}
+  ]
+}

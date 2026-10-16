@@ -1,0 +1,72 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9441, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'all users', encode(sha256(convert_to('connect-9441', 'UTF8')), 'hex'), 'conn', NULL, NULL, false)",
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9442, 4, 'ext-user2-api', 'external_id=ext-user2-api', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json",
+      "headers": {
+        "Api-Key": "connect-9441",
+        "Api-User-External-Id": "ext-user2-api"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user2.json",
+      "headers": {
+        "Api-Key": "connect-9441",
+        "Api-Username": "admin"
+      },
+      "params": {
+        "external_ids": {
+          "discourse_connect": "ext-user2-moved"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user3.json",
+      "headers": {
+        "Api-Key": "connect-9441",
+        "Api-Username": "admin"
+      },
+      "params": {
+        "external_ids": {
+          "discourse_connect": "ext-user3-new"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user3.json",
+      "headers": {
+        "Api-Key": "connect-9441",
+        "Api-Username": "admin"
+      },
+      "params": {
+        "external_ids": {
+          "github": "123"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/users/4.json",
+      "headers": {
+        "Api-Key": "connect-9441",
+        "Api-Username": "admin"
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/current_user/user_option/treat_as_new_topic_start_date"
+  ]
+}

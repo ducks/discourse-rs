@@ -15,7 +15,7 @@ use serde_json::json;
 use crate::html::Chrome;
 use crate::html::Crawler;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// Paths served without a session even when login is required: the
 /// controllers that `skip_before_action :redirect_to_login_if_required`,
@@ -39,6 +39,8 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/uploads/")
         // EmailController
         || path.starts_with("/email/unsubscribe")
+        // OmniAuth's middleware and Users::OmniauthCallbacksController
+        || path.starts_with("/auth/")
         // UserApiKeysController#new, #otp, #activate and the device
         // request and poll (create_otp needs a login of its own).
         || matches!(
@@ -116,36 +118,27 @@ pub async fn gate(
     }
     let headers: HeaderMap = request.extract_parts().await?;
     let uri: Uri = request.uri().clone();
-    if path == "/" || path == "/login" {
-        check_auth_immediately(&settings)?;
+    if path == "/login" {
         return login_page(&state, &settings, &headers, &uri).await;
     }
-    redirect_to_login(&state, &settings, &headers, &uri)
-}
-
-/// redirect_to_login's auth_immediately branches send readers straight to
-/// DiscourseConnect, or to the only external login when local logins are
-/// off; neither exists here yet.
-fn check_auth_immediately(settings: &SiteSettings) -> Result<(), AppError> {
-    if settings.get("auth_immediately")?.truthy()
-        && (settings.get("enable_discourse_connect")?.truthy()
-            || !settings.get("enable_local_logins")?.truthy())
-    {
-        return Err(
-            Unsupported("auth_immediately (DiscourseConnect or single external login)").into(),
-        );
+    match redirect_to_login(&state, &settings, &headers, &uri).await? {
+        Some(response) => Ok(response),
+        // The front page renders the login page itself.
+        None => login_page(&state, &settings, &headers, &uri).await,
     }
-    Ok(())
 }
 
-/// `ApplicationController#redirect_to_login` away from the front page.
-pub(super) fn redirect_to_login(
+/// `ApplicationController#redirect_to_login`: straight to DiscourseConnect
+/// (the url kept in the server session), or to the only external login
+/// when local logins are off (unless a signup through it is under way),
+/// else to /login with the url in the destination_url cookie. None for
+/// the front page, which shows the login page itself.
+pub(super) async fn redirect_to_login(
     state: &AppState,
     settings: &SiteSettings,
     headers: &HeaderMap,
     uri: &Uri,
-) -> Result<Response, AppError> {
-    check_auth_immediately(settings)?;
+) -> Result<Option<Response>, AppError> {
     let base_path = state.config.globals.relative_url_root();
     let host = headers
         .get(header::HOST)
@@ -155,22 +148,69 @@ pub(super) fn redirect_to_login(
         "http://{host}{}",
         uri.path_and_query().map(|p| p.as_str()).unwrap_or("/")
     );
-    // `cookies[:destination_url] = destination_url`; javascript redirects
-    // there after login.
-    let cookie = format!(
+    let destination_cookie = format!(
         "destination_url={}; path=/; SameSite=Lax",
         form_urlencoded::byte_serialize(original_url.as_bytes()).collect::<String>()
     );
-    Ok((
-        StatusCode::FOUND,
-        [
-            (header::LOCATION, format!("http://{host}{base_path}/login")),
-            (header::SET_COOKIE, cookie),
-            (header::CACHE_CONTROL, "no-cache, no-store".to_string()),
-        ],
-        Body::empty(),
-    )
-        .into_response())
+    let redirect = |location: String, cookies: Vec<String>| -> Result<Response, AppError> {
+        let mut response = (
+            StatusCode::FOUND,
+            [
+                (header::LOCATION, location),
+                (header::CACHE_CONTROL, "no-cache, no-store".to_string()),
+            ],
+            Body::empty(),
+        )
+            .into_response();
+        for c in cookies {
+            response
+                .headers_mut()
+                .append(header::SET_COOKIE, HeaderValue::from_str(&c)?);
+        }
+        Ok(response)
+    };
+    let authentication_data =
+        crate::session::current::cookie(headers, "authentication_data").is_some();
+    let auth_immediately = settings.get("auth_immediately")?.truthy();
+    if auth_immediately && settings.get("enable_discourse_connect")?.truthy() {
+        // server_session[:destination_url] = destination_url
+        let mut session = crate::session::forum::load_forum_session(state, headers);
+        let session_id = session.server_session_id();
+        let mut conn = state.pool.acquire().await?;
+        crate::session::server::set(
+            &mut conn,
+            &session_id,
+            "destination_url",
+            &json!(original_url),
+            crate::session::server::EXPIRY_SECONDS,
+        )
+        .await?;
+        let cookies = session.set_cookie(state, settings)?.into_iter().collect();
+        return Ok(Some(redirect(
+            format!("http://{host}{base_path}/session/sso"),
+            cookies,
+        )?));
+    }
+    if auth_immediately && !settings.get("enable_local_logins")?.truthy() && !authentication_data {
+        let enabled = crate::auth::enabled(settings)?;
+        if let [only] = enabled.as_slice() {
+            return Ok(Some(redirect(
+                format!("http://{host}{base_path}/auth/{}", only.name),
+                vec![destination_cookie],
+            )?));
+        }
+    }
+    let front =
+        uri.path() == format!("{base_path}/") || (base_path.is_empty() && uri.path() == "/");
+    if front && !authentication_data {
+        return Ok(None);
+    }
+    // `cookies[:destination_url] = destination_url`; javascript redirects
+    // there after login.
+    Ok(Some(redirect(
+        format!("http://{host}{base_path}/login"),
+        vec![destination_cookie],
+    )?))
 }
 
 /// Marks a `not_logged_in` response, which a page request (a GET that is
@@ -217,9 +257,10 @@ pub struct LoginRequiredPage {
     /// Username and password logins are on (the form); external logins are
     /// not ported.
     pub local_logins: bool,
+    /// DiscourseConnect is on: the login route sends the browser to it.
+    pub discourse_connect: bool,
     pub csrf_token: String,
 }
-
 /// The login page: what `/login` shows, and what the front page shows
 /// while login is required.
 pub async fn login_page(
@@ -267,7 +308,9 @@ pub async fn login_page(
         base_path: site.base_path,
         welcome: welcome.trim_start_matches("# ").to_string(),
         login_required: settings.get("login_required")?.truthy(),
-        local_logins: settings.get("enable_local_logins")?.truthy(),
+        local_logins: settings.get("enable_local_logins")?.truthy()
+            && !settings.get("enable_discourse_connect")?.truthy(),
+        discourse_connect: settings.get("enable_discourse_connect")?.truthy(),
         csrf_token,
     };
     let mut response = (

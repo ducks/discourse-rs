@@ -1,0 +1,43 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true,
+    "email_editable": false,
+    "auth_overrides_email": true,
+    "discourse_connect_overrides_bio": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9401, 4, 'ext-user2', 'old', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two')",
+    "INSERT INTO groups (id, name, created_at, updated_at, automatic, user_count, visibility_level) VALUES (9411, 'connected', now() - interval '2 days', now() - interval '2 days', false, 0, 0), (9412, 'leaving', now() - interval '2 days', now() - interval '2 days', false, 1, 0)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (9412, 4, now() - interval '2 days', now() - interval '2 days', 3)"
+  ],
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "ext-user2",
+          "email": "user2.moved@example.com",
+          "username": "user2",
+          "bio": "Hello from **connect**",
+          "add_groups": "Connected,missing",
+          "remove_groups": "leaving"
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/changes/single_sign_on_records/updated/*/after/last_payload"
+  ]
+}

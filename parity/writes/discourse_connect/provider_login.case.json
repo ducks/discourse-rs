@@ -1,0 +1,44 @@
+{
+  "user": null,
+  "settings": {
+    "enable_discourse_connect_provider": true,
+    "discourse_connect_provider_secrets": "provider.example.com|prov-secret",
+    "discourse_connect_provider_claims": "name|email|groups"
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-none",
+          "return_sso_url": "https://provider.example.com/sso_return",
+          "prompt": "none"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-login",
+          "return_sso_url": "https://provider.example.com/sso_return"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user2",
+        "password": "password"
+      }
+    }
+  ]
+}

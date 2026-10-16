@@ -1,0 +1,76 @@
+{
+  "user": "admin",
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true,
+    "auth_overrides_username": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9481, 4, 'ext-user2-sync', 'old', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/sync_sso.json",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "external_id": "ext-synced-new",
+          "email": "synced.person@example.com",
+          "username": "synced",
+          "name": "Synced Person",
+          "title": "Synced"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/sync_sso.json",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "external_id": "ext-user2-sync",
+          "email": "user2@example.com",
+          "username": "user2_renamed"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/sync_sso.json",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "external_id": "",
+          "email": "blank@example.com"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/sync_sso.json",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "external_id": "NULL",
+          "email": "banned@example.com"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/sync_sso.json",
+      "discourse_connect": {
+        "secret": "not-the-secret",
+        "fields": {
+          "external_id": "ext-1",
+          "email": "badsig@example.com"
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/changes/single_sign_on_records/inserted/*/last_payload"
+  ]
+}

@@ -358,21 +358,89 @@ pub async fn create(
         })));
     }
 
-    // The insert and the after_create callbacks.
+    let user_id = insert_user(
+        &mut *conn,
+        settings,
+        &payloads,
+        &NewUser {
+            username: s.username,
+            name: s.name,
+            email: &email,
+            password: s.password,
+            active: false,
+            locale: Some(s.locale.filter(|l| !l.is_empty()).unwrap_or("en")),
+            ip: Some(s.ip),
+            custom_fields: &custom_fields,
+        },
+    )
+    .await?;
+
+    // activation.finish: EmailActivator.
+    let token =
+        accounts::create_email_token(&mut *conn, user_id, &email, token_scopes::SIGNUP).await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "critical_user_email",
+        json!({"type": "signup", "user_id": user_id, "email_token": token, "to_address": null}),
+    )
+    .await?;
+    accounts::update_timezone_if_missing(&mut *conn, user_id, s.timezone).await?;
+    let message = i18n
+        .t_with(
+            "login.activate_email",
+            &[("email", &html_escape::encode_text(&email))],
+        )
+        .unwrap_or_default();
+    let mut body = json!({"success": true, "active": false, "message": message});
+    if !settings.get("hide_email_address_taken")?.truthy() {
+        body["user_id"] = json!(user_id);
+    }
+    Ok(Created::Signed { user_id, body })
+}
+
+/// A user record to save (`User.new(...).save!` past its validations).
+pub struct NewUser<'a> {
+    pub username: &'a str,
+    pub name: Option<&'a str>,
+    /// The primary email, downcased.
+    pub email: &'a str,
+    pub password: Option<&'a str>,
+    pub active: bool,
+    pub locale: Option<&'a str>,
+    /// `ip_address` and `registration_ip_address`.
+    pub ip: Option<&'a str>,
+    /// `user_field_*` custom fields, saved after the record.
+    pub custom_fields: &'a [(String, Value)],
+}
+
+/// `user.save!` for a new user: the insert, the after_create callbacks
+/// (email token, stats, options, profile, random avatar, trust level
+/// group, default category, tag and sidebar preferences), after_save's
+/// custom fields, avatar refresh and search index, and after_commit's
+/// user_created hooks and group counts. The new user's id.
+pub async fn insert_user(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    payloads: &crate::web_hooks::Payloads<'_>,
+    u: &NewUser<'_>,
+) -> Result<i32, AppError> {
+    let email = u.email;
+    let normalized = normalize_email(email);
+    let custom_fields = u.custom_fields;
     let trust_level = settings.get("default_trust_level")?.to_i() as i32;
-    let locale = s.locale.filter(|l| !l.is_empty()).unwrap_or("en");
     let user_id: i32 = sqlx::query_scalar(
         "INSERT INTO users (username, username_lower, name, active, approved, trust_level, ip_address, \
                             registration_ip_address, locale, created_at, updated_at) \
-         VALUES ($1, $2, $3, FALSE, FALSE, $4, $5::inet, $5::inet, $6, clock_timestamp(), clock_timestamp()) \
+         VALUES ($1, $2, $3, $7, FALSE, $4, $5::inet, $5::inet, $6, clock_timestamp(), clock_timestamp()) \
          RETURNING id",
     )
-    .bind(s.username)
-    .bind(accounts::normalize_username(s.username)?)
-    .bind(s.name)
+    .bind(u.username)
+    .bind(accounts::normalize_username(u.username)?)
+    .bind(u.name)
     .bind(trust_level)
-    .bind(s.ip)
-    .bind(locale)
+    .bind(u.ip)
+    .bind(u.locale)
+    .bind(u.active)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(
@@ -380,15 +448,15 @@ pub async fn create(
          VALUES ($1, $2, TRUE, $3, clock_timestamp(), clock_timestamp())",
     )
     .bind(user_id)
-    .bind(&email)
+    .bind(email)
     .bind(&normalized)
     .execute(&mut *conn)
     .await?;
-    if let Some(password) = s.password {
+    if let Some(password) = u.password {
         accounts::set_password(&mut *conn, user_id, password).await?;
     }
     // create_email_token (then replaced by the activation email's)
-    accounts::create_email_token(&mut *conn, user_id, &email, token_scopes::SIGNUP).await?;
+    accounts::create_email_token(&mut *conn, user_id, email, token_scopes::SIGNUP).await?;
     sqlx::query("INSERT INTO user_stats (user_id, new_since) VALUES ($1, clock_timestamp())")
         .bind(user_id)
         .execute(&mut *conn)
@@ -442,13 +510,13 @@ pub async fn create(
             avatar_id = Some(id);
         }
     }
-    let joined = ensure_in_trust_level_group(&mut *conn, &payloads, user_id, trust_level).await?;
+    let joined = ensure_in_trust_level_group(&mut *conn, payloads, user_id, trust_level).await?;
     default_category_and_tag_preferences(&mut *conn, settings, user_id).await?;
     default_sidebar_links(&mut *conn, settings, user_id).await?;
     // after_save: save_custom_fields (HasCustomFields, included first),
     // refresh_avatar (the avatar row and its gravatar job), then the
     // search index.
-    for (key, value) in &custom_fields {
+    for (key, value) in custom_fields {
         crate::user_fields::save_custom_field(&mut *conn, user_id, key, value).await?;
     }
     let avatar_id: i32 = match avatar_id {
@@ -466,17 +534,17 @@ pub async fn create(
     if settings.get("automatically_download_gravatars")?.truthy() {
         enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
     }
-    let username_lower = accounts::normalize_username(s.username)?;
+    let username_lower = accounts::normalize_username(u.username)?;
     crate::posting::search_index::index_user(
         &mut *conn,
         settings,
         user_id,
         &username_lower,
-        s.name,
+        u.name,
     )
     .await?;
     // after_commit: user_created's web hooks.
-    crate::web_hooks::enqueue_user_hooks(&mut *conn, &payloads, "user_created", user_id).await?;
+    crate::web_hooks::enqueue_user_hooks(&mut *conn, payloads, "user_created", user_id).await?;
     // The group users' after_commit (GroupManager#sync_add_side_effects),
     // after the user's: the groups' counts, so user_created's payload has
     // them as they were.
@@ -486,28 +554,7 @@ pub async fn create(
             .execute(&mut *conn)
             .await?;
     }
-
-    // activation.finish: EmailActivator.
-    let token =
-        accounts::create_email_token(&mut *conn, user_id, &email, token_scopes::SIGNUP).await?;
-    crate::jobs::enqueue(
-        &mut *conn,
-        "critical_user_email",
-        json!({"type": "signup", "user_id": user_id, "email_token": token, "to_address": null}),
-    )
-    .await?;
-    accounts::update_timezone_if_missing(&mut *conn, user_id, s.timezone).await?;
-    let message = i18n
-        .t_with(
-            "login.activate_email",
-            &[("email", &html_escape::encode_text(&email))],
-        )
-        .unwrap_or_default();
-    let mut body = json!({"success": true, "active": false, "message": message});
-    if !settings.get("hide_email_address_taken")?.truthy() {
-        body["user_id"] = json!(user_id);
-    }
-    Ok(Created::Signed { user_id, body })
+    Ok(user_id)
 }
 
 fn humanize(attr: &str) -> String {

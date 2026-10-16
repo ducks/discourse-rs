@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "settings": {
+    "github_client_id": "ghclient1",
+    "github_client_secret": "abc123",
+    "enable_github_logins": true,
+    "oauth2_client_id": "oauth2-client",
+    "oauth2_client_secret": "oauth2-secret",
+    "oauth2_authorize_url": "https://idp.example.com/authorize",
+    "oauth2_token_url": "https://idp.example.com/token",
+    "oauth2_enabled": true,
+    "openid_connect_discovery_document": "https://idp.example.com/.well-known/openid-configuration",
+    "openid_connect_client_id": "oidc-client",
+    "openid_connect_client_secret": "oidc-secret",
+    "openid_connect_enabled": true
+  },
+  "setup": [
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9481, 'github', 'gh-1', 3, now(), '{}', '{}', '{}', now(), now()), (9482, 'github', 'gh-2', 4, now(), '{}', '{}', '{}', now(), now()), (9483, 'oidc', 'oidc-1', 4, now(), '{}', '{}', '{}', now(), now()), (9484, 'facebook', 'fb-1', 5, now(), '{}', '{}', '{}', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/associated_accounts_by_provider.json"}
+  ]
+}

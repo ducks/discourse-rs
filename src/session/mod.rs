@@ -5,6 +5,7 @@ pub mod cookie;
 pub mod csrf;
 pub mod current;
 pub mod forum;
+pub mod login;
 pub mod server;
 pub mod token;
 pub mod user_api_key;

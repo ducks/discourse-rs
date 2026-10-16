@@ -750,27 +750,22 @@ pub async fn next_best_title(
 /// `Discourse.system_user`
 const SYSTEM_USER_ID: i32 = -1;
 
-/// `User#email_confirmed?`: a confirmed token for the primary email, or
-/// no tokens at all (a DiscourseConnect record's external email is
-/// refused).
+/// `User#email_confirmed?`: a confirmed token for the primary email, no
+/// tokens at all, or the email the DiscourseConnect record has.
 pub async fn email_confirmed(conn: &mut PgConnection, user_id: i32) -> Result<bool, AppError> {
     let (confirmed, none, sso): (bool, bool, bool) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM email_tokens t JOIN user_emails e ON e.user_id = t.user_id \
                           AND e.primary AND t.email = e.email \
                         WHERE t.user_id = $1 AND t.confirmed), \
                 NOT EXISTS (SELECT 1 FROM email_tokens WHERE user_id = $1), \
-                EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
+                EXISTS (SELECT 1 FROM single_sign_on_records r JOIN user_emails e \
+                          ON e.user_id = r.user_id AND e.primary \
+                        WHERE r.user_id = $1 AND lower(r.external_email) = e.email)",
     )
     .bind(user_id)
     .fetch_one(&mut *conn)
     .await?;
-    if confirmed || none {
-        return Ok(true);
-    }
-    if sso {
-        return Err(Unsupported("email confirmation through DiscourseConnect").into());
-    }
-    Ok(false)
+    Ok(confirmed || none || sso)
 }
 
 /// `User#set_automatic_groups`: an active, unstaged, confirmed user added

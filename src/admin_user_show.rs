@@ -3,8 +3,8 @@
 //! trust level 3 requirements, the user's groups and how upcoming changes
 //! apply to them.
 //!
-//! Refused: user fields, a DiscourseConnect record, associated accounts, a
-//! recent user export, and penalty reasons with markup.
+//! Refused: user fields, a recent user export, and penalty reasons with
+//! markup.
 
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
@@ -98,11 +98,6 @@ pub async fn show(
             true,
         ),
         (
-            "SELECT EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
-            "DiscourseConnect records on the admin view of a user",
-            false,
-        ),
-        (
             "SELECT EXISTS (SELECT 1 FROM user_exports WHERE user_id = $1 AND created_at > now() - interval '2 days')",
             "a recent user export on the admin view of a user",
             true,
@@ -175,16 +170,10 @@ pub async fn show(
     let can_check_emails =
         guardian.is_admin() || (guardian.is_staff() && s.get("moderators_view_emails")?.truthy());
     if admin_users::include_email(guardian, &r, false, can_check_emails) {
-        let accounts: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_associated_accounts WHERE user_id = $1)",
-        )
-        .bind(user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if accounts {
-            return Err(Unsupported("associated accounts on the admin view of a user").into());
-        }
-        u.insert("associated_accounts".into(), json!([]));
+        u.insert(
+            "associated_accounts".into(),
+            crate::auth::associated_accounts(&mut *conn, cx.i18n, user_id).await?,
+        );
     }
 
     let staff = r.admin || r.moderator;
@@ -235,7 +224,10 @@ pub async fn show(
     let can_check_sso = guardian.is_admin()
         || (guardian.is_moderator() && s.get("moderators_view_sso_details")?.truthy());
     if can_check_sso {
-        u.insert("single_sign_on_record".into(), Value::Null);
+        u.insert(
+            "single_sign_on_record".into(),
+            single_sign_on_record(&mut *conn, user_id).await?,
+        );
     }
 
     if !options.detailed {
@@ -409,7 +401,18 @@ pub async fn show(
         ),
     );
     if guardian.is_admin() {
-        u.insert("external_ids".into(), json!({}));
+        // external_ids: each associated account's provider and uid.
+        let accounts: Vec<(String, String)> = sqlx::query_as(
+            "SELECT provider_name, provider_uid FROM user_associated_accounts WHERE user_id = $1 ORDER BY id",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        let mut ids = Map::new();
+        for (provider, uid) in accounts {
+            ids.insert(provider, json!(uid));
+        }
+        u.insert("external_ids".into(), Value::Object(ids));
     }
     // similar_users: other real, non-staff users at the same IP.
     let similar: i64 =
@@ -962,4 +965,45 @@ async fn upcoming_changes_stats(
     // The changes come back by name.
     out.sort_by_key(|c| c["name"].as_str().unwrap_or_default().to_string());
     Ok(Value::Array(out))
+}
+
+/// SingleSignOnRecordSerializer for the user's record, null without one.
+pub async fn single_sign_on_record(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    #[derive(sqlx::FromRow)]
+    struct Rec {
+        user_id: i32,
+        external_id: String,
+        created_at: NaiveDateTime,
+        updated_at: NaiveDateTime,
+        external_username: Option<String>,
+        external_name: Option<String>,
+        external_avatar_url: Option<String>,
+        external_profile_background_url: Option<String>,
+        external_card_background_url: Option<String>,
+    }
+    let record: Option<Rec> = sqlx::query_as(
+        "SELECT user_id, external_id, created_at, updated_at, external_username, external_name, \
+                external_avatar_url, external_profile_background_url, external_card_background_url \
+         FROM single_sign_on_records WHERE user_id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    Ok(match record {
+        None => Value::Null,
+        Some(r) => json!({
+            "user_id": r.user_id,
+            "external_id": r.external_id,
+            "created_at": crate::topic_list::time_json(r.created_at),
+            "updated_at": crate::topic_list::time_json(r.updated_at),
+            "external_username": r.external_username,
+            "external_name": r.external_name,
+            "external_avatar_url": r.external_avatar_url,
+            "external_profile_background_url": r.external_profile_background_url,
+            "external_card_background_url": r.external_card_background_url,
+        }),
+    })
 }

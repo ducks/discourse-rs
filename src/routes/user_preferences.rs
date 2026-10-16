@@ -298,22 +298,13 @@ pub async fn check_emails(
     .fetch_all(&mut *conn)
     .await?;
     // associated_accounts: each authenticator's description for the user.
-    let associated: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_associated_accounts WHERE user_id = $1) \
-             OR EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
-    )
-    .bind(user.id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if associated {
-        return Err(Unsupported("the associated accounts of external logins (191)").into());
-    }
+    let associated = crate::auth::associated_accounts(&mut conn, &state.i18n, user.id).await?;
     let mut emails = emails.into_iter();
     Ok(Json(json!({
         "email": emails.next(),
         "secondary_emails": emails.collect::<Vec<_>>(),
         "unconfirmed_emails": unconfirmed,
-        "associated_accounts": [],
+        "associated_accounts": associated,
     }))
     .into_response())
 }

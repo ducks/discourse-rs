@@ -1,0 +1,9 @@
+{% extends "no_ember.html" %}
+{% block content %}
+{#- session/sso_login.html.erb: the error is HTML (raw). -#}
+<h1>{{ title }}</h1>
+
+<br/>
+
+<p>{{ error|safe }}</p>
+{% endblock %}

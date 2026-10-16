@@ -111,8 +111,30 @@ pub async fn update(
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     // An admin's API request sets external ids (the managed authenticators'
     // and DiscourseConnect's); everyone else's is ignored.
-    if matches!(p.get("external_ids"), Some(Value::Object(_))) && guardian.is_admin() {
-        return Err(crate::Unsupported("updating external ids (191)").into());
+    let is_api = headers.contains_key(crate::session::api_key::HEADER_API_KEY)
+        || headers.contains_key(crate::session::user_api_key::HEADER_USER_API_KEY);
+    // `attributes[:discourse_connect]` (given: the id, blank to remove)
+    // and `attributes[:user_associated_accounts]`.
+    let mut discourse_connect: Option<Option<String>> = None;
+    let mut associated: Vec<(String, Option<String>)> = Vec::new();
+    if let Some(Value::Object(ids)) = p.get("external_ids")
+        && guardian.is_admin()
+        && is_api
+    {
+        for (provider, uid) in ids {
+            let uid = crate::params::scalar(uid).filter(|u| !crate::ruby::is_blank(u));
+            if provider == "discourse_connect" {
+                if !settings.get("enable_discourse_connect")?.truthy() {
+                    return Ok(super::search::invalid_parameters(&state, "external_ids"));
+                }
+                discourse_connect = Some(uid);
+                continue;
+            }
+            if !crate::auth::enabled_managed(&settings, provider)? {
+                return Ok(super::search::invalid_parameters(&state, "external_ids"));
+            }
+            associated.push((provider.clone(), uid));
+        }
     }
     let user_fields = p.get("user_fields").cloned();
     // user_params.except(:username, :email, :password)
@@ -177,6 +199,77 @@ pub async fn update(
             axum::Json(serde_json::json!({ "errors": [message] })),
         )
             .into_response());
+    }
+
+    // update_discourse_connect: the record's external id (and a payload
+    // naming it), or the record removed.
+    if let Some(external_id) = discourse_connect {
+        match external_id {
+            Some(id) => {
+                let payload = format!("external_id={id}");
+                let updated = sqlx::query(
+                    "UPDATE single_sign_on_records SET external_id = $2, last_payload = $3, updated_at = now() \
+                     WHERE user_id = $1 AND (external_id, last_payload) IS DISTINCT FROM ($2, $3)",
+                )
+                .bind(target.id)
+                .bind(&id)
+                .bind(&payload)
+                .execute(&mut *tx)
+                .await?;
+                let exists: bool = sqlx::query_scalar(
+                    "SELECT EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
+                )
+                .bind(target.id)
+                .fetch_one(&mut *tx)
+                .await?;
+                if updated.rows_affected() == 0 && !exists {
+                    sqlx::query(
+                        "INSERT INTO single_sign_on_records (user_id, external_id, last_payload, created_at, updated_at) \
+                         VALUES ($1, $2, $3, now(), now())",
+                    )
+                    .bind(target.id)
+                    .bind(&id)
+                    .bind(&payload)
+                    .execute(&mut *tx)
+                    .await?;
+                }
+            }
+            // destroy!, of a new record too (nothing to remove).
+            None => {
+                sqlx::query("DELETE FROM single_sign_on_records WHERE user_id = $1")
+                    .bind(target.id)
+                    .execute(&mut *tx)
+                    .await?;
+            }
+        }
+    }
+    // updated_associated_accounts: each provider's uid, or its account
+    // removed.
+    for (provider, uid) in associated {
+        match uid {
+            Some(uid) => {
+                sqlx::query(
+                    "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, info, credentials, extra, created_at, updated_at) \
+                     VALUES ($1, $2, $3, '{}', '{}', '{}', now(), now()) \
+                     ON CONFLICT (provider_name, user_id) DO UPDATE SET provider_uid = EXCLUDED.provider_uid, updated_at = now() \
+                     WHERE user_associated_accounts.provider_uid IS DISTINCT FROM EXCLUDED.provider_uid",
+                )
+                .bind(&provider)
+                .bind(&uid)
+                .bind(target.id)
+                .execute(&mut *tx)
+                .await?;
+            }
+            None => {
+                sqlx::query(
+                    "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2",
+                )
+                .bind(&provider)
+                .bind(target.id)
+                .execute(&mut *tx)
+                .await?;
+            }
+        }
     }
 
     // json_result(user, serializer: UserSerializer)

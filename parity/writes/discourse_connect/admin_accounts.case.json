@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name, external_avatar_url) VALUES (9451, 4, 'ext-user2-admin', 'external_id=ext-user2-admin', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two', 'https://idp.example.com/a.png')",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9452, 'facebook', 'fb-77', 4, now(), '{\"email\":\"user2@facebook.example\",\"name\":\"User Two\"}', '{}', '{}', now(), now())",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9453, 'github', 'gh-88', 4, now(), '{\"nickname\":\"user2gh\"}', '{}', '{}', now(), now())",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9454, 'oidc', 'oidc-99', 4, now(), '{}', '{}', '{}', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/4.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user2/emails.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/users/list/active.json?show_emails=true"
+    }
+  ]
+}

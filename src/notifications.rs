@@ -131,11 +131,14 @@ struct Row {
     fancy_title: Option<String>,
     slug: Option<String>,
     subtype: Option<String>,
+    /// The user's DiscourseConnect external id.
+    external_id: Option<String>,
 }
 
 const COLUMNS: &str = "notifications.id, notifications.user_id, notifications.notification_type, \
     notifications.read, notifications.high_priority, notifications.created_at, notifications.post_number, \
-    notifications.topic_id, notifications.data, topics.fancy_title, topics.slug, topics.subtype";
+    notifications.topic_id, notifications.data, topics.fancy_title, topics.slug, topics.subtype, \
+    (SELECT external_id FROM single_sign_on_records s WHERE s.user_id = notifications.user_id) AS external_id";
 
 /// What the request asks for.
 #[derive(Debug, Clone, Default)]
@@ -534,9 +537,7 @@ pub async fn serialize_by_id(
 /// NotificationSerializer for each row.
 fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, NotificationsError> {
     let enable_names = settings.get("enable_names")?.truthy();
-    if settings.get("enable_discourse_connect")?.truthy() {
-        return Err(Unsupported("external_id on notifications").into());
-    }
+    let discourse_connect = settings.get("enable_discourse_connect")?.truthy();
     let mut out = Vec::with_capacity(rows.len());
     for r in rows {
         let mut n = Map::new();
@@ -545,6 +546,9 @@ fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, Notificatio
         }
         n.insert("id".into(), json!(r.id));
         n.insert("user_id".into(), json!(r.user_id));
+        if discourse_connect {
+            n.insert("external_id".into(), json!(r.external_id));
+        }
         n.insert("notification_type".into(), json!(r.notification_type));
         n.insert("read".into(), json!(r.read));
         n.insert("high_priority".into(), json!(r.high_priority));

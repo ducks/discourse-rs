@@ -1,0 +1,34 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "ext-pending",
+          "email": "pending.person@example.com",
+          "require_activation": "true",
+          "avatar_url": "https://idp.example.com/avatar.png",
+          "suppress_welcome_message": "true"
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/changes/single_sign_on_records/inserted/*/last_payload"
+  ]
+}

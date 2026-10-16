@@ -272,7 +272,6 @@ const CHAT_SIDEBAR_MODES: &[(&str, i64)] = &[
 /// What the update refuses outright, by param.
 const REFUSED: &[(&str, &str)] = &[
     ("custom_fields", "updating custom fields"),
-    ("external_ids", "updating external ids (191)"),
     (
         "date_of_birth",
         "updating the date of birth (discourse-cakeday, 202)",

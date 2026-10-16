@@ -1,0 +1,273 @@
+{
+  "name": "admin_actions",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user2/sso-email.json?context=%2Fadmin%2Fusers%2F4%2Fuser2"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user2/sso-payload.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user3/sso-email.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/delete_associated_accounts.json",
+      "params": {
+        "context": "/admin/users/4/user2"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/4/sso_record.json"
+    }
+  ],
+  "started_at": "2026-10-16T01:54:13.798141",
+  "transaction_started_at": "2026-10-16T01:54:10.107943",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email": "User2@Example.com"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "payload": "external_id=ext-user2-actions&email=user2%40example.com"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "email": "N/A"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "single_sign_on_records": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9471,
+          "user_id": 4,
+          "created_at": "2026-10-14T01:54:10.107943",
+          "updated_at": "2026-10-14T01:54:10.107943",
+          "external_id": "ext-user2-actions",
+          "last_payload": "external_id=ext-user2-actions&email=user2%40example.com",
+          "external_name": "User Two",
+          "external_email": "User2@Example.com",
+          "external_username": "user2",
+          "external_avatar_url": null,
+          "external_card_background_url": null,
+          "external_profile_background_url": null
+        }
+      ],
+      "updated": []
+    },
+    "user_associated_accounts": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9472,
+          "info": {
+            "name": "Two \"Quoted\" #{x}",
+            "email": "user2@facebook.example"
+          },
+          "extra": {},
+          "user_id": 4,
+          "last_used": "2026-10-16T01:54:10.107943",
+          "created_at": "2026-10-16T01:54:10.107943",
+          "updated_at": "2026-10-16T01:54:10.107943",
+          "credentials": {},
+          "provider_uid": "fb-actions",
+          "provider_name": "facebook"
+        },
+        {
+          "id": 9473,
+          "info": {
+            "n": 3,
+            "urls": {
+              "Blog": null
+            },
+            "nickname": "user2gh"
+          },
+          "extra": {},
+          "user_id": 4,
+          "last_used": "2026-10-16T01:54:10.107943",
+          "created_at": "2026-10-16T01:54:10.107943",
+          "updated_at": "2026-10-16T01:54:10.107943",
+          "credentials": {},
+          "provider_uid": "gh-actions",
+          "provider_name": "github"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 115,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VtxhxLjzeP3svQI8Xqn0A0IjaXI=",
+            "created_at": "2026-10-16T01:54:11.739424",
+            "rotated_at": "2026-10-16T01:54:11.734513",
+            "updated_at": "2026-10-16T01:54:11.739424",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "VtxhxLjzeP3svQI8Xqn0A0IjaXI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 115,
+            "seen_at": "2026-10-16T01:54:13.81261",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VtxhxLjzeP3svQI8Xqn0A0IjaXI=",
+            "created_at": "2026-10-16T01:54:11.739424",
+            "rotated_at": "2026-10-16T01:54:11.734513",
+            "updated_at": "2026-10-16T01:54:11.739424",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "VtxhxLjzeP3svQI8Xqn0A0IjaXI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 16,
+          "context": "/admin/users/4/user2",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T01:54:13.831674",
+          "ip_address": null,
+          "updated_at": "2026-10-16T01:54:13.831674",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 4
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 16,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T01:54:13.860197",
+          "ip_address": null,
+          "updated_at": "2026-10-16T01:54:13.860197",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 4
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 16,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T01:54:13.886188",
+          "ip_address": null,
+          "updated_at": "2026-10-16T01:54:13.886188",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 5
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 119,
+          "context": "/admin/users/4/user2",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T01:54:13.917645",
+          "ip_address": null,
+          "updated_at": "2026-10-16T01:54:13.917645",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{provider: \"facebook\", uid: \"fb-actions\", info: {\"name\" => \"Two \\\"Quoted\\\" \\#{x}\", \"email\" => \"user2@facebook.example\"}},{provider: \"github\", uid: \"gh-actions\", info: {\"n\" => 3, \"urls\" => {\"Blog\" => nil}, \"nickname\" => \"user2gh\"}}",
+          "target_user_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9471, 4, 'ext-user2-actions', 'external_id=ext-user2-actions&email=user2%40example.com', now() - interval '2 days', now() - interval '2 days', 'user2', 'User2@Example.com', 'User Two')",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9472, 'facebook', 'fb-actions', 4, now(), '{\"email\":\"user2@facebook.example\",\"name\":\"Two \\\"Quoted\\\" #{x}\"}', '{}', '{}', now(), now())",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9473, 'github', 'gh-actions', 4, now(), '{\"nickname\":\"user2gh\",\"urls\":{\"Blog\":null},\"n\":3}', '{}', '{}', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "f3db44af194edd9b26bb71206e1bf04451abad03f9ce144b8220ba52fda3100d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
