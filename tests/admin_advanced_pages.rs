@@ -168,8 +168,11 @@ async fn the_backups_logs_since_the_operation_started() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;
     let mut conn = db.pool.acquire().await.unwrap();
-    // An earlier operation's line, then the start of this one.
-    st.bus
+    // An earlier operation's line, then the start of this one: just past
+    // that line. Not bus.now(): its horizon is the cluster's oldest open
+    // transaction, which another database's test can hold back.
+    let position = st
+        .bus
         .publish(
             &mut conn,
             "/admin/backups/logs",
@@ -178,7 +181,6 @@ async fn the_backups_logs_since_the_operation_started() {
         )
         .await
         .unwrap();
-    let position = st.bus.now().await.unwrap();
     sqlx::query(
         "INSERT INTO discourse_rs.cached_values (key, value, expires_at) VALUES ('start_logs_message_id', $1, now() + interval '1 day')",
     )
