@@ -1785,9 +1785,11 @@ route table has been made, so this list may be short.
     buttons, the authentication_data cookie read once (auth-complete),
     OIDC's RP-initiated logout. Refused: a provider's description as
     the bio, groups linked to a provider's groups, invite-only sites
-    191c. `feat/external-auth-signup` M: signing up with the
+    191c. ~~`feat/external-auth-signup`~~ (done) M: signing up with the
     authentication the callback kept (users#create, UserAuthenticator,
-    LoginActivator), the client's authentication_data handling
+    LoginActivator), the client's authentication_data handling, the
+    /signup page. Refused: a username other than the provider's when it
+    overrides usernames (UsernameChanger saves the user early)
     191d. `feat/external-auth-builtin` M: GitHub, Google, Facebook,
     Discord, LinkedIn, Discourse ID, Microsoft and Amazon strategies;
     Twitter (OAuth 1.0a) with its health check; Apple, LTI and Patreon

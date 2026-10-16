@@ -369,6 +369,83 @@ async fn oidc_login_of_a_new_user_leaves_signup_data() {
 }
 
 #[tokio::test]
+async fn oidc_signup_creates_an_active_account_without_a_password() {
+    let db = TestDb::new().await;
+    let (state, provider) = oidc_site(&db, "Signup.Person@Example.com").await;
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let start = browser.get("/auth/oidc").await;
+    let authorize = start.location();
+    provider.lock().unwrap().nonce = query_param(&authorize, "nonce");
+    let back = browser
+        .get(&format!(
+            "/auth/oidc/callback?code=good-code&state={}",
+            query_param(&authorize, "state")
+        ))
+        .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert_eq!(browser.authentication_data()["email_valid"], true);
+
+    let page = browser.get("/signup").await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(
+        page.body.contains("class=\"create-account\""),
+        "{}",
+        page.body
+    );
+    assert!(!page.body.contains("[en."), "{}", page.body);
+    let csrf = page
+        .body
+        .split_once("data-csrf=\"")
+        .and_then(|(_, rest)| rest.split_once('"'))
+        .map(|(token, _)| token.to_string())
+        .unwrap();
+
+    let hp = browser.get("/session/hp.json").await;
+    let hp: Value = serde_json::from_str(&hp.body).unwrap();
+    let challenge: String = hp["challenge"].as_str().unwrap().chars().rev().collect();
+    let body = form_urlencoded::Serializer::new(String::new())
+        .append_pair("authenticity_token", &csrf)
+        .append_pair("email", "signup.person@example.com")
+        .append_pair("username", "signupperson")
+        .append_pair("name", "Signup Person")
+        .append_pair("password_confirmation", hp["value"].as_str().unwrap())
+        .append_pair("challenge", &challenge)
+        .finish();
+    let created = browser.send(Method::POST, "/u.json", &body).await;
+    assert_eq!(created.status, StatusCode::OK, "{}", created.body);
+    let created: Value = serde_json::from_str(&created.body).unwrap();
+    assert_eq!(created["success"], true, "{created}");
+    assert_eq!(created["active"], true, "{created}");
+    assert!(browser.cookie("_t").is_some());
+
+    let (user_id, active, password): (i32, bool, Option<String>) = sqlx::query_as(
+        "SELECT u.id, u.active, \
+                (SELECT password_hash FROM user_passwords WHERE user_id = u.id) \
+         FROM users u WHERE username = 'signupperson'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(active);
+    assert_eq!(password, None);
+    let linked: Option<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM user_associated_accounts WHERE provider_name = 'oidc' AND provider_uid = 'sub-1'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(linked, Some(user_id));
+
+    // Logged in now, the signup page sends the reader home.
+    let again = browser.get("/signup").await;
+    assert_eq!(again.status, StatusCode::FOUND);
+    assert_eq!(again.location(), "http://test.localhost/");
+}
+
+#[tokio::test]
 async fn oidc_login_matches_a_verified_email_and_logs_on() {
     let db = TestDb::new().await;
     let (state, provider) = oidc_site(&db, "user1@example.com").await;

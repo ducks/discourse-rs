@@ -1,0 +1,901 @@
+{
+  "name": "signup_verified",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Signing Person",
+        "email": "signing.person@example.com",
+        "username": "signer",
+        "password_confirmation": "{{responses.2.body.value}}",
+        "challenge": "{{responses.2.body.challenge|reverse}}",
+        "timezone": "Europe/Paris"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "started_at": "2026-10-16T03:45:41.88538",
+  "transaction_started_at": "2026-10-16T03:45:40.956276",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=4b5faeb601482811e7b65df019a050e5240f8d9dd569f70e...",
+      "headers": {
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=4b5faeb601482811e7b65df019a050e5240f8d9dd569f70e"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "value": "1bde815d73fa2abf7dcf74ce143bbb69",
+        "challenge": "1ea614d2e0a65b44017f04a76a09c22f",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "active": true,
+        "message": "Your account is activated and ready to use."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "current_user": {
+          "id": 6,
+          "username": "signer",
+          "name": "Signing Person",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/s/a87d85/{size}.png",
+          "unread_notifications": 0,
+          "unread_high_priority_notifications": 0,
+          "all_unread_notifications_count": 0,
+          "read_first_notification": false,
+          "admin": false,
+          "notification_channel_position": null,
+          "do_not_disturb_channel_position": 0,
+          "moderator": false,
+          "staff": false,
+          "whisperer": false,
+          "title": null,
+          "any_posts": false,
+          "trust_level": 0,
+          "can_send_private_email_messages": false,
+          "can_send_private_messages": false,
+          "can_upload_avatar": true,
+          "can_edit": true,
+          "no_password": true,
+          "can_delete_account": true,
+          "can_post_anonymously": false,
+          "can_ignore_users": false,
+          "can_edit_tags": false,
+          "can_delete_all_posts_and_topics": false,
+          "custom_fields": {},
+          "muted_category_ids": [],
+          "indirectly_muted_category_ids": [],
+          "regular_category_ids": [],
+          "tracked_category_ids": [],
+          "watched_first_post_category_ids": [],
+          "watched_category_ids": [],
+          "watched_tags": [],
+          "watching_first_post_tags": [],
+          "tracked_tags": [],
+          "muted_tags": [],
+          "regular_tags": [],
+          "dismissed_banner_key": null,
+          "is_anonymous": false,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0,
+          "new_personal_messages_notifications_count": 0,
+          "read_faq": false,
+          "previous_visit_at": null,
+          "seen_notification_id": 0,
+          "flair_group_id": null,
+          "can_create_topic": true,
+          "can_set_topic_timer": false,
+          "link_posting_access": "full",
+          "top_category_ids": [],
+          "groups": [
+            {
+              "id": 10,
+              "name": "trust_level_0",
+              "has_messages": false
+            }
+          ],
+          "needs_required_fields_check": false,
+          "second_factor_enabled": false,
+          "ignored_users": [],
+          "do_not_disturb_until": null,
+          "can_review": false,
+          "draft_count": 0,
+          "pending_posts_count": 0,
+          "grouped_unread_notifications": {},
+          "display_sidebar_tags": true,
+          "sidebar_tags": [],
+          "sidebar_category_ids": [
+            2,
+            4
+          ],
+          "sidebar_sections": [
+            {
+              "id": 1,
+              "title": "Community",
+              "links": [
+                {
+                  "id": 1,
+                  "name": "Topics",
+                  "value": "/latest",
+                  "icon": "layer-group",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 2,
+                  "name": "My posts",
+                  "value": "/my/activity",
+                  "icon": "user",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 3,
+                  "name": "My messages",
+                  "value": "/my/messages",
+                  "icon": "inbox",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 4,
+                  "name": "Review",
+                  "value": "/review",
+                  "icon": "flag",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 5,
+                  "name": "Admin",
+                  "value": "/admin",
+                  "icon": "wrench",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 6,
+                  "name": "Invite",
+                  "value": "/new-invite",
+                  "icon": "paper-plane",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 7,
+                  "name": "Users",
+                  "value": "/u",
+                  "icon": "users",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 8,
+                  "name": "About",
+                  "value": "/about",
+                  "icon": "circle-info",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 9,
+                  "name": "FAQ",
+                  "value": "/faq",
+                  "icon": "circle-question",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 10,
+                  "name": "Groups",
+                  "value": "/g",
+                  "icon": "user-group",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 11,
+                  "name": "Badges",
+                  "value": "/badges",
+                  "icon": "certificate",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 12,
+                  "name": "Filter",
+                  "value": "/filter",
+                  "icon": "filter",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                }
+              ],
+              "slug": "community",
+              "public": true,
+              "section_type": "community",
+              "locale": null
+            }
+          ],
+          "unified_new_enabled": true,
+          "can_view_raw_email": false,
+          "login_method": "oauth",
+          "can_localize_content": false,
+          "is_impersonating": false,
+          "impersonation_expires_at": null,
+          "has_joinable_public_channels": true,
+          "can_use_templates": false,
+          "votes_exceeded": false,
+          "votes_count": 0,
+          "votes_left": 2,
+          "vote_limit": 2,
+          "can_create_poll": false,
+          "user_option": {
+            "mailing_list_mode": false,
+            "external_links_in_new_tab": false,
+            "enable_quoting": true,
+            "enable_smart_lists": true,
+            "enable_markdown_monospace_font": true,
+            "dynamic_favicon": false,
+            "automatically_unpin_topics": true,
+            "likes_notifications_disabled": false,
+            "hide_profile_and_presence": false,
+            "hide_profile": false,
+            "hide_presence": false,
+            "title_count_mode": "notifications",
+            "timezone": "Europe/Paris",
+            "skip_new_user_tips": false,
+            "default_calendar": "none_selected",
+            "bookmark_auto_delete_preference": 3,
+            "notify_on_linked_posts": true,
+            "should_be_redirected_to_top": false,
+            "treat_as_new_topic_start_date": "2026-10-16T03:45:42.074Z",
+            "sidebar_link_to_filtered_list": false,
+            "sidebar_show_count_of_new_items": false,
+            "composition_mode": 1,
+            "interface_color_mode": 1,
+            "show_original_content": false,
+            "send_shortcut": "enter",
+            "automatically_translate": true,
+            "understood_languages": [],
+            "hidden_composer_toolbar_buttons": [],
+            "show_thread_title_prompts": true,
+            "chat_channel_list_filter": "all",
+            "chat_channel_list_sort": "alphabetical",
+            "chat_channel_list_sort_starred": "alphabetical",
+            "chat_channel_list_sort_dms": "priority",
+            "chat_channel_list_filter_starred": "all",
+            "chat_channel_list_filter_dms": "all",
+            "chat_announce_new_messages": true,
+            "chat_new_message_sound": false,
+            "chat_header_indicator_preference": "all_new",
+            "chat_separate_sidebar_mode": "default",
+            "chat_send_shortcut": "enter",
+            "chat_quick_reaction_type": "frequent",
+            "chat_quick_reactions_custom": null
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "signing.person@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 6,
+          "confirmed": false,
+          "created_at": "2026-10-16T03:45:42.089847",
+          "token_hash": "efbca6e65c4615cef502d96a5c3643969ed943f8d2a5ebac9839f26915035323",
+          "updated_at": "2026-10-16T03:45:42.089847"
+        },
+        {
+          "id": 14,
+          "email": "signing.person@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 6,
+          "confirmed": true,
+          "created_at": "2026-10-16T03:45:42.276256",
+          "token_hash": "5f841a44990b15a9327dc6abe9c0c99693fa49c3abe91b6f9d020204d18eb964",
+          "updated_at": "2026-10-16T03:45:42.286637"
+        },
+        {
+          "id": 15,
+          "email": "signing.person@example.com",
+          "scope": 1,
+          "expired": false,
+          "user_id": 6,
+          "confirmed": true,
+          "created_at": "2026-10-16T03:45:42.351902",
+          "token_hash": "5c950bb333a1c4515818bc3bc5dde90b8928e08cea81493fc4416409bb7e5d5d",
+          "updated_at": "2026-10-16T03:45:42.360547"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 6,
+          "group_id": 10,
+          "created_at": "2026-10-16T03:45:42.144222",
+          "updated_at": "2026-10-16T03:45:42.144222",
+          "first_unread_pm_at": "2026-10-16T03:45:40.956276",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 5,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 6,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "sidebar_section_links": {
+      "inserted": [
+        {
+          "id": 28,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T03:45:40.956276",
+          "updated_at": "2026-10-16T03:45:40.956276",
+          "linkable_id": 3,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 29,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T03:45:40.956276",
+          "updated_at": "2026-10-16T03:45:40.956276",
+          "linkable_id": 2,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 30,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-16T03:45:40.956276",
+          "updated_at": "2026-10-16T03:45:40.956276",
+          "linkable_id": 4,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "name": "Signing Person",
+            "email": "signing.person@example.com",
+            "image": "http://fixtures.localhost:8099/signer.png",
+            "nickname": "signer"
+          },
+          "extra": {},
+          "user_id": 6,
+          "last_used": "2026-10-16T03:45:42.004256",
+          "created_at": "2026-10-16T03:45:42.005854",
+          "updated_at": "2026-10-16T03:45:42.266953",
+          "credentials": {
+            "token": "access-6",
+            "expires": false
+          },
+          "provider_uid": "606",
+          "provider_name": "oauth2_basic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/u.json",
+          "action": "generate",
+          "user_id": 6,
+          "client_ip": "127.0.0.1",
+          "auth_token": "WL8MxeAvUfdwNg4M7xtp4ErFkJs=",
+          "created_at": "2026-10-16T03:45:42.336031",
+          "user_agent": null,
+          "user_auth_token_id": 115
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 115,
+          "seen_at": "2026-10-16T03:45:42.414186",
+          "user_id": 6,
+          "client_ip": "127.0.0.1",
+          "auth_token": "WL8MxeAvUfdwNg4M7xtp4ErFkJs=",
+          "created_at": "2026-10-16T03:45:42.328304",
+          "rotated_at": "2026-10-16T03:45:42.323102",
+          "updated_at": "2026-10-16T03:45:42.328304",
+          "user_agent": null,
+          "auth_token_seen": true,
+          "prev_auth_token": "WL8MxeAvUfdwNg4M7xtp4ErFkJs=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": true,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_avatars": {
+      "inserted": [
+        {
+          "id": 8,
+          "user_id": 6,
+          "created_at": "2026-10-16T03:45:42.217504",
+          "updated_at": "2026-10-16T03:45:42.217504",
+          "custom_upload_id": null,
+          "gravatar_upload_id": null,
+          "last_gravatar_download_attempt": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_emails": {
+      "inserted": [
+        {
+          "id": 6,
+          "email": "signing.person@example.com",
+          "primary": true,
+          "user_id": 6,
+          "created_at": "2026-10-16T03:45:42.085125",
+          "updated_at": "2026-10-16T03:45:42.085125",
+          "normalized_email": "signingperson@example.com"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_options": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "timezone": "Europe/Paris",
+          "theme_ids": [],
+          "chat_sound": null,
+          "email_level": 1,
+          "homepage_id": null,
+          "seen_popups": null,
+          "chat_enabled": true,
+          "enable_defer": false,
+          "hide_profile": false,
+          "email_digests": true,
+          "hide_presence": false,
+          "send_shortcut": 0,
+          "text_size_key": 0,
+          "text_size_seq": 0,
+          "theme_key_seq": 0,
+          "dark_scheme_id": null,
+          "enable_quoting": true,
+          "color_scheme_id": null,
+          "dynamic_favicon": false,
+          "composition_mode": 1,
+          "default_calendar": 0,
+          "notify_on_solved": true,
+          "ai_ask_ai_default": true,
+          "email_in_reply_to": false,
+          "mailing_list_mode": false,
+          "auto_image_caption": false,
+          "chat_send_shortcut": 0,
+          "enable_smart_lists": true,
+          "skip_new_user_tips": false,
+          "chat_email_frequency": 1,
+          "digest_after_minutes": 10080,
+          "email_messages_level": 0,
+          "interface_color_mode": 1,
+          "title_count_mode_key": 0,
+          "understood_languages": [],
+          "ai_search_discoveries": true,
+          "show_original_content": false,
+          "allow_private_messages": true,
+          "chat_channel_list_sort": 0,
+          "chat_new_message_sound": false,
+          "email_previous_replies": 2,
+          "include_tl0_in_digests": false,
+          "notify_on_linked_posts": true,
+          "oldest_search_log_date": null,
+          "policy_email_frequency": 0,
+          "automatically_translate": true,
+          "enable_allowed_pm_users": false,
+          "push_notification_level": 1,
+          "chat_channel_list_filter": 0,
+          "chat_quick_reaction_type": 0,
+          "discourse_rewind_enabled": true,
+          "event_reminder_preference": 0,
+          "external_links_in_new_tab": false,
+          "hide_profile_and_presence": false,
+          "last_redirected_to_top_at": null,
+          "show_thread_title_prompts": true,
+          "automatically_unpin_topics": true,
+          "chat_announce_new_messages": true,
+          "chat_channel_list_sort_dms": 2,
+          "chat_separate_sidebar_mode": 0,
+          "new_topic_duration_minutes": 2880,
+          "chat_quick_reactions_custom": null,
+          "ignore_channel_wide_mention": null,
+          "like_notification_frequency": 1,
+          "mailing_list_mode_frequency": 1,
+          "chat_channel_list_filter_dms": 0,
+          "only_chat_push_notifications": null,
+          "auto_track_topics_after_msecs": 300000,
+          "discourse_rewind_dismissed_at": null,
+          "sidebar_link_to_filtered_list": false,
+          "watched_precedence_over_muted": false,
+          "chat_channel_list_sort_starred": 0,
+          "enable_markdown_monospace_font": true,
+          "bookmark_auto_delete_preference": 3,
+          "discourse_rewind_share_publicly": false,
+          "dismissed_dm_retention_reminder": null,
+          "hidden_composer_toolbar_buttons": [],
+          "sidebar_show_count_of_new_items": false,
+          "chat_channel_list_filter_starred": 0,
+          "chat_header_indicator_preference": 0,
+          "notification_level_when_assigned": 3,
+          "notification_level_when_replying": 2,
+          "dismissed_channel_retention_reminder": null,
+          "enable_upcoming_change_available_notifications": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_profiles": {
+      "inserted": [
+        {
+          "views": 0,
+          "bio_raw": null,
+          "user_id": 6,
+          "website": null,
+          "location": null,
+          "bio_cooked": null,
+          "featured_topic_id": null,
+          "bio_cooked_version": null,
+          "dismissed_banner_key": null,
+          "granted_title_badge_id": null,
+          "card_background_upload_id": null,
+          "profile_background_upload_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "user_id": 6,
+          "version": 3,
+          "raw_data": "signer signing person",
+          "search_data": "'person':3B 'signer':1A 'signing':2B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "read_faq": null,
+          "new_since": "2026-10-16T03:45:42.101936",
+          "time_read": 0,
+          "post_count": 0,
+          "draft_count": 0,
+          "likes_given": 0,
+          "topic_count": 0,
+          "bounce_score": 0,
+          "days_visited": 0,
+          "flags_agreed": 0,
+          "flags_ignored": 0,
+          "likes_received": 0,
+          "topics_entered": 0,
+          "first_unread_at": "2026-10-16T03:45:40.956276",
+          "flags_disagreed": 0,
+          "post_edits_count": null,
+          "posts_read_count": 0,
+          "first_unread_pm_at": "2026-10-16T03:45:40.956276",
+          "digest_attempted_at": null,
+          "pending_posts_count": 0,
+          "distinct_badge_count": 0,
+          "first_post_created_at": null,
+          "reset_bounce_score_after": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [
+        {
+          "id": 6,
+          "name": "Signing Person",
+          "admin": false,
+          "title": null,
+          "views": 0,
+          "active": true,
+          "locale": "en",
+          "staged": false,
+          "approved": false,
+          "username": "signer",
+          "moderator": false,
+          "created_at": "2026-10-16T03:45:42.07466",
+          "flag_level": 0,
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-16T03:45:42.07466",
+          "approved_at": null,
+          "trust_level": 0,
+          "last_seen_at": null,
+          "suspended_at": null,
+          "date_of_birth": null,
+          "first_seen_at": null,
+          "silenced_till": null,
+          "approved_by_id": null,
+          "flair_group_id": null,
+          "last_posted_at": null,
+          "suspended_till": null,
+          "username_lower": "signer",
+          "last_emailed_at": null,
+          "primary_group_id": null,
+          "previous_visit_at": null,
+          "secure_identifier": null,
+          "uploaded_avatar_id": null,
+          "seen_notification_id": 0,
+          "last_seen_reviewable_id": null,
+          "registration_ip_address": "127.0.0.1",
+          "required_fields_version": null,
+          "group_locked_trust_level": null,
+          "manual_locked_trust_level": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "download_avatar_from_url",
+      {
+        "url": "http://fixtures.localhost:8099/signer.png",
+        "user_id": 6,
+        "override_gravatar": false
+      }
+    ],
+    [
+      "update_gravatar in 1s",
+      {
+        "user_id": 6,
+        "avatar_id": 8
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_tokens": 13,
+    "group_users": 68,
+    "sidebar_section_links": 28,
+    "user_associated_accounts": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 115,
+    "user_avatars": 8,
+    "user_emails": 6,
+    "users": 6
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "id",
+    "oauth2_json_username_path": "login",
+    "oauth2_json_name_path": "name",
+    "oauth2_json_email_path": "mail",
+    "oauth2_json_avatar_path": "avatar",
+    "oauth2_email_verified": true,
+    "oauth2_enabled": true
+  },
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"access-6\"}"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"id\":606,\"login\":\"signer\",\"name\":\"Signing Person\",\"mail\":\"signing.person@example.com\",\"avatar\":\"http://fixtures.localhost:8099/signer.png\"}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "6d73ce14363bc779b56fe2df450481091ee6044288476da5b55fed3cf814d1e1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

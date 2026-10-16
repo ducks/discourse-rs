@@ -158,6 +158,12 @@ pub enum Created {
     Json(Value),
     /// The session's activation key and the JSON body.
     Signed { user_id: i32, body: Value },
+    /// A user the external login vouched for, created active: the caller
+    /// confirms their email and logs them on (LoginActivator).
+    Active { user_id: i32 },
+    /// `render body: nil, status: :forbidden`: no login method for the
+    /// signup (local logins off, no external authentication).
+    Forbidden,
 }
 
 /// The fields of a local signup.
@@ -171,6 +177,9 @@ pub struct Signup<'a> {
     pub ip: &'a str,
     /// `params[:user_fields]`
     pub user_fields: Option<&'a Value>,
+    /// The external login the server session kept (UserAuthenticator),
+    /// with whether its authenticator provides groups.
+    pub auth: Option<(&'a crate::auth::managed::AuthResult, bool)>,
 }
 
 fn fail_with(i18n: &I18n, key: &str) -> Created {
@@ -245,9 +254,45 @@ pub async fn create(
         Ok(values) => values,
         Err(()) => return Ok(fail_with(i18n, "login.missing_user_field")),
     };
-    if !settings.get("enable_local_logins")?.truthy() {
-        return Err(Unsupported("signup with local logins off (403)").into());
+    // UserAuthenticator: no authenticator and no local logins, a 403.
+    let auth = s.auth.map(|(a, _)| a);
+    if auth.is_none() && !settings.get("enable_local_logins")?.truthy() {
+        return Ok(Created::Forbidden);
     }
+    // authentication.start: the email the provider verified, the account
+    // active, the provider's overrides applied.
+    let authenticated =
+        auth.is_some_and(|a| a.email_valid && a.email().as_deref() == Some(email.as_str()));
+    let mut name = s.name.map(str::to_string);
+    if authenticated && let Some(a) = auth {
+        // UsernameChanger.override is a no-op when the form kept the
+        // provider's username (the field is read-only then); another one
+        // saves the user early under the new name.
+        if settings.get("auth_overrides_username")?.truthy() || a.overrides_username {
+            let resolved = a
+                .resolve_username(&mut *conn, settings, i18n, Some(s.username))
+                .await?;
+            if resolved.is_some_and(|r| !r.is_empty() && r != s.username) {
+                return Err(Unsupported(
+                    "auth_overrides_username with another username at an external signup",
+                )
+                .into());
+            }
+        }
+        if (settings.get("auth_overrides_name")?.truthy() || a.overrides_name)
+            && let Some(n) = a.name.as_deref().filter(|n| !n.trim().is_empty())
+            && name.as_deref() != Some(n)
+        {
+            name = Some(n.to_string());
+        }
+    }
+    if auth.is_some_and(|a| a.email_valid) && !authenticated {
+        return Ok(fail_with(
+            i18n,
+            "login.incorrect_username_email_or_password",
+        ));
+    }
+    let name = name.as_deref();
 
     // user.save: the validations, in User's order.
     let mut errors: Vec<(&str, String)> = Vec::new();
@@ -276,19 +321,21 @@ pub async fn create(
             &accounts::PasswordOwner {
                 admin: false,
                 username: s.username,
-                name: s.name,
+                name,
                 email: Some(&email),
                 current: None,
             },
         )?,
+        // password_required! only without an external login.
+        _ if auth.is_some() => None,
         _ => Some("blank"),
     };
-    if s.name.is_none_or(|n| n.trim().is_empty())
+    if name.is_none_or(|n| n.trim().is_empty())
         && settings.get("full_name_requirement")?.to_s() == "required_at_signup"
     {
         return Err(Unsupported("signup validation errors other than the username").into());
     }
-    if s.name.is_some_and(|n| n.chars().count() > 255) {
+    if name.is_some_and(|n| n.chars().count() > 255) {
         return Err(Unsupported("signup validation errors other than the username").into());
     }
     // allowed_ip_address: screened IPs, then the per-IP new account cap.
@@ -353,7 +400,7 @@ pub async fn create(
             "success": false,
             "message": message,
             "errors": by_attr,
-            "values": {"name": s.name, "username": s.username, "email": email},
+            "values": {"name": name, "username": s.username, "email": email},
             "is_developer": false,
         })));
     }
@@ -364,16 +411,70 @@ pub async fn create(
         &payloads,
         &NewUser {
             username: s.username,
-            name: s.name,
+            name,
             email: &email,
             password: s.password,
-            active: false,
+            active: authenticated,
             locale: Some(s.locale.filter(|l| !l.is_empty()).unwrap_or("en")),
             ip: Some(s.ip),
             custom_fields: &custom_fields,
         },
     )
     .await?;
+
+    // authentication.finish: the authenticator's after_create_account
+    // (the account given its user, the avatar and profile, the associated
+    // attributes).
+    if let Some((a, provides_groups)) = s.auth {
+        let Some((provider, uid)) = a.extra_data.clone() else {
+            return Err(Unsupported("an external signup without its account").into());
+        };
+        let info: Option<Value> = sqlx::query_scalar(
+            "UPDATE user_associated_accounts SET user_id = $3, updated_at = clock_timestamp() \
+             WHERE provider_name = $1 AND provider_uid = $2 RETURNING info",
+        )
+        .bind(&provider)
+        .bind(&uid)
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let info = match info {
+            Some(info) => info,
+            None => {
+                sqlx::query(
+                    "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, last_used, \
+                                                           info, credentials, extra, created_at, updated_at) \
+                     VALUES ($1, $2, $3, now(), '{}', '{}', '{}', now(), now())",
+                )
+                .bind(&provider)
+                .bind(&uid)
+                .bind(user_id)
+                .execute(&mut *conn)
+                .await?;
+                json!({})
+            }
+        };
+        let image = match &info["image"] {
+            Value::String(s) => Some(s.clone()),
+            _ => None,
+        };
+        crate::auth::managed::retrieve_avatar(&mut *conn, settings, user_id, image.as_deref())
+            .await?;
+        if let Value::Object(info) = &info {
+            crate::auth::managed::retrieve_profile(&mut *conn, user_id, info).await?;
+        }
+        crate::auth::managed::apply_associated_attributes(
+            &mut *conn,
+            settings,
+            a,
+            user_id,
+            provides_groups,
+        )
+        .await?;
+    }
+    if authenticated {
+        return Ok(Created::Active { user_id });
+    }
 
     // activation.finish: EmailActivator.
     let token =
@@ -893,6 +994,27 @@ pub(crate) async fn enqueue_gravatar(
     Ok(())
 }
 
+/// User#refresh_avatar's gravatar job, run by every save until a
+/// download has been attempted.
+pub async fn refresh_gravatar(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let avatar: Option<(i32, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
+        "SELECT id, last_gravatar_download_attempt FROM user_avatars WHERE user_id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some((avatar_id, None)) = avatar
+        && settings.get("automatically_download_gravatars")?.truthy()
+    {
+        enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
+    }
+    Ok(())
+}
+
 /// `user.active = true; user.save!` from EmailToken.confirm: the
 /// after_save avatar refresh (the gravatar job until one has run) and the
 /// welcome message (which the narrative bot turns off when enabled).
@@ -905,17 +1027,7 @@ pub async fn activate_user(
         .bind(user_id)
         .execute(&mut *conn)
         .await?;
-    let avatar: Option<(i32, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
-        "SELECT id, last_gravatar_download_attempt FROM user_avatars WHERE user_id = $1",
-    )
-    .bind(user_id)
-    .fetch_optional(&mut *conn)
-    .await?;
-    if let Some((avatar_id, None)) = avatar
-        && settings.get("automatically_download_gravatars")?.truthy()
-    {
-        enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
-    }
+    refresh_gravatar(&mut *conn, settings, user_id).await?;
     if settings.get("send_welcome_message")?.truthy()
         && !settings.get("discourse_narrative_bot_enabled")?.truthy()
     {

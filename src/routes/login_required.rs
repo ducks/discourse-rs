@@ -28,6 +28,8 @@ fn exempt(path: &str) -> bool {
             | "/site/basic-info.json"
             | "/robots.txt"
             | "/robots-builder.json"
+            // StaticController skips the gate; /login renders below.
+            | "/signup"
     ) || path.starts_with("/assets/")
         || path.starts_with("/fonts/")
         || path.starts_with("/highlight-js/")
@@ -349,6 +351,92 @@ pub async fn login_page(
             && !settings.get("enable_discourse_connect")?.truthy(),
         discourse_connect: settings.get("enable_discourse_connect")?.truthy(),
         external_logins: login_buttons(state, settings)?,
+        csrf_token,
+    };
+    let mut response = (
+        [(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("no-store, must-revalidate, private, max-age=0"),
+        )],
+        Html(page.render().map_err(crate::html::HtmlError::from)?),
+    )
+        .into_response();
+    if let Some(cookie) = set_cookie {
+        response
+            .headers_mut()
+            .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
+    }
+    Ok(response)
+}
+
+#[derive(Template)]
+#[template(path = "signup.html")]
+pub struct SignupPage {
+    pub site_title: String,
+    pub lang: String,
+    pub base_path: String,
+    pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
+    pub chrome: Chrome,
+    /// Username and password signups are on; an external login's new
+    /// account is taken either way.
+    pub local_logins: bool,
+    pub unavailable: String,
+    pub csrf_token: String,
+}
+
+/// GET /signup: static#show with id "signup", the create-account form.
+/// A logged in reader goes to the front page.
+pub async fn show_signup(
+    State(state): State<AppState>,
+    crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    if !guardian.is_anonymous() {
+        let location = format!("{}/", urls.base_url()?);
+        return Ok((
+            StatusCode::FOUND,
+            [(header::LOCATION, HeaderValue::from_str(&location)?)],
+        )
+            .into_response());
+    }
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
+    let (csrf_token, set_cookie) = super::session::anonymous_csrf(&state, &headers, &settings)?;
+    let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
+    crawler.description = site.site_description.clone();
+    let page = SignupPage {
+        crawler,
+        site_title: site.site_title,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        lang: site.lang,
+        base_path: site.base_path,
+        local_logins: settings.get("enable_local_logins")?.truthy()
+            && !settings.get("enable_discourse_connect")?.truthy(),
+        unavailable: state
+            .i18n
+            .t("login.new_registrations_disabled")
+            .unwrap_or("New account registrations are not allowed at this time.")
+            .to_string(),
         csrf_token,
     };
     let mut response = (

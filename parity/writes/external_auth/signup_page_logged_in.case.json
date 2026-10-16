@@ -1,0 +1,7 @@
+{
+  "user": "user0",
+  "keep_headers": ["Location"],
+  "requests": [
+    {"method": "GET", "path": "/signup"}
+  ]
+}
