@@ -1051,7 +1051,16 @@ generate_theme_screenshot_thumbnails (171).
     backup_restore/creator.rs:221; backup_restore/restorer.rs:831,933;
     routes/backups.rs:522,534; reports/pageviews.rs:497,501;
     jobs/upload_jobs.rs:48,116). Needs: an S3 client and an S3-compatible
-    store beside the reference for the harness
+    store beside the reference for the harness. Decided 2026-10-16: as
+    provider agnostic as possible. Uploads and backups go through one
+    store interface with local and S3-API backends, and nothing outside
+    the store knows which. The S3 backend works with any S3-compatible
+    service (AWS, R2, B2, MinIO, Wasabi, Spaces, Garage): configurable
+    endpoint, region and path-style or virtual-host addressing, no
+    AWS-only features unless a setting asks, no amazonaws.com
+    assumptions in URLs. Tested against a local MinIO or Garage, not
+    AWS. The interface leaves room for non-S3 backends (Azure Blob, GCS)
+    without changing callers
 123. `feat/secure-uploads` M, after 122: secure uploads and media
     (uploads.rs:342; posting/rebake.rs:49; pretty_text/helpers.rs:338;
     pretty_text/cooked_post_processor.rs:756; upload_references.rs:373;
@@ -2287,6 +2296,15 @@ route table has been made, so this list may be short.
     salts against the Rails source (file_store/base_store.rb,
     backup_restore/local_backup_store.rb, lib/discourse.rb,
     rails_multisite's connection_management.rb and cookie_salt.rb)
+209. `feat/viewer-timezone` M, decided 2026-10-16: dates and times in the
+    viewer's timezone, as Ember draws them (the browser's zone, or the
+    user's timezone option where Ember reads it), not UTC: relative and
+    absolute dates in lists, topics, posts, profiles, notifications,
+    admin tables and tooltips, bookmarks' reminders and the date
+    pickers. Server-rendered markup keeps UTC timestamps in its data
+    attributes and a small script formats them in the browser, so
+    cached pages stay shareable between viewers; the first paint must
+    not flash UTC text
 
 ## Milestone 1: a hostable read-only mirror
 
