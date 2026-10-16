@@ -1,0 +1,63 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "id",
+    "oauth2_json_username_path": "login",
+    "oauth2_json_name_path": "name",
+    "oauth2_json_email_path": "mail",
+    "oauth2_json_email_verified_path": "verified",
+    "oauth2_json_groups_path": "groups",
+    "oauth2_enabled": true
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at, user_count) VALUES (9701, 'engineers', now(), now(), 0), (9702, 'oldies', now(), now(), 1)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (9702, 3, now(), now(), 3)",
+    "INSERT INTO associated_groups (id, name, provider_name, provider_id, last_used, created_at, updated_at) VALUES (9801, 'devs', 'oauth2_basic', 'devs', '2026-01-01', now(), now()), (9802, 'legacy', 'oauth2_basic', 'legacy', '2026-01-01', now(), now())",
+    "INSERT INTO group_associated_groups (group_id, associated_group_id, created_at, updated_at) VALUES (9701, 9801, now(), now()), (9702, 9802, now(), now())",
+    "INSERT INTO user_associated_groups (user_id, associated_group_id, created_at, updated_at) VALUES (3, 9802, now(), now())"
+  ],
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"access-5\"}"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"id\":5,\"login\":\"user1\",\"name\":\"User One\",\"mail\":\"user1@example.com\",\"verified\":\"TRUE\",\"groups\":[\"devs\"]}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

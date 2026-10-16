@@ -550,6 +550,119 @@ async fn failure(
     .await
 }
 
+/// POST /auth/discourse_id/revoke (Users::DiscourseIdController#revoke,
+/// DiscourseId::Revoke): Discourse ID telling the site a user revoked
+/// it, signed with the client secret; the user's sessions end.
+pub async fn discourse_id_revoke(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use hmac::{Hmac, Mac};
+    use sha2::Digest;
+    let params = crate::params::parse(uri.query(), &headers, &body);
+    let param = |k: &str| crate::params::string(&params, k);
+    let identifier = param("identifier").filter(|v| !v.trim().is_empty());
+    if let Err(e) = crate::rate_limiter::RateLimiter::new(
+        None,
+        &format!(
+            "discourse_id_revoke_{}",
+            param("identifier").unwrap_or_default()
+        ),
+        5,
+        60,
+    )
+    .performed(&state.pool, state.config.rate_limits)
+    .await?
+    {
+        return Ok(e.into_response(&state.i18n));
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let bad = |error: String| {
+        (
+            StatusCode::BAD_REQUEST,
+            axum::Json(json!({ "error": error })),
+        )
+            .into_response()
+    };
+    // policy :discourse_id_properly_configured
+    let client_id = settings.get("discourse_id_client_id")?.to_s();
+    let secret = settings.get("discourse_id_client_secret")?.to_s();
+    if !settings.get("enable_discourse_id")?.truthy()
+        || client_id.trim().is_empty()
+        || secret.trim().is_empty()
+    {
+        return Ok(bad("Invalid request".into()));
+    }
+    // The contract: ActiveModel's integer cast, presence, then the
+    // timestamp's age and the signature.
+    let timestamp = param("timestamp")
+        .filter(|t| !t.trim().is_empty())
+        .map(|t| crate::ruby::to_i(&t));
+    let signature = param("signature").filter(|v| !v.trim().is_empty());
+    let mut errors: Vec<String> = Vec::new();
+    for (name, present) in [
+        ("Identifier", identifier.is_some()),
+        ("Timestamp", timestamp.is_some()),
+        ("Signature", signature.is_some()),
+    ] {
+        if !present {
+            errors.push(format!("{name} can't be blank"));
+        }
+    }
+    if let (Some(identifier), Some(timestamp), Some(signature)) =
+        (&identifier, timestamp, &signature)
+    {
+        let age = (crate::clock::now().timestamp() - timestamp).abs();
+        if age > 300 {
+            errors.push(format!("Timestamp is expired: {age} seconds old"));
+        }
+        let key = format!("{:x}", sha2::Sha256::digest(secret.as_bytes()));
+        let mut mac = Hmac::<sha2::Sha256>::new_from_slice(key.as_bytes()).expect("any key length");
+        mac.update(format!("{client_id}:{identifier}:{timestamp}").as_bytes());
+        let expected: String = mac
+            .finalize()
+            .into_bytes()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        if !bool::from(subtle::ConstantTimeEq::ct_eq(
+            signature.as_bytes(),
+            expected.as_bytes(),
+        )) {
+            errors.push(format!("Signature is invalid for user id {identifier}"));
+        }
+    }
+    if !errors.is_empty() {
+        return Ok(bad(errors.join(", ")));
+    }
+    // model :associated_account
+    let account: Option<Option<i32>> = sqlx::query_scalar(
+        "SELECT user_id FROM user_associated_accounts WHERE provider_name = 'discourse_id' AND provider_uid = $1",
+    )
+    .bind(identifier.as_deref().unwrap_or_default())
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some(user_id) = account else {
+        return Ok(bad("Invalid request".into()));
+    };
+    // UserAuthToken.where(user_id:).destroy_all
+    if settings.get("verbose_auth_token_logging")?.truthy() {
+        return Err(Unsupported("verbose auth token logging").into());
+    }
+    if let Some(user_id) = user_id {
+        sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+    }
+    tx.commit().await?;
+    Ok(axum::Json(json!({"success": true})).into_response())
+}
+
 /// GET /plugins/discourse-lti/javascripts/submit-on-load-lti.js
 pub async fn lti_submit_on_load_js() -> Response {
     (
@@ -1011,12 +1124,18 @@ async fn callback_phase(
             return Ok(Callback::Failed(f));
         }
     };
-    if token
+    // `access_token.refresh! if access_token.expired?`
+    let token = if token
         .expires_at
         .is_some_and(|at| at <= crate::clock::now().timestamp())
     {
-        return Err(Unsupported("refreshing an expired OAuth token").into());
-    }
+        match http.refresh(&client, &token).await? {
+            Ok(t) => t,
+            Err(f) => return Ok(Callback::Failed(f)),
+        }
+    } else {
+        token
+    };
     let auth = match name {
         "oauth2_basic" => crate::plugins::oauth2_basic::auth_hash(settings, &token)?,
         "oidc" => {
@@ -1708,8 +1827,28 @@ async fn user_found(
         result.not_allowed_from_ip_address = true;
         return Ok(None);
     }
+    // ScreenedIpAddress.block_admin_login?: with allow_admin screenings,
+    // an admin logs in only from an address the closest of them allows.
     if user.admin && settings.get("use_admin_ip_allowlist")?.truthy() {
-        return Err(Unsupported("the admin IP allowlist at an external login").into());
+        // ScreeningModel.actions: block 1, do_nothing 2, allow_admin 3.
+        let any_allowed: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM screened_ip_addresses WHERE action_type = 3)",
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+        if any_allowed {
+            let closest: Option<i32> = sqlx::query_scalar(
+                "SELECT action_type FROM screened_ip_addresses WHERE $1::inet <<= ip_address \
+                 ORDER BY masklen(ip_address) DESC LIMIT 1",
+            )
+            .bind(&ip)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if closest != Some(3) {
+                result.admin_not_allowed_from_ip_address = true;
+                return Ok(None);
+            }
+        }
     }
     if can_access && active {
         let cx = crate::discourse_connect::Ctx {
@@ -1717,10 +1856,18 @@ async fn user_found(
             i18n: &state.i18n,
             state,
         };
-        crate::auth::managed::apply_user_attributes(conn, &cx, result, user_id).await?;
+        if let Some(reason) =
+            crate::auth::managed::apply_user_attributes(conn, &cx, result, user_id).await?
+        {
+            // rescue ActiveRecord::RecordInvalid: the failure page says why.
+            result.failed = true;
+            result.failed_reason = Some(reason);
+            return Ok(None);
+        }
         let name = result.authenticator_name.as_deref().unwrap_or("");
         crate::auth::managed::apply_associated_attributes(
             conn,
+            state,
             settings,
             result,
             user_id,
@@ -1853,8 +2000,38 @@ pub async fn connect_info(
     };
     let json = json_path || super::session::is_xhr_or_json(&headers, &raw);
     if !json {
-        // check_xhr: the page the client draws the confirmation on.
-        return Err(Unsupported("the associate account page (Ember)").into());
+        // check_xhr: the client's associate-account route. Logged out, the
+        // login first; logged in, the account tab with the confirmation.
+        let base = base_path(&state);
+        let Some(user_id) = incoming.guardian.user_id() else {
+            return with_cookies(
+                (
+                    StatusCode::FOUND,
+                    [(header::LOCATION, format!("{base}/login"))],
+                )
+                    .into_response(),
+                &[format!(
+                    "destination_url={}; path=/",
+                    crate::ruby::cgi_escape(&format!("{base}/associate/{token}"))
+                )],
+            );
+        };
+        let mut conn = state.pool.acquire().await?;
+        let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *conn)
+            .await?;
+        return Ok((
+            StatusCode::FOUND,
+            [(
+                header::LOCATION,
+                format!(
+                    "{base}/u/{}/preferences/account?associate={token}",
+                    crate::ruby::cgi_escape(&username)
+                ),
+            )],
+        )
+            .into_response());
     }
     let Some(user_id) = incoming.guardian.user_id() else {
         return Ok(super::login_required::not_logged_in(&state));
@@ -2000,9 +2177,6 @@ pub(super) async fn revoke_account(
             }))
             .into_response());
         }
-    }
-    if provider_name == "discourse_id" {
-        return Err(Unsupported("revoking a Discourse ID account (the remote revoke)").into());
     }
     // ManagedAuthenticator#revoke
     let removed = sqlx::query(

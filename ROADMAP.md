@@ -1805,6 +1805,11 @@ route table has been made, so this list may be short.
     string setting set to nil kept as NULL. Refused: Patreon's reward
     groups for a new patron (the plugin's group sync), an LTI token with
     several audiences (a NoMethodError upstream)
+    191g. ~~`feat/external-auth-remaining`~~ (done) S: the refusals the
+    earlier items left: an expired token refreshed, the admin IP
+    allowlist, a suspended user's message, the email RecordInvalid
+    failure, groups linked to a provider's groups, the associate page,
+    Discourse ID's revoke endpoint and revoking its account
 192. `feat/invites` L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email

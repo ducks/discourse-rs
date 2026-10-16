@@ -461,7 +461,48 @@ impl Http<'_> {
                 None => params.push((k.clone(), v.clone())),
             }
         }
-        let mut headers = client.token_headers.clone();
+        self.token_request(client, params, client.token_headers.clone())
+            .await
+    }
+
+    /// `AccessToken#refresh!`: the refresh token exchanged for a new
+    /// token, which keeps the old refresh token when it brings none.
+    pub async fn refresh(
+        &self,
+        client: &Client,
+        token: &AccessToken,
+    ) -> Result<Result<AccessToken, Failure>, AppError> {
+        let Some(refresh) = token.refresh_token.clone().filter(|r| !r.is_empty()) else {
+            return Ok(Err(Failure::new(
+                "invalid_credentials",
+                "A refresh_token is not available",
+            )));
+        };
+        let params = vec![
+            ("grant_type".to_string(), "refresh_token".to_string()),
+            ("refresh_token".to_string(), refresh.clone()),
+        ];
+        Ok(
+            match self.token_request(client, params, Vec::new()).await? {
+                Ok(mut fresh) => {
+                    if fresh.refresh_token.is_none() {
+                        fresh.refresh_token = Some(refresh);
+                    }
+                    Ok(fresh)
+                }
+                Err(f) => Err(f),
+            },
+        )
+    }
+
+    /// `client.get_token(params)`: the client's authentication applied, the
+    /// request sent by the token method, the answer read as a token.
+    async fn token_request(
+        &self,
+        client: &Client,
+        mut params: Vec<(String, String)>,
+        mut headers: Vec<(String, String)>,
+    ) -> Result<Result<AccessToken, Failure>, AppError> {
         match client.auth_scheme {
             AuthScheme::BasicAuth => {
                 use base64::Engine;

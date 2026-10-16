@@ -1,0 +1,134 @@
+{
+  "name": "oauth2_override_email_taken",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "started_at": "2026-10-16T07:19:24.634058",
+  "transaction_started_at": "2026-10-16T07:19:23.075893",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=19f0a8aa192779950e4df64fa889a067bbecd5a73e45328d...",
+      "headers": {
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=19f0a8aa192779950e4df64fa889a067bbecd5a73e45328d"
+      }
+    },
+    {
+      "status": 200,
+      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.10.0-latest - https://github.com/discourse/discourse version bf55a44c2872738f7ae2664d6fec3d6d8779190f\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3049/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3049/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3049/auth/oauth2_basic/callback\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3049/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_52d22e96ca4d7c5494a46562d0df099f8b6caa0b.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_db96197b363568a3e5c31b0004bd50f2cf5856a7.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n\n\n  <link href=\"/stylesheets/chat_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n\n  \n  \n  \n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"947gzA26PxoPcNNdUJHUuaTFq\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3049/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n            <span class='header-buttons'>\n              <span class='auth-buttons'>\n                  <a href=\"/signup\" class='btn btn-text btn-primary btn-small sign-up-button'>Sign Up</a>\n                <a href=\"/login\" class='btn btn-icon-text btn-primary btn-small login-button'><svg class=\"fa d-icon svg-icon svg-node\" aria-hidden=\"true\"><svg id=\"user\" viewBox=\"0 0 448 512\">\n  <path d=\"M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z\"/>\n</svg></svg>\nLog In</a>\n              </span>\n            </span>\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div id=\"simple-container\">\n    <div class='alert alert-error'>\n      Primary email has already been taken\n    </div>\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n<script async nonce=\"947gzA26PxoPcNNdUJHUuaTFq\" type=\"text/javascript\" id=\"mini-profiler\" src=\"/mini-profiler-resources/includes.js?v=0ab236f63a9cce6719807f4cd6470f29\" data-css-url=\"/mini-profiler-resources/includes.css?v=0ab236f63a9cce6719807f4cd6470f29\" data-version=\"0ab236f63a9cce6719807f4cd6470f29\" data-path=\"/mini-profiler-resources/\" data-current-id=\"k60hamqi2ngtqeig00c9\" data-ids=\"k60hamqi2ngtqeig00c9,wlxfixucngedxmc31glw,bz5d5ck2kyq54djwnu88,9fpk8i4nl977ty0a8wed,6du594h3iwxmmxdtuxgk,1klz6vvzo2leftixpdde,be1dsczrbf38p5hnf1c0,t6a0i1tg1d3p4ru08jg5,dmuvcz0acda5sm1crlo5,u5xu3ree7p4aifdjlnaz,imk2rayncad6u2ey0vsu,5d0uukt2fyi81sa3xdiy,kc624y419mk52pjxbv4x,dtjy097emanyqa1rbgfe,lilc8gss8swq612ujrmj,12evlpuxvydm466776zk,q86uc3nj2mq81pqdhl4x,kyupgptd88c05p3jjnbu,zzfc30eouaql11oeo1h0,2hbq93mb3pwkhqjn4lvy,k00kviab2tv0ibbb75we,i7ath7euub2g3ck3b9gw,9kih6afzbistb7hwgzr0,vze9z36eoqi33bgrai8n,vhos0bbiri5vun2rhwjr,uan8b85xq2e555i6dcay,sr773qlkny45f72hekfj,rxncygurvkzig0hgky4k,qob3ndg07aljzhhrzwem,p02n36223o466is50j74,mea07oq3z3wejogklte6,jwl3ubz0zx54ohbwqvz9,drwtmfrjnimyfxq67gw6,9w9nhqky5l2kfrjik6hc,1wxa42ahz6g86jityvhd,vnatmy86zmr0tg8vqe7t,t6sgydoewytdzbx1tyjz,n0rea7yvwy92fob22nj7,m2kfxcek7e5gpgdmm6el,iosvf3imiy2msfc2buuq,bfuz7uke16fptru4bgyf,yef5v7qup2nfgb14xpic,vnewrzcnn1d974rt8gxb,ulqq1bxc8zmvy8est125,tb6uebaekdz18h832maq,loc1sj4j13p35kd04ypi,hsryi70y5p6fx14vgqmh,a5jvpzv76xklwooegdj8,5qtuyr9gkgi5v3w2sguz,570ia0jbmf9sf661hioh,r2b4fglsbp31nlu3ug5g,mnokapnlid92qrgjat9h,ud615csslo58bioer0z3,ev3cj1l2uq94k1r3ghkb,d1qqowqt1rb74ukncgvr,5c8q2kwwg00eyl7zcsy6,zzvlwhd0xenlrd3v3ouk,jj897i71gqeyvtza9fju,mv7yjrhmz4k8tqxns7bv,szm0run5483g43p4b09r,jdvlkipk7ir2xapnojvi,66uw5g7pwkufd3kv8672,xo83gjdy65g551qqflfw,ucdw6igofb0vtwwd4kv6,64slsb7c53exwsryiazm,oby1q26pykoy03lxa5kq,yq4vjjty06muc5y1b11d,6evivimn07x8ackvh689,lhh9tl53uzkn7efx7n6l,k1dr7c5yofehhfhshouq,giza4bt7tdarluf72mrr,ed6v6exst8oq3mgkythc,uwbalv9kh670rmkuytu9,rxiy30iq2n4ib5rpakk,1qsnyv1181b8fwujqjsy,u7stp5mg2hw1vh2mnwmc,drslr3rbnddcs4lfdzsp,ez9ctv6daxm2dx091scv,66lq8gzo7q1ckgxhprgv,894u3bc101khu8kfwwjd,fz8m70iiumgvfmy6wcqw,kuscvx5hbdtzd5uckz31,ykx2xtn0x865iexkiu4c,3yjte1khigop7gypn8qc,zfvlo9gi5vvy49t3zacx,k80gjvautjohif3xyj88,bg1c001jy37sqgxg7moi,5c2ftd1f3nvojvo860mb,ymherhxnln4bsvw3pe49,vc3shiub1asa4tzznaiv,tuchs614hukhm69x9toq,r7vtg04gyh0eq0hijeh7,ldci5vbxzyaharwl7r9n,9gjd6y7nexukchj2gwp4,ba1tnfbhp7no1y1w86vm,81ce3pky6ctk8iojtip5,gy6g20p5j6o7br338lfo,gto4co1qf13e47bkhtc7,gsvaknrwukd7hk8mi952,3fotcj3lsnn24zauy4up\" data-horizontal-position=\"right\" data-vertical-position=\"top\" data-trivial=\"false\" data-children=\"false\" data-max-traces=\"100\" data-controls=\"false\" data-total-sql-count=\"false\" data-authorized=\"true\" data-toggle-shortcut=\"alt+p\" data-start-hidden=\"false\" data-collapse-results=\"true\" data-html-container=\"body\" data-hidden-custom-fields=\"\" data-turbo-permanent=\"false\"></script>\n</body>\n</html>\n"
+    },
+    {
+      "status": 404,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "info": {},
+            "extra": {},
+            "user_id": 3,
+            "last_used": "2026-10-16T07:19:23.075893",
+            "created_at": "2026-10-16T07:19:23.075893",
+            "updated_at": "2026-10-16T07:19:23.075893",
+            "credentials": {},
+            "provider_uid": "4242",
+            "provider_name": "oauth2_basic"
+          },
+          "after": {
+            "id": 1,
+            "info": {
+              "name": "User One",
+              "email": "user2@example.com",
+              "nickname": "user1",
+              "email_verified": true
+            },
+            "extra": {},
+            "user_id": 3,
+            "last_used": "2026-10-16T07:19:25.102925",
+            "created_at": "2026-10-16T07:19:23.075893",
+            "updated_at": "2026-10-16T07:19:25.103961",
+            "credentials": {
+              "token": "access-e",
+              "expires": false
+            },
+            "provider_uid": "4242",
+            "provider_name": "oauth2_basic"
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "user.id",
+    "oauth2_json_username_path": "user.login",
+    "oauth2_json_name_path": "user.name",
+    "oauth2_json_email_path": "user.mail",
+    "oauth2_json_email_verified_path": "verified",
+    "oauth2_json_avatar_path": "user.avatar",
+    "oauth2_scope": "read",
+    "oauth2_enabled": true,
+    "oauth2_overrides_email": true
+  },
+  "setup": [
+    "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, info, credentials, extra, last_used, created_at, updated_at) VALUES ('oauth2_basic', '4242', 3, '{}', '{}', '{}', now(), now(), now())"
+  ],
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"access-e\",\"token_type\":\"Bearer\"}"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"user\":{\"id\":4242,\"login\":\"user1\",\"name\":\"User One\",\"mail\":\"user2@example.com\"},\"verified\":true}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "fragment": [
+    "<div id=\"simple-container\">",
+    "</div>\n</div>"
+  ],
+  "recorded_from": {
+    "case": "3ad83d8ab125cdcef116fef2b9df437ecc09ac29d407641cb70e0e6f25f509bc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

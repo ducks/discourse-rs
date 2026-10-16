@@ -1,0 +1,28 @@
+{
+  "name": "discourse_id_revoke_unconfigured",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/auth/discourse_id/revoke?identifier=abc&timestamp=1&signature=x"
+    }
+  ],
+  "started_at": "2026-10-16T06:52:56.616019",
+  "transaction_started_at": "2026-10-16T06:52:55.840145",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "45ac804cd99fbbfa8a9f38d142ee3c541315597b3c8b8d934e285d67449774f0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

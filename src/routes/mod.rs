@@ -1949,6 +1949,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(omniauth::callback).post(omniauth::callback),
         )
         .route(
+            "/auth/discourse_id/revoke",
+            post(omniauth::discourse_id_revoke),
+        )
+        .route(
             "/auth/{provider}/initiate",
             get(omniauth::initiate).post(omniauth::initiate),
         )

@@ -191,13 +191,13 @@ pub async fn create(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     i18n: &I18n,
-    host: &crate::pretty_text::Host,
+    state: &crate::AppState,
     s: &Signup<'_>,
 ) -> Result<Created, AppError> {
     let payloads = crate::web_hooks::Payloads {
         settings,
         i18n,
-        config: &host.config,
+        config: &state.config,
     };
     if settings.get("invite_code")?.presence().is_some() {
         return Err(Unsupported("invite codes at signup").into());
@@ -461,11 +461,18 @@ pub async fn create(
         crate::auth::managed::retrieve_avatar(&mut *conn, settings, user_id, image.as_deref())
             .await?;
         if let Value::Object(info) = &info {
-            crate::auth::managed::retrieve_profile(&mut *conn, settings, host, user_id, info)
-                .await?;
+            crate::auth::managed::retrieve_profile(
+                &mut *conn,
+                settings,
+                &crate::pretty_text::Host::from_state(state),
+                user_id,
+                info,
+            )
+            .await?;
         }
         crate::auth::managed::apply_associated_attributes(
             &mut *conn,
+            state,
             settings,
             a,
             user_id,

@@ -1467,3 +1467,160 @@ async fn apple_signs_its_secret_and_checks_the_id_token() {
     assert_eq!(data["name"], "Ann Apple");
     assert_eq!(data["email_valid"], true);
 }
+
+#[tokio::test]
+async fn the_associate_page_leads_to_the_account_tab() {
+    let db = TestDb::new().await;
+    let (state, _provider) = oidc_site(&db, "user1@example.com").await;
+    let token = "0123456789abcdef0123456789abcdef";
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let html = [("accept", "text/html")];
+    let logged_out = browser
+        .send_with(Method::GET, &format!("/associate/{token}"), "", &html)
+        .await;
+    assert_eq!(logged_out.status, StatusCode::FOUND);
+    assert_eq!(logged_out.location(), "/login");
+    assert_eq!(
+        browser.cookie("destination_url").as_deref(),
+        Some("%2Fassociate%2F0123456789abcdef0123456789abcdef")
+    );
+    let csrf = browser.get("/session/csrf.json").await;
+    let csrf: Value = serde_json::from_str(&csrf.body).unwrap();
+    let login = form_urlencoded::Serializer::new(String::new())
+        .append_pair("login", "user1")
+        .append_pair("password", "password")
+        .append_pair("authenticity_token", csrf["csrf"].as_str().unwrap())
+        .finish();
+    browser
+        .send_with(
+            Method::POST,
+            "/session",
+            &login,
+            &[("x-requested-with", "XMLHttpRequest")],
+        )
+        .await;
+    let logged_in = browser
+        .send_with(Method::GET, &format!("/associate/{token}"), "", &html)
+        .await;
+    assert_eq!(
+        logged_in.location(),
+        format!("/u/user1/preferences/account?associate={token}")
+    );
+    let page = browser
+        .send_with(Method::GET, "/u/user1/preferences/account", "", &html)
+        .await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.body.contains("data-associate="), "{}", page.body);
+    assert!(page.body.contains("Connect %{provider} Account"));
+}
+
+#[tokio::test]
+async fn discourse_id_revoke_ends_the_users_sessions() {
+    use hmac::{Hmac, Mac};
+    use sha2::Digest;
+    let db = TestDb::new().await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    for (k, v) in [
+        ("discourse_id_client_id", "did-client"),
+        ("discourse_id_client_secret", "did-secret"),
+        ("enable_discourse_id", "t"),
+    ] {
+        set(&state, k, v).await;
+    }
+    sqlx::query(
+        "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, info, credentials, extra, created_at, updated_at) \
+         VALUES ('discourse_id', 'did-1', 3, '{}', '{}', '{}', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO user_auth_tokens (user_id, auth_token, prev_auth_token, rotated_at, created_at, updated_at) \
+         VALUES (3, 'a', 'b', now(), now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let sign = |timestamp: i64| {
+        let key = format!("{:x}", sha2::Sha256::digest(b"did-secret"));
+        let mut mac = Hmac::<sha2::Sha256>::new_from_slice(key.as_bytes()).unwrap();
+        mac.update(format!("did-client:did-1:{timestamp}").as_bytes());
+        mac.finalize()
+            .into_bytes()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    };
+    let now = chrono::Utc::now().timestamp();
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let forged = browser
+        .send(
+            Method::POST,
+            "/auth/discourse_id/revoke",
+            &format!(
+                "identifier=did-1&timestamp={now}&signature={}",
+                sign(now + 1)
+            ),
+        )
+        .await;
+    assert_eq!(forged.status, StatusCode::BAD_REQUEST);
+    assert!(
+        forged
+            .body
+            .contains("Signature is invalid for user id did-1")
+    );
+    let tokens = || async {
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM user_auth_tokens WHERE user_id = 3")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap()
+    };
+    assert_eq!(tokens().await, 1);
+    let revoked = browser
+        .send(
+            Method::POST,
+            "/auth/discourse_id/revoke",
+            &format!("identifier=did-1&timestamp={now}&signature={}", sign(now)),
+        )
+        .await;
+    assert_eq!(revoked.status, StatusCode::OK, "{}", revoked.body);
+    assert_eq!(revoked.body, r#"{"success":true}"#);
+    assert_eq!(tokens().await, 0);
+}
+
+#[tokio::test]
+async fn a_suspended_users_login_says_why() {
+    let db = TestDb::new().await;
+    let (state, provider) = oidc_site(&db, "user1@example.com").await;
+    sqlx::query(
+        "UPDATE users SET suspended_till = '2031-03-05 10:00', suspended_at = now() WHERE id = 3",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, created_at, updated_at) \
+         VALUES (10, 1, 3, 'Spamming the forum\nmore detail', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let back = round_trip(&mut browser, &provider, "/auth/oidc", "good-code").await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    let data = browser.authentication_data();
+    assert_eq!(data["suspended"], true, "{data}");
+    assert_eq!(
+        data["suspended_message"],
+        "Account suspended until March 5, 2031: Spamming the forum"
+    );
+}

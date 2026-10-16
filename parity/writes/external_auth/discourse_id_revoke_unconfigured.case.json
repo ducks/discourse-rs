@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/auth/discourse_id/revoke?identifier=abc&timestamp=1&signature=x"
+    }
+  ]
+}
