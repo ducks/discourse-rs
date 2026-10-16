@@ -1984,6 +1984,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/login",
             get(login_required::show_login).post(session::enter),
         )
+        .route("/signup", get(login_required::show_signup))
         .route("/search", cached!(get(search::show)))
         .route("/search.json", cached!(get(search::show_json)))
         .route("/search/query", cached!(get(search::query)))

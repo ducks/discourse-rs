@@ -832,6 +832,9 @@ pub(crate) async fn confirm_email_token(
     .await?;
     if !active {
         crate::signup::activate_user(&mut *conn, settings, user_id).await?;
+    } else {
+        // user.save! with nothing changed still runs after_save.
+        crate::signup::refresh_gravatar(&mut *conn, settings, user_id).await?;
     }
     // set_automatic_groups
     let host = crate::pretty_text::Host::from_state(state);
@@ -971,6 +974,29 @@ pub async fn create_user(
     let locale = params::string(&p, "locale");
     let timezone = params::string(&p, "timezone");
     let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    // UserAuthenticator: the external login the callback kept.
+    let auth = match crate::session::server::get(&mut tx, &session_id, "authentication").await? {
+        Some(data @ Value::Object(_)) => {
+            Some(crate::auth::managed::AuthResult::from_session_data(&data))
+        }
+        _ => None,
+    };
+    let provides_groups = match auth.as_ref().and_then(|a| a.authenticator_name.as_deref()) {
+        Some(name) => {
+            // has_authenticator?: the login must still be enabled.
+            if !crate::auth::enabled(&settings)?
+                .iter()
+                .any(|p| p.name == name)
+            {
+                return Ok(super::search::invalid_access_with(
+                    &state,
+                    "authenticator_not_found",
+                ));
+            }
+            super::omniauth::provides_groups(&settings, name)?
+        }
+        None => false,
+    };
     let created = crate::signup::create(
         &mut tx,
         &settings,
@@ -985,15 +1011,90 @@ pub async fn create_user(
             timezone: timezone.as_deref(),
             ip: &ip,
             user_fields: p.get("user_fields"),
+            auth: auth.as_ref().map(|a| (a, provides_groups)),
         },
     )
     .await?;
+    // authentication.finish: the kept login forgotten, the session marked
+    // as authenticated with OAuth.
+    let finish_auth = |session: &mut crate::session::forum::ForumSession| {
+        if auth.is_some() {
+            session.map.insert(
+                "authenticated_with_oauth".into(),
+                crate::session::cookie::Scalar::Bool(true),
+            );
+            session.changed = true;
+        }
+    };
+    let mut extra_cookies: Vec<String> = Vec::new();
     let body = match created {
         crate::signup::Created::Json(body) => {
             tx.commit().await?;
             body
         }
+        crate::signup::Created::Forbidden => {
+            tx.commit().await?;
+            return Ok(StatusCode::FORBIDDEN.into_response());
+        }
+        crate::signup::Created::Active { user_id } => {
+            crate::session::server::delete(&mut tx, &session_id, "authentication").await?;
+            finish_auth(&mut session);
+            // confirm_email: user.activate.
+            user_activate(&state, &mut tx, &settings, user_id, &email).await?;
+            // activation.finish: LoginActivator.
+            extra_cookies.push(
+                crate::session::login::log_on_user(
+                    &state,
+                    &settings,
+                    &mut tx,
+                    &headers,
+                    peer,
+                    uri.path(),
+                    user_id,
+                    true,
+                )
+                .await?,
+            );
+            if settings.get("send_welcome_message")?.truthy() {
+                crate::jobs::enqueue(
+                    &mut tx,
+                    "send_system_message",
+                    json!({"user_id": user_id, "message_type": "welcome_user"}),
+                )
+                .await?;
+            }
+            crate::accounts::update_timezone_if_missing(&mut tx, user_id, timezone.as_deref())
+                .await?;
+            crate::session::server::delete(&mut tx, &session_id, HONEYPOT_KEY).await?;
+            crate::session::server::delete(&mut tx, &session_id, CHALLENGE_KEY).await?;
+            let message = state.i18n.t("login.active").unwrap_or_default().to_string();
+            crate::session::server::set(
+                &mut tx,
+                &session_id,
+                "user_created_message",
+                &json!(message),
+                crate::session::server::EXPIRY_SECONDS,
+            )
+            .await?;
+            // `user.activate if user.active?`
+            user_activate(&state, &mut tx, &settings, user_id, &email).await?;
+            tx.commit().await?;
+            session.map.insert(
+                "activate_user".into(),
+                crate::session::cookie::Scalar::Int(user_id.into()),
+            );
+            session.changed = true;
+            let mut body = json!({"success": true, "active": true, "message": message});
+            if !settings.get("hide_email_address_taken")?.truthy() {
+                body["user_id"] = json!(user_id);
+            }
+            body
+        }
         crate::signup::Created::Signed { user_id, body } => {
+            if auth.is_some() {
+                crate::session::server::delete(&mut tx, &session_id, "authentication").await?;
+            }
+            finish_auth(&mut session);
             crate::session::server::delete(&mut tx, &session_id, HONEYPOT_KEY).await?;
             crate::session::server::delete(&mut tx, &session_id, CHALLENGE_KEY).await?;
             crate::session::server::set(
@@ -1014,7 +1115,34 @@ pub async fn create_user(
         }
     };
     let cookie = session.set_cookie(&state, &settings)?;
-    with_session_cookie(Json(body).into_response(), cookie)
+    let mut response = with_session_cookie(Json(body).into_response(), cookie)?;
+    for c in extra_cookies {
+        response.headers_mut().append(
+            header::SET_COOKIE,
+            c.parse()
+                .map_err(|_| crate::Unsupported("an unencodable cookie"))?,
+        );
+    }
+    Ok(response)
+}
+
+/// `User#activate`: a signup token for the email, confirmed.
+async fn user_activate(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+    email: &str,
+) -> Result<(), AppError> {
+    let token = crate::accounts::create_email_token(
+        &mut *conn,
+        user_id,
+        &email.to_lowercase(),
+        token_scopes::SIGNUP,
+    )
+    .await?;
+    confirm_email_token(state, conn, settings, &token, token_scopes::SIGNUP).await?;
+    Ok(())
 }
 
 /// PUT /u/activate-account/:token(.json): the signup token confirmed, the
