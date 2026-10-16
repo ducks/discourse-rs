@@ -25,3 +25,10 @@
 # Problem checks (90g8). Masked: the trackers, which the reference's
 # scheduler writes and the seed has none of.
 /admin/problem-checks as=admin mask=.admin-problem-checks__items>tbody
+# Badges (90g8).
+/admin/badges as=admin
+/admin/badges/settings as=admin
+/admin/badges/1 as=admin
+/admin/badges/new as=admin
+/admin/badges/award/new as=admin
+/admin/badges/award/1 as=admin

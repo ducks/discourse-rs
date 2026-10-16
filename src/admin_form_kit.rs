@@ -40,7 +40,7 @@ impl Field<'_> {
         let mut out = format!(
             "<div class=\"{class}\"{} data-name=\"{n}\" id=\"control-{n}\" data-control-type=\"{}\">",
             if self.disabled {
-                " data-disabled=\"true\""
+                " data-disabled=\"\""
             } else {
                 ""
             },

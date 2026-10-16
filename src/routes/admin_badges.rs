@@ -4,7 +4,7 @@
 //! query's preview, creating, updating and destroying a badge, and the
 //! mass award from a CSV file.
 //!
-//! Refused: the Ember pages (an HTML request).
+//! The pages themselves as HTML: crate::routes::admin_badges_pages.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -98,12 +98,31 @@ pub async fn index(
     if let Err(r) = admin(&state, &guardian) {
         return Ok(*r);
     }
-    refuse_html(uri.path(), &headers)?;
+    if !xhr_or_json(uri.path(), &headers) {
+        return crate::routes::admin_badges_pages::page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin_badges_view::Page::Index,
+        )
+        .await;
+    }
     let mut conn = state.pool.acquire().await?;
     let Loaded { settings } = load(&state, &mut conn).await?;
+    Ok(Json(document(&state, &mut conn, &settings).await?).into_response())
+}
+
+/// AdminBadgesSerializer's document: the badges, their types and
+/// groupings.
+pub(super) async fn document(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+) -> Result<Value, AppError> {
     let urls = Urls {
         config: &state.config,
-        settings: &settings,
+        settings,
     };
     let base_path = state.config.globals.relative_url_root();
     let rows: Vec<BadgeRow> = sqlx::query_as(&format!(
@@ -126,7 +145,7 @@ pub async fn index(
     for b in &rows {
         badges.push(admin_badge_json(
             &state.i18n,
-            &settings,
+            settings,
             &urls,
             base_path,
             b,
@@ -148,7 +167,7 @@ pub async fn index(
             json!({"id": id, "name": name, "description": description, "position": position, "system": *id <= 5})
         })
         .collect();
-    Ok(Json(json!({
+    Ok(json!({
         "badges": badges,
         "badge_types": types,
         "badge_groupings": grouping_json,
@@ -160,7 +179,6 @@ pub async fn index(
             "badge_type_ids": all_types.iter().map(|t| t.0).collect::<Vec<_>>(),
         },
     }))
-    .into_response())
 }
 
 /// GET /admin/badges/types(.json)
@@ -185,19 +203,29 @@ pub async fn badge_types(
     Ok(Json(json!({ "badge_types": types })).into_response())
 }
 
-/// GET /admin/badges/{new,:id} and /admin/badges/award/:badge_id: empty
-/// actions, the Ember page for a browser and no content otherwise.
+/// GET /admin/badges/{settings,new,:id} and /admin/badges/award/:badge_id:
+/// empty actions, no content for JSON; the page for a browser.
 pub async fn page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    use crate::admin_badges_view::Page;
     if let Err(r) = admin(&state, &guardian) {
         return Ok(*r);
     }
-    refuse_html(uri.path(), &headers)?;
-    Ok(StatusCode::NO_CONTENT.into_response())
+    if xhr_or_json(uri.path(), &headers) {
+        return Ok(StatusCode::NO_CONTENT.into_response());
+    }
+    let path = uri.path().trim_end_matches('/');
+    let rest = path.strip_prefix("/admin/badges/").unwrap_or_default();
+    let which = match rest.strip_prefix("award/") {
+        Some(id) => Page::Award(id.to_string()),
+        None if rest == "settings" => Page::Settings,
+        None => Page::Show(rest.to_string()),
+    };
+    crate::routes::admin_badges_pages::page(&state, &guardian, &headers, &uri, which).await
 }
 
 /// The badge's AdminBadgeSerializer document: its type and itself.

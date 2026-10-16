@@ -274,6 +274,71 @@ async fn the_api_keys_pages() {
 }
 
 #[tokio::test]
+async fn the_badges_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // The index: the header's actions, the list and the intro.
+    let (status, html) = admin.page("/admin/badges").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Badges - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-badges\">"));
+    assert!(html.contains("data-href=\"/admin/badges/award/new\""));
+    assert!(html.contains("edit-groupings-btn"));
+    assert!(html.contains("<li class=\"active admin-badges-tabs__index\">"));
+    assert!(html.contains("<ul class=\"admin-badge-list\">"));
+    assert!(html.contains("<a href=\"/admin/badges/1\"><span class=\"user-badge badge-type-bronze\" data-badge-name=\"Basic\""));
+    assert!(html.contains("<section class=\"current-badge content-body\"><h2>"));
+    assert!(html.contains("/admin-badges.js"));
+    // A system badge: its texts read-only with their site text links.
+    let (status, html) = admin.page("/admin/badges/1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<a class=\"active\" href=\"/admin/badges/1\">"));
+    assert!(html.contains(
+        "<form class=\"form-kit badge-form current-badge content-body\" novalidate=\"\""
+    ));
+    assert!(html.contains("<span class=\"readonly-field\">Basic</span><a href=\"/admin/customize/site_texts?q=badges.basic_user.name\">"));
+    assert!(html.contains("title=\"Selected icon: user\""));
+    assert!(html.contains("data-name=\"badge_grouping_id\""));
+    assert!(!html.contains("badge-form__delete-badge-btn"));
+    // A new one: its name to type, the first type and grouping, Delete.
+    let (_, html) = admin.page("/admin/badges/new").await;
+    assert!(html.contains("<span class=\"badge-display-name\">New Badge</span></h2>"));
+    assert!(html.contains("name=\"name\" type=\"text\" value=\"New Badge\""));
+    assert!(html.contains("<span class=\"d-icon-grid-picker__label\">Select icon</span>"));
+    assert!(html.contains("badge-form__delete-badge-btn"));
+    // Bulk award: the note with no badge, the CSV form with one.
+    let (_, html) = admin.page("/admin/badges/award/new").await;
+    assert!(html.contains("<div class=\"admin-contents admin-badges award\">"));
+    assert!(html.contains("<span class=\"badge-required\">"));
+    assert!(html.contains("<a href=\"/admin/badges/award/1\">"));
+    let (_, html) = admin.page("/admin/badges/award/1").await;
+    assert!(html.contains("<form class=\"form-horizontal\" data-badge-id=\"1\">"));
+    assert!(html.contains("id=\"massAwardCSVUpload\""));
+    // The settings tab.
+    let (status, html) = admin.page("/admin/badges/settings").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Settings - Badges - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("data-setting=\"enable_badges\""));
+    // The JSON stays.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/badges.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"badges\":"), "{body}");
+    let (status, _) = admin.send(Method::GET, "/admin/badges/1", "", true).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/badges")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn the_problem_checks_page() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;

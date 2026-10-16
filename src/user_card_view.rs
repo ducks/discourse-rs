@@ -152,7 +152,7 @@ pub(crate) fn avatar_flair(
 
 /// `domFromString("<div>" + description + "</div>").innerText`, the
 /// badge button's title: the description without its tags.
-fn strip_tags(html: &str) -> String {
+pub(crate) fn strip_tags(html: &str) -> String {
     let mut text = String::with_capacity(html.len());
     let mut in_tag = false;
     for c in html.chars() {
