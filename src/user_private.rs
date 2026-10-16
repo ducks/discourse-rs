@@ -119,18 +119,10 @@ impl Private<'_> {
             if backup {
                 return Err(Unsupported("second_factor_remaining_backup_codes").into());
             }
-            let accounts: i64 = sqlx::query_scalar(
-                "SELECT count(*) FROM user_associated_accounts WHERE user_id = $1",
-            )
-            .bind(user.id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if accounts > 0 {
-                return Err(
-                    Unsupported("associated_accounts (per-authenticator descriptions)").into(),
-                );
-            }
-            out.insert("associated_accounts".into(), json!([]));
+            let accounts = crate::auth::associated_accounts(&mut *self.conn, self.i18n, user.id)
+                .await
+                .map_err(UsersError::App)?;
+            out.insert("associated_accounts".into(), accounts);
         }
         Ok(())
     }

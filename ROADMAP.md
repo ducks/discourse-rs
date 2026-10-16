@@ -1762,7 +1762,34 @@ route table has been made, so this list may be short.
     routes/user_api_key_auth.rs:296; group_manager.rs:753),
     auth_immediately and logout with only external logins
     (routes/login_required.rs:132; routes/session.rs:605), Twitter's
-    login health check (problem_checks.rs:488). Needs: network
+    login health check (problem_checks.rs:488). Needs: network. Split
+    into stacked branches `feat/external-auth-<x>`:
+    191a. ~~`feat/external-auth-connect`~~ (done) M: DiscourseConnect,
+    consumer and provider (/session/sso, /session/sso_login,
+    /session/sso_provider with its 2FA confirmation and the login it
+    waits for), external ids (the current user, notifications, web hook
+    payloads, API requests, /u/by-external, admins' `external_ids` on
+    PUT /u, email confirmation through the record), the admin's
+    sync_sso, sso_record and delete_associated_accounts, sso-email and
+    sso-payload, the authenticator registry (every builtin and bundled
+    plugin provider: site.json's auth_providers, associated accounts on
+    /emails, the user and the admin view, the report), auth_immediately,
+    logout with only external logins. Refused: invites through
+    DiscourseConnect (192), suspended users at its login, unstaging a
+    staged user, `admin`/`moderator` in a payload (the staff groups'
+    refresh), validation messages other than the email's in sync_sso
+    191b. `feat/external-auth-oauth` M: the OmniAuth request and
+    callback phases (/auth/:provider, the confirmation page,
+    /auth/failure), discourse-oauth2-basic and discourse-openid-connect,
+    connecting and revoking accounts (/associate/:token,
+    preferences/revoke-account, the account tab), the login page's
+    buttons
+    191c. `feat/external-auth-signup` M: signing up with the
+    authentication the callback kept (users#create, UserAuthenticator,
+    LoginActivator), the client's authentication_data handling
+    191d. `feat/external-auth-builtin` M: GitHub, Google, Facebook,
+    Discord, LinkedIn, Discourse ID, Microsoft and Amazon strategies;
+    Twitter (OAuth 1.0a) with its health check; Apple, LTI and Patreon
 192. `feat/invites` L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email

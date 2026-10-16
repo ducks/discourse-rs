@@ -507,6 +507,33 @@ pub async fn create(
     .await?;
     let cookie = current::auth_cookie(&state.keys, &settings, &user, &unhashed)?;
 
+    // `if payload = cookies.delete(:sso_payload)`: the DiscourseConnect
+    // provider request the login page was shown for, answered now.
+    if let Some(payload) = current::cookie(&headers, "sso_payload") {
+        let payload = form_urlencoded::parse(format!("v={payload}").as_bytes())
+            .next()
+            .map(|(_, v)| v.into_owned())
+            .unwrap_or_default();
+        drop(conn);
+        let base_path = state.config.globals.relative_url_root();
+        let cookies = vec![
+            cookie,
+            format!(
+                "sso_payload=; path={}; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT",
+                if base_path.is_empty() { "/" } else { base_path }
+            ),
+        ];
+        let mut response = super::discourse_connect::provider_after_login(
+            &state, &settings, &headers, &uri, user.id, &payload, cookies,
+        )
+        .await?;
+        response.headers_mut().insert(
+            "x-discourse-username",
+            HeaderValue::from_str(&user.username)?,
+        );
+        return Ok(response);
+    }
+
     // The body: UserSerializer for the user themselves, seen as them
     // (log_on_user has set current_user). The request carried no auth
     // cookie, so no token is the active one.
@@ -605,13 +632,37 @@ pub async fn destroy(
         .map(str::to_string);
     let mut redirect_url = return_url.or_else(|| settings.get("logout_redirect").ok()?.presence());
     if redirect_url.is_none() && settings.get("login_required")?.truthy() {
-        if settings.get("enable_discourse_connect")?.truthy() {
+        let uses_sso = settings.get("enable_discourse_connect")?.truthy();
+        let has_one_auth = !settings.get("enable_local_logins")?.truthy()
+            && crate::auth::enabled(&settings)?.len() == 1;
+        if uses_sso || has_one_auth {
             redirect_url = Some(format!("{base_path}/login-required"));
-        } else if !settings.get("enable_local_logins")?.truthy() {
-            return Err(Unsupported("logout with only external logins").into());
         }
     }
     let redirect_url = redirect_url.unwrap_or_else(|| format!("{base_path}/"));
+    log_off(
+        &state,
+        &mut conn,
+        &settings,
+        &headers,
+        &incoming,
+        &redirect_url,
+    )
+    .await
+}
+
+/// The rest of SessionController#destroy once the redirect url is known
+/// (DiscourseConnect's provider logout passes its return url): the auth
+/// token (or every token, log_out_strict) gone, user_logged_out's hooks,
+/// then the redirect, or its url to an xhr request.
+pub(super) async fn log_off(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    headers: &HeaderMap,
+    incoming: &Incoming,
+    redirect_url: &str,
+) -> Result<Response, AppError> {
     if let Some(session) = &incoming.session {
         if settings.get("log_out_strict")?.truthy() {
             sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")
@@ -626,9 +677,9 @@ pub async fn destroy(
         }
         // user.logged_out, or the user_logged_out event: its web hooks.
         crate::web_hooks::enqueue_user_hooks(
-            &mut conn,
+            &mut *conn,
             &crate::web_hooks::Payloads {
-                settings: &settings,
+                settings,
                 i18n: &state.i18n,
                 config: &state.config,
             },
@@ -647,11 +698,13 @@ pub async fn destroy(
             .get(header::HOST)
             .and_then(|h| h.to_str().ok())
             .unwrap_or("localhost");
-        (
-            StatusCode::FOUND,
-            [(header::LOCATION, format!("http://{host}{redirect_url}"))],
-        )
-            .into_response()
+        // A trusted return url (another site's) is absolute.
+        let location = if redirect_url.contains("://") {
+            redirect_url.to_string()
+        } else {
+            format!("http://{host}{redirect_url}")
+        };
+        (StatusCode::FOUND, [(header::LOCATION, location)]).into_response()
     };
     if let Some(session) = &incoming.session {
         response.headers_mut().insert(
@@ -660,7 +713,7 @@ pub async fn destroy(
         );
     }
     if incoming.had_token_cookie {
-        let cookie = current::delete_auth_cookie(&settings)?;
+        let cookie = current::delete_auth_cookie(settings)?;
         response
             .headers_mut()
             .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);

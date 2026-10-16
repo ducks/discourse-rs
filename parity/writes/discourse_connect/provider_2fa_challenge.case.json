@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_discourse_connect_provider": true,
+    "discourse_connect_provider_secrets": "provider.example.com|prov-secret"
+  },
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, created_at, updated_at, name) VALUES (9491, 3, 1, 'JBSWY3DPEHPK3PXP', true, now() - interval '1 day', now() - interval '1 day', 'phone')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-2fa",
+          "return_sso_url": "https://provider.example.com/sso_return",
+          "require_2fa": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/2fa.json?nonce={{responses.0.body.second_factor_challenge_nonce}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/second_factor_challenge_nonce"
+  ]
+}

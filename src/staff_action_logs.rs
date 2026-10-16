@@ -154,6 +154,14 @@ fn moderator_visible_action_ids(s: &SiteSettings) -> Result<Vec<i32>, AppError> 
         .collect())
 }
 
+/// `UserHistory#set_admin_only`: a staff action moderators don't see.
+pub fn admin_only(name: &str, s: &SiteSettings) -> Result<bool, AppError> {
+    let Some(id) = action_id(name) else {
+        return Ok(false);
+    };
+    Ok(staff_action_ids().contains(&id) && !moderator_visible_action_ids(s)?.contains(&id))
+}
+
 /// The request's params the index reads.
 #[derive(Default)]
 pub struct Params {

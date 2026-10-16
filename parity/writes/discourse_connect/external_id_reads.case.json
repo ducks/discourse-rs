@@ -1,0 +1,35 @@
+{
+  "user": "user1",
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9421, 3, 'ext-user1-reads', 'external_id=ext-user1-reads', now() - interval '2 days', now() - interval '2 days', 'user1', 'user1@example.com', 'User One')",
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9422, 4, 'ext-user2-reads', 'external_id=ext-user2-reads', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two')",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, created_at, updated_at, topic_id, post_number, high_priority) VALUES (9431, 5, 3, '{\"display_username\":\"user2\",\"topic_title\":\"Welcome\"}', false, now() - interval '1 hour', now() - interval '1 hour', 5, 1, false)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications.json?recent=true&limit=5"
+    },
+    {
+      "method": "GET",
+      "path": "/u/by-external/ext-user2-reads.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/by-external/no-such-id.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/by-external/github/123.json"
+    }
+  ]
+}

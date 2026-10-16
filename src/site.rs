@@ -152,28 +152,12 @@ const TAGS_FILTER_REGEXP: &str = r#"[/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+"
 /// `Archetype.list` minus private_message.
 const ARCHETYPES: &[&str] = &["regular", "banner"];
 
-/// The `enable_*` settings behind `Discourse::BUILTIN_AUTH`.
-const BUILTIN_AUTH_SETTINGS: &[&str] = &[
-    "enable_discourse_id",
-    "enable_facebook_logins",
-    "enable_google_oauth2_logins",
-    "enable_github_logins",
-    "enable_twitter_logins",
-    "enable_discord_logins",
-    "enable_linkedin_oidc_logins",
-];
-
-/// Whether a builtin login provider is enabled (`Discourse.enabled_auth_providers`
+/// Whether a login provider is enabled (`Discourse.enabled_auth_providers`
 /// is not empty), the client's login methods.
 pub fn external_logins_enabled(
     s: &crate::site_settings::SiteSettings,
 ) -> Result<bool, crate::AppError> {
-    for name in BUILTIN_AUTH_SETTINGS {
-        if s.get(name)?.truthy() {
-            return Ok(true);
-        }
-    }
-    Ok(false)
+    Ok(!crate::auth::enabled(s)?.is_empty())
 }
 
 #[derive(Debug)]
@@ -1256,15 +1240,13 @@ impl Site<'_> {
         Ok(Value::Array(out))
     }
 
-    /// `Discourse.enabled_auth_providers`: none unless a builtin provider is
-    /// enabled, and serializing an enabled one isn't ported.
+    /// `Discourse.enabled_auth_providers` through AuthProviderSerializer.
     fn auth_providers(&self) -> Result<Value, SiteError> {
-        for name in BUILTIN_AUTH_SETTINGS {
-            if self.truthy(name)? {
-                return Err(Unsupported("auth_providers (AuthProviderSerializer)").into());
-            }
+        let mut out = Vec::new();
+        for provider in crate::auth::enabled(self.settings)? {
+            out.push(provider.serialize(self.settings)?);
         }
-        Ok(json!([]))
+        Ok(Value::Array(out))
     }
 }
 

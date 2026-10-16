@@ -319,7 +319,12 @@ async fn ensure_can_search(
         .is_some_and(|a| a.contains("application/json"));
     Ok(Some(match uri {
         Some(uri) if !accepts_json => {
-            super::login_required::redirect_to_login(state, &settings, headers, uri)?
+            match super::login_required::redirect_to_login(state, &settings, headers, uri).await? {
+                Some(response) => response,
+                None => {
+                    return Err(crate::Unsupported("the search page's login redirect at /").into());
+                }
+            }
         }
         _ => super::login_required::not_logged_in(state),
     }))

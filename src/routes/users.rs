@@ -114,6 +114,9 @@ enum Routed {
     Preferences(String, super::user_preferences::Route, bool),
     /// `/u/:username/emails`: users#check_emails.
     CheckEmails(String),
+    /// `/u/:username/sso-email` (true) and `/sso-payload`:
+    /// users#check_sso_email and #check_sso_payload.
+    CheckSso(String, bool),
     /// The HTML of `/u/:username/notifications(/<tab>)`.
     Notifications(String, crate::user_notifications_view::Route),
     /// A path users#show answers that the Ember app has no route for: its
@@ -149,6 +152,9 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     }
     if rest == "emails" {
         return Ok(Routed::CheckEmails(username));
+    }
+    if rest == "sso-email" || rest == "sso-payload" {
+        return Ok(Routed::CheckSso(username, rest == "sso-email"));
     }
     if !json && (rest == "notifications" || rest.starts_with("notifications/")) {
         return Ok(match super::user_notifications::route(rest) {
@@ -231,6 +237,77 @@ pub async fn show(
     .await
 }
 
+/// GET /u/by-external/{external_id} and
+/// /u/by-external/{external_provider}/{external_id}: users#show for the
+/// user fetch_user_from_params finds by DiscourseConnect's external id, or
+/// (admins only) a managed authenticator's.
+pub async fn show_by_external(
+    State(state): State<AppState>,
+    axum::Extension(incoming): axum::Extension<crate::session::current::Incoming>,
+    Path(parts): Path<Vec<(String, String)>>,
+    Query(params): Query<ShowParams>,
+    headers: HeaderMap,
+    Peer(peer): Peer,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    let get = |k: &str| parts.iter().find(|(n, _)| n == k).map(|(_, v)| v.clone());
+    let raw = get("external_id").unwrap_or_default();
+    let json = raw.ends_with(".json");
+    let external_id = raw.strip_suffix(".json").unwrap_or(&raw).to_string();
+    let mut conn = state.pool.acquire().await?;
+    let user: Option<(String, bool)> = match get("external_provider") {
+        Some(provider) => {
+            if !incoming.guardian.is_admin() {
+                return Ok(invalid_access(&state));
+            }
+            let settings =
+                SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+                    .await?;
+            if !crate::auth::enabled_managed(&settings, &provider)? {
+                return Ok(super::topics::not_found_response(&state));
+            }
+            sqlx::query_as(
+                "SELECT u.username, u.active FROM user_associated_accounts a JOIN users u ON u.id = a.user_id \
+                 WHERE a.provider_name = $1 AND a.provider_uid = $2 LIMIT 1",
+            )
+            .bind(&provider)
+            .bind(&external_id)
+            .fetch_optional(&mut *conn)
+            .await?
+        }
+        None => {
+            sqlx::query_as(
+                "SELECT u.username, u.active FROM single_sign_on_records r JOIN users u ON u.id = r.user_id \
+                 WHERE r.external_id = $1 LIMIT 1",
+            )
+            .bind(&external_id)
+            .fetch_optional(&mut *conn)
+            .await?
+        }
+    };
+    drop(conn);
+    let Some((username, active)) = user else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if !active {
+        return Err(Unsupported("an inactive user by external id (InactiveUserSerializer)").into());
+    }
+    respond(
+        state,
+        incoming,
+        Target {
+            username,
+            action: Action::Show,
+            json,
+        },
+        params,
+        headers,
+        peer,
+        uri,
+    )
+    .await
+}
+
 /// GET /u/{username}/{*rest}
 pub async fn show_with_tail(
     State(state): State<AppState>,
@@ -283,6 +360,19 @@ pub async fn show_with_tail(
                 &incoming.guardian,
                 &username,
                 context,
+            )
+            .await;
+        }
+        Routed::CheckSso(username, email) => {
+            let context = crate::params::parse(uri.query(), &headers, &axum::body::Bytes::new())
+                .get("context")
+                .and_then(crate::params::scalar);
+            return super::discourse_connect::check_sso(
+                &state,
+                &incoming.guardian,
+                &username,
+                context,
+                email,
             )
             .await;
         }

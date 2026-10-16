@@ -1,0 +1,38 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso?client=parity",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true,
+    "auth_overrides_name": true
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login",
+      "discourse_connect": {
+        "secret": "parity-connect-secret",
+        "fields": {
+          "nonce": "{{responses.0.headers.Location|sso_nonce}}",
+          "external_id": "ext-user1",
+          "email": "user1@example.com",
+          "username": "user1",
+          "name": "User One From Connect"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/changes/single_sign_on_records/inserted/*/last_payload"
+  ]
+}

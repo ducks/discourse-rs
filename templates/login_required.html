@@ -3,6 +3,19 @@
 <div class="login-required">
   <h1>{{ welcome }}</h1>
   {% if login_required %}<p>This site requires an account to read. Log in to continue.</p>{% endif %}
+  {% if discourse_connect %}
+  {#- routes/login.js: DiscourseConnect is the only login, so the login
+      route starts it, back to here (or to destination_url, which
+      /session/sso reads). -#}
+  <p><a class="btn btn-primary" id="discourse-connect-login" href="{{ base_path }}/session/sso">Log in</a></p>
+  <script>
+    (function () {
+      var kept = /(?:^|; )destination_url=/.test(document.cookie);
+      var returnPath = kept ? "{{ base_path }}/" : encodeURIComponent(location.pathname);
+      window.location = "{{ base_path }}/session/sso?return_path=" + returnPath;
+    })();
+  </script>
+  {% endif %}
   {% if local_logins %}
   {#- POST /session answers 200 with an `error` for refused logins, as Rails
       does, so the script reads the body rather than the status. -#}

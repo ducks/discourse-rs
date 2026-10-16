@@ -1,0 +1,125 @@
+{
+  "name": "report_accounts_connect",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/associated_accounts_by_provider.json"
+    }
+  ],
+  "started_at": "2026-10-16T02:51:05.207206",
+  "transaction_started_at": "2026-10-16T02:51:02.982604",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "associated_accounts_by_provider",
+          "title": "Associated accounts by login method",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Show number of associated accounts grouped by login provider. Applicable only when social login methods are enabled.",
+          "description_link": null,
+          "data": [
+            {
+              "key": "no_accounts",
+              "provider": "Accounts without an SSO record",
+              "count": 3
+            },
+            {
+              "key": "discourse_connect",
+              "provider": "SSO via Discourse Connect",
+              "count": 2
+            }
+          ],
+          "start_date": "2026-10-15T00:00:00Z",
+          "end_date": "2026-11-14T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-14T00:00:00Z",
+          "prev_end_date": "2026-10-15T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": false,
+          "report_key": "reports:associated_accounts_by_provider:20261015:20261114:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "provider",
+              "title": "Login provider"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 115,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uiTqeeHaW+PKwqFgl33Aj//gsMI=",
+            "created_at": "2026-10-16T02:51:04.050458",
+            "rotated_at": "2026-10-16T02:51:04.047928",
+            "updated_at": "2026-10-16T02:51:04.050458",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uiTqeeHaW+PKwqFgl33Aj//gsMI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 115,
+            "seen_at": "2026-10-16T02:51:05.218658",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uiTqeeHaW+PKwqFgl33Aj//gsMI=",
+            "created_at": "2026-10-16T02:51:04.050458",
+            "rotated_at": "2026-10-16T02:51:04.047928",
+            "updated_at": "2026-10-16T02:51:04.050458",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uiTqeeHaW+PKwqFgl33Aj//gsMI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at) VALUES (9491, 3, 'ext-r1', 'x', now(), now()), (9492, 4, 'ext-r2', 'x', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "8e2c6451f7158fe7365855fb5fb7e247cdabff15c1bab456b4c17a201837cd37",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

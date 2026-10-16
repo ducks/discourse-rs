@@ -123,7 +123,7 @@ def resolve(value, state)
   when Array
     value.map { |v| resolve(v, state) }
   when String
-    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param)?\}\}/) do
+    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce)?\}\}/) do
       path, filter = Regexp.last_match(1), Regexp.last_match(2)
       found = path.split(".").reduce(state) { |acc, k| acc.is_a?(Array) ? acc[k.to_i] : acc&.[](k) }
       raise "{{#{path}}} resolved to nothing" if found.nil?
@@ -132,6 +132,12 @@ def resolve(value, state)
       when "|last_segment" then found.to_s.split("/").last
       # A url's `request` query value (the device flow's request token).
       when "|request_param" then CGI.unescape(found.to_s[/[?&]request=([^&#]*)/, 1].to_s)
+      # A url's `state` query value (an OAuth authorize redirect's).
+      when "|state_param" then CGI.unescape(found.to_s[/[?&]state=([^&#]*)/, 1].to_s)
+      # The nonce in a DiscourseConnect redirect's signed payload.
+      when "|sso_nonce"
+        payload = CGI.unescape(found.to_s[/[?&]sso=([^&#]*)/, 1].to_s)
+        Rack::Utils.parse_query(Base64.decode64(payload))["nonce"].to_s
       else found.to_s
       end
     end
@@ -400,6 +406,15 @@ cases.each do |c|
         options = { params: params, headers: headers.merge(r["headers"] || {}) }
         options[:as] = :json if r["method"] != "GET" && !multipart?(params)
         path = resolve(r["path"], state)
+        # `discourse_connect`: a DiscourseConnect provider's answer, its
+        # `fields` signed with `secret` as DiscourseConnectBase#payload
+        # signs them, added to the path's query.
+        if (dc = r["discourse_connect"])
+          dc = resolve(dc, state)
+          payload = Base64.strict_encode64(Rack::Utils.build_query(dc["fields"]))
+          sig = OpenSSL::HMAC.hexdigest("sha256", dc["secret"], payload)
+          path = "#{path}#{path.include?("?") ? "&" : "?"}sso=#{CGI.escape(payload)}&sig=#{sig}"
+        end
         # Unicorn sets REQUEST_PATH; log_on_user logs it as the token's path.
         options[:env] = { "REQUEST_PATH" => path.split("?").first }
         session.public_send(r["method"].downcase, path, **options)
@@ -415,7 +430,11 @@ cases.each do |c|
         # those the case names in `keep_headers` (a redirect's Location, as
         # its path, the host being each side's own).
         kept = session.response.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max", *(c["keep_headers"] || []))
-        kept["Location"] = URI(kept["Location"]).request_uri if kept["Location"]
+        # A relative one (OmniAuth's failure redirect) is kept as sent.
+        if kept["Location"]
+          location = URI(kept["Location"])
+          kept["Location"] = location.request_uri if location.respond_to?(:request_uri)
+        end
         response[:headers] = kept if kept.any?
         responses << response
       end

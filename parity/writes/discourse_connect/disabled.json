@@ -1,0 +1,44 @@
+{
+  "name": "disabled",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso"
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_login?sso=abc&sig=def"
+    }
+  ],
+  "started_at": "2026-10-16T01:08:33.873516",
+  "transaction_started_at": "2026-10-16T01:08:31.739981",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d268cb4c8d7f5ef259c1bbb21b723c7a68b3340cbb1942227df62940118c99c1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

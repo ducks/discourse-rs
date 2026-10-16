@@ -1344,11 +1344,63 @@ async fn align_sequences(pool: &PgPool, case: &Value, setup_counts: Option<HashM
     }
 }
 
-/// `{{path.to.value}}` with an optional `|reverse`, `|last_segment` or
-/// `|request_param` (a url's `request` query value).
+/// A url's query value by name.
+fn query_param(url: &str, name: &str) -> String {
+    url.split_once('?')
+        .and_then(|(_, q)| {
+            form_urlencoded::parse(q.split('#').next().unwrap_or("").as_bytes())
+                .find(|(k, _)| k == name)
+                .map(|(_, v)| v.into_owned())
+        })
+        .unwrap_or_default()
+}
+
+/// A case request's `discourse_connect`: its `fields` signed with `secret`
+/// as DiscourseConnectBase#payload signs them (Base64 of the query,
+/// HMAC-SHA256 in hex), the `sso` and `sig` to add to the path's query.
+fn discourse_connect_query(dc: &Value) -> String {
+    use base64::Engine;
+    use hmac::Mac;
+    let query: String = form_urlencoded::Serializer::new(String::new())
+        .extend_pairs(
+            dc["fields"]
+                .as_object()
+                .into_iter()
+                .flatten()
+                .map(|(k, v)| {
+                    let v = match v {
+                        Value::String(s) => s.clone(),
+                        other => other.to_string(),
+                    };
+                    (k.clone(), v)
+                }),
+        )
+        .finish();
+    let payload = base64::engine::general_purpose::STANDARD.encode(query);
+    let mut mac =
+        hmac::Hmac::<sha2::Sha256>::new_from_slice(dc["secret"].as_str().unwrap_or("").as_bytes())
+            .unwrap();
+    mac.update(payload.as_bytes());
+    let sig: String = mac
+        .finalize()
+        .into_bytes()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    let escaped: String = form_urlencoded::byte_serialize(payload.as_bytes()).collect();
+    format!("sso={escaped}&sig={sig}")
+}
+
+/// `{{path.to.value}}` with an optional `|reverse`, `|last_segment`,
+/// `|request_param` (a url's `request` query value), `|state_param` (its
+/// `state`, an OAuth authorize redirect's) or `|sso_nonce` (the nonce in a
+/// DiscourseConnect redirect's signed payload).
 fn resolve(value: &Value, state: &Value) -> Value {
     static REF: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-        regex::Regex::new(r"\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param)?\}\}").unwrap()
+        regex::Regex::new(
+            r"\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce)?\}\}",
+        )
+        .unwrap()
     });
     match value {
         Value::Object(m) => Value::Object(
@@ -1374,14 +1426,19 @@ fn resolve(value: &Value, state: &Value) -> Value {
                 match c.get(2).map(|m| m.as_str()) {
                     Some("|reverse") => text.chars().rev().collect(),
                     Some("|last_segment") => text.rsplit('/').next().unwrap_or("").to_string(),
-                    Some("|request_param") => text
-                        .split_once('?')
-                        .and_then(|(_, q)| {
-                            form_urlencoded::parse(q.as_bytes())
-                                .find(|(k, _)| k == "request")
-                                .map(|(_, v)| v.into_owned())
-                        })
-                        .unwrap_or_default(),
+                    Some("|request_param") => query_param(&text, "request"),
+                    Some("|state_param") => query_param(&text, "state"),
+                    Some("|sso_nonce") => {
+                        use base64::Engine;
+                        let payload = query_param(&text, "sso");
+                        let decoded = base64::engine::general_purpose::STANDARD
+                            .decode(payload.trim())
+                            .unwrap_or_default();
+                        form_urlencoded::parse(&decoded)
+                            .find(|(k, _)| k == "nonce")
+                            .map(|(_, v)| v.into_owned())
+                            .unwrap_or_default()
+                    }
                     _ => text,
                 }
             })
@@ -1692,11 +1749,21 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         let state = serde_json::json!({ "responses": responses, "jobs": jobs });
         let params = request.get("params").map(|p| resolve(p, &state));
         let body = params.as_ref().filter(|p| p.is_object());
-        let path = resolve(&request["path"], &state);
+        let mut path = resolve(&request["path"], &state)
+            .as_str()
+            .unwrap()
+            .to_string();
+        // `discourse_connect`: a DiscourseConnect provider's signed answer
+        // added to the query, as the recorder adds it.
+        if let Some(dc) = request.get("discourse_connect") {
+            let query = discourse_connect_query(&resolve(dc, &state));
+            path = format!(
+                "{path}{}{query}",
+                if path.contains('?') { "&" } else { "?" }
+            );
+        }
         let extra = request["headers"].as_object().cloned().unwrap_or_default();
-        let (status, body) = client
-            .send_with(method, path.as_str().unwrap(), body, &extra)
-            .await;
+        let (status, body) = client.send_with(method, &path, body, &extra).await;
         let mut response = serde_json::json!({ "status": status, "body": body });
         if !client.rate_headers.is_empty() {
             response["headers"] = Value::Object(client.rate_headers.clone());

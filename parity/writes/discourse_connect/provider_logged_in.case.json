@@ -1,0 +1,96 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_discourse_connect_provider": true,
+    "discourse_connect_provider_secrets": "provider.example.com|prov-secret\n*.other.example.com|other-secret"
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-1",
+          "return_sso_url": "https://provider.example.com/sso_return?x=1",
+          "custom.passthrough": "kept"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "discourse_connect": {
+        "secret": "other-secret",
+        "fields": {
+          "nonce": "provider-nonce-2",
+          "return_sso_url": "https://forum.other.example.com/session/sso_login",
+          "admin": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "wrong-secret",
+        "fields": {
+          "nonce": "provider-nonce-3",
+          "return_sso_url": "https://provider.example.com/sso_return"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-4",
+          "return_sso_url": "https://unknown.example.net/sso_return"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-5",
+          "return_sso_url": "https://provider.example.com/sso_return",
+          "prompt": "login"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-6"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/sso_provider",
+      "headers": {"Accept": "text/html", "X-Requested-With": ""},
+      "discourse_connect": {
+        "secret": "prov-secret",
+        "fields": {
+          "nonce": "provider-nonce-7",
+          "return_sso_url": "https://provider.example.com/logged_out",
+          "logout": "true"
+        }
+      }
+    }
+  ]
+}

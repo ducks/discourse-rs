@@ -127,9 +127,8 @@ pub async fn handle(
     let Some(user_id) = fetch_user(&mut tx, &guardian, &username).await? else {
         return Ok(super::topics::not_found_response(&state));
     };
-    if p.contains_key("external_id") {
-        return Err(Unsupported("finding the user by external id").into());
-    }
+    // fetch_user_from_params: the route's username always wins over an
+    // external_id param.
     match endpoint {
         Endpoint::Add | Endpoint::Change => {
             let owner = Owner::load(&mut tx, user_id).await?;

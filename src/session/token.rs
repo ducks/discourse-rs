@@ -138,12 +138,34 @@ pub async fn generate(
     client_ip: &str,
     path: Option<&str>,
 ) -> Result<(AuthToken, String), sqlx::Error> {
+    generate_with(
+        conn,
+        user_id,
+        secret_key_base,
+        user_agent,
+        client_ip,
+        path,
+        false,
+    )
+    .await
+}
+
+/// `UserAuthToken.generate!` with `authenticated_with_oauth:`.
+pub async fn generate_with(
+    conn: &mut PgConnection,
+    user_id: i32,
+    secret_key_base: &str,
+    user_agent: Option<&str>,
+    client_ip: &str,
+    path: Option<&str>,
+    authenticated_with_oauth: bool,
+) -> Result<(AuthToken, String), sqlx::Error> {
     let unhashed = new_unhashed_token();
     let hashed = hash_token(&unhashed, secret_key_base);
     let row: AuthToken = sqlx::query_as(
         "INSERT INTO user_auth_tokens (user_id, user_agent, client_ip, auth_token, prev_auth_token, \
                                        rotated_at, authenticated_with_oauth, created_at, updated_at) \
-         VALUES ($1, $2, $3::inet, $4, $4, now(), FALSE, now(), now()) \
+         VALUES ($1, $2, $3::inet, $4, $4, now(), $5, now(), now()) \
          RETURNING id, user_id, auth_token, prev_auth_token, auth_token_seen, rotated_at, authenticated_with_oauth, \
                    impersonated_user_id, impersonation_expires_at",
     )
@@ -151,6 +173,7 @@ pub async fn generate(
     .bind(user_agent)
     .bind(client_ip)
     .bind(&hashed)
+    .bind(authenticated_with_oauth)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(

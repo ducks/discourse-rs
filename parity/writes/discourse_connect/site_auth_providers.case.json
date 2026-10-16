@@ -1,0 +1,39 @@
+{
+  "user": null,
+  "settings": {
+    "github_client_id": "ghclient1",
+    "github_client_secret": "abc123",
+    "enable_github_logins": true,
+    "google_oauth2_client_id": "google-client",
+    "google_oauth2_client_secret": "google-secret",
+    "enable_google_oauth2_logins": true,
+    "facebook_app_id": "123456",
+    "facebook_app_secret": "def456",
+    "enable_facebook_logins": true,
+    "oauth2_client_id": "oauth2-client",
+    "oauth2_client_secret": "oauth2-secret",
+    "oauth2_authorize_url": "https://idp.example.com/authorize",
+    "oauth2_token_url": "https://idp.example.com/token",
+    "oauth2_enabled": true,
+    "oauth2_button_title": "with Example IdP",
+    "oauth2_allow_association_change": true,
+    "openid_connect_discovery_document": "https://idp.example.com/.well-known/openid-configuration",
+    "openid_connect_client_id": "oidc-client",
+    "openid_connect_client_secret": "oidc-secret",
+    "openid_connect_enabled": true,
+    "discord_client_id": "discord-client",
+    "enable_discord_logins": false
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/site.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/markdown_additional_options",
+    "/responses/0/body/hashtag_configurations",
+    "/responses/0/body/hashtag_icons",
+    "/responses/0/body/access_control"
+  ]
+}

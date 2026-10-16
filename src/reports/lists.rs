@@ -260,26 +260,9 @@ pub async fn trust_level_growth(
     Ok(())
 }
 
-/// Settings that turn on an external login (Discourse.enabled_authenticators).
-const LOGIN_SETTINGS: [&str; 14] = [
-    "enable_google_oauth2_logins",
-    "enable_facebook_logins",
-    "enable_twitter_logins",
-    "enable_github_logins",
-    "enable_discord_logins",
-    "enable_linkedin_oidc_logins",
-    "sign_in_with_apple_enabled",
-    "microsoft_auth_enabled",
-    "enable_login_with_amazon",
-    "oauth2_enabled",
-    "openid_connect_enabled",
-    "lti_enabled",
-    "patreon_login_enabled",
-    "enable_discourse_connect",
-];
-
-/// `report_associated_accounts_by_provider`, for a site without
-/// external logins (the providers' own counts are not ported).
+/// `report_associated_accounts_by_provider`: active users' accounts with
+/// each enabled login (or DiscourseConnect's records), the site's users,
+/// and those without any, most first.
 pub async fn associated_accounts(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
@@ -291,12 +274,43 @@ pub async fn associated_accounts(
         {"property": "provider", "title": cx.t("reports.associated_accounts_by_provider.labels.provider")?},
         {"property": "count", "type": "number", "title": cx.t("reports.default.labels.count")?},
     ]);
-    for setting in LOGIN_SETTINGS {
-        if cx.settings.get(setting).is_ok_and(|v| v.truthy()) {
-            return Err(
-                Unsupported("associated accounts by provider with an external login on").into(),
-            );
+    let enabled: Vec<String> = crate::auth::enabled(cx.settings)?
+        .iter()
+        .map(|p| p.name.to_string())
+        .collect();
+    let sso = cx.settings.get("enable_discourse_connect")?.truthy();
+    let mut data: Vec<(String, String, i64)> = Vec::new();
+    if !enabled.is_empty() && !sso {
+        let counts: Vec<(String, i64)> = sqlx::query_as(
+            "SELECT a.provider_name, count(*) FROM user_associated_accounts a \
+             JOIN users u ON u.id = a.user_id \
+             WHERE a.provider_name = ANY($1) AND u.active GROUP BY a.provider_name",
+        )
+        .bind(&enabled)
+        .fetch_all(&mut *conn)
+        .await?;
+        for name in &enabled {
+            let count = counts
+                .iter()
+                .find(|(n, _)| n == name)
+                .map(|(_, c)| *c)
+                .unwrap_or(0);
+            data.push((name.clone(), cx.t(&format!("js.login.{name}.name"))?, count));
         }
+    }
+    let mut sso_count = 0;
+    if sso {
+        sso_count = sqlx::query_scalar(
+            "SELECT count(DISTINCT r.user_id) FROM single_sign_on_records r \
+             JOIN users u ON u.id = r.user_id WHERE u.active",
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+        data.push((
+            "discourse_connect".into(),
+            cx.t("reports.associated_accounts_by_provider.labels.discourse_connect")?,
+            sso_count,
+        ));
     }
     // Statistics.users[:count]: real, active, neither suspended nor silenced.
     let mut cond = format!(
@@ -310,18 +324,35 @@ pub async fn associated_accounts(
     let total: i64 = sqlx::query_scalar(&format!("SELECT count(*) FROM users WHERE {cond}"))
         .fetch_one(&mut *conn)
         .await?;
-    let mut data = vec![
-        (
-            "total_users",
+    if !sso {
+        data.push((
+            "total_users".into(),
             cx.t("reports.associated_accounts_by_provider.labels.total_users")?,
             total,
-        ),
-        (
-            "no_accounts",
-            cx.t("reports.associated_accounts_by_provider.labels.no_accounts")?,
-            total,
-        ),
-    ];
+        ));
+    }
+    let with_accounts: i64 = if sso {
+        sso_count
+    } else if enabled.is_empty() {
+        0
+    } else {
+        sqlx::query_scalar(
+            "SELECT count(DISTINCT a.user_id) FROM user_associated_accounts a \
+             JOIN users u ON u.id = a.user_id WHERE a.provider_name = ANY($1) AND u.active",
+        )
+        .bind(&enabled)
+        .fetch_one(&mut *conn)
+        .await?
+    };
+    data.push((
+        "no_accounts".into(),
+        cx.t(if sso {
+            "reports.associated_accounts_by_provider.labels.no_sso_accounts"
+        } else {
+            "reports.associated_accounts_by_provider.labels.no_accounts"
+        })?,
+        total - with_accounts,
+    ));
     // sort_by! { -count }
     data.sort_by_key(|(_, _, n)| -n);
     r.data = Value::Array(

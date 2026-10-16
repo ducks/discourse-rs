@@ -285,16 +285,19 @@ pub(super) fn meets_tl(settings: &SiteSettings, guardian: &Guardian) -> Result<b
 }
 
 /// `redirect_anonymous_to_login`: the destination kept in
-/// destination_url, then the login page.
+/// destination_url, then the login page (DiscourseConnect's, which reads
+/// the cookie, when it is on).
 pub(super) fn redirect_to_login(
     state: &AppState,
     settings: &SiteSettings,
     headers: &HeaderMap,
     destination: &str,
 ) -> Result<Response, AppError> {
-    if settings.get("enable_discourse_connect")?.truthy() {
-        return Err(Unsupported("DiscourseConnect logins").into());
-    }
+    let login = if settings.get("enable_discourse_connect")?.truthy() {
+        "/session/sso"
+    } else {
+        "/login"
+    };
     let host = headers
         .get(header::HOST)
         .and_then(|h| h.to_str().ok())
@@ -307,7 +310,7 @@ pub(super) fn redirect_to_login(
     Ok((
         StatusCode::FOUND,
         [
-            (header::LOCATION, format!("http://{host}{base_path}/login")),
+            (header::LOCATION, format!("http://{host}{base_path}{login}")),
             (header::SET_COOKIE, cookie),
         ],
     )

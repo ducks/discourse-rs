@@ -1,0 +1,38 @@
+{
+  "user": "admin",
+  "settings": {
+    "discourse_connect_url": "https://idp.example.com/sso",
+    "discourse_connect_secret": "parity-connect-secret",
+    "enable_discourse_connect": true
+  },
+  "setup": [
+    "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name) VALUES (9471, 4, 'ext-user2-actions', 'external_id=ext-user2-actions&email=user2%40example.com', now() - interval '2 days', now() - interval '2 days', 'user2', 'User2@Example.com', 'User Two')",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9472, 'facebook', 'fb-actions', 4, now(), '{\"email\":\"user2@facebook.example\",\"name\":\"Two \\\"Quoted\\\" #{x}\"}', '{}', '{}', now(), now())",
+    "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9473, 'github', 'gh-actions', 4, now(), '{\"nickname\":\"user2gh\",\"urls\":{\"Blog\":null},\"n\":3}', '{}', '{}', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user2/sso-email.json?context=%2Fadmin%2Fusers%2F4%2Fuser2"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user2/sso-payload.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user3/sso-email.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/delete_associated_accounts.json",
+      "params": {
+        "context": "/admin/users/4/user2"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/4/sso_record.json"
+    }
+  ]
+}

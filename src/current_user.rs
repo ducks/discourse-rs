@@ -638,10 +638,25 @@ pub async fn serialize(
     };
     out.insert("link_posting_access".into(), json!(link_posting_access));
     if settings.get("enable_discourse_connect")?.truthy() {
-        return Err(Unsupported("external_id with DiscourseConnect").into());
+        let external_id: Option<String> =
+            sqlx::query_scalar("SELECT external_id FROM single_sign_on_records WHERE user_id = $1")
+                .bind(uid)
+                .fetch_optional(&mut *conn)
+                .await?;
+        out.insert("external_id".into(), json!(external_id));
     }
     if settings.get("include_associated_account_ids")?.truthy() {
-        return Err(Unsupported("associated_account_ids").into());
+        let accounts: Vec<(String, String)> = sqlx::query_as(
+            "SELECT provider_name, provider_uid FROM user_associated_accounts WHERE user_id = $1 ORDER BY id",
+        )
+        .bind(uid)
+        .fetch_all(&mut *conn)
+        .await?;
+        let mut ids = Map::new();
+        for (provider, uid) in accounts {
+            ids.insert(provider, json!(uid));
+        }
+        out.insert("associated_account_ids".into(), Value::Object(ids));
     }
     let top_category_ids: Vec<i32> = sqlx::query_scalar(
         "SELECT category_id FROM category_users WHERE user_id = $1 AND notification_level NOT IN (0, 1) \
