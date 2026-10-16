@@ -526,6 +526,7 @@ async fn render_title(live: &Live) -> Result<String, AppError> {
             post_number: None,
         },
         post_types: Vec::new(),
+        logo_small_url: None,
     };
     let rendered = match view.render(topic_id).await {
         Ok(rendered) => rendered,
@@ -609,6 +610,7 @@ async fn render_post(
             post_number: None,
         },
         post_types: Vec::new(),
+        logo_small_url: None,
     };
     let post = view
         .serialize_single_post(post_id, false, false, true)

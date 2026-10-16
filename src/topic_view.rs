@@ -257,6 +257,8 @@ pub struct TopicView<'a> {
     pub options: Options,
     /// `Topic.visible_post_types(user)`, set by render.
     pub post_types: Vec<i32>,
+    /// `logo_small`'s url once read (`logo_small_url`); None to start.
+    pub logo_small_url: Option<Option<String>>,
 }
 
 /// What the controller needs from the view besides the JSON.
@@ -849,6 +851,16 @@ impl TopicView<'_> {
         Ok(false)
     }
 
+    /// TopicListSerializer#logo_small_url, read once per view.
+    async fn logo_small_url(&mut self) -> Result<Option<String>, TopicListError> {
+        if let Some(url) = &self.logo_small_url {
+            return Ok(url.clone());
+        }
+        let url = self.list_serializer().logo_small_url().await?;
+        self.logo_small_url = Some(url.clone());
+        Ok(url)
+    }
+
     fn list_serializer(&mut self) -> TopicListSerializer<'_> {
         TopicListSerializer {
             conn: &mut *self.conn,
@@ -1048,6 +1060,14 @@ impl TopicView<'_> {
                     .await?
             }
         };
+        // The first post as the guardian sees it, for every flag type.
+        let first = match (first, self.guardian.is_authenticated()) {
+            (Some(post), true) => {
+                let ctx = self.post_ctx(&post).await?;
+                Some((post, ctx))
+            }
+            _ => None,
+        };
         let mut out = Vec::new();
         for id in &viewer.action_types.topic_flag_ids {
             let key = viewer
@@ -1057,19 +1077,18 @@ impl TopicView<'_> {
                 .find(|(_, i)| i == id)
                 .map(|(k, _)| k.as_str())
                 .unwrap_or_default();
-            let can_act = match (&first, self.guardian.is_authenticated()) {
-                (Some(post), true) => {
-                    let ctx = self.post_ctx(post).await?;
+            let can_act = match &first {
+                Some((post, ctx)) => {
                     let can_see_post =
                         self.guardian
-                            .can_see_post(self.settings, &ctx, viewer.can_see)?;
+                            .can_see_post(self.settings, ctx, viewer.can_see)?;
                     self.guardian.post_can_act(
                         self.settings,
                         &viewer.action_types,
                         (key, *id),
                         &ActOpts {
                             topic: &viewer.ctx,
-                            post: &ctx,
+                            post: ctx,
                             taken: None,
                             can_see_post,
                             author_missing: post.user_id.is_none(),
@@ -1083,18 +1102,6 @@ impl TopicView<'_> {
         Ok(Value::Array(out))
     }
 
-    /// The post's `notice` custom field, parsed.
-    async fn notice(&mut self, post_id: i32) -> Result<Option<Value>, TopicViewError> {
-        let raw: Option<Option<String>> = sqlx::query_scalar(
-            "SELECT value FROM post_custom_fields WHERE post_id = $1 AND name = 'notice' ORDER BY id LIMIT 1",
-        )
-        .bind(post_id)
-        .fetch_optional(&mut *self.conn)
-        .await?;
-        Ok(raw
-            .flatten()
-            .and_then(|v| serde_json::from_str::<Value>(&v).ok()))
-    }
     /// The guardian's view of a post row.
     async fn post_ctx(&mut self, post: &PostRow) -> Result<PostCtx, TopicViewError> {
         let author_staff: bool = match post.user_id {
@@ -1105,7 +1112,12 @@ impl TopicView<'_> {
                 .unwrap_or(false),
             None => false,
         };
-        Ok(PostCtx {
+        Ok(Self::post_ctx_with(post, author_staff))
+    }
+
+    /// post_ctx with the author's staff flag already known.
+    fn post_ctx_with(post: &PostRow, author_staff: bool) -> PostCtx {
+        PostCtx {
             id: post.id,
             user_id: post.user_id,
             post_number: post.post_number,
@@ -1118,7 +1130,7 @@ impl TopicView<'_> {
             wiki: post.wiki,
             created_at: post.created_at,
             author_staff,
-        })
+        }
     }
 
     /// `topic.public_topic_timer` through TopicTimerSerializer; a timer
@@ -1221,7 +1233,7 @@ impl TopicView<'_> {
         viewer: &Viewer,
         topic_actions: &Value,
     ) -> Result<Value, TopicViewError> {
-        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let logo_small_url = self.logo_small_url().await?;
         let group_ids: Vec<i32> = participants
             .iter()
             .flat_map(|(u, _)| [u.primary_group_id, u.flair_group_id])
@@ -1457,7 +1469,7 @@ impl TopicView<'_> {
         solved: Option<&crate::plugins::solved::TopicView>,
         can_vote: Option<bool>,
     ) -> Result<Vec<Value>, TopicViewError> {
-        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let logo_small_url = self.logo_small_url().await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
         let suppress_reply_when_quoting =
             self.settings.get("suppress_reply_when_quoting")?.truthy();
@@ -1576,6 +1588,29 @@ impl TopicView<'_> {
         } else {
             None
         };
+        // The page's per-post rows, each read once for every post.
+        let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        // badges_granted: UserBadge.for_post_header_badges.
+        let mut badges_granted = crate::badges_view::BadgesView {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            i18n: self.i18n,
+            guardian: self.guardian,
+            urls: self.urls,
+            base_path: self.urls.config.globals.relative_url_root(),
+        }
+        .badges_granted(&posts.iter().map(|p| (p.id, p.user_id)).collect::<Vec<_>>())
+        .await?;
+        let mut link_counts = self.link_counts(&post_ids).await?;
+        let custom_fields = PostFields::load(&mut *self.conn, &post_ids).await?;
+        let reviewable_counts = if self
+            .guardian
+            .can_review_topic(self.settings, viewer.can_see)?
+        {
+            Some(reviewable_counts(&mut *self.conn, &post_ids).await?)
+        } else {
+            None
+        };
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
@@ -1583,24 +1618,14 @@ impl TopicView<'_> {
             // BasicPostSerializer#cooked_hidden
             let cooked_hidden = post.hidden && !g.is_staff();
             let s = self.settings;
-            let ctx = self.post_ctx(post).await?;
+            let ctx = Self::post_ctx_with(post, u.is_some_and(|u| u.admin || u.moderator));
             let yours = match g.user_id() {
                 Some(uid) => post.user_id == Some(uid),
                 None => post.user_id.is_none(),
             };
             let can_see_post = g.can_see_post(s, &ctx, viewer.can_see)?;
             let taken = viewer.taken.get(&post.id);
-            // badges_granted: UserBadge.for_post_header_badges.
-            let badges_granted = crate::badges_view::BadgesView {
-                conn: &mut *self.conn,
-                settings: self.settings,
-                i18n: self.i18n,
-                guardian: g,
-                urls: self.urls,
-                base_path: self.urls.config.globals.relative_url_root(),
-            }
-            .badges_granted(post.id, post.user_id)
-            .await?;
+            let badges_granted = badges_granted.remove(&post.id).unwrap_or_default();
 
             let mut p = Map::new();
             p.insert("id".into(), json!(post.id));
@@ -1728,7 +1753,7 @@ impl TopicView<'_> {
             let link_counts = if post.hidden && !can_see_hidden_post {
                 Vec::new()
             } else {
-                self.link_counts(post.id).await?
+                link_counts.remove(&post.id).unwrap_or_default()
             };
             if !link_counts.is_empty() {
                 p.insert("link_counts".into(), Value::Array(link_counts));
@@ -1863,18 +1888,8 @@ impl TopicView<'_> {
             }
             if let Some(code) = &post.action_code {
                 p.insert("action_code".into(), json!(code));
-                let fields: Vec<(String, Option<String>)> = sqlx::query_as(
-                    "SELECT name, value FROM post_custom_fields WHERE post_id = $1 \
-                     AND name IN ('action_code_who', 'action_code_path') ORDER BY id",
-                )
-                .bind(post.id)
-                .fetch_all(&mut *self.conn)
-                .await?;
                 for key in ["action_code_who", "action_code_path"] {
-                    if let Some(value) = fields
-                        .iter()
-                        .find(|(n, _)| n == key)
-                        .and_then(|(_, v)| v.clone())
+                    if let Some(value) = custom_fields.first(post.id, key)
                         && !value.is_empty()
                     {
                         p.insert(key.into(), json!(value));
@@ -1883,7 +1898,7 @@ impl TopicView<'_> {
             }
             // notice: a new/returning-user notice shows to viewers past the
             // notice trust level; custom notices to everyone.
-            if let Some(notice) = self.notice(post.id).await? {
+            if let Some(notice) = custom_fields.notice(post.id) {
                 let show = match notice["type"].as_str() {
                     Some("custom") => {
                         return Err(Unsupported("custom post notices").into());
@@ -1907,18 +1922,8 @@ impl TopicView<'_> {
             if post.locked_by_id.is_some() && (yours || g.is_staff()) {
                 p.insert("locked".into(), json!(true));
             }
-            if g.can_review_topic(s, viewer.can_see)? {
-                let counts: Option<(i64, i64, i64)> = sqlx::query_as(
-                    "SELECT MAX(r.id), COUNT(*), SUM(CASE WHEN s.status = 0 THEN 1 ELSE 0 END) \
-                     FROM reviewables r JOIN reviewable_scores s ON s.reviewable_id = r.id \
-                     WHERE r.target_id = $1 AND r.target_type = 'Post' \
-                       AND r.type IN ('ReviewableFlaggedPost', 'ReviewableQueuedPost', 'ReviewableUser', 'ReviewablePost') \
-                       AND COALESCE(s.reason, '') <> 'category' GROUP BY r.target_id",
-                )
-                .bind(post.id)
-                .fetch_optional(&mut *self.conn)
-                .await?;
-                let (id, total, pending) = counts.unwrap_or((0, 0, 0));
+            if let Some(counts) = &reviewable_counts {
+                let (id, total, pending) = counts.get(&post.id).copied().unwrap_or((0, 0, 0));
                 p.insert("reviewable_id".into(), json!(id));
                 p.insert("reviewable_score_count".into(), json!(total));
                 p.insert("reviewable_score_pending_count".into(), json!(pending));
@@ -2104,7 +2109,7 @@ impl TopicView<'_> {
         let names = s.get("enable_names")?.truthy() && s.get("display_name_on_posts")?.truthy();
         let show_accepter = s.get("show_who_marked_solved")?.truthy();
         let quote = s.get("solved_quote_length")?.to_i() > 0;
-        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let logo_small_url = self.logo_small_url().await?;
         let mut out = Vec::with_capacity(visible.len());
         for (answer, post) in visible {
             // answer_user: the post's author, else the system user.
@@ -2659,18 +2664,22 @@ pub fn timeline_lookup(stream: &[(i32, i32)], max_values: usize) -> Vec<[i64; 2]
 }
 
 impl TopicView<'_> {
-    /// `TopicLink.counts_for` for one visible (non-hidden) source post, as
+    /// `TopicLink.counts_for` for a page's source posts, by post id, as
     /// PostSerializer#link_counts shapes it: links whose target topic is
     /// visible and in a category the viewer may read (`secure_category`),
     /// not muted by a logged-in viewer, external links always, `ORDER BY
     /// reflection, clicks DESC`.
-    async fn link_counts(&mut self, post_id: i32) -> Result<Vec<Value>, TopicViewError> {
+    async fn link_counts(
+        &mut self,
+        post_ids: &[i32],
+    ) -> Result<HashMap<i32, Vec<Value>>, TopicViewError> {
         let secure = self
             .guardian
             .secure_category_ids(&mut *self.conn, self.settings)
             .await?;
         #[derive(sqlx::FromRow)]
         struct Link {
+            post_id: i32,
             url: String,
             clicks: i32,
             title: Option<String>,
@@ -2678,13 +2687,13 @@ impl TopicView<'_> {
             reflection: Option<bool>,
         }
         let links: Vec<Link> = sqlx::query_as(
-            "SELECT l.url, l.clicks, COALESCE(t.title, l.title) AS title, l.internal, l.reflection \
+            "SELECT l.post_id, l.url, l.clicks, COALESCE(t.title, l.title) AS title, l.internal, l.reflection \
              FROM topic_links l \
              LEFT JOIN topics t ON t.id = l.link_topic_id \
              LEFT JOIN categories c ON c.id = t.category_id \
              LEFT JOIN posts target_posts ON l.link_post_id = target_posts.id \
              LEFT JOIN topic_users tu ON t.id = tu.topic_id AND tu.user_id = $3 \
-             WHERE l.post_id = $1 \
+             WHERE l.post_id = ANY($1) \
                AND t.deleted_at IS NULL \
                AND (t.id IS NULL OR t.visible = true) \
                AND (l.internal = false OR t.id IS NOT NULL) \
@@ -2692,28 +2701,81 @@ impl TopicView<'_> {
                AND COALESCE(t.archetype, 'regular') <> 'private_message' \
                AND ($3::int IS NULL OR COALESCE(tu.notification_level, 1) > 0) \
                AND (NOT COALESCE(c.read_restricted, false) OR c.id = ANY($2)) \
-             ORDER BY l.reflection ASC, l.clicks DESC",
+             ORDER BY l.post_id, l.reflection ASC, l.clicks DESC",
         )
-        .bind(post_id)
+        .bind(post_ids)
         .bind(&secure)
         .bind(self.guardian.user_id())
         .fetch_all(&mut *self.conn)
         .await?;
-        Ok(links
-            .into_iter()
-            .map(|l| {
-                let mut out = Map::new();
-                out.insert("url".into(), json!(l.url));
-                out.insert("internal".into(), json!(l.internal));
-                out.insert("reflection".into(), json!(l.reflection));
-                if let Some(title) = l.title.filter(|t| !t.is_empty()) {
-                    out.insert("title".into(), json!(title));
-                }
-                out.insert("clicks".into(), json!(l.clicks));
-                Value::Object(out)
-            })
-            .collect())
+        let mut out: HashMap<i32, Vec<Value>> = HashMap::new();
+        for l in links {
+            let mut link = Map::new();
+            link.insert("url".into(), json!(l.url));
+            link.insert("internal".into(), json!(l.internal));
+            link.insert("reflection".into(), json!(l.reflection));
+            if let Some(title) = l.title.filter(|t| !t.is_empty()) {
+                link.insert("title".into(), json!(title));
+            }
+            link.insert("clicks".into(), json!(l.clicks));
+            out.entry(l.post_id).or_default().push(Value::Object(link));
+        }
+        Ok(out)
     }
+}
+
+/// The custom fields the post serializer reads (`notice`,
+/// `action_code_who`, `action_code_path`) for a page's posts, in id order.
+struct PostFields(Vec<(i32, String, Option<String>)>);
+
+impl PostFields {
+    async fn load(conn: &mut PgConnection, post_ids: &[i32]) -> Result<Self, sqlx::Error> {
+        Ok(PostFields(
+            sqlx::query_as(
+                "SELECT post_id, name, value FROM post_custom_fields WHERE post_id = ANY($1) \
+                 AND name IN ('notice', 'action_code_who', 'action_code_path') ORDER BY id",
+            )
+            .bind(post_ids)
+            .fetch_all(conn)
+            .await?,
+        ))
+    }
+
+    /// The post's first field of that name, nil when its value is.
+    fn first(&self, post_id: i32, name: &str) -> Option<&str> {
+        self.0
+            .iter()
+            .find(|(id, n, _)| *id == post_id && n == name)
+            .and_then(|(_, _, v)| v.as_deref())
+    }
+
+    /// The post's `notice` custom field, parsed.
+    fn notice(&self, post_id: i32) -> Option<Value> {
+        self.first(post_id, "notice")
+            .and_then(|v| serde_json::from_str::<Value>(v).ok())
+    }
+}
+
+/// The reviewable of each post on the page: its id, score count and
+/// pending score count, the posts without one left out.
+async fn reviewable_counts(
+    conn: &mut PgConnection,
+    post_ids: &[i32],
+) -> Result<HashMap<i32, (i64, i64, i64)>, sqlx::Error> {
+    let rows: Vec<(i32, i64, i64, i64)> = sqlx::query_as(
+        "SELECT r.target_id, MAX(r.id), COUNT(*), SUM(CASE WHEN s.status = 0 THEN 1 ELSE 0 END) \
+         FROM reviewables r JOIN reviewable_scores s ON s.reviewable_id = r.id \
+         WHERE r.target_id = ANY($1) AND r.target_type = 'Post' \
+           AND r.type IN ('ReviewableFlaggedPost', 'ReviewableQueuedPost', 'ReviewableUser', 'ReviewablePost') \
+           AND COALESCE(s.reason, '') <> 'category' GROUP BY r.target_id",
+    )
+    .bind(post_ids)
+    .fetch_all(conn)
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|(post_id, id, total, pending)| (post_id, (id, total, pending)))
+        .collect())
 }
 
 /// SuggestedTopicsBuilder: the results so far and what they exclude.

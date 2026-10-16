@@ -2,6 +2,8 @@
 //! DetailedUserBadgeSerializer with its badges, badge types and granters
 //! side-loaded the way AMS embeds ids.
 
+use std::collections::HashMap;
+
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -513,40 +515,51 @@ impl BadgesView<'_> {
     /// The post header's `badges_granted`: each of the author's grants for
     /// the post of a badge shown there, as BasicUserBadgeSerializer's own
     /// document.
+    /// `badges_granted` for a page of posts, `(post id, author id)` each,
+    /// in one query: by post id, the posts without any left out.
     pub(crate) async fn badges_granted(
         &mut self,
-        post_id: i32,
-        author_id: Option<i32>,
-    ) -> Result<Vec<Value>, AppError> {
+        posts: &[(i32, Option<i32>)],
+    ) -> Result<HashMap<i32, Vec<Value>>, AppError> {
+        let mut out = HashMap::new();
         if !self.settings.get("enable_badges")?.truthy()
             || !self.settings.get("show_badges_in_post_header")?.truthy()
         {
-            return Ok(Vec::new());
+            return Ok(out);
         }
-        let rows: Vec<(i32, i32, NaiveDateTime)> = sqlx::query_as(
-            "SELECT id, badge_id, granted_at FROM user_badges \
-             WHERE post_id = $1 AND user_id = $2 AND badge_id IN \
+        let ids: Vec<i32> = posts.iter().map(|(id, _)| *id).collect();
+        let rows: Vec<(i32, i32, i32, i32, NaiveDateTime)> = sqlx::query_as(
+            "SELECT post_id, user_id, id, badge_id, granted_at FROM user_badges \
+             WHERE post_id = ANY($1) AND badge_id IN \
                (SELECT id FROM badges WHERE show_posts AND enabled AND listable AND show_in_post_header) \
              ORDER BY id",
         )
-        .bind(post_id)
-        .bind(author_id)
+        .bind(&ids)
         .fetch_all(&mut *self.conn)
         .await?;
-        let mut out = Vec::new();
-        for (id, badge_id, granted_at) in rows {
-            let mut side = Side::default();
-            let badge = self.side_badge(&mut side, badge_id, false).await?;
-            out.push(json!({
-                "badges": side.badges,
-                "badge_types": side.badge_types,
-                "basic_user_badge": {
-                    "id": id,
-                    "granted_at": time_json(granted_at),
-                    "grouping_position": badge.grouping_position,
-                    "badge_id": badge_id,
-                },
-            }));
+        for (post_id, author_id) in posts {
+            // UserBadge.for_post_header_badges: the post's author's only.
+            let mine = rows
+                .iter()
+                .filter(|r| r.0 == *post_id && Some(r.1) == *author_id);
+            let mut granted = Vec::new();
+            for &(_, _, id, badge_id, granted_at) in mine {
+                let mut side = Side::default();
+                let badge = self.side_badge(&mut side, badge_id, false).await?;
+                granted.push(json!({
+                    "badges": side.badges,
+                    "badge_types": side.badge_types,
+                    "basic_user_badge": {
+                        "id": id,
+                        "granted_at": time_json(granted_at),
+                        "grouping_position": badge.grouping_position,
+                        "badge_id": badge_id,
+                    },
+                }));
+            }
+            if !granted.is_empty() {
+                out.insert(*post_id, granted);
+            }
         }
         Ok(out)
     }

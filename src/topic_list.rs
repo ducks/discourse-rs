@@ -169,6 +169,8 @@ pub struct Prefetched {
     participants: HashMap<i32, Vec<Poster>>,
     /// The bundled plugins' after-load data for the page.
     plugins: crate::plugins::TopicListData,
+    /// `logo_small`'s url once read: each serialized topic asks for it.
+    logo_small_url: Option<Option<String>>,
 }
 
 /// The topic_users columns the list item reads (`user_data`).
@@ -405,11 +407,15 @@ impl TopicListSerializer<'_> {
         if !crate::plugins::solved::enabled(self.settings)? {
             return Ok(());
         }
-        let answered = match &self.prefetched.plugins.solved {
-            Some(data) if self.prefetched.topic_ids.contains(&t.id) => {
-                data.answered.contains(&t.id)
-            }
-            _ => crate::plugins::solved::answered_topics(&mut *self.conn, &[t.id])
+        let prefetched = self
+            .prefetched
+            .plugins
+            .solved
+            .as_ref()
+            .filter(|_| self.prefetched.topic_ids.contains(&t.id));
+        let answered = match prefetched {
+            Some(data) => data.answered.contains(&t.id),
+            None => crate::plugins::solved::answered_topics(&mut *self.conn, &[t.id])
                 .await?
                 .contains(&t.id),
         };
@@ -427,6 +433,7 @@ impl TopicListSerializer<'_> {
             self.settings,
             &facts,
             answered,
+            prefetched.map(|data| &data.category_fields),
             out,
         )
         .await?;
@@ -452,14 +459,20 @@ impl TopicListSerializer<'_> {
     }
 
     pub(crate) async fn logo_small_url(&mut self) -> Result<Option<String>, TopicListError> {
-        let id = self.settings.get("logo_small")?.to_i();
-        if id == 0 {
-            return Ok(None);
+        if let Some(url) = &self.prefetched.logo_small_url {
+            return Ok(url.clone());
         }
-        Ok(sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
-            .bind(i32::try_from(id).unwrap_or(0))
-            .fetch_optional(&mut *self.conn)
-            .await?)
+        let id = self.settings.get("logo_small")?.to_i();
+        let url = if id == 0 {
+            None
+        } else {
+            sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+                .bind(i32::try_from(id).unwrap_or(0))
+                .fetch_optional(&mut *self.conn)
+                .await?
+        };
+        self.prefetched.logo_small_url = Some(url.clone());
+        Ok(url)
     }
 
     /// PosterSerializer (BasicUserSerializer + flair/primary group mixins).

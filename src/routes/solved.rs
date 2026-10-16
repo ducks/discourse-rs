@@ -160,6 +160,7 @@ async fn run(
             post_number: None,
         },
         post_types: Vec::new(),
+        logo_small_url: None,
     }
     .solved_accepted_answers(topic_id)
     .await?;

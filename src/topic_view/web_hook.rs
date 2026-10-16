@@ -196,7 +196,7 @@ impl TopicView<'_> {
         };
         let deleted_by = match deleted_by_id.filter(|_| self.guardian.is_staff()) {
             Some(id) => {
-                let logo_small_url = self.list_serializer().logo_small_url().await?;
+                let logo_small_url = self.logo_small_url().await?;
                 Some(self.basic_user(id, logo_small_url.as_deref()).await?)
             }
             None => None,
@@ -288,7 +288,7 @@ impl TopicView<'_> {
         user_id: i32,
     ) -> Result<Value, TopicViewError> {
         let post = self.web_hook_post(post_id, Held::default()).await?;
-        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let logo_small_url = self.logo_small_url().await?;
         let user = self.basic_user(user_id, logo_small_url.as_deref()).await?;
         Ok(json!({ "post": post, "user": user }))
     }
@@ -492,7 +492,7 @@ impl TopicView<'_> {
                 .bind(topic.id)
                 .fetch_one(&mut *self.conn)
                 .await?;
-        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let logo_small_url = self.logo_small_url().await?;
         let deleted_by = match deleted_by_id {
             Some(id) => self.basic_user(id, logo_small_url.as_deref()).await?,
             None => Value::Null,

@@ -535,52 +535,65 @@ impl Registry<'_> {
         Ok(Value::Array(out))
     }
 
-    /// `Category#category_types`: the metadata of each type the category
-    /// matches, by id.
-    pub async fn for_category(
+    /// `Category#category_types` for each of the categories: the metadata
+    /// of each type it matches (`category_matches?`), by id. What the types
+    /// match is read in one query each, each type's metadata built once.
+    pub async fn for_categories(
         &self,
         conn: &mut PgConnection,
-        category_id: i32,
-    ) -> Result<Value, AppError> {
-        let mut out = Map::new();
-        for t in TYPES {
-            if self.matches(conn, t, category_id).await? {
-                out.insert(Self::id(t).into(), self.metadata(conn, t, None).await?);
-            }
+        category_ids: &[i32],
+    ) -> Result<Vec<Value>, AppError> {
+        if category_ids.is_empty() {
+            return Ok(Vec::new());
         }
-        Ok(Value::Object(out))
-    }
-
-    /// `category_matches?`
-    async fn matches(
-        &self,
-        conn: &mut PgConnection,
-        t: Type,
-        category_id: i32,
-    ) -> Result<bool, AppError> {
-        Ok(match t {
-            Type::Discussion => true,
-            // SiteSetting.events_calendar_categories_map
-            Type::Events => self
-                .cx
-                .settings
-                .get("events_calendar_categories")?
-                .to_s()
-                .split('|')
-                .any(|id| id.trim().parse::<i32>() == Ok(category_id)),
-            Type::Support => {
-                sqlx::query_scalar(
-                    "SELECT EXISTS (SELECT 1 FROM category_custom_fields \
-                 WHERE category_id = $1 AND name = 'enable_accepted_answers' AND value = 'true')",
-                )
-                .bind(category_id)
-                .fetch_one(&mut *conn)
-                .await?
+        let support: Vec<i32> = sqlx::query_scalar(
+            "SELECT DISTINCT category_id FROM category_custom_fields \
+             WHERE category_id = ANY($1) AND name = 'enable_accepted_answers' AND value = 'true'",
+        )
+        .bind(category_ids)
+        .fetch_all(&mut *conn)
+        .await?;
+        let ideas: Vec<i32> = if crate::plugins::topic_voting::enabled(self.cx.settings)? {
+            sqlx::query_scalar(
+                "SELECT DISTINCT category_id FROM topic_voting_category_settings \
+                 WHERE category_id = ANY($1)",
+            )
+            .bind(category_ids)
+            .fetch_all(&mut *conn)
+            .await?
+        } else {
+            Vec::new()
+        };
+        let events = self.cx.settings.get("events_calendar_categories")?.to_s();
+        let mut metadata: Vec<(Type, Value)> = Vec::new();
+        let mut out = Vec::with_capacity(category_ids.len());
+        for category_id in category_ids {
+            let mut types = Map::new();
+            for t in TYPES {
+                let matches = match t {
+                    Type::Discussion => true,
+                    // SiteSetting.events_calendar_categories_map
+                    Type::Events => events
+                        .split('|')
+                        .any(|id| id.trim().parse::<i32>() == Ok(*category_id)),
+                    Type::Support => support.contains(category_id),
+                    Type::Ideas => ideas.contains(category_id),
+                };
+                if !matches {
+                    continue;
+                }
+                let value = match metadata.iter().find(|(k, _)| *k == t) {
+                    Some((_, v)) => v.clone(),
+                    None => {
+                        let v = self.metadata(conn, t, None).await?;
+                        metadata.push((t, v.clone()));
+                        v
+                    }
+                };
+                types.insert(Self::id(t).into(), value);
             }
-            Type::Ideas => {
-                crate::plugins::topic_voting::enabled(self.cx.settings)?
-                    && crate::plugins::topic_voting::category_votes(conn, category_id).await?
-            }
-        })
+            out.push(Value::Object(types));
+        }
+        Ok(out)
     }
 }

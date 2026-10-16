@@ -1535,6 +1535,7 @@ async fn posts_feed(
                 post_number: None,
             },
             post_types: Vec::new(),
+            logo_small_url: None,
         };
         let Value::Object(mut post) = view.serialize_single_post(id, false, false, false).await?
         else {

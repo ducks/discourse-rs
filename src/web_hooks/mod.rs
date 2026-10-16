@@ -138,6 +138,7 @@ impl Payloads<'_> {
                 post_number: None,
             },
             post_types: Vec::new(),
+            logo_small_url: None,
         };
         Ok(f(&mut view).await?)
     }

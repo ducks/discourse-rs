@@ -382,6 +382,7 @@ async fn show(
         urls: &urls,
         options: Options { page, post_number },
         post_types: Vec::new(),
+        logo_small_url: None,
     };
     let rendered = match view.render(topic_id).await {
         Ok(r) => r,
