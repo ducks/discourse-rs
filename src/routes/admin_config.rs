@@ -279,3 +279,143 @@ async fn settings_page(
         StatusCode::OK,
     )
 }
+
+/// A flags page: the list, its settings tab, a new flag or a flag's form.
+pub(super) enum FlagsPage {
+    List,
+    Settings,
+    New,
+    Edit(String),
+}
+
+/// GET /admin/config/flags and under it, as the page (adminConfig.flags):
+/// the site's flag types (Site#flag_types, by position), the header and
+/// the tab's outlet; the new and edit forms go without the header.
+pub(super) async fn flags_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    page: FlagsPage,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_moderation_flags",
+    )
+    .await?;
+    let flags: Vec<crate::admin_flags::Flag> = sqlx::query_as(&format!(
+        "SELECT {} FROM flags WHERE NOT score_type AND id <> 2 ORDER BY position",
+        crate::admin_flags::COLUMNS
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    let used: Vec<i64> = sqlx::query_scalar(
+        "SELECT DISTINCT post_action_type_id::bigint FROM post_actions \
+         UNION SELECT DISTINCT reviewable_score_type::bigint FROM reviewable_scores",
+    )
+    .fetch_all(&mut *conn)
+    .await?;
+    let base_path = shell.site.base_path.clone();
+    let flag_types: Vec<serde_json::Value> = flags
+        .iter()
+        .map(|f| {
+            crate::admin_flags::serialize(
+                &state.i18n,
+                &base_path,
+                f,
+                "post_action",
+                used.contains(&f.id),
+            )
+        })
+        .collect();
+    let custom = flags.iter().filter(|f| !f.system()).count() as i64;
+    let limit = shell.settings.get("custom_flags_limit")?.to_i();
+    let cx = shell.cx(state);
+    let t = |k: &str| crate::admin_view::t(cx.i18n, k);
+    let (classes, title, content, script) = match &page {
+        FlagsPage::List => (
+            "admin-config flags",
+            t("admin.config.flags.title"),
+            format!(
+                "{}<div class=\"admin-container admin-config-page__main-area\">{}</div>",
+                crate::admin_config_view::flags_header(
+                    &cx,
+                    crate::admin_config_view::FlagsTab::Flags,
+                    custom >= limit
+                ),
+                crate::admin_config_view::flags_list(&cx, &flag_types)
+            ),
+            "admin-config.js",
+        ),
+        FlagsPage::Settings => {
+            let settings = super::admin_advanced::area_settings(
+                &mut conn,
+                state,
+                &shell,
+                uri,
+                json!({ "filter_area": "flags" }),
+            )
+            .await?;
+            (
+                "admin-config flags settings",
+                t("admin.config_areas.flags.settings"),
+                format!(
+                    "{}<div class=\"admin-container admin-config-page__main-area\">{settings}</div>",
+                    crate::admin_config_view::flags_header(
+                        &cx,
+                        crate::admin_config_view::FlagsTab::Settings,
+                        custom >= limit
+                    )
+                ),
+                "site-settings.js",
+            )
+        }
+        FlagsPage::New => (
+            "admin-config flags new",
+            String::new(),
+            crate::admin_config_view::flag_form(&cx, None, &crate::admin_flags::VALID_APPLIES_TO),
+            "admin-config.js",
+        ),
+        FlagsPage::Edit(id) => {
+            // The route's model: the site's flag type, if any.
+            let flag = id
+                .parse::<i64>()
+                .ok()
+                .and_then(|id| flag_types.iter().find(|f| f["id"].as_i64() == Some(id)));
+            (
+                "admin-config flags edit",
+                t("admin.config_areas.flags.edit_header"),
+                crate::admin_config_view::flag_form(
+                    &cx,
+                    flag,
+                    &crate::admin_flags::VALID_APPLIES_TO,
+                ),
+                "admin-config.js",
+            )
+        }
+    };
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-config-strings",
+        &[
+            "admin.config_areas.flags.delete_confirm",
+            "form_kit.errors_summary_title.one",
+            "form_kit.errors_summary_title.other",
+            "form_kit.errors.required",
+            "form_kit.errors.too_short.one",
+            "form_kit.errors.too_short.other",
+            "form_kit.errors.too_long.one",
+            "form_kit.errors.too_long.other",
+            "admin.config_areas.flags.form.invalid_applies_to",
+            "select_kit.filter_placeholder",
+            "select_kit.delete_item",
+            "select_kit.no_content",
+        ],
+    );
+    let main = crate::admin_view::contents(classes, &format!("{content}{strings}"));
+    shell.render(state, uri, &title, main, script, StatusCode::OK)
+}

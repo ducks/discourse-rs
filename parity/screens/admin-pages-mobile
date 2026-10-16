@@ -52,3 +52,8 @@
 /admin/config/localization as=admin
 /admin/config/trust-levels as=admin
 /admin/config/developer as=admin
+# The flags pages (90g6).
+/admin/config/flags as=admin
+/admin/config/flags/new as=admin
+/admin/config/flags/settings as=admin
+/admin/config/flags/3 as=admin

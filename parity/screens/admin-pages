@@ -85,3 +85,8 @@
 /admin/config/experimental as=admin
 /admin/config/gifs as=admin
 /admin/config/security?filter=password as=admin
+# The flags pages (90g6).
+/admin/config/flags as=admin
+/admin/config/flags/new as=admin
+/admin/config/flags/settings as=admin
+/admin/config/flags/3 as=admin
