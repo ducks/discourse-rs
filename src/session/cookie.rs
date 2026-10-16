@@ -17,13 +17,15 @@ use base64::engine::general_purpose::STANDARD as B64;
 use chrono::{DateTime, Utc};
 use rand::RngCore;
 
-/// A cookie's decoded content: a flat map of strings and integers.
+/// A cookie value: a string, integer, boolean or nil, or a hash of them
+/// with string keys (OmniAuth's `session["oauth"]`), in its order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Scalar {
     Str(String),
     Int(i64),
     Bool(bool),
     Nil,
+    Hash(Vec<(String, Scalar)>),
 }
 
 impl Scalar {
@@ -216,14 +218,25 @@ pub fn encode_payload(map: &[(&str, Scalar)], symbol_keys: bool) -> Vec<u8> {
         } else {
             encode_str(&mut out, key);
         }
-        match value {
-            Scalar::Str(s) => encode_str(&mut out, s),
-            Scalar::Int(i) => encode_int(&mut out, *i),
-            Scalar::Bool(b) => out.push(if *b { 0xc3 } else { 0xc2 }),
-            Scalar::Nil => out.push(0xc0),
-        }
+        encode_value(&mut out, value);
     }
     out
+}
+
+fn encode_value(out: &mut Vec<u8>, value: &Scalar) {
+    match value {
+        Scalar::Str(s) => encode_str(out, s),
+        Scalar::Int(i) => encode_int(out, *i),
+        Scalar::Bool(b) => out.push(if *b { 0xc3 } else { 0xc2 }),
+        Scalar::Nil => out.push(0xc0),
+        Scalar::Hash(entries) => {
+            encode_map_header(out, entries.len());
+            for (k, v) in entries {
+                encode_str(out, k);
+                encode_value(out, v);
+            }
+        }
+    }
 }
 
 fn encode_map_header(out: &mut Vec<u8>, len: usize) {
@@ -310,16 +323,24 @@ fn decode_payload(bytes: &[u8]) -> Result<Map, CookieError> {
     let object = json.as_object().ok_or(CookieError::Payload)?;
     let mut map = Map::new();
     for (k, v) in object {
-        let scalar = match v {
-            serde_json::Value::String(s) => Scalar::Str(s.clone()),
-            serde_json::Value::Number(n) => Scalar::Int(n.as_i64().ok_or(CookieError::Payload)?),
-            serde_json::Value::Bool(b) => Scalar::Bool(*b),
-            serde_json::Value::Null => Scalar::Nil,
-            _ => return Err(CookieError::Payload),
-        };
-        map.insert(k.clone(), scalar);
+        map.insert(k.clone(), json_scalar(v)?);
     }
     Ok(map)
+}
+
+fn json_scalar(v: &serde_json::Value) -> Result<Scalar, CookieError> {
+    Ok(match v {
+        serde_json::Value::String(s) => Scalar::Str(s.clone()),
+        serde_json::Value::Number(n) => Scalar::Int(n.as_i64().ok_or(CookieError::Payload)?),
+        serde_json::Value::Bool(b) => Scalar::Bool(*b),
+        serde_json::Value::Null => Scalar::Nil,
+        serde_json::Value::Object(o) => Scalar::Hash(
+            o.iter()
+                .map(|(k, v)| Ok((k.clone(), json_scalar(v)?)))
+                .collect::<Result<_, CookieError>>()?,
+        ),
+        serde_json::Value::Array(_) => return Err(CookieError::Payload),
+    })
 }
 
 struct Reader<'a> {
@@ -350,6 +371,11 @@ impl Reader<'_> {
     }
 
     fn map(&mut self) -> Result<Map, CookieError> {
+        Ok(self.entries()?.into_iter().collect())
+    }
+
+    /// A map's entries in their order.
+    fn entries(&mut self) -> Result<Vec<(String, Scalar)>, CookieError> {
         let header = self.byte()?;
         let len = match header {
             0x80..=0x8f => usize::from(header & 0x0f),
@@ -357,13 +383,13 @@ impl Reader<'_> {
             0xdf => self.be(4)? as usize,
             _ => return Err(CookieError::Payload),
         };
-        let mut map = Map::new();
+        let mut entries = Vec::with_capacity(len.min(64));
         for _ in 0..len {
             let key = self.key()?;
             let value = self.scalar()?;
-            map.insert(key, value);
+            entries.push((key, value));
         }
-        Ok(map)
+        Ok(entries)
     }
 
     /// A string or an ext-0 symbol.
@@ -420,6 +446,10 @@ impl Reader<'_> {
                 self.pos -= 1;
                 Scalar::Str(self.key()?)
             }
+            0x80..=0x8f | 0xde | 0xdf => {
+                self.pos -= 1;
+                Scalar::Hash(self.entries()?)
+            }
             _ => return Err(CookieError::Payload),
         })
     }
@@ -459,6 +489,30 @@ mod tests {
         assert_eq!(decoded["token"], Scalar::Str(token));
         assert_eq!(decoded["issued_at"], Scalar::Int(1790000000));
         assert_eq!(decoded["user_id"], Scalar::Int(1));
+    }
+
+    #[test]
+    fn keeps_nested_hashes_in_order() {
+        let oauth = Scalar::Hash(vec![(
+            "twitter".into(),
+            Scalar::Hash(vec![
+                ("request_token".into(), Scalar::Str("t".into())),
+                ("callback_confirmed".into(), Scalar::Bool(true)),
+            ]),
+        )]);
+        let bytes = encode_payload(&[("oauth", oauth.clone())], false);
+        // {"oauth" => {"twitter" => {"request_token" => "t", "callback_confirmed" => true}}}
+        let expected = format!(
+            "cc8081a5{}81a7{}82ad{}a174b2{}c3",
+            hex(b"oauth"),
+            hex(b"twitter"),
+            hex(b"request_token"),
+            hex(b"callback_confirmed"),
+        );
+        assert_eq!(hex(&bytes), expected);
+        assert_eq!(decode_payload(&bytes).unwrap()["oauth"], oauth);
+        let json = br#"{"oauth":{"twitter":{"request_token":"t","callback_confirmed":true}}}"#;
+        assert_eq!(decode_payload(json).unwrap()["oauth"], oauth);
     }
 
     #[test]

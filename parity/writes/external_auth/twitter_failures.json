@@ -1,0 +1,61 @@
+{
+  "name": "twitter_failures",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/twitter"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/twitter/callback?oauth_token=x&oauth_verifier=y"
+    }
+  ],
+  "started_at": "2026-10-16T05:30:56.207635",
+  "transaction_started_at": "2026-10-16T05:30:54.465955",
+  "responses": [
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=unauthorized&strategy=twitter"
+      }
+    },
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=session_expired&strategy=twitter"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "auth_require_interaction": false,
+    "twitter_consumer_key": "tw-key",
+    "twitter_consumer_secret": "tw-secret",
+    "enable_twitter_logins": true
+  },
+  "remote": {
+    "/oauth/request_token": {
+      "status": 401,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}"
+    }
+  },
+  "remote_hosts": {
+    "https://api.x.com": ""
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "67b77e55541cd0f92acd09378dd33fe657d7d73c3a57854c68bbb283553dffb5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "name": "twitter_login",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/twitter?force_login=true&origin=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/twitter/callback?oauth_token=req-tok&oauth_verifier=the-verifier"
+    }
+  ],
+  "started_at": "2026-10-16T05:30:57.53254",
+  "transaction_started_at": "2026-10-16T05:30:56.663778",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/oauth/authenticate?force_login=true&oauth_token=req-tok...",
+      "headers": {
+        "Location": "/oauth/authenticate?force_login=true&oauth_token=req-tok"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/latest"
+      }
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "name": "Tweety Bird",
+            "urls": {
+              "Twitter": "https://twitter.com/tweety",
+              "Website": null
+            },
+            "email": "user1@example.com",
+            "image": "http://fixtures.localhost:8099/tweety_normal.png",
+            "location": "The Cage",
+            "nickname": "tweety",
+            "description": "I *tawt* I taw a [puddy tat](https://example.com/cat)"
+          },
+          "extra": {},
+          "user_id": 3,
+          "last_used": "2026-10-16T05:30:57.799833",
+          "created_at": "2026-10-16T05:30:57.801265",
+          "updated_at": "2026-10-16T05:30:57.801265",
+          "credentials": {
+            "token": "acc-tok",
+            "secret": "acc-sec"
+          },
+          "provider_uid": "1234",
+          "provider_name": "twitter"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/auth/twitter/callback",
+          "action": "generate",
+          "user_id": 3,
+          "client_ip": "127.0.0.1",
+          "auth_token": "SR2I/La64x1IBCVU66R325cQwkY=",
+          "created_at": "2026-10-16T05:30:59.88406",
+          "user_agent": null,
+          "user_auth_token_id": 115
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 115,
+          "seen_at": null,
+          "user_id": 3,
+          "client_ip": "127.0.0.1",
+          "auth_token": "SR2I/La64x1IBCVU66R325cQwkY=",
+          "created_at": "2026-10-16T05:30:59.877676",
+          "rotated_at": "2026-10-16T05:30:59.872461",
+          "updated_at": "2026-10-16T05:30:59.877676",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "SR2I/La64x1IBCVU66R325cQwkY=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": true,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": "I *tawt* I taw a [puddy tat](https://example.com/cat)",
+            "user_id": 3,
+            "website": null,
+            "location": "The Cage",
+            "bio_cooked": "<p>I <em>tawt</em> I taw a <a href=\"https://example.com/cat\" rel=\"noopener nofollow ugc\">puddy tat</a></p>",
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-16T05:30:59.831315",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": "127.0.0.1",
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "download_avatar_from_url",
+      {
+        "url": "http://fixtures.localhost:8099/tweety_normal.png",
+        "user_id": 3,
+        "override_gravatar": false
+      }
+    ],
+    [
+      "pull_user_profile_hotlinked_images in 300s",
+      {
+        "user_id": 3
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_associated_accounts": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 115
+  },
+  "settings": {
+    "auth_require_interaction": false,
+    "twitter_consumer_key": "tw-key",
+    "twitter_consumer_secret": "tw-secret",
+    "enable_twitter_logins": true
+  },
+  "remote": {
+    "/oauth/request_token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "oauth_token=req-tok&oauth_token_secret=req-sec&oauth_callback_confirmed=true"
+    },
+    "/oauth/access_token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "oauth_token=acc-tok&oauth_token_secret=acc-sec&user_id=1234&screen_name=tweety"
+    },
+    "/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=true": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json;charset=utf-8"
+      },
+      "body": "{\"id\":1234,\"id_str\":\"1234\",\"name\":\"Tweety Bird\",\"screen_name\":\"tweety\",\"location\":\"The Cage\",\"description\":\"I *tawt* I taw a [puddy tat](https://example.com/cat)\",\"url\":null,\"profile_image_url\":\"http://fixtures.localhost:8099/tweety_normal.png\",\"email\":\"user1@example.com\"}"
+    }
+  },
+  "remote_hosts": {
+    "https://api.x.com": ""
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "c4e242f6596adcede30ae2fcf2a33d36c44117e6c3f0b2eae6af6b6da1267ae6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

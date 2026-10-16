@@ -1852,8 +1852,10 @@ route table has been made, so this list may be short.
     LinkedIn, Discourse ID, Microsoft and Amazon strategies. Refused: a
     Google id_token or JSON body handed to the callback, Facebook's
     signed request cookie
-    191e. `feat/external-auth-twitter` M: Twitter (OAuth 1.0a) with its
-    login health check (problem_checks.rs:488)
+    191e. ~~`feat/external-auth-twitter`~~ (done) M: Twitter (OAuth 1.0a)
+    with its login health check, nested hashes in the session cookie, a
+    provider's description as the bio (191b's refusal). Refused:
+    Twitter's callback_url param (a callback path of its own)
     191f. `feat/external-auth-plugins` M: discourse-apple-auth,
     discourse-lti and discourse-patreon's logins
 192. `feat/invites` L: InvitesController (/invites, invite links,

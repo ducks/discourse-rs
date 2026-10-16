@@ -25,6 +25,7 @@ use serde_json::{Map, Value, json};
 use super::search::Peer;
 use crate::auth::managed::{AuthHash, AuthResult};
 use crate::auth::oauth2::{self, Client, Failure, Http};
+use crate::auth::twitter;
 use crate::session::cookie::Scalar;
 use crate::session::current::Incoming;
 use crate::session::forum::{ForumSession, load_forum_session};
@@ -33,7 +34,7 @@ use crate::{AppError, AppState, Unsupported};
 
 /// The strategies ported.
 fn ported(name: &str) -> bool {
-    matches!(name, "oauth2_basic" | "oidc") || crate::auth::builtin::is_builtin(name)
+    matches!(name, "oauth2_basic" | "oidc" | "twitter") || crate::auth::builtin::is_builtin(name)
 }
 
 fn host(headers: &HeaderMap) -> &str {
@@ -226,6 +227,9 @@ pub async fn request(
             "omniauth.origin",
             Scalar::Str(referer.to_string()),
         );
+    }
+    if name == "twitter" {
+        return twitter_request(&state, &settings, &uri, &params, &mut session, cookies).await;
     }
     let http = http(&state, &settings);
     let callback = callback_url(&state, &settings, name)?;
@@ -535,6 +539,195 @@ async fn failure(
     .await
 }
 
+fn twitter_consumer(settings: &SiteSettings) -> Result<twitter::Consumer, AppError> {
+    Ok(twitter::Consumer {
+        key: settings.get("twitter_consumer_key")?.to_s(),
+        secret: settings.get("twitter_consumer_secret")?.to_s(),
+    })
+}
+
+/// OmniAuth's own `callback_url`, which omniauth-twitter keeps: the
+/// callback path with the current request's query string.
+fn twitter_callback_url(
+    state: &AppState,
+    settings: &SiteSettings,
+    query: Option<&str>,
+) -> Result<String, AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let query = query
+        .filter(|q| !q.is_empty())
+        .map(|q| format!("?{q}"))
+        .unwrap_or_default();
+    Ok(format!(
+        "{}{}/auth/twitter/callback{query}",
+        urls.base_url_no_prefix()?,
+        base_path(state)
+    ))
+}
+
+/// `session["oauth"]["twitter"]`
+fn twitter_session(session: &ForumSession) -> Option<Vec<(String, Scalar)>> {
+    let Some(Scalar::Hash(oauth)) = session.map.get("oauth") else {
+        return None;
+    };
+    oauth
+        .iter()
+        .find(|(k, _)| k == "twitter")
+        .and_then(|(_, v)| match v {
+            Scalar::Hash(h) => Some(h.clone()),
+            _ => None,
+        })
+}
+
+fn set_twitter_session(session: &mut ForumSession, value: Vec<(String, Scalar)>) {
+    let mut oauth = match session.map.remove("oauth") {
+        Some(Scalar::Hash(h)) => h,
+        _ => Vec::new(),
+    };
+    match oauth.iter_mut().find(|(k, _)| k == "twitter") {
+        Some(slot) => slot.1 = Scalar::Hash(value),
+        None => oauth.push(("twitter".into(), Scalar::Hash(value))),
+    }
+    session_set(session, "oauth", Scalar::Hash(oauth));
+}
+
+/// omniauth-twitter's request phase: the authorize params and the
+/// request token's form from the request, a request token for the
+/// callback, kept in the session, and the browser sent to authenticate
+/// it. A failing request token ends at /auth/failure as Discourse's
+/// on_failure names it.
+async fn twitter_request(
+    state: &AppState,
+    settings: &SiteSettings,
+    uri: &Uri,
+    params: &Map<String, Value>,
+    session: &mut ForumSession,
+    mut cookies: Vec<String>,
+) -> Result<Response, AppError> {
+    let param = |k: &str| crate::params::string(params, k);
+    if params.contains_key("callback_url") {
+        return Err(
+            Unsupported("Twitter's callback_url param (a callback path of its own)").into(),
+        );
+    }
+    let mut authorize: Vec<(String, String)> = Vec::new();
+    for k in ["force_login", "lang", "screen_name"] {
+        if let Some(v) = param(k) {
+            authorize.push((k.to_string(), v));
+        }
+    }
+    let mut form: Vec<(String, String)> = Vec::new();
+    if let Some(v) = param("x_auth_access_type") {
+        form.push(("x_auth_access_type".into(), v));
+    }
+    let path = if param("use_authorize").as_deref() == Some("true") {
+        "/oauth/authorize"
+    } else {
+        "/oauth/authenticate"
+    };
+    let callback = twitter_callback_url(state, settings, uri.query())?;
+    let consumer = twitter_consumer(settings)?;
+    let http = twitter::http(settings, &state.config);
+    let failure = match twitter::request_token(&http, &consumer, &callback, &form).await? {
+        twitter::Outcome::Ok(token) => {
+            let confirmed = token
+                .params
+                .iter()
+                .any(|(k, v)| k == "oauth_callback_confirmed" && v == "true");
+            set_twitter_session(
+                session,
+                vec![
+                    ("callback_confirmed".into(), Scalar::Bool(confirmed)),
+                    ("request_token".into(), Scalar::Str(token.token.clone())),
+                    ("request_secret".into(), Scalar::Str(token.secret.clone())),
+                ],
+            );
+            if !confirmed {
+                authorize.push(("oauth_callback".into(), callback));
+            }
+            let url = twitter::authorize_url(path, &authorize, &token.token);
+            cookies.extend(session.set_cookie(state, settings)?);
+            return omniauth_redirect(&url, &cookies);
+        }
+        // OAuth::Unauthorized escapes the request phase; on_failure names it.
+        twitter::Outcome::Unauthorized => "unauthorized",
+        twitter::Outcome::ServerError => "service_unavailable",
+        twitter::Outcome::Timeout(_) => "timeout",
+    };
+    cookies.extend(session.set_cookie(state, settings)?);
+    failure_redirect(state, failure, None, "twitter", &cookies)
+}
+
+/// omniauth-oauth's callback phase for Twitter: the request token taken
+/// from the session and exchanged with the verifier, then the account.
+async fn twitter_callback(
+    state: &AppState,
+    settings: &SiteSettings,
+    session: &mut ForumSession,
+    params: &Map<String, Value>,
+    query: Option<&str>,
+) -> Result<Callback, AppError> {
+    if !session.map.contains_key("oauth") {
+        return Ok(Callback::Failed(Failure::new(
+            "session_expired",
+            "Session Expired",
+        )));
+    }
+    let Some(mut kept) = twitter_session(session) else {
+        return Err(
+            Unsupported("a Twitter callback without its request token (NoMethodError)").into(),
+        );
+    };
+    let mut take = |key: &str| match kept.iter().position(|(k, _)| k == key) {
+        Some(i) => match kept.remove(i).1 {
+            Scalar::Str(s) => s,
+            _ => String::new(),
+        },
+        None => String::new(),
+    };
+    let request_token = twitter::Token {
+        token: take("request_token"),
+        secret: take("request_secret"),
+        params: Vec::new(),
+    };
+    let confirmed = kept
+        .iter()
+        .any(|(k, v)| k == "callback_confirmed" && *v == Scalar::Bool(true));
+    set_twitter_session(session, kept);
+    let consumer = twitter_consumer(settings)?;
+    let http = twitter::http(settings, &state.config);
+    let verifier = crate::params::string(params, "oauth_verifier");
+    let callback = twitter_callback_url(state, settings, query)?;
+    let outcome = if confirmed {
+        twitter::access_token(&http, &consumer, &request_token, verifier.as_deref(), None).await?
+    } else {
+        twitter::access_token(&http, &consumer, &request_token, None, Some(&callback)).await?
+    };
+    let token = match outcome {
+        twitter::Outcome::Ok(t) => t,
+        twitter::Outcome::Unauthorized => {
+            return Ok(Callback::Failed(Failure::new(
+                "invalid_credentials",
+                "401 Unauthorized",
+            )));
+        }
+        twitter::Outcome::ServerError => {
+            return Ok(Callback::Failed(Failure::new(
+                "service_unavailable",
+                "Net::HTTPFatalError",
+            )));
+        }
+        twitter::Outcome::Timeout(m) => return Ok(Callback::Failed(Failure::new("timeout", m))),
+    };
+    Ok(match twitter::auth_hash(&http, &consumer, &token).await? {
+        Ok(a) => Callback::Auth(Box::new(a)),
+        Err(f) => Callback::Failed(f),
+    })
+}
+
 /// What a strategy's callback phase found.
 enum Callback {
     Auth(Box<AuthHash>),
@@ -545,6 +738,7 @@ enum Callback {
 
 /// The strategy's `callback_phase`: the state checked, the provider's
 /// error, the code exchanged, the auth hash built.
+#[allow(clippy::too_many_arguments)]
 async fn callback_phase(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
@@ -553,7 +747,11 @@ async fn callback_phase(
     name: &str,
     params: &Map<String, Value>,
     headers: &HeaderMap,
+    query: Option<&str>,
 ) -> Result<Callback, AppError> {
+    if name == "twitter" {
+        return twitter_callback(state, settings, session, params, query).await;
+    }
     let http = http(state, settings);
     let param = |k: &str| crate::params::string(params, k);
     let mut oidc: Option<crate::plugins::openid_connect::Discovered> = None;
@@ -734,12 +932,14 @@ pub(super) async fn after_authenticate(
     auth: AuthHash,
     existing_account: Option<i32>,
 ) -> Result<(AuthResult, AuthHash), AppError> {
+    let host = crate::pretty_text::Host::from_state(state);
     match auth.provider.as_str() {
         "oauth2_basic" => {
             let http = http(state, settings);
             crate::plugins::oauth2_basic::after_authenticate(
                 conn,
                 settings,
+                &host,
                 &state.i18n,
                 &http,
                 auth,
@@ -751,6 +951,7 @@ pub(super) async fn after_authenticate(
             let result = crate::plugins::openid_connect::after_authenticate(
                 conn,
                 settings,
+                &host,
                 &auth,
                 existing_account,
             )
@@ -762,12 +963,39 @@ pub(super) async fn after_authenticate(
             crate::auth::builtin::after_authenticate(
                 conn,
                 settings,
+                &host,
                 &state.i18n,
                 &http,
                 auth,
                 existing_account,
             )
             .await
+        }
+        "twitter" => {
+            // TwitterAuthenticator: no extra kept, every email verified.
+            let behaviour = crate::auth::managed::Behaviour {
+                email_verified: true,
+                match_by_email: true,
+                overrides_email: false,
+                can_connect: true,
+                user_by_email: None,
+            };
+            if auth.uid.is_empty() {
+                return Err(Unsupported(
+                    "a Twitter login without a user id (provider_uid can't be blank)",
+                )
+                .into());
+            }
+            let result = crate::auth::managed::after_authenticate(
+                conn,
+                settings,
+                &host,
+                &auth,
+                &behaviour,
+                existing_account,
+            )
+            .await?;
+            Ok((result, auth))
         }
         _ => Err(Unsupported("logging in with this provider").into()),
     }
@@ -864,6 +1092,7 @@ pub async fn callback(
         name,
         &params,
         &headers,
+        uri.query(),
     )
     .await?;
     let auth = match found {

@@ -547,6 +547,7 @@ fn user_field_values_from(
 pub async fn after_authenticate(
     conn: &mut PgConnection,
     s: &SiteSettings,
+    host: &crate::pretty_text::Host,
     auth: &AuthHash,
     existing_account: Option<i32>,
 ) -> Result<AuthResult, AppError> {
@@ -558,7 +559,7 @@ pub async fn after_authenticate(
         user_by_email: None,
     };
     let mut result =
-        crate::auth::managed::after_authenticate(conn, s, auth, &behaviour, existing_account)
+        crate::auth::managed::after_authenticate(conn, s, host, auth, &behaviour, existing_account)
             .await?;
     let claim = setting(s, "openid_connect_groups_claim")?;
     if !claim.trim().is_empty() {

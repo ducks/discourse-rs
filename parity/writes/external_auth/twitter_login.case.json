@@ -1,0 +1,43 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "twitter_consumer_key": "tw-key",
+    "twitter_consumer_secret": "tw-secret",
+    "enable_twitter_logins": true
+  },
+  "remote_hosts": {
+    "https://api.x.com": ""
+  },
+  "remote": {
+    "/oauth/request_token": {
+      "status": 200,
+      "headers": {"Content-Type": "text/html; charset=utf-8"},
+      "body": "oauth_token=req-tok&oauth_token_secret=req-sec&oauth_callback_confirmed=true"
+    },
+    "/oauth/access_token": {
+      "status": 200,
+      "headers": {"Content-Type": "text/html; charset=utf-8"},
+      "body": "oauth_token=acc-tok&oauth_token_secret=acc-sec&user_id=1234&screen_name=tweety"
+    },
+    "/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=true": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json;charset=utf-8"},
+      "body": "{\"id\":1234,\"id_str\":\"1234\",\"name\":\"Tweety Bird\",\"screen_name\":\"tweety\",\"location\":\"The Cage\",\"description\":\"I *tawt* I taw a [puddy tat](https://example.com/cat)\",\"url\":null,\"profile_image_url\":\"http://fixtures.localhost:8099/tweety_normal.png\",\"email\":\"user1@example.com\"}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/twitter?force_login=true&origin=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/twitter/callback?oauth_token=req-tok&oauth_verifier=the-verifier"
+    }
+  ],
+  "ignore": [
+    "/responses/0/body"
+  ]
+}
