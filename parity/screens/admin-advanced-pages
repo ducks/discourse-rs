@@ -32,3 +32,6 @@
 /admin/badges/new as=admin
 /admin/badges/award/new as=admin
 /admin/badges/award/1 as=admin
+# Installed plugins (90g8).
+/admin/plugins as=admin
+/admin/plugins/poll as=admin

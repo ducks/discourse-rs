@@ -17,6 +17,7 @@ mod admin_form_templates;
 mod admin_groups;
 mod admin_logs;
 mod admin_pages;
+mod admin_plugins;
 mod admin_reports;
 mod admin_site_settings;
 mod admin_user_fields;
@@ -1195,6 +1196,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/problem-checks", get(admin_dashboard::index))
         .route("/admin/problem-checks.json", get(admin_dashboard::index))
+        .route("/admin/plugins", get(admin_plugins::index))
+        .route("/admin/plugins.json", get(admin_plugins::index))
+        .route("/admin/plugins/{plugin_id}", get(admin_plugins::show))
+        .route(
+            "/admin/plugins/{plugin_id}/settings",
+            get(admin_plugins::show),
+        )
         .route("/admin/problem_checks", get(admin_dashboard::index))
         .route("/admin/problem_checks.json", get(admin_dashboard::index))
         .route(
@@ -2391,6 +2399,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-email.js", get(asset))
         .route("/assets/admin-problem-checks.js", get(asset))
         .route("/assets/admin-badges.js", get(asset))
+        .route("/assets/admin-plugins.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))

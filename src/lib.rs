@@ -15,6 +15,8 @@ pub mod admin_flags;
 pub mod admin_form_kit;
 pub mod admin_groups_view;
 pub mod admin_logs_view;
+pub mod admin_plugins;
+pub mod admin_plugins_view;
 pub mod admin_problem_checks_view;
 pub mod admin_report_view;
 pub mod admin_reports_view;

@@ -274,6 +274,74 @@ async fn the_api_keys_pages() {
 }
 
 #[tokio::test]
+async fn the_installed_plugins_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // The list: every recorded plugin, its switch and settings link.
+    let (status, html) = admin.page("/admin/plugins").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Plugins - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-plugins\">"));
+    assert!(html.contains(
+        "<div class=\"admin-config-page -no-header\"><div class=\"admin-plugins-list-container\">"
+    ));
+    assert!(html.contains("<a class=\"admin-plugins-howto\" href=\"https://meta.discourse.org/t/install-a-plugin/19157\">"));
+    assert_eq!(
+        html.matches("class=\"d-table__row admin-plugins-list__row\"")
+            .count(),
+        46
+    );
+    assert!(html.contains("data-plugin-setting-button=\"poll\" href=\"/admin/plugins/poll\""));
+    // Only an enabled setting: the name unlinked, Settings disabled.
+    assert!(
+        html.contains(
+            "<div class=\"d-table__overview-name admin-plugins-list__name\">Checklist</div>"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("class=\"btn btn-default btn-text btn-small disabled\" data-plugin-setting-button=\"checklist\" href=\"/admin/site_settings/category/plugins?filter&#x3D;plugin%3Achecklist\""), "{html}");
+    assert!(html.contains("data-enabled-setting=\"poll_enabled\""));
+    // A plugin's settings.
+    let (status, html) = admin.page("/admin/plugins/poll").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Settings - Poll - Plugins - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-contents admin-plugins settings\">"));
+    assert!(html.contains("<section class=\"admin-plugin-config-area\">"));
+    assert!(html.contains("data-setting=\"poll_enabled\""));
+    assert!(!html.contains("d-nav-submenu"));
+    let (status, _) = admin.page("/admin/plugins/poll/settings").await;
+    assert_eq!(status, StatusCode::OK);
+    // The JSON: the plugins, one by name (or without its prefix).
+    let (status, body) = admin
+        .send(Method::GET, "/admin/plugins.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.starts_with("{\"plugins\":[{\"id\":\"discourse-adplugin\""),
+        "{body}"
+    );
+    let (status, body) = admin
+        .send(Method::GET, "/admin/plugins/solved.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"id\":\"discourse-solved\""), "{body}");
+    let (status, _) = admin
+        .send(Method::GET, "/admin/plugins/nope.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    // Staff only.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/plugins")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn the_badges_pages() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;
