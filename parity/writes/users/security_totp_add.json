@@ -1,0 +1,190 @@
+{
+  "name": "security_totp_add",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_totp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_totp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "123456"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "000000",
+        "name": "Phone"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "{{responses.2.body.key|totp}}",
+        "name": "Phone"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    }
+  ],
+  "started_at": "2026-10-16T22:39:06.147177",
+  "transaction_started_at": "2026-10-16T22:39:04.415175",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "key": "7DE7 22GZ X2W5 OCTE XRQ7 FYHR UQAI 6OGU",
+        "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQAAAAAWLtQ/AAAEkUlEQVR4nMVZa8rkKhA1o5A1CYqCqwoIISBkVYKi4JoCSu6pzP+5P+7Udxu68xC6Uq9T55hf7x8/v8QfP//r8tq2zarlq6q+WourTYmKH1rwzI/m3imMTPIJSRY5jXB5O9+3fAvMttfmxbLWd22j6L2LLueydBNf/pTIu8jsx5v3YoybYhQJv//Sn//bsg7P+WYvtFUjrWj68n/vz/+wDBdhaVzW15Dc1B5Rd2VFWuC2XVHXYh1RGLMinkLHdVhk29MCr20JDCh9tCJbS10WOsM1LmmBvc6tN2KFVO05q9LbnkabfVGHc/e3bDc1d/au0bcIYVByBp3W+XHNLxju47FKlnp4lxUQZpS1BfaYS8pvXygvUb0ZLSELqkYDhOGuNaGpql2RSRgx7gJ8Lbj6jos73+jmJ9aQz1LPgjvdyMuv313O7Tcyu99zndfeAGmLhloU1N4Rz8Id8/MuZszq13Gc2SPNcB8uI+zsMZfZxgpUEy4h2MJ0UQMKzhUEn9tvIdwFf8fsDjnHIG+tLBsuTxOF2/bIFOoMRAula6/t4ZHv81GC22+Z1p4VDU35pnqmFVq7vMPx8ewzFLM7FHdjoFQbMlw3qO8u77zzz1A55YXKhkHUlnxAHAhmDKIBIsU9xwCg1Uaz7D7Xthea5TJV5CAN7jofz3m3+wJLzZuXqDBHkI5IGGO451gU9YCnBYTFYJaWutkjOmC6YJ+hoirQ1OXhqWwwbT7+AoDxCDs3Z5rIdLjLuEDbQN5A2LaoUWbousqOqQWMHLoAUa/Kza4VFRnQDnKFnbdAjEGLYHhcAbEHRyRoLWYBYH6gvwtoCiRReOA8OJTMh//YDHutmV6V6NVTnHEKigjiBJStP4DnqOxp5DtR6h7HTEqB+GNrmR/XwFIJ3E7QYxqkbQJe6Vmoy7ln6GfVmHoEmLU2rnBFrRb6rnPXuYL6DnPtrZDB9wPUm1DmB3ANFZ2gx6beySBE0Ycxe44rau58a+R7kQCG5k+4g+IDf3xAmoC1P9DfIIbystYeR3iUS9ReObrEjWskBM4ciBmjyscDFegAbZvvpA+4ZyhcVgbFHdDaBs0d67GFdr834I055h0SwF1KU4Ib2FoXpBRQZzo0blxDgb9XlPdzFuhuCXmEsBvagZjs/BzgDW42tQJXcBNatL0FxvEEgpuvLfiaqM4biHISnYQg9Zt8fOXGcxAlGzttLbnr8Cu6Cw+T9yRInLFrA2hfkLQb8hvMKVugOpQYxPDJrg0wONFV4OgaLJ1IGm3uQR5Ci67AjWu9nhfYMaT/+7GlVGmHDwmI7LNEkkUML9pp8IYCQOStE53x7PnG9MjeIOOYXOCpomOUA1k6Trn7m14PANJAFdUHcbjXBVQopZ5934FeD4CZ7lMmQ/tbqHjw4/Ftc3HHnIjhoYQGokOCU8GDPBUEHpjDn29kvH3ARnvHdJY368fLr0t+HzA7Aaf0ksQLRFy+l/Vy8vO1l1I7IAmjgySAAOzy2dB2YJHsGvh7H3bsF9UX7e9AmXSX9OH1j7w3cG+bv9+TvdMViS/J8Mb+fuy/LP8DWaUI8JJ2nqEAAAAASUVORK5CYII="
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "error": "Please provide a code."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "error": "Please provide a name."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "error": "Invalid authentication code. Each code can only be used once."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "totps": [
+          {
+            "id": 1,
+            "name": "Phone",
+            "method": 1,
+            "last_used": null
+          }
+        ],
+        "security_keys": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 369,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcbKl9s8ygPLhZ09l+tqZ7xhOto=",
+            "created_at": "2026-10-16T22:39:05.204314",
+            "rotated_at": "2026-10-16T22:39:05.203024",
+            "updated_at": "2026-10-16T22:39:05.204314",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BcbKl9s8ygPLhZ09l+tqZ7xhOto=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 369,
+            "seen_at": "2026-10-16T22:39:06.159649",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcbKl9s8ygPLhZ09l+tqZ7xhOto=",
+            "created_at": "2026-10-16T22:39:05.204314",
+            "rotated_at": "2026-10-16T22:39:05.203024",
+            "updated_at": "2026-10-16T22:39:05.204314",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BcbKl9s8ygPLhZ09l+tqZ7xhOto=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_second_factors": {
+      "inserted": [
+        {
+          "id": 1,
+          "data": "7DE722GZX2W5OCTEXRQ7FYHRUQAI6OGU",
+          "name": "Phone",
+          "method": 1,
+          "enabled": true,
+          "user_id": 3,
+          "last_used": null,
+          "created_at": "2026-10-16T22:39:06.648765",
+          "updated_at": "2026-10-16T22:39:06.648765"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_second_factors": 1
+  },
+  "recorded_from": {
+    "case": "3f683e2c499022c40cc61119c3f156c35bf76bbfcd2694fd5e3c57b5748f26fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

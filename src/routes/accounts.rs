@@ -557,6 +557,39 @@ pub async fn password_reset_update(
         tx.commit().await?;
         return Err(crate::Unsupported("password reset with an unknown or used token").into());
     };
+    // rate_limit_second_factor!(@user)
+    if params::string(&p, "second_factor_token").is_some_and(|t| !t.trim().is_empty())
+        || p.get("second_factor_token").is_some_and(Value::is_object)
+    {
+        let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+        let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        if let Err(refused) = crate::rate_limiter::perform_each(
+            &state.pool,
+            state.config.rate_limits,
+            [
+                crate::rate_limiter::RateLimiter::new(
+                    None,
+                    &format!("second-factor-min-{ip}"),
+                    6,
+                    60,
+                ),
+                crate::rate_limiter::RateLimiter::new(
+                    None,
+                    &format!("second-factor-min-{username}"),
+                    6,
+                    60,
+                ),
+            ],
+        )
+        .await?
+        {
+            tx.commit().await?;
+            return Ok(refused.into_response(&state.i18n));
+        }
+    }
     // `raise Discourse::ReadOnly if @staff_writes_only_mode && !@user&.staff?`,
     // the token's confirmation kept.
     if mode.is_some_and(|m| m.0.staff_writes_only) {
@@ -569,25 +602,88 @@ pub async fn password_reset_update(
             return Err(crate::readonly::ReadOnly.into());
         }
     }
-    let second_factors: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled) \
-         OR EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled)",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *tx)
-    .await?;
-    if second_factors {
-        return Err(crate::Unsupported("password reset with second factors").into());
+    // Unless this reset already passed it: authenticate_second_factor, its
+    // failure an error on the user (on :user_second_factors for a security
+    // key's, :security_keys otherwise, as Rails has them).
+    let mut errors: Vec<(&str, &str)> = Vec::new();
+    let mut error_message: Option<String> = None;
+    let passed =
+        crate::session::server::get(&mut tx, &session_id, &format!("second-factor-{token}"))
+            .await?
+            .is_some_and(|v| !v.is_null() && v != json!(false));
+    if !passed {
+        let enabled = crate::second_factor::Enabled::load(&mut tx, &settings, user_id).await?;
+        let rp = crate::webauthn::RelyingParty::new(&state.config, &settings)?;
+        let attempt = crate::second_factor::Attempt::new(&p, &state.config, &rp, &mut session);
+        match crate::second_factor::authenticate(&mut tx, &state.i18n, user_id, &enabled, attempt)
+            .await?
+        {
+            Ok(_) => {
+                crate::session::server::set(
+                    &mut tx,
+                    &session_id,
+                    &format!("second-factor-{token}"),
+                    &json!(true),
+                    crate::session::server::EXPIRY_SECONDS,
+                )
+                .await?;
+            }
+            Err(failure) => {
+                errors.push(if failure["reason"] == "invalid_security_key" {
+                    ("user_second_factors", "User second factors")
+                } else {
+                    ("security_keys", "Security keys")
+                });
+                error_message = failure["error"].as_str().map(str::to_string);
+            }
+        }
     }
-    crate::session::server::set(
-        &mut tx,
-        &session_id,
-        &format!("second-factor-{token}"),
-        &json!(true),
-        crate::session::server::EXPIRY_SECONDS,
-    )
-    .await?;
     let password = params::string(&p, "password").unwrap_or_default();
+    if password.trim().is_empty() || password.chars().count() > 200 {
+        errors.push(("password", "Password"));
+    }
+    if !errors.is_empty() {
+        // The JSON answer to a reset with errors.
+        let (admin, email): (bool, Option<String>) = sqlx::query_as(
+            "SELECT admin, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\") \
+             FROM users u WHERE id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        let developer = state
+            .config
+            .globals
+            .get("developer_emails")
+            .zip(email.as_deref())
+            .is_some_and(|(list, email)| list.split(',').any(|d| d.trim() == email));
+        tx.commit().await?;
+        let mut by_attribute = serde_json::Map::new();
+        for (attribute, _) in &errors {
+            by_attribute.insert((*attribute).into(), json!(["is invalid"]));
+        }
+        let friendly: Vec<String> = errors
+            .iter()
+            .map(|(_, label)| format!("{label} is invalid"))
+            .collect();
+        let cookie = session.set_cookie(&state, &settings)?;
+        return with_session_cookie(
+            (
+                StatusCode::OK,
+                [(header::CACHE_CONTROL, NO_STORE)],
+                Json(json!({
+                    "success": false,
+                    "message": error_message,
+                    "errors": by_attribute,
+                    "friendly_messages": friendly,
+                    "is_developer": developer,
+                    "admin": admin,
+                })),
+            )
+                .into_response(),
+            cookie,
+        );
+    }
     #[derive(sqlx::FromRow)]
     struct Owner {
         admin: bool,
@@ -609,9 +705,6 @@ pub async fn password_reset_update(
     .bind(user_id)
     .fetch_one(&mut *tx)
     .await?;
-    if password.trim().is_empty() || password.chars().count() > 200 {
-        return Err(crate::Unsupported("password reset error responses").into());
-    }
     let current = match (
         &owner.password_hash,
         &owner.password_salt,

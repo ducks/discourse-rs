@@ -319,6 +319,7 @@ pub async fn second_factors(
 pub async fn second_factor_write(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    Peer(peer): Peer,
     method: axum::http::Method,
     headers: HeaderMap,
     uri: Uri,
@@ -427,7 +428,7 @@ pub async fn second_factor_write(
                 );
             }
             let renamed = sqlx::query(
-                "UPDATE user_security_keys SET name = $3, updated_at = clock_timestamp() \
+                "UPDATE user_security_keys SET name = $3, updated_at = CASE WHEN name IS DISTINCT FROM $3 THEN clock_timestamp() ELSE updated_at END \
                  WHERE id = $1 AND user_id = $2 AND enabled",
             )
             .bind(id)
@@ -474,7 +475,7 @@ pub async fn second_factor_write(
                     .into());
                 }
                 sqlx::query(
-                    "UPDATE user_security_keys SET name = $2, updated_at = clock_timestamp() \
+                    "UPDATE user_security_keys SET name = $2, updated_at = CASE WHEN name IS DISTINCT FROM $2 THEN clock_timestamp() ELSE updated_at END \
                      WHERE id = $1",
                 )
                 .bind(id)
@@ -493,7 +494,78 @@ pub async fn second_factor_write(
             }
             success()
         }
-        _ => return Err(Unsupported("managing authenticators and backup codes (155c)").into()),
+        "create_second_factor_totp" => {
+            // ROTP::Base32.random, staged for enable_second_factor_totp.
+            let secret = crate::second_factor::random_secret();
+            let session_id = session.server_session_id();
+            crate::session::server::set(
+                &mut conn,
+                &session_id,
+                &format!("staged-totp-{user_id}"),
+                &json!(secret),
+                crate::session::server::EXPIRY_SECONDS,
+            )
+            .await?;
+            let email: Option<String> = sqlx::query_scalar(
+                "SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            let uri = crate::second_factor::provisioning_uri(
+                &secret,
+                &settings.get("title")?.to_s(),
+                email.as_deref().unwrap_or_default(),
+            );
+            let key = secret
+                .as_bytes()
+                .chunks(4)
+                .filter(|c| c.len() == 4)
+                .map(|c| std::str::from_utf8(c).unwrap_or_default())
+                .collect::<Vec<_>>()
+                .join(" ");
+            Json(json!({
+                "success": "OK",
+                "key": key,
+                "qr": crate::second_factor::qr_data_url(&uri)?,
+            }))
+            .into_response()
+        }
+        "enable_second_factor_totp" => {
+            enable_totp(&state, &mut conn, &mut session, &p, peer, &headers, user_id).await?
+        }
+        "disable_second_factor" => {
+            // user_second_factors.destroy_all, second_factor_security_keys
+            // .destroy_all, then the email.
+            sqlx::query("DELETE FROM user_second_factors WHERE user_id = $1")
+                .bind(user_id)
+                .execute(&mut *conn)
+                .await?;
+            sqlx::query(
+                "DELETE FROM user_security_keys WHERE user_id = $1 AND enabled AND factor_type = 0",
+            )
+            .bind(i64::from(user_id))
+            .execute(&mut *conn)
+            .await?;
+            crate::jobs::enqueue(
+                &mut conn,
+                "critical_user_email",
+                json!({"type": "account_second_factor_disabled", "user_id": user_id}),
+            )
+            .await?;
+            success()
+        }
+        "second_factor" => update_second_factor(&state, &mut conn, &p, user_id).await?,
+        "second_factors_backup" => {
+            let codes = crate::second_factor::generate_backup_codes(
+                &mut conn,
+                user_id,
+                crate::second_factor::backup_code_iterations(state.config.rails_env),
+            )
+            .await?;
+            Json(json!({ "success": "OK", "backup_codes": codes })).into_response()
+        }
+        _ => return Ok(super::topics::not_found_response(&state)),
     };
     let cookie = session.set_cookie(&state, &settings)?;
     super::accounts::with_session_cookie(response, cookie)
@@ -564,6 +636,164 @@ async fn create_webauthn(
         json!(existing),
     );
     Ok(Json(Value::Object(out)).into_response())
+}
+
+/// #enable_second_factor_totp: the staged secret saved as an authenticator
+/// once a code from it checks out.
+#[allow(clippy::too_many_arguments)]
+async fn enable_totp(
+    state: &AppState,
+    conn: &mut PgConnection,
+    session: &mut crate::session::forum::ForumSession,
+    p: &Map<String, Value>,
+    peer: Option<std::net::SocketAddr>,
+    headers: &HeaderMap,
+    user_id: i32,
+) -> Result<Response, AppError> {
+    let failed = |key: &str| {
+        Json(json!({
+            "failed": "FAILED",
+            "error": state.i18n.t(key).unwrap_or_default(),
+        }))
+        .into_response()
+    };
+    let Some(token) = params::string(p, "second_factor_token").filter(|t| !t.trim().is_empty())
+    else {
+        return Ok(failed("login.missing_second_factor_code"));
+    };
+    let Some(name) = params::string(p, "name").filter(|n| !n.trim().is_empty()) else {
+        return Ok(failed("login.missing_second_factor_name"));
+    };
+    let session_id = session.server_session_id();
+    let staged =
+        crate::session::server::get(&mut *conn, &session_id, &format!("staged-totp-{user_id}"))
+            .await?;
+    let Some(Value::String(secret)) = staged else {
+        return Err(Unsupported("enabling an authenticator that was never staged").into());
+    };
+    // rate_limit_second_factor!(current_user)
+    let ip = crate::remote_ip::remote_ip(headers, peer)?;
+    let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if let Err(refused) = crate::rate_limiter::perform_each(
+        &state.pool,
+        state.config.rate_limits,
+        [
+            RateLimiter::new(None, &format!("second-factor-min-{ip}"), 6, 60),
+            RateLimiter::new(None, &format!("second-factor-min-{username}"), 6, 60),
+        ],
+    )
+    .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let now = crate::clock::now().timestamp();
+    if !crate::second_factor::verify_code(&secret, &token, now)? {
+        return Ok(failed("login.invalid_second_factor_code"));
+    }
+    // create_totp: UserSecondFactor's validations.
+    if name.chars().count() > 300 {
+        return Err(
+            Unsupported("an authenticator name over 300 characters (RecordInvalid)").into(),
+        );
+    }
+    let count: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_second_factors WHERE user_id = $1 AND method = 1",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if count >= 50 {
+        return Err(Unsupported("a 51st authenticator (RecordInvalid)").into());
+    }
+    sqlx::query(
+        "INSERT INTO user_second_factors (user_id, method, data, enabled, name, created_at, updated_at) \
+         VALUES ($1, 1, $2, TRUE, $3, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(user_id)
+    .bind(&secret)
+    .bind(&name)
+    .execute(&mut *conn)
+    .await?;
+    Ok(success())
+}
+
+/// #update_second_factor: an authenticator (by id) or the backup codes
+/// renamed or disabled; disabling backup codes deletes them all.
+async fn update_second_factor(
+    state: &AppState,
+    conn: &mut PgConnection,
+    p: &Map<String, Value>,
+    user_id: i32,
+) -> Result<Response, AppError> {
+    let Some(target) = params::string(p, "second_factor_target").filter(|t| !t.trim().is_empty())
+    else {
+        return Ok(super::accounts::param_missing("second_factor_target"));
+    };
+    let invalid = || super::search::invalid_parameters(state, "Discourse::InvalidParameters");
+    let ids: Vec<i64> =
+        match crate::ruby::to_i(&target) {
+            crate::second_factor::TOTP => {
+                let Some(id) = params::string(p, "id").filter(|t| !t.trim().is_empty()) else {
+                    return Ok(super::accounts::param_missing("id"));
+                };
+                let found: Option<i64> = sqlx::query_scalar(
+                "SELECT id FROM user_second_factors WHERE user_id = $1 AND method = 1 AND enabled \
+                 AND id = $2",
+            )
+            .bind(user_id)
+            .bind(crate::ruby::to_i(&id))
+            .fetch_optional(&mut *conn)
+            .await?;
+                match found {
+                    Some(id) => vec![id],
+                    None => return Ok(invalid()),
+                }
+            }
+            crate::second_factor::BACKUP_CODES => sqlx::query_scalar(
+                "SELECT id FROM user_second_factors WHERE user_id = $1 AND method = 2 AND enabled \
+                 ORDER BY id",
+            )
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?,
+            _ => return Ok(invalid()),
+        };
+    let backup = crate::ruby::to_i(&target) == crate::second_factor::BACKUP_CODES;
+    if let Some(name) = params::string(p, "name").filter(|n| !n.trim().is_empty()) {
+        if name.chars().count() > 300 {
+            return Err(
+                Unsupported("an authenticator name over 300 characters (RecordInvalid)").into(),
+            );
+        }
+        sqlx::query(
+            "UPDATE user_second_factors SET name = $2, updated_at = clock_timestamp() \
+             WHERE id = ANY($1) AND name IS DISTINCT FROM $2",
+        )
+        .bind(&ids)
+        .bind(&name)
+        .execute(&mut *conn)
+        .await?;
+    }
+    if params::string(p, "disable").as_deref() == Some("true") {
+        if backup {
+            sqlx::query("DELETE FROM user_second_factors WHERE user_id = $1 AND method = 2")
+                .bind(user_id)
+                .execute(&mut *conn)
+                .await?;
+        } else {
+            sqlx::query(
+                "UPDATE user_second_factors SET enabled = false, updated_at = clock_timestamp() \
+                 WHERE id = ANY($1)",
+            )
+            .bind(&ids)
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    Ok(success())
 }
 
 /// #delete_passkey: the user's own key by id (any factor type), unless it

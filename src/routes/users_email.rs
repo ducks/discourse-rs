@@ -19,7 +19,7 @@ use crate::params;
 use crate::session::current::{AuthGuardian, Incoming};
 use crate::site_settings::SiteSettings;
 use crate::topic_list_view::escape;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
@@ -390,18 +390,71 @@ pub async fn confirm(
         )
             .into_response()
     };
+    let mut cookie = None;
     if link == Link::New {
-        // run_second_factor!(SecondFactor::Actions::ConfirmEmail)
-        let second_factor: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled) \
-             OR EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled)",
-        )
-        .bind(request.user_id)
-        .fetch_one(&mut *tx)
-        .await?;
-        if second_factor {
-            return Err(Unsupported("confirming an email change with second factors (155)").into());
+        // run_second_factor!(SecondFactor::Actions::ConfirmEmail, target_user:
+        // change_request.user)
+        use crate::second_factor_auth as auth;
+        let mut session = crate::session::forum::load_forum_session(&state, &headers);
+        let session_id = session.server_session_id();
+        let nonce = p
+            .get("second_factor_nonce")
+            .and_then(params::scalar)
+            .filter(|n| !crate::ruby::is_blank(n));
+        if let Some(nonce) = nonce {
+            // verify_second_factor_auth_completed
+            let challenge =
+                match auth::find(&mut tx, &session_id, &nonce, Some(request.user_id)).await? {
+                    Err(bad) => return Ok(bad.response(&state.i18n)),
+                    Ok(challenge) => challenge,
+                };
+            if challenge.get("successful") != Some(&Value::Bool(true)) {
+                return Ok(auth::BadChallenge {
+                    key: "second_factor_auth.challenge_not_completed",
+                    status: StatusCode::UNAUTHORIZED,
+                }
+                .response(&state.i18n));
+            }
+            auth::delete(&mut tx, &session_id).await?;
+        } else {
+            let mut any = false;
+            for method in auth::DEFAULT_ALLOWED_METHODS {
+                any |= auth::valid_method_for_user(&mut tx, &s, request.user_id, method).await?;
+            }
+            if any {
+                let base_path = state.config.globals.relative_url_root();
+                let nonce = auth::initiate(
+                    &mut tx,
+                    &session_id,
+                    auth::Required {
+                        callback_method: "PUT",
+                        callback_path: uri.path(),
+                        callback_params: json!({ "token": token }),
+                        target_user_id: request.user_id,
+                        description: None,
+                        redirect_url: Some(if guardian.user_id().is_some() {
+                            format!("{base_path}/my/preferences/account")
+                        } else {
+                            format!("{base_path}/login")
+                        }),
+                    },
+                )
+                .await?;
+                tx.commit().await?;
+                let xhr = headers
+                    .get("x-requested-with")
+                    .and_then(|v| v.to_str().ok())
+                    .is_some_and(|v| v.eq_ignore_ascii_case("XMLHttpRequest"));
+                let urls = crate::url::Urls {
+                    config: &state.config,
+                    settings: &s,
+                };
+                let response = auth::required_response(xhr, &urls.base_url()?, &nonce);
+                let cookie = session.set_cookie(&state, &s)?;
+                return super::accounts::with_session_cookie(response, cookie);
+            }
         }
+        cookie = session.set_cookie(&state, &s)?;
     }
     let result = updater::confirm(&mut tx, &s, &token).await?;
     match (link, result) {
@@ -430,11 +483,11 @@ pub async fn confirm(
         }
         _ => {
             tx.commit().await?;
-            return Ok(already_done());
+            return super::accounts::with_session_cookie(already_done(), cookie);
         }
     }
     tx.commit().await?;
-    Ok(Json(json!({ "success": "OK" })).into_response())
+    super::accounts::with_session_cookie(Json(json!({ "success": "OK" })).into_response(), cookie)
 }
 
 /// Ember's confirm-old-email and confirm-new-email pages.

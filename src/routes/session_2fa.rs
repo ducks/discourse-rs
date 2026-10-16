@@ -60,9 +60,7 @@ pub async fn show(
     else {
         return Ok(param_missing("nonce"));
     };
-    if !wants_json(&headers, &uri) {
-        return Err(Unsupported("the 2FA page's HTML (its preloaded 2fa_challenge_data)").into());
-    }
+    let json_wanted = wants_json(&headers, &uri);
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -110,8 +108,189 @@ pub async fn show(
         }
         Err(bad) => (json!({ "error": bad.message(&state.i18n) }), bad.status),
     };
-    let cookie = session.set_cookie(&state, &settings)?;
-    super::accounts::with_session_cookie((status, Json(body)).into_response(), cookie)
+    if json_wanted {
+        let cookie = session.set_cookie(&state, &settings)?;
+        return super::accounts::with_session_cookie((status, Json(body)).into_response(), cookie);
+    }
+    // format.html: the page with 2fa_challenge_data, a 200 either way.
+    drop(conn);
+    page(
+        &state,
+        &settings,
+        &headers,
+        &uri,
+        &guardian,
+        &mut session,
+        &nonce,
+        body,
+    )
+    .await
+}
+
+#[derive(askama::Template)]
+#[template(path = "second_factor_auth.html")]
+struct SecondFactorAuthPage {
+    site_title: String,
+    lang: String,
+    base_path: String,
+    crawler: crate::html::Crawler,
+    viewer: Option<crate::html::Viewer>,
+    bus_position: String,
+    chrome: crate::html::Chrome,
+    /// What the page's script draws from, as JSON.
+    data: String,
+}
+
+/// The 2FA page (templates/second-factor-auth.gjs with its controller's
+/// choices), without the sidebar (hideApplicationSidebar).
+#[allow(clippy::too_many_arguments)]
+async fn page(
+    state: &AppState,
+    settings: &SiteSettings,
+    headers: &HeaderMap,
+    uri: &Uri,
+    guardian: &crate::guardian::Guardian,
+    session: &mut crate::session::forum::ForumSession,
+    nonce: &str,
+    model: Value,
+) -> Result<Response, AppError> {
+    use crate::second_factor::{BACKUP_CODES, PASSKEY, SECURITY_KEY, TOTP};
+    use askama::Template;
+    let t = |key: &str| {
+        state
+            .i18n
+            .t(&format!("js.{key}"))
+            .unwrap_or_default()
+            .to_string()
+    };
+    // The one session cookie: its csrf token for the script, and the
+    // viewer read from it as it now is.
+    let csrf = crate::session::csrf::mask(&session.csrf_token())
+        .ok_or(Unsupported("session csrf token not decodable"))?;
+    let cookie = session.set_cookie(state, settings)?;
+    let mut headers = headers.clone();
+    if let Some(cookie) = &cookie {
+        let pair = cookie.split(';').next().unwrap_or_default().to_string();
+        let name = crate::session::current::SESSION_COOKIE;
+        let others: Vec<String> = headers
+            .get_all(header::COOKIE)
+            .iter()
+            .filter_map(|h| h.to_str().ok())
+            .flat_map(|h| h.split(';'))
+            .map(str::trim)
+            .filter(|c| !c.is_empty() && !c.starts_with(&format!("{name}=")))
+            .map(str::to_string)
+            .collect();
+        let joined = others
+            .into_iter()
+            .chain(std::iter::once(pair))
+            .collect::<Vec<_>>()
+            .join("; ");
+        headers.remove(header::COOKIE);
+        headers.insert(header::COOKIE, joined.parse()?);
+    }
+    let vs = super::session::viewer_state(state, &headers, settings, guardian)?;
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let mut site = crate::html::Site::from_settings(settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
+    let mut conn = state.pool.acquire().await?;
+    site.load_chrome(
+        &mut conn,
+        state,
+        settings,
+        guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
+    site.bus_position = crate::bus::page_position(&state.bus).await?;
+    drop(conn);
+    site.chrome.sidebar = String::new();
+    let enabled = |k: &str| model.get(k).and_then(Value::as_bool).unwrap_or(false);
+    let allowed: Vec<i64> = model
+        .get("allowed_methods")
+        .and_then(Value::as_array)
+        .map(|a| a.iter().filter_map(Value::as_i64).collect())
+        .unwrap_or_default();
+    // passkeysAvailable, securityKeysAvailable, totpAvailable,
+    // backupCodesAvailable, in shownSecondFactorMethod's order.
+    let available: Vec<i64> = [
+        (PASSKEY, "passkeys_enabled"),
+        (SECURITY_KEY, "security_keys_enabled"),
+        (TOTP, "totp_enabled"),
+        (BACKUP_CODES, "backup_enabled"),
+    ]
+    .into_iter()
+    .filter(|(m, k)| enabled(k) && allowed.contains(m))
+    .map(|(m, _)| m)
+    .collect();
+    let error = model
+        .get("error")
+        .and_then(Value::as_str)
+        .map(str::to_string);
+    let data = json!({
+        "model": model,
+        "nonce": nonce,
+        "error": error,
+        "load_error": error.is_some(),
+        "available": available,
+        "shown": available.first().copied().unwrap_or(TOTP),
+        "csrf": csrf,
+        "base_path": base_path,
+        "icons": {
+            "key": crate::svg_sprite::raw_svg("key")?,
+            "user": crate::svg_sprite::raw_svg("user")?,
+        },
+        "strings": {
+            "order": [PASSKEY, SECURITY_KEY, TOTP, BACKUP_CODES],
+            "titles": {
+                "1": t("login.second_factor_title"),
+                "2": t("login.second_factor_backup_title"),
+                "3": t("login.second_factor_title"),
+                "4": t("login.second_factor_title"),
+            },
+            "descriptions": {
+                "1": t("login.second_factor_description"),
+                "2": t("login.second_factor_backup_description"),
+                "3": t("login.security_key_description"),
+                "4": t("login.passkey_2fa_description"),
+            },
+            "toggles": {
+                "1": t("login.second_factor_toggle.totp"),
+                "2": t("login.second_factor_toggle.backup_code"),
+                "3": t("login.second_factor_toggle.security_key"),
+                "4": t("login.second_factor_toggle.passkey"),
+            },
+            "classes": { "1": "totp", "2": "backup-code", "3": "security-key", "4": "passkey" },
+            "use_passkey": t("login.use_passkey"),
+            "security_key_authenticate": t("login.security_key_authenticate"),
+            "submit": t("submit"),
+            "otp_label": t("d_otp.screen_reader.other").replace("%{count}", "6"),
+            "redirect_after_success": t("second_factor_auth.redirect_after_success"),
+            "not_allowed": t("login.security_key_not_allowed_error"),
+            "generic_error": t("generic_error"),
+        },
+    });
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let page = SecondFactorAuthPage {
+        site_title: site.site_title,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler: crate::html::Crawler::for_request(&urls, uri, None)?,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        data: data.to_string().replace("</", "<\\/"),
+    };
+    let response = (
+        [(header::CACHE_CONTROL, "no-cache, no-store")],
+        axum::response::Html(page.render().map_err(crate::html::HtmlError::from)?),
+    )
+        .into_response();
+    let response = super::accounts::with_session_cookie(response, cookie)?;
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
 /// POST /session/2fa(.json)

@@ -1,0 +1,57 @@
+{
+  "user": "user1",
+  "ignore": [
+    "/responses/2/body/key",
+    "/responses/2/body/qr",
+    "/changes/user_second_factors/inserted/*/data"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_totp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/create_second_factor_totp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "123456"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "000000",
+        "name": "Phone"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/enable_second_factor_totp.json",
+      "params": {
+        "second_factor_token": "{{responses.2.body.key|totp}}",
+        "name": "Phone"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
 // UserPasskeys, AuthTokenDropdown and UserApiKeys), the dialogs they open
 // (ConfirmSession, AuthTokenModal), the calendar tab
 // (preferences/calendar-subscriptions.gjs with CalendarSubscriptionUrl),
-// the second factor page and chat's tab (preferences/chat.gjs). Managing
-// second factors and passkeys is 155's: their endpoints refuse it.
+// the second factor page and chat's tab (preferences/chat.gjs). The
+// modals that add and edit second factors are 155d's.
 (function () {
   "use strict";
 

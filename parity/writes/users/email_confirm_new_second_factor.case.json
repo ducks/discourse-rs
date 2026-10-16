@@ -1,0 +1,47 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, token_hash, scope, expired, confirmed, created_at, updated_at) VALUES (9601, 3, 'user1-new@example.com', 'c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9', 4, FALSE, FALSE, now(), now())",
+    "INSERT INTO email_change_requests (user_id, old_email, new_email, new_email_token_id, change_state, created_at, updated_at) VALUES (3, 'user1@example.com', 'user1-new@example.com', 9601, 2, now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "ignore": [
+    "/responses/0/body/second_factor_challenge_nonce"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/confirm-new-email/known-token-193d.json"
+    },
+    {
+      "method": "GET",
+      "path": "/session/2fa.json?nonce={{responses.0.body.second_factor_challenge_nonce}}"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/confirm-new-email/known-token-193d.json",
+      "params": {
+        "second_factor_nonce": "{{responses.0.body.second_factor_challenge_nonce}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/2fa.json",
+      "params": {
+        "nonce": "{{responses.0.body.second_factor_challenge_nonce}}",
+        "second_factor_method": "1",
+        "second_factor_token": "{{totp:JBSWY3DPEHPK3PXP}}"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/confirm-new-email/known-token-193d.json",
+      "params": {
+        "second_factor_nonce": "{{responses.0.body.second_factor_challenge_nonce}}"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

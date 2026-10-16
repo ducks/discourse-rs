@@ -353,6 +353,132 @@ pub async fn remaining_backup_codes(
     .await
 }
 
+/// `generate_backup_codes`: ten `SecureRandom.hex(16)` codes, each saved
+/// hashed with a salt of its own in place of the user's backup codes.
+pub async fn generate_backup_codes(
+    conn: &mut PgConnection,
+    user_id: i32,
+    iterations: u32,
+) -> Result<Vec<String>, sqlx::Error> {
+    use rand::RngCore;
+    let hex16 = || {
+        let mut bytes = [0u8; 16];
+        rand::thread_rng().fill_bytes(&mut bytes);
+        bytes.iter().map(|b| format!("{b:02x}")).collect::<String>()
+    };
+    let codes: Vec<String> = (0..10).map(|_| hex16()).collect();
+    sqlx::query("DELETE FROM user_second_factors WHERE user_id = $1 AND method = 2")
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
+    for code in &codes {
+        let salt = hex16();
+        let data = json!({ "salt": salt, "code_hash": hash_backup_code(code, &salt, iterations) });
+        sqlx::query(
+            "INSERT INTO user_second_factors (user_id, method, data, enabled, created_at, updated_at) \
+             VALUES ($1, 2, $2, TRUE, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(user_id)
+        .bind(data.to_string())
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(codes)
+}
+
+/// `ROTP::Base32.random`: twenty random bytes, base32.
+pub fn random_secret() -> String {
+    use rand::RngCore;
+    let mut bytes = [0u8; 20];
+    rand::thread_rng().fill_bytes(&mut bytes);
+    base32_encode(&bytes)
+}
+
+/// `ROTP::Base32.encode`: RFC 4648 letters, unpadded for whole groups.
+fn base32_encode(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let mut out = String::new();
+    let (mut buffer, mut bits) = (0u32, 0u32);
+    for b in bytes {
+        buffer = (buffer << 8) | u32::from(*b);
+        bits += 8;
+        while bits >= 5 {
+            bits -= 5;
+            out.push(ALPHABET[((buffer >> bits) & 31) as usize] as char);
+        }
+        buffer &= (1 << bits) - 1;
+    }
+    if bits > 0 {
+        out.push(ALPHABET[((buffer << (5 - bits)) & 31) as usize] as char);
+    }
+    out
+}
+
+/// `ERB::Util.url_encode`: all but unreserved characters escaped.
+fn url_encode(s: &str) -> String {
+    s.bytes()
+        .map(|b| {
+            if b.is_ascii_alphanumeric() || matches!(b, b'-' | b'.' | b'_' | b'~') {
+                (b as char).to_string()
+            } else {
+                format!("%{b:02X}")
+            }
+        })
+        .collect()
+}
+
+/// `totp_provisioning_uri(data)`: ROTP's otpauth URI for the secret,
+/// issued by the site title (colons dropped) to the user's email.
+pub fn provisioning_uri(secret: &str, title: &str, email: &str) -> String {
+    let issuer = title.replace(':', "");
+    let issuer = issuer.trim().replace(':', "_");
+    let label = [issuer.as_str(), email.trim_end()]
+        .iter()
+        .map(|s| url_encode(&s.replace(':', "_")))
+        .collect::<Vec<_>>()
+        .join(":");
+    format!(
+        "otpauth://totp/{label}?secret={}&issuer={}",
+        url_encode(secret),
+        url_encode(&issuer)
+    )
+}
+
+/// `RQRCode::QRCode.new(uri).as_png(border_modules: 1, size: 240)
+/// .to_data_url`: the code drawn black on white, scaled to 240 pixels.
+pub fn qr_data_url(text: &str) -> Result<String, AppError> {
+    use base64::Engine;
+    let code = qrcode::QrCode::new(text.as_bytes())
+        .map_err(|_| Unsupported("a provisioning URI too long for a QR code"))?;
+    let modules = code.width();
+    let colors = code.to_colors();
+    let total = modules + 2;
+    let size = 240u32;
+    let image = image::GrayImage::from_fn(size, size, |x, y| {
+        let mx = (x as usize * total) / size as usize;
+        let my = (y as usize * total) / size as usize;
+        let dark = mx >= 1
+            && my >= 1
+            && mx <= modules
+            && my <= modules
+            && colors[(my - 1) * modules + (mx - 1)] == qrcode::Color::Dark;
+        image::Luma([if dark { 0 } else { 255 }])
+    });
+    let mut png = Vec::new();
+    image::DynamicImage::ImageLuma8(image)
+        .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+        .map_err(|_| Unsupported("a QR code that would not encode as PNG"))?;
+    Ok(format!(
+        "data:image/png;base64,{}",
+        base64::engine::general_purpose::STANDARD.encode(png)
+    ))
+}
+
+/// `get_totp_object(data).verify(code, drift_ahead: 30, drift_behind: 30)`
+pub fn verify_code(secret: &str, otp: &str, now: i64) -> Result<bool, AppError> {
+    verify(secret, otp, now, 0)
+}
+
 /// `ROTP::TOTP#verify(otp, drift_ahead: 30, drift_behind: 30, after:)`.
 fn verify(secret: &str, otp: &str, now: i64, after: i64) -> Result<bool, AppError> {
     let key = base32_decode(secret).ok_or(Unsupported("TOTP secrets that are not base32"))?;
@@ -442,6 +568,27 @@ mod tests {
         assert!(!verify(secret, "081804", 1111111109 + 90, 0).unwrap());
         assert!(!verify(secret, "081804", 1111111109, 1111111109).unwrap());
         assert!(!verify(secret, "00000000", 1111111109, 0).unwrap());
+    }
+
+    #[test]
+    fn secrets_and_provisioning_uris() {
+        assert_eq!(
+            base32_encode(b"12345678901234567890"),
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+        );
+        let secret = random_secret();
+        assert_eq!(secret.len(), 32);
+        assert_eq!(base32_decode(&secret).unwrap().len(), 20);
+        // ROTP 6.3's provisioning_uri, the issuer's colons dropped.
+        assert_eq!(
+            provisioning_uri("JBSWY3DPEHPK3PXP", "My: Forum", "user1@example.com"),
+            "otpauth://totp/My%20Forum:user1%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=My%20Forum"
+        );
+        assert!(
+            qr_data_url("otpauth://totp/x")
+                .unwrap()
+                .starts_with("data:image/png;base64,")
+        );
     }
 
     #[test]

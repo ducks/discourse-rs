@@ -124,6 +124,45 @@ pub async fn valid_method_for_user(
     Ok(enabled.valid_method(method))
 }
 
+/// What `second_factor_auth_required!` hands `initiate_second_factor_auth`.
+pub struct Required<'a> {
+    pub callback_method: &'a str,
+    pub callback_path: &'a str,
+    pub callback_params: Value,
+    pub target_user_id: i32,
+    pub description: Option<String>,
+    pub redirect_url: Option<String>,
+}
+
+/// `initiate_second_factor_auth`: the challenge staged with the default
+/// allowed methods; its nonce.
+pub async fn initiate(
+    conn: &mut PgConnection,
+    session_id: &str,
+    required: Required<'_>,
+) -> Result<String, sqlx::Error> {
+    let nonce = new_nonce();
+    let mut challenge = Map::new();
+    challenge.insert("nonce".into(), json!(nonce));
+    challenge.insert("callback_method".into(), json!(required.callback_method));
+    challenge.insert("callback_path".into(), json!(required.callback_path));
+    challenge.insert("callback_params".into(), required.callback_params);
+    challenge.insert("allowed_methods".into(), json!(DEFAULT_ALLOWED_METHODS));
+    challenge.insert(
+        "generated_at".into(),
+        json!(crate::clock::now().timestamp()),
+    );
+    challenge.insert("target_user_id".into(), json!(required.target_user_id));
+    if let Some(description) = required.description {
+        challenge.insert("description".into(), json!(description));
+    }
+    if let Some(url) = required.redirect_url.filter(|u| !u.is_empty()) {
+        challenge.insert("redirect_url".into(), json!(url));
+    }
+    store(conn, session_id, &challenge).await?;
+    Ok(nonce)
+}
+
 /// `SecondFactorRequired`'s response: the nonce to an xhr request, else
 /// a redirect to the 2FA page.
 pub fn required_response(xhr: bool, base_path: &str, nonce: &str) -> Response {
