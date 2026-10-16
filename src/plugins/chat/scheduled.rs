@@ -100,7 +100,16 @@ pub async fn auto_join_users(state: &AppState, args: &Value) -> Result<(), AppEr
     if !super::enabled(&s)? {
         return Ok(());
     }
-    super::auto_join::create_memberships(&mut tx, &state.bus, state, &s, None, None).await?;
+    super::auto_join::create_memberships(
+        &mut tx,
+        &state.bus,
+        &state.i18n,
+        &state.config,
+        &s,
+        None,
+        None,
+    )
+    .await?;
     let event = args["event"].as_str().unwrap_or("hourly_job").to_string();
     auto_leave_channels(&mut tx, &s, &event, None).await?;
     tx.commit().await?;
@@ -117,6 +126,27 @@ pub(crate) async fn auto_leave_channels(
     settings: &SiteSettings,
     event: &str,
     user_id: Option<i32>,
+) -> Result<(), AppError> {
+    auto_leave(conn, settings, event, user_id, None).await
+}
+
+/// Chat::AutoLeaveChannels with `category_id` (chat's :category_updated
+/// listener): the restricted category part narrowed to that category.
+pub(crate) async fn auto_leave_category(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    event: &str,
+    category_id: i32,
+) -> Result<(), AppError> {
+    auto_leave(conn, settings, event, None, Some(category_id)).await
+}
+
+async fn auto_leave(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    event: &str,
+    user_id: Option<i32>,
+    category_id: Option<i32>,
 ) -> Result<(), AppError> {
     let group_ids = settings.group_ids("chat_allowed_groups")?;
     let everyone_allowed = group_ids.contains(&crate::guardian::auto_groups::EVERYONE)
@@ -148,11 +178,14 @@ pub(crate) async fn auto_leave_channels(
            SELECT uccm.user_id, uccm.chat_channel_id FROM user_chat_channel_memberships uccm \
            JOIN users u ON u.id = uccm.user_id AND u.id > 0 AND u.moderator = FALSE AND u.admin = FALSE{} \
            JOIN chat_channels cc ON cc.id = uccm.chat_channel_id AND cc.chatable_type = 'Category' \
-           JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = TRUE \
+           JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = TRUE{} \
            LEFT JOIN valid_permissions vp ON vp.user_id = uccm.user_id AND vp.category_id = c.id \
            WHERE vp.user_id IS NULL) \
          RETURNING chat_channel_id, user_id",
-        only("u.id")
+        only("u.id"),
+        category_id
+            .map(|id| format!(" AND c.id = {id}"))
+            .unwrap_or_default()
     ))
     .fetch_all(&mut *conn)
     .await?;

@@ -1769,7 +1769,22 @@ route table has been made, so this list may be short.
     the creation log; create_category_definition, also for
     ensure_db_consistency (jobs/consistency.rs:157). Refused: logos and
     backgrounds, email_in, localizations, category group moderation,
-    the plugin category types, automations on category_created_edited)
+    the plugin category types, automations on category_created_edited),
+    190c. ~~`feat/categories-update`~~ (done) L (PUT /categories/:id: the
+    move before the save, pending custom fields merged, the after_update
+    callbacks (the definition retitled and reindexed, the old slug's
+    permalink, the hashtag remap job after commit), the upload security
+    job, the category_updated web hook and chat's auto join and leave,
+    preload_user_fields!, log_category_settings_change; PUT
+    /category/:id/slug; the user destroyer saves a deleted user's
+    categories (user_destroyer.rs:1147, their settings built) and
+    recovers a deleted definition (:1181, topic voting's reclaim); the
+    owner changer's topic save into uncategorized (post_owner_changer.rs:282);
+    a username change publishing a definition's new description.
+    Refused: a description change, which revises the definition post
+    (revise_category_definition, the `not_yet` case
+    categories/update_description), changing the plugin category types,
+    discourse-ai's translation of a renamed category)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

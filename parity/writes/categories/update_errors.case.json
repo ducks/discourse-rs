@@ -1,0 +1,35 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "name": "General",
+        "color": "zzz"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/999.json",
+      "params": {
+        "name": "Gone"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "parent_category_id": 4
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "position": 0,
+        "name": ""
+      }
+    }
+  ]
+}

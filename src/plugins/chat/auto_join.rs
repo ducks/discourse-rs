@@ -30,7 +30,16 @@ pub async fn user(
     settings: &SiteSettings,
     user_id: i32,
 ) -> Result<(), AppError> {
-    create_memberships(conn, bus, state, settings, Some(user_id), None).await
+    create_memberships(
+        conn,
+        bus,
+        &state.i18n,
+        &state.config,
+        settings,
+        Some(user_id),
+        None,
+    )
+    .await
 }
 
 /// `Chat::AutoJoinChannels#create_memberships`: a following membership
@@ -42,7 +51,8 @@ pub async fn user(
 pub async fn create_memberships(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
-    state: &crate::AppState,
+    i18n: &crate::i18n::I18n,
+    config: &crate::config::Config,
     settings: &SiteSettings,
     user_id: Option<i32>,
     channel_id: Option<i64>,
@@ -119,16 +129,7 @@ pub async fn create_memberships(
             .filter(|(c, _)| *c == channel_id)
             .map(|(_, u)| *u)
             .collect();
-        publish_new_channel(
-            &mut *conn,
-            bus,
-            &state.i18n,
-            &state.config,
-            settings,
-            channel_id,
-            &users,
-        )
-        .await?;
+        publish_new_channel(&mut *conn, bus, i18n, config, settings, channel_id, &users).await?;
     }
     Ok(())
 }

@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "custom_fields": {
+          "note": "hello",
+          "has_chat_enabled": "false",
+          "count": 3
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "custom_fields": {
+          "note": "",
+          "count": 3
+        }
+      }
+    }
+  ]
+}

@@ -316,8 +316,10 @@ pub async fn create(
     let category_types = param_list(&p, "category_types");
     drop(conn);
 
+    let host = crate::pretty_text::Host::from_state(&state);
     let cx = crate::category_writes::Cx {
-        state: &state,
+        host: &host,
+        bus: &state.bus,
         settings: &s,
     };
     let mut tx = state.pool.begin().await?;
@@ -358,7 +360,7 @@ pub async fn create(
         &cx,
         id,
         "category_created",
-        !reloaded,
+        (!reloaded).then_some(record.saved_changes.as_slice()),
         !reloaded,
     )
     .await?;
@@ -380,4 +382,251 @@ pub async fn create(
     )
     .await?;
     Ok(Json(json!({ "category": json })).into_response())
+}
+
+/// `Category#category_types`' keys for the category: Discussion always,
+/// then each plugin type it matches.
+async fn current_types(
+    conn: &mut PgConnection,
+    state: &AppState,
+    s: &SiteSettings,
+    id: i32,
+) -> Result<Vec<String>, AppError> {
+    let types = cs::with_registry(&cs::Cx::of(state), s, async |r| {
+        r.for_category(conn, id).await
+    })
+    .await?;
+    Ok(types
+        .as_object()
+        .map(|m| m.keys().cloned().collect())
+        .unwrap_or_default())
+}
+
+/// `manage_category_types`: the site settings a type configures and
+/// the types added or removed are refused (the plugin category types
+/// are not ported); a request that keeps the category's types passes.
+async fn manage_category_types(
+    conn: &mut PgConnection,
+    state: &AppState,
+    s: &SiteSettings,
+    p: &serde_json::Map<String, serde_json::Value>,
+    id: i32,
+) -> Result<(), AppError> {
+    if p.get("category_type_site_settings")
+        .is_some_and(|v| !crate::category_writes::blank_param(v))
+    {
+        return Err(Unsupported("a category type's site settings").into());
+    }
+    if p.contains_key("category_types") {
+        let mut wanted = param_list(p, "category_types");
+        wanted.push("discussion".into());
+        let current = current_types(conn, state, s, id).await?;
+        let removed = current.iter().any(|t| !wanted.contains(t));
+        let added = wanted.iter().any(|t| !current.contains(t));
+        if removed || added {
+            return Err(Unsupported("changing a category's plugin category types").into());
+        }
+    }
+    if p.get("category_type_settings")
+        .is_some_and(|v| !crate::category_writes::blank_param(v))
+    {
+        return Err(Unsupported("a category type's category settings").into());
+    }
+    Ok(())
+}
+
+/// The id segment of `/categories/:id(.json)`.
+fn id_param(id: &str) -> &str {
+    id.strip_suffix(".json").unwrap_or(id)
+}
+
+/// PUT /categories/:id(.json): categories#update.
+pub async fn update(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(super::session::bad_csrf());
+    }
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(c) = fetch_category(&mut conn, &s, id_param(&id)).await? else {
+        return Ok(not_found(&state));
+    };
+    if !cs::can_edit(&mut conn, &s, &guardian, &c).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let mut params = crate::category_writes::permit(&p, &s)?;
+    let old_params = params.clone();
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(&state);
+    let cx = crate::category_writes::Cx {
+        host: &host,
+        bus: &state.bus,
+        settings: &s,
+    };
+    let mut tx = state.pool.begin().await?;
+    // move_to(category_params[:position].to_i) if category_params[:position]
+    if let Some(position) = params.remove("position").filter(|p| !p.is_null()) {
+        crate::category_writes::move_to(&mut tx, c.id, position_to_i(&position)).await?;
+    }
+    let pending = params.custom_fields.take();
+    manage_category_types(&mut tx, &state, &s, &p, c.id).await?;
+    // cat.reload
+    let mut record = crate::category_writes::Record::load(&mut tx, c.id)
+        .await?
+        .ok_or(Unsupported("a category that vanished during its update"))?;
+    let old_custom_fields = record.custom_fields_loaded().clone();
+    if let Some(pending) = &pending {
+        let merged = crate::category_writes::merge_pending_custom_fields(
+            record.custom_fields_loaded(),
+            pending,
+        );
+        record.set_custom_fields(merged);
+    }
+    let old_permissions = {
+        let perms = crate::category_writes::permissions_params(&mut tx, c.id).await?;
+        if perms.is_empty() {
+            vec![("everyone".to_string(), 1)]
+        } else {
+            perms
+        }
+    };
+    if let Err(rejected) = record.assign(&mut tx, &params).await? {
+        return Err(match rejected {
+            // An ArgumentError json_result doesn't rescue: Rails' 500.
+            crate::category_writes::Rejected::Argument(_) => {
+                Unsupported("an invalid enum value in a category update (a 500 in Rails)").into()
+            }
+            crate::category_writes::Rejected::Invalid(_) => {
+                Unsupported("an invalid category assignment").into()
+            }
+        });
+    }
+    match crate::category_writes::save(&mut tx, &cx, &mut record).await? {
+        crate::category_writes::Saved::Invalid(errors) => {
+            // The move (and nothing else) was written outside the save.
+            tx.commit().await?;
+            return Ok(unprocessable(errors));
+        }
+        crate::category_writes::Saved::Done(_) => {}
+    }
+    crate::category_writes::after_commit(
+        &mut tx,
+        &cx,
+        c.id,
+        "category_updated",
+        Some(record.saved_changes.as_slice()),
+        true,
+    )
+    .await?;
+    record.run_deferred(&mut tx).await?;
+    let mut pre = cs::preload_user_fields(&mut tx, &s, &state.i18n, &guardian, c.id).await?;
+    pre.category_setting = true;
+    crate::category_writes::log_settings_change(
+        &mut tx,
+        &cx,
+        user_id,
+        c.id,
+        &old_params,
+        &record.saved_changes,
+        &old_permissions,
+        &old_custom_fields,
+    )
+    .await?;
+    tx.commit().await?;
+    let mut conn = state.pool.acquire().await?;
+    let json = cs::serialize(&mut conn, &cs::Cx::of(&state), &s, &guardian, c.id, &pre).await?;
+    Ok(Json(json!({ "success": "OK", "category": json })).into_response())
+}
+
+/// PUT /category/:category_id/slug(.json): categories#update_slug.
+pub async fn update_slug(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(super::session::bad_csrf());
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // Category.find(params[:category_id].to_i)
+    let found = match i32::try_from(crate::ruby::to_i(&id)) {
+        Ok(id) => GuardedCategory::load(&mut conn, id).await?,
+        Err(_) => None,
+    };
+    let Some(c) = found else {
+        return Ok(not_found(&state));
+    };
+    if !cs::can_edit(&mut conn, &s, &guardian, &c).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let slug = p
+        .get("slug")
+        .and_then(crate::params::scalar)
+        .unwrap_or_default();
+    if crate::ruby::is_blank(&slug) {
+        let message = format!(
+            "Slug {}",
+            state
+                .i18n
+                .t("errors.messages.blank")
+                .unwrap_or("can't be blank")
+        );
+        return Ok(unprocessable(vec![message]));
+    }
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(&state);
+    let cx = crate::category_writes::Cx {
+        host: &host,
+        bus: &state.bus,
+        settings: &s,
+    };
+    let mut tx = state.pool.begin().await?;
+    let mut record = crate::category_writes::Record::load(&mut tx, c.id)
+        .await?
+        .ok_or(Unsupported("a category that vanished during its update"))?;
+    let params = crate::category_writes::Params {
+        attrs: vec![("slug", json!(slug))],
+        ..Default::default()
+    };
+    if record.assign(&mut tx, &params).await?.is_err() {
+        return Err(Unsupported("an invalid category assignment").into());
+    }
+    match crate::category_writes::save(&mut tx, &cx, &mut record).await? {
+        crate::category_writes::Saved::Invalid(errors) => {
+            tx.rollback().await?;
+            Ok(unprocessable(errors))
+        }
+        crate::category_writes::Saved::Done(_) => {
+            crate::category_writes::after_commit(
+                &mut tx,
+                &cx,
+                c.id,
+                "category_updated",
+                Some(record.saved_changes.as_slice()),
+                true,
+            )
+            .await?;
+            record.run_deferred(&mut tx).await?;
+            tx.commit().await?;
+            Ok(Json(json!({ "success": "OK" })).into_response())
+        }
+    }
 }

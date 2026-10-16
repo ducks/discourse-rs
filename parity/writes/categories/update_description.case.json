@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "description": "All about *this* site."
+      }
+    }
+  ],
+  "not_yet": "revising a category definition post when the description changes (revise_category_definition through PostRevisor)"
+}

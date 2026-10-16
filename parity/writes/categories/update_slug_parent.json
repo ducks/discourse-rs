@@ -1,0 +1,919 @@
+{
+  "name": "update_slug_parent",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "slug": "feedback-zone",
+        "parent_category_id": 4
+      }
+    }
+  ],
+  "started_at": "2026-10-16T02:43:48.150459",
+  "transaction_started_at": "2026-10-16T02:43:45.890253",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "category": {
+          "id": 2,
+          "name": "Site Feedback",
+          "color": "808281",
+          "text_color": "FFFFFF",
+          "style_type": "emoji",
+          "icon": null,
+          "emoji": "thought_balloon",
+          "slug": "feedback-zone",
+          "topic_count": 1,
+          "post_count": 1,
+          "position": 1,
+          "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+          "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "topic_url": "/t/about-the-site-feedback-category/1",
+          "read_restricted": false,
+          "permission": 1,
+          "parent_category_id": 4,
+          "notification_level": 1,
+          "can_edit": true,
+          "topic_template": null,
+          "topic_title_placeholder": null,
+          "has_children": false,
+          "subcategory_count": null,
+          "sort_order": null,
+          "sort_ascending": null,
+          "show_subcategory_list": false,
+          "num_featured_topics": 3,
+          "default_view": null,
+          "subcategory_list_style": "rows_with_featured_topics",
+          "default_top_period": "all",
+          "default_list_filter": "all",
+          "minimum_required_tags": 0,
+          "navigate_to_first_post_after_read": false,
+          "custom_fields": {},
+          "allow_global_tags": false,
+          "read_only_banner": null,
+          "form_template_ids": [],
+          "required_tag_groups": [],
+          "category_types": {
+            "discussion": {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            }
+          },
+          "locale": null,
+          "available_groups": [
+            "admins",
+            "anonymous_users",
+            "logged_in_users",
+            "moderators",
+            "staff",
+            "trust_level_0",
+            "trust_level_1",
+            "trust_level_2",
+            "trust_level_3",
+            "trust_level_4"
+          ],
+          "allowed_tags": [],
+          "allowed_tag_groups": [],
+          "auto_close_hours": null,
+          "auto_close_based_on_last_post": false,
+          "group_permissions": [
+            {
+              "permission_type": 1,
+              "group_name": "everyone",
+              "group_id": 0
+            }
+          ],
+          "email_in": null,
+          "email_in_allow_strangers": false,
+          "mailinglist_mirror": false,
+          "all_topics_wiki": false,
+          "allow_unlimited_owner_edits_on_first_post": false,
+          "cannot_delete_reason": "Can't delete this category because it has 1 topic. Oldest topic is <a href=\"http://localhost:3048/t/parity-fixture-pinned-and-closed/37\">Parity fixture: pinned and closed</a>.",
+          "is_special": true,
+          "allow_badges": true,
+          "topic_featured_link_allowed": true,
+          "search_priority": 0,
+          "topic_posting_review_group_ids": [],
+          "reply_posting_review_group_ids": [],
+          "default_slow_mode_seconds": null,
+          "category_type_settings": {},
+          "available_category_types": [
+            {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            },
+            {
+              "id": "events",
+              "name": "Events",
+              "title": "events",
+              "description": "Where members can find and discuss upcoming events on a shared calendar.",
+              "icon": "spiral_calendar",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Events",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "spiral_calendar",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "discourse_post_event_allowed_on_groups",
+                    "default": "",
+                    "current": "1|2",
+                    "overridden": false,
+                    "type": "group_list",
+                    "label": "Groups that can create events",
+                    "choices": null,
+                    "description": "Groups that are allowed to create events.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "use_local_event_date",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "enum",
+                    "label": "Event date format",
+                    "choices": [
+                      {
+                        "name": "Local date (e.g., April 20)",
+                        "value": true
+                      },
+                      {
+                        "name": "Relative time (e.g., in 2 days)",
+                        "value": false
+                      }
+                    ],
+                    "description": "Use local date after topic title instead of relative time.",
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "sort_categories_by_event_start_date_enabled",
+                    "default": true,
+                    "current": false,
+                    "overridden": false,
+                    "type": "enum",
+                    "label": "Topic sorting",
+                    "choices": [
+                      {
+                        "name": "Event date",
+                        "value": true
+                      },
+                      {
+                        "name": "Latest post activity",
+                        "value": false
+                      }
+                    ],
+                    "description": "Enable the sorting of category topics by event start date.",
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "sidebar_show_upcoming_events",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show \"Upcoming events\" link in navigation menu",
+                    "choices": null,
+                    "description": "Show upcoming events link in the sidebar under 'More'.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_settings": [
+                  {
+                    "key": "events_calendar_default_view",
+                    "default": "month",
+                    "type": "enum",
+                    "label": "Default calendar view",
+                    "subtype": null,
+                    "choices": [
+                      {
+                        "name": "Day",
+                        "value": "day"
+                      },
+                      {
+                        "name": "Week",
+                        "value": "week"
+                      },
+                      {
+                        "name": "Month",
+                        "value": "month"
+                      },
+                      {
+                        "name": "Year",
+                        "value": "year"
+                      }
+                    ],
+                    "description": null,
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "events_calendar_display_weekends",
+                    "default": true,
+                    "type": "bool",
+                    "label": "Display weekends",
+                    "subtype": null,
+                    "choices": null,
+                    "description": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_custom_fields": [],
+                "site_texts": []
+              },
+              "required_plugin": "Events",
+              "can_enable_plugin": true
+            },
+            {
+              "id": "support",
+              "name": "Support",
+              "title": "support",
+              "description": "Where members can ask questions and mark replies as solutions.",
+              "icon": "person_raising_hand",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Support",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "red_question_mark",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "show_filter_by_solved_status",
+                    "default": true,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show filter by solved status",
+                    "choices": null,
+                    "description": "Show a dropdown to filter a topic list by solved status.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "prioritize_solved_topics_in_search",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Prioritize solved topics in search",
+                    "choices": null,
+                    "description": "Prioritize solved topics in search results.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "show_who_marked_solved",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show who marked solved",
+                    "choices": null,
+                    "description": "Show who marked the topic as solved. This is indicated in the topic's first post, and the answer post in a tooltip.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_settings": [],
+                "category_custom_fields": [
+                  {
+                    "key": "enable_accepted_answers",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Allow topic owner and staff to mark a reply as the solution",
+                    "description": null,
+                    "choices": null,
+                    "required": true,
+                    "show_on_create": false,
+                    "show_on_edit": false
+                  },
+                  {
+                    "key": "solved_topics_auto_close_hours",
+                    "default": 48,
+                    "type": "integer",
+                    "subtype": "duration",
+                    "label": "Auto close solved topics",
+                    "description": "Automatically close solved topics after this duration from the last reply. Set to 0 to disable.",
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "notify_on_staff_accept_solved",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Notify topic creator when staff marks a solution",
+                    "description": null,
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "empty_box_on_unsolved",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Display unsolved topic state in the topic list for supported themes",
+                    "description": null,
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "enable_shared_issues",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Enable shared issues",
+                    "description": "Adds a button to unsolved topics in this category that members can use to signal they're experiencing the same issue and opt in to notifications about the solution.",
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_texts": [
+                  {
+                    "key": "js.solved.shared_issue.label",
+                    "name": "js_solved_shared_issue_label",
+                    "label": "Shared issue label",
+                    "description": "The label shown on the shared issue button.",
+                    "current": "Me too",
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "enable_shared_issues"
+                  }
+                ]
+              },
+              "required_plugin": "Solved",
+              "can_enable_plugin": true
+            },
+            {
+              "id": "ideas",
+              "name": "Ideas",
+              "title": "ideas",
+              "description": "Where members can submit ideas and vote on the ones they want most.",
+              "icon": "bulb",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Ideas",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "bulb",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "topic_voting_show_who_voted",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show who voted",
+                    "choices": null,
+                    "description": "Allow users to see who voted?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_show_votes_on_profile",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show votes on profile",
+                    "choices": null,
+                    "description": "Allow users to see their votes in their activity feed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_enable_vote_limits",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Limit member votes",
+                    "choices": null,
+                    "description": "Limit the number of votes per user based on trust level",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_tl0_vote_limit",
+                    "default": 2,
+                    "current": 2,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL0 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL0 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl1_vote_limit",
+                    "default": 4,
+                    "current": 4,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL1 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL1 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl2_vote_limit",
+                    "default": 6,
+                    "current": 6,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL2 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL2 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl3_vote_limit",
+                    "default": 8,
+                    "current": 8,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL3 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL3 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl4_vote_limit",
+                    "default": 10,
+                    "current": 10,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL4 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL4 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_alert_votes_left",
+                    "default": 1,
+                    "current": 1,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "Alert when votes remaining",
+                    "choices": null,
+                    "description": "Alert user when this many votes are left",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  }
+                ],
+                "category_settings": [],
+                "category_custom_fields": [],
+                "site_texts": []
+              },
+              "required_plugin": "Topic Voting",
+              "can_enable_plugin": true
+            }
+          ],
+          "has_chat_channels": false,
+          "uploaded_logo": null,
+          "uploaded_logo_dark": null,
+          "uploaded_background": null,
+          "uploaded_background_dark": null,
+          "category_setting": {
+            "auto_bump_cooldown_days": 1,
+            "num_auto_bump_daily": 0,
+            "require_reply_approval": false,
+            "require_topic_approval": false,
+            "nested_replies_default": false,
+            "topic_posting_review_mode": "no_one",
+            "reply_posting_review_mode": "no_one"
+          },
+          "category_localizations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "categories": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "icon": null,
+            "name": "Site Feedback",
+            "slug": "site-feedback",
+            "color": "808281",
+            "emoji": "thought_balloon",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 1,
+            "topic_id": 1,
+            "posts_day": 1,
+            "created_at": "2026-07-25T05:58:08.494443",
+            "name_lower": "site feedback",
+            "post_count": 1,
+            "posts_week": 1,
+            "posts_year": 1,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 1,
+            "updated_at": "2026-10-01T07:04:33.490822",
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "posts_month": 1,
+            "topic_count": 1,
+            "topics_week": 1,
+            "topics_year": 1,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 1,
+            "latest_post_id": 41,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 37,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          },
+          "after": {
+            "id": 2,
+            "icon": null,
+            "name": "Site Feedback",
+            "slug": "feedback-zone",
+            "color": "808281",
+            "emoji": "thought_balloon",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 1,
+            "topic_id": 1,
+            "posts_day": 1,
+            "created_at": "2026-07-25T05:58:08.494443",
+            "name_lower": "site feedback",
+            "post_count": 1,
+            "posts_week": 1,
+            "posts_year": 1,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 1,
+            "updated_at": "2026-10-16T02:43:48.235265",
+            "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+            "posts_month": 1,
+            "topic_count": 1,
+            "topics_week": 1,
+            "topics_year": 1,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 1,
+            "latest_post_id": 41,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 37,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": 4,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          }
+        }
+      ]
+    },
+    "permalinks": {
+      "inserted": [
+        {
+          "id": 1,
+          "url": "c/general/site-feedback/2",
+          "tag_id": null,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-16T02:43:48.245579",
+          "updated_at": "2026-10-16T02:43:48.245579",
+          "category_id": 2,
+          "external_url": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gDI6YZ5ZK3YgTievc+L3HvfutYU=",
+            "created_at": "2026-10-16T02:43:46.809055",
+            "rotated_at": "2026-10-16T02:43:46.807246",
+            "updated_at": "2026-10-16T02:43:46.809055",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gDI6YZ5ZK3YgTievc+L3HvfutYU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T02:43:48.162882",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gDI6YZ5ZK3YgTievc+L3HvfutYU=",
+            "created_at": "2026-10-16T02:43:46.809055",
+            "rotated_at": "2026-10-16T02:43:46.807246",
+            "updated_at": "2026-10-16T02:43:46.809055",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gDI6YZ5ZK3YgTievc+L3HvfutYU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/feedback-zone/2",
+          "details": null,
+          "post_id": null,
+          "subject": "parent_category_id",
+          "topic_id": null,
+          "new_value": "4",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:48.311974",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:48.311974",
+          "category_id": 2,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/feedback-zone/2",
+          "details": null,
+          "post_id": null,
+          "subject": "slug",
+          "topic_id": null,
+          "new_value": "feedback-zone",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:48.315202",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:48.315202",
+          "category_id": 2,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "site-feedback",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/feedback-zone/2",
+          "details": null,
+          "post_id": null,
+          "subject": "permissions",
+          "topic_id": null,
+          "new_value": "null",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:48.318213",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:48.318213",
+          "category_id": 2,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"everyone\":1}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "index_category_for_search",
+      {
+        "category_id": 2,
+        "force": false
+      }
+    ],
+    [
+      "remap_hashtag",
+      {
+        "remaps": [
+          {
+            "type": "category",
+            "id": 2,
+            "old_ref": "site-feedback"
+          }
+        ]
+      }
+    ]
+  ],
+  "next_ids": {
+    "permalinks": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "cd300982b925db26107c24d3f494d17e2b24b176f41d72ba53058bd0f261801e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

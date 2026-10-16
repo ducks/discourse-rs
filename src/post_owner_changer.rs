@@ -257,19 +257,25 @@ pub async fn change_owner(
         .execute(&mut *conn)
         .await?;
 
-        save_topic(conn, s, &mut topic).await?;
+        save_topic(conn, ctx, &mut topic).await?;
     }
     Ok(Outcome::Done)
 }
 
 /// `@topic.save!(validate: false)`: ensure_topic_has_a_category, then the
-/// changed columns with updated_at.
+/// changed columns with updated_at. A topic without a category lands in
+/// uncategorized: its slow mode and auto close come from there, its
+/// posts are queued for reindexing, and it leaves profiles when that
+/// category is restricted.
 async fn save_topic(
     conn: &mut PgConnection,
-    s: &crate::site_settings::SiteSettings,
+    ctx: &Ctx<'_>,
     topic: &mut TopicState,
 ) -> Result<(), AppError> {
-    if topic.category_id.is_none() && topic.archetype != "private_message" {
+    let s = ctx.settings;
+    // ensure_topic_has_a_category: regular topics only (the schema's
+    // has_category_id check keeps them from having none).
+    if topic.category_id.is_none() && topic.archetype == "regular" {
         topic.category_id = Some(s.get("uncategorized_category_id")?.to_i() as i32);
     }
     if topic.user_id == topic.saved_user_id
@@ -278,8 +284,38 @@ async fn save_topic(
     {
         return Ok(());
     }
-    if topic.category_id != topic.saved_category_id {
-        return Err(Unsupported("a topic without a category saved into uncategorized").into());
+    let category_changed = topic.category_id != topic.saved_category_id;
+    if category_changed {
+        let tagged: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = $1)")
+                .bind(topic.id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if tagged {
+            return Err(Unsupported(
+                "a tagged topic without a category saved into uncategorized (CategoryTagStat.topic_moved)",
+            )
+            .into());
+        }
+        // before_save: inherit_slow_mode_from_category
+        sqlx::query(
+            "UPDATE topics SET category_id = $2, \
+               slow_mode_seconds = COALESCE((SELECT default_slow_mode_seconds FROM categories WHERE id = $2), \
+                                            slow_mode_seconds) \
+             WHERE id = $1",
+        )
+        .bind(topic.id)
+        .bind(topic.category_id)
+        .execute(&mut *conn)
+        .await?;
+        // and inherit_auto_close_from_category
+        crate::topic_timer::inherit_auto_close_from_category(
+            &mut *conn,
+            ctx,
+            topic.id,
+            crate::topic_timer::types::CLOSE,
+        )
+        .await?;
     }
     sqlx::query(
         "UPDATE topics SET user_id = $2, last_post_user_id = $3, updated_at = clock_timestamp() \
@@ -290,6 +326,32 @@ async fn save_topic(
     .bind(topic.last_post_user_id)
     .execute(&mut *conn)
     .await?;
+    if category_changed {
+        // after_save: SearchIndexer.queue_post_reindex
+        sqlx::query(
+            "UPDATE post_search_data SET version = 0 FROM posts \
+             WHERE post_search_data.post_id = posts.id AND posts.topic_id = $1",
+        )
+        .bind(topic.id)
+        .execute(&mut *conn)
+        .await?;
+        // after_update: out of the profiles for a restricted category.
+        let restricted: bool = sqlx::query_scalar(
+            "SELECT COALESCE((SELECT read_restricted FROM categories WHERE id = $1), FALSE)",
+        )
+        .bind(topic.category_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if restricted {
+            sqlx::query(
+                "UPDATE user_profiles SET featured_topic_id = NULL WHERE featured_topic_id = $1",
+            )
+            .bind(topic.id)
+            .execute(&mut *conn)
+            .await?;
+        }
+        topic.saved_category_id = topic.category_id;
+    }
     topic.saved_user_id = topic.user_id;
     topic.saved_last_post_user_id = topic.last_post_user_id;
     Ok(())

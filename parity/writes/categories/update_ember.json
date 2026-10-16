@@ -1,0 +1,969 @@
+{
+  "name": "update_ember",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "name": "General",
+        "slug": "general",
+        "color": "25AAE2",
+        "text_color": "FFFFFF",
+        "permissions": {
+          "everyone": 1
+        },
+        "auto_close_hours": null,
+        "auto_close_based_on_last_post": false,
+        "default_slow_mode_seconds": null,
+        "position": 3,
+        "email_in": null,
+        "email_in_allow_strangers": false,
+        "mailinglist_mirror": false,
+        "parent_category_id": null,
+        "uploaded_logo_id": null,
+        "uploaded_logo_dark_id": null,
+        "uploaded_background_id": null,
+        "uploaded_background_dark_id": null,
+        "allow_badges": true,
+        "category_setting_attributes": {
+          "auto_bump_cooldown_days": 1,
+          "num_auto_bump_daily": 0,
+          "require_reply_approval": false,
+          "require_topic_approval": false,
+          "nested_replies_default": false,
+          "topic_posting_review_mode": "no_one",
+          "reply_posting_review_mode": "no_one"
+        },
+        "custom_fields": {
+          "has_chat_enabled": true
+        },
+        "topic_template": null,
+        "topic_title_placeholder": null,
+        "form_template_ids": [],
+        "all_topics_wiki": false,
+        "allow_unlimited_owner_edits_on_first_post": false,
+        "allowed_tags": [],
+        "allowed_tag_groups": [],
+        "allow_global_tags": false,
+        "required_tag_groups": [],
+        "sort_order": "activity",
+        "sort_ascending": null,
+        "topic_featured_link_allowed": true,
+        "show_subcategory_list": true,
+        "num_featured_topics": 4,
+        "default_view": "latest",
+        "subcategory_list_style": "rows_with_featured_topics",
+        "default_top_period": "all",
+        "minimum_required_tags": 0,
+        "navigate_to_first_post_after_read": false,
+        "search_priority": 0,
+        "topic_posting_review_group_ids": [],
+        "reply_posting_review_group_ids": [],
+        "read_only_banner": null,
+        "default_list_filter": "all",
+        "style_type": "emoji",
+        "emoji": "blue_book",
+        "icon": null,
+        "category_types": [
+          "discussion"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-16T02:43:18.853827",
+  "transaction_started_at": "2026-10-16T02:43:16.566121",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "category": {
+          "id": 4,
+          "name": "General",
+          "color": "25AAE2",
+          "text_color": "FFFFFF",
+          "style_type": "emoji",
+          "icon": null,
+          "emoji": "blue_book",
+          "slug": "general",
+          "topic_count": 3,
+          "post_count": 6,
+          "position": 3,
+          "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+          "description_text": "Create topics here that don’t fit into any other existing category.",
+          "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+          "topic_url": "/t/about-the-general-category/3",
+          "read_restricted": false,
+          "permission": 1,
+          "notification_level": 1,
+          "can_edit": true,
+          "topic_template": null,
+          "topic_title_placeholder": null,
+          "has_children": true,
+          "subcategory_count": 1,
+          "sort_order": "activity",
+          "sort_ascending": null,
+          "show_subcategory_list": true,
+          "num_featured_topics": 4,
+          "default_view": "latest",
+          "subcategory_list_style": "rows_with_featured_topics",
+          "default_top_period": "all",
+          "default_list_filter": "all",
+          "minimum_required_tags": 0,
+          "navigate_to_first_post_after_read": false,
+          "custom_fields": {
+            "has_chat_enabled": true
+          },
+          "allow_global_tags": false,
+          "read_only_banner": null,
+          "form_template_ids": [],
+          "required_tag_groups": [],
+          "category_types": {
+            "discussion": {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            }
+          },
+          "locale": null,
+          "available_groups": [
+            "admins",
+            "anonymous_users",
+            "logged_in_users",
+            "moderators",
+            "staff",
+            "trust_level_0",
+            "trust_level_1",
+            "trust_level_2",
+            "trust_level_3",
+            "trust_level_4"
+          ],
+          "allowed_tags": [],
+          "allowed_tag_groups": [],
+          "auto_close_hours": null,
+          "auto_close_based_on_last_post": false,
+          "group_permissions": [
+            {
+              "permission_type": 1,
+              "group_name": "everyone",
+              "group_id": 0
+            }
+          ],
+          "email_in": null,
+          "email_in_allow_strangers": false,
+          "mailinglist_mirror": false,
+          "all_topics_wiki": false,
+          "allow_unlimited_owner_edits_on_first_post": false,
+          "cannot_delete_reason": "Can't delete this category because it has chat channels.",
+          "allow_badges": true,
+          "topic_featured_link_allowed": true,
+          "search_priority": 0,
+          "topic_posting_review_group_ids": [],
+          "reply_posting_review_group_ids": [],
+          "default_slow_mode_seconds": null,
+          "category_type_settings": {},
+          "available_category_types": [
+            {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            },
+            {
+              "id": "events",
+              "name": "Events",
+              "title": "events",
+              "description": "Where members can find and discuss upcoming events on a shared calendar.",
+              "icon": "spiral_calendar",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Events",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "spiral_calendar",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "discourse_post_event_allowed_on_groups",
+                    "default": "",
+                    "current": "1|2",
+                    "overridden": false,
+                    "type": "group_list",
+                    "label": "Groups that can create events",
+                    "choices": null,
+                    "description": "Groups that are allowed to create events.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "use_local_event_date",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "enum",
+                    "label": "Event date format",
+                    "choices": [
+                      {
+                        "name": "Local date (e.g., April 20)",
+                        "value": true
+                      },
+                      {
+                        "name": "Relative time (e.g., in 2 days)",
+                        "value": false
+                      }
+                    ],
+                    "description": "Use local date after topic title instead of relative time.",
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "sort_categories_by_event_start_date_enabled",
+                    "default": true,
+                    "current": false,
+                    "overridden": false,
+                    "type": "enum",
+                    "label": "Topic sorting",
+                    "choices": [
+                      {
+                        "name": "Event date",
+                        "value": true
+                      },
+                      {
+                        "name": "Latest post activity",
+                        "value": false
+                      }
+                    ],
+                    "description": "Enable the sorting of category topics by event start date.",
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "sidebar_show_upcoming_events",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show \"Upcoming events\" link in navigation menu",
+                    "choices": null,
+                    "description": "Show upcoming events link in the sidebar under 'More'.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_settings": [
+                  {
+                    "key": "events_calendar_default_view",
+                    "default": "month",
+                    "type": "enum",
+                    "label": "Default calendar view",
+                    "subtype": null,
+                    "choices": [
+                      {
+                        "name": "Day",
+                        "value": "day"
+                      },
+                      {
+                        "name": "Week",
+                        "value": "week"
+                      },
+                      {
+                        "name": "Month",
+                        "value": "month"
+                      },
+                      {
+                        "name": "Year",
+                        "value": "year"
+                      }
+                    ],
+                    "description": null,
+                    "required": true,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "events_calendar_display_weekends",
+                    "default": true,
+                    "type": "bool",
+                    "label": "Display weekends",
+                    "subtype": null,
+                    "choices": null,
+                    "description": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_custom_fields": [],
+                "site_texts": []
+              },
+              "required_plugin": "Events",
+              "can_enable_plugin": true
+            },
+            {
+              "id": "support",
+              "name": "Support",
+              "title": "support",
+              "description": "Where members can ask questions and mark replies as solutions.",
+              "icon": "person_raising_hand",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Support",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "red_question_mark",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "show_filter_by_solved_status",
+                    "default": true,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show filter by solved status",
+                    "choices": null,
+                    "description": "Show a dropdown to filter a topic list by solved status.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "prioritize_solved_topics_in_search",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Prioritize solved topics in search",
+                    "choices": null,
+                    "description": "Prioritize solved topics in search results.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "show_who_marked_solved",
+                    "default": false,
+                    "current": false,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show who marked solved",
+                    "choices": null,
+                    "description": "Show who marked the topic as solved. This is indicated in the topic's first post, and the answer post in a tooltip.",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "category_settings": [],
+                "category_custom_fields": [
+                  {
+                    "key": "enable_accepted_answers",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Allow topic owner and staff to mark a reply as the solution",
+                    "description": null,
+                    "choices": null,
+                    "required": true,
+                    "show_on_create": false,
+                    "show_on_edit": false
+                  },
+                  {
+                    "key": "solved_topics_auto_close_hours",
+                    "default": 48,
+                    "type": "integer",
+                    "subtype": "duration",
+                    "label": "Auto close solved topics",
+                    "description": "Automatically close solved topics after this duration from the last reply. Set to 0 to disable.",
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "notify_on_staff_accept_solved",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Notify topic creator when staff marks a solution",
+                    "description": null,
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "empty_box_on_unsolved",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Display unsolved topic state in the topic list for supported themes",
+                    "description": null,
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "enable_shared_issues",
+                    "default": true,
+                    "type": "bool",
+                    "subtype": null,
+                    "label": "Enable shared issues",
+                    "description": "Adds a button to unsolved topics in this category that members can use to signal they're experiencing the same issue and opt in to notifications about the solution.",
+                    "choices": null,
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_texts": [
+                  {
+                    "key": "js.solved.shared_issue.label",
+                    "name": "js_solved_shared_issue_label",
+                    "label": "Shared issue label",
+                    "description": "The label shown on the shared issue button.",
+                    "current": "Me too",
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "enable_shared_issues"
+                  }
+                ]
+              },
+              "required_plugin": "Solved",
+              "can_enable_plugin": true
+            },
+            {
+              "id": "ideas",
+              "name": "Ideas",
+              "title": "ideas",
+              "description": "Where members can submit ideas and vote on the ones they want most.",
+              "icon": "bulb",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {
+                "general_category_settings": [
+                  {
+                    "key": "name",
+                    "default": "Ideas",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "style_type",
+                    "default": "emoji",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "emoji",
+                    "default": "bulb",
+                    "type": "string",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  }
+                ],
+                "site_settings": [
+                  {
+                    "key": "topic_voting_show_who_voted",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show who voted",
+                    "choices": null,
+                    "description": "Allow users to see who voted?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_show_votes_on_profile",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Show votes on profile",
+                    "choices": null,
+                    "description": "Allow users to see their votes in their activity feed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_enable_vote_limits",
+                    "default": true,
+                    "current": true,
+                    "overridden": false,
+                    "type": "bool",
+                    "label": "Limit member votes",
+                    "choices": null,
+                    "description": "Limit the number of votes per user based on trust level",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true
+                  },
+                  {
+                    "key": "topic_voting_tl0_vote_limit",
+                    "default": 2,
+                    "current": 2,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL0 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL0 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl1_vote_limit",
+                    "default": 4,
+                    "current": 4,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL1 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL1 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl2_vote_limit",
+                    "default": 6,
+                    "current": 6,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL2 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL2 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl3_vote_limit",
+                    "default": 8,
+                    "current": 8,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL3 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL3 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_tl4_vote_limit",
+                    "default": 10,
+                    "current": 10,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "TL4 vote limit",
+                    "choices": null,
+                    "description": "How many active votes are TL4 users allowed?",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  },
+                  {
+                    "key": "topic_voting_alert_votes_left",
+                    "default": 1,
+                    "current": 1,
+                    "overridden": false,
+                    "type": "integer",
+                    "label": "Alert when votes remaining",
+                    "choices": null,
+                    "description": "Alert user when this many votes are left",
+                    "required": null,
+                    "show_on_create": true,
+                    "show_on_edit": true,
+                    "depends_on": "topic_voting_enable_vote_limits",
+                    "min": 0
+                  }
+                ],
+                "category_settings": [],
+                "category_custom_fields": [],
+                "site_texts": []
+              },
+              "required_plugin": "Topic Voting",
+              "can_enable_plugin": true
+            }
+          ],
+          "has_chat_channels": false,
+          "uploaded_logo": null,
+          "uploaded_logo_dark": null,
+          "uploaded_background": null,
+          "uploaded_background_dark": null,
+          "category_setting": {
+            "auto_bump_cooldown_days": 1,
+            "num_auto_bump_daily": 0,
+            "require_reply_approval": false,
+            "require_topic_approval": false,
+            "nested_replies_default": false,
+            "topic_posting_review_mode": "no_one",
+            "reply_posting_review_mode": "no_one"
+          },
+          "category_localizations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "categories": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-01T07:04:33.522762",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 3,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 2,
+            "latest_post_id": 52,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 41,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          },
+          "after": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": "activity",
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-16T02:43:18.975432",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 3,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": "latest",
+            "topics_month": 2,
+            "latest_post_id": 52,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 41,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 4,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": true,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "created_at": "2026-10-16T02:43:17.252658",
+            "rotated_at": "2026-10-16T02:43:17.244917",
+            "updated_at": "2026-10-16T02:43:17.252658",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T02:43:18.868077",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "created_at": "2026-10-16T02:43:17.252658",
+            "rotated_at": "2026-10-16T02:43:17.244917",
+            "updated_at": "2026-10-16T02:43:17.252658",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/4",
+          "details": null,
+          "post_id": null,
+          "subject": "sort_order",
+          "topic_id": null,
+          "new_value": "activity",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:19.050983",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:19.050983",
+          "category_id": 4,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/4",
+          "details": null,
+          "post_id": null,
+          "subject": "show_subcategory_list",
+          "topic_id": null,
+          "new_value": "t",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:19.054546",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:19.054546",
+          "category_id": 4,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "f",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/4",
+          "details": null,
+          "post_id": null,
+          "subject": "num_featured_topics",
+          "topic_id": null,
+          "new_value": "4",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:19.05754",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:19.05754",
+          "category_id": 4,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "3",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 26,
+          "context": "/c/general/4",
+          "details": null,
+          "post_id": null,
+          "subject": "default_view",
+          "topic_id": null,
+          "new_value": "latest",
+          "admin_only": true,
+          "created_at": "2026-10-16T02:43:19.060356",
+          "ip_address": null,
+          "updated_at": "2026-10-16T02:43:19.060356",
+          "category_id": 4,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "index_category_for_search",
+      {
+        "category_id": 4,
+        "force": false
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "5521a0cdb6208c775817c052887e6b4dbf7dd40cb80bf7237f393fa9866d2afb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

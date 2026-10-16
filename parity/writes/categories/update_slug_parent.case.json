@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "slug": "feedback-zone",
+        "parent_category_id": 4
+      }
+    }
+  ]
+}

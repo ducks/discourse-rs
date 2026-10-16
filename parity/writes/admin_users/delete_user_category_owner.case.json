@@ -1,16 +1,14 @@
 {
   "user": "admin",
   "setup": [
-    "UPDATE categories SET user_id = 5 WHERE id = 34",
-    "UPDATE topics SET user_id = 5 WHERE id = (SELECT topic_id FROM categories WHERE id = 34)"
+    "UPDATE categories SET user_id = 5 WHERE id IN (2, 34)",
+    "DELETE FROM category_settings WHERE category_id = 34",
+    "UPDATE topics SET deleted_at = '2026-10-01 10:00:00', deleted_by_id = 1 WHERE id = 34"
   ],
   "requests": [
     {
       "method": "DELETE",
-      "path": "/admin/users/5.json",
-      "params": {
-        "context": "/admin/users/5/user3"
-      }
+      "path": "/admin/users/5.json"
     }
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/site-feedback.json",
+      "params": {
+        "text_color": "000000"
+      }
+    }
+  ]
+}
