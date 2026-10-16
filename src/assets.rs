@@ -238,6 +238,12 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/admin-reports.js"),
     ),
+    ("admin-ui.js", JS, include_str!("../static/js/admin-ui.js")),
+    (
+        "admin-backups.js",
+        JS,
+        include_str!("../static/js/admin-backups.js"),
+    ),
     ("dialog.js", JS, include_str!("../static/js/dialog.js")),
     (
         "chart.umd.min.js",

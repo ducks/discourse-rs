@@ -1,0 +1,8 @@
+# The advanced and customize admin pages (90g8, 90g7), as admin; see
+# parity/screens/pages for the format. Kept apart from admin-pages so the
+# 90g areas' lists merge cleanly.
+# Backups (90g8). Masked: nothing; the reference lists no backup files on
+# a fresh install, as the port's screens database doesn't.
+/admin/backups as=admin
+/admin/backups/logs as=admin
+/admin/backups/settings as=admin
