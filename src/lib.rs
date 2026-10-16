@@ -385,6 +385,12 @@ impl AppError {
     pub fn rate_limited(&self) -> Option<&rate_limiter::LimitExceeded> {
         self.0.downcast_ref::<rate_limiter::LimitExceeded>()
     }
+
+    /// The error raised, if it is a `T` (what Rails would rescue by
+    /// class).
+    pub fn downcast_ref<T: std::error::Error + 'static>(&self) -> Option<&T> {
+        self.0.downcast_ref::<T>()
+    }
 }
 
 impl AppError {

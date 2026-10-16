@@ -1,22 +1,38 @@
-//! BackupRestore::LocalBackupStore: the backups are the `.gz` and `.tgz`
-//! files in `public/backups/<db>`, newest first. The S3 store is refused.
+//! BackupRestore::BackupStore: where the backups are kept, picked by
+//! `backup_location`. Callers see one store (the files newest first, one
+//! file, delete, download, upload, the retention rules and the stats);
+//! which backend holds the files is the store's business. The local
+//! backend keeps the `.gz` and `.tgz` files in `public/backups/<db>`.
 
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_json::{Value, json};
 
+use crate::config::Config;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, Unsupported};
+
+/// Where a backup's bytes can be had.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Source {
+    /// A file on this machine (the local store's).
+    File(PathBuf),
+    /// A URL that serves it for a while (a remote store's presigned
+    /// download).
+    Url(String),
+}
 
 /// BackupRestore::BackupFile
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BackupFile {
     pub filename: String,
     pub size: u64,
-    /// `File.mtime(path).utc`
+    /// `File.mtime(path).utc`, or the object's Last-Modified.
     pub last_modified: NaiveDateTime,
-    pub path: PathBuf,
+    /// `source`: always the file for the local store; for a remote one
+    /// only when asked for (`include_download_source`).
+    pub source: Option<Source>,
 }
 
 impl BackupFile {
@@ -30,7 +46,239 @@ impl BackupFile {
     }
 }
 
-/// BackupRestore::LocalBackupStore
+/// The store's own failures, which callers answer for (Rails rescues
+/// them by class).
+#[derive(Debug)]
+pub enum BackupStoreError {
+    /// `BackupStore::StorageError`: the remote store failed, with its
+    /// message.
+    Storage(String),
+    /// `BackupStore::BackupFileExists`
+    FileExists,
+    /// `NotImplementedError`: what the backend cannot do (a local store's
+    /// upload URL).
+    NotImplemented(&'static str),
+}
+
+impl std::fmt::Display for BackupStoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BackupStoreError::Storage(message) => f.write_str(message),
+            BackupStoreError::FileExists => {
+                f.write_str("BackupRestore::BackupStore::BackupFileExists")
+            }
+            BackupStoreError::NotImplemented(what) => write!(f, "NotImplementedError: {what}"),
+        }
+    }
+}
+
+impl std::error::Error for BackupStoreError {}
+
+/// `BackupStore#stats`
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Stats {
+    pub used_bytes: u64,
+    /// None for a remote store.
+    pub free_bytes: Option<u64>,
+    pub count: usize,
+    pub last_backup_taken_at: Option<NaiveDateTime>,
+}
+
+/// The site's backup store (`BackupStore.create`).
+#[derive(Debug, Clone)]
+pub enum BackupStore {
+    Local(LocalBackupStore),
+}
+
+impl BackupStore {
+    /// `BackupStore.create`: the store `backup_location` names.
+    pub fn create(config: &Config, settings: &SiteSettings) -> Result<Self, AppError> {
+        match settings.get("backup_location")?.to_s().as_str() {
+            "local" => Self::local(config),
+            _ => Err(Unsupported("the S3 backup store").into()),
+        }
+    }
+
+    /// `BackupStore.create(location: LOCAL)`, whatever backup_location
+    /// says.
+    pub fn local(config: &Config) -> Result<Self, AppError> {
+        Ok(BackupStore::Local(LocalBackupStore::at(
+            &config.public_dir,
+            &config.site.db,
+        )?))
+    }
+
+    /// `remote?`
+    pub fn remote(&self) -> bool {
+        match self {
+            BackupStore::Local(_) => false,
+        }
+    }
+
+    /// `files`: `*.{gz,tgz}`, the newest (to the second) first.
+    pub async fn files(&self) -> Result<Vec<BackupFile>, AppError> {
+        let mut files = match self {
+            BackupStore::Local(s) => s.unsorted_files()?,
+        };
+        sort_newest_first(&mut files);
+        Ok(files)
+    }
+
+    /// `latest_file`
+    pub async fn latest_file(&self) -> Result<Option<BackupFile>, AppError> {
+        Ok(self.files().await?.into_iter().next())
+    }
+
+    /// `file(filename, include_download_source:)`: the backup of that
+    /// name, if there is one. A name leading outside the store is
+    /// InvalidParameters, as Rails raises.
+    pub async fn file(
+        &self,
+        filename: &str,
+        include_download_source: bool,
+    ) -> Result<Option<BackupFile>, AppError> {
+        match self {
+            // The local file is its own source either way.
+            BackupStore::Local(s) => {
+                let _ = include_download_source;
+                file_at(&s.path_from_filename(filename)?)
+            }
+        }
+    }
+
+    /// `delete_file`
+    pub async fn delete_file(&self, filename: &str) -> Result<(), AppError> {
+        match self {
+            BackupStore::Local(s) => {
+                let path = s.path_from_filename(filename)?;
+                if path.exists() {
+                    std::fs::remove_file(path)?;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    /// `download_file(filename, destination, failure_message)`: the
+    /// backup copied to a local path; a failure is the message and why.
+    pub async fn download_file(
+        &self,
+        filename: &str,
+        destination: &Path,
+        failure_message: &str,
+    ) -> Result<(), AppError> {
+        let copied = match self {
+            BackupStore::Local(s) => {
+                let source = s.path_from_filename(filename)?;
+                tokio::fs::copy(&source, destination)
+                    .await
+                    .map(|_| ())
+                    .map_err(|e| e.to_string())
+            }
+        };
+        copied.map_err(|e| std::io::Error::other(format!("{failure_message}\n{e}")).into())
+    }
+
+    /// `upload_file(filename, source_path, content_type)`: a local archive
+    /// put in the store. Only a remote store takes one: the local store's
+    /// archives are made in place.
+    pub async fn upload_file(
+        &self,
+        filename: &str,
+        source: &Path,
+        content_type: &str,
+    ) -> Result<(), AppError> {
+        match self {
+            BackupStore::Local(_) => {
+                let _ = (filename, source, content_type);
+                Err(BackupStoreError::NotImplemented("LocalBackupStore#upload_file").into())
+            }
+        }
+    }
+
+    /// `generate_upload_url(filename)`: where a browser puts a backup.
+    pub async fn generate_upload_url(&self, filename: &str) -> Result<String, AppError> {
+        match self {
+            BackupStore::Local(_) => {
+                let _ = filename;
+                Err(BackupStoreError::NotImplemented("LocalBackupStore#generate_upload_url").into())
+            }
+        }
+    }
+
+    /// `cleanup_allowed?`
+    fn cleanup_allowed(&self) -> bool {
+        match self {
+            BackupStore::Local(_) => true,
+        }
+    }
+
+    /// `delete_old`: past `maximum_backups`, the oldest go.
+    pub async fn delete_old(&self, maximum: i64) -> Result<(), AppError> {
+        if !self.cleanup_allowed() {
+            return Ok(());
+        }
+        let files = self.files().await?;
+        let keep = usize::try_from(maximum.max(0)).unwrap_or(usize::MAX);
+        if files.len() <= keep {
+            return Ok(());
+        }
+        for file in &files[keep..] {
+            self.delete_file(&file.filename).await?;
+        }
+        Ok(())
+    }
+
+    /// `delete_prior_to_n_days`: backups older than `remove_older_backups`
+    /// days go (blank or zero: none).
+    pub async fn delete_prior_to_n_days(
+        &self,
+        window: &str,
+        now: DateTime<Utc>,
+    ) -> Result<(), AppError> {
+        let days = crate::ruby::to_i(window);
+        if days <= 0 || !self.cleanup_allowed() {
+            return Ok(());
+        }
+        let cutoff = now - chrono::Duration::days(days);
+        for file in self.files().await? {
+            if file.last_modified.and_utc() < cutoff {
+                self.delete_file(&file.filename).await?;
+            }
+        }
+        Ok(())
+    }
+
+    /// `stats`: the files' sizes and count, the newest's date and, for the
+    /// local store, the free space where they are.
+    pub async fn stats(&self) -> Result<Stats, AppError> {
+        let files = self.files().await?;
+        let free_bytes = match self {
+            BackupStore::Local(s) => Some(free_bytes(s.directory())?),
+        };
+        Ok(Stats {
+            used_bytes: files.iter().map(|f| f.size).sum(),
+            free_bytes,
+            count: files.len(),
+            last_backup_taken_at: files.first().map(|f| f.last_modified),
+        })
+    }
+}
+
+/// `sort_by { |file| -file.last_modified.to_i }`; ties by name, so the
+/// order is stable.
+fn sort_newest_first(files: &mut [BackupFile]) {
+    files.sort_by(|a, b| {
+        b.last_modified
+            .and_utc()
+            .timestamp()
+            .cmp(&a.last_modified.and_utc().timestamp())
+            .then_with(|| a.filename.cmp(&b.filename))
+    });
+}
+
+/// BackupRestore::LocalBackupStore: the directory, where uploaded chunks
+/// and new archives are made whatever `backup_location` says.
 #[derive(Debug, Clone)]
 pub struct LocalBackupStore {
     base_directory: PathBuf,
@@ -45,16 +293,7 @@ impl LocalBackupStore {
         Ok(dir)
     }
 
-    /// `BackupStore.create` for `backup_location` local; S3 is refused.
-    pub fn create(state: &AppState, settings: &SiteSettings) -> Result<Self, AppError> {
-        let location = settings.get("backup_location")?.to_s();
-        if location != "local" {
-            return Err(Unsupported("the S3 backup store").into());
-        }
-        Self::at(&state.config.public_dir, &state.config.site.db)
-    }
-
-    /// The store of the site `db` (its `current_db`).
+    /// The directory of the site `db` (its `current_db`).
     pub fn at(public_dir: &Path, db: &str) -> Result<Self, AppError> {
         Ok(Self {
             base_directory: Self::base_directory(public_dir, db)?,
@@ -73,8 +312,8 @@ impl LocalBackupStore {
             .join(format!("{filename}.part{chunk_number}"))
     }
 
-    /// `files`: `*.{gz,tgz}`, the newest (to the second) first.
-    pub fn files(&self) -> Result<Vec<BackupFile>, AppError> {
+    /// `unsorted_files`: `*.{gz,tgz}` in the directory.
+    fn unsorted_files(&self) -> Result<Vec<BackupFile>, AppError> {
         let mut files = Vec::new();
         for entry in std::fs::read_dir(&self.base_directory)? {
             let entry = entry?;
@@ -87,35 +326,7 @@ impl LocalBackupStore {
                 files.push(file);
             }
         }
-        files.sort_by(|a, b| {
-            b.last_modified
-                .and_utc()
-                .timestamp()
-                .cmp(&a.last_modified.and_utc().timestamp())
-                .then_with(|| a.filename.cmp(&b.filename))
-        });
         Ok(files)
-    }
-
-    /// `latest_file`
-    pub fn latest_file(&self) -> Result<Option<BackupFile>, AppError> {
-        Ok(self.files()?.into_iter().next())
-    }
-
-    /// `file(filename)`: the backup of that name, if there is one. A name
-    /// leading outside the directory is InvalidParameters, as Rails raises.
-    pub fn file(&self, filename: &str) -> Result<Option<BackupFile>, AppError> {
-        let path = self.path_from_filename(filename)?;
-        file_at(&path)
-    }
-
-    /// `delete_file`
-    pub fn delete_file(&self, filename: &str) -> Result<(), AppError> {
-        let path = self.path_from_filename(filename)?;
-        if path.exists() {
-            std::fs::remove_file(path)?;
-        }
-        Ok(())
     }
 
     fn path_from_filename(&self, filename: &str) -> Result<PathBuf, AppError> {
@@ -132,36 +343,6 @@ impl LocalBackupStore {
             .into());
         }
         Ok(self.base_directory.join(filename))
-    }
-
-    /// `delete_old`: past `maximum_backups`, the oldest go (skipped in
-    /// development, as Creator#delete_old returns there).
-    pub fn delete_old(&self, maximum: i64) -> Result<(), AppError> {
-        let files = self.files()?;
-        let keep = usize::try_from(maximum.max(0)).unwrap_or(usize::MAX);
-        if files.len() <= keep {
-            return Ok(());
-        }
-        for file in &files[keep..] {
-            self.delete_file(&file.filename)?;
-        }
-        Ok(())
-    }
-
-    /// `delete_prior_to_n_days`: backups older than `remove_older_backups`
-    /// days go (blank or zero: none).
-    pub fn delete_prior_to_n_days(&self, window: &str, now: DateTime<Utc>) -> Result<(), AppError> {
-        let days = crate::ruby::to_i(window);
-        if days <= 0 {
-            return Ok(());
-        }
-        let cutoff = now - chrono::Duration::days(days);
-        for file in self.files()? {
-            if file.last_modified.and_utc() < cutoff {
-                self.delete_file(&file.filename)?;
-            }
-        }
-        Ok(())
     }
 }
 
@@ -182,7 +363,7 @@ fn file_at(path: &Path) -> Result<Option<BackupFile>, AppError> {
             .unwrap_or_default(),
         size: meta.len(),
         last_modified: modified.naive_utc(),
-        path: path.to_path_buf(),
+        source: Some(Source::File(path.to_path_buf())),
     }))
 }
 
@@ -281,34 +462,52 @@ mod tests {
         dir
     }
 
-    #[test]
-    fn lists_newest_first_and_only_archives() {
-        let public = scratch("list");
-        let store = LocalBackupStore::at(&public, "default").unwrap();
-        touch(store.directory(), "old.tar.gz", 3 * 86400);
-        touch(store.directory(), "new.sql.gz", 60);
-        touch(store.directory(), "mid.tgz", 86400);
-        touch(store.directory(), "notes.txt", 0);
-        touch(store.directory(), ".hidden.gz", 0);
-        let names: Vec<String> = store
+    async fn names(store: &BackupStore) -> Vec<String> {
+        store
             .files()
+            .await
             .unwrap()
             .into_iter()
             .map(|f| f.filename)
-            .collect();
-        assert_eq!(names, ["new.sql.gz", "mid.tgz", "old.tar.gz"]);
+            .collect()
+    }
 
-        store.delete_prior_to_n_days("2", Utc::now()).unwrap();
-        assert!(store.file("old.tar.gz").unwrap().is_none());
-        store.delete_prior_to_n_days("", Utc::now()).unwrap();
-        store.delete_old(1).unwrap();
-        let names: Vec<String> = store
-            .files()
-            .unwrap()
-            .into_iter()
-            .map(|f| f.filename)
-            .collect();
-        assert_eq!(names, ["new.sql.gz"]);
+    #[tokio::test]
+    async fn lists_newest_first_and_only_archives() {
+        let public = scratch("list");
+        let local = LocalBackupStore::at(&public, "default").unwrap();
+        touch(local.directory(), "old.tar.gz", 3 * 86400);
+        touch(local.directory(), "new.sql.gz", 60);
+        touch(local.directory(), "mid.tgz", 86400);
+        touch(local.directory(), "notes.txt", 0);
+        touch(local.directory(), ".hidden.gz", 0);
+        let store = BackupStore::Local(local);
+        assert_eq!(names(&store).await, ["new.sql.gz", "mid.tgz", "old.tar.gz"]);
+        let stats = store.stats().await.unwrap();
+        assert_eq!(stats.count, 3);
+        assert_eq!(
+            stats.used_bytes,
+            ("new.sql.gz".len() + "mid.tgz".len() + "old.tar.gz".len()) as u64
+        );
+        assert!(stats.free_bytes.is_some());
+
+        store.delete_prior_to_n_days("2", Utc::now()).await.unwrap();
+        assert!(store.file("old.tar.gz", false).await.unwrap().is_none());
+        store.delete_prior_to_n_days("", Utc::now()).await.unwrap();
+        store.delete_old(1).await.unwrap();
+        assert_eq!(names(&store).await, ["new.sql.gz"]);
+
+        let copy = public.join("copy.sql.gz");
+        store
+            .download_file("new.sql.gz", &copy, "Failed to copy")
+            .await
+            .unwrap();
+        assert_eq!(std::fs::read_to_string(&copy).unwrap(), "new.sql.gz");
+        let missing = store
+            .download_file("gone.sql.gz", &copy, "Failed to copy")
+            .await
+            .unwrap_err();
+        assert!(missing.to_string().starts_with("Failed to copy\n"));
         std::fs::remove_dir_all(public).unwrap();
     }
 

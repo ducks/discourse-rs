@@ -3,7 +3,7 @@
 
 use serde_json::{Value, json};
 
-use super::store::{self, LocalBackupStore};
+use super::store::{self, BackupStore, LocalBackupStore};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
 
@@ -121,8 +121,9 @@ pub async fn backup_chunks_merger(state: &AppState, args: &Value) -> Result<(), 
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let files: Vec<Value> = LocalBackupStore::create(state, &settings)?
-        .files()?
+    let files: Vec<Value> = BackupStore::create(&state.config, &settings)?
+        .files()
+        .await?
         .iter()
         .map(store::BackupFile::json)
         .collect();
@@ -229,13 +230,15 @@ async fn schedule(state: &AppState) -> Result<(), AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let store = LocalBackupStore::create(state, &settings)?;
+    let store = BackupStore::create(&state.config, &settings)?;
     // Creator#delete_prior_to_n_days, its errors only logged.
     if state.config.rails_env != crate::config::RailsEnv::Development
-        && let Err(e) = store.delete_prior_to_n_days(
-            &settings.get("remove_older_backups")?.to_s(),
-            crate::clock::now(),
-        )
+        && let Err(e) = store
+            .delete_prior_to_n_days(
+                &settings.get("remove_older_backups")?.to_s(),
+                crate::clock::now(),
+            )
+            .await
     {
         tracing::error!("Something went wrong while deleting backups prior to n days....: {e}");
     }
@@ -246,7 +249,7 @@ async fn schedule(state: &AppState) -> Result<(), AppError> {
     if frequency == 0 {
         return Ok(());
     }
-    if let Some(latest) = store.latest_file()? {
+    if let Some(latest) = store.latest_file().await? {
         let date = latest.last_modified.date();
         if date + chrono::Duration::days(frequency) > crate::clock::now().date_naive() {
             return Ok(());

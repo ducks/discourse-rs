@@ -19,7 +19,7 @@ use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 
 use super::creator::{Log, OperationRunning, database_args, logs_markdown};
-use super::store::LocalBackupStore;
+use super::store::BackupStore;
 use crate::config::RailsEnv;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
@@ -285,13 +285,21 @@ impl Restore<'_> {
         self.tmp_directory = Some(tmp_directory.clone());
         let archive_path = tmp_directory.join(&self.filename);
         let settings = self.settings().await?;
-        let store = LocalBackupStore::create(self.state, &settings)?;
-        self.log.log("Copying archive to tmp directory...").await;
-        let source = store.directory().join(&self.filename);
-        if let Err(e) = std::fs::copy(&source, &archive_path) {
-            return Err(error(format!(
-                "Failed to copy archive to tmp directory.\n{e}"
-            )));
+        let store = BackupStore::create(&self.state.config, &settings)?;
+        let failure_message = if store.remote() {
+            self.log
+                .log("Downloading archive to tmp directory...")
+                .await;
+            "Failed to download archive to tmp directory."
+        } else {
+            self.log.log("Copying archive to tmp directory...").await;
+            "Failed to copy archive to tmp directory."
+        };
+        if let Err(e) = store
+            .download_file(&self.filename, &archive_path, failure_message)
+            .await
+        {
+            return Err(error(e.to_string()));
         }
         let is_archive = !self.filename.ends_with(".sql.gz");
         if is_archive {
