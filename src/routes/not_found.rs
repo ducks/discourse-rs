@@ -50,10 +50,11 @@ struct EmberNotFoundPage {
     html: String,
 }
 
-/// `show_json_errors?`: format json (the `.json` path, or as the Accept
-/// header decides it) or XHR.
+/// `show_json_errors?`: format json (the `.json` path, a route whose
+/// format defaults to json, or as the Accept header decides it) or XHR.
 fn shows_json_errors(path: &str, query: Option<&str>, headers: &HeaderMap) -> bool {
     path.ends_with(".json")
+        || path.ends_with("/svg-sprite/picker-search")
         || headers
             .get("x-requested-with")
             .is_some_and(|v| v == "XMLHttpRequest")

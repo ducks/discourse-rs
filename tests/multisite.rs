@@ -532,7 +532,9 @@ async fn a_path_hostname_picks_the_site() {
         "{}",
         location(&reply)
     );
-    let reply = client.get("/svg-sprite/b.example/svg-1-0.js").await;
+    let reply = client
+        .get("/svg-sprite/b.example/svg-1-0000000000000000000000000000000000000000.js")
+        .await;
     assert_eq!(reply.status, StatusCode::FOUND);
     assert!(
         location(&reply).contains("/svg-sprite/b.example/svg-1-"),
