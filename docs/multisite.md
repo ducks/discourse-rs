@@ -12,6 +12,51 @@ router, so the 871 `state.pool` and 268 `state.bus` call sites do not
 change; one job worker per site. Without a multisite.yml the process has
 one site and behaves exactly as now.
 
+## Running several forums
+
+For operators; the rest of this page is the port's sweep.
+
+One process serves several forums, picked by the request's Host, as
+Discourse's multisite does. The default forum is the one the environment
+names (`DATABASE_URL`, `DISCOURSE_HOSTNAME`); the others are listed in a
+multisite.yml that `DISCOURSE_MULTISITE_CONFIG_PATH` names
+(deploy/multisite.yml.example):
+
+```yaml
+second:                    # the db key: uploads/second, backups/second
+  database: discourse_second
+  host: /run/postgresql    # optional: host or socket directory, port,
+  pool: 5                  #   username, password as libpq takes them
+  host_names:              # the first is the forum's hostname in URLs
+    - second.example.com
+```
+
+- Each forum has its own database; two forums on one database, or one
+  host name on two forums, stop the process at startup. `default` is
+  not a key you may use.
+- Every host name needs a site block in Caddy (deploy/Caddyfile). A
+  host no forum has gets a bare 404; /srv/status answers on any host.
+- The forums share `PUBLIC_DIR`: uploads at `uploads/<key>`, backups at
+  `backups/<key>`. `scripts/restore-backup --site <key> --public <dir>`
+  restores a backup into a forum, moving its uploads to the key.
+- A forum that fails to start (its database unreachable, its schema
+  behind) is logged and its hosts answer 503 until a restart; the
+  others serve. The default forum failing stops the process.
+
+Turning multisite on for an existing single forum: its URLs, uploads
+and backups stay as they are (its key is `default`), but its session
+cookies are salted with the request's host, as RailsMultisite does, so
+everyone is signed out once. A cookie also works on the one host name
+it was set for only.
+
+The connection budget: each forum may hold its `pool` (default
+`DISCOURSE_DB_POOL`, else 10), plus 4 for the rate limiter and 1 for
+pg-bus's listener (1 more while a backup runs). Idle connections close
+after 60 seconds. At startup the process warns when the forums on one
+Postgres server could hold more than its `max_connections` (100 by
+default): six busy forums at the default pool already do. Lower the
+pools or raise `max_connections`.
+
 ## What Rails does
 
 From the reference source and rails_multisite 7.0.0 (the gem Discourse
@@ -313,3 +358,15 @@ own docs), so every site on one Postgres shares publish throughput.
   `/uploads/<old>/` is rewritten with sed before loading (Rails remaps
   the loaded tables with DbHelper.remap; the same result for these
   URLs).
+- 208d: the default site failing to start stops the process (it is the
+  environment's site and answers /srv/status); any other is logged as
+  Rails' `URGENT: Failed to initialize site` and its hosts get a plain
+  503 `site unavailable`.
+- 208d: every pool closes connections idle for 60 s (sqlx's default is
+  10 minutes). The budget check sums `pool + 4 + 1` per site and groups
+  sites by Postgres server (host or socket, and port), reading each
+  server's `max_connections`; it warns and does not refuse.
+- 208d: deploy/discourse-rs.service gains `StateDirectory=discourse-rs`,
+  since uploads, backups and TMP_DIR are written under /var/lib
+  (ProtectSystem=strict left it read only), and env.example sets
+  TMP_DIR there.

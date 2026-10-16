@@ -399,6 +399,11 @@ env file. Then:
 4. `systemctl enable --now discourse-rs`, and add `deploy/Caddyfile` to
    Caddy's config with the real hostname.
 
+Several forums can run from one process, picked by hostname: see
+[docs/multisite.md](docs/multisite.md#running-several-forums) for
+multisite.yml, what changes for an existing forum and the connection
+budget.
+
 The server binds to loopback and trusts `X-Forwarded-For`, so only the
 proxy may reach it. `systemctl stop` (SIGTERM) lets in-flight requests
 finish. A release binary embeds the schema vendored at its tag; a backup

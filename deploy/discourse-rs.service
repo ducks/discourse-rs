@@ -12,7 +12,9 @@ ExecStart=/usr/local/bin/discourse-rs
 Restart=on-failure
 RestartSec=2
 
-# The server only reads PUBLIC_DIR and talks to Postgres; it writes no files.
+# The server reads /etc/discourse-rs and writes under /var/lib/discourse-rs
+# (uploads, backups, TMP_DIR); the rest of the system is read only to it.
+StateDirectory=discourse-rs
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true

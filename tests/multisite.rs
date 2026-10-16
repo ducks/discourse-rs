@@ -51,7 +51,7 @@ async fn two_sites(make: impl Fn() -> Config) -> (Site, Site) {
     };
     let a = state(db_a.pool.clone(), config_a).await;
     let b = other_site(&a, db_b.pool.clone(), config_b).await;
-    let dispatcher = Sites::multisite(vec![a.clone(), b.clone()])
+    let dispatcher = Sites::multisite(vec![a.clone(), b.clone()], &[])
         .unwrap()
         .into_service();
     (
@@ -848,4 +848,104 @@ async fn scheduled_jobs_run_per_site_worker() {
     worker_a.await.unwrap();
     worker_b.await.unwrap();
     assert_eq!(last_job_performed(&b).await, None);
+}
+
+/// A request straight to a dispatcher: (status, body).
+async fn dispatch(dispatcher: &Dispatcher, host: &str, path: &str) -> (StatusCode, String) {
+    let request = Request::builder()
+        .uri(path)
+        .header(header::HOST, host)
+        .body(Body::empty())
+        .unwrap();
+    let response = dispatcher.clone().oneshot(request).await.unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, String::from_utf8_lossy(&bytes).into_owned())
+}
+
+/// Startup as main.rs runs it: a site that fails to start (here its
+/// database does not exist) is logged and skipped, its hosts answer 503,
+/// and the default site serves.
+#[tokio::test]
+async fn a_site_that_fails_to_start_answers_503_and_the_others_serve() {
+    use discourse_rs::multisite::{Shared, SiteSpec, boot_all};
+    use sqlx::postgres::PgConnectOptions;
+    let db = TestDb::new().await;
+    let (public, tmp) = scratch("boot");
+    let mut process = config(RailsEnv::Test, &[]);
+    process.site.database_url = db.url();
+    process.site.pool = 2;
+    process.public_dir = public.clone();
+    process.tmp_dir = tmp;
+    let shared = Shared {
+        site_setting_defs: std::sync::Arc::new(
+            discourse_rs::site_settings::Definitions::vendored().unwrap(),
+        ),
+        i18n: std::sync::Arc::new(discourse_rs::i18n::I18n::vendored().unwrap()),
+        keys: std::sync::Arc::new(discourse_rs::session::current::Keys::ephemeral()),
+        mailer: discourse_rs::email::Mailer::memory(),
+        global_rate_limits: Default::default(),
+    };
+    let server: PgConnectOptions = db.url().parse().unwrap();
+    let missing = SiteSpec {
+        db: "gone".into(),
+        database: "discourse_rs_208d_no_such_database".into(),
+        host: server
+            .get_socket()
+            .map(|s| s.display().to_string())
+            .or_else(|| Some(server.get_host().to_string())),
+        port: Some(server.get_port()),
+        username: None,
+        password: None,
+        pool: Some(1),
+        host_names: vec!["gone.example".into()],
+    };
+    let sites = boot_all(&shared, process, Some(vec![missing]))
+        .await
+        .unwrap();
+    assert_eq!(sites.states().count(), 1);
+    let dispatcher = sites.into_service();
+    assert_eq!(
+        dispatch(&dispatcher, "gone.example", "/latest.json").await,
+        (StatusCode::SERVICE_UNAVAILABLE, "site unavailable".into())
+    );
+    let (status, _) = dispatch(&dispatcher, "test.localhost", "/about.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        dispatch(&dispatcher, "nowhere.example", "/srv/status").await,
+        (StatusCode::OK, "ok".into())
+    );
+    let _ = std::fs::remove_dir_all(public.parent().unwrap());
+}
+
+/// The startup check: each site may hold its pool, the rate limiter's 4
+/// and pg-bus's listener; more than the server's max_connections warns.
+#[tokio::test]
+async fn the_connection_budget_warns_past_max_connections() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    assert!(
+        discourse_rs::multisite::connection_budget(&[a.st.clone(), b.st.clone()])
+            .await
+            .is_empty()
+    );
+    let max: String = sqlx::query_scalar("SHOW max_connections")
+        .fetch_one(&a.db.pool)
+        .await
+        .unwrap();
+    let max: u32 = max.parse().unwrap();
+    let with_pool = |site: &Site| {
+        let mut st = site.st.clone();
+        let mut config = (*st.config).clone();
+        config.site.pool = max / 2;
+        st.config = std::sync::Arc::new(config);
+        st
+    };
+    let warnings =
+        discourse_rs::multisite::connection_budget(&[with_pool(&a), with_pool(&b)]).await;
+    assert_eq!(warnings.len(), 1, "{warnings:?}");
+    assert!(
+        warnings[0].contains(&format!("(default, second) may hold {}", 2 * (max / 2 + 5))),
+        "{}",
+        warnings[0]
+    );
 }

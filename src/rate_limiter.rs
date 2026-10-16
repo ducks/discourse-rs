@@ -29,7 +29,7 @@ use sqlx::postgres::PgPoolOptions;
 use crate::i18n::I18n;
 
 /// Connections of the limiter's own pool, each held for one query.
-const OWN_POOL_SIZE: u32 = 4;
+pub const OWN_POOL_SIZE: u32 = 4;
 
 /// The limiter's pool for the database `pool` connects to, made lazily
 /// from its connect options and kept per database.

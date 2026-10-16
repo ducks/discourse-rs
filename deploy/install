@@ -37,6 +37,10 @@ fi
 install -Dm755 "$bin" "$dest/usr/local/bin/discourse-rs"
 install -Dm644 "$here/discourse-rs.service" "$dest/etc/systemd/system/discourse-rs.service"
 install -Dm644 "$here/discourse-rs.sysusers" "$dest/etc/sysusers.d/discourse-rs.conf"
+# The multisite example, refreshed on every install; the server reads
+# /etc/discourse-rs/multisite.yml only when DISCOURSE_MULTISITE_CONFIG_PATH
+# names it.
+install -Dm644 "$here/multisite.yml.example" "$dest/etc/discourse-rs/multisite.yml.example"
 install -dm755 "$dest/var/lib/discourse-rs/public"
 
 if [ -z "$dest" ]; then
@@ -52,6 +56,7 @@ else
     chown root:discourse-rs "$env_file"
   fi
   echo "wrote $env_file: set DATABASE_URL, DISCOURSE_HOSTNAME and DISCOURSE_SECRET_KEY_BASE"
+  echo "for more forums from this process: /etc/discourse-rs/multisite.yml.example and docs/multisite.md"
 fi
 
 if [ -z "$dest" ]; then

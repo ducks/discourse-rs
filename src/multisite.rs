@@ -300,6 +300,7 @@ pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn E
     let pool = PgPoolOptions::new()
         .max_connections(config.site.pool)
         .acquire_timeout(std::time::Duration::from_secs(5))
+        .idle_timeout(IDLE_TIMEOUT)
         .connect(&config.site.database_url)
         .await?;
 
@@ -363,6 +364,96 @@ pub async fn shut_down(state: &AppState) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// How long a pool keeps a connection nobody uses, so an idle site holds
+/// few.
+pub const IDLE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
+
+/// Every site started: the default (whose failure stops the process),
+/// then each multisite.yml entry, one that fails logged and served as 503
+/// (as Rails' safe_each_connection keeps going).
+pub async fn boot_all(
+    shared: &Shared,
+    mut process: Config,
+    specs: Option<Vec<SiteSpec>>,
+) -> Result<Sites, Box<dyn Error>> {
+    process.site.multisite = specs.is_some();
+    let Some(specs) = specs else {
+        return Ok(Sites::single(boot(shared, process).await?));
+    };
+    let mut configs = vec![process.clone()];
+    configs.extend(specs.iter().map(|spec| spec.config(&process)));
+    check_distinct(&configs)?;
+    let mut configs = configs.into_iter();
+    let default = configs.next().expect("the default site's config");
+    let mut states = vec![boot(shared, default).await?];
+    let mut down = Vec::new();
+    for config in configs {
+        let db = config.site.db.clone();
+        match boot(shared, config.clone()).await {
+            Ok(state) => states.push(state),
+            Err(e) => {
+                tracing::error!(
+                    site = db,
+                    "URGENT: Failed to initialize site {db}: {e}; its hosts answer 503"
+                );
+                down.push(config);
+            }
+        }
+    }
+    for warning in connection_budget(&states).await {
+        tracing::warn!("{warning}");
+    }
+    Ok(Sites::multisite(states, &down)?)
+}
+
+/// What a site may hold at once: its pool, the rate limiter's own pool
+/// and pg-bus's listener (a backup's pg_dump adds one while it runs).
+pub fn site_connections(config: &Config) -> u32 {
+    config.site.pool + crate::rate_limiter::OWN_POOL_SIZE + 1
+}
+
+/// The sites' connections against each Postgres server's
+/// max_connections: a warning per server they could exhaust.
+pub async fn connection_budget(states: &[AppState]) -> Vec<String> {
+    let mut servers: Vec<(String, u32, Vec<&str>, &AppState)> = Vec::new();
+    for state in states {
+        let options = state.pool.connect_options();
+        let server = match options.get_socket() {
+            Some(socket) => format!("{}:{}", socket.display(), options.get_port()),
+            None => format!("{}:{}", options.get_host(), options.get_port()),
+        };
+        let need = site_connections(&state.config);
+        let db = state.config.site.db.as_str();
+        match servers.iter_mut().find(|s| s.0 == server) {
+            Some(s) => {
+                s.1 += need;
+                s.2.push(db);
+            }
+            None => servers.push((server, need, vec![db], state)),
+        }
+    }
+    let mut warnings = Vec::new();
+    for (server, need, sites, state) in servers {
+        let max: Result<String, sqlx::Error> = sqlx::query_scalar("SHOW max_connections")
+            .fetch_one(&state.pool)
+            .await;
+        match max.map(|m| m.parse::<u32>()) {
+            Ok(Ok(max)) if need > max => warnings.push(format!(
+                "multisite: the sites on {server} ({}) may hold {need} connections \
+                 (each its pool, the rate limiter's {} and pg-bus's listener), more than \
+                 its max_connections of {max}",
+                sites.join(", "),
+                crate::rate_limiter::OWN_POOL_SIZE,
+            )),
+            Ok(_) => {}
+            Err(e) => warnings.push(format!(
+                "multisite: max_connections of {server} not read: {e}"
+            )),
+        }
+    }
+    warnings
+}
+
 /// The process's sites and how a request finds its own.
 pub struct Sites {
     /// Every site's state, the default first.
@@ -401,15 +492,21 @@ impl Sites {
 
     /// Under multisite.yml: the default site first, then the others. The
     /// asset hostnames are `GlobalSetting.cdn_hostnames`, else the default
-    /// site's host names (200-first_middlewares.rb).
-    pub fn multisite(states: Vec<AppState>) -> Result<Sites, String> {
+    /// site's host names (200-first_middlewares.rb). The sites in `down`
+    /// failed to start: their hosts answer 503 until a restart brings them
+    /// up.
+    pub fn multisite(states: Vec<AppState>, down: &[Config]) -> Result<Sites, String> {
         let Some(default) = states.first() else {
             return Err("multisite: no default site".into());
         };
         if default.config.site.db != DEFAULT {
             return Err("multisite: the first site must be the default".into());
         }
-        let configs: Vec<Config> = states.iter().map(|s| (*s.config).clone()).collect();
+        let configs: Vec<Config> = states
+            .iter()
+            .map(|s| (*s.config).clone())
+            .chain(down.iter().cloned())
+            .collect();
         check_distinct(&configs)?;
         let mut asset_hostnames = cdn_hostnames(&default.config);
         if asset_hostnames.is_empty() {
@@ -431,6 +528,14 @@ impl Sites {
             for host in state.config.hostnames() {
                 by_host.insert(host.to_string(), routers.len());
                 routers.push(for_host(state, Some(host)));
+            }
+        }
+        let unavailable = Router::new()
+            .fallback(|| async { (StatusCode::SERVICE_UNAVAILABLE, "site unavailable") });
+        for config in down {
+            for host in config.hostnames() {
+                by_host.insert(host.to_string(), routers.len());
+                routers.push(unavailable.clone());
             }
         }
         Ok(Sites {
