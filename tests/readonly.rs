@@ -47,7 +47,11 @@ async fn pages_show_the_notice_and_carry_the_header() {
     let (status, flag, body) = send(&st, page()).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(flag, None);
-    assert!(!body.contains("global-notice"));
+    // GlobalNotice is there, empty.
+    assert!(body.contains(
+        "<div class=\"container\" id=\"main-container\"><div></div><div class=\"global-notice\"></div></div>"
+    ));
+    assert!(!body.contains("global-notice-alert"));
 
     set(&db.pool, readonly::USER_READONLY_MODE_KEY).await;
     let (status, flag, body) = send(&st, page()).await;

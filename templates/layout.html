@@ -250,10 +250,18 @@
           <script src="{{ crate::assets::url(base_path, "sidebar.js") }}"></script>
           {%- endif %}
           <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
-            {%- if !chrome.global_notice.is_empty() %}
-            <div class="container" id="main-container">{{ chrome.global_notice|safe }}</div>
-            {%- endif %}
+            {#- The application template's main container on every page: its
+                plugin outlet's wrapper (which the admin pages go without)
+                and GlobalNotice. -#}
+            <div class="container" id="main-container">{% if !chrome.html_classes.contains("admin-area") %}<div></div>{% endif %}
+            {%- if chrome.global_notice.is_empty() %}<div class="global-notice"></div>{% else %}{{ chrome.global_notice|safe }}{% endif -%}
+            </div>
             {% block content %}{% endblock %}
+            {#- CardContainer's cloak, which the mobile view always draws
+                (user-card.js shows it behind an open card). -#}
+            {%- if mobile %}
+            <div class="card-cloak"></div>
+            {%- endif %}
           </div>
           {%- if chrome.powered_by %}
           <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>{{ chrome.t("powered_by_discourse") }}</span></span></a>

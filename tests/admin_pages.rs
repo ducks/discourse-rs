@@ -277,6 +277,12 @@ async fn the_mobile_view_puts_the_panel_in_the_header_menu() {
         "<div class=\"sidebar-hamburger-dropdown\"><div class=\"sidebar-sections admin-panel\">"
     ));
     assert!(!html.contains("id=\"d-sidebar\""));
+    // CardContainer's cloak is always there in the mobile view.
+    assert!(html.contains("<div class=\"card-cloak\"></div>"));
+    // The main container goes without its outlet's wrapper here.
+    assert!(html.contains(
+        "<div class=\"container\" id=\"main-container\"><div class=\"global-notice\"></div></div>"
+    ));
 }
 
 #[tokio::test]
