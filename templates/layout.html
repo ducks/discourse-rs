@@ -75,6 +75,11 @@
         other layout (page.js) brings no head of its own. -#}
     <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "lightbox.js") }}" defer data-lightbox="{{ crate::assets::url(base_path, "photoswipe-lightbox.esm.min.js") }}" data-photoswipe="{{ crate::assets::url(base_path, "photoswipe.esm.min.js") }}"{{ chrome.lightbox_attrs|safe }}></script>
+    {#- The icon sprite (SvgSprite.path), long cached: it sets
+        window.__svg_sprite before the body is parsed. -#}
+    {%- if !chrome.svg_sprite_path.is_empty() %}
+    <script src="{{ chrome.svg_sprite_path }}"></script>
+    {%- endif %}
     {%- if !chrome.highlight_js_path.is_empty() %}
     <meta name="discourse-highlight-js" content="{{ chrome.highlight_js_path }}" data-core="{{ crate::assets::url(base_path, "highlightjs-core.min.js") }}"{% if chrome.autohighlight_all_code %} data-all-code{% endif %}>
     {%- endif %}
@@ -129,7 +134,13 @@
   {#- data-narrow-desktop: the layout the page was rendered in, which
       page.js compares with the viewport's (NarrowDesktop). -#}
   <body hx-boost="true" class="{{ chrome.body_classes }}"{% if narrow %} data-narrow-desktop{% endif %}{% if let Some(v) = viewer %} hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'{% endif %}>
+    {#- The sprite's symbols, before anything that uses them is parsed;
+        inlined where the chrome has no sprite script. -#}
+    {%- if chrome.svg_sprite_path.is_empty() %}
     {{ crate::routes::ICONS_SVG|safe }}
+    {%- else %}
+    <script>document.currentScript.insertAdjacentHTML("afterend", window.__svg_sprite || "")</script>
+    {%- endif %}
     <section id="main">
       <div class="discourse-root">
         {#- GlimmerSiteHeader: drop-down-mode outside the mobile view and the

@@ -80,6 +80,7 @@ mod sitemap;
 mod solved;
 mod srv;
 mod stylesheets;
+mod svg_sprite;
 mod tag_admin;
 mod tag_groups;
 mod tag_search;
@@ -120,7 +121,8 @@ use tower_http::services::ServeDir;
 use crate::AppState;
 
 /// The Font Awesome icons the pages use, as a sprite of <symbol>s
-/// (scripts/build-icon-sprite), which the layout includes inline.
+/// (scripts/build-icon-sprite): served as a script (svg_sprite::chrome_script)
+/// and inlined where a page has no sprite script.
 pub const ICONS_SVG: &str = include_str!("../../static/vendor/icons.svg");
 
 /// GET /assets/<name>: the embedded stylesheets and scripts (crate::assets).
@@ -2211,6 +2213,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/highlight-syntax.js", get(asset))
         .route("/assets/highlightjs-core.min.js", get(asset))
         .route("/highlight-js/{hostname}/{file}", get(highlight_js::show))
+        .route("/svg-sprite/{hostname}/{file}", get(svg_sprite::show))
         .route("/assets/modal.js", get(asset))
         .route("/assets/spoiler-alert.js", get(asset))
         .route("/assets/post-decorations.js", get(asset))

@@ -119,6 +119,37 @@ pub fn raw_svg(name: &str) -> Result<String, Unsupported> {
     }
 }
 
+/// The page chrome's sprite (crate::routes::ICONS_SVG) as Discourse serves
+/// its sprites: `/svg-sprite/:hostname/svg-:theme_id-:version.js`, a script
+/// that sets `window.__svg_sprite`, cached for a year. The layout loads it
+/// in its head and inserts the symbols where it used to inline them.
+pub fn chrome_path(hostname: &str, theme_id: i64) -> String {
+    format!(
+        "/svg-sprite/{hostname}/svg-{theme_id}-{}.js",
+        chrome_version()
+    )
+}
+
+/// The chrome sprite's version: the SHA1 of the sprite.
+pub fn chrome_version() -> &'static str {
+    static VERSION: OnceLock<String> = OnceLock::new();
+    VERSION.get_or_init(|| {
+        use sha1::{Digest, Sha1};
+        format!("{:x}", Sha1::digest(crate::routes::ICONS_SVG.as_bytes()))
+    })
+}
+
+/// The chrome sprite's script: `window.__svg_sprite = "<svg>...";`.
+pub fn chrome_script() -> &'static str {
+    static SCRIPT: OnceLock<String> = OnceLock::new();
+    SCRIPT.get_or_init(|| {
+        format!(
+            "window.__svg_sprite = {};\n",
+            serde_json::Value::from(crate::routes::ICONS_SVG)
+        )
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
