@@ -332,6 +332,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("groups.js", JS, include_str!("../static/js/groups.js")),
     (
+        "category-edit.js",
+        JS,
+        include_str!("../static/js/category-edit.js"),
+    ),
+    (
         "search-page.js",
         JS,
         include_str!("../static/js/search-page.js"),

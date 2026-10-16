@@ -1,9 +1,10 @@
-//! CategoriesController's reads of one category: show (`/c/:id/show`),
-//! find_by_slug (`/c/*slug/find_by_slug`) and visible_groups
-//! (`/c/:id/visible_groups`), dispatched from the `/c/*path` route.
+//! CategoriesController: show (`/c/:id/show`), find_by_slug
+//! (`/c/*slug/find_by_slug`) and visible_groups (`/c/:id/visible_groups`),
+//! dispatched from the `/c/*path` route; create, update, update_slug and
+//! destroy; and the category editor page (`/c/*slug/edit(/:tab)`,
+//! `/new-category`, crate::category_edit_view).
 //!
-//! Refused: their HTML (the Ember app's category editor, also
-//! `/c/*slug/edit(/:tab)` and `/new-category`).
+//! Refused: the HTML of `/c/:id/show` (an Ember route that has none).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -37,6 +38,7 @@ pub(super) async fn dispatch(
     state: &AppState,
     guardian: &Guardian,
     headers: &HeaderMap,
+    uri: &Uri,
     path: &str,
     json_suffix: bool,
 ) -> Result<Option<Response>, AppError> {
@@ -53,9 +55,12 @@ pub(super) async fn dispatch(
         [slugs @ .., "find_by_slug"] if !slugs.is_empty() => {
             Ok(Some(find_by_slug(state, guardian, slugs).await?))
         }
-        [slugs @ .., "edit"] | [slugs @ .., "edit", _] if !slugs.is_empty() && !json => {
-            Err(Unsupported("the category editor page (Ember)").into())
-        }
+        [slugs @ .., "edit"] if !slugs.is_empty() && !json => Ok(Some(
+            editor_page(state, guardian, headers, uri, Some(slugs), None).await?,
+        )),
+        [slugs @ .., "edit", tab] if !slugs.is_empty() && !json => Ok(Some(
+            editor_page(state, guardian, headers, uri, Some(slugs), Some(tab)).await?,
+        )),
         _ => Ok(None),
     }
 }
@@ -781,4 +786,148 @@ pub async fn destroy(
     deleted.log(&mut tx, user_id, c.id).await?;
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
+/// The category editor page (layout plus the editor).
+#[derive(askama::Template)]
+#[template(path = "category_edit.html")]
+pub struct CategoryEditHtml {
+    pub site_title: String,
+    pub lang: String,
+    pub base_path: String,
+    pub crawler: crate::html::Crawler,
+    pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
+    pub chrome: crate::html::Chrome,
+    pub page_title: String,
+    pub main: String,
+}
+
+/// GET /c/*slug/edit(/:tab) and /new-category(/:tab): the category
+/// editor for those who may edit the category (or create one).
+pub(super) async fn editor_page(
+    state: &AppState,
+    guardian: &Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    slugs: Option<&[&str]>,
+    tab: Option<&str>,
+) -> Result<Response, AppError> {
+    use askama::Template;
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(state));
+    }
+    let tab = match tab.unwrap_or("general") {
+        t @ ("general" | "security" | "settings") => t,
+        "setup" => "general",
+        _ => return Err(Unsupported("this category editor tab").into()),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let (category, url, edit_path, own_id) = match slugs {
+        Some(slugs) => {
+            let max_nesting = s.get("max_category_nesting")?.to_i();
+            let Some(found) =
+                crate::category::Category::find_by_slug_path(&mut conn, slugs, max_nesting).await?
+            else {
+                return Ok(not_found(state));
+            };
+            let Some(c) = GuardedCategory::load(&mut conn, found.id).await? else {
+                return Ok(not_found(state));
+            };
+            if !cs::can_see(&mut conn, &s, guardian, &c).await? {
+                return Ok(not_found(state));
+            }
+            if !cs::can_edit(&mut conn, &s, guardian, &c).await? {
+                return Ok(super::search::invalid_access(state));
+            }
+            let pre = cs::preload_user_fields(&mut conn, &s, &state.i18n, guardian, c.id).await?;
+            let json =
+                cs::serialize(&mut conn, &cs::Cx::of(state), &s, guardian, c.id, &pre).await?;
+            let url = found.url(&mut conn, &base_path).await?;
+            let edit_path = format!(
+                "{base_path}/c/{}/edit",
+                found.slug_path(&mut conn).await?.join("/")
+            );
+            (json, Some(url), Some(edit_path), Some(c.id))
+        }
+        None => {
+            if !cs::can_create(&s, guardian)? {
+                return Ok(super::search::invalid_access(state));
+            }
+            (crate::category_edit_view::new_category(), None, None, None)
+        }
+    };
+    let types = cs::with_registry(&cs::Cx::of(state), &s, async |r| {
+        r.list(&mut conn, guardian).await
+    })
+    .await?;
+    let parents: Vec<(i64, String)> = sqlx::query_as::<_, (i32, String)>(
+        "SELECT id, name FROM categories WHERE parent_category_id IS NULL \
+           AND id IS DISTINCT FROM $1 ORDER BY position, id",
+    )
+    .bind(own_id)
+    .fetch_all(&mut *conn)
+    .await?
+    .into_iter()
+    .map(|(id, name)| (i64::from(id), name))
+    .collect();
+    let groups: Vec<String> = sqlx::query_scalar("SELECT name FROM groups ORDER BY name")
+        .fetch_all(&mut *conn)
+        .await?;
+    let editor = crate::category_edit_view::Editor {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        category: &category,
+        url: url.clone(),
+        edit_path,
+        tab,
+        parents,
+        groups,
+        types: &types,
+    };
+    let main = editor.html();
+    let frame = super::groups::frame(
+        state,
+        &mut conn,
+        &s,
+        guardian,
+        headers,
+        uri,
+        crate::sidebar::Active::None,
+    )
+    .await?;
+    let super::groups::Frame {
+        site, vs, crawler, ..
+    } = frame;
+    let page_title = match &url {
+        Some(_) => category["name"].as_str().unwrap_or("").to_string(),
+        None => state.i18n.t("js.category.create").unwrap_or("").to_string(),
+    };
+    let page = CategoryEditHtml {
+        site_title: site.site_title,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        page_title,
+        main,
+    };
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(body, &page.crawler, &s, &vs)?)
+}
+
+/// GET /new-category(/:tab)
+pub async fn new_category_page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    tab: Option<axum::extract::Path<String>>,
+) -> Result<Response, AppError> {
+    let tab = tab.map(|axum::extract::Path(t)| t);
+    editor_page(&state, &guardian, &headers, &uri, None, tab.as_deref()).await
 }
