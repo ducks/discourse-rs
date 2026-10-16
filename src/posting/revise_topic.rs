@@ -1742,7 +1742,7 @@ pub async fn revision_recipients(
 /// `Post#sync_category_description` from revise_topic: a category
 /// definition's description follows its first paragraph, and a change is
 /// published on /categories.
-async fn sync_category_description(
+pub(crate) async fn sync_category_description(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     topic_id: i32,

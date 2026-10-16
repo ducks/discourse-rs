@@ -10,8 +10,7 @@
 //! and are not rebaked.
 //!
 //! Refused: non-ASCII usernames (Ruby's grapheme counts and Unicode
-//! normalization), watched words (user fields), a category description
-//! that a rewritten definition post would change (publish_category), the
+//! normalization), watched words (user fields), the
 //! system user's site-logo avatar, and the `user_updated` automations and
 //! workflows the job's events would run.
 
@@ -747,7 +746,8 @@ async fn update_post(
                 .execute(&mut *conn)
                 .await?;
         }
-        sync_category_description(&mut *conn, ctx, topic_id, &cooked).await?;
+        crate::posting::revise_topic::sync_category_description(&mut *conn, ctx, topic_id, &cooked)
+            .await?;
     }
     // SearchIndexer.index(post, force: true) if post.topic, for raw present.
     if live_topic && !crate::ruby::is_blank(&raw) {
@@ -764,43 +764,6 @@ async fn update_post(
         crate::posting::search_index::reindex_post(&mut *conn, s, &base, post_id).await?;
     }
     Ok(())
-}
-
-/// `Post#sync_category_description`: refused when the description would
-/// change (publish_category and the site cache are not ported).
-async fn sync_category_description(
-    conn: &mut PgConnection,
-    ctx: &Ctx<'_>,
-    topic_id: i32,
-    cooked: &str,
-) -> Result<(), AppError> {
-    let category: Option<Option<String>> =
-        sqlx::query_scalar("SELECT description FROM categories WHERE topic_id = $1 LIMIT 1")
-            .bind(topic_id)
-            .fetch_optional(&mut *conn)
-            .await?;
-    let Some(description) = category else {
-        return Ok(());
-    };
-    let Some(html) = first_paragraph_description(cooked) else {
-        return Ok(());
-    };
-    let template = ctx
-        .i18n
-        .t_with(
-            "category.post_template",
-            &[(
-                "replace_paragraph",
-                ctx.i18n.t("category.replace_paragraph").unwrap_or(""),
-            )],
-        )
-        .ok_or(Unsupported("category.post_template"))?;
-    let prefix: String = template.chars().take(51).collect();
-    let new_description = (!html.starts_with(&prefix)).then_some(html);
-    if description == new_description {
-        return Ok(());
-    }
-    Err(Unsupported("changing a category description after a username change").into())
 }
 
 /// `Category.first_paragraph_description(cooked)`

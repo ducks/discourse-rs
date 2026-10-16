@@ -63,6 +63,19 @@ pub async fn topic_trashed(
     .await
 }
 
+/// on(:topic_recovered): an open topic reclaims its votes.
+pub async fn topic_recovered(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    closed: bool,
+    archived: bool,
+) -> Result<(), sqlx::Error> {
+    if closed || archived {
+        return Ok(());
+    }
+    crate::jobs::enqueue(conn, RECLAIM, json!({ "topic_id": topic_id })).await
+}
+
 /// on(:post_edited) for a revision that changed the topic's category: an
 /// open topic with votes reclaims them in a voting category, releases
 /// them elsewhere.

@@ -1,0 +1,25 @@
+{
+  "user": "user2",
+  "settings": {
+    "moderators_manage_categories": "true"
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "read_only_banner": "Read only"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/3.json",
+      "params": {
+        "read_only_banner": "Staff"
+      }
+    }
+  ]
+}

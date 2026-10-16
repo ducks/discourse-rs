@@ -22,7 +22,7 @@ use sqlx::PgConnection;
 
 use crate::i18n::I18n;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, Unsupported};
 
 /// The column kinds ActiveRecord casts to.
 #[derive(Clone, Copy, PartialEq)]
@@ -283,7 +283,7 @@ pub fn permit(p: &Map<String, Value>, s: &SiteSettings) -> Result<Params, AppErr
     // tagging_enabled: a blank list param becomes [] before the permit.
     let list_param = |key: &str| -> Option<Vec<Value>> {
         let v = p.get(key)?;
-        if tagging && blank(v) {
+        if tagging && blank_param(v) {
             return Some(Vec::new());
         }
         scalar_list(v)
@@ -349,7 +349,7 @@ pub fn permit(p: &Map<String, Value>, s: &SiteSettings) -> Result<Params, AppErr
     out.allowed_tags = list_param("allowed_tags").map(strings);
     out.allowed_tag_groups = list_param("allowed_tag_groups").map(strings);
     if let Some(v) = p.get("required_tag_groups") {
-        let groups = if tagging && blank(v) {
+        let groups = if tagging && blank_param(v) {
             Some(Vec::new())
         } else {
             match v {
@@ -470,6 +470,11 @@ pub struct Record {
     allowed_tags: Option<Vec<String>>,
     allowed_tag_groups: Option<Vec<String>>,
     required_tag_groups: Option<Vec<(String, i64)>>,
+    /// `saved_changes` after a save: each changed column, before and after.
+    pub saved_changes: Vec<(String, Value, Value)>,
+    /// Jobs enqueued with DB.after_commit, after the model's own
+    /// after_commit callbacks (`run_deferred`).
+    deferred: Vec<(&'static str, Value)>,
 }
 
 impl Record {
@@ -492,6 +497,8 @@ impl Record {
             allowed_tags: None,
             allowed_tag_groups: None,
             required_tag_groups: None,
+            saved_changes: Vec::new(),
+            deferred: Vec::new(),
         }
     }
 
@@ -686,19 +693,40 @@ async fn group_id_from_param(
         .await?)
 }
 
-/// What a save reads besides the database.
+/// What a save reads besides the database: the site (config, setting
+/// definitions, translations, as cooking takes them), its bus and
+/// settings.
 pub struct Cx<'a> {
-    pub state: &'a AppState,
+    pub host: &'a crate::pretty_text::Host,
+    pub bus: &'a pg_bus::Bus,
     pub settings: &'a SiteSettings,
 }
 
-impl Cx<'_> {
+impl<'a> Cx<'a> {
+    /// From a post's context (the user destroyer, the owner changer).
+    pub fn from_posting(ctx: &'a crate::posting::Ctx<'a>) -> Cx<'a> {
+        Cx {
+            host: ctx.host,
+            bus: ctx.bus,
+            settings: ctx.settings,
+        }
+    }
+
     fn i18n(&self) -> &I18n {
-        &self.state.i18n
+        &self.host.i18n
     }
 
     fn t(&self, key: &str) -> String {
-        self.state.i18n.t(key).unwrap_or(key).to_string()
+        self.host.i18n.t(key).unwrap_or(key).to_string()
+    }
+
+    /// The serializer's context.
+    pub fn ser(&self) -> crate::category_serializer::Cx<'_> {
+        crate::category_serializer::Cx {
+            config: &self.host.config,
+            i18n: &self.host.i18n,
+            defs: &self.host.site_setting_defs,
+        }
     }
 }
 
@@ -1428,6 +1456,16 @@ pub async fn save(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Record) -> Resul
             r.review_groups[slot] = Some(Vec::new());
         }
     }
+    let changes = r.changes();
+    if !is_new
+        && changes.iter().any(|(k, _, _)| k == "description")
+        && definition_has_first_post(conn, r.id.unwrap_or_default()).await?
+    {
+        return Err(Unsupported(
+            "revising a category's definition post when its description changes",
+        )
+        .into());
+    }
     let id = if is_new {
         let cols: Vec<String> = r.values.keys().cloned().collect();
         let list = cols.join(", ");
@@ -1529,17 +1567,19 @@ pub async fn save(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Record) -> Resul
         // after_create
         create_category_definition(conn, cx, id).await?;
         delete_category_permalink(conn, id).await?;
+    } else {
+        after_update(conn, cx, id, &changes, &mut r.deferred).await?;
     }
     // The has_many :through writers (autosaved after the callbacks).
     save_tags(conn, cx, r, id).await?;
     save_form_templates(conn, r, id).await?;
     // after_save: HasCustomFields, then the category's.
     save_custom_fields(conn, r, id).await?;
-    crate::bus::clear_anon_cache(&cx.state.bus, &mut *conn).await?;
+    crate::bus::clear_anon_cache(cx.bus, &mut *conn).await?;
     crate::category_serializer::publish_category(
         &mut *conn,
-        &crate::category_serializer::Cx::of(cx.state),
-        &cx.state.bus,
+        &cx.ser(),
+        cx.bus,
         cx.settings,
         id,
         &crate::category_serializer::Preloaded {
@@ -1548,6 +1588,8 @@ pub async fn save(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Record) -> Resul
         },
     )
     .await?;
+    r.saved_changes = changes;
+    r.original = r.values.clone();
     Ok(Saved::Done(id))
 }
 
@@ -1683,6 +1725,42 @@ async fn save_custom_fields(
         .bind(&key)
         .fetch_all(&mut *conn)
         .await?;
+        // An array: its serialized items, the rows replaced unless equal.
+        if let Some(Value::Array(items)) = fields.get(&key) {
+            let wanted: Vec<String> = items
+                .iter()
+                .filter(|v| !v.is_null())
+                .filter_map(|v| match v {
+                    Value::Array(_) => Some(v.to_string()),
+                    other => serialize_custom_field(&key, other),
+                })
+                .collect();
+            let have: Vec<String> = rows
+                .iter()
+                .map(|(_, v)| v.clone().unwrap_or_default())
+                .collect();
+            if wanted != have {
+                sqlx::query(
+                    "DELETE FROM category_custom_fields WHERE category_id = $1 AND name = $2",
+                )
+                .bind(id)
+                .bind(&key)
+                .execute(&mut *conn)
+                .await?;
+                for value in wanted {
+                    sqlx::query(
+                        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+                         VALUES ($1, $2, $3, now(), now())",
+                    )
+                    .bind(id)
+                    .bind(&key)
+                    .bind(&value)
+                    .execute(&mut *conn)
+                    .await?;
+                }
+            }
+            continue;
+        }
         let value = fields
             .get(&key)
             .and_then(|v| serialize_custom_field(&key, v));
@@ -1968,9 +2046,8 @@ pub async fn create_category_definition(
         Some(d) => d.clone(),
         None => post_template(i18n)?,
     };
-    let host = crate::pretty_text::Host::from_state(cx.state);
     let cooked = crate::pretty_text::cook(
-        &host,
+        cx.host,
         &raw,
         &crate::pretty_text::MarkdownOptions {
             topic_id: Some(i64::from(topic_id)),
@@ -2014,10 +2091,10 @@ pub async fn create_category_definition(
     }
     // after_commit index_search: the post's and the topic's rows.
     let urls = crate::url::Urls {
-        config: &cx.state.config,
+        config: &cx.host.config,
         settings: s,
     };
-    let base_path = cx.state.config.globals.relative_url_root().to_string();
+    let base_path = cx.host.config.globals.relative_url_root().to_string();
     let base = crate::posting::search_index::BaseUrls {
         base_path: &base_path,
         base_url_no_prefix: urls.base_url_no_prefix()?,
@@ -2117,7 +2194,7 @@ pub async fn log_creation(
         "created_at: {}\nname: {name}",
         created_at_to_s(conn, id).await?
     );
-    let context = url(conn, cx.state.config.globals.relative_url_root(), id).await?;
+    let context = url(conn, cx.host.config.globals.relative_url_root(), id).await?;
     insert_history(
         conn,
         "create_category",
@@ -2167,9 +2244,21 @@ pub async fn after_commit(
     cx: &Cx<'_>,
     id: i32,
     event: &str,
-    force: bool,
+    saved: Option<&[(String, Value, Value)]>,
     setting_loaded: bool,
 ) -> Result<bool, AppError> {
+    let saved = saved.unwrap_or(&[]);
+    let changed = |key: &str| saved.iter().any(|(k, _, _)| k == key);
+    let update = event == "category_updated";
+    // enqueue_upload_security_updates (on update)
+    if update && changed("read_restricted") {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "update_category_upload_security",
+            json!({ "category_id": id }),
+        )
+        .await?;
+    }
     let automations: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM discourse_automation_automations \
          WHERE enabled AND trigger = 'category_created_edited')",
@@ -2187,13 +2276,65 @@ pub async fn after_commit(
         opts.insert("payload".into(), json!(payload));
         crate::web_hooks::enqueue_hooks(&mut *conn, "category", event, opts).await?;
     }
+    if update {
+        category_updated_plugins(conn, cx, id, changed("name") || changed("description")).await?;
+    }
     crate::jobs::enqueue(
         &mut *conn,
         "index_category_for_search",
-        json!({ "category_id": id, "force": force }),
+        json!({ "category_id": id, "force": changed("name") }),
     )
     .await?;
     Ok(hooked)
+}
+
+/// The plugins' `:category_updated` listeners: chat's auto join and
+/// leave for the category's channel; discourse-ai's translations of a
+/// renamed or redescribed category are refused.
+pub async fn category_updated_plugins(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    id: i32,
+    name_or_description_changed: bool,
+) -> Result<(), AppError> {
+    let s = cx.settings;
+    let on = |name: &str| -> Result<bool, AppError> {
+        Ok(s.get(name).map(|v| v.truthy()).unwrap_or(false))
+    };
+    if name_or_description_changed && on("discourse_ai_enabled")? && on("ai_translation_enabled")? {
+        return Err(Unsupported(
+            "translating a changed category (discourse-ai localize_categories)",
+        )
+        .into());
+    }
+    if !crate::plugins::chat::enabled(s)? {
+        return Ok(());
+    }
+    let channel: Option<(i64, bool)> = sqlx::query_as(
+        "SELECT id::bigint, auto_join_users FROM chat_channels \
+         WHERE chatable_type = 'Category' AND chatable_id = $1 ORDER BY id LIMIT 1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((channel_id, auto_join)) = channel else {
+        return Ok(());
+    };
+    if auto_join {
+        crate::plugins::chat::auto_join::create_memberships(
+            &mut *conn,
+            cx.bus,
+            &cx.host.i18n,
+            &cx.host.config,
+            s,
+            None,
+            Some(channel_id),
+        )
+        .await?;
+    }
+    crate::plugins::chat::scheduled::auto_leave_category(&mut *conn, s, "category_updated", id)
+        .await?;
+    Ok(())
 }
 
 /// WebHookCategorySerializer as the system user sees it: CategorySerializer
@@ -2207,7 +2348,7 @@ pub async fn web_hook_payload(
     let system = crate::web_hooks::system_guardian(conn).await?;
     let mut json = crate::category_serializer::serialize(
         conn,
-        &crate::category_serializer::Cx::of(cx.state),
+        &cx.ser(),
         cx.settings,
         &system,
         id,
@@ -2258,7 +2399,7 @@ pub async fn log_custom(
 }
 
 /// `blank?` for a param value.
-fn blank(v: &Value) -> bool {
+pub fn blank_param(v: &Value) -> bool {
     match v {
         Value::Null => true,
         Value::String(s) => crate::ruby::is_blank(s),
@@ -2266,5 +2407,453 @@ fn blank(v: &Value) -> bool {
         Value::Object(o) => o.is_empty(),
         Value::Bool(b) => !b,
         Value::Number(_) => false,
+    }
+}
+
+/// `revise_category_definition`'s guard: a live definition topic with a
+/// first post.
+async fn definition_has_first_post(conn: &mut PgConnection, id: i32) -> Result<bool, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM categories c JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
+         JOIN posts p ON p.topic_id = t.id AND p.post_number = 1 AND p.deleted_at IS NULL WHERE c.id = $1)",
+    )
+    .bind(id)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
+fn change<'a>(changes: &'a [(String, Value, Value)], key: &str) -> Option<(&'a Value, &'a Value)> {
+    changes
+        .iter()
+        .find(|(k, _, _)| k == key)
+        .map(|(_, before, after)| (before, after))
+}
+
+/// The after_update callbacks: the definition's title follows a rename,
+/// an old slug keeps a permalink, and a slug or parent change remaps
+/// hashtags.
+async fn after_update(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    id: i32,
+    changes: &[(String, Value, Value)],
+    deferred: &mut Vec<(&'static str, Value)>,
+) -> Result<(), AppError> {
+    if let Some((old, new)) = change(changes, "name") {
+        rename_category_definition(
+            conn,
+            cx,
+            id,
+            old.as_str().unwrap_or(""),
+            new.as_str().unwrap_or(""),
+        )
+        .await?;
+    }
+    if let Some((old, _)) = change(changes, "slug") {
+        create_category_permalink(conn, id, old.as_str().unwrap_or("")).await?;
+    }
+    let slug_change = change(changes, "slug");
+    let parent_change = change(changes, "parent_category_id");
+    if (slug_change.is_some() || parent_change.is_some())
+        && let Some(job) = category_hashtag_remap(conn, id, slug_change, parent_change).await?
+    {
+        deferred.push(("remap_hashtag", job));
+    }
+    Ok(())
+}
+
+/// `rename_category_definition`: a definition still titled for the old
+/// name takes the new one (`update_attribute`: the slug and fancy title,
+/// then its search rows).
+async fn rename_category_definition(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    id: i32,
+    old_name: &str,
+    new_name: &str,
+) -> Result<(), AppError> {
+    let topic: Option<(i32, String)> = sqlx::query_as(
+        "SELECT t.id, t.title FROM categories c JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
+         WHERE c.id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((topic_id, title)) = topic else {
+        return Ok(());
+    };
+    let i18n = cx.i18n();
+    let old_title = i18n
+        .t_with("category.topic_prefix", &[("category", old_name)])
+        .ok_or(Unsupported("category.topic_prefix"))?;
+    if title != old_title {
+        return Ok(());
+    }
+    let new_title = i18n
+        .t_with("category.topic_prefix", &[("category", new_name)])
+        .ok_or(Unsupported("category.topic_prefix"))?;
+    let s = cx.settings;
+    let slug = crate::posting::text::slug_for(&new_title, &s.get("default_locale")?.to_s())?;
+    let fancy_title = crate::posting::text::fancy_title(
+        &new_title,
+        crate::posting::text::EmojiEscape::from_settings(s)?,
+    )?;
+    sqlx::query(
+        "UPDATE topics SET title = $2, slug = $3, fancy_title = $4, updated_at = now() WHERE id = $1",
+    )
+    .bind(topic_id)
+    .bind(&new_title)
+    .bind(&slug)
+    .bind(&fancy_title)
+    .execute(&mut *conn)
+    .await?;
+    // after_save: SearchIndexer.queue_post_reindex, then the topic's
+    // first post and its row.
+    sqlx::query(
+        "UPDATE post_search_data SET version = 0 FROM posts \
+         WHERE post_search_data.post_id = posts.id AND posts.topic_id = $1",
+    )
+    .bind(topic_id)
+    .execute(&mut *conn)
+    .await?;
+    let first_post: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1 AND deleted_at IS NULL",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some(post_id) = first_post {
+        let urls = crate::url::Urls {
+            config: &cx.host.config,
+            settings: s,
+        };
+        let base_path = cx.host.config.globals.relative_url_root().to_string();
+        crate::posting::search_index::reindex_post(
+            &mut *conn,
+            s,
+            &crate::posting::search_index::BaseUrls {
+                base_path: &base_path,
+                base_url_no_prefix: urls.base_url_no_prefix()?,
+                store: crate::file_store::FileStore::for_site(urls.config, s)?,
+            },
+            post_id,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `create_category_permalink`: the old slug under the current parent's
+/// path, pointed at the category (an existing permalink re-pointed).
+async fn create_category_permalink(
+    conn: &mut PgConnection,
+    id: i32,
+    old_slug: &str,
+) -> Result<(), AppError> {
+    let parent: Option<i32> =
+        sqlx::query_scalar("SELECT parent_category_id FROM categories WHERE id = $1")
+            .bind(id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let mut url = String::from("c");
+    if let Some(parent) = parent
+        && let Some(p) = crate::category::Category::find(&mut *conn, parent).await?
+    {
+        url.push('/');
+        url.push_str(&p.slug_path(&mut *conn).await?.join("/"));
+    }
+    url.push_str(&format!("/{old_slug}/{id}"));
+    let updated = sqlx::query("UPDATE permalinks SET category_id = $2 WHERE url = $1")
+        .bind(&url)
+        .bind(id)
+        .execute(&mut *conn)
+        .await?
+        .rows_affected();
+    if updated == 0 {
+        sqlx::query(
+            "INSERT INTO permalinks (url, category_id, created_at, updated_at) VALUES ($1, $2, now(), now())",
+        )
+        .bind(&url)
+        .bind(id)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
+/// `Category.hashtag_ref_from`
+async fn hashtag_ref_from(
+    conn: &mut PgConnection,
+    slug: &str,
+    parent: Option<i64>,
+) -> Result<String, AppError> {
+    let parent_slug: Option<String> = match parent {
+        Some(p) => {
+            sqlx::query_scalar("SELECT slug FROM categories WHERE id = $1")
+                .bind(p as i32)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
+    Ok(match parent_slug {
+        Some(p) => format!("{p}:{slug}"),
+        None => slug.to_string(),
+    })
+}
+
+/// `enqueue_category_hashtag_remap` through HashtagRemapper.enqueue: the
+/// remaps whose old ref no longer is the current one, as a remap_hashtag
+/// job.
+async fn category_hashtag_remap(
+    conn: &mut PgConnection,
+    id: i32,
+    slug_change: Option<(&Value, &Value)>,
+    parent_change: Option<(&Value, &Value)>,
+) -> Result<Option<Value>, AppError> {
+    let (slug, parent): (String, Option<i32>) =
+        sqlx::query_as("SELECT slug, parent_category_id FROM categories WHERE id = $1")
+            .bind(id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let old_slug = slug_change
+        .and_then(|(old, _)| old.as_str().map(str::to_string))
+        .unwrap_or_else(|| slug.clone());
+    let old_parent = match parent_change {
+        Some((old, _)) => old.as_i64(),
+        None => parent.map(i64::from),
+    };
+    let mut remaps = vec![(id, hashtag_ref_from(conn, &old_slug, old_parent).await?)];
+    if slug_change.is_some() {
+        let subs: Vec<(i32, String)> = sqlx::query_as(
+            "SELECT id, slug FROM categories WHERE parent_category_id = $1 ORDER BY id",
+        )
+        .bind(id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for (sub_id, sub_slug) in subs {
+            remaps.push((sub_id, format!("{old_slug}:{sub_slug}")));
+        }
+    }
+    let mut usable = Vec::new();
+    for (rid, old_ref) in remaps {
+        // CategoryHashtagDataSource.ref_for: slug_ref(depth: 1).
+        let current: Option<(String, Option<String>)> = sqlx::query_as(
+            "SELECT c.slug, p.slug FROM categories c LEFT JOIN categories p ON p.id = c.parent_category_id \
+             WHERE c.id = $1",
+        )
+        .bind(rid)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let current = current.map(|(slug, parent)| match parent {
+            Some(p) => format!("{p}:{slug}"),
+            None => slug,
+        });
+        let unchanged = current
+            .as_deref()
+            .filter(|c| !c.is_empty())
+            .is_some_and(|c| c.to_lowercase() == old_ref.to_lowercase());
+        if !unchanged {
+            usable.push(json!({ "type": "category", "id": rid, "old_ref": old_ref }));
+        }
+    }
+    if usable.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(json!({ "remaps": usable })))
+}
+
+/// `Category#permissions_params`: each category group's group name and
+/// permission type; `{everyone: 1}` for none.
+pub async fn permissions_params(
+    conn: &mut PgConnection,
+    id: i32,
+) -> Result<Vec<(String, i64)>, AppError> {
+    let rows: Vec<(String, i32)> = sqlx::query_as(
+        "SELECT g.name, cg.permission_type FROM category_groups cg JOIN groups g ON g.id = cg.group_id \
+         WHERE cg.category_id = $1 ORDER BY cg.id",
+    )
+    .bind(id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut out: Vec<(String, i64)> = Vec::new();
+    for (name, level) in rows {
+        // A hash: a later row for the same name replaces the value in place.
+        match out.iter_mut().find(|(n, _)| *n == name) {
+            Some(entry) => entry.1 = i64::from(level),
+            None => out.push((name, i64::from(level))),
+        }
+    }
+    Ok(out)
+}
+
+/// A hash of names to levels as `to_json` writes it.
+fn permissions_json(perms: &[(String, i64)]) -> String {
+    let mut m = Map::new();
+    for (k, v) in perms {
+        m.insert(k.clone(), json!(v));
+    }
+    crate::web_hooks::to_json(&Value::Object(m))
+}
+
+/// A value as a UserHistory text column stores it (ActiveModel's string
+/// cast: booleans as t and f, floats as Ruby prints them).
+fn history_value(v: &Value) -> Option<String> {
+    match v {
+        Value::Null => None,
+        Value::Bool(b) => Some(if *b { "t" } else { "f" }.into()),
+        Value::String(s) => Some(s.clone()),
+        Value::Number(n) => Some(match n.as_i64() {
+            Some(i) => i.to_string(),
+            None => crate::ruby::float_to_s(n.as_f64().unwrap_or(0.0)),
+        }),
+        other => Some(other.to_string()),
+    }
+}
+
+/// `StaffActionLogger#log_category_settings_change`: a row per changed
+/// attribute among the params' keys, the permissions when they differ
+/// from the old ones, and each custom field given that changed.
+#[allow(clippy::too_many_arguments)]
+pub async fn log_settings_change(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    acting_user_id: i32,
+    id: i32,
+    params: &Params,
+    saved_changes: &[(String, Value, Value)],
+    old_permissions: &[(String, i64)],
+    old_custom_fields: &Map<String, Value>,
+) -> Result<(), AppError> {
+    let mut rows: Vec<(String, Option<String>, Option<String>)> = Vec::new();
+    for key in params.keys() {
+        if let Some((before, after)) = change(saved_changes, key) {
+            rows.push((key.to_string(), history_value(before), history_value(after)));
+        }
+    }
+    let given = params.permissions_given_json();
+    let same = |a: &[(String, i64)], b: &[(String, i64)]| {
+        let mut a = a.to_vec();
+        let mut b = b.to_vec();
+        a.sort();
+        b.sort();
+        a == b
+    };
+    if !old_permissions.is_empty() && !given.as_deref().is_some_and(|g| same(g, old_permissions)) {
+        rows.push((
+            "permissions".into(),
+            Some(permissions_json(old_permissions)),
+            Some(match &given {
+                Some(p) => permissions_json(p),
+                None => "null".into(),
+            }),
+        ));
+    }
+    if let Some(fields) = &params.custom_fields {
+        for (key, value) in fields {
+            let old = old_custom_fields.get(key).cloned().unwrap_or(Value::Null);
+            if old == *value {
+                continue;
+            }
+            rows.push((
+                format!("custom_fields[{key}]"),
+                history_value(&old),
+                history_value(value),
+            ));
+        }
+    }
+    let context = url(conn, cx.host.config.globals.relative_url_root(), id).await?;
+    let action = crate::staff_action_logs::action_id("change_category_settings")
+        .ok_or(Unsupported("a staff action missing from the enums"))?;
+    for (subject, previous, new) in rows {
+        sqlx::query(
+            "INSERT INTO user_histories (action, acting_user_id, category_id, context, subject, \
+                                         previous_value, new_value, admin_only, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(action)
+        .bind(acting_user_id)
+        .bind(id)
+        .bind(&context)
+        .bind(&subject)
+        .bind(previous)
+        .bind(new)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
+impl Params {
+    /// `category_params[:permissions].to_h` with each name kept once.
+    fn permissions_given_json(&self) -> Option<Vec<(String, i64)>> {
+        let perms = self.permissions.as_ref()?;
+        let mut out: Vec<(String, i64)> = Vec::new();
+        for (k, v) in perms {
+            match out.iter_mut().find(|(n, _)| n == k) {
+                Some(e) => e.1 = *v,
+                None => out.push((k.clone(), *v)),
+            }
+        }
+        Some(out)
+    }
+}
+
+/// `merge_pending_custom_fields!`: blank values delete the key, booleans
+/// become strings, the rest is kept as given.
+pub fn merge_pending_custom_fields(
+    current: &Map<String, Value>,
+    pending: &Map<String, Value>,
+) -> Map<String, Value> {
+    let mut out = current.clone();
+    for (key, value) in pending {
+        match value {
+            Value::Null => {
+                out.remove(key);
+            }
+            Value::String(s) if s.is_empty() => {
+                out.remove(key);
+            }
+            Value::Bool(b) => {
+                out.insert(key.clone(), json!(b.to_string()));
+            }
+            other => {
+                out.insert(key.clone(), other.clone());
+            }
+        }
+    }
+    out
+}
+
+impl Record {
+    /// The custom fields as loaded (typed).
+    pub fn custom_fields_loaded(&self) -> &Map<String, Value> {
+        &self.custom_fields_original
+    }
+
+    /// Sets the custom fields to save, when they differ from the loaded
+    /// ones (custom_fields_clean? otherwise).
+    pub fn set_custom_fields(&mut self, fields: Map<String, Value>) {
+        if fields != self.custom_fields_original {
+            self.custom_fields = Some(fields);
+        }
+    }
+}
+
+impl Record {
+    /// The jobs a save left for DB.after_commit, enqueued after the
+    /// after_commit callbacks.
+    pub async fn run_deferred(&mut self, conn: &mut PgConnection) -> Result<(), AppError> {
+        for (job, args) in std::mem::take(&mut self.deferred) {
+            crate::jobs::enqueue(&mut *conn, job, args).await?;
+        }
+        Ok(())
+    }
+}
+
+impl Record {
+    /// Assigns a column directly (as the model's writer would).
+    pub fn set(&mut self, key: &str, value: Value) {
+        self.values.insert(key.to_string(), value);
     }
 }

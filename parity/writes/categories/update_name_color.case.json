@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "name": "Feedback",
+        "color": "123456"
+      }
+    }
+  ]
+}

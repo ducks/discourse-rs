@@ -448,7 +448,12 @@ async fn category(
     .bind(s.get("uncategorized_category_id")?.to_i() as i32)
     .fetch_all(&mut *conn)
     .await?;
-    let cx = crate::category_writes::Cx { state, settings: s };
+    let host = crate::pretty_text::Host::from_state(state);
+    let cx = crate::category_writes::Cx {
+        host: &host,
+        bus: &state.bus,
+        settings: s,
+    };
     for id in ids {
         // Topic.transaction
         let mut tx = sqlx::Connection::begin(&mut *conn).await?;

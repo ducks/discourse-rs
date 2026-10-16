@@ -587,7 +587,8 @@ impl Context<'_> {
             super::auto_join::create_memberships(
                 &mut *self.conn,
                 bus,
-                state,
+                &state.i18n,
+                &state.config,
                 self.settings,
                 None,
                 Some(channel.id),

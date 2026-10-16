@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "position": 0
+      }
+    }
+  ]
+}

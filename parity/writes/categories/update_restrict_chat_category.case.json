@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/4.json",
+      "params": {
+        "permissions": {
+          "staff": 1
+        }
+      }
+    }
+  ]
+}

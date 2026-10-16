@@ -45,8 +45,6 @@ const STAFF_GROUP: i64 = 3;
 const LIKE: i32 = 2;
 /// `Post.types[:whisper]`
 const WHISPER: i32 = 4;
-/// `TopTopic.periods`
-const TOP_PERIODS: [&str; 6] = ["all", "yearly", "quarterly", "monthly", "weekly", "daily"];
 
 /// `UserDestroyer#destroy`'s options.
 #[derive(Debug, Default, Clone)]
@@ -1135,33 +1133,31 @@ async fn adopt_categories(
             .bind(user_id)
             .fetch_all(&mut *conn)
             .await?;
+    let cx = crate::category_writes::Cx::from_posting(ctx);
     for (category_id, topic_id) in categories {
-        let (setting, review_groups): (bool, bool) = sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM category_settings WHERE category_id = $1), \
-                    EXISTS (SELECT 1 FROM category_posting_review_groups WHERE category_id = $1)",
-        )
-        .bind(category_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if !setting || review_groups {
-            return Err(Unsupported(
-                "saving a category without its settings or with posting review groups",
-            )
-            .into());
+        // c.user_id = system; c.save! (Category#save with its callbacks).
+        let mut record = crate::category_writes::Record::load(&mut *conn, category_id)
+            .await?
+            .ok_or(Unsupported(
+                "a category that vanished during a user's deletion",
+            ))?;
+        record.set("user_id", json!(SYSTEM_USER_ID));
+        match crate::category_writes::save(&mut *conn, &cx, &mut record).await? {
+            crate::category_writes::Saved::Invalid(_) => {
+                return Err(Unsupported(
+                    "a category failing its validations as its owner is deleted (save!)",
+                )
+                .into());
+            }
+            crate::category_writes::Saved::Done(_) => {}
         }
-        // Category's before_validation normalizations, then the save.
-        sqlx::query(
-            "UPDATE categories SET user_id = $2, \
-               default_top_period = CASE WHEN default_top_period = ANY($3) THEN default_top_period END, \
-               minimum_required_tags = COALESCE(minimum_required_tags, 0), \
-               updated_at = clock_timestamp() \
-             WHERE id = $1",
-        )
-        .bind(category_id)
-        .bind(SYSTEM_USER_ID)
-        .bind(&TOP_PERIODS[..])
-        .execute(&mut *conn)
-        .await?;
+        // Its commit callbacks: category_updated (web hooks refused, the
+        // plugins' listeners), then the index job.
+        if crate::web_hooks::active(&mut *conn, "category_updated").await? {
+            return Err(Unsupported("category_updated web hooks from a user's deletion").into());
+        }
+        crate::category_writes::category_updated_plugins(&mut *conn, &cx, category_id, false)
+            .await?;
         after_commit.push((
             "index_category_for_search",
             json!({ "category_id": category_id, "force": false }),
@@ -1178,9 +1174,9 @@ async fn adopt_categories(
             continue;
         };
         if deleted.is_some() {
-            return Err(Unsupported("recovering a deleted category definition topic").into());
+            recover_definition(conn, ctx, topic_id).await?;
         }
-        // topic.recover! (nothing to recover), then user_id = -1 and save!.
+        // user_id = -1 and save!.
         let slug =
             crate::posting::topic_save::reassigned_slug(&mut *conn, ctx.settings, topic_id).await?;
         sqlx::query(
@@ -1191,6 +1187,55 @@ async fn adopt_categories(
         .bind(SYSTEM_USER_ID)
         .bind(&slug)
         .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
+/// `Topic#recover!` for a deleted category definition: the category's
+/// own count leaves its definition out, so only the row is recovered;
+/// tags, an embed and the plugins' topic_recovered listeners (topic
+/// voting's reclaimed votes, boards) are refused.
+async fn recover_definition(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+) -> Result<(), AppError> {
+    let (visible, category_id, own_category, closed, archived): (bool, Option<i32>, bool, bool, bool) =
+        sqlx::query_as(
+        "SELECT t.visible, t.category_id, \
+                EXISTS (SELECT 1 FROM categories c WHERE c.id = t.category_id AND c.topic_id = t.id), \
+                t.closed, t.archived \
+         FROM topics t WHERE t.id = $1",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if visible && category_id.is_some() && !own_category {
+        return Err(Unsupported("recovering a definition topic outside its category").into());
+    }
+    let (tags, embed): (bool, bool) = sqlx::query_as(
+        "SELECT EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = $1), \
+                EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = $1)",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if tags || embed {
+        return Err(Unsupported("recovering a tagged or embedded category definition").into());
+    }
+    if ctx.settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+        return Err(Unsupported("the boards plugin's topic_recovered sync").into());
+    }
+    sqlx::query("UPDATE topics SET deleted_at = NULL, deleted_by_id = NULL WHERE id = $1")
+        .bind(topic_id)
+        .execute(&mut *conn)
+        .await?;
+    // DiscourseEvent :topic_recovered
+    if crate::plugins::topic_voting::enabled(ctx.settings)? {
+        crate::plugins::topic_voting::lifecycle::topic_recovered(
+            &mut *conn, topic_id, closed, archived,
+        )
         .await?;
     }
     Ok(())
