@@ -1,0 +1,115 @@
+{
+  "name": "google_failures",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2?state=chosen-state&redirect_uri=https%3A%2F%2Fapp.example%2Fcb&login_hint=a%20b%40example.com&openid_realm=realm"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2/callback?state=chosen-state"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2/callback?error=access_denied&state={{responses.4.headers.Location|state_param}}"
+    }
+  ],
+  "started_at": "2026-10-16T04:53:58.251968",
+  "transaction_started_at": "2026-10-16T04:53:55.781886",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=e443d1f5faa86b9ade0778ceaab005596c7ee3841ce68471...",
+      "headers": {
+        "Location": "/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=e443d1f5faa86b9ade0778ceaab005596c7ee3841ce68471"
+      }
+    },
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=invalid_credentials&strategy=google_oauth2"
+      }
+    },
+    {
+      "status": 302,
+      "body": "Redirecting to https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&login_hint=a%20b%40example.com&openid.realm=realm&redirect_uri=https%3A%2F%2Fapp.example%2Fcb&response_type=code&scope=email%20profile&state=chosen-state...",
+      "headers": {
+        "Location": "/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&login_hint=a%20b%40example.com&openid.realm=realm&redirect_uri=https%3A%2F%2Fapp.example%2Fcb&response_type=code&scope=email%20profile&state=chosen-state"
+      }
+    },
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=invalid_credentials&strategy=google_oauth2"
+      }
+    },
+    {
+      "status": 302,
+      "body": "Redirecting to https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=d081885e90b790f1520890b7f11a87ace0bae0f9ccb85d3c...",
+      "headers": {
+        "Location": "/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=d081885e90b790f1520890b7f11a87ace0bae0f9ccb85d3c"
+      }
+    },
+    {
+      "status": 302,
+      "body": "302 Moved",
+      "headers": {
+        "Location": "/auth/failure?message=invalid_credentials&strategy=google_oauth2"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "google_oauth2_client_id": "gclient",
+    "google_oauth2_client_secret": "gsecret",
+    "google_oauth2_hd": "example.com",
+    "enable_google_oauth2_logins": true
+  },
+  "remote": {
+    "/g-oauth/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"access_token\":\"g-token-2\",\"token_type\":\"Bearer\"}"
+    },
+    "/g-apis/oauth2/v3/userinfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"sub\":\"g-2\",\"email\":\"someone@other.example\",\"email_verified\":true,\"hd\":\"other.example\"}"
+    }
+  },
+  "remote_hosts": {
+    "https://oauth2.googleapis.com": "/g-oauth",
+    "https://www.googleapis.com": "/g-apis"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "a4e0522fac28042b5d82b5f2692cecf2de350072817273e4c81f7f9fdf9c3e69",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "github_client_id": "ghclient1",
+    "github_client_secret": "abc123",
+    "enable_github_logins": true,
+    "blocked_email_domains": "blocked.example"
+  },
+  "remote_hosts": {
+    "https://github.com": "/gh",
+    "https://api.github.com": "/gh-api"
+  },
+  "remote": {
+    "/gh/login/oauth/access_token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+      "body": "access_token=gh-token-1&scope=user%3Aemail&token_type=bearer"
+    },
+    "/gh-api/user": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "body": "{\"id\":1001,\"login\":\"octo\",\"name\":\"Octo Cat\",\"avatar_url\":\"http://fixtures.localhost:8099/octo.png\",\"html_url\":\"https://github.com/octo\",\"blog\":\"\",\"email\":null,\"publicRepos\":3}"
+    },
+    "/gh-api/user/emails": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "body": "[{\"email\":\"octo@blocked.example\",\"primary\":true,\"verified\":true,\"visibility\":\"public\"},{\"email\":\"octo.second@example.com\",\"primary\":false,\"verified\":false,\"visibility\":null},{\"email\":\"Octo.Third@example.com\",\"primary\":false,\"verified\":true,\"visibility\":null}]"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/github?origin=%2Flatest"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/github/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {"method": "GET", "path": "/session/hp.json"},
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Octo Cat",
+        "email": "octo.second@example.com",
+        "username": "octo",
+        "password": "a-long-enough-pass-phrase",
+        "password_confirmation": "{{responses.2.body.value}}",
+        "challenge": "{{responses.2.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

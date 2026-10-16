@@ -9,6 +9,7 @@
 
 use serde_json::{Value, json};
 
+pub mod builtin;
 pub mod managed;
 pub mod oauth2;
 use sqlx::PgConnection;

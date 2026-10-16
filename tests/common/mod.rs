@@ -217,6 +217,7 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
             .into(),
         rate_limits: false,
         track_requests: false,
+        auth_provider_hosts: Vec::new(),
         globals: GlobalSettings::from_vars(globals.iter().copied()),
     }
 }

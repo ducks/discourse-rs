@@ -1,0 +1,53 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "github_client_id": "ghclient1",
+    "github_client_secret": "abc123",
+    "enable_github_logins": true
+  },
+  "remote_hosts": {
+    "https://github.com": "/gh",
+    "https://api.github.com": "/gh-api"
+  },
+  "remote": {
+    "/gh/login/oauth/access_token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"access_token\":\"gh-token-2\",\"token_type\":\"bearer\",\"scope\":\"user:email\"}"
+    },
+    "/gh-api/user": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "body": "{\"id\":1002,\"login\":\"user1-gh\",\"name\":null,\"avatar_url\":null,\"html_url\":\"https://github.com/user1-gh\",\"blog\":null}"
+    },
+    "/gh-api/user/emails": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "body": "[{\"email\":\"someone-else@example.com\",\"primary\":true,\"verified\":true},{\"email\":\"user1@example.com\",\"primary\":false,\"verified\":true}]"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/github"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/github/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user1.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

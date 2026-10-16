@@ -1,0 +1,69 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "discord_client_id": "discord-client",
+    "discord_secret": "discord-secret",
+    "discord_trusted_guilds": "111|222",
+    "enable_discord_logins": true
+  },
+  "remote_hosts": {
+    "https://discord.com/api": "/discord"
+  },
+  "remote": {
+    "/discord/oauth2/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"discord-token\",\"token_type\":\"Bearer\",\"scope\":\"identify email guilds\"}"
+    },
+    "/discord/users/@me": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"id\":\"80351110224678912\",\"username\":\"nelly\",\"global_name\":null,\"avatar\":\"8342729096ea3675442027381ff50dfe\",\"verified\":true,\"email\":\"nelly@example.com\"}"
+    },
+    "/discord/users/@me/guilds": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "[{\"id\":\"999\",\"name\":\"Elsewhere\"}]"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/discord"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/discord/callback?code=good-code&state={{responses.0.headers.Location|state_param}}",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/auth/failure?message=invalid_credentials&strategy=discord",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ],
+  "fragment": [
+    "<div id=\"simple-container\">",
+    "</div>\n</div>"
+  ]
+}

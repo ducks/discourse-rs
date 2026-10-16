@@ -1,0 +1,41 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "login_with_amazon_client_id": "amzn-client",
+    "login_with_amazon_client_secret": "amzn-secret",
+    "login_with_amazon_email_verified": false,
+    "enable_login_with_amazon": true
+  },
+  "remote_hosts": {
+    "https://api.amazon.com": "/amz-api",
+    "https://www.amazon.com": "/amz-www"
+  },
+  "remote": {
+    "/amz-api/auth/o2/token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json;charset=UTF-8"},
+      "body": "{\"access_token\":\"Atza|amzn-token\",\"token_type\":\"bearer\"}"
+    },
+    "/amz-www/ap/user/profile?access_token=Atza%7Camzn-token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json;charset=UTF-8"},
+      "body": "{\"Profile\":{\"CustomerId\":\"amzn1.account.X\",\"Name\":\"Amazon Person\",\"PrimaryEmail\":\"amazon.person@example.com\",\"PostalCode\":\"98101\"}}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/amazon"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/amazon/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

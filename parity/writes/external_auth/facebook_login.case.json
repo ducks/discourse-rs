@@ -1,0 +1,49 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "facebook_app_id": "123456",
+    "facebook_app_secret": "abcdef0123",
+    "enable_facebook_logins": true
+  },
+  "remote_hosts": {
+    "https://graph.facebook.com": "/fb"
+  },
+  "remote": {
+    "/fb/v19.0/oauth/access_token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=UTF-8"},
+      "body": "{\"access_token\":\"fb-token-1\",\"token_type\":\"bearer\"}"
+    },
+    "/fb/v19.0/me?appsecret_proof=ded07c47585465c5511ce59535e895edaf3dfc045958bed136eefad29ac40359&fields=name%2Cfirst_name%2Clast_name%2Cemail": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=UTF-8"},
+      "body": "{\"id\":\"10203\",\"name\":\"Face Person\",\"first_name\":\"Face\",\"last_name\":\"Person\",\"email\":\"face.person@example.com\"}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/facebook?display=popup"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/facebook/callback?error=access_denied&error_reason=user_denied&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/facebook"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/facebook/callback?code=good-code&state={{responses.2.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body",
+    "/responses/2/headers/Location",
+    "/responses/2/body"
+  ]
+}

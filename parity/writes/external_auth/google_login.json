@@ -1,0 +1,262 @@
+{
+  "name": "google_login",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2?origin=%2Ft%2Fwelcome%2F5"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "started_at": "2026-10-16T04:58:59.444152",
+  "transaction_started_at": "2026-10-16T04:58:57.858069",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&prompt=select_account%20consent&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=483af792d5234b848c2fcf1873fff90f6065f5d7cfe968a6...",
+      "headers": {
+        "Location": "/o/oauth2/auth?access_type=offline&client_id=gclient&hd=example.com&prompt=select_account%20consent&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgoogle_oauth2%2Fcallback&response_type=code&scope=email%20profile&state=483af792d5234b848c2fcf1873fff90f6065f5d7cfe968a6"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/t/welcome/5"
+      }
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "name": "Gee User",
+            "email": "User2@example.com",
+            "image": "https://lh3.googleusercontent.com/a/pic",
+            "last_name": "User",
+            "first_name": "Gee",
+            "email_verified": true,
+            "unverified_email": "User2@example.com"
+          },
+          "extra": {
+            "id_token": "eyJhbGciOiJub25lIn0.e30.",
+            "raw_info": {
+              "hd": "example.com",
+              "sub": "g-1",
+              "name": "Gee User",
+              "email": "User2@example.com",
+              "picture": "https://lh3.googleusercontent.com/a/pic=s96-c",
+              "given_name": "Gee",
+              "family_name": "User",
+              "email_verified": true
+            }
+          },
+          "user_id": 4,
+          "last_used": "2026-10-16T04:58:59.779653",
+          "created_at": "2026-10-16T04:58:59.782164",
+          "updated_at": "2026-10-16T04:58:59.782164",
+          "credentials": {
+            "scope": "openid https://www.googleapis.com/auth/userinfo.email",
+            "token": "g-token-1",
+            "expires": false
+          },
+          "provider_uid": "g-1",
+          "provider_name": "google_oauth2"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/auth/google_oauth2/callback",
+          "action": "generate",
+          "user_id": 4,
+          "client_ip": "127.0.0.1",
+          "auth_token": "107ivZ5Qn7o8MF6Xskso/sbQJkE=",
+          "created_at": "2026-10-16T04:58:59.957302",
+          "user_agent": null,
+          "user_auth_token_id": 115
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 115,
+          "seen_at": null,
+          "user_id": 4,
+          "client_ip": "127.0.0.1",
+          "auth_token": "107ivZ5Qn7o8MF6Xskso/sbQJkE=",
+          "created_at": "2026-10-16T04:58:59.945219",
+          "rotated_at": "2026-10-16T04:58:59.937072",
+          "updated_at": "2026-10-16T04:58:59.945219",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "107ivZ5Qn7o8MF6Xskso/sbQJkE=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": true,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-16T04:58:59.853831",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": "127.0.0.1",
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "download_avatar_from_url",
+      {
+        "url": "https://lh3.googleusercontent.com/a/pic",
+        "user_id": 4,
+        "override_gravatar": false
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_associated_accounts": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 115
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "google_oauth2_client_id": "gclient",
+    "google_oauth2_client_secret": "gsecret",
+    "google_oauth2_hd": "example.com",
+    "google_oauth2_prompt": "select_account|consent",
+    "enable_google_oauth2_logins": true
+  },
+  "remote": {
+    "/g-oauth/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"access_token\":\"g-token-1\",\"scope\":\"openid https://www.googleapis.com/auth/userinfo.email\",\"token_type\":\"Bearer\",\"id_token\":\"eyJhbGciOiJub25lIn0.e30.\"}"
+    },
+    "/g-apis/oauth2/v3/userinfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"sub\":\"g-1\",\"name\":\"Gee User\",\"given_name\":\"Gee\",\"family_name\":\"User\",\"picture\":\"https://lh3.googleusercontent.com/a/pic=s96-c\",\"email\":\"User2@example.com\",\"email_verified\":true,\"hd\":\"example.com\"}"
+    },
+    "/g-apis/oauth2/v3/tokeninfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"azp\":\"gclient\",\"aud\":\"gclient\",\"scope\":\"openid https://www.googleapis.com/auth/userinfo.email\",\"exp\":\"1900000000\"}"
+    }
+  },
+  "remote_hosts": {
+    "https://oauth2.googleapis.com": "/g-oauth",
+    "https://www.googleapis.com": "/g-apis"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "36cfa3efb29e8056f5b3110a110fe96d8caa05295c8b087704f6bdd4cf80d7e9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
