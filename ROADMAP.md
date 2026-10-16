@@ -2321,6 +2321,18 @@ route table has been made, so this list may be short.
     attributes and a small script formats them in the browser, so
     cached pages stay shareable between viewers; the first paint must
     not flash UTC text
+210. `docs/plugin-audits` M, decided 2026-10-16: a parity audit of every
+    bundled plugin the port has started (crate::plugins::STARTED). A
+    plugin is done only when it has all of the reference plugin's
+    features; having its markdown, a few routes or most of its pages
+    makes it started, not done. Each audit compares the reference
+    plugin (plugin.rb, routes, controllers, serializers, jobs, events
+    and modifiers, settings and their handlers, migrations, the Ember
+    UI) with the port and turns every gap into a ROADMAP item named
+    after the plugin. Started: chat, poll, reactions, solved, topic
+    voting, presence, local dates, lazy videos, checklist, details,
+    footnote, spoiler, LTI, OAuth2 basic, OpenID Connect, Apple. None is
+    done
 
 ## Milestone 1: a hostable read-only mirror
 
