@@ -2,7 +2,10 @@
 //! `backup_location`. Callers see one store (the files newest first, one
 //! file, delete, download, upload, the retention rules and the stats);
 //! which backend holds the files is the store's business. The local
-//! backend keeps the `.gz` and `.tgz` files in `public/backups/<db>`.
+//! backend keeps the `.gz` and `.tgz` files in `public/backups/<db>`; the
+//! external one (S3BackupStore) keeps them as objects under
+//! `s3_backup_bucket/<db>/` in an object storage bucket
+//! ([`crate::object_storage`]).
 
 use std::path::{Path, PathBuf};
 
@@ -10,8 +13,9 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_json::{Value, json};
 
 use crate::config::Config;
+use crate::object_storage::{Backend, CorsRule, PutOptions, StorageError, s3};
 use crate::site_settings::SiteSettings;
-use crate::{AppError, Unsupported};
+use crate::{AppError, ruby};
 
 /// Where a backup's bytes can be had.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -74,6 +78,14 @@ impl std::fmt::Display for BackupStoreError {
 
 impl std::error::Error for BackupStoreError {}
 
+/// `rescue Aws::Errors::ServiceError => e; raise StorageError.new(...)`
+fn storage(e: StorageError) -> AppError {
+    match e {
+        StorageError::Unsupported(u) => u.into(),
+        e => BackupStoreError::Storage(e.to_string()).into(),
+    }
+}
+
 /// `BackupStore#stats`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Stats {
@@ -88,14 +100,168 @@ pub struct Stats {
 #[derive(Debug, Clone)]
 pub enum BackupStore {
     Local(LocalBackupStore),
+    External(Box<ExternalBackupStore>),
+}
+
+/// BackupRestore::S3BackupStore: objects under `s3_backup_bucket`'s folder
+/// and the site's db (`<bucket>/<folder>/<db>/<filename>`).
+#[derive(Debug, Clone)]
+pub struct ExternalBackupStore {
+    pub(crate) backend: Backend,
+    /// The bucket's folder and the site's db: what keys start with.
+    pub(crate) folder: String,
+    /// `s3_presigned_get_url_expires_after_seconds`
+    presigned_get_expires: u64,
+    /// `!s3_disable_cleanup`
+    cleanup_allowed: bool,
+    /// `s3_install_cors_rule`
+    install_cors_rule: bool,
+}
+
+/// S3BackupStore::UPLOAD_URL_EXPIRES_AFTER_SECONDS (six hours).
+const UPLOAD_URL_EXPIRES_AFTER_SECONDS: u64 = 6 * 3600;
+
+impl ExternalBackupStore {
+    fn for_site(config: &Config, settings: &SiteSettings) -> Result<Self, AppError> {
+        // s3_bucket_name_with_prefix: File.join(s3_backup_bucket,
+        // current_db), split as S3Helper splits it.
+        let bucket = settings.get("s3_backup_bucket")?.to_s().to_lowercase();
+        if ruby::is_blank(&bucket) {
+            // S3Helper: Discourse::InvalidParameters.new("s3_bucket_name")
+            return Err(std::io::Error::other(
+                "You supplied invalid parameters to the request: s3_bucket_name",
+            )
+            .into());
+        }
+        let with_db = format!("{}/{}", bucket.trim_end_matches('/'), config.site.db);
+        let (name, folder) = with_db.split_once('/').unwrap_or((&with_db, ""));
+        // S3Helper.s3_options(SiteSetting): the site's region, endpoint
+        // and keys, never transfer acceleration.
+        let s3_config = crate::file_store::s3_config(config, settings, true, name, false)
+            .map_err(AppError::from)?;
+        Ok(ExternalBackupStore {
+            backend: Backend::S3(s3::S3::new(&s3_config).map_err(storage)?),
+            folder: folder.to_string(),
+            presigned_get_expires: settings
+                .get("s3_presigned_get_url_expires_after_seconds")?
+                .to_i()
+                .max(0) as u64,
+            cleanup_allowed: !settings.get("s3_disable_cleanup")?.truthy(),
+            install_cors_rule: settings.get("s3_install_cors_rule")?.truthy(),
+        })
+    }
+
+    /// `s3_helper.object(filename)`'s key.
+    fn key(&self, filename: &str) -> String {
+        if self.folder.is_empty() {
+            filename.to_string()
+        } else {
+            format!("{}/{filename}", self.folder)
+        }
+    }
+
+    /// `file_regex`: a `.gz` or `.tgz` right under the folder.
+    fn is_backup_key(&self, key: &str) -> bool {
+        let rest = if self.folder.is_empty() {
+            Some(key)
+        } else {
+            key.strip_prefix(&format!("{}/", self.folder))
+        };
+        rest.is_some_and(|name| {
+            let lower = name.to_lowercase();
+            !name.contains('/') && (lower.ends_with(".gz") || lower.ends_with(".tgz"))
+        })
+    }
+
+    async fn unsorted_files(&self) -> Result<Vec<BackupFile>, AppError> {
+        self.backend.ensure_bucket().await.map_err(storage)?;
+        let prefix = if self.folder.is_empty() {
+            String::new()
+        } else {
+            format!("{}/", self.folder)
+        };
+        let objects = self.backend.list(&prefix).await.map_err(storage)?;
+        Ok(objects
+            .into_iter()
+            .filter(|o| self.is_backup_key(&o.key))
+            .map(|o| BackupFile {
+                filename: o.key.rsplit('/').next().unwrap_or(&o.key).to_string(),
+                size: o.size,
+                last_modified: o.last_modified,
+                source: None,
+            })
+            .collect())
+    }
+
+    /// `obj.exists?` and the object's file, presigned when asked.
+    async fn file(
+        &self,
+        filename: &str,
+        with_source: bool,
+    ) -> Result<Option<BackupFile>, AppError> {
+        self.backend.ensure_bucket().await?;
+        let key = self.key(filename);
+        let Some(meta) = self.backend.head(&key).await? else {
+            return Ok(None);
+        };
+        let source = if with_source {
+            Some(Source::Url(self.backend.presigned_get(
+                &key,
+                self.presigned_get_expires,
+                None,
+            )?))
+        } else {
+            None
+        };
+        Ok(Some(BackupFile {
+            filename: key.rsplit('/').next().unwrap_or(&key).to_string(),
+            size: meta.size,
+            last_modified: meta.last_modified,
+            source,
+        }))
+    }
+
+    /// `generate_upload_url`: refused for a name taken, the bucket's CORS
+    /// rule for browser uploads made sure of, then a presigned PUT good
+    /// for six hours. Any service error is a StorageError.
+    async fn generate_upload_url(&self, filename: &str) -> Result<String, AppError> {
+        let key = self.key(filename);
+        let generated = async {
+            self.backend.ensure_bucket().await?;
+            if self.backend.head(&key).await?.is_some() {
+                return Ok(None);
+            }
+            if self.install_cors_rule {
+                self.backend
+                    .ensure_cors(&CorsRule::backup_direct_upload())
+                    .await?;
+            }
+            let (url, _) = self.backend.presigned_put(
+                &key,
+                UPLOAD_URL_EXPIRES_AFTER_SECONDS,
+                &PutOptions::default(),
+            )?;
+            Ok::<_, StorageError>(Some(url))
+        };
+        match generated.await {
+            Ok(Some(url)) => Ok(url),
+            Ok(None) => Err(BackupStoreError::FileExists.into()),
+            Err(e) => {
+                tracing::warn!("Failed to generate upload URL for S3: {e}");
+                Err(storage(e))
+            }
+        }
+    }
 }
 
 impl BackupStore {
     /// `BackupStore.create`: the store `backup_location` names.
     pub fn create(config: &Config, settings: &SiteSettings) -> Result<Self, AppError> {
         match settings.get("backup_location")?.to_s().as_str() {
-            "local" => Self::local(config),
-            _ => Err(Unsupported("the S3 backup store").into()),
+            "s3" => Ok(BackupStore::External(Box::new(
+                ExternalBackupStore::for_site(config, settings)?,
+            ))),
+            _ => Self::local(config),
         }
     }
 
@@ -110,15 +276,14 @@ impl BackupStore {
 
     /// `remote?`
     pub fn remote(&self) -> bool {
-        match self {
-            BackupStore::Local(_) => false,
-        }
+        matches!(self, BackupStore::External(_))
     }
 
     /// `files`: `*.{gz,tgz}`, the newest (to the second) first.
     pub async fn files(&self) -> Result<Vec<BackupFile>, AppError> {
         let mut files = match self {
             BackupStore::Local(s) => s.unsorted_files()?,
+            BackupStore::External(s) => s.unsorted_files().await?,
         };
         sort_newest_first(&mut files);
         Ok(files)
@@ -130,7 +295,7 @@ impl BackupStore {
     }
 
     /// `file(filename, include_download_source:)`: the backup of that
-    /// name, if there is one. A name leading outside the store is
+    /// name, if there is one. A name leading outside the local store is
     /// InvalidParameters, as Rails raises.
     pub async fn file(
         &self,
@@ -139,10 +304,8 @@ impl BackupStore {
     ) -> Result<Option<BackupFile>, AppError> {
         match self {
             // The local file is its own source either way.
-            BackupStore::Local(s) => {
-                let _ = include_download_source;
-                file_at(&s.path_from_filename(filename)?)
-            }
+            BackupStore::Local(s) => file_at(&s.path_from_filename(filename)?),
+            BackupStore::External(s) => s.file(filename, include_download_source).await,
         }
     }
 
@@ -156,32 +319,50 @@ impl BackupStore {
                 }
                 Ok(())
             }
+            BackupStore::External(s) => {
+                s.backend.ensure_bucket().await?;
+                let key = s.key(filename);
+                if s.backend.head(&key).await?.is_some() {
+                    s.backend.delete(&key).await?;
+                }
+                Ok(())
+            }
         }
     }
 
     /// `download_file(filename, destination, failure_message)`: the
-    /// backup copied to a local path; a failure is the message and why.
+    /// backup copied to a local path. A local copy's failure is the
+    /// message and why (`cp`'s error), a download's the message alone.
     pub async fn download_file(
         &self,
         filename: &str,
         destination: &Path,
         failure_message: &str,
     ) -> Result<(), AppError> {
-        let copied = match self {
+        match self {
             BackupStore::Local(s) => {
                 let source = s.path_from_filename(filename)?;
                 tokio::fs::copy(&source, destination)
                     .await
                     .map(|_| ())
-                    .map_err(|e| e.to_string())
+                    .map_err(|e| std::io::Error::other(format!("{failure_message}\n{e}")).into())
             }
-        };
-        copied.map_err(|e| std::io::Error::other(format!("{failure_message}\n{e}")).into())
+            BackupStore::External(s) => {
+                let key = s.key(filename);
+                match s.backend.download(&key, destination).await {
+                    Ok(()) => Ok(()),
+                    Err(e) => {
+                        tracing::error!("downloading {key}: {e}");
+                        Err(std::io::Error::other(failure_message.to_string()).into())
+                    }
+                }
+            }
+        }
     }
 
     /// `upload_file(filename, source_path, content_type)`: a local archive
-    /// put in the store. Only a remote store takes one: the local store's
-    /// archives are made in place.
+    /// put in the store, refused when the name is taken. Only a remote
+    /// store takes one: the local store's archives are made in place.
     pub async fn upload_file(
         &self,
         filename: &str,
@@ -190,8 +371,20 @@ impl BackupStore {
     ) -> Result<(), AppError> {
         match self {
             BackupStore::Local(_) => {
-                let _ = (filename, source, content_type);
                 Err(BackupStoreError::NotImplemented("LocalBackupStore#upload_file").into())
+            }
+            BackupStore::External(s) => {
+                s.backend.ensure_bucket().await?;
+                let key = s.key(filename);
+                if s.backend.head(&key).await?.is_some() {
+                    return Err(BackupStoreError::FileExists.into());
+                }
+                let opts = PutOptions {
+                    content_type: Some(content_type.to_string()),
+                    ..Default::default()
+                };
+                s.backend.put_file(&key, source, &opts).await?;
+                Ok(())
             }
         }
     }
@@ -200,9 +393,9 @@ impl BackupStore {
     pub async fn generate_upload_url(&self, filename: &str) -> Result<String, AppError> {
         match self {
             BackupStore::Local(_) => {
-                let _ = filename;
                 Err(BackupStoreError::NotImplemented("LocalBackupStore#generate_upload_url").into())
             }
+            BackupStore::External(s) => s.generate_upload_url(filename).await,
         }
     }
 
@@ -210,6 +403,7 @@ impl BackupStore {
     fn cleanup_allowed(&self) -> bool {
         match self {
             BackupStore::Local(_) => true,
+            BackupStore::External(s) => s.cleanup_allowed,
         }
     }
 
@@ -255,6 +449,7 @@ impl BackupStore {
         let files = self.files().await?;
         let free_bytes = match self {
             BackupStore::Local(s) => Some(free_bytes(s.directory())?),
+            BackupStore::External(_) => None,
         };
         Ok(Stats {
             used_bytes: files.iter().map(|f| f.size).sum(),

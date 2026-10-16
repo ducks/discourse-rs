@@ -52,6 +52,49 @@ pub struct PutOptions {
     pub metadata: Vec<(String, String)>,
 }
 
+/// A CORS rule a bucket needs for browsers to reach it directly (S3CorsRulesets).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CorsRule {
+    pub allowed_headers: Vec<String>,
+    pub allowed_methods: Vec<String>,
+    pub allowed_origins: Vec<String>,
+    pub expose_headers: Vec<String>,
+    pub max_age_seconds: Option<u32>,
+}
+
+impl CorsRule {
+    /// `S3CorsRulesets::BACKUP_DIRECT_UPLOAD`
+    pub fn backup_direct_upload() -> CorsRule {
+        let s = |v: &[&str]| v.iter().map(|x| x.to_string()).collect();
+        CorsRule {
+            allowed_headers: s(&["*"]),
+            allowed_methods: s(&["GET", "HEAD", "PUT"]),
+            allowed_origins: s(&["*"]),
+            expose_headers: s(&["ETag"]),
+            max_age_seconds: Some(3000),
+        }
+    }
+
+    /// `S3CorsRulesets::DIRECT_UPLOAD`
+    pub fn direct_upload() -> CorsRule {
+        let s = |v: &[&str]| v.iter().map(|x| x.to_string()).collect();
+        CorsRule {
+            allowed_headers: s(&[
+                "Authorization",
+                "Content-Disposition",
+                "Content-Type",
+                "X-Amz-Acl",
+                "X-Amz-Meta-Sha1-Checksum",
+                "X-Amz-Tagging",
+            ]),
+            allowed_methods: s(&["GET", "HEAD", "PUT"]),
+            allowed_origins: s(&["*"]),
+            expose_headers: s(&["ETag"]),
+            max_age_seconds: Some(3000),
+        }
+    }
+}
+
 /// One rule of a bucket's lifecycle: objects under `prefix` expire
 /// `days` after they were written.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -309,6 +352,14 @@ impl Backend {
     pub async fn abort_multipart(&self, key: &str, upload_id: &str) -> Result<(), StorageError> {
         match self {
             Backend::S3(s) => s.abort_multipart(key, upload_id).await,
+        }
+    }
+
+    /// The CORS rule added unless the bucket has one like it; whether it
+    /// was written.
+    pub async fn ensure_cors(&self, rule: &CorsRule) -> Result<bool, StorageError> {
+        match self {
+            Backend::S3(s) => s.ensure_cors(rule).await,
         }
     }
 

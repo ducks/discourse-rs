@@ -522,13 +522,13 @@ pub async fn storage_stats(
     let uploads_free = if store.external() {
         None
     } else {
-        let public = &config.public_dir;
-        let uploads_dir = public.join("uploads").join(&config.site.db);
-        Some(free_bytes(if uploads_dir.exists() {
-            &uploads_dir
-        } else {
-            public
-        })?)
+        // The filesystem the uploads directory is (or would be) on.
+        let uploads_dir = config.public_dir.join("uploads").join(&config.site.db);
+        let existing = uploads_dir
+            .ancestors()
+            .find(|p| p.exists())
+            .unwrap_or(std::path::Path::new("/"));
+        Some(free_bytes(existing)?)
     };
     r.data = json!({
         "backups": backups,

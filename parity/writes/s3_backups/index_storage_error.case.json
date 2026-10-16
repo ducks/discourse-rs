@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "s3": {
+    "buckets": []
+  },
+  "settings": {
+    "s3_backup_bucket": "s3-backups-wrong-key",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "not-the-secret-key",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "requests": [
+    {"method": "GET", "path": "/admin/backups.json"}
+  ]
+}

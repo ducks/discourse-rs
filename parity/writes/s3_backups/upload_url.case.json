@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "s3": {
+    "buckets": ["s3-backups-upload-url"],
+    "objects": {
+      "s3-backups-upload-url/default/taken.tar.gz": "backup.tar.gz"
+    }
+  },
+  "settings": {
+    "s3_backup_bucket": "s3-backups-upload-url",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "requests": [
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": "fresh-upload.tar.gz"}},
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": "taken.tar.gz"}},
+    {"method": "GET", "path": "/admin/backups/upload_url", "params": {"filename": "x.zip"}}
+  ]
+}

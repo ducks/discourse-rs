@@ -5,7 +5,7 @@
 mod common;
 
 use common::{TestDb, bus_messages, recorded_config, state};
-use discourse_rs::backup_restore::{self, jobs, store::LocalBackupStore};
+use discourse_rs::backup_restore::{self, jobs, store::BackupStore, store::LocalBackupStore};
 use serde_json::json;
 
 fn scratch_public(name: &str) -> std::path::PathBuf {
@@ -348,6 +348,100 @@ async fn a_dump_only_backup_and_one_refused_while_running() {
     .await
     .unwrap();
     assert_eq!(title, "Backup failed");
+    let _ = std::fs::remove_dir_all(&st.config.public_dir);
+    let _ = std::fs::remove_dir_all(&st.config.tmp_dir);
+}
+
+/// backup_location s3 (on MinIO): the archive is made locally, uploaded
+/// under `<bucket>/<folder>/<db>/`, and the local copy removed; the store
+/// lists it, downloads it for a restore, keeps maximum_backups and
+/// deletes. Skipped without MinIO.
+#[tokio::test]
+async fn a_backup_to_s3_is_uploaded_and_listed_there() {
+    if let Err(why) = common::s3::S3Server::available() {
+        eprintln!("skipped: {why}");
+        return;
+    }
+    let server = common::s3::S3Server::start().unwrap();
+    let db = TestDb::new().await;
+    let mut config = recorded_config();
+    config.public_dir = scratch_public("s3");
+    config.tmp_dir = scratch_public("s3-tmp");
+    config.object_storage_endpoints = vec![server.endpoint_mapping()];
+    let st = state(db.pool.clone(), config).await;
+    for (name, value) in [
+        ("s3_backup_bucket", "s3-backups/forum"),
+        ("s3_access_key_id", common::s3::ACCESS_KEY_ID),
+        ("s3_secret_access_key", common::s3::SECRET_ACCESS_KEY),
+        ("s3_region", common::s3::REGION),
+        ("s3_endpoint", common::s3::ENDPOINT),
+        ("backup_location", "s3"),
+    ] {
+        let data_type = st.site_setting_defs.get(name).unwrap().data_type as i32;
+        common::set_setting(&db.pool, name, data_type, value).await;
+    }
+    let outcome = backup_restore::creator::run(&st, 1, Default::default())
+        .await
+        .unwrap();
+    assert!(outcome.success, "{:#?}", outcome.logs);
+    assert!(
+        outcome
+            .logs
+            .iter()
+            .any(|l| l.ends_with("] Uploading archive..."))
+    );
+    assert!(
+        outcome
+            .logs
+            .iter()
+            .any(|l| l.ends_with("] Removing archive from local storage..."))
+    );
+    assert!(
+        !st.config
+            .public_dir
+            .join("backups/default")
+            .join(&outcome.filename)
+            .exists()
+    );
+    let object = server
+        .bucket("s3-backups")
+        .head(&format!("forum/default/{}", outcome.filename))
+        .await
+        .unwrap()
+        .expect("the archive in the bucket");
+    assert_eq!(object.content_type.as_deref(), Some("application/gzip"));
+
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    let store = BackupStore::create(&st.config, &settings).unwrap();
+    assert!(store.remote());
+    let files = store.files().await.unwrap();
+    assert_eq!(files.len(), 1);
+    assert_eq!(files[0].filename, outcome.filename);
+    assert_eq!(files[0].size, object.size);
+    let copy = st.config.tmp_dir.join("copy.sql.gz");
+    std::fs::create_dir_all(&st.config.tmp_dir).unwrap();
+    store
+        .download_file(&outcome.filename, &copy, "Failed to download")
+        .await
+        .unwrap();
+    assert!(gunzip(&std::fs::read(&copy).unwrap()).contains("CREATE TABLE public.topics ("));
+    // Taken: the same name is not uploaded again.
+    let taken = store
+        .upload_file(&outcome.filename, &copy, "application/gzip")
+        .await
+        .unwrap_err();
+    assert!(taken.to_string().contains("BackupFileExists"));
+    let stats = store.stats().await.unwrap();
+    assert_eq!((stats.count, stats.free_bytes), (1, None));
+    store.delete_old(0).await.unwrap();
+    assert!(store.files().await.unwrap().is_empty());
     let _ = std::fs::remove_dir_all(&st.config.public_dir);
     let _ = std::fs::remove_dir_all(&st.config.tmp_dir);
 }
