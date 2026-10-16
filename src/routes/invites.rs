@@ -958,9 +958,33 @@ pub async fn invited_json(
     path_filter: Option<&str>,
     uri: &Uri,
 ) -> Result<Response, AppError> {
-    let p = params::parse_query(uri.query().unwrap_or(""));
+    Ok(
+        match invited_doc(
+            state,
+            guardian,
+            username,
+            path_filter,
+            uri.query().unwrap_or(""),
+        )
+        .await?
+        {
+            Ok(doc) => Json(doc).into_response(),
+            Err(refused) => refused,
+        },
+    )
+}
+
+/// users#invited's document, or the response refusing it.
+pub(crate) async fn invited_doc(
+    state: &AppState,
+    guardian: &Guardian,
+    username: &str,
+    path_filter: Option<&str>,
+    query: &str,
+) -> Result<Result<Value, Response>, AppError> {
+    let p = params::parse_query(query);
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(state));
+        return Ok(Err(super::login_required::not_logged_in(state)));
     }
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -978,19 +1002,18 @@ pub async fn invited_json(
             } else {
                 Value::Null
             };
-            return Ok(Json(
+            return Ok(Ok(
                 json!({"invites": [], "can_see_invite_details": false, "error": error}),
-            )
-            .into_response());
+            ));
         }
-        return Ok(json_error(
+        return Ok(Err(json_error(
             StatusCode::UNPROCESSABLE_ENTITY,
             state
                 .i18n
                 .t("invite.disabled_errors.invalid_access")
                 .unwrap_or_default()
                 .to_string(),
-        ));
+        )));
     }
     let filter = path_filter
         .map(str::to_string)
@@ -1009,7 +1032,7 @@ pub async fn invited_json(
         crate::users::User::find_active(&mut conn, &lower).await?
     };
     let Some(inviter) = user else {
-        return Ok(super::topics::not_found_response(state));
+        return Ok(Err(super::topics::not_found_response(state)));
     };
     let details = guardian.is_staff() || guardian.is_me(inviter.id);
     let show_emails = details;
@@ -1156,7 +1179,7 @@ pub async fn invited_json(
         0
     };
     let redeemed = invites::count(&mut conn, inviter.id, invites::List::Redeemed).await?;
-    Ok(Json(json!({
+    Ok(Ok(json!({
         "invites": items,
         "can_see_invite_details": details,
         "counts": {
@@ -1165,6 +1188,5 @@ pub async fn invited_json(
             "redeemed": redeemed,
             "total": pending + expired,
         },
-    }))
-    .into_response())
+    })))
 }

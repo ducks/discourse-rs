@@ -69,6 +69,9 @@ pub enum Tab<'a> {
     /// `userNotifications.*`: the notifications navigation and tab
     /// (crate::user_notifications_view), drawn.
     Notifications(String),
+    /// `userInvited.*`: the invites navigation and list
+    /// (crate::invite_page_view), drawn.
+    Invited(String),
 }
 
 /// The activity sub-navigation's stream routes.
@@ -590,7 +593,7 @@ pub fn render(
             &format!("{user_path}/invited"),
             "user-plus",
             &t(cx, "user.invited.title"),
-            false,
+            matches!(tab, Tab::Invited(_)),
         ));
     }
     if settings.enable_badges && u["badge_count"].as_i64().unwrap_or(0) > 0 {
@@ -659,7 +662,8 @@ pub fn render(
             | Tab::Badges(content)
             | Tab::DeletedPosts(content)
             | Tab::Preferences(content)
-            | Tab::Notifications(content) => out.push_str(content),
+            | Tab::Notifications(content)
+            | Tab::Invited(content) => out.push_str(content),
         }
     }
     out.push_str("</div></div></section></div>");

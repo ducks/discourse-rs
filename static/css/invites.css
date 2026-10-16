@@ -1,0 +1,1387 @@
+/* The invite page and the profile's Invites tab (invites/show,
+ * user-invited/show) as Rails compiles them into common.css: every rule
+ * whose selector names the invite page, its form and the login code form,
+ * the signup progress bar and welcome header, the invite list or DTable,
+ * in common.css's order. */
+
+/* signup-progress-bar.scss */
+:root {
+  --progress-bar-line-width: 1px;
+  --progress-bar-circle-size: 0.5rem;
+  --progress-bar-icon-size: 0.25rem;
+}
+
+.admin-area .powered-by-discourse,.has-full-page-chat .powered-by-discourse,.static-login .powered-by-discourse,.invite-page .powered-by-discourse,.account-created-page .powered-by-discourse,.admin-invite-page .powered-by-discourse,.activate-account-page .powered-by-discourse {
+  display:none !important;
+}
+.signup-progress-bar {
+  width:auto;
+  display:flex;
+  box-sizing:border-box;
+  margin-bottom:1.2rem;
+  gap:1rem;
+}
+@media(width < 40rem) {
+  .signup-progress-bar {
+    margin:1.5rem .85rem;
+  }
+}
+.account-created .signup-progress-bar,.activate-account .signup-progress-bar {
+  margin-inline:0;
+}
+.signup-progress-bar__segment {
+  width:auto;
+  display:flex;
+  flex-direction:column;
+  gap:.5rem;
+  color:var(--primary-low-mid);
+}
+.signup-progress-bar__segment:first-child .signup-progress-bar__circle {
+  transform:translateX(50%);
+  z-index:1;
+}
+.signup-progress-bar__segment:last-child {
+  width:var(--progress-bar-circle-size);
+}
+.signup-progress-bar__segment:last-child .signup-progress-bar__circle {
+  transform:translateX(-50%);
+  z-index:1;
+}
+.signup-progress-bar__step {
+  display:flex;
+}
+.signup-progress-bar__circle {
+  flex-shrink:0;
+  font-size:var(--progress-bar-icon-size);
+  color:var(--secondary);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:var(--progress-bar-circle-size);
+  width:var(--progress-bar-circle-size);
+  transform:none;
+  border-radius:50%;
+  border:var(--progress-bar-line-width) solid var(--primary-low-mid);
+  background-color:var(--secondary);
+}
+.--active .signup-progress-bar__circle {
+  background-color:var(--success);
+  border-color:var(--success);
+  box-shadow:0 0 1px calc(var(--progress-bar-circle-size)/2) var(--success-low);
+}
+.--completed .signup-progress-bar__circle {
+  background-color:var(--success);
+  border-color:var(--success);
+}
+.d-table {
+  width:100%;
+}
+@media(width < 48rem) {
+  .d-table {
+    border-collapse:collapse;
+    margin-bottom:var(--space-12);
+  }
+}
+.d-table th,.d-table td {
+  padding:var(--space-2);
+}
+.d-table .status-label {
+  --d-border-radius: var(--space-4);
+  --status-icon-diameter: 8px;
+  display:flex;
+  flex-wrap:nowrap;
+  width:fit-content;
+  background-color:var(--primary-low);
+  padding:var(--space-half) var(--space-2);
+  border-radius:var(--d-border-radius);
+}
+.d-table .status-label .status-label-indicator {
+  display:inline-block;
+  width:var(--status-icon-diameter);
+  height:var(--status-icon-diameter);
+  border-radius:50%;
+  background-color:var(--primary-high);
+  flex-shrink:0;
+  margin-right:var(--space-1);
+  margin-top:.35rem;
+}
+.d-table .status-label .status-label-text {
+  color:var(--primary-high);
+  font-size:var(--font-down-1);
+}
+.d-table .status-label.--success {
+  background-color:var(--success-low);
+}
+.d-table .status-label.--success .status-label-indicator {
+  background-color:var(--success);
+}
+.d-table .status-label.--success .status-label-text {
+  color:var(--success-hover);
+}
+.d-table .status-label.--critical {
+  background-color:var(--danger-low);
+}
+.d-table .status-label.--critical .status-label-indicator {
+  background-color:var(--danger);
+}
+.d-table .status-label.--critical .status-label-text {
+  color:var(--danger-hover);
+}
+.d-table .status-label.--inactive {
+  background-color:var(--primary-low);
+}
+.d-table .status-label.--inactive .status-label-indicator {
+  background-color:var(--primary-high);
+}
+.d-table .status-label.--inactive .status-label-text {
+  color:var(--primary-high);
+}
+@media(width < 48rem) {
+  .d-table__header {
+    display:none;
+  }
+}
+.d-table__header-cell {
+  text-align:left;
+  font-weight:normal;
+  color:var(--primary-high);
+  vertical-align:bottom;
+}
+.d-table__row {
+  position:relative;
+  padding:var(--space-1) 0;
+}
+@media(width < 48rem) {
+  .d-table__row {
+    display:block;
+    margin-bottom:var(--space-3);
+    border:1px solid var(--content-border-color);
+  }
+}
+.d-table__row.has-update {
+  background-color:var(--tertiary-very-low);
+  border-left:solid 3px var(--tertiary);
+}
+.d-table__cell {
+  vertical-align:middle;
+}
+@media(width < 48rem) {
+  .d-table__cell {
+    display:block;
+    border-top:1px solid var(--content-border-color);
+  }
+}
+@media(width < 48rem) {
+  .d-table__cell:first-child {
+    border-top:0;
+  }
+}
+@media(width < 48rem) {
+  .d-table__cell.--overview {
+    width:auto;
+    border-top:0;
+  }
+}
+.d-table__cell.--overview .d-table__overview-name {
+  font-weight:700;
+  max-width:80%;
+  margin-bottom:var(--space-1);
+  color:var(--primary);
+}
+.d-table__cell.--overview .d-table__overview-link {
+  color:var(--primary);
+}
+.d-table__cell.--overview .d-table__overview-link .d-table__overview-name:hover,.d-table__cell.--overview .d-table__overview-link .d-table__overview-name:focus {
+  color:var(--tertiary);
+}
+.d-table__cell.--overview a.d-table__overview-name:visited {
+  color:currentcolor;
+}
+.d-table__cell.--overview a.d-table__overview-name:hover,.d-table__cell.--overview a.d-table__overview-name:focus {
+  color:var(--tertiary);
+}
+.d-table__cell.--overview .d-table__overview-author {
+  font-size:var(--font-down-1);
+  margin-bottom:var(--space-1);
+}
+.d-table__cell.--overview .d-table__overview-about {
+  padding-right:var(--space-4);
+}
+@media(width < 48rem) {
+  .d-table__cell.--overview .d-table__overview-about {
+    padding-top:var(--space-1);
+  }
+}
+.d-table__cell.--overview .d-table__overview-about .d-icon {
+  font-size:var(--font-down-3);
+  margin-bottom:.1em;
+}
+.d-table__cell.--overview .d-table__overview-flags {
+  color:var(--primary-high);
+  font-size:var(--font-down-1);
+  text-transform:lowercase;
+}
+.d-table__cell.--overview .d-table__overview-flags::first-letter {
+  text-transform:uppercase;
+}
+@media(width < 48rem) {
+  .d-table__cell.--detail {
+    display:flex;
+    justify-content:space-between;
+  }
+}
+.d-table__mobile-label {
+  display:none;
+}
+@media(width < 48rem) {
+  .d-table__mobile-label {
+    display:inline-flex;
+    color:var(--primary-high);
+  }
+}
+.d-table__cell.--controls {
+  text-align:right;
+  width:auto;
+}
+@media(width < 48rem) {
+  .d-table__cell.--controls {
+    position:absolute;
+    top:-3px;
+    right:0;
+    border-top:0;
+    width:auto;
+  }
+}
+.d-table__cell-actions {
+  display:flex;
+  flex-direction:row;
+  gap:.5em;
+  justify-content:flex-end;
+}
+.d-table__cell-actions .fk-d-menu__trigger {
+  font-size:var(--font-down-1);
+}
+.d-table__value-wrapper {
+  display:flex;
+  align-items:center;
+  gap:var(--space-1);
+}
+.d-table__badges {
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-1);
+  align-items:center;
+  min-height:var(--space-8);
+}
+.d-table-badge {
+  display:flex;
+  font-size:var(--font-down-2);
+  border-radius:var(--d-button-border-radius);
+  color:var(--primary-very-high);
+  background:var(--tertiary-very-low);
+  letter-spacing:.25px;
+}
+.d-table-badge span {
+  display:flex;
+  align-items:center;
+  gap:0 var(--space-1);
+}
+.d-table-badge__content {
+  padding:var(--space-half) var(--space-2);
+}
+.d-table-badge__info {
+  border-left:1px solid var(--secondary);
+  border-radius:0 var(--d-button-border-radius) var(--d-button-border-radius) 0;
+  padding:var(--space-half) var(--space-1);
+}
+.d-table-badge svg {
+  font-size:var(--font-down-2);
+  color:var(--primary-high);
+}
+.login-welcome-header {
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:auto 1fr;
+  overflow-wrap:anywhere;
+}
+.login-welcome-header .login-title {
+  font-size:var(--font-up-5);
+  margin:0;
+  line-height:var(--line-height-medium);
+}
+@media(width >= 40rem) {
+  .login-welcome-header .login-title {
+    font-size:var(--font-up-6);
+  }
+}
+.login-welcome-header .login-subheader {
+  font-size:var(--font-0);
+  margin:0;
+}
+@media(width >= 40rem) {
+  .login-welcome-header .login-subheader {
+    font-size:var(--font-up-1);
+  }
+}
+.login-welcome-header .waving-hand {
+  width:30px;
+  height:30px;
+  margin-left:.5em;
+  align-self:center;
+}
+@media(width >= 40rem) {
+  .login-welcome-header .waving-hand .waving-hand {
+    width:35px;
+    height:35px;
+  }
+}
+.d-otp {
+  display:flex;
+  align-items:center;
+  position:relative;
+  width:min-content;
+}
+.email-login .d-otp {
+  width:100%;
+  justify-content:center;
+}
+.d-otp-group {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.d-otp-slot {
+  padding:var(--d-otp-slot-padding, 0.5em 0.65em);
+  font-size:var(--d-otp-slot-font-size, inherit);
+  line-height:normal;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:var(--d-input-border);
+  border-radius:var(--d-border-radius);
+  position:relative;
+  transition:all .3s ease-out;
+  width:1em;
+}
+.d-otp-slot.--is-focused {
+  border-color:var(--d-input-focused-color);
+  outline:2px solid var(--d-input-focused-color);
+  outline-offset:-2px;
+}
+.d-otp-slot.--show-cursor::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translateX(-50%) translateY(-50%);
+  width:1px;
+  height:50%;
+  background-color:currentcolor;
+  animation:otp-cursor-blink 1s infinite;
+}
+.d-otp-slot.--placeholder {
+  font-size:var(--font-up-0);
+}
+.form-kit__field.has-error .d-otp-slot {
+  border-color:var(--danger);
+}
+.d-otp-separator {
+  color:var(--primary-medium);
+  font-size:var(--font-up-1);
+  font-weight:700;
+}
+.d-otp-input-wrapper {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.d-otp-input {
+  position:absolute;
+  inset:0;
+  width:calc(100% + 40px);
+  height:100%;
+  display:flex;
+  text-align:left;
+  opacity:1;
+  color:rgba(0,0,0,0);
+  pointer-events:all;
+  background:rgba(0,0,0,0);
+  caret-color:rgba(0,0,0,0);
+  border:0 solid rgba(0,0,0,0);
+  outline:rgba(0,0,0,0) solid 0;
+  box-shadow:none;
+  line-height:1;
+  letter-spacing:-0.5em;
+  font-size:var(--root-height);
+  font-family:monospace;
+  font-variant-numeric:tabular-nums;
+  clip-path:inset(0 40px 0 0);
+}
+.d-otp-input[data-com-onepassword-filled] {
+  background-clip:text;
+}
+.activate-account .login-welcome-header {
+  width:fit-content;
+}
+.authorize-api-key__code-form .d-otp-slot {
+  font-size:var(--font-up-1);
+  padding:.625em .8em;
+}
+body.invite-page {
+  font-family:system-ui,Arial,sans-serif;
+}
+body.invite-page #main-outlet-wrapper {
+  padding:0;
+}
+.invites-show #modal-alert,.admin-invite-page #modal-alert {
+  box-sizing:border-box;
+  display:inline-block;
+  padding:1em 3.5em 1em 1em;
+  width:100%;
+  max-width:100%;
+  margin-bottom:0;
+  min-height:35px;
+}
+.invites-show #modal-alert:empty,.admin-invite-page #modal-alert:empty {
+  min-height:0;
+  padding:0;
+  overflow:hidden;
+  display:inline;
+}
+body.login-page .powered-by-discourse,body.login-page .above-main-container-outlet,body.login-page .before-header-panel-outlet,body.login-page .below-site-header-outlet,body.signup-page .powered-by-discourse,body.signup-page .above-main-container-outlet,body.signup-page .before-header-panel-outlet,body.signup-page .below-site-header-outlet,body.invite-page .powered-by-discourse,body.invite-page .above-main-container-outlet,body.invite-page .before-header-panel-outlet,body.invite-page .below-site-header-outlet,body.password-reset-page .powered-by-discourse,body.password-reset-page .above-main-container-outlet,body.password-reset-page .before-header-panel-outlet,body.password-reset-page .below-site-header-outlet,body.activate-account-page .powered-by-discourse,body.activate-account-page .above-main-container-outlet,body.activate-account-page .before-header-panel-outlet,body.activate-account-page .below-site-header-outlet {
+  display:none;
+}
+body.login-page #main-outlet,body.signup-page #main-outlet,body.invite-page #main-outlet,body.password-reset-page #main-outlet,body.activate-account-page #main-outlet {
+  padding:0;
+}
+body.login-page .d-header,body.signup-page .d-header,body.invite-page .d-header,body.password-reset-page .d-header,body.activate-account-page .d-header {
+  box-shadow:none;
+  border:none;
+  background-color:var(--secondary);
+}
+body.login-page .d-header .home-logo-wrapper-outlet,body.signup-page .d-header .home-logo-wrapper-outlet,body.invite-page .d-header .home-logo-wrapper-outlet,body.password-reset-page .d-header .home-logo-wrapper-outlet,body.activate-account-page .d-header .home-logo-wrapper-outlet {
+  width:100%;
+}
+body.login-page .d-header .title a,body.signup-page .d-header .title a,body.invite-page .d-header .title a,body.password-reset-page .d-header .title a,body.activate-account-page .d-header .title a {
+  margin:0 auto;
+}
+.login-fullpage,.signup-fullpage,.invites-show,.password-reset-page {
+  min-height:calc(90vh - var(--header-offset));
+}
+@media(width < 48rem) {
+  .login-fullpage,.signup-fullpage,.invites-show,.password-reset-page {
+    justify-content:flex-start;
+  }
+}
+html.keyboard-visible:not(.ios-device) .login-fullpage,html.keyboard-visible:not(.ios-device) .signup-fullpage,html.keyboard-visible:not(.ios-device) .invites-show,html.keyboard-visible:not(.ios-device) .password-reset-page {
+  height:calc(var(--composer-vh, 1vh)*100 - var(--header-offset));
+  overflow-y:scroll;
+}
+.login-fullpage .signup-body,.login-fullpage .login-body,.signup-fullpage .signup-body,.signup-fullpage .login-body,.invites-show .signup-body,.invites-show .login-body,.password-reset-page .signup-body,.password-reset-page .login-body {
+  display:flex;
+  justify-content:center;
+  width:100%;
+  max-width:800px;
+  box-sizing:border-box;
+}
+@media(width < 48rem) {
+  .login-fullpage .signup-body,.login-fullpage .login-body,.signup-fullpage .signup-body,.signup-fullpage .login-body,.invites-show .signup-body,.invites-show .login-body,.password-reset-page .signup-body,.password-reset-page .login-body {
+    flex-direction:column;
+    gap:unset;
+    padding-inline:.5rem;
+  }
+}
+.login-fullpage .alert,.signup-fullpage .alert,.invites-show .alert,.password-reset-page .alert {
+  width:100%;
+  max-width:800px;
+  box-sizing:border-box;
+  margin:0;
+}
+.login-fullpage .login-page-cta,.login-fullpage .signup-page-cta,.signup-fullpage .login-page-cta,.signup-fullpage .signup-page-cta,.invites-show .login-page-cta,.invites-show .signup-page-cta,.password-reset-page .login-page-cta,.password-reset-page .signup-page-cta {
+  display:flex;
+  flex-direction:column;
+}
+@media(width >= 40rem) {
+  .login-fullpage .login-page-cta__buttons,.login-fullpage .signup-page-cta__buttons,.signup-fullpage .login-page-cta__buttons,.signup-fullpage .signup-page-cta__buttons,.invites-show .login-page-cta__buttons,.invites-show .signup-page-cta__buttons,.password-reset-page .login-page-cta__buttons,.password-reset-page .signup-page-cta__buttons {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+  }
+  .login-fullpage .login-page-cta__buttons button,.login-fullpage .signup-page-cta__buttons button,.signup-fullpage .login-page-cta__buttons button,.signup-fullpage .signup-page-cta__buttons button,.invites-show .login-page-cta__buttons button,.invites-show .signup-page-cta__buttons button,.password-reset-page .login-page-cta__buttons button,.password-reset-page .signup-page-cta__buttons button {
+    font-size:var(--font-0) !important;
+    width:100%;
+  }
+  .login-fullpage .login-page-cta__existing-account,.login-fullpage .login-page-cta__no-account-yet,.login-fullpage .signup-page-cta__existing-account,.login-fullpage .signup-page-cta__no-account-yet,.signup-fullpage .login-page-cta__existing-account,.signup-fullpage .login-page-cta__no-account-yet,.signup-fullpage .signup-page-cta__existing-account,.signup-fullpage .signup-page-cta__no-account-yet,.invites-show .login-page-cta__existing-account,.invites-show .login-page-cta__no-account-yet,.invites-show .signup-page-cta__existing-account,.invites-show .signup-page-cta__no-account-yet,.password-reset-page .login-page-cta__existing-account,.password-reset-page .login-page-cta__no-account-yet,.password-reset-page .signup-page-cta__existing-account,.password-reset-page .signup-page-cta__no-account-yet {
+    font-size:var(--font-down-1);
+    margin-bottom:.5rem;
+    text-align:center;
+    width:100%;
+  }
+  .login-fullpage .login-page-cta__existing-account::before,.login-fullpage .login-page-cta__no-account-yet::before,.login-fullpage .signup-page-cta__existing-account::before,.login-fullpage .signup-page-cta__no-account-yet::before,.signup-fullpage .login-page-cta__existing-account::before,.signup-fullpage .login-page-cta__no-account-yet::before,.signup-fullpage .signup-page-cta__existing-account::before,.signup-fullpage .signup-page-cta__no-account-yet::before,.invites-show .login-page-cta__existing-account::before,.invites-show .login-page-cta__no-account-yet::before,.invites-show .signup-page-cta__existing-account::before,.invites-show .signup-page-cta__no-account-yet::before,.password-reset-page .login-page-cta__existing-account::before,.password-reset-page .login-page-cta__no-account-yet::before,.password-reset-page .signup-page-cta__existing-account::before,.password-reset-page .signup-page-cta__no-account-yet::before {
+    content:" ";
+    display:block;
+    height:1px;
+    width:100%;
+    background-color:var(--primary-low);
+    margin-block:1rem;
+  }
+  .login-fullpage .login-page-cta__disclaimer,.login-fullpage .signup-page-cta__disclaimer,.signup-fullpage .login-page-cta__disclaimer,.signup-fullpage .signup-page-cta__disclaimer,.invites-show .login-page-cta__disclaimer,.invites-show .signup-page-cta__disclaimer,.password-reset-page .login-page-cta__disclaimer,.password-reset-page .signup-page-cta__disclaimer {
+    font-size:var(--font-down-1);
+    margin-bottom:.5rem;
+  }
+}
+@media(width < 48rem) {
+  .login-fullpage .login-page-cta,.login-fullpage .signup-page-cta,.signup-fullpage .login-page-cta,.signup-fullpage .signup-page-cta,.invites-show .login-page-cta,.invites-show .signup-page-cta,.password-reset-page .login-page-cta,.password-reset-page .signup-page-cta {
+    font-size:var(--font-down-1);
+    padding:1rem;
+    padding-top:0;
+    padding-bottom:calc(env(safe-area-inset-bottom) + 1rem);
+  }
+  .login-fullpage .login-page-cta__buttons,.login-fullpage .signup-page-cta__buttons,.signup-fullpage .login-page-cta__buttons,.signup-fullpage .signup-page-cta__buttons,.invites-show .login-page-cta__buttons,.invites-show .signup-page-cta__buttons,.password-reset-page .login-page-cta__buttons,.password-reset-page .signup-page-cta__buttons {
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:.5rem;
+  }
+  .login-fullpage .login-page-cta button,.login-fullpage .signup-page-cta button,.signup-fullpage .login-page-cta button,.signup-fullpage .signup-page-cta button,.invites-show .login-page-cta button,.invites-show .signup-page-cta button,.password-reset-page .login-page-cta button,.password-reset-page .signup-page-cta button {
+    padding-block:.65rem;
+    width:fit-content;
+  }
+}
+.login-fullpage .login-page-cta__existing-account,.login-fullpage .login-page-cta__no-account-yet,.login-fullpage .signup-page-cta__existing-account,.login-fullpage .signup-page-cta__no-account-yet,.signup-fullpage .login-page-cta__existing-account,.signup-fullpage .login-page-cta__no-account-yet,.signup-fullpage .signup-page-cta__existing-account,.signup-fullpage .signup-page-cta__no-account-yet,.invites-show .login-page-cta__existing-account,.invites-show .login-page-cta__no-account-yet,.invites-show .signup-page-cta__existing-account,.invites-show .signup-page-cta__no-account-yet,.password-reset-page .login-page-cta__existing-account,.password-reset-page .login-page-cta__no-account-yet,.password-reset-page .signup-page-cta__existing-account,.password-reset-page .signup-page-cta__no-account-yet {
+  font-size:var(--font-down-1);
+  color:var(--primary-medium);
+}
+.login-fullpage .login-page-cta__disclaimer,.login-fullpage .signup-page-cta__disclaimer,.signup-fullpage .login-page-cta__disclaimer,.signup-fullpage .signup-page-cta__disclaimer,.invites-show .login-page-cta__disclaimer,.invites-show .signup-page-cta__disclaimer,.password-reset-page .login-page-cta__disclaimer,.password-reset-page .signup-page-cta__disclaimer {
+  color:var(--primary-medium);
+  margin-bottom:1rem;
+}
+.login-fullpage .second-factor .login-page-cta,.signup-fullpage .second-factor .login-page-cta,.invites-show .second-factor .login-page-cta,.password-reset-page .second-factor .login-page-cta {
+  margin-top:1em;
+}
+.login-fullpage .login-left-side,.signup-fullpage .login-left-side,.invites-show .login-left-side,.password-reset-page .login-left-side {
+  box-sizing:border-box;
+  width:100%;
+  max-width:500px;
+}
+@media(width >= 48rem) {
+  .login-fullpage .login-left-side,.signup-fullpage .login-left-side,.invites-show .login-left-side,.password-reset-page .login-left-side {
+    padding:3rem;
+    overflow:auto;
+  }
+}
+.login-fullpage .login-right-side,.signup-fullpage .login-right-side,.invites-show .login-right-side,.password-reset-page .login-right-side {
+  padding:3rem;
+  position:relative;
+}
+@media(width < 48rem) {
+  .login-fullpage .login-right-side,.signup-fullpage .login-right-side,.invites-show .login-right-side,.password-reset-page .login-right-side {
+    padding:1rem 0 0;
+    background:unset;
+    max-width:unset;
+  }
+}
+.login-fullpage .login-right-side::before,.signup-fullpage .login-right-side::before,.invites-show .login-right-side::before,.password-reset-page .login-right-side::before {
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  width:1px;
+  height:80%;
+  transform:translateY(-50%);
+  background-color:var(--primary-low);
+}
+.login-fullpage .input-group,.signup-fullpage .input-group,.invites-show .input-group,.password-reset-page .input-group {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  margin-bottom:1em;
+}
+.login-fullpage .input-group details.select-kit,.login-fullpage .input-group details.single-select,.login-fullpage .input-group details.combobox,.login-fullpage .input-group details.combo-box,.signup-fullpage .input-group details.select-kit,.signup-fullpage .input-group details.single-select,.signup-fullpage .input-group details.combobox,.signup-fullpage .input-group details.combo-box,.invites-show .input-group details.select-kit,.invites-show .input-group details.single-select,.invites-show .input-group details.combobox,.invites-show .input-group details.combo-box,.password-reset-page .input-group details.select-kit,.password-reset-page .input-group details.single-select,.password-reset-page .input-group details.combobox,.password-reset-page .input-group details.combo-box {
+  width:100%;
+}
+.login-fullpage .input-group input,.login-fullpage .input-group .select-kit-header,.login-fullpage .input-group textarea,.signup-fullpage .input-group input,.signup-fullpage .input-group .select-kit-header,.signup-fullpage .input-group textarea,.invites-show .input-group input,.invites-show .input-group .select-kit-header,.invites-show .input-group textarea,.password-reset-page .input-group input,.password-reset-page .input-group .select-kit-header,.password-reset-page .input-group textarea {
+  padding:.75em .77em;
+  min-width:250px;
+  margin-bottom:.25em;
+  width:100%;
+}
+.login-fullpage .input-group textarea,.signup-fullpage .input-group textarea,.invites-show .input-group textarea,.password-reset-page .input-group textarea {
+  border:var(--d-input-border);
+  border-radius:var(--d-input-border-radius);
+}
+.login-fullpage .input-group input:not(.filter-input):focus,.signup-fullpage .input-group input:not(.filter-input):focus,.invites-show .input-group input:not(.filter-input):focus,.password-reset-page .input-group input:not(.filter-input):focus {
+  outline:none;
+  border:1px solid var(--tertiary);
+  box-shadow:0 0 0 2px rgb(var(--tertiary-rgb), 0.25);
+}
+.login-fullpage .input-group input:disabled,.signup-fullpage .input-group input:disabled,.invites-show .input-group input:disabled,.password-reset-page .input-group input:disabled {
+  background-color:var(--primary-low);
+}
+.login-fullpage .input-group span.more-info,.signup-fullpage .input-group span.more-info,.invites-show .input-group span.more-info,.password-reset-page .input-group span.more-info {
+  color:var(--primary-medium);
+  min-height:1.4em;
+  overflow-wrap:anywhere;
+}
+.login-fullpage .input-group label.alt-placeholder,.login-fullpage .input-group .user-field.text label.control-label,.login-fullpage .input-group .user-field.dropdown label.control-label,.login-fullpage .input-group .user-field.multiselect label.control-label,.signup-fullpage .input-group label.alt-placeholder,.signup-fullpage .input-group .user-field.text label.control-label,.signup-fullpage .input-group .user-field.dropdown label.control-label,.signup-fullpage .input-group .user-field.multiselect label.control-label,.invites-show .input-group label.alt-placeholder,.invites-show .input-group .user-field.text label.control-label,.invites-show .input-group .user-field.dropdown label.control-label,.invites-show .input-group .user-field.multiselect label.control-label,.password-reset-page .input-group label.alt-placeholder,.password-reset-page .input-group .user-field.text label.control-label,.password-reset-page .input-group .user-field.dropdown label.control-label,.password-reset-page .input-group .user-field.multiselect label.control-label {
+  display:block;
+  color:var(--primary-medium);
+  font-size:16px;
+  font-weight:normal;
+  position:absolute;
+  pointer-events:none;
+  left:1em;
+  width:max-content;
+  max-width:calc(100% - 2em);
+  top:13px;
+  box-shadow:0 0 0 0 rgb(var(--tertiary-rgb), 0);
+  transition:.2s ease all;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.login-fullpage .input-group .user-field.text label.control-label,.login-fullpage .input-group .user-field.dropdown label.control-label,.login-fullpage .input-group .user-field.multiselect label.control-label,.login-fullpage .input-group .user-field.date label.control-label,.signup-fullpage .input-group .user-field.text label.control-label,.signup-fullpage .input-group .user-field.dropdown label.control-label,.signup-fullpage .input-group .user-field.multiselect label.control-label,.signup-fullpage .input-group .user-field.date label.control-label,.invites-show .input-group .user-field.text label.control-label,.invites-show .input-group .user-field.dropdown label.control-label,.invites-show .input-group .user-field.multiselect label.control-label,.invites-show .input-group .user-field.date label.control-label,.password-reset-page .input-group .user-field.text label.control-label,.password-reset-page .input-group .user-field.dropdown label.control-label,.password-reset-page .input-group .user-field.multiselect label.control-label,.password-reset-page .input-group .user-field.date label.control-label {
+  top:-8px;
+  left:.75em;
+  background-color:var(--secondary);
+  padding:0 .25em 0 .25em;
+  font-size:var(--font-down-1);
+}
+.login-fullpage .input-group .user-field.multiselect label.control-label,.login-fullpage .input-group .user-field.dropdown label.control-label,.signup-fullpage .input-group .user-field.multiselect label.control-label,.signup-fullpage .input-group .user-field.dropdown label.control-label,.invites-show .input-group .user-field.multiselect label.control-label,.invites-show .input-group .user-field.dropdown label.control-label,.password-reset-page .input-group .user-field.multiselect label.control-label,.password-reset-page .input-group .user-field.dropdown label.control-label {
+  z-index:301;
+}
+.login-fullpage .input-group .user-field.text label.control-label,.signup-fullpage .input-group .user-field.text label.control-label,.invites-show .input-group .user-field.text label.control-label,.password-reset-page .input-group .user-field.text label.control-label {
+  top:13px;
+}
+.login-fullpage .input-group .user-field.text:focus-within,.login-fullpage .input-group .user-field.dropdown:focus-within,.login-fullpage .input-group .user-field.multiselect:focus-within,.signup-fullpage .input-group .user-field.text:focus-within,.signup-fullpage .input-group .user-field.dropdown:focus-within,.signup-fullpage .input-group .user-field.multiselect:focus-within,.invites-show .input-group .user-field.text:focus-within,.invites-show .input-group .user-field.dropdown:focus-within,.invites-show .input-group .user-field.multiselect:focus-within,.password-reset-page .input-group .user-field.text:focus-within,.password-reset-page .input-group .user-field.dropdown:focus-within,.password-reset-page .input-group .user-field.multiselect:focus-within {
+  z-index:1000;
+}
+.login-fullpage .input-group input:focus+label.alt-placeholder,.login-fullpage .input-group input.value-entered+label.alt-placeholder,.signup-fullpage .input-group input:focus+label.alt-placeholder,.signup-fullpage .input-group input.value-entered+label.alt-placeholder,.invites-show .input-group input:focus+label.alt-placeholder,.invites-show .input-group input.value-entered+label.alt-placeholder,.password-reset-page .input-group input:focus+label.alt-placeholder,.password-reset-page .input-group input.value-entered+label.alt-placeholder {
+  top:-8px;
+  left:.75em;
+  background-color:var(--secondary);
+  padding:0 .25em 0 .25em;
+  font-size:var(--font-down-1);
+}
+.login-fullpage .input-group input.alt-placeholder:invalid,.signup-fullpage .input-group input.alt-placeholder:invalid,.invites-show .input-group input.alt-placeholder:invalid,.password-reset-page .input-group input.alt-placeholder:invalid {
+  color:var(--primary);
+}
+.login-fullpage .input-group .user-field.dropdown .more-info,.login-fullpage .input-group .user-field.dropdown .instructions,.login-fullpage .input-group .user-field.multiselect .more-info,.login-fullpage .input-group .user-field.multiselect .instructions,.signup-fullpage .input-group .user-field.dropdown .more-info,.signup-fullpage .input-group .user-field.dropdown .instructions,.signup-fullpage .input-group .user-field.multiselect .more-info,.signup-fullpage .input-group .user-field.multiselect .instructions,.invites-show .input-group .user-field.dropdown .more-info,.invites-show .input-group .user-field.dropdown .instructions,.invites-show .input-group .user-field.multiselect .more-info,.invites-show .input-group .user-field.multiselect .instructions,.password-reset-page .input-group .user-field.dropdown .more-info,.password-reset-page .input-group .user-field.dropdown .instructions,.password-reset-page .input-group .user-field.multiselect .more-info,.password-reset-page .input-group .user-field.multiselect .instructions {
+  opacity:1;
+}
+.login-fullpage .input-group #email-login-link,.signup-fullpage .input-group #email-login-link,.invites-show .input-group #email-login-link,.password-reset-page .input-group #email-login-link {
+  transition:opacity .5s;
+}
+.login-fullpage .input-group #email-login-link.no-login-filled,.signup-fullpage .input-group #email-login-link.no-login-filled,.invites-show .input-group #email-login-link.no-login-filled,.password-reset-page .input-group #email-login-link.no-login-filled {
+  opacity:0;
+  visibility:hidden;
+}
+.login-fullpage .input-group #email-login-link,.login-fullpage .input-group #one-time-code-link,.login-fullpage .input-group .login__password-links,.signup-fullpage .input-group #email-login-link,.signup-fullpage .input-group #one-time-code-link,.signup-fullpage .input-group .login__password-links,.invites-show .input-group #email-login-link,.invites-show .input-group #one-time-code-link,.invites-show .input-group .login__password-links,.password-reset-page .input-group #email-login-link,.password-reset-page .input-group #one-time-code-link,.password-reset-page .input-group .login__password-links {
+  font-size:var(--font-down-1);
+  display:flex;
+  justify-content:space-between;
+}
+.login-fullpage .input-group .tip:not(:empty)+label.more-info,.signup-fullpage .input-group .tip:not(:empty)+label.more-info,.invites-show .input-group .tip:not(:empty)+label.more-info,.password-reset-page .input-group .tip:not(:empty)+label.more-info {
+  display:none;
+}
+@media(width < 48rem) {
+  .login-fullpage .login-form,.login-fullpage #login-form,.signup-fullpage .login-form,.signup-fullpage #login-form,.invites-show .login-form,.invites-show #login-form,.password-reset-page .login-form,.password-reset-page #login-form {
+    margin:0;
+    padding:0 1rem;
+  }
+}
+.login-fullpage .login-form,.login-fullpage #login-form,.login-fullpage .invite-form,.signup-fullpage .login-form,.signup-fullpage #login-form,.signup-fullpage .invite-form,.invites-show .login-form,.invites-show #login-form,.invites-show .invite-form,.password-reset-page .login-form,.password-reset-page #login-form,.password-reset-page .invite-form {
+  margin-top:2em;
+  display:flex;
+  flex-direction:column;
+}
+.login-fullpage .login-form .create-account-associate-link,.login-fullpage #login-form .create-account-associate-link,.login-fullpage .invite-form .create-account-associate-link,.signup-fullpage .login-form .create-account-associate-link,.signup-fullpage #login-form .create-account-associate-link,.signup-fullpage .invite-form .create-account-associate-link,.invites-show .login-form .create-account-associate-link,.invites-show #login-form .create-account-associate-link,.invites-show .invite-form .create-account-associate-link,.password-reset-page .login-form .create-account-associate-link,.password-reset-page #login-form .create-account-associate-link,.password-reset-page .invite-form .create-account-associate-link {
+  order:1;
+}
+@media(width < 48rem) {
+  .login-fullpage .login-form .input-group,.login-fullpage #login-form .input-group,.login-fullpage .invite-form .input-group,.signup-fullpage .login-form .input-group,.signup-fullpage #login-form .input-group,.signup-fullpage .invite-form .input-group,.invites-show .login-form .input-group,.invites-show #login-form .input-group,.invites-show .invite-form .input-group,.password-reset-page .login-form .input-group,.password-reset-page #login-form .input-group,.password-reset-page .invite-form .input-group {
+    margin-bottom:1em;
+  }
+  .login-fullpage .login-form .input-group input,.login-fullpage #login-form .input-group input,.login-fullpage .invite-form .input-group input,.signup-fullpage .login-form .input-group input,.signup-fullpage #login-form .input-group input,.signup-fullpage .invite-form .input-group input,.invites-show .login-form .input-group input,.invites-show #login-form .input-group input,.invites-show .invite-form .input-group input,.password-reset-page .login-form .input-group input,.password-reset-page #login-form .input-group input,.password-reset-page .invite-form .input-group input {
+    height:2.5em;
+    margin-bottom:.25em;
+  }
+  .login-fullpage .login-form .input-group input:focus+label,.login-fullpage .login-form .input-group input.value-entered+label.alt-placeholder,.login-fullpage #login-form .input-group input:focus+label,.login-fullpage #login-form .input-group input.value-entered+label.alt-placeholder,.login-fullpage .invite-form .input-group input:focus+label,.login-fullpage .invite-form .input-group input.value-entered+label.alt-placeholder,.signup-fullpage .login-form .input-group input:focus+label,.signup-fullpage .login-form .input-group input.value-entered+label.alt-placeholder,.signup-fullpage #login-form .input-group input:focus+label,.signup-fullpage #login-form .input-group input.value-entered+label.alt-placeholder,.signup-fullpage .invite-form .input-group input:focus+label,.signup-fullpage .invite-form .input-group input.value-entered+label.alt-placeholder,.invites-show .login-form .input-group input:focus+label,.invites-show .login-form .input-group input.value-entered+label.alt-placeholder,.invites-show #login-form .input-group input:focus+label,.invites-show #login-form .input-group input.value-entered+label.alt-placeholder,.invites-show .invite-form .input-group input:focus+label,.invites-show .invite-form .input-group input.value-entered+label.alt-placeholder,.password-reset-page .login-form .input-group input:focus+label,.password-reset-page .login-form .input-group input.value-entered+label.alt-placeholder,.password-reset-page #login-form .input-group input:focus+label,.password-reset-page #login-form .input-group input.value-entered+label.alt-placeholder,.password-reset-page .invite-form .input-group input:focus+label,.password-reset-page .invite-form .input-group input.value-entered+label.alt-placeholder {
+    top:-10px;
+  }
+  .login-fullpage .login-form .input-group input.alt-placeholder:invalid,.login-fullpage #login-form .input-group input.alt-placeholder:invalid,.login-fullpage .invite-form .input-group input.alt-placeholder:invalid,.signup-fullpage .login-form .input-group input.alt-placeholder:invalid,.signup-fullpage #login-form .input-group input.alt-placeholder:invalid,.signup-fullpage .invite-form .input-group input.alt-placeholder:invalid,.invites-show .login-form .input-group input.alt-placeholder:invalid,.invites-show #login-form .input-group input.alt-placeholder:invalid,.invites-show .invite-form .input-group input.alt-placeholder:invalid,.password-reset-page .login-form .input-group input.alt-placeholder:invalid,.password-reset-page #login-form .input-group input.alt-placeholder:invalid,.password-reset-page .invite-form .input-group input.alt-placeholder:invalid {
+    color:var(--primary);
+  }
+  .login-fullpage .login-form .input-group label.more-info,.login-fullpage #login-form .input-group label.more-info,.login-fullpage .invite-form .input-group label.more-info,.signup-fullpage .login-form .input-group label.more-info,.signup-fullpage #login-form .input-group label.more-info,.signup-fullpage .invite-form .input-group label.more-info,.invites-show .login-form .input-group label.more-info,.invites-show #login-form .input-group label.more-info,.invites-show .invite-form .input-group label.more-info,.password-reset-page .login-form .input-group label.more-info,.password-reset-page #login-form .input-group label.more-info,.password-reset-page .invite-form .input-group label.more-info {
+    color:var(--primary-medium);
+  }
+  .login-fullpage .login-form .input-group label.alt-placeholder,.login-fullpage .login-form .input-group .user-field.text label.control-label,.login-fullpage #login-form .input-group label.alt-placeholder,.login-fullpage #login-form .input-group .user-field.text label.control-label,.login-fullpage .invite-form .input-group label.alt-placeholder,.login-fullpage .invite-form .input-group .user-field.text label.control-label,.signup-fullpage .login-form .input-group label.alt-placeholder,.signup-fullpage .login-form .input-group .user-field.text label.control-label,.signup-fullpage #login-form .input-group label.alt-placeholder,.signup-fullpage #login-form .input-group .user-field.text label.control-label,.signup-fullpage .invite-form .input-group label.alt-placeholder,.signup-fullpage .invite-form .input-group .user-field.text label.control-label,.invites-show .login-form .input-group label.alt-placeholder,.invites-show .login-form .input-group .user-field.text label.control-label,.invites-show #login-form .input-group label.alt-placeholder,.invites-show #login-form .input-group .user-field.text label.control-label,.invites-show .invite-form .input-group label.alt-placeholder,.invites-show .invite-form .input-group .user-field.text label.control-label,.password-reset-page .login-form .input-group label.alt-placeholder,.password-reset-page .login-form .input-group .user-field.text label.control-label,.password-reset-page #login-form .input-group label.alt-placeholder,.password-reset-page #login-form .input-group .user-field.text label.control-label,.password-reset-page .invite-form .input-group label.alt-placeholder,.password-reset-page .invite-form .input-group .user-field.text label.control-label {
+    top:11px;
+  }
+  .login-fullpage .login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.login-fullpage .login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.login-fullpage #login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.login-fullpage #login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.login-fullpage .invite-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.login-fullpage .invite-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.signup-fullpage .login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.signup-fullpage .login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.signup-fullpage #login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.signup-fullpage #login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.signup-fullpage .invite-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.signup-fullpage .invite-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.invites-show .login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.invites-show .login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.invites-show #login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.invites-show #login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.invites-show .invite-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.invites-show .invite-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.password-reset-page .login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.password-reset-page .login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.password-reset-page #login-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.password-reset-page #login-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label,.password-reset-page .invite-form .input-group div.user-field:not(.dropdown) .controls input:focus+label.alt-placeholder.control-label,.password-reset-page .invite-form .input-group div.user-field.value-entered:not(.dropdown) .controls label.alt-placeholder.control-label {
+    top:-10px;
+  }
+  .login-fullpage .login-form .input-group .user-field.dropdown label.control-label,.login-fullpage .login-form .input-group .user-field.multiselect label.control-label,.login-fullpage .login-form .input-group .user-field.date label.control-label,.login-fullpage #login-form .input-group .user-field.dropdown label.control-label,.login-fullpage #login-form .input-group .user-field.multiselect label.control-label,.login-fullpage #login-form .input-group .user-field.date label.control-label,.login-fullpage .invite-form .input-group .user-field.dropdown label.control-label,.login-fullpage .invite-form .input-group .user-field.multiselect label.control-label,.login-fullpage .invite-form .input-group .user-field.date label.control-label,.signup-fullpage .login-form .input-group .user-field.dropdown label.control-label,.signup-fullpage .login-form .input-group .user-field.multiselect label.control-label,.signup-fullpage .login-form .input-group .user-field.date label.control-label,.signup-fullpage #login-form .input-group .user-field.dropdown label.control-label,.signup-fullpage #login-form .input-group .user-field.multiselect label.control-label,.signup-fullpage #login-form .input-group .user-field.date label.control-label,.signup-fullpage .invite-form .input-group .user-field.dropdown label.control-label,.signup-fullpage .invite-form .input-group .user-field.multiselect label.control-label,.signup-fullpage .invite-form .input-group .user-field.date label.control-label,.invites-show .login-form .input-group .user-field.dropdown label.control-label,.invites-show .login-form .input-group .user-field.multiselect label.control-label,.invites-show .login-form .input-group .user-field.date label.control-label,.invites-show #login-form .input-group .user-field.dropdown label.control-label,.invites-show #login-form .input-group .user-field.multiselect label.control-label,.invites-show #login-form .input-group .user-field.date label.control-label,.invites-show .invite-form .input-group .user-field.dropdown label.control-label,.invites-show .invite-form .input-group .user-field.multiselect label.control-label,.invites-show .invite-form .input-group .user-field.date label.control-label,.password-reset-page .login-form .input-group .user-field.dropdown label.control-label,.password-reset-page .login-form .input-group .user-field.multiselect label.control-label,.password-reset-page .login-form .input-group .user-field.date label.control-label,.password-reset-page #login-form .input-group .user-field.dropdown label.control-label,.password-reset-page #login-form .input-group .user-field.multiselect label.control-label,.password-reset-page #login-form .input-group .user-field.date label.control-label,.password-reset-page .invite-form .input-group .user-field.dropdown label.control-label,.password-reset-page .invite-form .input-group .user-field.multiselect label.control-label,.password-reset-page .invite-form .input-group .user-field.date label.control-label {
+    top:-10px;
+  }
+}
+.login-fullpage #login-buttons,.signup-fullpage #login-buttons,.invites-show #login-buttons,.password-reset-page #login-buttons {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:1rem;
+  white-space:nowrap;
+}
+@media(width >= 40rem) {
+  .login-fullpage #login-buttons,.signup-fullpage #login-buttons,.invites-show #login-buttons,.password-reset-page #login-buttons {
+    height:100%;
+  }
+}
+@media(width < 48rem) {
+  .login-fullpage #login-buttons,.signup-fullpage #login-buttons,.invites-show #login-buttons,.password-reset-page #login-buttons {
+    flex-direction:row;
+    flex-wrap:wrap;
+    padding:0 1rem;
+    gap:.25em;
+    margin-bottom:1rem;
+  }
+  .login-fullpage #login-buttons .btn,.login-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,.d-modal.json-schema-editor-modal .je-ready .login-fullpage #login-buttons .json-editor-btn-add,.login-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready button,.d-modal.json-schema-editor-modal .je-ready .login-fullpage #login-buttons button,.signup-fullpage #login-buttons .btn,.signup-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,.d-modal.json-schema-editor-modal .je-ready .signup-fullpage #login-buttons .json-editor-btn-add,.signup-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready button,.d-modal.json-schema-editor-modal .je-ready .signup-fullpage #login-buttons button,.invites-show #login-buttons .btn,.invites-show #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,.d-modal.json-schema-editor-modal .je-ready .invites-show #login-buttons .json-editor-btn-add,.invites-show #login-buttons .d-modal.json-schema-editor-modal .je-ready button,.d-modal.json-schema-editor-modal .je-ready .invites-show #login-buttons button,.password-reset-page #login-buttons .btn,.password-reset-page #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,.d-modal.json-schema-editor-modal .je-ready .password-reset-page #login-buttons .json-editor-btn-add,.password-reset-page #login-buttons .d-modal.json-schema-editor-modal .je-ready button,.d-modal.json-schema-editor-modal .je-ready .password-reset-page #login-buttons button {
+    margin:0;
+    padding-block:.65rem;
+    border:1px solid var(--content-border-color);
+    flex:1 1 calc(50% - .25em);
+    font-size:var(--font-down-1);
+    white-space:nowrap;
+  }
+  .login-fullpage #login-buttons .btn:last-child,.login-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:last-child,.d-modal.json-schema-editor-modal .je-ready .login-fullpage #login-buttons .json-editor-btn-add:last-child,.login-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready button:last-child,.d-modal.json-schema-editor-modal .je-ready .login-fullpage #login-buttons button:last-child,.signup-fullpage #login-buttons .btn:last-child,.signup-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:last-child,.d-modal.json-schema-editor-modal .je-ready .signup-fullpage #login-buttons .json-editor-btn-add:last-child,.signup-fullpage #login-buttons .d-modal.json-schema-editor-modal .je-ready button:last-child,.d-modal.json-schema-editor-modal .je-ready .signup-fullpage #login-buttons button:last-child,.invites-show #login-buttons .btn:last-child,.invites-show #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:last-child,.d-modal.json-schema-editor-modal .je-ready .invites-show #login-buttons .json-editor-btn-add:last-child,.invites-show #login-buttons .d-modal.json-schema-editor-modal .je-ready button:last-child,.d-modal.json-schema-editor-modal .je-ready .invites-show #login-buttons button:last-child,.password-reset-page #login-buttons .btn:last-child,.password-reset-page #login-buttons .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:last-child,.d-modal.json-schema-editor-modal .je-ready .password-reset-page #login-buttons .json-editor-btn-add:last-child,.password-reset-page #login-buttons .d-modal.json-schema-editor-modal .je-ready button:last-child,.d-modal.json-schema-editor-modal .je-ready .password-reset-page #login-buttons button:last-child {
+    margin-right:auto;
+  }
+  .login-fullpage #login-buttons .discourse-id__wrapper,.signup-fullpage #login-buttons .discourse-id__wrapper,.invites-show #login-buttons .discourse-id__wrapper,.password-reset-page #login-buttons .discourse-id__wrapper {
+    flex:1 1 100%;
+  }
+}
+.login-fullpage #login-buttons .btn-social,.signup-fullpage #login-buttons .btn-social,.invites-show #login-buttons .btn-social,.password-reset-page #login-buttons .btn-social {
+  border:1px solid var(--content-border-color);
+  padding:.75em .77em;
+}
+.login-fullpage #login-buttons .btn-social.discourse_id,.signup-fullpage #login-buttons .btn-social.discourse_id,.invites-show #login-buttons .btn-social.discourse_id,.password-reset-page #login-buttons .btn-social.discourse_id {
+  border-color:var(--discourse_id-border);
+}
+.login-fullpage #login-buttons .discourse-id__wrapper,.signup-fullpage #login-buttons .discourse-id__wrapper,.invites-show #login-buttons .discourse-id__wrapper,.password-reset-page #login-buttons .discourse-id__wrapper {
+  display:flex;
+  justify-content:center;
+  flex-direction:column;
+}
+.login-fullpage #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix,.signup-fullpage #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix,.invites-show #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix,.password-reset-page #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.3rem;
+  padding-top:.5rem;
+  padding-bottom:.5rem;
+  color:var(--primary-500);
+  font-size:var(--font-down-1);
+}
+.login-fullpage #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix .btn-discourse-id__description,.signup-fullpage #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix .btn-discourse-id__description,.invites-show #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix .btn-discourse-id__description,.password-reset-page #login-buttons .discourse-id__wrapper .btn-discourse-id__suffix .btn-discourse-id__description {
+  max-width:175px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.login-fullpage .login-welcome-header,.signup-fullpage .login-welcome-header,.invites-show .login-welcome-header,.password-reset-page .login-welcome-header {
+  box-sizing:border-box;
+  width:100%;
+}
+@media(width < 48rem) {
+  .login-fullpage .login-welcome-header,.signup-fullpage .login-welcome-header,.invites-show .login-welcome-header,.password-reset-page .login-welcome-header {
+    padding:1rem;
+  }
+}
+.login-fullpage .btn-social-title,.signup-fullpage .btn-social-title,.invites-show .btn-social-title,.password-reset-page .btn-social-title {
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.login-fullpage .tip,.signup-fullpage .tip,.invites-show .tip,.password-reset-page .tip {
+  font-size:var(--font-down-1);
+  display:block;
+}
+.login-fullpage .tip.bad,.signup-fullpage .tip.bad,.invites-show .tip.bad,.password-reset-page .tip.bad {
+  color:var(--danger);
+}
+.login-fullpage .toggle-password-mask span,.signup-fullpage .toggle-password-mask span,.invites-show .toggle-password-mask span,.password-reset-page .toggle-password-mask span {
+  font-size:var(--font-down-1-rem);
+}
+.login-fullpage .more-info,.login-fullpage .instructions,.signup-fullpage .more-info,.signup-fullpage .instructions,.invites-show .more-info,.invites-show .instructions,.password-reset-page .more-info,.password-reset-page .instructions {
+  font-size:var(--font-down-1);
+  color:var(--primary-medium);
+  overflow-wrap:anywhere;
+}
+.login-fullpage .caps-lock-warning,.signup-fullpage .caps-lock-warning,.invites-show .caps-lock-warning,.password-reset-page .caps-lock-warning {
+  color:var(--danger);
+  font-size:var(--font-down-1);
+}
+@media(width < 48rem) {
+  .login-fullpage .caps-lock-warning,.signup-fullpage .caps-lock-warning,.invites-show .caps-lock-warning,.password-reset-page .caps-lock-warning {
+    display:none;
+  }
+}
+.login-fullpage .create-account__password-info,.signup-fullpage .create-account__password-info,.invites-show .create-account__password-info,.password-reset-page .create-account__password-info {
+  display:flex;
+  justify-content:space-between;
+}
+.login-fullpage .create-account__password-info .create-account__password-tip-validation,.signup-fullpage .create-account__password-info .create-account__password-tip-validation,.invites-show .create-account__password-info .create-account__password-tip-validation,.password-reset-page .create-account__password-info .create-account__password-tip-validation {
+  display:flex;
+}
+.login-fullpage .inline-spinner,.signup-fullpage .inline-spinner,.invites-show .inline-spinner,.password-reset-page .inline-spinner {
+  display:inline-flex;
+}
+.login-fullpage .invitation-cta,.signup-fullpage .invitation-cta,.invites-show .invitation-cta,.password-reset-page .invitation-cta {
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+.login-fullpage .invitation-cta__accept,.signup-fullpage .invitation-cta__accept,.invites-show .invitation-cta__accept,.password-reset-page .invitation-cta__accept {
+  width:100%;
+}
+.login-fullpage .invitation-cta__info,.signup-fullpage .invitation-cta__info,.invites-show .invitation-cta__info,.password-reset-page .invitation-cta__info {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  gap:.5rem;
+  line-height:1rem;
+  color:var(--primary-medium);
+}
+.login-fullpage .invitation-cta__sign-in,.signup-fullpage .invitation-cta__sign-in,.invites-show .invitation-cta__sign-in,.password-reset-page .invitation-cta__sign-in {
+  padding:0;
+  height:100%;
+  font-size:1rem;
+}
+@media(width >= 40rem) {
+  .login-fullpage:not(:has(.has-alt-auth)) .alert,.signup-fullpage:not(:has(.has-alt-auth)) .alert,.invites-show:not(:has(.has-alt-auth)) .alert,.password-reset-page:not(:has(.has-alt-auth)) .alert {
+    max-width:500px;
+  }
+}
+@media(width < 48rem) {
+  .login-fullpage .login-or-separator,.signup-fullpage .login-or-separator,.invites-show .login-or-separator,.password-reset-page .login-or-separator {
+    border-top:1px solid var(--content-border-color);
+    position:relative;
+    margin-block:1rem;
+  }
+  .login-fullpage .login-or-separator span,.signup-fullpage .login-or-separator span,.invites-show .login-or-separator span,.password-reset-page .login-or-separator span {
+    transform:translate(-50%, -50%);
+    position:absolute;
+    left:50%;
+    top:50%;
+    background:var(--secondary);
+    padding-inline:.5rem;
+    color:var(--primary-medium);
+    font-size:var(--font-down-1-rem);
+    text-transform:uppercase;
+  }
+}
+@media(40rem <= width < 48rem) {
+  .login-fullpage .has-alt-auth,.signup-fullpage .has-alt-auth,.invites-show .has-alt-auth,.password-reset-page .has-alt-auth {
+    flex-direction:column;
+    overflow:auto;
+    gap:0;
+  }
+  .login-fullpage .has-alt-auth .login-page-cta,.login-fullpage .has-alt-auth .signup-page-cta,.login-fullpage .has-alt-auth .btn-social,.signup-fullpage .has-alt-auth .login-page-cta,.signup-fullpage .has-alt-auth .signup-page-cta,.signup-fullpage .has-alt-auth .btn-social,.invites-show .has-alt-auth .login-page-cta,.invites-show .has-alt-auth .signup-page-cta,.invites-show .has-alt-auth .btn-social,.password-reset-page .has-alt-auth .login-page-cta,.password-reset-page .has-alt-auth .signup-page-cta,.password-reset-page .has-alt-auth .btn-social {
+    font-size:var(--font-down-1);
+  }
+  .login-fullpage .has-alt-auth .login-left-side,.signup-fullpage .has-alt-auth .login-left-side,.invites-show .has-alt-auth .login-left-side,.password-reset-page .has-alt-auth .login-left-side {
+    overflow:unset;
+    padding:1em;
+    max-width:unset;
+  }
+  .login-fullpage .has-alt-auth .login-right-side,.signup-fullpage .has-alt-auth .login-right-side,.invites-show .has-alt-auth .login-right-side,.password-reset-page .has-alt-auth .login-right-side {
+    padding:1em;
+    max-width:unset;
+  }
+  .login-fullpage .has-alt-auth .login-right-side::before,.signup-fullpage .has-alt-auth .login-right-side::before,.invites-show .has-alt-auth .login-right-side::before,.password-reset-page .has-alt-auth .login-right-side::before {
+    height:1px;
+    width:calc(100% - 2em);
+    left:1em;
+    top:0;
+  }
+  .login-fullpage .signup-progress-bar,.signup-fullpage .signup-progress-bar,.invites-show .signup-progress-bar,.password-reset-page .signup-progress-bar {
+    font-size:var(--font-down-1);
+  }
+}
+.invite-page .password-confirmation,.signup-fullpage .password-confirmation,.login-fullpage .password-confirmation {
+  display:none;
+}
+.invite-page .user-fields .input-group .user-field.text.value-entered label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.text input:focus+label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.text textarea:focus+label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.textarea.value-entered label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.textarea input:focus+label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.textarea textarea:focus+label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.text.value-entered label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.text input:focus+label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.text textarea:focus+label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.textarea.value-entered label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.textarea input:focus+label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.textarea textarea:focus+label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.text.value-entered label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.text input:focus+label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.text textarea:focus+label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.textarea.value-entered label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.textarea input:focus+label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.textarea textarea:focus+label.alt-placeholder.control-label {
+  top:-8px;
+  left:.75em;
+  background-color:var(--secondary);
+  padding:0 .25em 0 .25em;
+  font-size:14px;
+  color:var(--primary-medium);
+}
+.invite-page .user-fields .input-group .user-field.text label.alt-placeholder.control-label,.invite-page .user-fields .input-group .user-field.textarea label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.text label.alt-placeholder.control-label,.signup-fullpage .user-fields .input-group .user-field.textarea label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.text label.alt-placeholder.control-label,.login-fullpage .user-fields .input-group .user-field.textarea label.alt-placeholder.control-label {
+  color:var(--primary-medium);
+  font-size:16px;
+  position:absolute;
+  pointer-events:none;
+  top:12px;
+  transition:.2s ease all;
+  max-width:calc(100% - 2em);
+  white-space:nowrap;
+  display:inline-block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.invite-page .user-fields .input-group .user-field details:not(.has-selection) span.name,.invite-page .user-fields .input-group .user-field details:not(.has-selection) span.formatted-selection,.signup-fullpage .user-fields .input-group .user-field details:not(.has-selection) span.name,.signup-fullpage .user-fields .input-group .user-field details:not(.has-selection) span.formatted-selection,.login-fullpage .user-fields .input-group .user-field details:not(.has-selection) span.name,.login-fullpage .user-fields .input-group .user-field details:not(.has-selection) span.formatted-selection {
+  color:var(--primary-medium);
+}
+.invite-page .user-fields .input-group .user-field .select-kit-row span.name,.signup-fullpage .user-fields .input-group .user-field .select-kit-row span.name,.login-fullpage .user-fields .input-group .user-field .select-kit-row span.name {
+  color:var(--primary);
+}
+.invite-page .user-fields .input-group .user-field .select-kit.combo-box.is-expanded summary,.signup-fullpage .user-fields .input-group .user-field .select-kit.combo-box.is-expanded summary,.login-fullpage .user-fields .input-group .user-field .select-kit.combo-box.is-expanded summary {
+  outline:none;
+  border:1px solid var(--tertiary);
+  box-shadow:0 0 0 2px rgb(var(--tertiary-rgb), 0.25);
+}
+.invite-page .user-fields .input-group .user-field .controls .checkbox-label,.signup-fullpage .user-fields .input-group .user-field .controls .checkbox-label,.login-fullpage .user-fields .input-group .user-field .controls .checkbox-label {
+  display:flex;
+  align-items:center;
+}
+.invite-page .user-fields .input-group .user-field .controls .checkbox-label input[type=checkbox].ember-checkbox,.signup-fullpage .user-fields .input-group .user-field .controls .checkbox-label input[type=checkbox].ember-checkbox,.login-fullpage .user-fields .input-group .user-field .controls .checkbox-label input[type=checkbox].ember-checkbox {
+  width:1em !important;
+  min-width:unset;
+  margin-block:0;
+}
+@media(width < 48rem) {
+  .login-page #main-outlet,.login-page #main-outlet-wrapper,.signup-page #main-outlet,.signup-page #main-outlet-wrapper,.invite-page #main-outlet,.invite-page #main-outlet-wrapper {
+    padding:0;
+  }
+  .invites-show .login-welcome-header {
+    padding-inline:0;
+  }
+  .invites-show .signup-progress-bar {
+    margin-inline:0;
+  }
+  .signup-fullpage .signup-body .login-welcome-header {
+    padding-bottom:.25rem;
+    padding-top:0;
+  }
+}
+@media(width >= 40rem) {
+  .invites-show.container {
+    box-sizing:border-box;
+    box-shadow:none;
+    max-width:550px;
+  }
+}
+.login-form .required,.user-field .required,.invites-show .required {
+  vertical-align:top;
+  color:var(--danger);
+  font-weight:bold;
+  margin-left:.25em;
+}
+.user-invites-page .invite-error {
+  grid-column:1/span 2;
+}
+.user-invites-page .d-table.user-invite-list {
+  margin-top:var(--space-4);
+}
+.user-invites-page .d-table.user-invite-list .invite-link-target {
+  display:none;
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell.--overview .d-icon {
+  color:var(--primary-medium);
+  font-size:var(--font-down-1);
+  margin-right:var(--space-1);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell.--controls {
+  width:10%;
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell.invite-updated-at {
+  width:18%;
+}
+@media(width < 48rem) {
+  .user-invites-page .d-table.user-invite-list .d-table__cell.invite-updated-at {
+    width:auto;
+  }
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell.invite-expires-at {
+  width:20%;
+}
+@media(width < 48rem) {
+  .user-invites-page .d-table.user-invite-list .d-table__cell.invite-expires-at {
+    width:auto;
+  }
+}
+@media(width < 48rem) {
+  .user-invites-page .d-table.user-invite-list .d-table__cell .invite-shortkey {
+    max-width:70%;
+  }
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-description {
+  color:var(--primary-high);
+  margin-top:var(--space-1);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-details {
+  margin-left:var(--space-5);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-groups {
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-2);
+  row-gap:0;
+  margin-top:var(--space-2);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-topic {
+  margin-top:var(--space-2);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-extra {
+  font-size:var(--font-down-1);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-extra a {
+  color:var(--primary-very-high);
+}
+.user-invites-page .d-table.user-invite-list .d-table__cell .invite-extra-item-link {
+  display:inline-flex;
+  align-items:center;
+  color:var(--primary-high);
+}
+.user-invite-buttons {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5em;
+}
+.user-invite-search {
+  min-width:0;
+  margin-right:auto;
+}
+.user-invite-search input {
+  margin:0;
+  width:100%;
+}
+.admin-mcp__access-table .d-table__overview-name {
+  display:block;
+}
+@media(max-width: 700px) {
+  .admin-mcp__table .d-table__cell.--detail {
+    gap:var(--space-2);
+  }
+}
+.static-login .software-update-prompt,.wizard .software-update-prompt,.invite-page .software-update-prompt {
+  top:0;
+}
+@keyframes code-login-form-dice-roll {0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes code-login-form-step-in {from{opacity:0;transform:translateY(0.5rem)}to{opacity:1;transform:translateY(0)}}
+.code-login-form {
+  display:flex;
+  flex-direction:column;
+  gap:1em;
+}
+.code-login-form .login-welcome-header {
+  display:block;
+}
+.code-login-form .login-welcome-header .login-title {
+  text-wrap:pretty;
+}
+.code-login-form__email-step {
+  display:flex;
+  flex-direction:column;
+  gap:1em;
+}
+.code-login-form__code-step,.code-login-form__second-factor-step,.code-login-form__account-details-step,.code-login-form__user-fields-step,.code-login-form__signup-details-step,.code-login-form__pending-approval-step {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:1em;
+}
+@media(prefers-reduced-motion: no-preference) {
+  .code-login-form__code-step,.code-login-form__second-factor-step,.code-login-form__account-details-step,.code-login-form__user-fields-step,.code-login-form__signup-details-step,.code-login-form__pending-approval-step {
+    animation:code-login-form-step-in .25s ease;
+  }
+}
+.code-login-form__account-details-step .user-fields,.code-login-form__user-fields-step .user-fields {
+  align-self:stretch;
+  margin-top:.5em;
+}
+.code-login-form__account-fields {
+  display:grid;
+  grid-template-columns:minmax(0, 1fr);
+  align-self:stretch;
+  gap:1em .5em;
+}
+.code-login-form__account-fields.--with-username-generator {
+  grid-template-columns:minmax(0, 1fr) auto;
+}
+.code-login-form__account-fields .code-login-form__username-field {
+  display:grid;
+  grid-template-columns:subgrid;
+  grid-column:1/-1;
+  gap:.25em .5em;
+}
+.code-login-form__account-fields .code-login-form__username-field>label,.code-login-form__account-fields .code-login-form__username-field>.code-login-form__error {
+  grid-column:1/-1;
+}
+.code-login-form__account-fields .code-login-form__username-input {
+  display:contents;
+}
+.code-login-form__account-fields .code-login-form__name-field {
+  grid-column:1/-1;
+}
+.code-login-form__account-fields .code-login-form__password-field,.code-login-form__account-fields .code-login-form__create-password {
+  grid-column:1;
+}
+.code-login-form__account-fields .code-login-form__password-field input {
+  width:100%;
+  min-width:0;
+}
+.code-login-form__name-field {
+  display:flex;
+  flex-direction:column;
+  align-self:stretch;
+  gap:.25em;
+}
+.code-login-form__name {
+  width:100%;
+  margin:0;
+}
+.code-login-form__password-field {
+  align-self:stretch;
+  width:100%;
+  margin:0;
+}
+.code-login-form__new-account {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  align-self:stretch;
+  gap:1em;
+  padding:1em 0;
+}
+.code-login-form__avatar {
+  position:relative;
+  padding:0;
+  border:none;
+  background:none;
+  cursor:pointer;
+  line-height:0;
+}
+.code-login-form__avatar .avatar {
+  display:block;
+}
+.code-login-form__avatar-placeholder {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:144px;
+  height:144px;
+  border-radius:50%;
+  background:var(--primary-low);
+  color:var(--primary-medium);
+}
+.code-login-form__avatar-placeholder .d-icon {
+  width:50%;
+  height:50%;
+}
+.code-login-form__avatar-edit {
+  position:absolute;
+  right:0;
+  bottom:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:2em;
+  height:2em;
+  border-radius:50%;
+  background:var(--tertiary);
+  color:var(--secondary);
+}
+.code-login-form__avatar-edit .d-icon {
+  margin:0;
+}
+.code-login-form__username-field {
+  display:flex;
+  flex-direction:column;
+  align-self:stretch;
+  gap:.25em;
+}
+.code-login-form__username-input {
+  display:flex;
+  align-self:stretch;
+  gap:.5em;
+}
+.code-login-form__username-input input[type=text] {
+  flex:1 1 auto;
+  min-width:0;
+  width:auto;
+  margin:0;
+}
+.code-login-form__new-account-username {
+  width:100%;
+}
+@media(prefers-reduced-motion: no-preference) {
+  .code-login-form__new-account-username {
+    transition:color .2s ease;
+  }
+  .code-login-form__new-account-username.--swapping {
+    color:rgba(0,0,0,0);
+  }
+}
+.code-login-form__username-regen {
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+}
+.code-login-form__username-regen .d-icon {
+  font-size:var(--font-up-2);
+}
+@media(prefers-reduced-motion: no-preference) {
+  .code-login-form__username-regen.--rolling .d-icon {
+    animation:code-login-form-dice-roll .4s ease infinite;
+  }
+}
+.code-login-form__continue-to-site {
+  align-self:stretch;
+}
+.code-login-form__title {
+  margin:0;
+}
+.code-login-form__instructions {
+  margin:0;
+  color:var(--primary-high);
+}
+.code-login-form__error {
+  color:var(--danger);
+}
+.code-login-form__error:empty {
+  display:none;
+}
+.code-login-form__notice {
+  margin:0;
+  color:var(--success);
+}
+.code-login-form__actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5em;
+}
+.code-login-form__email-actions {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.5em;
+}
+.code-login-form+.signup-page-cta__disclaimer {
+  margin-top:1.5em;
+}
+@media(width < 48rem) {
+  .signup-page .signup-body.passwordless-signup .login-welcome-header {
+    padding:0;
+    margin-bottom:1rem;
+  }
+  .signup-page .signup-body.passwordless-signup .code-login-form__email-actions {
+    align-self:stretch;
+  }
+  .signup-page .signup-body.passwordless-signup .code-login-form__continue,.signup-page .signup-body.passwordless-signup .code-login-form__verify {
+    width:100%;
+  }
+}
+.invites-show {
+  box-sizing:border-box;
+  background:var(--secondary);
+  padding:1em;
+}
+@media(width >= 40rem) {
+  .invites-show {
+    padding:2rem 3rem;
+  }
+}
+.invites-show .success-info p:last-child {
+  margin-bottom:0;
+}
+.invites-show .invited-by {
+  display:flex;
+  align-items:center;
+  gap:.5em;
+  margin:1em 0;
+  font-size:var(--font-down-1);
+}
+.invites-show .invited-by p {
+  margin:0;
+}
+.invites-show .user-info {
+  align-items:center;
+  gap:.5em;
+  margin:0;
+}
+.invites-show .invited-by .avatar {
+  width:30px;
+  height:30px;
+}
+.invites-show .create-account__password-info {
+  display:flex;
+  justify-content:space-between;
+}
+.invites-show .create-account__password-tip-validation {
+  display:flex;
+  flex-direction:column;
+}
+.invites-show .invitation-cta {
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  margin-top:1rem;
+}
+@media(width < 40rem) {
+  .invites-show .invitation-cta {
+    flex-direction:column;
+    align-items:flex-start;
+    margin-top:2rem;
+  }
+}
+.invites-show .instructions {
+  color:var(--primary-medium);
+}
+.invites-show .disclaimer {
+  color:var(--primary-medium);
+  margin-top:.5em;
+}
+.invites-show .invite-form form {
+  display:flex;
+  flex-direction:column;
+}
+.invites-show .invite-form form .input-group.email-input,.invites-show .invite-form form .input-group.username-input,.invites-show .invite-form form .input-group.name-input.name-required {
+  order:-1;
+}
+@media(width < 40rem) {
+  .invites-show .signup-progress-bar {
+    margin:0;
+  }
+}
+.invite-page {
+  background:var(--secondary);
+}
+.invites-show,#simple-container .invite-error {
+  max-width:500px;
+  padding:2rem 3rem;
+  background:var(--secondary);
+  margin:0 auto;
+}
+@media(width < 48rem) {
+  .invites-show,#simple-container .invite-error {
+    margin:1em auto 1em auto;
+    padding:1rem;
+  }
+}
+#simple-container .invite-error .error-info {
+  text-align:center;
+}
+#simple-container .invite-error .error-image {
+  text-align:center;
+  padding-bottom:1em;
+}

@@ -2365,6 +2365,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(asset),
         )
         .route("/assets/sidebar.js", get(asset))
+        .route("/assets/invite.js", get(asset))
+        .route("/assets/user-invited.js", get(asset))
         .route("/assets/admin.css", get(asset))
         .route("/assets/admin.js", get(asset))
         .route("/assets/admin-dashboard.js", get(asset))

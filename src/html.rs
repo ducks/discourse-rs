@@ -294,6 +294,9 @@ pub struct Chrome {
     /// A route of ALL_PAGES_EXCLUDED_ROUTES (the full-page search, login,
     /// signup, ...): no header search button.
     pub hide_search_button: bool,
+    /// hideApplicationHeaderButtons("login", "signup") (the invite page):
+    /// no log in or sign up buttons.
+    pub hide_auth_buttons: bool,
     /// The mobile view's full-page chat: the header's logo gives way to
     /// chat's (ChatHeader: back to the forum, the Chat heading).
     pub chat_header: String,
