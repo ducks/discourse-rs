@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, moderator, admin) VALUES (906, 'Fixture906', NULL, 1, now() - interval '1 day', now() - interval '1 day', 0, 1, 0, now() + interval '30 days', TRUE, FALSE), (907, 'Fixture907', NULL, 1, now() - interval '1 day', now() - interval '1 day', 0, 1, 0, now() + interval '30 days', FALSE, TRUE)"
+  ],
+  "run_jobs": [
+    "admin_confirmation_email"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/invites/show/Fixture907.json",
+      "params": {}
+    }
+  ]
+}

@@ -13,7 +13,7 @@ use crate::i18n::I18n;
 use crate::{AppError, Unsupported};
 
 /// `UserHistory.actions[:grant_moderation]`
-const GRANT_MODERATION: i32 = 34;
+pub const GRANT_MODERATION: i32 = 34;
 /// `Group::AUTO_GROUPS`: the staff groups, with who belongs in each.
 const STAFF_GROUPS: [(i32, &str, Option<&str>); 3] = [
     (1, "admins", Some("admin")),

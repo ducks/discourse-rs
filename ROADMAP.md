@@ -1867,7 +1867,7 @@ route table has been made, so this list may be short.
     allowlist, a suspended user's message, the email RecordInvalid
     failure, groups linked to a provider's groups, the associate page,
     Discourse ID's revoke endpoint and revoking its account
-192. `feat/invites` L: InvitesController (/invites, invite links,
+192. ~~`feat/invites`~~ (done, 192a-f) L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email
     addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
@@ -1892,9 +1892,8 @@ route table has been made, so this list may be short.
     login code for an invite (/session/login-code(/verify) with
     invite_key; plain code logins still refuse), redeeming on activation
     (EmailToken.confirm), invalidating on password reset, invite-only
-    ReviewableUser, invite codes at signup. Refused: redeeming admin and
-    moderator invites (grant_moderation!, AdminConfirmation), user fields
-    and staged users on redemption
+    ReviewableUser, invite codes at signup. Refused: user fields and
+    staged users on redemption
     192c. ~~`feat/invites-elsewhere`~~ (done) M: adding group members by
     email (cannot_add_emails, the invites with skip_email, the rate limit
     message), inviting to a message by email (Topic#invite's
@@ -1922,6 +1921,11 @@ route table has been made, so this list may be short.
     bulk_invite_succeeded or _failed message with its log) and
     ProcessBulkInviteEmails. Refused: user fields and locales in the CSV
     (staged users for them), the bulk upload modal on the Invites tab
+    192f. ~~`feat/invites-staff`~~ (done) S: redeeming admin and
+    moderator invites (InviteRedeemer's grant_moderator_from_invite and
+    create_admin_grant_confirmation: a new user starts as a moderator,
+    an existing one is granted moderation, an admin invite logs the
+    grant and asks the inviter to confirm admin by email)
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a
     compatibility layer, not a gap in the port's own pages, which get
     live updates over pg-bus's /bus already (MessageBus on pg-bus, so
