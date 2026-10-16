@@ -1001,7 +1001,7 @@ pub async fn create_user(
         &mut tx,
         &settings,
         &state.i18n,
-        &crate::pretty_text::Host::from_state(&state),
+        &state,
         &crate::signup::Signup {
             name: name.as_deref(),
             email: &email,

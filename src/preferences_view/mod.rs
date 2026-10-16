@@ -382,6 +382,32 @@ fn associated_accounts(p: &Prefs<'_>) -> Result<String, AppError> {
         ));
         return Ok(out);
     };
+    // The associate-account-confirm modal's strings, for an account the
+    // callback kept to connect (preferences.js).
+    let mut providers = serde_json::Map::new();
+    for method in crate::auth::enabled(p.s)? {
+        providers.insert(
+            method.name.to_string(),
+            serde_json::Value::String(t(cx, &format!("login.{}.name", method.name))),
+        );
+    }
+    let confirm = serde_json::json!({
+        "title": t(cx, "user.associated_accounts.confirm_modal_title"),
+        "disconnect": t(cx, "user.associated_accounts.confirm_description.disconnect"),
+        "account_specific": t(cx, "user.associated_accounts.confirm_description.account_specific"),
+        "generic": t(cx, "user.associated_accounts.confirm_description.generic"),
+        "connect": t(cx, "user.associated_accounts.connect"),
+        "cancel": t(cx, "user.associated_accounts.cancel"),
+        "providers": providers,
+    });
+    out = out.replacen(
+        "data-setting-name=\"user-associated-accounts\"",
+        &format!(
+            "data-setting-name=\"user-associated-accounts\" data-associate=\"{}\"",
+            escape(&confirm.to_string())
+        ),
+        1,
+    );
     out.push_str("<table class=\"associated-accounts\"><tbody>");
     for method in crate::auth::enabled(p.s)? {
         let account = accounts.iter().find(|a| a["name"] == method.name);

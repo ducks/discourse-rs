@@ -1596,7 +1596,73 @@
   document.addEventListener("change", syncShown);
   document.addEventListener("prefs-change", syncShown);
 
+  function interpolate(text, values) {
+    return String(text || "").replace(/%\{(\w+)\}/g, function (m, k) {
+      return values[k] === undefined ? m : values[k];
+    });
+  }
+
+  // routes/associate-account: /associate/:token sends the reader here
+  // with the token; the kept account is read and the
+  // associate-account-confirm modal shown over the account tab.
+  function associateFromUrl() {
+    var params = new URLSearchParams(location.search);
+    var token = params.get("associate");
+    var section = document.querySelector(".pref-associated-accounts[data-associate]");
+    if (!token || !section) {
+      return;
+    }
+    params.delete("associate");
+    var rest = params.toString();
+    history.replaceState(history.state, "", location.pathname + (rest ? "?" + rest : ""));
+    var l = {};
+    try {
+      l = JSON.parse(section.dataset.associate);
+    } catch (e) {
+      l = {};
+    }
+    ajax("GET", "/associate/" + encodeURIComponent(token) + ".json")
+      .then(function (model) {
+        var provider = (l.providers || {})[model.provider_name] || "[en.login." + model.provider_name + ".name]";
+        // The modal's paragraphs; the dialog wraps its message in one.
+        var paragraphs = [];
+        if (model.existing_account_description) {
+          paragraphs.push(
+            escape(interpolate(l.disconnect, { provider: provider, account_description: model.existing_account_description }))
+          );
+        }
+        paragraphs.push(
+          escape(
+            model.account_description
+              ? interpolate(l.account_specific, { provider: provider, account_description: model.account_description })
+              : interpolate(l.generic, { provider: provider })
+          )
+        );
+        var message = paragraphs.join("</p><p>");
+        Discourse.dialog.confirm({
+          title: interpolate(l.title, { provider: provider }),
+          message: message,
+          confirmLabel: l.connect,
+          cancelLabel: l.cancel,
+          confirmClass: "btn-primary",
+          didConfirm: function () {
+            ajax("POST", "/associate/" + encodeURIComponent(model.token))
+              .then(function (result) {
+                if (result && result.success) {
+                  location.reload();
+                } else {
+                  Discourse.dialog.alert(escape((result && result.error) || ""));
+                }
+              })
+              .catch(popupAjaxError);
+          },
+        });
+      })
+      .catch(popupAjaxError);
+  }
+
   Discourse.onPage(function () {
+    associateFromUrl();
     pushSetup();
     // send_shortcut's meta key: Cmd on a Mac (formatShortcut("mod")).
     if (/Mac|iPhone|iPad/.test(navigator.platform)) {

@@ -1,0 +1,60 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "user.id",
+    "oauth2_json_username_path": "user.login",
+    "oauth2_json_name_path": "user.name",
+    "oauth2_json_email_path": "user.mail",
+    "oauth2_json_email_verified_path": "verified",
+    "oauth2_scope": "read",
+    "oauth2_enabled": true,
+    "use_admin_ip_allowlist": true
+  },
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"access-9\",\"token_type\":\"Bearer\"}"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"user\":{\"id\":5151,\"login\":\"admin\",\"name\":\"Admin\",\"mail\":\"admin@example.com\"},\"verified\":true}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ],
+  "setup": [
+    "INSERT INTO screened_ip_addresses (ip_address, action_type, created_at, updated_at) VALUES ('203.0.113.0/24', 3, now(), now())"
+  ]
+}

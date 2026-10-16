@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "settings": {
+    "discourse_id_client_id": "did-client",
+    "discourse_id_client_secret": "did-secret",
+    "enable_discourse_id": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/auth/discourse_id/revoke"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/discourse_id/revoke?identifier=abc&timestamp=soon&signature="
+    }
+  ]
+}

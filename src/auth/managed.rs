@@ -284,18 +284,12 @@ impl AuthResult {
             out.insert("requires_invite".into(), json!(true));
             return Ok(out);
         }
-        if let Some(user_id) = self.user_id {
-            let suspended: bool = sqlx::query_scalar(
-                "SELECT suspended_till IS NOT NULL AND suspended_till > now() FROM users WHERE id = $1",
-            )
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if suspended {
-                return Err(
-                    Unsupported("a suspended user's external login (suspended_message)").into(),
-                );
-            }
+        if let Some(user_id) = self.user_id
+            && let Some(message) = suspended_message(conn, i18n, user_id).await?
+        {
+            out.insert("suspended".into(), json!(true));
+            out.insert("suspended_message".into(), json!(message));
+            return Ok(out);
         }
         if self.omniauth_disallow_totp {
             out.insert("omniauth_disallow_totp".into(), json!(true));
@@ -362,6 +356,60 @@ impl AuthResult {
         }
         Ok(out)
     }
+}
+
+/// `User#suspended_message`: None unless suspended; the date it ends and
+/// the latest suspension's reason (its first line).
+pub async fn suspended_message(
+    conn: &mut PgConnection,
+    i18n: &crate::i18n::I18n,
+    user_id: i32,
+) -> Result<Option<String>, AppError> {
+    // UserHistory.actions[:suspend_user]
+    const SUSPEND_USER: i32 = 10;
+    let row: Option<(chrono::NaiveDateTime, bool)> = sqlx::query_as(
+        "SELECT suspended_till, suspended_till > now() + interval '100 years' FROM users \
+         WHERE id = $1 AND suspended_till IS NOT NULL AND suspended_till > now()",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((till, forever)) = row else {
+        return Ok(None);
+    };
+    let details: Option<Option<String>> = sqlx::query_scalar(
+        "SELECT details FROM user_histories WHERE target_user_id = $1 AND action = $2 \
+         ORDER BY id DESC LIMIT 1",
+    )
+    .bind(user_id)
+    .bind(SUSPEND_USER)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let reason = match details.flatten().filter(|d| !crate::ruby::is_blank(d)) {
+        None => None,
+        Some(d) if d.contains(['<', '>', '&', '"', '\'']) => {
+            return Err(Unsupported("penalty reasons with markup (sanitize_staff_reason)").into());
+        }
+        // sanitize_staff_reason's <br> for each newline, the first part.
+        Some(d) => Some(d.split('\n').next().unwrap_or_default().to_string()),
+    };
+    let key = match (&reason, forever) {
+        (None, _) => "login.suspended",
+        (Some(_), true) => "login.suspended_with_reason_forever",
+        (Some(_), false) => "login.suspended_with_reason",
+    };
+    // I18n.l(suspended_till, format: :date_only): "%B %-d, %Y".
+    let date = till.format("%B %-d, %Y").to_string();
+    Ok(Some(
+        i18n.t_with(
+            key,
+            &[
+                ("date", date.as_str()),
+                ("reason", reason.as_deref().unwrap_or("")),
+            ],
+        )
+        .unwrap_or_default(),
+    ))
 }
 
 /// `User.find_by_email(email)`: any of a user's addresses.
@@ -580,13 +628,14 @@ pub async fn retrieve_profile(
 
 /// `apply_user_attributes!`: the username, email and name the provider
 /// overrides on the user (settings or the authenticator), saved when one
-/// changed.
+/// changed. Some(the RecordInvalid's messages) when the email can't be
+/// saved; the username change before it stays.
 pub async fn apply_user_attributes(
     conn: &mut PgConnection,
     cx: &crate::discourse_connect::Ctx<'_>,
     result: &AuthResult,
     user_id: i32,
-) -> Result<(), AppError> {
+) -> Result<Option<String>, AppError> {
     let s = cx.settings;
     let (username, email, name): (String, Option<String>, Option<String>) = sqlx::query_as(
         "SELECT u.username, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\"), u.name \
@@ -611,13 +660,30 @@ pub async fn apply_user_attributes(
         && let Some(given) = result.email().filter(|e| !e.trim().is_empty())
         && email.as_deref() != Some(given.as_str())
     {
-        if crate::discourse_connect::email_error(conn, s, &given, Some(user_id))
+        // The primary UserEmail's first error (EmailValidator, then
+        // unique_email), as validates_associated words it.
+        let error = if !crate::accounts::valid_email(&given) {
+            Some(cx.i18n.t("user.email.invalid").unwrap_or("is invalid."))
+        } else if !crate::signup::email_allowed(s, &given)? {
+            Some(
+                cx.i18n
+                    .t("user.email.not_allowed")
+                    .unwrap_or("is not allowed from that email provider."),
+            )
+        } else if crate::discourse_connect::email_error(conn, s, &given, Some(user_id))
             .await?
             .is_some()
         {
-            return Err(
-                Unsupported("an external login's email another user has (RecordInvalid)").into(),
-            );
+            Some(
+                cx.i18n
+                    .t("activerecord.errors.messages.taken")
+                    .unwrap_or("has already been taken"),
+            )
+        } else {
+            None
+        };
+        if let Some(error) = error {
+            return Ok(Some(format!("Primary email {error}")));
         }
         new_email = Some(given);
     }
@@ -632,6 +698,33 @@ pub async fn apply_user_attributes(
         crate::discourse_connect::save_email_and_name(conn, cx, user_id, new_email, new_name)
             .await?;
     }
+    Ok(None)
+}
+
+/// `GroupHistory.actions`
+const ADD_USER_TO_GROUP: i32 = 2;
+const REMOVE_USER_FROM_GROUP: i32 = 3;
+
+/// GroupActionLogger's log by the system user, with the associated
+/// group's label as the subject.
+async fn log_group_change(
+    conn: &mut PgConnection,
+    group_id: i32,
+    user_id: i32,
+    action: i32,
+    subject: &str,
+) -> Result<(), AppError> {
+    sqlx::query(
+        "INSERT INTO group_histories (group_id, acting_user_id, target_user_id, action, subject, \
+                                      created_at, updated_at) \
+         VALUES ($1, -1, $2, $3, $4, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(group_id)
+    .bind(user_id)
+    .bind(action)
+    .bind(subject)
+    .execute(&mut *conn)
+    .await?;
     Ok(())
 }
 
@@ -641,6 +734,7 @@ pub async fn apply_user_attributes(
 /// them as they are).
 pub async fn apply_associated_attributes(
     conn: &mut PgConnection,
+    state: &crate::AppState,
     s: &SiteSettings,
     result: &AuthResult,
     user_id: i32,
@@ -692,40 +786,101 @@ pub async fn apply_associated_attributes(
         .bind(user_id)
         .fetch_all(&mut *conn)
         .await?;
-        let changed: Vec<i64> = ids
-            .iter()
-            .filter(|id| !current.contains(id))
-            .chain(current.iter().filter(|id| !ids.contains(id)))
-            .copied()
-            .collect();
-        let linked: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM group_associated_groups WHERE associated_group_id = ANY($1))",
-        )
-        .bind(&changed)
-        .fetch_one(&mut *conn)
-        .await?;
-        if linked {
-            return Err(
-                Unsupported("groups linked to a provider's groups (add_automatically)").into(),
-            );
-        }
-        sqlx::query(
-            "DELETE FROM user_associated_groups WHERE user_id = $1 AND NOT (associated_group_id = ANY($2))",
+        let host = crate::pretty_text::Host::from_state(state);
+        let promotion = crate::promotion::Ctx {
+            settings: s,
+            i18n: &state.i18n,
+            host: &host,
+            config: &state.config,
+        };
+        let cx = crate::group_manager::Cx {
+            state,
+            promotion: &promotion,
+        };
+        // The join rows no longer wanted, destroyed one by one: each's
+        // before_destroy (remove_from_associated_groups) takes the user
+        // out of every linked group no other of their rows links them to.
+        let removed: Vec<(i64, String)> = sqlx::query_as(
+            "SELECT uag.id, ag.provider_name || ':' || ag.name FROM user_associated_groups uag \
+             JOIN associated_groups ag ON ag.id = uag.associated_group_id \
+             WHERE uag.user_id = $1 AND NOT (uag.associated_group_id = ANY($2)) ORDER BY uag.id",
         )
         .bind(user_id)
         .bind(&ids)
-        .execute(&mut *conn)
+        .fetch_all(&mut *conn)
         .await?;
-        for id in &ids {
-            if !current.contains(id) {
-                sqlx::query(
-                    "INSERT INTO user_associated_groups (user_id, associated_group_id, created_at, updated_at) \
-                     VALUES ($1, $2, now(), now())",
-                )
-                .bind(user_id)
-                .bind(id)
+        for (uag_id, label) in removed {
+            let groups: Vec<i32> = sqlx::query_scalar(
+                "SELECT g.id FROM groups g \
+                 WHERE EXISTS (SELECT 1 FROM group_associated_groups WHERE group_id = g.id) \
+                 AND NOT EXISTS (SELECT 1 FROM user_associated_groups uag \
+                   JOIN group_associated_groups gag ON gag.associated_group_id = uag.associated_group_id \
+                   WHERE uag.user_id = $1 AND uag.id <> $2 AND gag.group_id = g.id) \
+                 ORDER BY g.id",
+            )
+            .bind(user_id)
+            .bind(uag_id)
+            .fetch_all(&mut *conn)
+            .await?;
+            for group_id in groups {
+                let Some(group) = crate::group_manager::find(&mut *conn, group_id).await? else {
+                    continue;
+                };
+                // remove_automatically: a member removed, the removal logged.
+                let gone =
+                    crate::group_manager::remove_many(&mut *conn, &cx, &group, &[user_id]).await?;
+                if !gone.is_empty() {
+                    log_group_change(
+                        &mut *conn,
+                        group_id,
+                        user_id,
+                        REMOVE_USER_FROM_GROUP,
+                        &label,
+                    )
+                    .await?;
+                }
+            }
+            sqlx::query("DELETE FROM user_associated_groups WHERE id = $1")
+                .bind(uag_id)
                 .execute(&mut *conn)
                 .await?;
+        }
+        // The new join rows; each's after_commit (add_to_associated_groups)
+        // adds the user to the groups its associated group links.
+        for id in &ids {
+            if current.contains(id) {
+                continue;
+            }
+            sqlx::query(
+                "INSERT INTO user_associated_groups (user_id, associated_group_id, created_at, updated_at) \
+                 VALUES ($1, $2, now(), now())",
+            )
+            .bind(user_id)
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+        }
+        for id in ids.iter().filter(|id| !current.contains(id)) {
+            let linked: Vec<(i32, String)> = sqlx::query_as(
+                "SELECT gag.group_id::int, ag.provider_name || ':' || ag.name FROM group_associated_groups gag \
+                 JOIN associated_groups ag ON ag.id = gag.associated_group_id \
+                 WHERE gag.associated_group_id = $1 ORDER BY gag.id",
+            )
+            .bind(id)
+            .fetch_all(&mut *conn)
+            .await?;
+            for (group_id, label) in linked {
+                let Some(group) = crate::group_manager::find(&mut *conn, group_id).await? else {
+                    continue;
+                };
+                // add_automatically: a non-member added, the addition logged.
+                let added =
+                    crate::group_manager::add_many(&mut *conn, &cx, &group, &[user_id], false)
+                        .await?;
+                if !added.is_empty() {
+                    log_group_change(&mut *conn, group_id, user_id, ADD_USER_TO_GROUP, &label)
+                        .await?;
+                }
             }
         }
         sqlx::query(
