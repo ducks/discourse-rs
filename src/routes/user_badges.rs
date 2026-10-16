@@ -470,10 +470,7 @@ pub async fn put_user_tail(
             )
             .await
         }
-        rest => match super::user_preferences::refused_tail("PUT", rest) {
-            Some(what) => Err(crate::Unsupported(what).into()),
-            None => Ok(super::topics::not_found_response(&state.0)),
-        },
+        _ => Ok(super::topics::not_found_response(&state.0)),
     }
 }
 

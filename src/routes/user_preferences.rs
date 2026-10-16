@@ -309,16 +309,6 @@ pub async fn check_emails(
     .into_response())
 }
 
-/// The preference endpoints under `/u/:username/` other items port, by
-/// method and path (`.json` or not): what is refused.
-pub fn refused_tail(method: &str, rest: &str) -> Option<&'static str> {
-    let rest = rest.strip_suffix(".json").unwrap_or(rest);
-    Some(match (method, rest) {
-        ("POST", "preferences/revoke-account") => "revoking an associated account (191)",
-        _ => return None,
-    })
-}
-
 /// POST and DELETE /u/:username/*rest: the email endpoints, the
 /// preference endpoints other items port refused; no other route.
 pub async fn post_tail(
@@ -338,6 +328,23 @@ pub async fn post_tail(
             state, &incoming, username, headers, uri, body,
         )
         .await;
+    }
+    if matches!(
+        rest.as_str(),
+        "preferences/revoke-account" | "preferences/revoke-account.json"
+    ) {
+        let p = crate::params::parse(uri.query(), &headers, &body);
+        let form: Vec<(String, String)> = p
+            .iter()
+            .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+            .collect();
+        if !super::session::csrf_ok(&state, &headers, &form, uri.path(), "POST") {
+            return Ok(super::session::bad_csrf());
+        }
+        if incoming.guardian.is_anonymous() {
+            return Ok(super::login_required::not_logged_in(&state));
+        }
+        return super::omniauth::revoke_account(&state, &incoming.guardian, &username, &p).await;
     }
     tail(
         "POST",
@@ -397,10 +404,7 @@ async fn tail(
         )
         .await;
     }
-    match refused_tail(method, &rest) {
-        Some(what) => Err(Unsupported(what).into()),
-        None => Ok(super::topics::not_found_response(&state)),
-    }
+    Ok(super::topics::not_found_response(&state))
 }
 
 /// `/u/:username/preferences(/<tab>)(.json)`: what the tab path names.

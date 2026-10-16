@@ -21,6 +21,8 @@ pub mod auth_providers;
 pub mod chat;
 pub mod lazy_videos;
 pub mod local_dates;
+pub mod oauth2_basic;
+pub mod openid_connect;
 pub mod poll;
 pub mod presence;
 pub mod reactions;

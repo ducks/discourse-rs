@@ -1,0 +1,49 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "user.id",
+    "oauth2_json_username_path": "user.login",
+    "oauth2_json_name_path": "user.name",
+    "oauth2_json_email_path": "user.mail",
+    "oauth2_send_auth_header": false,
+    "oauth2_enabled": true
+  },
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+      "body": "access_token=access-2&token_type=bearer"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"user\":{\"id\":\"abc-7\",\"login\":\"brand new\",\"name\":\"\",\"mail\":\"New.Person@Example.com\"}}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic?origin=%2Ft%2Fwelcome%2F5"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

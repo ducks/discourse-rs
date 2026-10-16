@@ -259,8 +259,45 @@ pub struct LoginRequiredPage {
     pub local_logins: bool,
     /// DiscourseConnect is on: the login route sends the browser to it.
     pub discourse_connect: bool,
+    /// The enabled external logins' buttons (login-buttons).
+    pub external_logins: Vec<LoginButton>,
     pub csrf_token: String,
 }
+
+/// An external login's button (the login-buttons component).
+pub struct LoginButton {
+    pub name: String,
+    /// `title_override`, else `login.<name>.title`.
+    pub title: String,
+    /// The icon, inlined.
+    pub icon: String,
+}
+
+/// The enabled authenticators' buttons, as LoginMethod describes them.
+fn login_buttons(state: &AppState, settings: &SiteSettings) -> Result<Vec<LoginButton>, AppError> {
+    let mut out = Vec::new();
+    if settings.get("enable_discourse_connect")?.truthy() {
+        return Ok(out);
+    }
+    for p in crate::auth::enabled(settings)? {
+        let title = match p.title_setting {
+            Some(setting) => settings.get(setting)?.to_s(),
+            None => state
+                .i18n
+                .t(&format!("js.login.{}.title", p.name))
+                .unwrap_or(p.name)
+                .to_string(),
+        };
+        let icon = crate::svg_sprite::raw_svg(p.icon.unwrap_or("right-to-bracket"))?;
+        out.push(LoginButton {
+            name: p.name.to_string(),
+            title,
+            icon,
+        });
+    }
+    Ok(out)
+}
+
 /// The login page: what `/login` shows, and what the front page shows
 /// while login is required.
 pub async fn login_page(
@@ -311,6 +348,7 @@ pub async fn login_page(
         local_logins: settings.get("enable_local_logins")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy(),
         discourse_connect: settings.get("enable_discourse_connect")?.truthy(),
+        external_logins: login_buttons(state, settings)?,
         csrf_token,
     };
     let mut response = (

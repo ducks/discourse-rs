@@ -1,0 +1,55 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "auth_overrides_name": true,
+    "oauth2_client_id": "basic-client",
+    "oauth2_client_secret": "basic-secret",
+    "oauth2_authorize_url": "http://fixtures.localhost:8099/authorize",
+    "oauth2_token_url": "http://fixtures.localhost:8099/token",
+    "oauth2_user_json_url": "http://fixtures.localhost:8099/user.json",
+    "oauth2_json_user_id_path": "id",
+    "oauth2_json_username_path": "login",
+    "oauth2_json_name_path": "name",
+    "oauth2_json_email_path": "mail",
+    "oauth2_json_email_verified_path": "verified",
+    "oauth2_json_groups_path": "groups",
+    "oauth2_user_field_mappings": "[{\"path\":\"dept\",\"user_field_id\":9601}]",
+    "oauth2_enabled": true
+  },
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (9601, 'Department', 'Where you work', 0, true, false, false, false, 1, 0, now(), now())"
+  ],
+  "remote": {
+    "/token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"access_token\":\"access-5\"}"
+    },
+    "/user.json": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"id\":5,\"login\":\"user1\",\"name\":\"User Renamed\",\"mail\":\"user1@example.com\",\"verified\":\"TRUE\",\"groups\":[\"devs\",\"ops\",\"devs\"],\"dept\":\"Engineering\"}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

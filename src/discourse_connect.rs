@@ -872,7 +872,7 @@ fn valid_locale(locale: &str) -> bool {
 
 /// `user_profile.bio_raw = bio; user_profile.save!`: cooked before the
 /// save, the hotlinked images pulled after the grace period.
-async fn save_bio(
+pub(crate) async fn save_bio(
     conn: &mut PgConnection,
     cx: &Ctx<'_>,
     user_id: i32,
@@ -1065,6 +1065,39 @@ async fn save_user(
     .await
 }
 
+/// `UsernameChanger.override(user, username)` for a user by id.
+pub(crate) async fn override_username_of(
+    conn: &mut PgConnection,
+    cx: &Ctx<'_>,
+    user_id: i32,
+    new_username: &str,
+) -> Result<(), AppError> {
+    let user = load_user(conn, user_id).await?.ok_or(Unsupported(
+        "overriding the username of a user that vanished",
+    ))?;
+    override_username(conn, cx, &user, new_username).await
+}
+
+/// `user.email = email; user.name = name; user.save!` for what an
+/// external login overrides.
+pub(crate) async fn save_email_and_name(
+    conn: &mut PgConnection,
+    cx: &Ctx<'_>,
+    user_id: i32,
+    email: Option<String>,
+    name: Option<String>,
+) -> Result<(), AppError> {
+    let user = load_user(conn, user_id)
+        .await?
+        .ok_or(Unsupported("saving a user that vanished"))?;
+    let pending = Pending {
+        email,
+        name,
+        ..Default::default()
+    };
+    save_user(conn, cx, &user, &pending).await
+}
+
 /// `UsernameChanger.override(user, username)`
 async fn override_username(
     conn: &mut PgConnection,
@@ -1141,7 +1174,7 @@ async fn set_automatic_groups(
 
 /// The first reason the primary email is refused (`Some(None)` when it is
 /// blank), as User's validation of it would.
-async fn email_error(
+pub(crate) async fn email_error(
     conn: &mut PgConnection,
     s: &SiteSettings,
     email: &str,

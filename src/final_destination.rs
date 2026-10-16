@@ -446,6 +446,13 @@ impl Fetcher<'_> {
     /// the connection made only to an address the SSRF check allows, the
     /// headers sent as given, no redirects followed.
     pub async fn post(&self, req: &Post<'_>) -> Result<Posted, AppError> {
+        self.send(reqwest::Method::POST, req).await
+    }
+
+    /// A request of any method through `FinalDestination::FaradayAdapter`
+    /// (the OAuth strategies' token and user info requests), as `post`
+    /// makes it.
+    pub async fn send(&self, method: reqwest::Method, req: &Post<'_>) -> Result<Posted, AppError> {
         let Some((host, port)) = post_target(req.url) else {
             return Ok(Posted::Failed(format!("bad URI(is not URI?): {}", req.url)));
         };
@@ -465,7 +472,7 @@ impl Fetcher<'_> {
             .danger_accept_invalid_certs(!req.verify_certificate)
             .resolve_to_addrs(&host, &addrs)
             .build()?;
-        let mut request = client.post(req.url);
+        let mut request = client.request(method, req.url);
         for (name, value) in req.headers {
             request = request.header(name.as_str(), value.as_str());
         }
