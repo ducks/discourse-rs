@@ -630,3 +630,42 @@ pub async fn update_slug(
         }
     }
 }
+
+/// DELETE /categories/:id(.json): categories#destroy.
+pub async fn destroy(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(super::session::bad_csrf());
+    }
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(c) = fetch_category(&mut conn, &s, id_param(&id)).await? else {
+        return Ok(not_found(&state));
+    };
+    if !cs::can_delete(&mut conn, &s, &guardian, &c).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(&state);
+    let cx = crate::category_writes::Cx {
+        host: &host,
+        bus: &state.bus,
+        settings: &s,
+    };
+    let mut tx = state.pool.begin().await?;
+    let deleted = crate::category_writes::Deleted::read(&mut tx, &cx, c.id).await?;
+    crate::category_writes::destroy(&mut tx, &cx, c.id).await?;
+    deleted.log(&mut tx, user_id, c.id).await?;
+    tx.commit().await?;
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}

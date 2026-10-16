@@ -71,7 +71,7 @@ pub async fn all_settings(
     // upload setting's dimensions as fix_upload_dimensions does (recorded
     // for the config areas' include_hidden: true).
     if filters.names.is_some() && filters.allowed_hidden.is_some() {
-        fix_upload_dimensions(&mut *conn, cx).await?;
+        fix_upload_dimensions(&mut *conn, cx, true).await?;
     }
     let filtering =
         filters.categories.as_ref().is_some_and(|c| !c.is_empty()) || filters.plugin.is_some();
@@ -141,6 +141,11 @@ fn yaml_json(v: &Yaml) -> Json {
 /// HiddenProvider#all: `hidden: true`, shadowed by a present GlobalSetting,
 /// or named in the `hide_settings` of an upcoming change that is enabled
 /// (UpcomingChanges.settings_hidden_while_enabled).
+/// Whether all_settings leaves the setting out without include_hidden.
+pub(crate) fn is_hidden(cx: &Context<'_>, def: &Definition) -> Result<bool, AppError> {
+    hidden(cx, def)
+}
+
 fn hidden(cx: &Context<'_>, def: &Definition) -> Result<bool, AppError> {
     if opt(def, "hidden").is_some_and(|v| v.as_bool() == Some(true)) {
         return Ok(true);
@@ -810,9 +815,10 @@ async fn placeholder(
 pub(crate) async fn fix_upload_dimensions(
     conn: &mut PgConnection,
     cx: &Context<'_>,
+    include_hidden: bool,
 ) -> Result<(), AppError> {
     for def in cx.defs.iter() {
-        if !matches!(def.data_type, DataType::Upload) {
+        if !matches!(def.data_type, DataType::Upload) || (!include_hidden && hidden(cx, def)?) {
             continue;
         }
         let mut value = cx.settings.get(&def.name)?.to_s();

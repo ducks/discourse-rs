@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "settings": {
+    "general_category_id": "2",
+    "topic_voting_enabled": "true"
+  },
+  "setup": [
+    "UPDATE topics SET category_id = 4 WHERE category_id = 2 AND id <> 1",
+    "UPDATE categories SET topic_count = 0 WHERE id = 2",
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (2, now(), now())",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (2, 10, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (2, 4, 3) ON CONFLICT (category_id, user_id) DO UPDATE SET notification_level = 3",
+    "INSERT INTO permalinks (url, category_id, created_at, updated_at) VALUES ('c/old-feedback', 2, now(), now())",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 2, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 503)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/categories/site-feedback.json"
+    }
+  ]
+}

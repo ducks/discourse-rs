@@ -1,0 +1,25 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Short Lived",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "permissions": {
+          "staff": 1
+        },
+        "custom_fields": {
+          "note": "x"
+        },
+        "allowed_tag_groups": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/categories/35.json"
+    }
+  ]
+}
