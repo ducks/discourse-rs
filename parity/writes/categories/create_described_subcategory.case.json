@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Help Desk",
+        "slug": "help",
+        "color": "F7941D",
+        "text_color": "000000",
+        "parent_category_id": 4,
+        "description": "Ask the team for help with *anything*.",
+        "style_type": "emoji",
+        "emoji": "sos",
+        "position": 1,
+        "topic_template": "What happened?",
+        "num_featured_topics": 5,
+        "search_priority": 4,
+        "default_view": "top",
+        "auto_close_hours": 24,
+        "custom_fields": {
+          "note": "first",
+          "flag": true
+        }
+      }
+    }
+  ]
+}

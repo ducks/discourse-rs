@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Inner Circle",
+        "color": "BF1E2E",
+        "text_color": "FFFFFF",
+        "permissions": {
+          "staff": 1,
+          "trust_level_1": 3
+        }
+      }
+    }
+  ]
+}

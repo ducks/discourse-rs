@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Fresh Ideas",
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    }
+  ]
+}

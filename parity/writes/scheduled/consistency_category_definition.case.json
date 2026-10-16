@@ -1,5 +1,4 @@
 {
-  "not_yet": "creating a category's definition topic",
   "user": null,
   "setup": [
     "UPDATE categories SET topic_id = NULL WHERE id = 2"

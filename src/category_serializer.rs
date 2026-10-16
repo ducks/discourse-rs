@@ -42,6 +42,11 @@ const BOOLEAN_FIELDS: &[&str] = &[
     "disable_topic_resorting",
 ];
 
+/// Whether a category custom field is registered as boolean.
+pub fn is_boolean_field(name: &str) -> bool {
+    BOOLEAN_FIELDS.contains(&name)
+}
+
 /// `HasCustomFields::Helpers::CUSTOM_FIELD_TRUE`
 fn custom_field_true(v: &str) -> bool {
     matches!(v, "1" | "t" | "true" | "T" | "True" | "TRUE")
@@ -597,7 +602,7 @@ pub async fn serialize(
     // CategorySerializer
     out.insert("locale".into(), json!(extra.locale));
     let group_permissions = if can_edit_category {
-        Some(group_permissions(conn, s, guardian, id, row.read_restricted).await?)
+        Some(group_permissions(conn, guardian, id, row.read_restricted).await?)
     } else {
         None
     };
@@ -738,7 +743,7 @@ pub async fn serialize(
         json!(extra.default_slow_mode_seconds),
     );
     if can_edit_category {
-        let settings = category_type_settings(conn, s, id).await?;
+        let settings = category_type_settings(s, id)?;
         out.insert("category_type_settings".into(), settings);
         out.insert(
             "available_category_types".into(),
@@ -890,12 +895,10 @@ pub async fn with_registry<T>(
 /// category without any.
 async fn group_permissions(
     conn: &mut PgConnection,
-    s: &SiteSettings,
     guardian: &Guardian,
     id: i32,
     read_restricted: bool,
 ) -> Result<Vec<Value>, AppError> {
-    let _ = s;
     let visible = crate::groups::visible_groups_scope(guardian, "g", true, false);
     let rows: Vec<(i32, String, i32)> = sqlx::query_as(&format!(
         "SELECT cg.permission_type, g.name, cg.group_id FROM category_groups cg \
@@ -931,12 +934,7 @@ async fn group_permissions(
 /// `CategorySerializer#category_type_settings`: each matching type's
 /// stored category settings; only Events has any
 /// (`read_category_settings`, from `calendar_categories`).
-async fn category_type_settings(
-    conn: &mut PgConnection,
-    s: &SiteSettings,
-    id: i32,
-) -> Result<Value, AppError> {
-    let _ = conn;
+fn category_type_settings(s: &SiteSettings, id: i32) -> Result<Value, AppError> {
     let mut out = Map::new();
     let events = s
         .get("events_calendar_categories")?

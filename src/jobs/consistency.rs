@@ -47,7 +47,7 @@ pub async fn ensure_db_consistency(state: &AppState) -> Result<(), AppError> {
     logged(ENSURE, "User", user(c).await)?;
     logged(ENSURE, "UserAvatar", user_avatar(c).await)?;
     logged(ENSURE, "UserEmail", user_email(c, &s).await)?;
-    logged(ENSURE, "Category", category(c).await)?;
+    logged(ENSURE, "Category", category(c, state, &s).await)?;
     logged(ENSURE, "TopicThumbnail", topic_thumbnail(c).await)?;
     logged(ENSURE, "UserAction", user_action(c, last_seen).await)?;
     logged(
@@ -140,22 +140,6 @@ async fn preflight(
         .await?,
         "removing unused avatar thumbnails (OptimizedImage#destroy)",
     )?;
-    // Categories left without a live definition topic (after the step's
-    // own UPDATE) get one created (create_category_definition), unless
-    // they skip it or are the uncategorized category.
-    let needs_definition: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM categories c \
-           LEFT JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
-           WHERE t.id IS NULL AND c.id <> $1 \
-             AND NOT EXISTS (SELECT 1 FROM category_custom_fields f WHERE f.category_id = c.id \
-                               AND f.name = 'skip_category_definition' AND f.value IN ('t', 'true')))",
-    )
-    .bind(s.get("uncategorized_category_id")?.to_i() as i32)
-    .fetch_one(&mut *conn)
-    .await?;
-    if needs_definition {
-        return Err(Unsupported("creating a category's definition topic").into());
-    }
     Ok(())
 }
 
@@ -440,16 +424,38 @@ async fn user_email(conn: &mut PgConnection, s: &SiteSettings) -> Result<(), App
 }
 
 /// `Category.ensure_consistency!`: categories whose definition topic is
-/// gone lose the link (destroying and creating definitions is refused up
-/// front).
-async fn category(conn: &mut PgConnection) -> Result<(), AppError> {
+/// gone lose the link, then every category but uncategorized without one
+/// gets it created (create_category_definition, which skips those marked
+/// skip_category_definition). Destroying a definition without its first
+/// post is refused up front.
+async fn category(
+    conn: &mut PgConnection,
+    state: &AppState,
+    s: &SiteSettings,
+) -> Result<(), AppError> {
     exec(
-        conn,
+        &mut *conn,
         "UPDATE categories c SET topic_id = NULL WHERE c.id IN ( \
            SELECT c2.id FROM categories c2 LEFT JOIN topics t ON t.id = c2.topic_id AND t.deleted_at IS NULL \
            WHERE t.id IS NULL AND c2.topic_id IS NOT NULL)",
     )
-    .await
+    .await?;
+    let ids: Vec<i32> = sqlx::query_scalar(
+        "SELECT c.id FROM categories c \
+         LEFT JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
+         WHERE t.id IS NULL AND c.id <> $1 ORDER BY c.id",
+    )
+    .bind(s.get("uncategorized_category_id")?.to_i() as i32)
+    .fetch_all(&mut *conn)
+    .await?;
+    let cx = crate::category_writes::Cx { state, settings: s };
+    for id in ids {
+        // Topic.transaction
+        let mut tx = sqlx::Connection::begin(&mut *conn).await?;
+        crate::category_writes::create_category_definition(&mut tx, &cx, id).await?;
+        tx.commit().await?;
+    }
+    Ok(())
 }
 
 /// `TopicThumbnail.ensure_consistency!`: thumbnails of missing uploads or

@@ -1,0 +1,65 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "general",
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Colors",
+        "color": "nope",
+        "text_color": "12",
+        "num_featured_topics": 0,
+        "slug": "none",
+        "auto_close_hours": -1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Too Deep",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 34
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Uncat Child",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 1,
+        "emoji": "not_an_emoji_at_all"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Wordy",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  ]
+}

@@ -1980,8 +1980,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/tags/filter/search", get(tag_search::search))
         .route("/tags/filter/search.json", get(tag_search::search))
-        .route("/categories", cached!(get(list::categories)))
-        .route("/categories.json", cached!(get(list::categories_json)))
+        .route(
+            "/categories",
+            cached!(get(list::categories)).post(categories::create),
+        )
+        .route(
+            "/categories.json",
+            cached!(get(list::categories_json)).post(categories::create),
+        )
         .route("/emojis.json", get(emojis::index))
         .route("/assets/emoji-data.json", get(emojis::client_data))
         .route("/emojis/search-aliases", get(emojis::search_aliases))
