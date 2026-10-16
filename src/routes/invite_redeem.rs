@@ -132,9 +132,6 @@ pub(crate) async fn redeem(
     if !invite.redeemable(&mut *conn).await? {
         return Ok(Redeemed::Nil);
     }
-    if invite.admin || invite.moderator {
-        return Err(Unsupported("redeeming admin and moderator invites").into());
-    }
     // ensure_email_is_present!
     let given = args.email.clone().filter(|e| !crate::ruby::is_blank(e));
     let email = match (&given, args.redeeming_user) {
@@ -242,10 +239,64 @@ async fn redeem_in(
         ),
     )
     .await?;
+    // grant_moderator_from_invite, create_admin_grant_confirmation
+    let inviter_staff: Option<(bool, bool)> =
+        sqlx::query_as("SELECT admin, admin OR moderator FROM users WHERE id = $1")
+            .bind(invite.invited_by_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let (inviter_admin, inviter_staff) = inviter_staff.unwrap_or((false, false));
+    if invite.moderator && inviter_staff && !user_is_moderator(&mut *conn, user_id).await? {
+        crate::roles::grant_moderation(&mut *conn, &state.i18n, user_id).await?;
+    }
+    if admin_invite_grantable(&mut *conn, s, &invite, inviter_admin).await? {
+        if !user_is_moderator(&mut *conn, user_id).await? {
+            crate::roles::grant_moderation(&mut *conn, &state.i18n, user_id).await?;
+        }
+        crate::roles::log(
+            &mut *conn,
+            invite.invited_by_id,
+            user_id,
+            crate::roles::GRANT_MODERATION,
+        )
+        .await?;
+        if crate::admin_confirmation::can_grant_admin(&mut *conn, invite.invited_by_id, user_id)
+            .await?
+        {
+            crate::admin_confirmation::create(&mut *conn, user_id, invite.invited_by_id).await?;
+        }
+    }
     Ok(Ok(Redeemed::User {
         id: user_id,
         created,
     }))
+}
+
+async fn user_is_moderator(conn: &mut PgConnection, user_id: i32) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar("SELECT moderator FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(conn)
+        .await
+}
+
+/// `InviteRedeemer.admin_invite_grantable?(invite)`: an admin invite from
+/// an admin with the roles invite modal.
+async fn admin_invite_grantable(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    invite: &Invite,
+    inviter_admin: bool,
+) -> Result<bool, AppError> {
+    if !invite.admin || !inviter_admin {
+        return Ok(false);
+    }
+    let Some(inviter) = SessionUser::load(&mut *conn, invite.invited_by_id).await? else {
+        return Ok(false);
+    };
+    let guardian = Guardian::for_user(&mut *conn, &inviter).await?;
+    Ok(guardian
+        .upcoming_change_enabled(&mut *conn, s, "enable_invite_modal_with_roles")
+        .await?)
 }
 
 /// `add_to_private_topics_if_invited`: the messages any invite to this
@@ -598,6 +649,16 @@ async fn create_user_from_invite(
     if crate::accounts::ip_blocked(&mut *conn, &ip).await? {
         return Err(Unsupported("invite redemption validation errors other than the email").into());
     }
+    // A moderator invite from staff, or an admin invite it may grant:
+    // the user starts as a moderator.
+    let inviter: Option<(bool, bool)> =
+        sqlx::query_as("SELECT admin, admin OR moderator FROM users WHERE id = $1")
+            .bind(invite.invited_by_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let (inviter_admin, inviter_staff) = inviter.unwrap_or((false, false));
+    let moderator = (invite.moderator && inviter_staff)
+        || admin_invite_grantable(&mut *conn, s, invite, inviter_admin).await?;
     let payloads = crate::web_hooks::Payloads {
         settings: s,
         i18n: &state.i18n,
@@ -617,7 +678,7 @@ async fn create_user_from_invite(
             locale: None,
             active: false,
             approved,
-            moderator: false,
+            moderator,
             staged: false,
             custom_fields: &[],
         },
