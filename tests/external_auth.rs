@@ -45,10 +45,23 @@ impl Reply {
 
 impl Browser {
     async fn send(&mut self, method: Method, path: &str, body: &str) -> Reply {
+        self.send_with(method, path, body, &[]).await
+    }
+
+    async fn send_with(
+        &mut self,
+        method: Method,
+        path: &str,
+        body: &str,
+        headers: &[(&str, &str)],
+    ) -> Reply {
         let mut request = Request::builder()
             .method(method)
             .uri(path)
             .header(header::HOST, "test.localhost");
+        for (k, v) in headers {
+            request = request.header(*k, *v);
+        }
         if !self.cookies.is_empty() {
             let cookie: Vec<String> = self
                 .cookies
@@ -1135,4 +1148,322 @@ async fn twitter_signs_each_step_and_leaves_signup_data() {
         replay.location(),
         "/auth/failure?message=invalid_credentials&strategy=twitter"
     );
+}
+
+/// An RS256 JWT signed with `key`.
+fn signed_jwt(claims: &Value, key: &rsa::RsaPrivateKey) -> String {
+    use base64::Engine;
+    use sha2::Digest;
+    let e = base64::engine::general_purpose::URL_SAFE_NO_PAD;
+    let input = format!(
+        "{}.{}",
+        e.encode(json!({"alg": "RS256", "typ": "JWT"}).to_string()),
+        e.encode(claims.to_string())
+    );
+    let mut digest_info = vec![
+        0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+        0x05, 0x00, 0x04, 0x20,
+    ];
+    digest_info.extend_from_slice(&sha2::Sha256::digest(input.as_bytes()));
+    let signature = key
+        .sign(rsa::Pkcs1v15Sign::new_unprefixed(), &digest_info)
+        .unwrap();
+    format!("{input}.{}", e.encode(signature))
+}
+
+async fn lti_site(db: &TestDb) -> (AppState, rsa::RsaPrivateKey) {
+    use rsa::pkcs8::EncodePublicKey;
+    let key = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 1024).unwrap();
+    let public = key
+        .to_public_key()
+        .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
+        .unwrap();
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    for (k, v) in [
+        ("lti_client_ids", "client-a"),
+        ("lti_authorization_endpoint", "https://lms.example/auth"),
+        ("lti_platform_issuer_id", "https://lms.example"),
+        ("lti_platform_public_key", public.as_str()),
+        ("lti_email_verified", "t"),
+        ("lti_enabled", "t"),
+    ] {
+        set(&state, k, v).await;
+    }
+    (state, key)
+}
+
+/// The platform's launch: initiate, then the ID token posted back
+/// across sites and resubmitted from the tool's page.
+async fn lti_launch(
+    browser: &mut Browser,
+    key: &rsa::RsaPrivateKey,
+    sub: &str,
+    email: &str,
+    custom: Value,
+) -> Reply {
+    let start = browser
+        .get("/auth/lti/initiate?iss=https%3A%2F%2Flms.example&login_hint=hint&target_link_uri=%2Ft%2Fwelcome%2F5")
+        .await;
+    assert_eq!(start.status, StatusCode::FOUND, "{}", start.body);
+    let authorize = start.location();
+    assert!(
+        authorize.starts_with("https://lms.example/auth?client_id=client-a&login_hint=hint&nonce=")
+    );
+    assert_eq!(query_param(&authorize, "response_mode"), "form_post");
+    let now = chrono::Utc::now().timestamp();
+    let token = signed_jwt(
+        &json!({
+            "iss": "https://lms.example",
+            "aud": "client-a",
+            "sub": sub,
+            "exp": now + 300,
+            "nbf": now - 10,
+            "nonce": query_param(&authorize, "nonce"),
+            "email": email,
+            "name": "Lti Learner",
+            "https://purl.imsglobal.org/spec/lti/claim/custom": custom,
+        }),
+        key,
+    );
+    let state_param = query_param(&authorize, "state");
+    let form = |samesite: bool| {
+        let mut s = form_urlencoded::Serializer::new(String::new());
+        if samesite {
+            s.append_pair("samesite", "true");
+        }
+        s.append_pair("state", &state_param)
+            .append_pair("id_token", &token)
+            .finish()
+    };
+    // The platform's POST comes without the session: the page resubmits it.
+    let page = browser
+        .send(Method::POST, "/auth/lti/callback", &form(false))
+        .await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(
+        page.body
+            .contains("<input type='hidden' name='samesite' value='true'/>")
+    );
+    assert!(page.body.contains("submit-on-load-lti.js"));
+    browser
+        .send(Method::POST, "/auth/lti/callback", &form(true))
+        .await
+}
+
+#[tokio::test]
+async fn lti_launch_signs_up_with_the_invite_as_destination() {
+    let db = TestDb::new().await;
+    let (state, key) = lti_site(&db).await;
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let back = lti_launch(
+        &mut browser,
+        &key,
+        "learner-1",
+        "learner@example.com",
+        json!({"discourse_invite_link": "/invites/abc123"}),
+    )
+    .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    let data = browser.authentication_data();
+    assert_eq!(data["email"], "learner@example.com");
+    assert_eq!(data["email_valid"], true);
+    assert_eq!(data["destination_url"], "/invites/abc123");
+    let extra: Value = sqlx::query_scalar(
+        "SELECT extra FROM user_associated_accounts WHERE provider_name = 'lti' AND provider_uid = 'learner-1'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(extra["raw_info"]["name"], "Lti Learner");
+    // A token signed by another key is refused.
+    let other = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 1024).unwrap();
+    let refused = lti_launch(
+        &mut browser,
+        &other,
+        "learner-2",
+        "x@example.com",
+        json!({}),
+    )
+    .await;
+    assert_eq!(
+        refused.location(),
+        "/auth/failure?message=token_invalid&strategy=lti"
+    );
+}
+
+#[tokio::test]
+async fn lti_launch_for_a_logged_in_user_connects_the_account() {
+    let db = TestDb::new().await;
+    let (state, key) = lti_site(&db).await;
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let csrf = browser.get("/session/csrf.json").await;
+    let csrf: Value = serde_json::from_str(&csrf.body).unwrap();
+    let login = form_urlencoded::Serializer::new(String::new())
+        .append_pair("login", "user1")
+        .append_pair("password", "password")
+        .append_pair("authenticity_token", csrf["csrf"].as_str().unwrap())
+        .finish();
+    let logged_in = browser
+        .send_with(
+            Method::POST,
+            "/session",
+            &login,
+            &[("x-requested-with", "XMLHttpRequest")],
+        )
+        .await;
+    assert!(browser.cookie("_t").is_some(), "{}", logged_in.body);
+    let back = lti_launch(
+        &mut browser,
+        &key,
+        "learner-9",
+        "elsewhere@example.com",
+        json!({}),
+    )
+    .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert!(
+        back.location()
+            .starts_with("http://test.localhost/associate/"),
+        "{}",
+        back.location()
+    );
+}
+
+/// The fake Apple: the client secret checked against the team's key,
+/// an ID token signed with the key its JWKS lists.
+struct FakeApple {
+    team_key: p256::ecdsa::VerifyingKey,
+    id_token: String,
+    jwks: Value,
+    secret_ok: Vec<bool>,
+}
+
+type SharedApple = Arc<Mutex<FakeApple>>;
+
+async fn apple_token(
+    State(p): State<SharedApple>,
+    Form(form): Form<Vec<(String, String)>>,
+) -> Json<Value> {
+    use base64::Engine;
+    use p256::ecdsa::signature::Verifier;
+    let mut p = p.lock().unwrap();
+    let secret = form
+        .iter()
+        .find(|(k, _)| k == "client_secret")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_default();
+    let (input, sig) = secret.rsplit_once('.').unwrap();
+    let e = base64::engine::general_purpose::URL_SAFE_NO_PAD;
+    let sig = p256::ecdsa::Signature::from_slice(&e.decode(sig).unwrap()).unwrap();
+    let claims: Value =
+        serde_json::from_slice(&e.decode(input.split_once('.').unwrap().1).unwrap()).unwrap();
+    let ok = p.team_key.verify(input.as_bytes(), &sig).is_ok()
+        && claims["iss"] == "TEAM1"
+        && claims["sub"] == "com.example.app";
+    p.secret_ok.push(ok);
+    Json(json!({"access_token": "apple-access", "token_type": "Bearer", "id_token": p.id_token}))
+}
+
+async fn apple_keys(State(p): State<SharedApple>) -> Json<Value> {
+    Json(p.lock().unwrap().jwks.clone())
+}
+
+#[tokio::test]
+async fn apple_signs_its_secret_and_checks_the_id_token() {
+    use base64::Engine;
+    use p256::pkcs8::EncodePrivateKey;
+    use rsa::traits::PublicKeyParts;
+    use sha2::Digest;
+    let db = TestDb::new().await;
+    let team = p256::ecdsa::SigningKey::random(&mut rand::thread_rng());
+    let team_pem = team.to_pkcs8_pem(p256::pkcs8::LineEnding::LF).unwrap();
+    let rsa_key = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 1024).unwrap();
+    let e = base64::engine::general_purpose::URL_SAFE_NO_PAD;
+    let jwks = json!({"keys": [{
+        "kty": "RSA", "kid": "k1", "alg": "RS256",
+        "n": e.encode(rsa_key.n().to_bytes_be()),
+        "e": e.encode(rsa_key.e().to_bytes_be()),
+    }]});
+    let now = chrono::Utc::now().timestamp();
+    let input = format!(
+        "{}.{}",
+        e.encode(json!({"alg": "RS256", "kid": "k1"}).to_string()),
+        e.encode(
+            json!({
+                "iss": "https://appleid.apple.com",
+                "aud": "com.example.app",
+                "sub": "apple-1",
+                "exp": now + 600,
+                "email": "apple.person@example.com",
+            })
+            .to_string()
+        )
+    );
+    let mut digest_info = vec![
+        0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+        0x05, 0x00, 0x04, 0x20,
+    ];
+    digest_info.extend_from_slice(&sha2::Sha256::digest(input.as_bytes()));
+    let signature = rsa_key
+        .sign(rsa::Pkcs1v15Sign::new_unprefixed(), &digest_info)
+        .unwrap();
+    let shared: SharedApple = Arc::new(Mutex::new(FakeApple {
+        team_key: *team.verifying_key(),
+        id_token: format!("{input}.{}", e.encode(signature)),
+        jwks,
+        secret_ok: Vec::new(),
+    }));
+    let app = Router::new()
+        .route("/auth/token", post(apple_token))
+        .route("/auth/keys", get(apple_keys))
+        .with_state(shared.clone());
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    let mut config = config(RailsEnv::Test, &[]);
+    config.auth_provider_hosts = vec![("https://appleid.apple.com".into(), base)];
+    let state = state(db.pool.clone(), config).await;
+    for (k, v) in [
+        ("apple_client_id", "com.example.app"),
+        ("apple_team_id", "TEAM1"),
+        ("apple_key_id", "KEY1"),
+        ("apple_pem", team_pem.as_str()),
+        ("sign_in_with_apple_enabled", "t"),
+        ("auth_require_interaction", "f"),
+    ] {
+        set(&state, k, v).await;
+    }
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let start = browser.get("/auth/apple").await;
+    let authorize = start.location();
+    assert_eq!(query_param(&authorize, "response_mode"), "form_post");
+    let state_param = query_param(&authorize, "state");
+    // Apple posts back; the post comes back as a GET.
+    let posted = browser
+        .send(
+            Method::POST,
+            "/auth/apple/callback",
+            &format!("code=good-code&state={state_param}&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D"),
+        )
+        .await;
+    assert_eq!(posted.status, StatusCode::FOUND);
+    let again = posted.location();
+    assert!(again.starts_with("http://test.localhost/auth/apple/callback?code=good-code&state="));
+    let path = again.trim_start_matches("http://test.localhost");
+    let back = browser.get(path).await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert_eq!(shared.lock().unwrap().secret_ok, [true]);
+    let data = browser.authentication_data();
+    assert_eq!(data["email"], "apple.person@example.com");
+    assert_eq!(data["name"], "Ann Apple");
+    assert_eq!(data["email_valid"], true);
 }

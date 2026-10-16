@@ -1799,8 +1799,12 @@ route table has been made, so this list may be short.
     with its login health check, nested hashes in the session cookie, a
     provider's description as the bio (191b's refusal). Refused:
     Twitter's callback_url param (a callback path of its own)
-    191f. `feat/external-auth-plugins` M: discourse-apple-auth,
-    discourse-lti and discourse-patreon's logins
+    191f. ~~`feat/external-auth-plugins`~~ (done) M: discourse-apple-auth,
+    discourse-lti and discourse-patreon's logins, OmniAuth's compat
+    patch for doubled subfolders, redirects without a content type, a
+    string setting set to nil kept as NULL. Refused: Patreon's reward
+    groups for a new patron (the plugin's group sync), an LTI token with
+    several audiences (a NoMethodError upstream)
 192. `feat/invites` L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email

@@ -61,6 +61,8 @@ imagequant = { version = "4.4.1", default-features = false }
 kamadak-exif = "0.6.1"
 grass = { version = "0.13.4", default-features = false }
 libc = "0.2"
+# Sign in with Apple: the ES256 client secret.
+p256 = { version = "0.13", default-features = false, features = ["ecdsa", "pem", "pkcs8", "std"] }
 
 [dev-dependencies]
 http-body-util = "0.1"

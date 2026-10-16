@@ -1949,6 +1949,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(omniauth::callback).post(omniauth::callback),
         )
         .route(
+            "/auth/{provider}/initiate",
+            get(omniauth::initiate).post(omniauth::initiate),
+        )
+        .route(
+            crate::plugins::lti::SUBMIT_ON_LOAD_PATH,
+            get(omniauth::lti_submit_on_load_js),
+        )
+        .route(
             "/associate/{token}",
             get(omniauth::connect_info).post(omniauth::connect),
         )

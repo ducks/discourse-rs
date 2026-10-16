@@ -34,7 +34,8 @@ use crate::{AppError, AppState, Unsupported};
 
 /// The strategies ported.
 fn ported(name: &str) -> bool {
-    matches!(name, "oauth2_basic" | "oidc" | "twitter") || crate::auth::builtin::is_builtin(name)
+    matches!(name, "oauth2_basic" | "oidc" | "twitter" | "lti" | "apple")
+        || crate::auth::builtin::is_builtin(name)
 }
 
 fn host(headers: &HeaderMap) -> &str {
@@ -65,13 +66,12 @@ fn http<'a>(state: &'a AppState, settings: &'a SiteSettings) -> Http<'a> {
 fn omniauth_redirect(location: &str, cookies: &[String]) -> Result<Response, AppError> {
     let mut response = (
         StatusCode::FOUND,
-        [
-            (header::LOCATION, HeaderValue::from_str(location)?),
-            (header::CONTENT_TYPE, HeaderValue::from_static("text/html")),
-        ],
+        [(header::LOCATION, HeaderValue::from_str(location)?)],
         format!("Redirecting to {location}..."),
     )
         .into_response();
+    // Rack::Response sets no content type.
+    response.headers_mut().remove(header::CONTENT_TYPE);
     for c in cookies {
         response
             .headers_mut()
@@ -110,6 +110,7 @@ fn failure_redirect(
         "302 Moved",
     )
         .into_response();
+    response.headers_mut().remove(header::CONTENT_TYPE);
     for c in cookies {
         response
             .headers_mut()
@@ -231,6 +232,11 @@ pub async fn request(
     if name == "twitter" {
         return twitter_request(&state, &settings, &uri, &params, &mut session, cookies).await;
     }
+    if name == "lti" {
+        // LTI logins are third party initiated only.
+        cookies.extend(session.set_cookie(&state, &settings)?);
+        return failure_redirect(&state, "third_party_only", None, name, &cookies);
+    }
     let http = http(&state, &settings);
     let callback = callback_url(&state, &settings, name)?;
     let state_param = oauth2::random_hex(24);
@@ -269,6 +275,11 @@ pub async fn request(
                 crate::plugins::openid_connect::pkce(&settings)?,
             )
         }
+        "apple" => (
+            crate::plugins::apple::client(&settings)?,
+            crate::plugins::apple::authorize_params(),
+            false,
+        ),
         n => (
             crate::auth::builtin::client(&settings, n)?,
             crate::auth::builtin::authorize_params(&settings, n, &params)?,
@@ -539,6 +550,96 @@ async fn failure(
     .await
 }
 
+/// GET /plugins/discourse-lti/javascripts/submit-on-load-lti.js
+pub async fn lti_submit_on_load_js() -> Response {
+    (
+        [(header::CONTENT_TYPE, "application/javascript")],
+        crate::plugins::lti::SUBMIT_ON_LOAD_JS,
+    )
+        .into_response()
+}
+
+/// The LTI resubmit page, sent back as the cross-site POST came in.
+fn lti_resubmit(
+    state: &AppState,
+    settings: &SiteSettings,
+    params: &Map<String, Value>,
+    keys: &[&str],
+) -> Result<Response, AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let script = urls.absolute(crate::plugins::lti::SUBMIT_ON_LOAD_PATH)?;
+    Ok((
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, "text/html; charset=UTF-8")],
+        crate::plugins::lti::resubmit_page(params, keys, &script),
+    )
+        .into_response())
+}
+
+/// GET or POST /auth/:provider/initiate: discourse-lti's other phase, a
+/// login the platform starts.
+pub async fn initiate(
+    State(state): State<AppState>,
+    method: Method,
+    Path(provider): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let enabled = crate::auth::enabled(&settings)?;
+    if provider.to_lowercase() != "lti" || !enabled.iter().any(|p| p.name == "lti") {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let params = crate::params::parse(uri.query(), &headers, &body);
+    if crate::plugins::lti::cross_site_post(method == Method::POST, &params) {
+        return lti_resubmit(
+            &state,
+            &settings,
+            &params,
+            &[
+                "iss",
+                "login_hint",
+                "target_link_uri",
+                "lti_message_hint",
+                "client_id",
+            ],
+        );
+    }
+    let callback = callback_url(&state, &settings, "lti")?;
+    match crate::plugins::lti::initiate(&settings, &params, &callback)? {
+        crate::plugins::lti::Initiate::Fail(kind) => {
+            failure_redirect(&state, kind, None, "lti", &[])
+        }
+        crate::plugins::lti::Initiate::Redirect {
+            url,
+            state: state_param,
+            nonce,
+            destination,
+        } => {
+            let mut session = load_forum_session(&state, &headers);
+            let session_id = session.server_session_id();
+            session_set(&mut session, "omniauth.state", Scalar::Str(state_param));
+            session_set(&mut session, "omniauth.nonce", Scalar::Str(nonce));
+            crate::session::server::set(
+                &mut conn,
+                &session_id,
+                "destination_url",
+                &json!(destination),
+                crate::session::server::EXPIRY_SECONDS,
+            )
+            .await?;
+            let cookies: Vec<String> = session.set_cookie(&state, &settings)?.into_iter().collect();
+            omniauth_redirect(&url, &cookies)
+        }
+    }
+}
+
 fn twitter_consumer(settings: &SiteSettings) -> Result<twitter::Consumer, AppError> {
     Ok(twitter::Consumer {
         key: settings.get("twitter_consumer_key")?.to_s(),
@@ -752,6 +853,22 @@ async fn callback_phase(
     if name == "twitter" {
         return twitter_callback(state, settings, session, params, query).await;
     }
+    if name == "lti" {
+        let kept = |k: &str| match session.map.get(k) {
+            Some(Scalar::Str(s)) => Some(s.clone()),
+            _ => None,
+        };
+        let (st, nonce) = (kept("omniauth.state"), kept("omniauth.nonce"));
+        return Ok(
+            match crate::plugins::lti::callback(settings, params, st.as_deref(), nonce.as_deref())?
+            {
+                crate::plugins::lti::Callback::Auth(a) => Callback::Auth(a),
+                crate::plugins::lti::Callback::Fail(kind, message) => {
+                    Callback::Failed(Failure::new(&kind, message))
+                }
+            },
+        );
+    }
     let http = http(state, settings);
     let param = |k: &str| crate::params::string(params, k);
     let mut oidc: Option<crate::plugins::openid_connect::Discovered> = None;
@@ -777,12 +894,14 @@ async fn callback_phase(
             oidc = Some(d);
             (client, false)
         }
+        "apple" => (crate::plugins::apple::client(settings)?, false),
         n => {
             let client = crate::auth::builtin::client(settings, n)?;
             if let Some(f) = crate::auth::builtin::before_callback(n, params, &client, headers)? {
                 return Ok(Callback::Failed(f));
             }
-            (client, false)
+            let ignores = crate::auth::builtin::ignores_state(settings, n)?;
+            (client, ignores)
         }
     };
     // omniauth-oauth2's callback_phase.
@@ -916,6 +1035,12 @@ async fn callback_phase(
                 Err(f) => return Ok(Callback::Failed(f)),
             }
         }
+        "apple" => {
+            match crate::plugins::apple::auth_hash(conn, &http, &client, &token, params).await? {
+                Ok(a) => a,
+                Err(f) => return Ok(Callback::Failed(f)),
+            }
+        }
         n => match crate::auth::builtin::auth_hash(&http, n, &client, &token).await? {
             Ok(a) => a,
             Err(f) => return Ok(Callback::Failed(f)),
@@ -933,7 +1058,8 @@ pub(super) async fn after_authenticate(
     existing_account: Option<i32>,
 ) -> Result<(AuthResult, AuthHash), AppError> {
     let host = crate::pretty_text::Host::from_state(state);
-    match auth.provider.as_str() {
+    let provider = auth.provider.clone();
+    match provider.as_str() {
         "oauth2_basic" => {
             let http = http(state, settings);
             crate::plugins::oauth2_basic::after_authenticate(
@@ -960,7 +1086,7 @@ pub(super) async fn after_authenticate(
         }
         n if crate::auth::builtin::is_builtin(n) => {
             let http = http(state, settings);
-            crate::auth::builtin::after_authenticate(
+            let (result, auth) = crate::auth::builtin::after_authenticate(
                 conn,
                 settings,
                 &host,
@@ -969,7 +1095,62 @@ pub(super) async fn after_authenticate(
                 auth,
                 existing_account,
             )
-            .await
+            .await?;
+            if n == "patreon" {
+                patreon_creator_tokens(state, conn, settings, &result, &auth).await?;
+            }
+            Ok((result, auth))
+        }
+        "apple" => {
+            // AppleAuthenticator: Apple verifies every email.
+            let behaviour = crate::auth::managed::Behaviour {
+                email_verified: true,
+                match_by_email: true,
+                overrides_email: false,
+                can_connect: true,
+                user_by_email: None,
+            };
+            if auth.uid.is_empty() {
+                return Err(Unsupported(
+                    "an Apple login without a subject (provider_uid can't be blank)",
+                )
+                .into());
+            }
+            let result = crate::auth::managed::after_authenticate(
+                conn,
+                settings,
+                &host,
+                &auth,
+                &behaviour,
+                existing_account,
+            )
+            .await?;
+            Ok((result, auth))
+        }
+        "lti" => {
+            let behaviour = crate::auth::managed::Behaviour {
+                email_verified: settings.get("lti_email_verified")?.truthy(),
+                match_by_email: true,
+                overrides_email: false,
+                can_connect: true,
+                user_by_email: None,
+            };
+            if auth.uid.is_empty() {
+                return Err(Unsupported(
+                    "an LTI login without a subject (provider_uid can't be blank)",
+                )
+                .into());
+            }
+            let result = crate::auth::managed::after_authenticate(
+                conn,
+                settings,
+                &host,
+                &auth,
+                &behaviour,
+                existing_account,
+            )
+            .await?;
+            Ok((result, auth))
         }
         "twitter" => {
             // TwitterAuthenticator: no extra kept, every email verified.
@@ -999,6 +1180,46 @@ pub(super) async fn after_authenticate(
         }
         _ => Err(Unsupported("logging in with this provider").into()),
     }
+}
+
+/// PatreonAuthenticator#after_authenticate: the creator's own login keeps
+/// its tokens in the creator token settings.
+async fn patreon_creator_tokens(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    result: &AuthResult,
+    auth: &AuthHash,
+) -> Result<(), AppError> {
+    let creator = settings.get("patreon_creator_discourse_username")?.to_s();
+    let Some(user_id) = result.user_id.filter(|_| !creator.trim().is_empty()) else {
+        return Ok(());
+    };
+    let username: Option<String> = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+    if username.as_deref() != Some(creator.as_str()) {
+        return Ok(());
+    }
+    for (name, key) in [
+        ("patreon_creator_access_token", "token"),
+        ("patreon_creator_refresh_token", "refresh_token"),
+    ] {
+        let value = auth.credentials.get(key).cloned().unwrap_or(Value::Null);
+        crate::site_setting_update::set(
+            conn,
+            &state.bus,
+            settings,
+            &state.site_setting_defs,
+            &state.i18n,
+            name,
+            &value,
+        )
+        .await?
+        .map_err(|message| AppError::from(std::io::Error::other(message)))?;
+    }
+    Ok(())
 }
 
 /// `persist_auth_token(auth)`: the auth kept ten minutes for
@@ -1058,6 +1279,7 @@ fn valid_origin(
 #[allow(clippy::too_many_arguments)]
 pub async fn callback(
     State(state): State<AppState>,
+    method: Method,
     Path(provider): Path<String>,
     headers: HeaderMap,
     Peer(peer): Peer,
@@ -1080,6 +1302,18 @@ pub async fn callback(
         return Err(Unsupported("logging in with this provider (191e)").into());
     }
     let params = crate::params::parse(uri.query(), &headers, &body);
+    // discourse-lti's callback_call: a cross-site POST is resubmitted.
+    if name == "lti" && crate::plugins::lti::cross_site_post(method == Method::POST, &params) {
+        return lti_resubmit(&state, &settings, &params, &["error", "state", "id_token"]);
+    }
+    // Sign in with Apple's form_post: back as a GET, the session dropped.
+    if name == "apple" && method == Method::POST {
+        let callback = callback_url(&state, &settings, name)?;
+        return omniauth_redirect(
+            &crate::plugins::apple::post_redirect(&callback, &params),
+            &[],
+        );
+    }
     let mut session = load_forum_session(&state, &headers);
     let session_id = session.server_session_id();
     // callback_call: the origin and params taken out of the session.
@@ -1152,6 +1386,58 @@ pub async fn callback(
             .await?;
         if staged {
             result.user_id = None;
+        }
+    }
+    // discourse-lti's after_auth: a new user's invite link becomes the
+    // destination, and one already logged in connects the account.
+    if name == "lti" && result.user_id.is_none() {
+        if let Some((_, uid)) = &result.extra_data {
+            let extra: Option<Value> = sqlx::query_scalar(
+                "SELECT extra FROM user_associated_accounts WHERE provider_name = 'lti' AND provider_uid = $1",
+            )
+            .bind(uid)
+            .fetch_optional(&mut *tx)
+            .await?;
+            let urls = crate::url::Urls {
+                config: &state.config,
+                settings: &settings,
+            };
+            if let Some(dest) = extra.and_then(|e| {
+                crate::plugins::lti::invite_destination(
+                    &e,
+                    &urls.current_hostname().unwrap_or_default(),
+                    &base_path(&state),
+                )
+            }) {
+                crate::session::server::set(
+                    &mut tx,
+                    &session_id,
+                    "destination_url",
+                    &json!(dest),
+                    crate::session::server::EXPIRY_SECONDS,
+                )
+                .await?;
+            }
+        }
+        if crate::session::current::cookie(&headers, "_t").is_some() {
+            // ShouldReconnect: complete again as a reconnect.
+            if !(can_connect && current_user.is_some()) {
+                return Err(Unsupported(
+                    "an LTI reconnect without a current user (ShouldReconnect raised twice)",
+                )
+                .into());
+            }
+            let path = persist_auth_token(&state, &mut tx, &session_id, &auth_json).await?;
+            tx.commit().await?;
+            cookies.extend(session.set_cookie(&state, &settings)?);
+            return with_cookies(
+                (
+                    StatusCode::FOUND,
+                    [(header::LOCATION, format!("http://{}{path}", host(&headers)))],
+                )
+                    .into_response(),
+                &cookies,
+            );
         }
     }
     // preferred_origin: the server session's destination, the provider

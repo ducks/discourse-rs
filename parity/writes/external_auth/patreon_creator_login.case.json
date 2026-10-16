@@ -1,0 +1,42 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "patreon_enabled": true,
+    "patreon_client_id": "pat-client",
+    "patreon_client_secret": "pat-secret",
+    "patreon_creator_discourse_username": "user1",
+    "patreon_login_enabled": true
+  },
+  "remote_hosts": {
+    "https://api.patreon.com": "/pat-api",
+    "https://www.patreon.com": "/pat-www"
+  },
+  "remote": {
+    "/pat-api/oauth2/token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"access_token\":\"pat-token\",\"refresh_token\":\"pat-refresh\",\"token_type\":\"Bearer\",\"scope\":\"users\"}"
+    },
+    "/pat-api/oauth2/api/current_user": {
+      "status": 200,
+      "headers": {"Content-Type": "application/vnd.api+json"},
+      "body": "{\"data\":{\"id\":\"321\",\"type\":\"user\",\"attributes\":{\"email\":\"user1@example.com\",\"is_email_verified\":true,\"full_name\":\"Creator One\",\"thumbUrl\":null}}}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/patreon"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/patreon/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

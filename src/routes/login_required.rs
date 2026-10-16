@@ -43,6 +43,8 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/email/unsubscribe")
         // OmniAuth's middleware and Users::OmniauthCallbacksController
         || path.starts_with("/auth/")
+        // Plugins' public files, served statically.
+        || path.starts_with("/plugins/")
         // UserApiKeysController#new, #otp, #activate and the device
         // request and poll (create_otp needs a login of its own).
         || matches!(
@@ -281,7 +283,11 @@ fn login_buttons(state: &AppState, settings: &SiteSettings) -> Result<Vec<LoginB
     if settings.get("enable_discourse_connect")?.truthy() {
         return Ok(out);
     }
-    for p in crate::auth::enabled(settings)? {
+    // discourse-lti hides its button: the platform starts its logins.
+    for p in crate::auth::enabled(settings)?
+        .into_iter()
+        .filter(|p| p.name != "lti")
+    {
         let title = match p.title_setting {
             Some(setting) => settings.get(setting)?.to_s(),
             None => state

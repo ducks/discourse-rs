@@ -17,10 +17,12 @@
 //! Core's events (DiscourseEvent) reach the plugins listening through the
 //! functions here, called where Rails triggers them.
 
+pub mod apple;
 pub mod auth_providers;
 pub mod chat;
 pub mod lazy_videos;
 pub mod local_dates;
+pub mod lti;
 pub mod oauth2_basic;
 pub mod openid_connect;
 pub mod poll;
