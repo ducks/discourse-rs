@@ -748,13 +748,17 @@ then by what running a forum needs (milestone 6). Briefs:
     discourse-solved's related solved topics; the summary menu opens on
     click only, not on a delayed hover. Left, refused as a page: a
     search log term's page),
-    90g6. `feat/admin-shell-config` L (the /admin/config areas: about,
-    content and category management, login, notifications, localization,
-    analytics, permalinks, user defaults, trust levels, group
-    permissions, user fields, watched words, site admin, legal, flags,
-    logo, fonts, interface, emoji, navigation, welcome banner, security,
-    spam, developer, rate limits, onebox, files, search, experimental,
-    upcoming changes, what's new), 90g7. `feat/admin-shell-customize` L
+    90g6. `feat/admin-shell-config` L, in part (done, in
+    feat/admin-shell-config-settings: the areas that are their settings,
+    localization, notifications, analytics and SEO, user defaults, trust
+    levels, group permissions, site admin, legal, interface, navigation,
+    security, spam, developer, rate limits, onebox, files, search,
+    experimental and GIFs; a locale list setting drawn as Ember's
+    compact list, whose chooser, as the other list settings', is still
+    refused when opened. Left: about, content and category
+    management, login, permalinks, user fields, watched words, flags,
+    logo, fonts, emoji, welcome banner, MCP, upcoming changes, what's
+    new), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
     palettes, site texts, email style, form templates, embedding, robots
     txt), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch

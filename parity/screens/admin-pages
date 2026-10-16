@@ -64,3 +64,24 @@
 # browser's zone.
 /admin/reports/signups?start_date=2026-07-01&end_date=2026-07-31 as=admin wait=2500 mask=.relative-date
 /admin/reports/signups?mode=table&start_date=2026-07-01&end_date=2026-07-31 as=admin wait=2500
+# The config areas that are their settings (90g6).
+/admin/config/localization as=admin
+/admin/config/notifications as=admin
+/admin/config/analytics-and-seo as=admin
+/admin/config/user-defaults as=admin
+/admin/config/trust-levels as=admin
+/admin/config/group-permissions as=admin
+/admin/config/site-admin as=admin
+/admin/config/legal as=admin
+/admin/config/interface as=admin
+/admin/config/navigation as=admin
+/admin/config/security as=admin
+/admin/config/spam as=admin
+/admin/config/developer as=admin
+/admin/config/rate-limits as=admin
+/admin/config/onebox as=admin
+/admin/config/files as=admin
+/admin/config/search as=admin
+/admin/config/experimental as=admin
+/admin/config/gifs as=admin
+/admin/config/security?filter=password as=admin

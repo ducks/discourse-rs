@@ -1277,7 +1277,8 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
             if disabled { " disabled" } else { "" },
             escape(&t(i18n, "admin.site_settings.uploaded_image_list.label"))
         ),
-        "compact_list" | "group_list" | "file_types_list" | "host_list" => {
+        // SettingLocaleList draws as a compact list.
+        "compact_list" | "locale_list" | "group_list" | "file_types_list" | "host_list" => {
             let names = multi_names(page, setting, &values);
             let header = format!(
                 "<details class=\"select-kit multi-select list-setting{}\"><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",

@@ -3,6 +3,7 @@ mod accounts;
 mod admin_advanced;
 mod admin_api_keys;
 mod admin_badges;
+mod admin_config;
 mod admin_dashboard;
 mod admin_dashboard_sections;
 mod admin_email;
@@ -2497,6 +2498,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .delete(user_security::calendar_subscriptions),
         );
     }
+    router = admin_config::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.
     if let Some(src) = &config.discourse_src {
