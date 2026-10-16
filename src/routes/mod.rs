@@ -132,8 +132,9 @@ use tower_http::services::ServeDir;
 use crate::AppState;
 
 /// The Font Awesome icons the pages use, as a sprite of <symbol>s
-/// (scripts/build-icon-sprite): served as a script (svg_sprite::chrome_script)
-/// and inlined where a page has no sprite script.
+/// (scripts/build-icon-sprite), inlined where a page has no sprite script
+/// (pages without the chrome, and no_ember.html, which renders with the
+/// database down); the chrome loads the site's sprite (crate::svg_sprite).
 pub const ICONS_SVG: &str = include_str!("../../static/vendor/icons.svg");
 
 /// GET /assets/<name>: the embedded stylesheets and scripts (crate::assets).
@@ -2363,6 +2364,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/highlightjs-core.min.js", get(asset))
         .route("/highlight-js/{hostname}/{file}", get(highlight_js::show))
         .route("/svg-sprite/{hostname}/{file}", get(svg_sprite::show))
+        .route("/svg-sprite/picker-search", get(svg_sprite::picker_search))
+        .route("/svg-sprite/search/{keyword}", get(svg_sprite::search))
+        .route(
+            "/svg-sprite/{hostname}/icon/{name}",
+            get(svg_sprite::svg_icon),
+        )
+        .route(
+            "/svg-sprite/{hostname}/icon/{color}/{name}",
+            get(svg_sprite::svg_icon),
+        )
         .route("/assets/modal.js", get(asset))
         .route("/assets/spoiler-alert.js", get(asset))
         .route("/assets/post-decorations.js", get(asset))

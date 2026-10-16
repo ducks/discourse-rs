@@ -391,7 +391,9 @@
                 '" data-icon-id="' +
                 escapeHtml(icon.id) +
                 '" role="option" type="button">' +
-                (icon.symbol || "") +
+                // IconButton#symbol: a hidden SVG holding the symbol the
+                // sprite lacks, for the icon beside it.
+                (icon.symbol ? '<svg xmlns="http://www.w3.org/2000/svg" style="display: none">' + icon.symbol + "</svg>" : "") +
                 ui.icon(icon.id) +
                 "</button>"
               );

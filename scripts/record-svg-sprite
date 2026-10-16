@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Record the sprite symbols and icon lists SvgSprite reads from files and
+# the plugins (scripts/svg_sprite_export.rb) from a reference agent into
+# vendor/discourse/config/svg_sprite.json, for the icon sprite and the
+# icon picker (src/svg_sprite.rs). Run after vendoring, from an agent at
+# the vendored commit with the bundled plugins.
+#
+# Usage: scripts/record-svg-sprite <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but vendor/ is from $vendored" >&2
+  exit 1
+fi
+dv copy "$root/scripts/svg_sprite_export.rb" "$agent:/tmp/svg_sprite_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/svg_sprite_export.rb /tmp/svg_sprite.json | tail -1
+dv copy "$agent:/tmp/svg_sprite.json" "$root/vendor/discourse/config/svg_sprite.json" > /dev/null

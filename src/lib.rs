@@ -181,6 +181,7 @@ pub mod site_texts;
 pub mod staff_action_logs;
 pub mod stylesheet;
 pub mod svg_sprite;
+pub mod svg_sprite_xml;
 pub mod system_message;
 pub mod tag_groups;
 pub mod tag_writes;

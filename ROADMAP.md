@@ -809,10 +809,8 @@ then by what running a forum needs (milestone 6). Briefs:
     (DFilterControls with the status dropdown, the enabled switch, the
     settings links), and a plugin's settings page in
     AdminPluginConfigPage. Left: the email template editor (moved to
-    90g7, with site texts' translation overrides),
-    /svg-sprite/picker-search (SvgSprite.all_icons with the settings,
-    badge, group, plugin and theme icons; the icon grid shows the page
-    error until then), the configuration nav plugins' own admin pages
+    90g7, with site texts' translation overrides), the configuration
+    nav plugins' own admin pages
     (refused as a page: chat, AI, automation, data explorer and the
     rest the recording marks), saving a plugin's settings (the site
     settings update refuses plugin settings)),
