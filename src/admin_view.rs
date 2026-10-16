@@ -26,6 +26,7 @@ pub struct AdminViewer {
     pub staff: bool,
     pub can_invite_to_forum: bool,
     pub can_see_ip: bool,
+    pub can_see_emails: bool,
 }
 
 impl AdminViewer {
@@ -42,6 +43,7 @@ impl AdminViewer {
             staff: flag("staff"),
             can_invite_to_forum: flag("can_invite_to_forum"),
             can_see_ip: flag("can_see_ip"),
+            can_see_emails: flag("can_see_emails"),
         }
     }
 }

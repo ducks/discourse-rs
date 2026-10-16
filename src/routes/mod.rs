@@ -1013,6 +1013,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/logs/screened_emails/{id}",
             delete(admin_logs::destroy_screened_email),
         )
+        .route("/admin/email-logs", get(admin_logs::email_logs_index))
         .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
         .route(
             "/admin/email-logs/incoming/{id}",
@@ -2374,6 +2375,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-dashboard.js", get(asset))
         .route("/assets/admin-users.js", get(asset))
         .route("/assets/admin-reports.js", get(asset))
+        .route("/assets/admin-logs.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))

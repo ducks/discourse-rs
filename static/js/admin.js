@@ -88,6 +88,9 @@
     top.addEventListener("scroll", function () {
       content.scrollLeft = top.scrollLeft;
     }, { passive: true });
+    // A list whose rows the client loads after the wrapper is drawn (the
+    // email logs) resizes once more, which shows the scrollbar again.
+    var loadsLater = container.hasAttribute("data-loads-rows");
     var observer = new IntersectionObserver(function (entries) {
       var entry = entries[0];
       if (entry.boundingClientRect.bottom < entry.rootBounds.height) {
@@ -95,10 +98,30 @@
       } else {
         syncWidth();
       }
+      if (loadsLater) {
+        loadsLater = false;
+        syncWidth();
+      }
     }, { root: null, threshold: 0 });
     observer.observe(content);
     syncWidth();
-    return observer;
+    // dOnResize: a later change of the content's size syncs the width
+    // again (its first report comes before the intersection's).
+    var first = true;
+    var resize = new ResizeObserver(function () {
+      if (first) {
+        first = false;
+        return;
+      }
+      syncWidth();
+    });
+    resize.observe(content);
+    return {
+      disconnect: function () {
+        observer.disconnect();
+        resize.disconnect();
+      },
+    };
   }
 
   Discourse.onPage(function () {

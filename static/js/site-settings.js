@@ -848,6 +848,29 @@
     };
   });
 
+  // A layout redraw (the window crossing a breakpoint) swaps the page in
+  // again; the pending edits, and so the changes banner, come along as
+  // Ember keeps them in its tracker.
+  var pending = null;
+  document.addEventListener("discourse:before-redraw", function () {
+    pending = dirtyRows().map(function (row) {
+      return [row.dataset.setting, currentValue(row)];
+    });
+  });
+  document.addEventListener("discourse:redrawn", function () {
+    var root = page();
+    if (root && pending) {
+      pending.forEach(function (edit) {
+        var row = root.querySelector('.row.setting[data-setting="' + edit[0] + '"]');
+        if (row) {
+          setValue(row, edit[1]);
+          syncRow(row);
+        }
+      });
+    }
+    pending = null;
+  });
+
   document.addEventListener("input", function (event) {
     var root = page();
     if (!root || !root.contains(event.target)) {

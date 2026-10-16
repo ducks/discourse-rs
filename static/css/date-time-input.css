@@ -1,0 +1,138 @@
+/* DDateInput, DDateTimeInput and their range (components/date-input.scss,
+   date-time-input.scss, date-time-input-range.scss) as Rails compiles
+   them into common.css: the admin logs' and reports' date filters. */
+
+.inline-form>.select-kit,
+.inline-form>input[type=text],
+.inline-form>input[type=search],
+.inline-form>input[type=password],
+.inline-form>label,
+.inline-form>.btn,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>button,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>.json-editor-btn-add,
+.inline-form>.d-date-input {
+  margin-bottom:.5em;
+  margin-right:.5em;
+}
+.inline-form>.select-kit:last-child,
+.inline-form>input[type=text]:last-child,
+.inline-form>input[type=search]:last-child,
+.inline-form>input[type=password]:last-child,
+.inline-form>label:last-child,
+.inline-form>.btn:last-child,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>button:last-child,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>.json-editor-btn-add:last-child,
+.inline-form>.d-date-input:last-child {
+  margin-right:0;
+}
+.d-date-input {
+  display:inline-flex;
+  cursor:pointer;
+  flex-direction:column;
+  min-width:140px;
+  flex:1 0 auto;
+}
+.d-date-input .date-picker {
+  cursor:pointer;
+  margin:0;
+  text-align:left;
+  width:100%;
+  box-shadow:none;
+  position:relative;
+}
+.d-date-input .date-picker::placeholder {
+  font-size:var(--font-0);
+  color:var(--primary-medium);
+}
+.d-date-input .date-picker:focus {
+  border-color:var(--d-input-focused-color);
+  outline:2px solid var(--d-input-focused-color);
+  outline-offset:-2px;
+}
+html.ios-device .d-date-input .date-picker:not(.--has-value)::after {
+  font-size:var(--font-0);
+  color:var(--primary-medium);
+  content:attr(placeholder);
+}
+html:not(.ios-device) .d-date-input .date-picker::after {
+  content:"";
+  mask:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14px' height='16px' viewBox='0 0 448 512'%3E%3Cpath d='M400 64h-48V12c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v52H160V12c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v52H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zm-6 400H54c-3.3 0-6-2.7-6-6V160h352v298c0 3.3-2.7 6-6 6z'%3E%3C/path%3E%3C/svg%3E") no-repeat 50% 50%;
+  position:absolute;
+  right:4px;
+  top:0;
+  box-sizing:border-box;
+  background-color:var(--primary);
+  height:100%;
+  width:20px;
+  z-index:1;
+}
+html:not(.ios-device) .d-date-input .date-picker::-webkit-calendar-picker-indicator {
+  background:rgba(0,0,0,0);
+  position:absolute;
+  cursor:pointer;
+  right:0;
+  z-index:2;
+}
+.d-date-input .pika-single {
+  margin-left:-1px;
+  margin-top:1px;
+}
+.d-date-input .pika-single .pika-row td .pika-button.pika-day {
+  box-shadow:none;
+  border-radius:0;
+}
+.d-date-input+.d-time-input {
+  margin-left:1px;
+}
+.d-time-input+.d-date-input {
+  margin-left:1px;
+}
+.d-date-input+.clear-date-time {
+  margin-left:1px;
+}
+.d-date-time-input-range .from {
+  margin-bottom:.5em;
+}
+.d-date-time-input {
+  display:flex;
+  box-sizing:border-box;
+  position:relative;
+}
+.d-date-time-input .date-picker {
+  max-width:unset;
+}
+.d-date-time-input .d-date-time-input {
+  margin-left:auto;
+  flex:1 1 auto;
+}
+.d-date-time-input .d-time-input .select-kit-header {
+  border-color:rgba(0,0,0,0);
+}
+.d-date-time-input .d-date-input+.d-time-input {
+  margin-left:1px;
+}
+.d-date-time-input .d-time-input+.d-date-input {
+  margin-right:1px;
+}
+.reviewable .reviewable-container .d-date-time-input-range {
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-2);
+}
+.reviewable .reviewable-container .d-date-time-input-range .from {
+  margin:0;
+}
+.reviewable .reviewable-container .d-date-time-input {
+  flex:1 1 auto;
+}
+.search-container .search-filters .combo-box:not(#postTime) .d-date-input,
+.search-container .search-filters .combo-box:not(#postTime) input[type=number],
+.search-container .search-filters .combo-box:not(#postTime) .select-kit,
+.search-container .search-filters .control-group .d-date-input,
+.search-container .search-filters .control-group input[type=number],
+.search-container .search-filters .control-group .select-kit,
+.search-container .search-filters .multi-select .d-date-input,
+.search-container .search-filters .multi-select input[type=number],
+.search-container .search-filters .multi-select .select-kit {
+  margin-bottom:0;
+}

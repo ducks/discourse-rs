@@ -722,12 +722,19 @@ then by what running a forum needs (milestone 6). Briefs:
     dashboard_hidden_reports, in REPORT_GROUPS' groups, the other core
     reports and each plugin's, under DFilterControls' text filter and
     group menu as the URL's `filter` and `group`, with its reset and no
-    results state; the HTML of the pages below is refused where their
-    JSON is still served, instead of answering a page with JSON. Left:
+    results state. Then (feat/admin-shell-reports-logs-rest) the Logs &
+    screening pages: the staff action logs with their filters (the
+    URL's `filters`, `startDate`, `endDate`), action menu, formatted
+    details and their modal, next pages; screened emails (allow),
+    screened URLs, screened IP addresses (filter, add, inline edit,
+    delete, allow, block); search logs (period, search type); the email
+    logs' five tabs with their filters, rows and next pages; and the
+    site settings' pending edits kept across a layout redraw. Refused,
+    saying so where used: the CSV exports, the theme and tag group
+    changes' details, the incoming email modal. Left, refused as pages:
     a report's page (AdminReport: its period groupings, dates, filters,
-    chart and table modes, export and refresh), /admin/logs: staff
-    actions, screened emails, IPs and URLs, search logs and a term;
-    email logs),
+    chart and table modes, export and refresh) and a search log term's
+    page),
     90g6. `feat/admin-shell-config` L (the /admin/config areas: about,
     content and category management, login, notifications, localization,
     analytics, permalinks, user defaults, trust levels, group
