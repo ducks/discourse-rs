@@ -1792,7 +1792,17 @@ route table has been made, so this list may be short.
     votes), the definition trashed (VoteRelease), general_category_id and
     the category site settings cleared after all_settings measured the
     upload settings, the deletion published and logged. Refused: a
-    category with a chat channel or embeddable hosts)
+    category with a chat channel or embeddable hosts), 190e.
+    ~~`feat/categories-types`~~ (done) M (Categories::Configure and
+    Unconfigure for Discussion, Ideas (topic voting's toggle: the voting
+    setting row, votes unarchived and archived) and Support (solved's
+    custom fields; removing it saves the category): the plugin enabled,
+    the schema's site settings through SiteSetting::Update for admins,
+    the configure log; on create (category_type, category_types, the
+    unavailable type's 422 rolling it back) and in update's
+    manage_category_types (availability first, the types' own custom
+    fields out of the pending ones). Refused: Events, site settings and
+    category settings given per type)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

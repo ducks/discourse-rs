@@ -13,8 +13,9 @@
 //!
 //! Refused: content localization (locale, category_localizations),
 //! category group moderation (moderating_group_ids), uploads as logos or
-//! backgrounds, email_in addresses, plugin category types other than
-//! Discussion, and the automations on category_created_edited.
+//! backgrounds, email_in addresses, the Events category type
+//! (crate::category_type_config) and the automations on
+//! category_created_edited.
 
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
@@ -3123,4 +3124,22 @@ impl Deleted {
         )
         .await
     }
+}
+
+/// `category.custom_fields[k] = v` for each field, then
+/// `save_custom_fields` (Categories::Types::Base#configure_custom_fields).
+pub async fn write_custom_fields(
+    conn: &mut PgConnection,
+    id: i32,
+    fields: &Map<String, Value>,
+) -> Result<(), AppError> {
+    let mut record = Record::load(&mut *conn, id)
+        .await?
+        .ok_or(Unsupported("a category that vanished while configuring it"))?;
+    let mut merged = record.custom_fields_loaded().clone();
+    for (k, v) in fields {
+        merged.insert(k.clone(), v.clone());
+    }
+    record.set_custom_fields(merged);
+    save_custom_fields(conn, &mut record, id).await
 }

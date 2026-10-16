@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Ideas",
+        "color": "F1592A",
+        "text_color": "FFFFFF",
+        "style_type": "emoji",
+        "emoji": "bulb",
+        "category_type": "ideas",
+        "category_types": [
+          "ideas"
+        ]
+      }
+    }
+  ]
+}

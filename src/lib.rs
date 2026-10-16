@@ -38,6 +38,7 @@ pub mod category;
 pub mod category_badge;
 pub mod category_list;
 pub mod category_serializer;
+pub mod category_type_config;
 pub mod category_types;
 pub mod category_writes;
 pub mod clock;

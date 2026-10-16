@@ -221,26 +221,44 @@ fn present(v: Option<&serde_json::Value>) -> bool {
     }
 }
 
-/// `Categories::Configure` for a type given on create: Discussion's
-/// configure is a no-op that logs; the plugin types are refused.
+/// `Categories::Configure.call` for a type: Ok(Err(message)) when the
+/// type is not available to the guardian.
+#[allow(clippy::too_many_arguments)]
 async fn configure_type(
     conn: &mut PgConnection,
-    user_id: i32,
+    state: &AppState,
+    cx: &crate::category_writes::Cx<'_>,
+    guardian: &Guardian,
     category_id: i32,
     category_type: &str,
-) -> Result<(), AppError> {
-    if category_type != "discussion" {
-        return Err(Unsupported("configuring a category as a plugin category type").into());
+    category_values: &serde_json::Map<String, serde_json::Value>,
+    site_setting_values: &serde_json::Map<String, serde_json::Value>,
+) -> Result<Result<(), String>, AppError> {
+    cs::with_registry(&cs::Cx::of(state), cx.settings, async |r| {
+        crate::category_type_config::configure(
+            conn,
+            cx,
+            r,
+            guardian,
+            category_id,
+            category_type,
+            category_values,
+            site_setting_values,
+        )
+        .await
+    })
+    .await
+}
+
+/// A hash param's scalar entries.
+fn param_map(
+    p: &serde_json::Map<String, serde_json::Value>,
+    key: &str,
+) -> serde_json::Map<String, serde_json::Value> {
+    match p.get(key) {
+        Some(serde_json::Value::Object(m)) => m.clone(),
+        _ => serde_json::Map::new(),
     }
-    crate::category_writes::log_custom(
-        conn,
-        user_id,
-        "configure_category_type",
-        category_id,
-        &[("category_type", category_type.to_string())],
-    )
-    .await?;
-    Ok(())
 }
 
 /// The scalar params of a list param (`Array(params[key]).compact_blank`).
@@ -343,14 +361,37 @@ pub async fn create(
         crate::category_writes::move_to(&mut tx, id, position_to_i(&position)).await?;
     }
     if let Some(t) = &category_type {
-        configure_type(&mut tx, user_id, id, t).await?;
+        // [custom_fields, category_type_settings (Events' keys only)]
+        let values = params.custom_fields.clone().unwrap_or_default();
+        let site_values = param_map(&p, "category_type_site_settings");
+        if let Err(message) = configure_type(
+            &mut tx,
+            &state,
+            &cx,
+            &guardian,
+            id,
+            t,
+            &values,
+            &site_values,
+        )
+        .await?
+        {
+            tx.rollback().await?;
+            return Ok(unprocessable(vec![message]));
+        }
     }
     let additional: Vec<&String> = category_types
         .iter()
         .filter(|t| Some(*t) != category_type.as_ref() && *t != "discussion")
         .collect();
+    let none = serde_json::Map::new();
     for t in &additional {
-        configure_type(&mut tx, user_id, id, t).await?;
+        if let Err(message) =
+            configure_type(&mut tx, &state, &cx, &guardian, id, t, &none, &none).await?
+        {
+            tx.rollback().await?;
+            return Ok(unprocessable(vec![message]));
+        }
     }
     // `@category.reload` after configuring types: no saved changes, the
     // category_setting association unloaded.
@@ -367,6 +408,8 @@ pub async fn create(
     crate::category_writes::log_creation(&mut tx, &cx, user_id, id).await?;
     tx.commit().await?;
     let mut conn = state.pool.acquire().await?;
+    // The settings as the type configuration left them.
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let json = cs::serialize(
         &mut conn,
         &cs::Cx::of(&state),
@@ -402,29 +445,79 @@ async fn current_types(
         .unwrap_or_default())
 }
 
-/// `manage_category_types`: the site settings a type configures and
-/// the types added or removed are refused (the plugin category types
-/// are not ported); a request that keeps the category's types passes.
+/// `manage_category_types`: the types the request's category_types adds
+/// are checked for availability first (Ok(Err(message)) for one that
+/// isn't), then the removed ones unconfigured and the added ones
+/// configured. Returns the custom field keys the changed types own,
+/// which leave the pending custom fields. Site settings given per type
+/// (category_type_site_settings) are refused.
 async fn manage_category_types(
     conn: &mut PgConnection,
     state: &AppState,
-    s: &SiteSettings,
+    cx: &crate::category_writes::Cx<'_>,
+    guardian: &Guardian,
     p: &serde_json::Map<String, serde_json::Value>,
     id: i32,
-) -> Result<(), AppError> {
+) -> Result<Result<Vec<&'static str>, String>, AppError> {
     if p.get("category_type_site_settings")
         .is_some_and(|v| !crate::category_writes::blank_param(v))
     {
         return Err(Unsupported("a category type's site settings").into());
     }
-    if p.contains_key("category_types") {
-        let mut wanted = param_list(p, "category_types");
-        wanted.push("discussion".into());
-        let current = current_types(conn, state, s, id).await?;
-        let removed = current.iter().any(|t| !wanted.contains(t));
-        let added = wanted.iter().any(|t| !current.contains(t));
-        if removed || added {
-            return Err(Unsupported("changing a category's plugin category types").into());
+    if !p.contains_key("category_types") {
+        return Ok(Ok(Vec::new()));
+    }
+    let mut wanted = param_list(p, "category_types");
+    wanted.push("discussion".into());
+    let current = current_types(conn, state, cx.settings, id).await?;
+    let removed: Vec<String> = current
+        .iter()
+        .filter(|t| !wanted.contains(t))
+        .cloned()
+        .collect();
+    let mut added: Vec<String> = Vec::new();
+    for t in wanted {
+        if !current.contains(&t) && !added.contains(&t) {
+            added.push(t);
+        }
+    }
+    let scx = cs::Cx::of(state);
+    // Preflight: every added type available before anything changes.
+    for t in &added {
+        let available = cs::with_registry(&scx, cx.settings, async |r| {
+            Ok(match crate::category_type_config::parse(t) {
+                Some(ty) => crate::category_type_config::available_for(r, ty, guardian)?,
+                None => false,
+            })
+        })
+        .await?;
+        if !available {
+            let message = cs::with_registry(&scx, cx.settings, async |r| {
+                crate::category_type_config::unavailable_error(&state.i18n, r, t)
+            })
+            .await?;
+            return Ok(Err(message));
+        }
+    }
+    let mut dropped: Vec<&'static str> = Vec::new();
+    for t in added.iter().chain(removed.iter()) {
+        let Some(ty) = crate::category_type_config::parse(t) else {
+            continue;
+        };
+        let keys = cs::with_registry(&scx, cx.settings, async |r| {
+            crate::category_type_config::custom_field_keys(conn, r, ty).await
+        })
+        .await?;
+        dropped.extend(keys);
+    }
+    for t in &removed {
+        crate::category_type_config::unconfigure(conn, cx, guardian, id, t).await?;
+    }
+    let none = serde_json::Map::new();
+    for t in &added {
+        if let Err(message) = configure_type(conn, state, cx, guardian, id, t, &none, &none).await?
+        {
+            return Ok(Err(message));
         }
     }
     if p.get("category_type_settings")
@@ -432,7 +525,7 @@ async fn manage_category_types(
     {
         return Err(Unsupported("a category type's category settings").into());
     }
-    Ok(())
+    Ok(Ok(dropped))
 }
 
 /// The id segment of `/categories/:id(.json)`.
@@ -465,7 +558,7 @@ pub async fn update(
         return Ok(super::search::invalid_access(&state));
     }
     let mut params = crate::category_writes::permit(&p, &s)?;
-    let old_params = params.clone();
+    let mut old_params = params.clone();
     drop(conn);
     let host = crate::pretty_text::Host::from_state(&state);
     let cx = crate::category_writes::Cx {
@@ -478,13 +571,31 @@ pub async fn update(
     if let Some(position) = params.remove("position").filter(|p| !p.is_null()) {
         crate::category_writes::move_to(&mut tx, c.id, position_to_i(&position)).await?;
     }
-    let pending = params.custom_fields.take();
-    manage_category_types(&mut tx, &state, &s, &p, c.id).await?;
+    let old_custom_fields = crate::category_serializer::custom_fields(&mut tx, c.id).await?;
+    let mut pending = params.custom_fields.take();
+    match manage_category_types(&mut tx, &state, &cx, &guardian, &p, c.id).await? {
+        Err(message) => {
+            // Rendered from inside json_result: the move stays.
+            tx.commit().await?;
+            return Ok(unprocessable(vec![message]));
+        }
+        Ok(dropped) => {
+            // The changed types' own fields leave the pending custom fields
+            // (the hash category_params and its copy share).
+            for key in dropped {
+                if let Some(fields) = pending.as_mut() {
+                    fields.remove(key);
+                }
+                if let Some(fields) = old_params.custom_fields.as_mut() {
+                    fields.remove(key);
+                }
+            }
+        }
+    }
     // cat.reload
     let mut record = crate::category_writes::Record::load(&mut tx, c.id)
         .await?
         .ok_or(Unsupported("a category that vanished during its update"))?;
-    let old_custom_fields = record.custom_fields_loaded().clone();
     if let Some(pending) = &pending {
         let merged = crate::category_writes::merge_pending_custom_fields(
             record.custom_fields_loaded(),
@@ -544,6 +655,8 @@ pub async fn update(
     .await?;
     tx.commit().await?;
     let mut conn = state.pool.acquire().await?;
+    // The settings as the type configuration left them.
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let json = cs::serialize(&mut conn, &cs::Cx::of(&state), &s, &guardian, c.id, &pre).await?;
     Ok(Json(json!({ "success": "OK", "category": json })).into_response())
 }

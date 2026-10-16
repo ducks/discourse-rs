@@ -1,0 +1,28 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "category_types": [
+          "discussion",
+          "support"
+        ],
+        "custom_fields": {
+          "enable_accepted_answers": "false",
+          "note": "kept"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/categories/2.json",
+      "params": {
+        "category_types": [
+          "discussion"
+        ]
+      }
+    }
+  ]
+}
