@@ -1,0 +1,80 @@
+{
+  "name": "create_permission_conflict",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Staff Sub",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 3,
+        "permissions": {
+          "trust_level_0": 1
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T01:45:47.244761",
+  "transaction_started_at": "2026-10-16T01:45:45.780799",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Any group that is allowed to access a subcategory must also be allowed to access the parent category. The following groups have access to one of the subcategories, but no access to parent category: trust_level_0."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8bGQeeHvfw1hvEWksMmJ5v7mVQo=",
+            "created_at": "2026-10-16T01:45:46.267556",
+            "rotated_at": "2026-10-16T01:45:46.266338",
+            "updated_at": "2026-10-16T01:45:46.267556",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8bGQeeHvfw1hvEWksMmJ5v7mVQo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T01:45:47.257261",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8bGQeeHvfw1hvEWksMmJ5v7mVQo=",
+            "created_at": "2026-10-16T01:45:46.267556",
+            "rotated_at": "2026-10-16T01:45:46.266338",
+            "updated_at": "2026-10-16T01:45:46.267556",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8bGQeeHvfw1hvEWksMmJ5v7mVQo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "80b0998711c8c3f303ad73527775f6aa65515724080195009c68ee3cc5f472d9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

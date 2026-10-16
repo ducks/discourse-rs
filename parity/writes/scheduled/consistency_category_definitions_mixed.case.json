@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE categories SET topic_id = NULL, description = NULL WHERE id = 4",
+    "UPDATE categories SET topic_id = NULL, default_slow_mode_seconds = 600 WHERE id = 34",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (3, 'skip_category_definition', 'true', now(), now())",
+    "UPDATE topics SET deleted_at = now() WHERE id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

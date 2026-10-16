@@ -1760,7 +1760,16 @@ route table has been made, so this list may be short.
     member's /categories update (Category.set_permission!);
     publish_category, so a definition's description changing on a
     title edit no longer refuses; Support's schema on a site without
-    Horizon)
+    Horizon), 190b. ~~`feat/categories-create`~~ (done) L (Category#save:
+    category_params, ActiveRecord's casts, the validations in order with
+    their messages, the before_save normalizations, permissions,
+    settings, custom fields, tags, tag groups, required tag groups, form
+    templates and posting review groups; POST /categories with position,
+    Discussion's configure log, the created web hook, the index job and
+    the creation log; create_category_definition, also for
+    ensure_db_consistency (jobs/consistency.rs:157). Refused: logos and
+    backgrounds, email_in, localizations, category group moderation,
+    the plugin category types, automations on category_created_edited)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Mine",
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    }
+  ]
+}

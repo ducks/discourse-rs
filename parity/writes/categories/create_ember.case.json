@@ -1,0 +1,63 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Announcements",
+        "slug": "",
+        "color": "0088CC",
+        "text_color": "FFFFFF",
+        "permissions": {
+          "everyone": 1
+        },
+        "auto_close_hours": null,
+        "auto_close_based_on_last_post": false,
+        "default_slow_mode_seconds": null,
+        "position": null,
+        "email_in": null,
+        "email_in_allow_strangers": false,
+        "mailinglist_mirror": false,
+        "parent_category_id": null,
+        "uploaded_logo_id": null,
+        "uploaded_logo_dark_id": null,
+        "uploaded_background_id": null,
+        "uploaded_background_dark_id": null,
+        "allow_badges": true,
+        "category_setting_attributes": {},
+        "custom_fields": {},
+        "topic_template": null,
+        "topic_title_placeholder": null,
+        "form_template_ids": [],
+        "all_topics_wiki": false,
+        "allow_unlimited_owner_edits_on_first_post": false,
+        "allowed_tags": [],
+        "allowed_tag_groups": [],
+        "allow_global_tags": false,
+        "required_tag_groups": [],
+        "sort_order": null,
+        "sort_ascending": null,
+        "topic_featured_link_allowed": true,
+        "show_subcategory_list": false,
+        "num_featured_topics": 3,
+        "default_view": null,
+        "subcategory_list_style": "rows_with_featured_topics",
+        "default_top_period": "all",
+        "minimum_required_tags": 0,
+        "navigate_to_first_post_after_read": false,
+        "search_priority": 0,
+        "topic_posting_review_group_ids": [],
+        "reply_posting_review_group_ids": [],
+        "read_only_banner": null,
+        "default_list_filter": "all",
+        "style_type": "square",
+        "emoji": null,
+        "icon": null,
+        "category_types": [
+          "discussion"
+        ]
+      }
+    }
+  ]
+}

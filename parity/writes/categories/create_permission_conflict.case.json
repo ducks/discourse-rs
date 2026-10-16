@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Staff Sub",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 3,
+        "permissions": {
+          "trust_level_0": 1
+        }
+      }
+    }
+  ]
+}

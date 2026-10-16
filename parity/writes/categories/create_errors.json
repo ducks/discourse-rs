@@ -1,0 +1,171 @@
+{
+  "name": "create_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "general",
+        "color": "AB9364",
+        "text_color": "FFFFFF"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Colors",
+        "color": "nope",
+        "text_color": "12",
+        "num_featured_topics": 0,
+        "slug": "none",
+        "auto_close_hours": -1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Too Deep",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 34
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Uncat Child",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "parent_category_id": 1,
+        "emoji": "not_an_emoji_at_all"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/categories.json",
+      "params": {
+        "name": "Wordy",
+        "color": "AB9364",
+        "text_color": "FFFFFF",
+        "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T01:45:38.658777",
+  "transaction_started_at": "2026-10-16T01:45:37.079841",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: name"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Category Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Num featured topics must be greater than 0",
+          "Auto close hours must be greater than 0",
+          "Slug is reserved",
+          "Color is invalid",
+          "Text color is invalid"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You can't nest a subcategory under another"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Emoji is invalid"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Description is too long (maximum is 1000 characters)."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1oJkiV3eYd2qK5WO9MLONVIZ1JI=",
+            "created_at": "2026-10-16T01:45:37.673656",
+            "rotated_at": "2026-10-16T01:45:37.672322",
+            "updated_at": "2026-10-16T01:45:37.673656",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "1oJkiV3eYd2qK5WO9MLONVIZ1JI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T01:45:38.676961",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1oJkiV3eYd2qK5WO9MLONVIZ1JI=",
+            "created_at": "2026-10-16T01:45:37.673656",
+            "rotated_at": "2026-10-16T01:45:37.672322",
+            "updated_at": "2026-10-16T01:45:37.673656",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "1oJkiV3eYd2qK5WO9MLONVIZ1JI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "32f3e66f170eca8a24de9761dbc154db31ad58c07d606c9274a2373b7c163e87",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
