@@ -259,15 +259,15 @@ impl Registry<'_> {
                         self.t(&format!("{p}.notify_on_staff_accept_solved.label")),
                     ),
                 ];
-                // Hidden when Horizon (theme -2) is the default theme.
+                // Hidden when Horizon (theme -2) is the default theme. Rails
+                // syncs the core themes on every migration, so a site always
+                // has it there; a restored backup from before Horizon has no
+                // row here, and Horizon cannot be its default theme.
                 let horizon: bool =
                     sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM themes WHERE id = -2)")
                         .fetch_one(&mut *conn)
                         .await?;
-                if !horizon {
-                    return Err(Unsupported("category types without the Horizon theme").into());
-                }
-                if self.cx.settings.get("default_theme_id")?.to_i() != -2 {
+                if !horizon || self.cx.settings.get("default_theme_id")?.to_i() != -2 {
                     custom.push(field(
                         "empty_box_on_unsolved",
                         json!(true),
@@ -533,6 +533,19 @@ impl Registry<'_> {
             out.push(self.metadata(conn, t, Some(guardian)).await?);
         }
         Ok(Value::Array(out))
+    }
+
+    /// `Category#category_types` for one category.
+    pub async fn for_category(
+        &self,
+        conn: &mut PgConnection,
+        category_id: i32,
+    ) -> Result<Value, AppError> {
+        Ok(self
+            .for_categories(conn, &[category_id])
+            .await?
+            .pop()
+            .unwrap_or_else(|| json!({})))
     }
 
     /// `Category#category_types` for each of the categories: the metadata

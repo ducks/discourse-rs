@@ -1396,8 +1396,8 @@ generate_theme_screenshot_thumbnails (171).
     GroupMentionsUpdater), an editor who can no longer see the group
     (routes/admin_groups.rs:1379), ordering members by custom fields
     (routes/groups.rs:999), random username suggestions (:409), the
-    group activity, messages and manage pages (:1541), group permissions
-    with categories (:1336, after 190's CategorySerializer)
+    group activity, messages and manage pages (:1541); group permissions
+    with categories are done (190a)
 158. `feat/shared-drafts` M: shared_drafts_category (topic_query.rs:371;
     topic_guardian.rs:373,770) and publishing them
     (jobs/topic_timers.rs:132, TopicPublisher)
@@ -1695,9 +1695,9 @@ route table has been made, so this list may be short.
     message inbox in pm-reset-new and bulk archiving, filter=unread over
     a message inbox, bulk deleting one's own topics or as a non-staff
     user, the nested view toggle while nested replies are on,
-    routes/topics_bulk.rs, topics_bulk.rs). Stays refused: a category
-    definition's description changing on a title edit needs
-    CategorySerializer (190)
+    routes/topics_bulk.rs, topics_bulk.rs). A category definition's
+    description changing on a title edit is published with 190a's
+    CategorySerializer
 189. `feat/tags-writes` L: tags on topics (posts#create and update
     refuse them, routes/posts.rs; PUT /t, routes/topic_update.rs; a
     split's new topic, post_mover.rs; the bulk tag operations,
@@ -1752,7 +1752,15 @@ route table has been made, so this list may be short.
     scheduled/consistency_category_definition), saving a category without
     its settings (user_destroyer.rs:1147,1181; post_owner_changer.rs:282),
     category types without Horizon (category_types.rs:268), the category
-    editor (topic voting's toggle)
+    editor (topic voting's toggle). Split by dependency, each branch
+    stacked on the one before: 190a. ~~`feat/categories-show`~~ (done) M
+    (CategorySerializer with its plugin fields and the category
+    guardian methods; categories#show, find_by_slug with the not-found
+    page, visible_groups; group permissions with categories; a group
+    member's /categories update (Category.set_permission!);
+    publish_category, so a definition's description changing on a
+    title edit no longer refuses; Support's schema on a site without
+    Horizon)
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

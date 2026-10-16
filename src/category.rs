@@ -52,7 +52,7 @@ impl Category {
 
     /// `Category.find_by_slug_path`: each segment lowercased, matched under
     /// the previous category; `<id>-category` slugs match by id.
-    async fn find_by_slug_path(
+    pub(crate) async fn find_by_slug_path(
         conn: &mut PgConnection,
         segments: &[&str],
         max_nesting: i64,

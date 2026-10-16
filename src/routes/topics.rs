@@ -160,7 +160,7 @@ pub(crate) async fn not_found_extras(
 }
 
 /// topics#show's 404: not_found with the extras.
-async fn topic_not_found(
+pub(crate) async fn topic_not_found(
     state: &AppState,
     guardian: &Guardian,
     slug: &str,

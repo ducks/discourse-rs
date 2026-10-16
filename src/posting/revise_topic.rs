@@ -1740,22 +1740,21 @@ pub async fn revision_recipients(
 }
 
 /// `Post#sync_category_description` from revise_topic: a category
-/// definition's description follows its first paragraph. Changing it
-/// publishes the category on /categories (CategorySerializer, not
-/// ported), so a change is refused.
+/// definition's description follows its first paragraph, and a change is
+/// published on /categories.
 async fn sync_category_description(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     topic_id: i32,
     cooked: &str,
 ) -> Result<(), AppError> {
-    let category: Option<Option<String>> = sqlx::query_scalar(
-        "SELECT description FROM categories WHERE topic_id = $1 ORDER BY id LIMIT 1",
+    let category: Option<(i32, Option<String>)> = sqlx::query_as(
+        "SELECT id, description FROM categories WHERE topic_id = $1 ORDER BY id LIMIT 1",
     )
     .bind(topic_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let Some(description) = category else {
+    let Some((category_id, description)) = category else {
         return Ok(());
     };
     let Some(html) = crate::username_changer::first_paragraph_description(cooked) else {
@@ -1776,10 +1775,26 @@ async fn sync_category_description(
     if description == new_description {
         return Ok(());
     }
-    Err(Unsupported(
-        "a category description changing on its definition's revision (publish_category's CategorySerializer)",
+    // update_column (no updated_at), then publish_category.
+    sqlx::query("UPDATE categories SET description = $2 WHERE id = $1")
+        .bind(category_id)
+        .bind(&new_description)
+        .execute(&mut *conn)
+        .await?;
+    let cx = crate::category_serializer::Cx {
+        config: ctx.config,
+        i18n: ctx.i18n,
+        defs: &ctx.host.site_setting_defs,
+    };
+    crate::category_serializer::publish_category(
+        &mut *conn,
+        &cx,
+        ctx.bus,
+        ctx.settings,
+        category_id,
+        &Default::default(),
     )
-    .into())
+    .await
 }
 
 /// `topic.save!` on a topic as it is (TopicConverter after adding allowed

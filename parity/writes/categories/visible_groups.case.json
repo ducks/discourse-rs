@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (3, 10, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (4, 0, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/4/visible_groups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/3/visible_groups.json"
+    }
+  ]
+}

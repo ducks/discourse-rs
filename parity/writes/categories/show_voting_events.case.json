@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {
+    "topic_voting_enabled": "true",
+    "enable_simplified_category_creation": "true",
+    "events_calendar_categories": "4",
+    "calendar_categories": "categoryId=4;weekends=false;defaultView=week"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now()), (4, 'custom_list', 'a', now(), now()), (4, 'custom_list', 'b', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/4/show.json"
+    }
+  ]
+}
