@@ -70,6 +70,7 @@ mod chat;
 mod chat_pages;
 mod color_schemes;
 mod impersonate;
+mod invite_redeem;
 mod invites;
 mod onebox;
 mod polls;
@@ -530,7 +531,29 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/invites/{id}",
-            put(invites::update).delete(invites::destroy),
+            get(invite_redeem::show)
+                .put(invites::update)
+                .delete(invites::destroy),
+        )
+        .route(
+            "/invites/show/{id}",
+            put(invite_redeem::perform_accept_invitation),
+        )
+        .route(
+            "/session/login-code",
+            post(invite_redeem::create_login_code),
+        )
+        .route(
+            "/session/login-code.json",
+            post(invite_redeem::create_login_code),
+        )
+        .route(
+            "/session/login-code/verify",
+            post(invite_redeem::verify_login_code),
+        )
+        .route(
+            "/session/login-code/verify.json",
+            post(invite_redeem::verify_login_code),
         )
         .route("/invites/retrieve", get(invites::retrieve))
         .route("/invites/retrieve.json", get(invites::retrieve))

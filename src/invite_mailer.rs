@@ -145,3 +145,67 @@ pub async fn invite_email(state: &AppState, args: &Value) -> Result<(), AppError
     tx.commit().await?;
     Ok(())
 }
+
+pub const INVITE_PASSWORD_INSTRUCTIONS_EMAIL: &str = "invite_password_instructions_email";
+
+/// `Jobs::InvitePasswordInstructionsEmail`: InviteMailer's
+/// send_password_instructions, a password reset token in a link to set
+/// one.
+pub async fn invite_password_instructions_email(
+    state: &AppState,
+    args: &Value,
+) -> Result<(), AppError> {
+    let Some(login) = args
+        .get("username")
+        .and_then(Value::as_str)
+        .filter(|u| !crate::ruby::is_blank(u))
+    else {
+        return Err(Unsupported(
+            "invite_password_instructions_email without a username (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = crate::site_settings::SiteSettings::load(
+        &mut conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
+    let Some(user_id) = crate::pm_invite::find_by_username_or_email(&mut conn, login).await? else {
+        return Err(Unsupported("password instructions for a user that is gone").into());
+    };
+    let email: String = sqlx::query_scalar(
+        "SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\" LIMIT 1",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::email::sender::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        mailer: &state.mailer,
+    };
+    let mut tx = state.pool.begin().await?;
+    let token = crate::accounts::create_email_token(
+        &mut tx,
+        user_id,
+        &email,
+        crate::accounts::token_scopes::PASSWORD_RESET,
+    )
+    .await?;
+    let built = crate::email::account::build_template(
+        &ctx,
+        "invite_password_instructions",
+        &email,
+        &[("email_token", &token)],
+        None,
+    )
+    .await?;
+    crate::email::sender::send(&mut tx, &ctx, built, "invite_password_instructions", None).await?;
+    tx.commit().await?;
+    Ok(())
+}
