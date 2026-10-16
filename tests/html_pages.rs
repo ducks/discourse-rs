@@ -179,6 +179,17 @@ async fn stylesheet_is_served() {
     assert!(css.contains(".topic-list .posters"));
 }
 
+/// Each bundled asset has its route: a page that links one without it
+/// gets a 404 for the script.
+#[tokio::test]
+async fn every_asset_is_served() {
+    let db = TestDb::new().await;
+    for name in discourse_rs::assets::names() {
+        let (status, _, _) = get(&db.pool, &format!("/assets/{name}")).await;
+        assert_eq!(status, StatusCode::OK, "/assets/{name}");
+    }
+}
+
 /// Each page says where its live updates start, as a pg-bus position, and
 /// polling from there delivers what changed after the page was read.
 #[tokio::test(flavor = "multi_thread")]
