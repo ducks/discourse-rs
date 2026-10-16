@@ -1937,9 +1937,9 @@ route table has been made, so this list may be short.
 200. `feat/user-exports` M: user and admin CSV exports (/export_entity,
     ExportCsvFile), a recent export on the admin view of a user
     (admin_user_show.rs)
-201. `perf/topic-view-queries` M: the topic view's per-post queries
-    (milestone 2); bench above two connections needs a machine that
-    holds its clocks (BENCH.md)
+201. ~~`perf/topic-view-queries`~~ (done as perf/topic-page-queries and
+    perf/topic-page-chrome, BENCH.md 2026-10-16) M: the topic view's
+    per-post queries (milestone 2)
 202. `feat/plugins-unported` L: the plugins the reference runs that the
     port doesn't: discourse-ai, gamification, calendar and events, data
     explorer (admin_dashboard.rs:1060), automation and
@@ -2081,8 +2081,8 @@ how often a backup trips them.
 - [ ] `subcategory_list` styles, paginated category lists: 128
 - [x] Performance: batch the list serializer's per-topic queries (99 to
       11 per /latest.json, 137 to 332 req/s at one connection)
-- [ ] Performance: the topic view's per-post queries; bench above two
-      connections needs a machine that holds its clocks (BENCH.md): 201
+- [x] Performance: the topic view's per-post queries (169 to 143 per
+      logged-in topic page, 4 fewer for each further post): 201
 - [ ] Group flair uploads, user fields, badges granted, auth providers,
       user color schemes on `/site.json`. User fields (87b) and user color
       schemes (90b) done; group flair uploads: 157; auth providers: 191;
