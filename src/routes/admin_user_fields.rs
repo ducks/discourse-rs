@@ -105,8 +105,24 @@ pub async fn index_alias(
     if let Some(r) = staff_route(&state, &guardian) {
         return Ok(r);
     }
+    if ember_page(&headers, &uri) {
+        return super::admin_config::user_fields_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            super::admin_config::UserFieldsPage::List,
+        )
+        .await;
+    }
     refuse_html(&headers, &uri)?;
     index_json(&state).await
+}
+
+/// An HTML request for one of the Ember pages (adminUserFields), whose
+/// paths are the dashed ones.
+fn ember_page(headers: &HeaderMap, uri: &Uri) -> bool {
+    !json_request(headers, uri) && uri.path().starts_with("/admin/config/user-fields")
 }
 
 /// GET /admin/config/user-fields/:id and /user_fields/:id: show (`new`
@@ -120,6 +136,16 @@ pub async fn show(
 ) -> Result<Response, AppError> {
     if let Some(r) = staff_route(&state, &guardian) {
         return Ok(r);
+    }
+    if ember_page(&headers, &uri) && id == "new" {
+        return super::admin_config::user_fields_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            super::admin_config::UserFieldsPage::New,
+        )
+        .await;
     }
     refuse_html(&headers, &uri)?;
     if strip_json(&id) == "new" {
@@ -141,12 +167,26 @@ pub async fn show(
 pub async fn edit(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
-    Path(_id): Path<String>,
+    Path(id): Path<String>,
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
     if let Some(r) = staff_route(&state, &guardian) {
         return Ok(r);
+    }
+    if ember_page(&headers, &uri) {
+        // The route's store.find: a field that isn't there is the 404.
+        let Some(id) = field_id(&id) else {
+            return Ok(super::topics::not_found_response(&state));
+        };
+        return super::admin_config::user_fields_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            super::admin_config::UserFieldsPage::Edit(id),
+        )
+        .await;
     }
     refuse_html(&headers, &uri)?;
     Ok(StatusCode::NO_CONTENT.into_response())

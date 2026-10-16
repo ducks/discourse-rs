@@ -195,3 +195,102 @@ async fn the_flags_pages() {
         .await;
     assert_eq!(status, StatusCode::NO_CONTENT);
 }
+
+#[tokio::test]
+async fn the_permalinks_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // None yet: the empty list.
+    let (status, html) = admin.page("/admin/config/permalinks").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Permalinks - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-config admin-permalinks\"><div class=\"admin-permalinks admin-config-page\"><div class=\"d-page-header\">"));
+    assert!(
+        html.contains("admin-config-area-empty-list__cta-button admin-permalinks__add-permalink")
+    );
+    sqlx::query("INSERT INTO permalinks (url, external_url, created_at, updated_at) VALUES ('old/path', 'https://example.com/x', now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = admin.page("/admin/config/permalinks").await;
+    assert!(
+        html.contains("<tr class=\"d-table__row admin-permalink-item old_path\""),
+        "{html}"
+    );
+    assert!(html.contains("d-icon-up-right-from-square"));
+    assert!(html.contains("<a href=\"https://example.com/x\">https://example.com/x</a>"));
+    assert!(html.contains("d-filter-controls__input"));
+    // A filter's results, for the script.
+    let (_, html) = admin.page("/admin/config/permalinks?filter=zzz").await;
+    assert!(
+        html.starts_with("<div class=\"d-filter-controls__no-results\">"),
+        "{html}"
+    );
+    // The forms go without the header; the edit shows the type's field.
+    let id: i32 = sqlx::query_scalar("SELECT id FROM permalinks WHERE url = 'old/path'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = admin.page(&format!("/admin/config/permalinks/{id}")).await;
+    assert!(html.contains("<div class=\"admin-contents admin-config admin-permalinks edit\"><div class=\"admin-permalinks admin-config-page\"><div class=\"admin-container admin-config-page__main-area\"><a class=\"active btn btn-transparent back-button\""), "{html}");
+    assert!(html.contains("selected=\"\" value=\"external_url\""));
+    assert!(html.contains("name=\"externalUrl\" value=\"https://example.com/x\""));
+    let (_, html) = admin.page("/admin/config/permalinks/new").await;
+    assert!(html.contains("<h3 class=\"admin-config-area-card__title\">Add permalink</h3>"));
+    assert!(html.contains("name=\"topicId\""));
+    let (_, html) = admin.page("/admin/config/permalinks/settings").await;
+    assert!(html.contains("<li class=\"active admin-permalinks-tabs__settings\">"));
+    // The JSON stays the controller's.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/permalinks.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("[{"), "{body}");
+}
+
+#[tokio::test]
+async fn the_user_fields_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/user-fields").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>User fields - Admin - "), "{html}");
+    assert!(html.contains("admin-user_fields__add-emoji"));
+    sqlx::query("INSERT INTO user_fields (name, description, field_type_enum, editable, requirement, show_on_profile, show_on_user_card, searchable, show_on_signup, position, created_at, updated_at) VALUES ('Company', 'Where you work', 0, false, 2, false, false, true, true, 1, now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = admin.page("/admin/config/user-fields").await;
+    assert!(
+        html.contains(
+            "<div class=\"d-table__overview-name admin-user_field-item__name\">Company</div>"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"d-table__overview-flags\">"));
+    let id: i32 = sqlx::query_scalar("SELECT id FROM user_fields WHERE name = 'Company'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = admin
+        .page(&format!("/admin/config/user-fields/{id}/edit"))
+        .await;
+    assert!(
+        html.contains("<title>Edit User Field - User fields - Admin - "),
+        "{html}"
+    );
+    assert!(!html.contains("d-page-header__title"));
+    assert!(html.contains("value=\"Company\""));
+    assert!(html.contains("data-editable-false=\"\""));
+    let (_, html) = admin.page("/admin/config/user-fields/new").await;
+    assert!(html.contains("<title>Add User Field - User fields - Admin - "));
+    assert!(html.contains("value=\"optional\" checked=\"\""));
+    // The JSON stays the controller's.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/user-fields.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"user_fields\":["), "{body}");
+}

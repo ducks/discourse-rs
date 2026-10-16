@@ -758,10 +758,14 @@ then by what running a forum needs (milestone 6). Briefs:
     refused when opened. Then feat/admin-shell-config-flags: the flags
     list with its toggles, edit and its menu's move and delete, the
     settings tab, and the new and edit forms with FormKit's validation,
-    counters and the applies-to MultiSelect. Left: about, content and
-    category management, login, permalinks, user fields, watched words,
-    logo, fonts, emoji, welcome banner, MCP, upcoming changes, what's
-    new), 90g7. `feat/admin-shell-customize` L
+    counters and the applies-to MultiSelect. Then
+    feat/admin-shell-config-permalinks: the permalinks list (the
+    server's filter, copy, edit, delete), its settings tab and form with
+    each type's field; the user fields list (move, delete) and form
+    (the requirement and preferences rules, the options' ValueList, the
+    confirmation for all users). Left: about, content and category
+    management, login, watched words, logo, fonts, emoji, welcome
+    banner, MCP, upcoming changes, what's new), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
     palettes, site texts, email style, form templates, embedding, robots
     txt), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
