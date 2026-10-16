@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block title %}{% if !page_title.is_empty() %}{{ page_title }} - {% endif %}{{ site_title }}{% endblock %}
+{% block content %}
+{{ main|safe }}
+<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "category-edit.js") }}"></script>
+{% endblock %}

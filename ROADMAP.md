@@ -1802,7 +1802,14 @@ route table has been made, so this list may be short.
     unavailable type's 422 rolling it back) and in update's
     manage_category_types (availability first, the types' own custom
     fields out of the pending ones). Refused: Events, site settings and
-    category settings given per type)
+    category settings given per type), 190f. ~~`feat/categories-editor`~~
+    (done) M (the category editor at /c/*slug/edit(/:tab) and
+    /new-category: the General tab with the category types (Ideas is
+    topic voting's toggle), Security's permissions table and Settings,
+    saved as Ember's Category#save sends it, and the delete section.
+    Left: the Images, Topic template, Tags and Localizations tabs, the
+    emoji and icon pickers and colour palette, and the entry points on
+    the category and categories pages (the edit wrench, New category))
 191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
     and associated accounts (site.rs:1233; user_private.rs:130;

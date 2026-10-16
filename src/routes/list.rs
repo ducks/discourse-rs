@@ -473,7 +473,7 @@ pub async fn category(
     };
     // categories#show, find_by_slug, visible_groups and the editor.
     if let Some(response) =
-        super::categories::dispatch(&state, &guardian, &headers, &path, json).await?
+        super::categories::dispatch(&state, &guardian, &headers, &uri, &path, json).await?
     {
         return Ok(response);
     }

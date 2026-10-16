@@ -391,6 +391,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/category/{category_id}/slug.json",
             put(categories::update_slug).get(permalinks::category_redirect),
         )
+        .route("/new-category", get(categories::new_category_page))
+        .route("/new-category/{tab}", get(categories::new_category_page))
         .route(
             "/categories/{id}",
             put(categories::update).delete(categories::destroy),
