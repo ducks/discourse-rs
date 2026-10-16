@@ -731,10 +731,23 @@ then by what running a forum needs (milestone 6). Briefs:
     logs' five tabs with their filters, rows and next pages; and the
     site settings' pending edits kept across a layout redraw. Refused,
     saying so where used: the CSV exports, the theme and tag group
-    changes' details, the incoming email modal. Left, refused as pages:
-    a report's page (AdminReport: its period groupings, dates, filters,
-    chart and table modes, export and refresh) and a search log term's
-    page),
+    changes' details, the incoming email modal. Then
+    (feat/admin-shell-report-page) a report's page: AdminReport's chrome
+    drawn by the server from the bulk request Ember makes (the back link,
+    to the dashboard when it came from there; the period groupings,
+    dates, the category, group, list, bool and category list filters;
+    the average label, errors and no-data alert; the modes, refresh;
+    the related users), its modes by static/js/admin-report.js (the
+    table with sorting, pages, totals and the related users' summary
+    menus; the line, stacked, stacked line and radar charts, shared with
+    the dashboard in admin-report-charts.js; the inline table; posters
+    by member type with its members report), the controls changing the
+    route's query params as onParamsChange does. Refused, saying so
+    where used: the CSV export, the compare groups modal, the counters
+    and storage stats modes (no core report draws them on this page),
+    discourse-solved's related solved topics; the summary menu opens on
+    click only, not on a delayed hover. Left, refused as a page: a
+    search log term's page),
     90g6. `feat/admin-shell-config` L (the /admin/config areas: about,
     content and category management, login, notifications, localization,
     analytics, permalinks, user defaults, trust levels, group

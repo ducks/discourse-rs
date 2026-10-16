@@ -19,6 +19,8 @@ struct Client {
     cookies: Vec<(String, String)>,
     csrf: Option<String>,
     mobile: bool,
+    // A header the next request carries (htmx's HX-Current-URL).
+    extra: Option<(String, String)>,
 }
 
 impl Client {
@@ -28,6 +30,7 @@ impl Client {
             cookies: Vec::new(),
             csrf: None,
             mobile: false,
+            extra: None,
         }
     }
 
@@ -42,6 +45,9 @@ impl Client {
             .method(method)
             .uri(path)
             .header(header::HOST, "test.localhost");
+        if let Some((name, value)) = self.extra.take() {
+            request = request.header(name, value);
+        }
         if xhr {
             request = request.header("x-requested-with", "XMLHttpRequest");
             if let Some(token) = &self.csrf {
@@ -103,6 +109,16 @@ impl Client {
             )
             .await;
         client
+    }
+
+    async fn page_with_header(
+        &mut self,
+        path: &str,
+        name: &str,
+        value: &str,
+    ) -> (StatusCode, String) {
+        self.extra = Some((name.to_string(), value.to_string()));
+        self.page(path).await
     }
 
     async fn page(&mut self, path: &str) -> (StatusCode, String) {
@@ -623,14 +639,106 @@ async fn the_reports_index() {
 }
 
 #[tokio::test]
+async fn the_report_page() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE users SET created_at = '2026-01-10 12:00:00' WHERE username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    set_setting(&db.pool, "dashboard_hidden_reports", 8, "visits").await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    // A chart: the chrome, the groupings, the dates, the group filter,
+    // the modes; the related users below; the report for the script.
+    let (status, html) = admin
+        .page("/admin/reports/signups?start_date=2026-01-01&end_date=2026-01-31")
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-reports\">"));
+    assert!(
+        html.contains(
+            "<a class=\"active btn btn-transparent back-button\" href=\"/admin/reports\">"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-report is-enabled is-visible signups\">"));
+    assert!(html.contains("<a class=\"d-page-subheader__title-link\" href=\"/admin/reports/signups?start_date&#x3D;2026-01-01&amp;end_date&#x3D;2026-01-31\">Signups</a>"), "{html}");
+    assert!(html.contains("name=\"chart-grouping-signups\" type=\"radio\" value=\"weekly\""));
+    assert!(html.contains("type=\"date\" value=\"2026-01-01\""));
+    assert!(html.contains(
+        "<div class=\"chart__filter --group\"><div class=\"input\"><div class=\"group-filter\">"
+    ));
+    assert!(html.contains("mode-btn chart btn-primary\""));
+    assert!(
+        html.contains("<section class=\"admin-report-related-items\">"),
+        "{html}"
+    );
+    assert!(html.contains("admin-report-related-items__username\">user1</span>"));
+    assert!(html.contains("id=\"admin-report-data\""));
+    assert!(html.contains("/admin-report-charts.js") && html.contains("/admin-report.js"));
+    // A table carries no groupings; its mode is the script's to draw.
+    let (_, html) = admin
+        .page("/admin/reports/signups?mode=table&start_date=2026-01-01&end_date=2026-01-31")
+        .await;
+    assert!(!html.contains("chart-groupings"));
+    assert!(!html.contains("admin-report-related-items\""));
+    assert!(html.contains("mode-btn table btn-primary\""));
+    // No data: the alert with the report's link.
+    let (_, html) = admin
+        .page("/admin/reports/signups?start_date=2020-01-01&end_date=2020-01-31")
+        .await;
+    assert!(
+        html.contains("<div class=\"alert alert-info report-alert no-data\">"),
+        "{html}"
+    );
+    // A filter the URL carries is the filter's selection.
+    let (_, html) = admin
+        .page("/admin/reports/signups?filters=%7B%22group%22%3A1%7D")
+        .await;
+    assert!(
+        html.contains("combo-box has-selection\" data-filter=\"group\""),
+        "{html}"
+    );
+    // A report that doesn't exist: no header or filtering.
+    let (status, html) = admin.page("/admin/reports/nonexistent_xyz").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<div class=\"alert alert-error report-alert not-found\">"));
+    assert!(!html.contains("chart__actions"));
+    // A hidden report draws nothing inside.
+    let (_, html) = admin.page("/admin/reports/visits").await;
+    assert!(
+        html.contains("<div class=\"admin-report is-enabled hidden visits\"></div>"),
+        "{html}"
+    );
+    // From the dashboard, the way back is the dashboard.
+    let (_, html) = admin
+        .page_with_header(
+            "/admin/reports/signups",
+            "hx-current-url",
+            "http://localhost/admin?period=weekly",
+        )
+        .await;
+    assert!(
+        html.contains(
+            "<a class=\"btn btn-transparent back-button\" href=\"/admin?period&#x3D;weekly\">"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("Back to dashboard"));
+    // The JSON stays the report.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/reports/signups", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"report\":{"), "{body}");
+}
+
+#[tokio::test]
 async fn the_admin_pages_not_drawn_yet_are_refused() {
     let db = TestDb::new().await;
     let st = admin_state(&db).await;
     let mut admin = Client::logged_in(st, "admin").await;
-    for path in [
-        "/admin/reports/signups",
-        "/admin/logs/search_logs/term?term=foo",
-    ] {
+    for path in ["/admin/logs/search_logs/term?term=foo"] {
         let (status, _) = admin.page(path).await;
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
         // Their JSON is served.

@@ -10,6 +10,7 @@ pub mod admin_dashboard_view;
 pub mod admin_flags;
 pub mod admin_groups_view;
 pub mod admin_logs_view;
+pub mod admin_report_view;
 pub mod admin_reports_view;
 pub mod admin_site_settings;
 pub mod admin_site_settings_view;

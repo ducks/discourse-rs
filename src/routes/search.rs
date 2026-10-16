@@ -882,7 +882,7 @@ fn valid_search_term(term: &str, settings: &SiteSettings) -> Result<bool, AppErr
 /// The advanced filters' data: the site's categories by activity with
 /// their chooser rows (CategoryRow) and header labels, and the options
 /// the viewer and plugins bring.
-async fn advanced_panel(
+pub(super) async fn advanced_panel(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
