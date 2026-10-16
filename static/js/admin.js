@@ -103,8 +103,10 @@
         syncWidth();
       }
     }, { root: null, threshold: 0 });
+    // The intersection's first report (on observing) draws the bar or
+    // not; drawing it before that showed it for a moment, 12px above a
+    // table whose bottom was in view.
     observer.observe(content);
-    syncWidth();
     // dOnResize: a later change of the content's size syncs the width
     // again (its first report comes before the intersection's).
     var first = true;
