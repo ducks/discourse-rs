@@ -294,3 +294,67 @@ async fn the_user_fields_pages() {
     assert_eq!(status, StatusCode::OK);
     assert!(body.starts_with("{\"user_fields\":["), "{body}");
 }
+
+#[tokio::test]
+async fn the_content_and_login_areas() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // Content: each tab titled by its own label.
+    let (status, html) = admin.page("/admin/config/content").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Categories &#38; tags - Admin - "),
+        "{html}"
+    );
+    assert!(
+        html.contains("<div class=\"admin-contents admin-config content categories-and-tags\">")
+    );
+    assert!(
+        html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/config/content\">")
+    );
+    assert!(html.contains("data-setting=\"tag_style\""));
+    // A setting's preview, with its value.
+    assert!(
+        html.contains("<div class=\"preview\" data-template="),
+        "{html}"
+    );
+    let (_, html) = admin.page("/admin/config/content/sharing").await;
+    assert!(html.contains("<div class=\"admin-contents admin-config content sharing\">"));
+    // The settings route goes to the first tab.
+    let (status, location) = admin.page("/admin/config/content/settings").await;
+    assert!(status.is_redirection(), "{status}");
+    assert_eq!(location, "/admin/config/content");
+    // Login: titled by the area; its settings tab adds a crumb.
+    let (_, html) = admin.page("/admin/config/login-and-authentication").await;
+    assert!(
+        html.contains("<title>Login &#38; authentication - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-contents admin-config login settings\">"));
+    assert_eq!(
+        html.matches("class=\"d-breadcrumbs__item\"").count(),
+        3,
+        "{html}"
+    );
+    let (_, html) = admin
+        .page("/admin/config/login-and-authentication/authenticators")
+        .await;
+    assert!(html.contains("<div class=\"admin-contents admin-config login authenticators\">"));
+    // Discourse ID's controller is not ported.
+    let (status, _) = admin
+        .page("/admin/config/login-and-authentication/discourse-id")
+        .await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    // The JSON is the site settings controller's.
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            "/admin/config/content.json?filter_area=sharing",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"site_settings\":["), "{body}");
+}

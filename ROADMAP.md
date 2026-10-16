@@ -763,9 +763,16 @@ then by what running a forum needs (milestone 6). Briefs:
     server's filter, copy, edit, delete), its settings tab and form with
     each type's field; the user fields list (move, delete) and form
     (the requirement and preferences rules, the options' ValueList, the
-    confirmation for all users). Left: about, content and category
-    management, login, watched words, logo, fonts, emoji, welcome
-    banner, MCP, upcoming changes, what's new), 90g7. `feat/admin-shell-customize` L
+    confirmation for all users). Then
+    feat/admin-shell-config-content-login: content's four tabs and
+    login's settings, authenticators and DiscourseConnect tabs, and a
+    setting's preview (tag_style's). Refused: login's Discourse ID tab
+    (Admin::Config::DiscourseIdController is not ported); the plugins'
+    login tabs (oauth2, oidc) wait for their plugins. Left: about,
+    category management, watched words, logo, fonts, emoji, welcome
+    banner, MCP, upcoming changes, what's new; the settings' links to
+    their area's page (linkifySettingLinks, from the admin search's data
+    source, 90g9)), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
     palettes, site texts, email style, form templates, embedding, robots
     txt), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch

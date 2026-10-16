@@ -666,7 +666,18 @@ fn setting_row(cx: &AdminCx, page: &Page, setting: &Value) -> String {
     } else {
         let display_description = kind != "bool";
         match form_kit_type(setting) {
-            Some(control) => out.push_str(&form_kit(cx, page, setting, control, disabled)),
+            Some(control) => {
+                out.push_str(&form_kit(cx, page, setting, control, disabled));
+                // SiteSetting#preview: the setting's preview markup with
+                // its value (site-settings.js redraws it as it changes).
+                if let Some(preview) = setting["preview"].as_str() {
+                    out.push_str(&format!(
+                        "<div class=\"preview\" data-template=\"{}\">{}</div>",
+                        escape(preview),
+                        preview.replace("{{value}}", &value_string(&setting["value"]))
+                    ));
+                }
+            }
             None => out.push_str(&legacy(cx, page, setting, &kind, disabled)),
         }
         out.push_str(&validation);

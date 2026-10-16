@@ -63,3 +63,6 @@
 /admin/config/permalinks/settings as=admin
 /admin/config/user-fields as=admin
 /admin/config/user-fields/new as=admin
+# The content and login areas (90g6).
+/admin/config/content as=admin
+/admin/config/login-and-authentication as=admin

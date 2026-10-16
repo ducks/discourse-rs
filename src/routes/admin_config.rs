@@ -214,7 +214,7 @@ pub(super) fn routes(mut router: Router<AppState>) -> Router<AppState> {
             .route(&format!("/admin/config/{}", a.path), get(handler))
             .route(&format!("/admin/config/{}.json", a.path), get(handler));
     }
-    router
+    tabbed_routes(router)
 }
 
 /// The area's settings page; its JSON (and anyone but an admin) goes to
@@ -607,4 +607,255 @@ pub(super) async fn user_fields_page(
     );
     let main = crate::admin_view::contents(classes, &content);
     shell.render(state, uri, &title, main, "admin-config.js", StatusCode::OK)
+}
+
+/// An area whose tabs are each AdminAreaSettings (content, login): the
+/// tab's path under the area, its DNavItem label, its route's class, the
+/// AdminAreaSettings area, and whether it shows its breadcrumb.
+struct Tab {
+    path: &'static str,
+    label: &'static str,
+    class: &'static str,
+    area: &'static str,
+    crumb: bool,
+}
+
+struct TabbedArea {
+    path: &'static str,
+    key: &'static str,
+    link: &'static str,
+    /// Each tab's title is the area's (true) or the tab's label (false).
+    area_title: bool,
+    tabs: &'static [Tab],
+}
+
+const CONTENT: TabbedArea = TabbedArea {
+    path: "content",
+    key: "content",
+    link: "admin_content",
+    area_title: false,
+    tabs: &[
+        Tab {
+            path: "",
+            label: "admin.config.content.sub_pages.categories_and_tags.title",
+            class: "categories-and-tags",
+            area: "categories_and_tags",
+            crumb: false,
+        },
+        Tab {
+            path: "sharing",
+            label: "admin.config.content.sub_pages.sharing.title",
+            class: "sharing",
+            area: "sharing",
+            crumb: false,
+        },
+        Tab {
+            path: "posts-and-topics",
+            label: "admin.config.content.sub_pages.posts_and_topics.title",
+            class: "posts-and-topics",
+            area: "posts_and_topics",
+            crumb: false,
+        },
+        Tab {
+            path: "stats-and-thresholds",
+            label: "admin.config.content.sub_pages.stats_and_thresholds.title",
+            class: "stats-and-thresholds",
+            area: "stats_and_thresholds",
+            crumb: false,
+        },
+    ],
+};
+
+/// The plugins' login tabs (site.admin_config_login_routes) are not
+/// here: no plugin registers one until the plugins run (crate::site).
+const LOGIN: TabbedArea = TabbedArea {
+    path: "login-and-authentication",
+    key: "login",
+    link: "admin_login",
+    area_title: true,
+    tabs: &[
+        Tab {
+            path: "",
+            label: "admin.config.login.sub_pages.common_settings.title",
+            class: "settings",
+            area: "login",
+            crumb: true,
+        },
+        Tab {
+            path: "discourse-id",
+            label: "admin.config.login.sub_pages.discourse_id.title",
+            class: "discourse-id",
+            area: "",
+            crumb: false,
+        },
+        Tab {
+            path: "authenticators",
+            label: "admin.config.login.sub_pages.authenticators.title",
+            class: "authenticators",
+            area: "authenticators",
+            crumb: false,
+        },
+        Tab {
+            path: "discourseconnect",
+            label: "admin.config.login.sub_pages.discourseconnect.title",
+            class: "discourseconnect",
+            area: "discourseconnect",
+            crumb: false,
+        },
+    ],
+};
+
+/// The tabbed areas' routes: each tab and its `.json`, and content's
+/// settings route, which goes to the area's first tab.
+pub(super) fn tabbed_routes(mut router: Router<AppState>) -> Router<AppState> {
+    for area in [&CONTENT, &LOGIN] {
+        for (index, tab) in area.tabs.iter().enumerate() {
+            let path = if tab.path.is_empty() {
+                format!("/admin/config/{}", area.path)
+            } else {
+                format!("/admin/config/{}/{}", area.path, tab.path)
+            };
+            let handler = move |state: State<AppState>,
+                                guardian: AuthGuardian,
+                                headers: HeaderMap,
+                                uri: Uri,
+                                body: Bytes| async move {
+                tabbed_page(state, guardian, headers, uri, body, area, index).await
+            };
+            router = router
+                .route(&path, get(handler))
+                .route(&format!("{path}.json"), get(handler));
+        }
+    }
+    router.route(
+        "/admin/config/content/settings",
+        get(
+            |State(state): State<AppState>,
+             AuthGuardian(guardian): AuthGuardian,
+             headers: HeaderMap,
+             uri: Uri,
+             body: Bytes| async move {
+                if wants_json(&uri, &headers) || !guardian.is_admin() {
+                    return super::admin_site_settings::config_index(
+                        State(state),
+                        AuthGuardian(guardian),
+                        headers,
+                        uri,
+                        body,
+                    )
+                    .await;
+                }
+                let to = format!(
+                    "{}/admin/config/content",
+                    state.config.globals.relative_url_root()
+                );
+                Ok::<Response, AppError>(axum::response::Redirect::to(&to).into_response())
+            },
+        ),
+    )
+}
+
+/// A tab of a tabbed area: the area's header with its tabs over the tab's
+/// AdminAreaSettings. Discourse ID's tab, whose controller is not ported,
+/// is refused.
+async fn tabbed_page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+    area: &'static TabbedArea,
+    index: usize,
+) -> Result<Response, AppError> {
+    let tab = &area.tabs[index];
+    if tab.area.is_empty() {
+        // Admin::Config::DiscourseIdController
+        if !guardian.is_staff() {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        return Err(crate::Unsupported("the Discourse ID admin page and its JSON").into());
+    }
+    if wants_json(&uri, &headers) || !guardian.is_admin() {
+        return super::admin_site_settings::config_index(
+            State(state),
+            AuthGuardian(guardian),
+            headers,
+            uri,
+            body,
+        )
+        .await;
+    }
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian, &headers, area.link).await?;
+    let settings = super::admin_advanced::area_settings(
+        &mut conn,
+        &state,
+        &shell,
+        &uri,
+        json!({ "filter_area": tab.area }),
+    )
+    .await?;
+    let cx = shell.cx(&state);
+    let area_path = format!("/admin/config/{}", area.path);
+    let tab_path = |t: &Tab| {
+        if t.path.is_empty() {
+            area_path.clone()
+        } else {
+            format!("{area_path}/{}", t.path)
+        }
+    };
+    let title = t(cx.i18n, &format!("admin.config.{}.title", area.key));
+    let mut crumbs = vec![
+        Crumb {
+            label: t(cx.i18n, "admin_title"),
+            path: "/admin",
+        },
+        Crumb {
+            label: title.clone(),
+            path: &area_path,
+        },
+    ];
+    let own_path = tab_path(tab);
+    if tab.crumb {
+        crumbs.push(Crumb {
+            label: t(cx.i18n, "settings"),
+            path: &own_path,
+        });
+    }
+    let paths: Vec<String> = area.tabs.iter().map(tab_path).collect();
+    let items: Vec<(&str, &str, &str, bool)> = area
+        .tabs
+        .iter()
+        .zip(paths.iter())
+        .enumerate()
+        .map(|(i, (t, p))| ("", p.as_str(), t.label, i == index))
+        .collect();
+    let header = PageHeader {
+        crumbs,
+        title: title.clone(),
+        actions: String::new(),
+        description: Some(t(
+            cx.i18n,
+            &format!("admin.config.{}.header_description", area.key),
+        )),
+        learn_more_url: None,
+        tabs: Some(crate::admin_ui::tabs(&cx, &items)),
+    }
+    .render(&cx);
+    let content = format!("{header}<div class=\"admin-config-page__main-area\">{settings}</div>");
+    let classes = format!("admin-config {} {}", area.key, tab.class);
+    let main = crate::admin_view::contents(&classes, &content);
+    let page_title = if area.area_title {
+        title
+    } else {
+        t(cx.i18n, tab.label)
+    };
+    shell.render(
+        &state,
+        &uri,
+        &page_title,
+        main,
+        "site-settings.js",
+        StatusCode::OK,
+    )
 }
