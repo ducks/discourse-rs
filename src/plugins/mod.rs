@@ -279,6 +279,67 @@ pub async fn user_content_deleting(
     Ok(())
 }
 
+/// The bundled plugins (their plugin.rb names) the port has started, in
+/// src/plugins or the markdown crate. Started is not done: a plugin is
+/// done only when it has all of the reference plugin's features (ROADMAP
+/// item 210). Enabling a plugin not listed here is refused
+/// (crate::site_setting_update), unless the reference has it on by
+/// default.
+pub const STARTED: &[&str] = &[
+    "chat",
+    "checklist",
+    "discourse-apple-auth",
+    "discourse-details",
+    "discourse-lazy-videos",
+    "discourse-local-dates",
+    "discourse-lti",
+    "discourse-oauth2-basic",
+    "discourse-openid-connect",
+    "discourse-presence",
+    "discourse-reactions",
+    "discourse-solved",
+    "discourse-topic-voting",
+    "footnote",
+    "poll",
+    "spoiler-alert",
+];
+
+/// DiscourseEvent `:site_setting_changed`, after a setting's new value is
+/// saved: the handlers of the plugins the port implements, each while
+/// its plugin is enabled (`plugin.on`). Of these, only chat's retention
+/// reminders handle a type the settings update takes (integers); its
+/// chat_allowed_groups job and discourse-reactions' like sync are on
+/// list settings, which the update refuses.
+pub async fn site_setting_changed(
+    conn: &mut sqlx::PgConnection,
+    defs: &crate::site_settings::Definitions,
+    settings: &SiteSettings,
+    name: &str,
+    old: &crate::site_settings::Value,
+    new: &crate::site_settings::Value,
+) -> Result<(), crate::AppError> {
+    if defs.plugin_enabled("chat", settings) {
+        // Chat::RETENTION_SETTINGS_TO_USER_OPTION_FIELDS: a new non-zero
+        // retention re-shows the dismissed retention reminders.
+        let field = match name {
+            "chat_channel_retention_days" => Some("dismissed_channel_retention_reminder"),
+            "chat_dm_retention_days" => Some("dismissed_dm_retention_reminder"),
+            _ => None,
+        };
+        if let Some(field) = field
+            && old != new
+            && new.to_s() != "0"
+        {
+            sqlx::query(&format!(
+                "UPDATE user_options SET {field} = FALSE WHERE {field} = TRUE"
+            ))
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    Ok(())
+}
+
 /// DiscourseEvent `:user_added_to_group` (GroupManager#add, each user
 /// added): chat's AutoJoinChannels for the user.
 pub async fn user_added_to_group(

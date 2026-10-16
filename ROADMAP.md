@@ -812,8 +812,8 @@ then by what running a forum needs (milestone 6). Briefs:
     90g7, with site texts' translation overrides), the configuration
     nav plugins' own admin pages
     (refused as a page: chat, AI, automation, data explorer and the
-    rest the recording marks), saving a plugin's settings (the site
-    settings update refuses plugin settings)),
+    rest the recording marks), enabling a bundled plugin the port
+    doesn't implement (refused by the settings update)),
     90g9.
     `feat/admin-shell-search` S (the admin search modal and the sidebar
     filter's keyword index), 90h.

@@ -273,6 +273,76 @@ async fn the_api_keys_pages() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+/// The installed plugins' switch saves a plugin's enabled setting; a
+/// plugin the port doesn't implement isn't turned on.
+#[tokio::test]
+async fn a_plugins_enabled_setting() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let setting = |name: &'static str| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_scalar::<_, String>("SELECT value FROM site_settings WHERE name = $1")
+                .bind(name)
+                .fetch_optional(&pool)
+                .await
+                .unwrap()
+        }
+    };
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/poll_enabled",
+            "poll_enabled=false",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "{body}");
+    assert_eq!(setting("poll_enabled").await.as_deref(), Some("f"));
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/poll_enabled",
+            "poll_enabled=true",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    // A plugin's other settings.
+    sqlx::query("UPDATE user_options SET dismissed_dm_retention_reminder = TRUE")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/chat_dm_retention_days",
+            "chat_dm_retention_days=30",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let dismissed: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM user_options WHERE dismissed_dm_retention_reminder",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(dismissed, 0, "the retention reminders show again");
+    // Not started here: refused, the setting left off.
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/discourse_ai_enabled",
+            "discourse_ai_enabled=true",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(setting("discourse_ai_enabled").await, None);
+}
+
 #[tokio::test]
 async fn the_installed_plugins_pages() {
     let db = TestDb::new().await;

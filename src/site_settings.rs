@@ -492,6 +492,14 @@ impl Definitions {
         }
     }
 
+    /// A bundled plugin's `enabled_site_setting`, None when it names none.
+    pub fn enabled_setting_of(&self, plugin: &str) -> Option<&str> {
+        self.parsed
+            .plugin_enabled_settings
+            .get(plugin)
+            .and_then(|s| s.as_deref())
+    }
+
     pub fn get(&self, name: &str) -> Option<&Definition> {
         self.parsed.index.get(name).map(|&i| &self.parsed.list[i])
     }

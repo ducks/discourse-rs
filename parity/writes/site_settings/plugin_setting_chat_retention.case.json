@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/chat_dm_retention_days.json",
+      "params": {
+        "chat_dm_retention_days": "30"
+      }
+    }
+  ]
+}

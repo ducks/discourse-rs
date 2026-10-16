@@ -3,9 +3,13 @@
 //! validation, then `set_and_log` (the override saved, the
 //! change_site_setting staff log).
 //!
-//! Ported for core settings of the plain types (string, integer, float,
-//! bool, enum with listed choices). Refused: plugin settings, themeable and
-//! upcoming change settings, the other types (lists, uploads, groups,
+//! Ported for core's and the bundled plugins' settings of the plain types
+//! (string, integer, float, bool, enum with listed choices), a plugin
+//! setting's change running the handlers of the plugins the port
+//! has started (crate::plugins::site_setting_changed). Refused: enabling a
+//! bundled plugin the port has not started (unless the reference has
+//! it on by default), themeable and upcoming change settings, the other
+//! types (lists, uploads, groups,
 //! categories, objects...), settings with a validator class or a custom
 //! validation, default user preferences (their backfill), client strings
 //! with markup (sanitize_field), settings shadowed by a global setting,
@@ -159,9 +163,6 @@ pub async fn update(
             .unwrap_or_default();
         return Ok(Outcome::Invalid(message));
     }
-    if def.plugin.is_some() {
-        return Err(Unsupported("plugin settings").into());
-    }
     // SiteSettingExtension::InvalidSettingAccess, which the controller's
     // on_exceptions answers.
     if def.themeable {
@@ -235,6 +236,17 @@ pub async fn update(
     if let Some(message) = invalid(def, &new_value, i18n)? {
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
     }
+    // A plugin's enabled setting turned on: the plugin's behaviour, which
+    // the port has only for the plugins it has started porting (and runs the
+    // plugins the reference enables by default with, as their default).
+    if let Some(plugin) = &def.plugin
+        && defs.enabled_setting_of(plugin) == Some(name)
+        && new_value.truthy()
+        && !def.default.truthy()
+        && !crate::plugins::STARTED.contains(&plugin.as_str())
+    {
+        return Err(Unsupported("enabling a bundled plugin the port has not started").into());
+    }
     // SiteSetting::Update#save: default user preferences log whether
     // existing users were updated; #backfill enqueues the sidebar job.
     let details = if SIDEBAR_DEFAULTS.contains(&name) {
@@ -262,6 +274,8 @@ pub async fn update(
         details.as_deref(),
     )
     .await?;
+    crate::plugins::site_setting_changed(&mut *conn, defs, settings, name, &previous, &new_value)
+        .await?;
     if backfill && SIDEBAR_DEFAULTS.contains(&name) {
         crate::jobs::enqueue(
             &mut *conn,

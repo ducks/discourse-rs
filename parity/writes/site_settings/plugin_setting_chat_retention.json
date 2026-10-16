@@ -1,0 +1,114 @@
+{
+  "name": "plugin_setting_chat_retention",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/chat_dm_retention_days.json",
+      "params": {
+        "chat_dm_retention_days": "30"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T20:32:41.057329",
+  "transaction_started_at": "2026-10-16T20:32:39.079601",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "chat_dm_retention_days",
+          "value": "30",
+          "data_type": 3,
+          "created_at": "2026-10-16T20:32:41.084843",
+          "updated_at": "2026-10-16T20:32:41.084843"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 220,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RnKxXJHg/IUlp+2WsZ/dUJSk8Bw=",
+            "created_at": "2026-10-16T20:32:39.758962",
+            "rotated_at": "2026-10-16T20:32:39.756986",
+            "updated_at": "2026-10-16T20:32:39.758962",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RnKxXJHg/IUlp+2WsZ/dUJSk8Bw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 220,
+            "seen_at": "2026-10-16T20:32:41.065812",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RnKxXJHg/IUlp+2WsZ/dUJSk8Bw=",
+            "created_at": "2026-10-16T20:32:39.758962",
+            "rotated_at": "2026-10-16T20:32:39.756986",
+            "updated_at": "2026-10-16T20:32:39.758962",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RnKxXJHg/IUlp+2WsZ/dUJSk8Bw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "chat_dm_retention_days",
+          "topic_id": null,
+          "new_value": "30",
+          "admin_only": true,
+          "created_at": "2026-10-16T20:32:41.091511",
+          "ip_address": null,
+          "updated_at": "2026-10-16T20:32:41.091511",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "0",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "4c6bc26e1bde6abf87bdc68704e9ae684a41dbef2729a0a9d6009082a41533c4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

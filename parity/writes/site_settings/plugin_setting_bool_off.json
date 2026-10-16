@@ -1,0 +1,114 @@
+{
+  "name": "plugin_setting_bool_off",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/poll_enabled.json",
+      "params": {
+        "poll_enabled": "false"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T20:32:38.609916",
+  "transaction_started_at": "2026-10-16T20:32:34.486988",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "poll_enabled",
+          "value": "f",
+          "data_type": 5,
+          "created_at": "2026-10-16T20:32:38.661977",
+          "updated_at": "2026-10-16T20:32:38.661977"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 220,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2RX6NKyfk4ZpwGpOAIr/ujXWGJU=",
+            "created_at": "2026-10-16T20:32:36.30776",
+            "rotated_at": "2026-10-16T20:32:36.299811",
+            "updated_at": "2026-10-16T20:32:36.30776",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2RX6NKyfk4ZpwGpOAIr/ujXWGJU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 220,
+            "seen_at": "2026-10-16T20:32:38.621259",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2RX6NKyfk4ZpwGpOAIr/ujXWGJU=",
+            "created_at": "2026-10-16T20:32:36.30776",
+            "rotated_at": "2026-10-16T20:32:36.299811",
+            "updated_at": "2026-10-16T20:32:36.30776",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2RX6NKyfk4ZpwGpOAIr/ujXWGJU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "poll_enabled",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-10-16T20:32:38.677956",
+          "ip_address": null,
+          "updated_at": "2026-10-16T20:32:38.677956",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "true",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "e19dfc580b960f212d722310ce7da367672979e13e123e799f7d614d19c308f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
