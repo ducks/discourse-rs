@@ -13,3 +13,4 @@
 /admin/email/preview-digest as=admin mask=.preview-output
 /admin/email/advanced-test as=admin
 /admin/email/templates as=admin
+/admin/problem-checks as=admin mask=.admin-problem-checks__items>tbody

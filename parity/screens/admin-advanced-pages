@@ -22,3 +22,6 @@
 /admin/email/preview-digest as=admin mask=.preview-output
 /admin/email/advanced-test as=admin
 /admin/email/templates as=admin
+# Problem checks (90g8). Masked: the trackers, which the reference's
+# scheduler writes and the seed has none of.
+/admin/problem-checks as=admin mask=.admin-problem-checks__items>tbody
