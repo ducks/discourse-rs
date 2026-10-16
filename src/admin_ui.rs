@@ -360,6 +360,103 @@ pub fn back_button(cx: &AdminCx, path: &str, label_key: &str) -> String {
     )
 }
 
+/// A JavaScript number as a template prints it.
+pub fn js_number(f: f64) -> String {
+    if f.fract() == 0.0 && f.abs() < 1e15 {
+        format!("{}", f as i64)
+    } else {
+        f.to_string()
+    }
+}
+
+/// select-kit's ComboBox, closed: the header with the selected row's
+/// name (or the none label), its rows in a template for admin-ui.js,
+/// which opens it and fires `change` on the details with the value in
+/// data-value.
+pub fn combo_box(
+    cx: &AdminCx,
+    class: &str,
+    rows: &[(String, String)],
+    selected: Option<&str>,
+    none: Option<&str>,
+) -> String {
+    let chosen = selected.and_then(|v| rows.iter().find(|(value, _)| value == v));
+    let name = chosen
+        .map(|(_, n)| n.clone())
+        .or_else(|| none.map(str::to_string))
+        .unwrap_or_default();
+    let filter_by = crate::admin_view::t_with(cx.i18n, "select_kit.filter_by", &[("name", &name)]);
+    let value_attr = chosen
+        .map(|(v, _)| format!(" data-value=\"{}\"", escape(v)))
+        .unwrap_or_default();
+    let mut template = String::new();
+    let mut all: Vec<(String, String)> = Vec::new();
+    if let Some(none) = none {
+        all.push((String::new(), none.to_string()));
+    }
+    all.extend(rows.iter().cloned());
+    for (index, (value, row)) in all.iter().enumerate() {
+        let is = chosen.map(|(v, _)| v == value).unwrap_or(value.is_empty());
+        template.push_str(&format!(
+            "<li aria-checked=\"{is}\" role=\"menuitemradio\" data-index=\"{index}\" data-name=\"{n}\" data-value=\"{}\" title=\"{n}\" tabindex=\"0\" class=\"select-kit-row{}{}\"><span class=\"name\">{n}</span></li>",
+            escape(value),
+            if value.is_empty() { " none" } else { "" },
+            if is { " is-highlighted is-selected" } else { "" },
+            n = escape(row)
+        ));
+    }
+    format!(
+        "<details class=\"select-kit single-select combobox combo-box {class}{}\"><summary aria-label=\"{fb}\" class=\"select-kit-header single-select-header combo-box-header\" data-name=\"{n}\"{value_attr} name=\"{fb}\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\" title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div><template class=\"select-kit-rows\">{template}</template></details>",
+        if chosen.is_some() {
+            " has-selection"
+        } else {
+            ""
+        },
+        icon("angle-down", Some("angle-icon")),
+        fb = escape(&filter_by),
+        n = escape(&name),
+    )
+}
+
+/// DMultiSelect's trigger (closed): the selected names, each removable,
+/// or the label, and the expand button. admin-ui.js opens its menu.
+pub fn multi_select_trigger(class: &str, label: &str, selection: &[(String, String)]) -> String {
+    let inner = if selection.is_empty() {
+        format!(
+            "<span class=\"d-multi-select-trigger__label\">{}</span>",
+            escape(label)
+        )
+    } else {
+        format!(
+            "<div class=\"d-multi-select-trigger__selection\">{}</div>",
+            selection
+                .iter()
+                .map(|(v, n)| format!(
+                    "<button class=\"d-multi-select-trigger__selected-item\" title=\"{n}\" type=\"button\" data-value=\"{}\"><span class=\"d-multi-select-trigger__selection-label\">{n}</span>{}</button>",
+                    escape(v),
+                    icon("xmark", Some("d-multi-select-trigger__remove-selection-icon")),
+                    n = escape(n)
+                ))
+                .collect::<String>()
+        )
+    };
+    format!(
+        "<div aria-expanded=\"false\" class=\"fk-d-menu__trigger d-multi-select-trigger{} {class}\" data-identifier=\"d-multi-select\" data-trigger=\"\" data-label=\"{}\">{inner}{}</div>",
+        if selection.is_empty() {
+            ""
+        } else {
+            " --has-selection"
+        },
+        escape(label),
+        Button {
+            class: "d-multi-select-trigger__expand-btn btn-transparent",
+            icon: Some("angle-down"),
+            ..Default::default()
+        }
+        .render()
+    )
+}
+
 /// `humanSize` (admin/helpers/human-size): I18n.toHumanSize.
 pub fn human_size(cx: &AdminCx, bytes: i64) -> String {
     let units = ["", "kb", "mb", "gb", "tb"];

@@ -236,6 +236,271 @@
     setTimeout(close, 3000);
   }
 
+  // A select-kit body floated under its header, as select-kit places it.
+  function floatBody(details) {
+    var body = details.querySelector(".select-kit-body");
+    var header = details.querySelector("summary");
+    var fui = window.FloatingUIDOM;
+    if (!fui || !body || !header) {
+      return;
+    }
+    body.style.position = "fixed";
+    body.style.top = "0";
+    body.style.left = "0";
+    body.style.minWidth = Math.round(header.getBoundingClientRect().width) + "px";
+    fui
+      .computePosition(header, body, {
+        placement: "bottom-start",
+        strategy: "fixed",
+        middleware: [fui.flip({ padding: 3 }), fui.shift({ limiter: fui.limitShift() }), fui.offset(3)],
+      })
+      .then(function (result) {
+        body.style.transform = "translate(" + Math.round(result.x) + "px," + Math.round(result.y) + "px)";
+        body.style.visibility = "visible";
+      });
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ComboBox (src/admin_ui.rs combo_box): its rows drawn as it opens; a
+  // row chosen becomes the header's and fires `change` on the details,
+  // its value in data-value.
+  document.addEventListener(
+    "toggle",
+    function (event) {
+      var details = event.target;
+      if (!details.matches || !details.matches(".admin-contents details.combo-box")) {
+        return;
+      }
+      var template = details.querySelector("template.select-kit-rows");
+      if (!template) {
+        return;
+      }
+      details.classList.toggle("is-expanded", details.open);
+      var body = details.querySelector(".select-kit-body");
+      if (!details.open) {
+        body.innerHTML = "";
+        body.removeAttribute("style");
+        return;
+      }
+      body.innerHTML =
+        '<ul aria-live="polite" class="select-kit-collection" role="menu">' + template.innerHTML + "</ul>";
+      floatBody(details);
+    },
+    true
+  );
+
+  document.addEventListener("click", function (event) {
+    var row = event.target.closest(".admin-contents details.combo-box .select-kit-row");
+    if (!row) {
+      return;
+    }
+    var details = row.closest("details.combo-box");
+    var name = row.dataset.name;
+    var value = row.dataset.value;
+    var header = details.querySelector("summary");
+    header.dataset.name = name;
+    var choice = header.querySelector(".select-kit-selected-name");
+    choice.dataset.name = name;
+    choice.title = name;
+    choice.querySelector(".name").textContent = name;
+    details.dataset.value = value;
+    details.classList.toggle("has-selection", value !== "");
+    details.open = false;
+    details.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  // DMultiSelect (src/admin_ui.rs multi_select_trigger): the menu with its
+  // search and results from the loader the page registers for the
+  // trigger's class; a result chosen joins the selection, a selected item
+  // clicked leaves it. `change` fires on the trigger.
+  var multiLoaders = {};
+
+  function multiSelect(className, load) {
+    multiLoaders[className] = load;
+  }
+
+  // The selected items, { value, name } each.
+  function selectionOf(trigger) {
+    return Array.prototype.map.call(
+      trigger.querySelectorAll(".d-multi-select-trigger__selected-item"),
+      function (b) {
+        return { value: b.dataset.value, name: b.title };
+      }
+    );
+  }
+
+  function setSelection(trigger, values) {
+    var label = trigger.dataset.label || "";
+    var inner = values.length
+      ? '<div class="d-multi-select-trigger__selection">' +
+        values
+          .map(function (v) {
+            return (
+              '<button class="d-multi-select-trigger__selected-item" title="' +
+              escapeHtml(v.name) +
+              '" type="button" data-value="' +
+              escapeHtml(v.value) +
+              '"><span class="d-multi-select-trigger__selection-label">' +
+              escapeHtml(v.name) +
+              "</span>" +
+              icon("xmark").replace("svg-icon", "svg-icon d-multi-select-trigger__remove-selection-icon") +
+              "</button>"
+            );
+          })
+          .join("") +
+        "</div>"
+      : '<span class="d-multi-select-trigger__label">' + escapeHtml(label) + "</span>";
+    var expand = trigger.querySelector(".d-multi-select-trigger__expand-btn");
+    Array.prototype.slice.call(trigger.children).forEach(function (child) {
+      if (child !== expand) {
+        child.remove();
+      }
+    });
+    expand.insertAdjacentHTML("beforebegin", inner);
+    trigger.classList.toggle("--has-selection", values.length > 0);
+    trigger.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function openMultiSelect(trigger) {
+    var load = null;
+    Object.keys(multiLoaders).forEach(function (cls) {
+      if (trigger.classList.contains(cls)) {
+        load = multiLoaders[cls];
+      }
+    });
+    if (!load || !Discourse.float) {
+      return;
+    }
+    var content = document.createElement("ul");
+    content.className = "dropdown-menu d-multi-select__content";
+    content.innerHTML =
+      '<li class="dropdown-menu__item d-multi-select__search-container">' +
+      icon("magnifying-glass") +
+      '<input autocomplete="off" class="d-multi-select__search-input" placeholder="' +
+      escapeHtml(t("multi_select.search")) +
+      '" type="search"></li><li><hr class="dropdown-menu__divider"></li><div class="d-multi-select__results"></div>';
+    trigger.setAttribute("aria-expanded", "true");
+    var menu = Discourse.float.menu(trigger, {
+      identifier: "d-multi-select",
+      mainClass: "d-multi-select-content",
+      content: content,
+      onClose: function () {
+        trigger.setAttribute("aria-expanded", "false");
+      },
+    });
+    var input = content.querySelector("input");
+    var results = content.querySelector(".d-multi-select__results");
+    var timer = null;
+    function search() {
+      var chosen = selectionOf(trigger).map(function (s) {
+        return s.value;
+      });
+      Promise.resolve(load(input.value))
+        .then(function (items) {
+          var available = (items || []).filter(function (i) {
+            return chosen.indexOf(i.value) === -1;
+          });
+          results.innerHTML = available.length
+            ? '<ul class="d-multi-select__search-results">' +
+              available
+                .map(function (i) {
+                  return (
+                    '<li class="dropdown-menu__item d-multi-select__result" role="button" title="' +
+                    escapeHtml(i.name) +
+                    '" data-value="' +
+                    escapeHtml(i.value) +
+                    '"><span class="d-multi-select__result-label">' +
+                    escapeHtml(i.name) +
+                    "</span></li>"
+                  );
+                })
+                .join("") +
+              "</ul>"
+            : '<div class="d-multi-select__search-no-results">' + escapeHtml(t("multi_select.no_results")) + "</div>";
+        })
+        .catch(function () {});
+    }
+    input.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(search, 250);
+    });
+    results.addEventListener("click", function (event) {
+      var item = event.target.closest(".d-multi-select__result");
+      if (item) {
+        setSelection(trigger, selectionOf(trigger).concat([{ value: item.dataset.value, name: item.title }]));
+        if (menu && menu.close) {
+          menu.close();
+        }
+      }
+    });
+    input.focus();
+    search();
+  }
+
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(".admin-contents .d-multi-select-trigger");
+    if (!trigger) {
+      return;
+    }
+    var selected = event.target.closest(".d-multi-select-trigger__selected-item");
+    if (selected) {
+      setSelection(
+        trigger,
+        selectionOf(trigger).filter(function (v) {
+          return v.value !== selected.dataset.value;
+        })
+      );
+      return;
+    }
+    if (trigger.getAttribute("aria-expanded") === "true") {
+      Discourse.float.close("d-multi-select");
+      return;
+    }
+    openMultiSelect(trigger);
+  });
+
+  // DLoadMore: the sentinel in view loads the next page through the
+  // page's loader, with the sentinel's data-load-more URL.
+  function loadMore(onLoad) {
+    var sentinel = document.querySelector(".admin-contents .load-more-sentinel[data-load-more]");
+    if (!sentinel || !window.IntersectionObserver) {
+      return function () {};
+    }
+    var busy = false;
+    var observer = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting || busy || !sentinel.dataset.loadMore) {
+        return;
+      }
+      busy = true;
+      var url = sentinel.dataset.loadMore;
+      var path = url.indexOf(base()) === 0 ? url.slice(base().length) : url;
+      ajax("GET", path)
+        .then(function (json) {
+          var next = onLoad(json);
+          if (next) {
+            sentinel.dataset.loadMore = next;
+          } else {
+            delete sentinel.dataset.loadMore;
+          }
+        })
+        .catch(function () {})
+        .then(function () {
+          busy = false;
+        });
+    });
+    observer.observe(sentinel);
+    return function () {
+      observer.disconnect();
+    };
+  }
+
   // DNativeSelectOption: the chosen option is the --selected one.
   document.addEventListener("change", function (event) {
     var select = event.target.closest(".admin-contents select.d-native-select");
@@ -286,5 +551,8 @@
     menus: menus,
     subscribe: subscribe,
     toast: toast,
+    escapeHtml: escapeHtml,
+    multiSelect: multiSelect,
+    loadMore: loadMore,
   };
 })();

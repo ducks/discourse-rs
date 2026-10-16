@@ -272,3 +272,63 @@ async fn the_api_keys_pages() {
     let (status, _) = admin.page("/admin/api/keys/99").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_web_hooks_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::POST,
+            "/admin/api/web_hooks.json",
+            "web_hook[payload_url]=https://example.com/hook&web_hook[content_type]=1&web_hook[secret]=abcdefghijklmnop&web_hook[wildcard_web_hook]=false&web_hook[verify_certificate]=true&web_hook[active]=true&web_hook[web_hook_event_type_ids][]=101",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    // The index: the hook's row and its menu.
+    let (status, html) = admin.page("/admin/api/web_hooks").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-webhooks admin-config-page\">"));
+    assert!(html.contains("<table class=\"d-table admin-web_hooks__items\">"));
+    assert!(html.contains("<tr class=\"d-table__row\" data-web-hook-id=\"1\">"));
+    assert!(html.contains("<a href=\"/admin/api/web_hooks/1/edit\">https://example.com/hook</a>"));
+    assert!(html.contains("/admin-web-hooks.js"));
+    // The new hook's form: the event chooser and no hook id.
+    let (status, html) = admin.page("/admin/api/web_hooks/new").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("name=\"payload_url\""), "{html}");
+    assert!(html.contains(
+        "<fieldset class=\"form-kit__fieldset form-kit__control-radio-group\" name=\"wildcard\">"
+    ));
+    assert!(html.contains("data-name=\"topic_created\""));
+    assert!(!html.contains("data-web-hook-id"));
+    // The edit form carries the hook's id for the save, and its event.
+    let (status, html) = admin.page("/admin/api/web_hooks/1/edit").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("data-web-hook-id=\"1\""), "{html}");
+    assert!(html.contains("value=\"https://example.com/hook\""));
+    assert!(html.contains(" checked=\"\" data-id=\"101\""), "{html}");
+    // The events page: the summary and the empty listing.
+    let (status, html) = admin.page("/admin/api/web_hooks/1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-webhooks__summary\" data-web-hook-id=\"1\">"));
+    assert!(html.contains("<div class=\"web-hook-events-listing\" data-web-hook-id=\"1\">"));
+    assert!(html.contains("<a class=\"go-back active\" href=\"/admin/api/web_hooks\">"));
+    // The JSON stays.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/api/web_hooks/1.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with('{'), "{body}");
+    // A missing hook; not for members.
+    let (status, _) = admin.page("/admin/api/web_hooks/99/edit").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/api/web_hooks")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
