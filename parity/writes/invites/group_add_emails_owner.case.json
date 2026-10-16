@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "emails": "friend@example.com",
+        "skip_email": "true"
+      }
+    }
+  ]
+}

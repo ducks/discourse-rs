@@ -1,0 +1,72 @@
+{
+  "name": "pm_invite_email_tl1",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite.json",
+      "params": {
+        "email": "outsider@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:34.051288",
+  "transaction_started_at": "2026-10-16T06:14:32.579995",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KhLMwfOzE7PBAyQG+UIiQQaqebU=",
+            "created_at": "2026-10-16T06:14:33.044965",
+            "rotated_at": "2026-10-16T06:14:33.043351",
+            "updated_at": "2026-10-16T06:14:33.044965",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KhLMwfOzE7PBAyQG+UIiQQaqebU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:34.060986",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KhLMwfOzE7PBAyQG+UIiQQaqebU=",
+            "created_at": "2026-10-16T06:14:33.044965",
+            "rotated_at": "2026-10-16T06:14:33.043351",
+            "updated_at": "2026-10-16T06:14:33.044965",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KhLMwfOzE7PBAyQG+UIiQQaqebU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "cac724f583b77c58b8cac79263551543cefd8fd0d3fa278acb8e3582dd88857d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

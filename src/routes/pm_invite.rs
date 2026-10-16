@@ -188,6 +188,61 @@ pub async fn invite(
             Json(body).into_response()
         }
         Invited::Failed => failed(),
+        Invited::ByEmail => {
+            if !guardian.can_invite_via_email(&settings, &topic, can_see)? {
+                return Ok(failed());
+            }
+            let group_ids =
+                crate::invites::lookup_groups(&mut tx, p.get("group_ids"), p.get("group_names"))
+                    .await?
+                    .map(|groups| groups.iter().map(|g| g.id).collect())
+                    .unwrap_or_default();
+            let inviter = crate::invites::Inviter::load(
+                &mut tx,
+                guardian
+                    .user_id()
+                    .ok_or(Unsupported("inviting anonymously"))?,
+            )
+            .await?
+            .ok_or(Unsupported("an inviter who is gone"))?;
+            let opts = crate::invites::Generate {
+                email: Some(target.clone()),
+                topic_id: Some(topic_id),
+                group_ids,
+                custom_message: p.get("custom_message").and_then(params::scalar),
+                invite_to_topic: json!(true),
+                ..crate::invites::Generate::default()
+            };
+            let limits = crate::invites::Limits {
+                pool: &state.pool,
+                enabled: state.config.rate_limits,
+            };
+            match crate::invites::generate(
+                &mut tx,
+                &settings,
+                &state.i18n,
+                &limits,
+                &inviter,
+                &opts,
+            )
+            .await?
+            {
+                crate::invites::Generated::Invite(_) => {
+                    tx.commit().await?;
+                    Json(json!({"success": "OK"})).into_response()
+                }
+                crate::invites::Generated::RateLimited(refused) => {
+                    refused.into_response(&state.i18n)
+                }
+                crate::invites::Generated::UserExists(_)
+                | crate::invites::Generated::Invalid(_) => {
+                    return Err(Unsupported(
+                        "an invite to a message that fails to save (a 500 in Rails)",
+                    )
+                    .into());
+                }
+            }
+        }
         Invited::Refused(message) => errors(message),
         Invited::RateLimited(refused) => refused.into_response(&state.i18n),
     })

@@ -1,0 +1,124 @@
+{
+  "name": "group_add_emails_owner",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "emails": "friend@example.com",
+        "skip_email": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:22.375896",
+  "transaction_started_at": "2026-10-16T06:14:20.919695",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "usernames": [],
+        "emails": [
+          "friend@example.com"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 1,
+          "created_at": "2026-10-16T06:14:22.431849",
+          "updated_at": "2026-10-16T06:14:22.431849"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "friend@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T06:14:22.423938",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T06:14:22.417487",
+          "invite_key": "daC86NwdUd",
+          "updated_at": "2026-10-16T06:14:22.423938",
+          "description": null,
+          "email_token": "c71c7a880a176b497fea5a2f73f2bb15",
+          "deleted_by_id": null,
+          "invited_by_id": 3,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UJ+Yo8zptauluF1RIcAx/GYCRs8=",
+            "created_at": "2026-10-16T06:14:21.416166",
+            "rotated_at": "2026-10-16T06:14:21.414684",
+            "updated_at": "2026-10-16T06:14:21.416166",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "UJ+Yo8zptauluF1RIcAx/GYCRs8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:22.386658",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UJ+Yo8zptauluF1RIcAx/GYCRs8=",
+            "created_at": "2026-10-16T06:14:21.416166",
+            "rotated_at": "2026-10-16T06:14:21.414684",
+            "updated_at": "2026-10-16T06:14:21.416166",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "UJ+Yo8zptauluF1RIcAx/GYCRs8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "invited_groups": 1,
+    "invites": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "482b01ba57f9c3727ab849c9e9d4f01915f39391c96116b18599e47e8c0a65ea",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

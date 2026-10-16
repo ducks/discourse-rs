@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to a member by their email",
+        "raw": "Hello there, this message names a member by the email address of their account.",
+        "archetype": "private_message",
+        "target_recipients": "user1@example.com"
+      }
+    }
+  ]
+}

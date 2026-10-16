@@ -370,14 +370,14 @@ fn sanitize_username(name: &str) -> Result<String, AppError> {
     Ok(REPEATED.replace_all(&name, "_").into_owned())
 }
 
-/// `UserNameSuggester.suggest(email, allow_generic_fallback:)`: a free
-/// username from the email's local part (when the site uses emails for
-/// suggestions), else the generic fallback.
-pub(crate) async fn suggest_from_email(
+/// `UserNameSuggester.suggest(input, allow_generic_fallback:)`: a free
+/// username from a name, or from an email's local part when the site uses
+/// emails for suggestions, else the generic fallback.
+pub(crate) async fn suggest_username(
     conn: &mut PgConnection,
-    state: &AppState,
+    i18n: &crate::i18n::I18n,
     s: &SiteSettings,
-    email: &str,
+    input: &str,
     allow_generic_fallback: bool,
 ) -> Result<Option<String>, AppError> {
     const GENERIC: [&str; 11] = [
@@ -393,30 +393,33 @@ pub(crate) async fn suggest_from_email(
         "contact",
         "team",
     ];
+    // User::EMAIL
     static EMAIL: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"([^@]+)@([^\.]+)").unwrap());
-    let mut name = String::new();
-    if s.get("use_email_for_username_and_name_suggestions")?
-        .truthy()
-    {
-        let parsed = match EMAIL.captures(email) {
-            Some(c) => {
-                let local = c.get(1).map_or("", |m| m.as_str());
-                if GENERIC.contains(&local) {
-                    c.get(2).map_or("", |m| m.as_str()).to_string()
-                } else {
-                    local.to_string()
-                }
-            }
-            None => email.to_string(),
-        };
-        name = sanitize_username(&parsed)?;
-    }
+    let mut name = match EMAIL.captures(input) {
+        Some(_)
+            if !s
+                .get("use_email_for_username_and_name_suggestions")?
+                .truthy() =>
+        {
+            String::new()
+        }
+        Some(c) => {
+            let local = c.get(1).map_or("", |m| m.as_str());
+            let parsed = if GENERIC.contains(&local) {
+                c.get(2).map_or("", |m| m.as_str())
+            } else {
+                local
+            };
+            sanitize_username(parsed)?
+        }
+        None => sanitize_username(input)?,
+    };
     if name.is_empty() {
         if !allow_generic_fallback {
             return Ok(None);
         }
-        name = sanitize_username(&t(state, "fallback_username"))?;
+        name = sanitize_username(i18n.t("fallback_username").unwrap_or("user"))?;
         if name.is_empty() {
             name = "user".into();
         }
@@ -424,6 +427,59 @@ pub(crate) async fn suggest_from_email(
     Ok(Some(
         super::groups::suggest_username(&mut *conn, s, &name).await?,
     ))
+}
+
+/// TopicCreator#find_or_create_user's create: a staged user for an email
+/// a message goes to, named after the email's local part.
+pub(crate) async fn create_staged_user(
+    conn: &mut PgConnection,
+    i18n: &crate::i18n::I18n,
+    s: &SiteSettings,
+    config: &crate::config::Config,
+    email: &str,
+) -> Result<i32, AppError> {
+    let display_name = email.split('@').next().unwrap_or_default();
+    let sanitized = if display_name.is_empty() {
+        String::new()
+    } else {
+        sanitize_username(display_name)?
+    };
+    let input = if sanitized.is_empty() {
+        email
+    } else {
+        sanitized.as_str()
+    };
+    let username = suggest_username(&mut *conn, i18n, s, input, true)
+        .await?
+        .ok_or(Unsupported("a staged user without a username"))?;
+    if display_name.is_empty() {
+        return Err(Unsupported("User.suggest_name for a staged user").into());
+    }
+    let payloads = crate::web_hooks::Payloads {
+        settings: s,
+        i18n,
+        config,
+    };
+    crate::signup::insert_user(
+        &mut *conn,
+        s,
+        &payloads,
+        &crate::signup::NewUser {
+            username: &username,
+            name: Some(display_name),
+            email: &email.to_lowercase(),
+            password: None,
+            trust_level: s.get("default_trust_level")?.to_i() as i32,
+            ip: None,
+            locale: None,
+            active: false,
+            approved: false,
+            moderator: false,
+            staged: true,
+            custom_fields: &[],
+        },
+    )
+    .await
 }
 
 /// `InviteRedeemer.create_user_from_invite`: the user saved, maybe
@@ -450,7 +506,7 @@ async fn create_user_from_invite(
         {
             u.clone()
         }
-        _ => suggest_from_email(&mut *conn, state, s, &email, true)
+        _ => suggest_username(&mut *conn, &state.i18n, s, &email, true)
             .await?
             .ok_or(Unsupported("an invitee without a username"))?,
     };
@@ -562,6 +618,7 @@ async fn create_user_from_invite(
             active: false,
             approved,
             moderator: false,
+            staged: false,
             custom_fields: &[],
         },
     )
@@ -1138,7 +1195,7 @@ pub(crate) async fn show_info(
                 && s.get("use_email_for_username_and_name_suggestions")?
                     .truthy() =>
         {
-            suggest_from_email(&mut *conn, state, s, e, true)
+            suggest_username(&mut *conn, &state.i18n, s, e, true)
                 .await?
                 .unwrap_or_default()
         }
@@ -1687,7 +1744,7 @@ pub async fn verify_login_code(
         }
         let Some(username) = &username else {
             // render_signup_username_required for an invite
-            let suggested = suggest_from_email(&mut tx, &state, &s, &email, false).await?;
+            let suggested = suggest_username(&mut tx, &state.i18n, &s, &email, false).await?;
             if suggested.is_some() {
                 return Err(Unsupported("suggesting an invitee's username from the email").into());
             }

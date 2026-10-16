@@ -1,0 +1,505 @@
+{
+  "name": "pm_to_existing_email",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to a member by their email",
+        "raw": "Hello there, this message names a member by the email address of their account.",
+        "archetype": "private_message",
+        "target_recipients": "user1@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:46.837989",
+  "transaction_started_at": "2026-10-16T06:14:45.411236",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 53,
+        "name": "Admin",
+        "username": "admin",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+        "created_at": "2026-10-16T06:14:47.115Z",
+        "cooked": "<p>Hello there, this message names a member by the email address of their account.</p>",
+        "post_number": 1,
+        "post_type": 1,
+        "posts_count": 1,
+        "updated_at": "2026-10-16T06:14:47.115Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 0,
+        "readers_count": 0,
+        "score": 0,
+        "yours": true,
+        "topic_id": 45,
+        "topic_slug": "a-message-to-a-member-by-their-email",
+        "display_username": "Admin",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": true,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": true,
+        "can_wiki": true,
+        "user_title": null,
+        "bookmarked": false,
+        "raw": "Hello there, this message names a member by the email address of their account.",
+        "actions_summary": [
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": true,
+        "admin": true,
+        "staff": true,
+        "user_id": 1,
+        "draft_sequence": 1,
+        "hidden": false,
+        "trust_level": 4,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "reviewable_id": null,
+        "reviewable_score_count": 0,
+        "reviewable_score_pending_count": 0,
+        "post_url": "/t/a-message-to-a-member-by-their-email/45/1",
+        "reactions": [],
+        "current_user_reaction": null,
+        "reaction_users_count": 0,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null,
+        "can_vote": false
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "topic_45"
+        },
+        {
+          "id": 2,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "new_topic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hello there, this message names a member by the email address of their account.",
+          "search_data": "'account':22 'address':19 'email':8A,18 'hello':9 'member':5A,15 'messag':2A,12 'name':13",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-16T06:14:47.156906",
+          "updated_at": "2026-10-16T06:14:47.156906",
+          "drafts_saved": 0,
+          "writing_device": "unknown",
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hello there, this message names a member by the email address of their account.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hello there, this message names a member by the email address of their account.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-16T06:14:47.115398",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-16T06:14:47.115515",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T06:14:47.115515",
+          "word_count": 14,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-16T06:14:47.151435",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 3,
+          "topic_id": 45,
+          "created_at": "2026-10-16T06:14:47.005404",
+          "updated_at": "2026-10-16T06:14:47.005404"
+        },
+        {
+          "id": 10,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-16T06:14:47.008947",
+          "updated_at": "2026-10-16T06:14:47.008947"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A message to a member by their email Hello there, this message names a member by the email address of their account.",
+          "topic_id": 45,
+          "search_data": "'account':22B 'address':19B 'email':8A,18B 'hello':9B 'member':5A,15B 'messag':2A,12B 'name':13B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 3,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-16T06:14:47.032451",
+          "first_visited_at": "2026-10-16T06:14:47.032451",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T06:14:47.03104"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-16T06:14:47.169435",
+          "last_visited_at": "2026-10-16T06:14:47.022984",
+          "first_visited_at": "2026-10-16T06:14:47.022984",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-16T06:14:47.02105"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "a-message-to-a-member-by-their-email",
+          "score": null,
+          "title": "A message to a member by their email",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hello there, this message names a member by the email address of their account.",
+          "subtype": "user_to_user",
+          "user_id": 1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-16T06:14:47.115515",
+          "pinned_at": null,
+          "created_at": "2026-10-16T06:14:47.000042",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-16T06:14:47.182278",
+          "word_count": 14,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "A message to a member by their email",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-16T06:14:47.115515",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 1,
+          "created_at": "2026-10-16T06:14:47.000042",
+          "updated_at": "2026-10-16T06:14:47.044925",
+          "action_type": 12,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 3,
+          "created_at": "2026-10-16T06:14:47.000042",
+          "updated_at": "2026-10-16T06:14:47.080852",
+          "action_type": 13,
+          "acting_user_id": 1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wpbWG/4nD/5JqsJLzRW+ImZLLZM=",
+            "created_at": "2026-10-16T06:14:45.959306",
+            "rotated_at": "2026-10-16T06:14:45.957622",
+            "updated_at": "2026-10-16T06:14:45.959306",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wpbWG/4nD/5JqsJLzRW+ImZLLZM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:46.847352",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wpbWG/4nD/5JqsJLzRW+ImZLLZM=",
+            "created_at": "2026-10-16T06:14:45.959306",
+            "rotated_at": "2026-10-16T06:14:45.957622",
+            "updated_at": "2026-10-16T06:14:45.959306",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wpbWG/4nD/5JqsJLzRW+ImZLLZM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "recorded_from": {
+    "case": "70755330e8e338b85551c3518d336c43a1328cc60a03719ab10f39484416a7af",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

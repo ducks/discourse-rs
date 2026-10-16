@@ -1,0 +1,78 @@
+{
+  "name": "group_add_emails_owner_tl1",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "emails": "friend@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:24.223189",
+  "transaction_started_at": "2026-10-16T06:14:22.775746",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Only usernames can be used to add members to this group. To invite by email, use the Invite button."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "doyYU0KuSI5uR2bS66oVmf9XdIY=",
+            "created_at": "2026-10-16T06:14:23.315997",
+            "rotated_at": "2026-10-16T06:14:23.314941",
+            "updated_at": "2026-10-16T06:14:23.315997",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "doyYU0KuSI5uR2bS66oVmf9XdIY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:24.23432",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "doyYU0KuSI5uR2bS66oVmf9XdIY=",
+            "created_at": "2026-10-16T06:14:23.315997",
+            "rotated_at": "2026-10-16T06:14:23.314941",
+            "updated_at": "2026-10-16T06:14:23.315997",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "doyYU0KuSI5uR2bS66oVmf9XdIY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 2, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "89965b01bfd1b61f03fdcc18968ff096ad300f44f0cc8e8ba3c29c93864b0a2c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

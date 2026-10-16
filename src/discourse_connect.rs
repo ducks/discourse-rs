@@ -1273,6 +1273,7 @@ async fn match_email_or_create_user(
                 active: false,
                 approved: false,
                 moderator: false,
+                staged: false,
                 locale,
                 ip,
                 custom_fields: &[],

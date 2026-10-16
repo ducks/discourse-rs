@@ -1,0 +1,123 @@
+{
+  "name": "group_add_emails_skip",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "emails": "newbie@example.com",
+        "notify_users": "false"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T06:14:26.222433",
+  "transaction_started_at": "2026-10-16T06:14:24.599127",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "usernames": [],
+        "emails": [
+          "newbie@example.com"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 1,
+          "created_at": "2026-10-16T06:14:26.260292",
+          "updated_at": "2026-10-16T06:14:26.260292"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "newbie@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T06:14:26.253239",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T06:14:26.24809",
+          "invite_key": "hUuxxYdFCC",
+          "updated_at": "2026-10-16T06:14:26.253239",
+          "description": null,
+          "email_token": "a496cd109590f4ea53e06931040910c6",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HTUPgz9sOwIOwXDPwdCrCnYMHVQ=",
+            "created_at": "2026-10-16T06:14:25.388677",
+            "rotated_at": "2026-10-16T06:14:25.387368",
+            "updated_at": "2026-10-16T06:14:25.388677",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HTUPgz9sOwIOwXDPwdCrCnYMHVQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T06:14:26.230169",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HTUPgz9sOwIOwXDPwdCrCnYMHVQ=",
+            "created_at": "2026-10-16T06:14:25.388677",
+            "rotated_at": "2026-10-16T06:14:25.387368",
+            "updated_at": "2026-10-16T06:14:25.388677",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HTUPgz9sOwIOwXDPwdCrCnYMHVQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "invited_groups": 1,
+    "invites": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "1e09de656cefaaefbd4d5d8384a078ffd8e1464a649ec50e2a006ba5a134f0dd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

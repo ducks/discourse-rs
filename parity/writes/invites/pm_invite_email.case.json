@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "invite_email"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/43/invite.json",
+      "params": {
+        "email": "outsider@example.com",
+        "custom_message": "Have a look"
+      }
+    }
+  ]
+}

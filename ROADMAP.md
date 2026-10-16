@@ -1895,9 +1895,15 @@ route table has been made, so this list may be short.
     ReviewableUser, invite codes at signup. Refused: redeeming admin and
     moderator invites (grant_moderation!, AdminConfirmation), user fields
     and staged users on redemption
-    192c. `feat/invites-elsewhere` M: adding group members by email,
-    inviting to a message by email (Topic#invite), messages to email
-    addresses (TopicCreator#add_emails, staged users)
+    192c. ~~`feat/invites-elsewhere`~~ (done) M: adding group members by
+    email (cannot_add_emails, the invites with skip_email, the rate limit
+    message), inviting to a message by email (Topic#invite's
+    Invite.generate with the topic and groups), messages to email
+    addresses (TopicCreator#add_emails: staged users created, the
+    recipients in order) and the notification and email a staged
+    recipient gets (user_posted_pm_staged, no unsubscribe link or respond
+    instructions). Refused: a staged recipient of a topic started by
+    email (IncomingEmail's subject)
     192d. `feat/invites-pages` M: the accept page (invites/show) and the
     profile's Invited tab (user-invited/show) in Ember's markup
     192e. `feat/invites-bulk` S: POST /invites/upload_csv,

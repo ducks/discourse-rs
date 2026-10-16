@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/43/invite.json",
+      "params": {
+        "email": "outsider@example.com"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/t/43/invite.json",
+      "params": {
+        "email": "Outsider@example.com"
+      }
+    }
+  ]
+}
