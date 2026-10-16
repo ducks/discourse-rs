@@ -1847,9 +1847,15 @@ route table has been made, so this list may be short.
     LoginActivator), the client's authentication_data handling, the
     /signup page. Refused: a username other than the provider's when it
     overrides usernames (UsernameChanger saves the user early)
-    191d. `feat/external-auth-builtin` M: GitHub, Google, Facebook,
-    Discord, LinkedIn, Discourse ID, Microsoft and Amazon strategies;
-    Twitter (OAuth 1.0a) with its health check; Apple, LTI and Patreon
+    191d. ~~`feat/external-auth-builtin`~~ (done) M: GitHub, Google
+    (with its groups through a service account), Facebook, Discord,
+    LinkedIn, Discourse ID, Microsoft and Amazon strategies. Refused: a
+    Google id_token or JSON body handed to the callback, Facebook's
+    signed request cookie
+    191e. `feat/external-auth-twitter` M: Twitter (OAuth 1.0a) with its
+    login health check (problem_checks.rs:488)
+    191f. `feat/external-auth-plugins` M: discourse-apple-auth,
+    discourse-lti and discourse-patreon's logins
 192. `feat/invites` L: InvitesController (/invites, invite links,
     redeeming), invite codes at signup (signup.rs:194), adding group
     members by email (routes/admin_groups.rs:601), messages to email

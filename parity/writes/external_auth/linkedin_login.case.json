@@ -1,0 +1,40 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "linkedin_oidc_client_id": "liclient",
+    "linkedin_oidc_client_secret": "lisecret",
+    "enable_linkedin_oidc_logins": true
+  },
+  "remote_hosts": {
+    "https://www.linkedin.com": "/li-www",
+    "https://api.linkedin.com": "/li-api"
+  },
+  "remote": {
+    "/li-www/oauth/v2/accessToken": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"access_token\":\"li-token\",\"scope\":\"openid,profile,email\",\"token_type\":\"Bearer\",\"id_token\":\"a.b.c\"}"
+    },
+    "/li-api/v2/userinfo": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"sub\":\"li-sub-1\",\"email_verified\":true,\"name\":\"Linked Person\",\"locale\":{\"country\":\"US\",\"language\":\"en\"},\"given_name\":\"Linked\",\"family_name\":\"Person\",\"email\":\"user3@example.com\",\"picture\":\"http://fixtures.localhost:8099/li.png\"}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/linkedin_oidc"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/linkedin_oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

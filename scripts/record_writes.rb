@@ -349,8 +349,29 @@ if cases.any? { |c| c["remote"] }
   end
 end
 
+# `remote_hosts`: a login provider's fixed endpoints (https://github.com,
+# https://www.googleapis.com, ...) reached on the fixtures server instead,
+# under the path each maps to. Faraday builds every URL the OAuth2
+# strategies request through build_exclusive_url; tests/writes.rs sets
+# the port's Config::auth_provider_hosts the same way.
+REMOTE_HOSTS = {}
+module RecordRemoteHosts
+  def build_exclusive_url(*args)
+    uri = super
+    s = uri.to_s
+    REMOTE_HOSTS.each do |from, to|
+      if s.start_with?(from)
+        return URI.parse("http://fixtures.localhost:8099#{to}#{s.delete_prefix(from)}")
+      end
+    end
+    uri
+  end
+end
+Faraday::Connection.prepend(RecordRemoteHosts)
+
 cases.each do |c|
   ENQUEUED.clear
+  REMOTE_HOSTS.replace(c["remote_hosts"] || {})
   backups_before = backup_files
   pool.pin_connection!(true)
   PINNED.replace([ActiveRecord::Base.connection.current_transaction])
@@ -488,6 +509,7 @@ cases.each do |c|
     record[:random_delays] = c["random_delays"] if c["random_delays"]
     record[:files] = c["files"] if c["files"]
     record[:remote] = c["remote"] if c["remote"]
+    record[:remote_hosts] = c["remote_hosts"] if c["remote_hosts"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
     record[:keep_headers] = c["keep_headers"] if c["keep_headers"]
     record[:fragment] = c["fragment"] if c["fragment"]

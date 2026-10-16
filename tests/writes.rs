@@ -1645,6 +1645,19 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     config.public_dir = public.clone();
     // RateLimiter: off, as the recorder runs Rails, unless the case asks.
     config.rate_limits = case["rate_limits"] == true;
+    // `remote_hosts`: login providers' fixed endpoints on the fixtures
+    // server, as the recorder rewrites Faraday's URLs.
+    config.auth_provider_hosts = case["remote_hosts"]
+        .as_object()
+        .into_iter()
+        .flatten()
+        .map(|(from, to)| {
+            (
+                from.clone(),
+                format!("http://fixtures.localhost:8099{}", to.as_str().unwrap()),
+            )
+        })
+        .collect();
     let app_state = state(db.pool.clone(), config).await;
     // Counted before the sequences are set: the rolled-back run of the
     // setup still advances them.

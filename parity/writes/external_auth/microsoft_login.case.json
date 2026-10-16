@@ -1,0 +1,42 @@
+{
+  "user": null,
+  "settings": {
+    "auth_require_interaction": false,
+    "microsoft_auth_client_id": "ms-client",
+    "microsoft_auth_client_secret": "ms-secret",
+    "microsoft_auth_tenant_id": "common",
+    "microsoft_auth_email_verified": true,
+    "microsoft_auth_enabled": true
+  },
+  "remote_hosts": {
+    "https://login.microsoftonline.com": "/ms-login",
+    "https://graph.microsoft.com": "/ms-graph"
+  },
+  "remote": {
+    "/ms-login/common/oauth2/v2.0/token": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "body": "{\"token_type\":\"Bearer\",\"scope\":\"openid email profile\",\"access_token\":\"ms-token\"}"
+    },
+    "/ms-graph/v1.0/me": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json; odata.metadata=minimal"},
+      "body": "{\"id\":\"ms-id-1\",\"displayName\":null,\"userPrincipalName\":\"user0@example.com\",\"mail\":null,\"givenName\":\"User\"}"
+    }
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/microsoft_office365?display=page"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/microsoft_office365/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

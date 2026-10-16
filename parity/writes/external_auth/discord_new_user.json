@@ -1,0 +1,130 @@
+{
+  "name": "discord_new_user",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/discord"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/discord/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ],
+  "started_at": "2026-10-16T04:58:54.625315",
+  "transaction_started_at": "2026-10-16T04:58:53.121787",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=7981bd171218e315ad901101dc2edc0c0e552e208b7c8fb0...",
+      "headers": {
+        "Location": "/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=7981bd171218e315ad901101dc2edc0c0e552e208b7c8fb0"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/"
+      }
+    },
+    {
+      "status": 404,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "name": "Kelly K",
+            "email": null,
+            "image": "https://cdn.discordapp.com/avatars/80351110224678913/",
+            "nickname": "kelly"
+          },
+          "extra": {
+            "raw_info": {
+              "id": "80351110224678913",
+              "email": "kelly@example.com",
+              "avatar": null,
+              "guilds": [
+                {
+                  "id": "222",
+                  "name": "Trusted",
+                  "approximate_member_count": 5
+                }
+              ],
+              "username": "kelly",
+              "verified": false,
+              "global_name": "Kelly K",
+              "accent_color": 3
+            }
+          },
+          "user_id": null,
+          "last_used": "2026-10-16T04:58:54.83489",
+          "created_at": "2026-10-16T04:58:54.857216",
+          "updated_at": "2026-10-16T04:58:54.857216",
+          "credentials": {
+            "token": "discord-token",
+            "expires": false
+          },
+          "provider_uid": "80351110224678913",
+          "provider_name": "discord"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_associated_accounts": 1
+  },
+  "settings": {
+    "auth_require_interaction": false,
+    "discord_client_id": "discord-client",
+    "discord_secret": "discord-secret",
+    "discord_trusted_guilds": "111|222",
+    "enable_discord_logins": true
+  },
+  "remote": {
+    "/discord/oauth2/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"discord-token\",\"token_type\":\"Bearer\",\"scope\":\"identify email guilds\"}"
+    },
+    "/discord/users/@me": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"id\":\"80351110224678913\",\"username\":\"kelly\",\"global_name\":\"Kelly K\",\"avatar\":null,\"verified\":false,\"email\":\"kelly@example.com\",\"accentColor\":3}"
+    },
+    "/discord/users/@me/guilds": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "[{\"id\":\"222\",\"name\":\"Trusted\",\"approximateMemberCount\":5}]"
+    }
+  },
+  "remote_hosts": {
+    "https://discord.com/api": "/discord"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "05d39929e337f0622e12d8998b115a02e8fa9e14744f1ea85a001b112ca6eda1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

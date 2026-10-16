@@ -8,7 +8,8 @@ use serde_json::{Map, Value};
 
 use crate::{AppError, Unsupported};
 
-/// `Faraday::Utils.escape`: unreserved bytes kept, spaces as "+".
+/// `Faraday::Utils.escape`: unreserved bytes kept, spaces as "%20" (the
+/// oauth2 gem sets `Faraday::Utils.default_space_encoding` to it).
 pub fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for b in s.bytes() {
@@ -16,7 +17,7 @@ pub fn escape(s: &str) -> String {
             b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'.' | b'~' | b'_' | b'-' => {
                 out.push(b as char)
             }
-            b' ' => out.push('+'),
+            b' ' => out.push_str("%20"),
             _ => out.push_str(&format!("%{b:02X}")),
         }
     }
@@ -229,7 +230,7 @@ fn snake(key: &str) -> String {
     out.to_lowercase()
 }
 
-fn snaky(v: Value) -> Value {
+pub fn snaky(v: Value) -> Value {
     match v {
         Value::Object(map) => Value::Object(
             map.into_iter()
@@ -346,6 +347,17 @@ pub struct Http<'a> {
 }
 
 impl Http<'_> {
+    /// A provider's fixed endpoint where the config says it is reached
+    /// (`Config::auth_provider_hosts`, set by tests only).
+    pub fn rewrite(&self, url: &str) -> String {
+        for (from, to) in &self.fetcher.urls.config.auth_provider_hosts {
+            if let Some(rest) = url.strip_prefix(from.as_str()) {
+                return format!("{to}{rest}");
+            }
+        }
+        url.to_string()
+    }
+
     /// One request, through FinalDestination's SSRF check or straight.
     /// Err with the failure OmniAuth would name.
     pub async fn request(
@@ -357,6 +369,7 @@ impl Http<'_> {
         headers: &[(String, String)],
         body: Option<String>,
     ) -> Result<Result<Fetched, Failure>, AppError> {
+        let url = &self.rewrite(url);
         if final_destination {
             let body = body.unwrap_or_default();
             let posted = self
@@ -538,17 +551,33 @@ impl Http<'_> {
         path: &str,
         extra_headers: &[(String, String)],
     ) -> Result<Result<Value, Failure>, AppError> {
-        let url = build_url(client.site.as_deref(), path, &[])?;
         let mut headers = vec![("Authorization".to_string(), format!("Bearer {token}"))];
         headers.extend(extra_headers.iter().cloned());
+        self.resource(client, reqwest::Method::GET, path, &[], &headers, None)
+            .await
+    }
+
+    /// `client.request(verb, path, params:, headers:, body:).parsed`: a
+    /// request under the client's site, an error status failing as
+    /// OAuth2::Error does (invalid_credentials).
+    pub async fn resource(
+        &self,
+        client: &Client,
+        method: reqwest::Method,
+        path: &str,
+        query: &[(String, String)],
+        headers: &[(String, String)],
+        body: Option<String>,
+    ) -> Result<Result<Value, Failure>, AppError> {
+        let url = build_url(client.site.as_deref(), path, query)?;
         let fetched = match self
             .request(
                 client.final_destination,
                 client.timeout,
-                reqwest::Method::GET,
+                method,
                 &url,
-                &headers,
-                None,
+                headers,
+                body,
             )
             .await?
         {
@@ -561,16 +590,23 @@ impl Http<'_> {
                 format!("request to {url} failed: {}", fetched.status),
             )));
         }
-        Ok(Ok(
-            match parse_body(&fetched.content_type, &fetched.body)? {
-                Some(m) => Value::Object(m),
-                None => match serde_json::from_str::<Value>(&fetched.body) {
-                    Ok(v) if fetched.content_type.is_empty() => v,
-                    _ => Value::String(fetched.body),
-                },
-            },
-        ))
+        Ok(Ok(parsed_value(&fetched.content_type, &fetched.body)?))
     }
+}
+
+/// `OAuth2::Response#parsed` for any body: a JSON hash snake_cased, a JSON
+/// array as it is, anything else as a string.
+pub fn parsed_value(content_type: &str, body: &str) -> Result<Value, AppError> {
+    if let Some(m) = parse_body(content_type, body)? {
+        return Ok(Value::Object(m));
+    }
+    let ct = content_type.split(';').next().unwrap_or("").trim();
+    let json = ct.is_empty() || ct.eq_ignore_ascii_case("application/json");
+    Ok(match serde_json::from_str::<Value>(body) {
+        Ok(v @ Value::Array(_)) if json => v,
+        Ok(v) if ct.is_empty() => v,
+        _ => Value::String(body.to_string()),
+    })
 }
 
 #[cfg(test)]
@@ -586,7 +622,7 @@ mod tests {
                 &[("b".into(), "x y".into()), ("a".into(), "1".into())]
             )
             .unwrap(),
-            "https://discord.com/api/oauth2/authorize?a=1&b=x+y"
+            "https://discord.com/api/oauth2/authorize?a=1&b=x%20y"
         );
         assert_eq!(
             build_url(

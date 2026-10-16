@@ -1,0 +1,250 @@
+{
+  "name": "linkedin_login",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/linkedin_oidc"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/linkedin_oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "started_at": "2026-10-16T04:58:14.651985",
+  "transaction_started_at": "2026-10-16T04:58:13.712178",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d0e9e18d0753974f33fdedda53ae37b4e83d34fc00a53d2a...",
+      "headers": {
+        "Location": "/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d0e9e18d0753974f33fdedda53ae37b4e83d34fc00a53d2a"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/"
+      }
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "email": "user3@example.com",
+            "image": "http://fixtures.localhost:8099/li.png",
+            "last_name": "Person",
+            "first_name": "Linked"
+          },
+          "extra": {
+            "raw_info": {
+              "sub": "li-sub-1",
+              "name": "Linked Person",
+              "email": "user3@example.com",
+              "locale": {
+                "country": "US",
+                "language": "en"
+              },
+              "picture": "http://fixtures.localhost:8099/li.png",
+              "given_name": "Linked",
+              "family_name": "Person",
+              "email_verified": true
+            }
+          },
+          "user_id": 5,
+          "last_used": "2026-10-16T04:58:14.78102",
+          "created_at": "2026-10-16T04:58:14.783022",
+          "updated_at": "2026-10-16T04:58:14.783022",
+          "credentials": {
+            "token": "li-token",
+            "expires": false
+          },
+          "provider_uid": "li-sub-1",
+          "provider_name": "linkedin_oidc"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/auth/linkedin_oidc/callback",
+          "action": "generate",
+          "user_id": 5,
+          "client_ip": "127.0.0.1",
+          "auth_token": "PYHg8UdRD9pOzqq2HCU/VUT10EI=",
+          "created_at": "2026-10-16T04:58:15.005429",
+          "user_agent": null,
+          "user_auth_token_id": 115
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 115,
+          "seen_at": null,
+          "user_id": 5,
+          "client_ip": "127.0.0.1",
+          "auth_token": "PYHg8UdRD9pOzqq2HCU/VUT10EI=",
+          "created_at": "2026-10-16T04:58:14.975422",
+          "rotated_at": "2026-10-16T04:58:14.967706",
+          "updated_at": "2026-10-16T04:58:14.975422",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "PYHg8UdRD9pOzqq2HCU/VUT10EI=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": true,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-07-25T05:59:17.511834",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-16T04:58:14.813491",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": "127.0.0.1",
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "download_avatar_from_url",
+      {
+        "url": "http://fixtures.localhost:8099/li.png",
+        "user_id": 5,
+        "override_gravatar": false
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_associated_accounts": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 115
+  },
+  "settings": {
+    "auth_require_interaction": false,
+    "linkedin_oidc_client_id": "liclient",
+    "linkedin_oidc_client_secret": "lisecret",
+    "enable_linkedin_oidc_logins": true
+  },
+  "remote": {
+    "/li-www/oauth/v2/accessToken": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"access_token\":\"li-token\",\"scope\":\"openid,profile,email\",\"token_type\":\"Bearer\",\"id_token\":\"a.b.c\"}"
+    },
+    "/li-api/v2/userinfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"sub\":\"li-sub-1\",\"email_verified\":true,\"name\":\"Linked Person\",\"locale\":{\"country\":\"US\",\"language\":\"en\"},\"given_name\":\"Linked\",\"family_name\":\"Person\",\"email\":\"user3@example.com\",\"picture\":\"http://fixtures.localhost:8099/li.png\"}"
+    }
+  },
+  "remote_hosts": {
+    "https://www.linkedin.com": "/li-www",
+    "https://api.linkedin.com": "/li-api"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "4210d7e27b02bb327203dae95b340d5104ac9beda686f07dd2bab5fe0695dbaf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

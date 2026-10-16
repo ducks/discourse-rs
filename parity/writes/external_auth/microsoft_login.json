@@ -1,0 +1,235 @@
+{
+  "name": "microsoft_login",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/microsoft_office365?display=page"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/microsoft_office365/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "started_at": "2026-10-16T04:58:17.020554",
+  "transaction_started_at": "2026-10-16T04:58:16.125161",
+  "responses": [
+    {
+      "status": 302,
+      "body": "Redirecting to http://fixtures.localhost:8099/ms-login/common/oauth2/v2.0/authorize?client_id=ms-client&display=page&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fmicrosoft_office365%2Fcallback&response_type=code&scope=openid%20email%20profile%20https%3A%2F%2Fgraph.microsoft.com%2FUser.Read&state=ae75efa1a698ca6c0f87430c39b5da2f37bd2ab0be692ab0...",
+      "headers": {
+        "Location": "/ms-login/common/oauth2/v2.0/authorize?client_id=ms-client&display=page&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fmicrosoft_office365%2Fcallback&response_type=code&scope=openid%20email%20profile%20https%3A%2F%2Fgraph.microsoft.com%2FUser.Read&state=ae75efa1a698ca6c0f87430c39b5da2f37bd2ab0be692ab0"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/"
+      }
+    }
+  ],
+  "changes": {
+    "user_associated_accounts": {
+      "inserted": [
+        {
+          "id": 1,
+          "info": {
+            "name": "user0@example.com",
+            "email": "user0@example.com"
+          },
+          "extra": {
+            "raw_info": {
+              "id": "ms-id-1",
+              "mail": null,
+              "given_name": "User",
+              "display_name": null,
+              "user_principal_name": "user0@example.com"
+            }
+          },
+          "user_id": 2,
+          "last_used": "2026-10-16T04:58:17.178606",
+          "created_at": "2026-10-16T04:58:17.18376",
+          "updated_at": "2026-10-16T04:58:17.18376",
+          "credentials": {
+            "token": "ms-token",
+            "expires": false
+          },
+          "provider_uid": "ms-id-1",
+          "provider_name": "microsoft_office365"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/auth/microsoft_office365/callback",
+          "action": "generate",
+          "user_id": 2,
+          "client_ip": "127.0.0.1",
+          "auth_token": "O0JPQMXbJFkEb7ixgpJBv/eYTQ8=",
+          "created_at": "2026-10-16T04:58:17.367571",
+          "user_agent": null,
+          "user_auth_token_id": 115
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 115,
+          "seen_at": null,
+          "user_id": 2,
+          "client_ip": "127.0.0.1",
+          "auth_token": "O0JPQMXbJFkEb7ixgpJBv/eYTQ8=",
+          "created_at": "2026-10-16T04:58:17.361813",
+          "rotated_at": "2026-10-16T04:58:17.354266",
+          "updated_at": "2026-10-16T04:58:17.361813",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "O0JPQMXbJFkEb7ixgpJBv/eYTQ8=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": true,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-16T04:58:17.290438",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": "127.0.0.1",
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_associated_accounts": 1,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 115
+  },
+  "settings": {
+    "auth_require_interaction": false,
+    "microsoft_auth_client_id": "ms-client",
+    "microsoft_auth_client_secret": "ms-secret",
+    "microsoft_auth_tenant_id": "common",
+    "microsoft_auth_email_verified": true,
+    "microsoft_auth_enabled": true
+  },
+  "remote": {
+    "/ms-login/common/oauth2/v2.0/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"token_type\":\"Bearer\",\"scope\":\"openid email profile\",\"access_token\":\"ms-token\"}"
+    },
+    "/ms-graph/v1.0/me": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; odata.metadata=minimal"
+      },
+      "body": "{\"id\":\"ms-id-1\",\"displayName\":null,\"userPrincipalName\":\"user0@example.com\",\"mail\":null,\"givenName\":\"User\"}"
+    }
+  },
+  "remote_hosts": {
+    "https://login.microsoftonline.com": "/ms-login",
+    "https://graph.microsoft.com": "/ms-graph"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "d95a73ff43a23a7b5b1bfdb25c84b2c8ad1c5b421de7acc1a1cd6fdb02f51ae9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -37,6 +37,11 @@ pub struct Config {
     /// Middleware::RequestTracker's logging and beacons, which Rails loads
     /// outside development or with TRACK_REQUESTS.
     pub track_requests: bool,
+    /// The fixed endpoints of external login providers (GitHub, Google,
+    /// ...) reached elsewhere: (prefix, replacement) pairs applied to
+    /// each request URL, so tests can stand in for the providers. Empty
+    /// outside tests.
+    pub auth_provider_hosts: Vec<(String, String)>,
 }
 
 /// A site's part of the Config (RailsMultisite's connection spec).
@@ -245,6 +250,7 @@ impl Config {
             globals,
             rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
             track_requests: rails_env != RailsEnv::Development || var("TRACK_REQUESTS").is_some(),
+            auth_provider_hosts: Vec::new(),
         })
     }
 }

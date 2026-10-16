@@ -185,6 +185,7 @@ mod tests {
             letter_avatar_font: crate::letter_avatar::DEFAULT_FONT.into(),
             rate_limits: false,
             track_requests: false,
+            auth_provider_hosts: Vec::new(),
             globals: GlobalSettings::from_vars(globals.iter().copied()),
         }
     }

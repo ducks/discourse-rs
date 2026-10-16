@@ -11,9 +11,9 @@
 //! Failures go to /auth/failure. GET /auth/:provider without GET allowed
 //! shows the confirmation page that posts to it.
 //!
-//! Strategies ported: discourse-oauth2-basic's and
-//! discourse-openid-connect's. Refused: the others (191d), and
-//! invite-only sites' invite check.
+//! Strategies ported: discourse-oauth2-basic's, discourse-openid-connect's
+//! and the OAuth2 ones Discourse ships (auth/builtin.rs). Refused: the
+//! others, and invite-only sites' invite check.
 
 use askama::Template;
 use axum::body::Bytes;
@@ -33,7 +33,7 @@ use crate::{AppError, AppState, Unsupported};
 
 /// The strategies ported.
 fn ported(name: &str) -> bool {
-    matches!(name, "oauth2_basic" | "oidc")
+    matches!(name, "oauth2_basic" | "oidc") || crate::auth::builtin::is_builtin(name)
 }
 
 fn host(headers: &HeaderMap) -> &str {
@@ -140,6 +140,13 @@ fn callback_url(state: &AppState, settings: &SiteSettings, name: &str) -> Result
         config: &state.config,
         settings,
     };
+    if crate::auth::builtin::is_builtin(name) {
+        return crate::auth::builtin::callback_url(
+            name,
+            &urls.base_url_no_prefix()?,
+            state.config.globals.relative_url_root(),
+        );
+    }
     Ok(format!("{}/auth/{name}/callback", urls.base_url()?))
 }
 
@@ -175,7 +182,7 @@ pub async fn request(
     };
     let name = authenticator.name;
     if !ported(name) {
-        return Err(Unsupported("logging in with this provider (191d)").into());
+        return Err(Unsupported("logging in with this provider (191e)").into());
     }
     let params = crate::params::parse(uri.query(), &headers, &body);
     let mut session = load_forum_session(&state, &headers);
@@ -258,9 +265,20 @@ pub async fn request(
                 crate::plugins::openid_connect::pkce(&settings)?,
             )
         }
-        _ => unreachable!("a ported strategy"),
+        n => (
+            crate::auth::builtin::client(&settings, n)?,
+            crate::auth::builtin::authorize_params(&settings, n, &params)?,
+            false,
+        ),
     };
-    extra.insert(0, ("state".to_string(), state_param.clone()));
+    // Google takes a state from the request; it is the one kept.
+    let state_param = match extra.iter().find(|(k, _)| k == "state") {
+        Some((_, given)) => given.clone(),
+        None => {
+            extra.insert(0, ("state".to_string(), state_param.clone()));
+            state_param
+        }
+    };
     if pkce {
         let verifier = oauth2::random_hex(64);
         extra.push(("code_challenge".into(), oauth2::code_challenge(&verifier)));
@@ -534,6 +552,7 @@ async fn callback_phase(
     session: &mut ForumSession,
     name: &str,
     params: &Map<String, Value>,
+    headers: &HeaderMap,
 ) -> Result<Callback, AppError> {
     let http = http(state, settings);
     let param = |k: &str| crate::params::string(params, k);
@@ -560,7 +579,13 @@ async fn callback_phase(
             oidc = Some(d);
             (client, false)
         }
-        _ => return Err(Unsupported("logging in with this provider (191d)").into()),
+        n => {
+            let client = crate::auth::builtin::client(settings, n)?;
+            if let Some(f) = crate::auth::builtin::before_callback(n, params, &client, headers)? {
+                return Ok(Callback::Failed(f));
+            }
+            (client, false)
+        }
     };
     // omniauth-oauth2's callback_phase.
     let error = param("error_reason").or_else(|| param("error"));
@@ -591,7 +616,30 @@ async fn callback_phase(
         }
     }
     if let Some(error) = error {
-        return Ok(Callback::Failed(Failure::new(&error, error.clone())));
+        // CallbackError's message: error, the description (or reason) and
+        // the uri. When it is the error alone, Discourse's on_failure takes
+        // the failure for a rescued exception and re-raises it, which the
+        // callback phase rescues as invalid_credentials (and the second
+        // time, a 500).
+        let message = [
+            param("error"),
+            param("error_description").or_else(|| param("error_reason")),
+            param("error_uri"),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>()
+        .join(" | ");
+        if message == error {
+            if error == "invalid_credentials" {
+                return Err(Unsupported("an OAuth error re-raised by on_failure (500)").into());
+            }
+            return Ok(Callback::Failed(Failure::new(
+                "invalid_credentials",
+                message,
+            )));
+        }
+        return Ok(Callback::Failed(Failure::new(&error, message)));
     }
     let code = param("code").unwrap_or_default();
     let callback = callback_url(state, settings, name)?;
@@ -605,6 +653,20 @@ async fn callback_phase(
         extra.push(("code_verifier".into(), verifier.unwrap_or_default()));
     }
     let token = match &oidc {
+        _ if crate::auth::builtin::is_builtin(name) => {
+            let xhr = headers
+                .get("x-requested-with")
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|v| v == "XMLHttpRequest");
+            let json_body = headers
+                .get(header::CONTENT_TYPE)
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|v| v.to_lowercase().contains("json"));
+            crate::auth::builtin::build_access_token(
+                &http, settings, name, &client, params, xhr, json_body, &callback,
+            )
+            .await?
+        }
         Some(d) if d.userinfo_endpoint.is_none() => {
             crate::plugins::openid_connect::token_without_userinfo(
                 &http, &client, &code, &callback, &extra,
@@ -656,7 +718,10 @@ async fn callback_phase(
                 Err(f) => return Ok(Callback::Failed(f)),
             }
         }
-        _ => unreachable!("a ported strategy"),
+        n => match crate::auth::builtin::auth_hash(&http, n, &client, &token).await? {
+            Ok(a) => a,
+            Err(f) => return Ok(Callback::Failed(f)),
+        },
     };
     Ok(Callback::Auth(Box::new(auth)))
 }
@@ -692,7 +757,19 @@ pub(super) async fn after_authenticate(
             .await?;
             Ok((result, auth))
         }
-        _ => Err(Unsupported("logging in with this provider (191d)").into()),
+        n if crate::auth::builtin::is_builtin(n) => {
+            let http = http(state, settings);
+            crate::auth::builtin::after_authenticate(
+                conn,
+                settings,
+                &state.i18n,
+                &http,
+                auth,
+                existing_account,
+            )
+            .await
+        }
+        _ => Err(Unsupported("logging in with this provider").into()),
     }
 }
 
@@ -772,14 +849,23 @@ pub async fn callback(
     };
     let name = authenticator.name;
     if !ported(name) {
-        return Err(Unsupported("logging in with this provider (191d)").into());
+        return Err(Unsupported("logging in with this provider (191e)").into());
     }
     let params = crate::params::parse(uri.query(), &headers, &body);
     let mut session = load_forum_session(&state, &headers);
     let session_id = session.server_session_id();
     // callback_call: the origin and params taken out of the session.
     let origin = session_take(&mut session, "omniauth.origin").filter(|o| !o.is_empty());
-    let found = callback_phase(&state, &mut tx, &settings, &mut session, name, &params).await?;
+    let found = callback_phase(
+        &state,
+        &mut tx,
+        &settings,
+        &mut session,
+        name,
+        &params,
+        &headers,
+    )
+    .await?;
     let auth = match found {
         Callback::Auth(auth) => *auth,
         Callback::Redirect(url) => {
@@ -1167,6 +1253,7 @@ pub(super) fn provides_groups(settings: &SiteSettings, name: &str) -> Result<boo
             .to_s()
             .trim()
             .is_empty(),
+        "google_oauth2" => crate::auth::builtin::google_provides_groups(settings)?,
         _ => false,
     })
 }

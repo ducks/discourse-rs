@@ -1,0 +1,56 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "auth_require_interaction": false,
+    "google_oauth2_client_id": "gclient",
+    "google_oauth2_client_secret": "gsecret",
+    "google_oauth2_hd": "example.com",
+    "google_oauth2_prompt": "select_account|consent",
+    "enable_google_oauth2_logins": true
+  },
+  "remote_hosts": {
+    "https://oauth2.googleapis.com": "/g-oauth",
+    "https://www.googleapis.com": "/g-apis"
+  },
+  "remote": {
+    "/g-oauth/token": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"access_token\":\"g-token-1\",\"scope\":\"openid https://www.googleapis.com/auth/userinfo.email\",\"token_type\":\"Bearer\",\"id_token\":\"eyJhbGciOiJub25lIn0.e30.\"}"
+    },
+    "/g-apis/oauth2/v3/userinfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"sub\":\"g-1\",\"name\":\"Gee User\",\"given_name\":\"Gee\",\"family_name\":\"User\",\"picture\":\"https://lh3.googleusercontent.com/a/pic=s96-c\",\"email\":\"User2@example.com\",\"email_verified\":true,\"hd\":\"example.com\"}"
+    },
+    "/g-apis/oauth2/v3/tokeninfo": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": "{\"azp\":\"gclient\",\"aud\":\"gclient\",\"scope\":\"openid https://www.googleapis.com/auth/userinfo.email\",\"exp\":\"1900000000\"}"
+    }
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2?origin=%2Ft%2Fwelcome%2F5"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/google_oauth2/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
+    }
+  ],
+  "ignore": [
+    "/responses/0/headers/Location",
+    "/responses/0/body"
+  ]
+}

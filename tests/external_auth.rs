@@ -621,3 +621,294 @@ async fn interaction_required_shows_the_confirmation_page() {
     let unknown = browser.get("/auth/github").await;
     assert_eq!(unknown.status, StatusCode::FORBIDDEN);
 }
+
+/// What the fake GitHub and Google saw.
+#[derive(Default)]
+struct Hosted {
+    base: String,
+    /// Each token request's headers and form.
+    token_requests: Vec<(HeaderMap, Vec<(String, String)>)>,
+    /// The Accept header of the emails request.
+    emails_accept: Option<String>,
+    /// The service account's JWT, checked against this key.
+    service_key: Option<rsa::RsaPublicKey>,
+    group_pages: Vec<String>,
+}
+
+type SharedHosted = Arc<Mutex<Hosted>>;
+
+async fn hosted_token(
+    State(p): State<SharedHosted>,
+    headers: HeaderMap,
+    Form(form): Form<Vec<(String, String)>>,
+) -> (StatusCode, Json<Value>) {
+    let mut p = p.lock().unwrap();
+    p.token_requests.push((headers, form.clone()));
+    let get = |k: &str| form.iter().find(|(n, _)| n == k).map(|(_, v)| v.clone());
+    if get("grant_type").as_deref() == Some("urn:ietf:params:oauth:grant-type:jwt-bearer") {
+        use base64::Engine;
+        use sha2::Digest;
+        let jwt = get("assertion").unwrap_or_default();
+        let (input, signature) = jwt.rsplit_once('.').unwrap();
+        let signature = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode(signature)
+            .unwrap();
+        let mut digest_info = vec![
+            0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02,
+            0x01, 0x05, 0x00, 0x04, 0x20,
+        ];
+        digest_info.extend_from_slice(&sha2::Sha256::digest(input.as_bytes()));
+        let key = p.service_key.clone().unwrap();
+        if key
+            .verify(
+                rsa::Pkcs1v15Sign::new_unprefixed(),
+                &digest_info,
+                &signature,
+            )
+            .is_err()
+        {
+            return (StatusCode::UNAUTHORIZED, Json(json!({"error": "bad jwt"})));
+        }
+        let claims: Value = serde_json::from_slice(
+            &base64::engine::general_purpose::URL_SAFE_NO_PAD
+                .decode(input.split_once('.').unwrap().1)
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(claims["sub"], "admin@example.com");
+        assert_eq!(
+            claims["scope"],
+            "https://www.googleapis.com/auth/admin.directory.group.readonly"
+        );
+        return (
+            StatusCode::OK,
+            Json(json!({"access_token": "service-token", "token_type": "Bearer"})),
+        );
+    }
+    if get("code").as_deref() != Some("good-code") {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error": "bad_verification_code"})),
+        );
+    }
+    (
+        StatusCode::OK,
+        Json(
+            json!({"access_token": "hosted-token", "token_type": "bearer", "scope": "user:email"}),
+        ),
+    )
+}
+
+async fn hosted_github_user() -> Json<Value> {
+    Json(json!({"id": 77, "login": "octo", "name": null, "avatar_url": null}))
+}
+
+async fn hosted_github_emails(State(p): State<SharedHosted>, headers: HeaderMap) -> Json<Value> {
+    p.lock().unwrap().emails_accept = headers
+        .get(header::ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string);
+    Json(json!([
+        {"email": "nobody-here@example.com", "primary": true, "verified": true},
+        {"email": "user2@example.com", "primary": false, "verified": true},
+    ]))
+}
+
+async fn hosted_google_userinfo() -> Json<Value> {
+    Json(json!({
+        "sub": "g-77",
+        "email": "user3@example.com",
+        "email_verified": true,
+        "hd": "example.com",
+        "picture": "https://lh3.example/p=s96-c",
+    }))
+}
+
+async fn hosted_google_tokeninfo() -> Json<Value> {
+    Json(json!({"aud": "gclient", "scope": "email profile"}))
+}
+
+async fn hosted_google_groups(
+    State(p): State<SharedHosted>,
+    axum::extract::Query(q): axum::extract::Query<Vec<(String, String)>>,
+) -> Json<Value> {
+    let page = q
+        .iter()
+        .find(|(k, _)| k == "pageToken")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_default();
+    p.lock().unwrap().group_pages.push(page.clone());
+    if page.is_empty() {
+        Json(json!({
+            "groups": [{"id": "g1", "name": "Engineering", "directMembersCount": "3"}],
+            "nextPageToken": "page-2",
+        }))
+    } else {
+        Json(json!({"groups": [{"id": "g2", "name": "Support"}]}))
+    }
+}
+
+/// A site whose GitHub and Google are the test's.
+async fn hosted_site(db: &TestDb) -> (AppState, SharedHosted) {
+    let shared: SharedHosted = Arc::new(Mutex::new(Hosted::default()));
+    let app = Router::new()
+        .route("/gh/login/oauth/access_token", post(hosted_token))
+        .route("/gh-api/user", get(hosted_github_user))
+        .route("/gh-api/user/emails", get(hosted_github_emails))
+        .route("/g-oauth/token", post(hosted_token))
+        .route("/g-apis/oauth2/v3/userinfo", get(hosted_google_userinfo))
+        .route("/g-apis/oauth2/v3/tokeninfo", post(hosted_google_tokeninfo))
+        .route(
+            "/g-admin/admin/directory/v1/groups",
+            get(hosted_google_groups),
+        )
+        .with_state(shared.clone());
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    shared.lock().unwrap().base = base.clone();
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    let mut config = config(RailsEnv::Test, &[]);
+    config.auth_provider_hosts = vec![
+        ("https://github.com".into(), format!("{base}/gh")),
+        ("https://api.github.com".into(), format!("{base}/gh-api")),
+        (
+            "https://oauth2.googleapis.com".into(),
+            format!("{base}/g-oauth"),
+        ),
+        (
+            "https://www.googleapis.com".into(),
+            format!("{base}/g-apis"),
+        ),
+        (
+            "https://admin.googleapis.com".into(),
+            format!("{base}/g-admin"),
+        ),
+    ];
+    let state = state(db.pool.clone(), config).await;
+    set(&state, "allowed_internal_hosts", "127.0.0.1").await;
+    set(&state, "auth_require_interaction", "f").await;
+    (state, shared)
+}
+
+#[tokio::test]
+async fn github_logs_on_by_a_verified_secondary_email() {
+    let db = TestDb::new().await;
+    let (state, hosted) = hosted_site(&db).await;
+    set(&state, "github_client_id", "ghclient").await;
+    set(&state, "github_client_secret", "abc123").await;
+    set(&state, "enable_github_logins", "t").await;
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let start = browser.get("/auth/github").await;
+    let authorize = start.location();
+    assert!(
+        authorize.starts_with("https://github.com/login/oauth/authorize?"),
+        "{authorize}"
+    );
+    assert_eq!(query_param(&authorize, "scope"), "user:email");
+    let back = browser
+        .get(&format!(
+            "/auth/github/callback?code=good-code&state={}",
+            query_param(&authorize, "state")
+        ))
+        .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert_eq!(back.location(), "http://test.localhost/");
+    {
+        let h = hosted.lock().unwrap();
+        // request_body: the client's id and secret in the form, no header.
+        let (headers, form) = &h.token_requests[0];
+        assert!(headers.get(header::AUTHORIZATION).is_none());
+        let get = |k: &str| form.iter().find(|(n, _)| n == k).map(|(_, v)| v.clone());
+        assert_eq!(get("client_id").as_deref(), Some("ghclient"));
+        assert_eq!(get("client_secret").as_deref(), Some("abc123"));
+        assert_eq!(
+            h.emails_accept.as_deref(),
+            Some("application/vnd.github.v3")
+        );
+    }
+    assert!(browser.cookie("_t").is_some());
+    let (user_id, info): (Option<i32>, Value) = sqlx::query_as(
+        "SELECT user_id, info FROM user_associated_accounts WHERE provider_name = 'github'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(user_id, Some(4));
+    assert_eq!(info["email"], "nobody-here@example.com");
+    assert_eq!(info["nickname"], "octo");
+}
+
+#[tokio::test]
+async fn google_reads_groups_through_the_service_account() {
+    use rsa::pkcs8::EncodePrivateKey;
+    let db = TestDb::new().await;
+    let (state, hosted) = hosted_site(&db).await;
+    let key = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 1024).unwrap();
+    hosted.lock().unwrap().service_key = Some(key.to_public_key());
+    let pem = key.to_pkcs8_pem(rsa::pkcs8::LineEnding::LF).unwrap();
+    let account = json!({"client_email": "svc@example.iam", "private_key": pem.as_str()});
+    for (k, v) in [
+        ("google_oauth2_client_id", "gclient"),
+        ("google_oauth2_client_secret", "gsecret"),
+        ("google_oauth2_hd", "example.com"),
+        ("google_oauth2_hd_groups", "t"),
+        (
+            "google_oauth2_hd_groups_service_account_admin_email",
+            "admin@example.com",
+        ),
+        (
+            "google_oauth2_hd_groups_service_account_json",
+            &account.to_string(),
+        ),
+        ("enable_google_oauth2_logins", "t"),
+    ] {
+        set(&state, k, v).await;
+    }
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let start = browser.get("/auth/google_oauth2").await;
+    let authorize = start.location();
+    assert_eq!(query_param(&authorize, "hd"), "example.com");
+    assert_eq!(query_param(&authorize, "scope"), "email profile");
+    assert_eq!(query_param(&authorize, "access_type"), "offline");
+    let back = browser
+        .get(&format!(
+            "/auth/google_oauth2/callback?code=good-code&state={}",
+            query_param(&authorize, "state")
+        ))
+        .await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert!(browser.cookie("_t").is_some());
+    {
+        let h = hosted.lock().unwrap();
+        // The code exchanged with Basic auth, then the service account's.
+        assert_eq!(
+            h.token_requests[0].0.get(header::AUTHORIZATION).unwrap(),
+            "Basic Z2NsaWVudDpnc2VjcmV0"
+        );
+        assert_eq!(h.token_requests.len(), 2);
+        assert_eq!(h.group_pages, ["", "page-2"]);
+    }
+    let (extra, credentials): (Value, Value) = sqlx::query_as(
+        "SELECT extra, credentials FROM user_associated_accounts WHERE provider_name = 'google_oauth2'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(extra["raw_groups"][0]["direct_members_count"], "3");
+    assert_eq!(credentials["scope"], "email profile");
+    let names: Vec<String> = sqlx::query_scalar(
+        "SELECT g.name FROM user_associated_groups ug \
+         JOIN associated_groups g ON g.id = ug.associated_group_id \
+         WHERE ug.user_id = 5 ORDER BY g.name",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(names, ["Engineering", "Support"]);
+}
