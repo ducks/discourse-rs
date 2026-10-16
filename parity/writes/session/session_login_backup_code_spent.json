@@ -1,0 +1,47 @@
+{
+  "name": "session_login_backup_code_spent",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_token": "fedcba9876543210fedcba9876543210",
+        "second_factor_method": 2
+      }
+    }
+  ],
+  "started_at": "2026-10-16T19:21:44.759981",
+  "transaction_started_at": "2026-10-16T19:21:41.527055",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "Invalid authentication code. Each code can only be used once.",
+        "reason": "invalid_second_factor",
+        "backup_enabled": true,
+        "security_key_enabled": false,
+        "totp_enabled": true,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9302, 3, 2, '{\"salt\":\"5a17\",\"code_hash\":\"543475d7ec5f98c7432d86efdc20c85667c465675d50ebc44548bbd34a7393c9\"}', true, NULL, now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9303, 3, 2, '{\"salt\":\"0f0f\",\"code_hash\":\"4d5a70cc81e4dcd6bb1bde1026026b3fff39b9f5a9e10e82446ea02e5e74691c\"}', false, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "ae04953d7af72947720adf93b6ff74d0ec6323252cdc946594bee9bc2087f700",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

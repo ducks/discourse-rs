@@ -1242,12 +1242,12 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 3546 | security key only > blank params | needs-harness | webauthn credential + challenge fixtures |
 | 3566 | security key only > invalid params | needs-harness | webauthn |
 | 3589 | security key only > valid > logs in | needs-harness | webauthn |
-| 3626 | security key disabled in background, TOTP on | needs-harness | webauthn |
-| 3651 | TOTP > token missing > missing-second-factor error | recordable | session_login_totp_missing (setup SQL user_second_factors) |
+| 3626 | security key disabled in background, TOTP on | covered | session_login_security_key_staged (new, matches: the staged challenge, then TOTP with a key enrolled) |
+| 3651 | TOTP > token missing > missing-second-factor error | covered | session_login_second_factor_needed (new, matches) |
 | 3663 | TOTP > invalid TOTP token | covered | session_login_totp_invalid (new) |
-| 3680 | TOTP > invalid backup code | recordable | session_login_backup_code_invalid (setup SQL totp + backup rows) |
-| 3699 | TOTP > valid token logs in | needs-harness | time-based code |
-| 3722 | TOTP > valid backup code logs in | needs-harness | hashed backup code fixture |
+| 3680 | TOTP > invalid backup code | covered | session_login_backup_code_spent (new, matches) |
+| 3699 | TOTP > valid token logs in | covered | session_login_totp, session_login_totp_reused (new, `{{totp:SECRET}}`, match) |
+| 3722 | TOTP > valid backup code logs in | covered | session_login_backup_code (new, matches) |
 | 3747 | blocked IP | unported | session.rs:291 screened IPs |
 | 3765 | strips leading @ | recordable | session_login_at_prefix |
 | 3780 | login by email | recordable | session_login_by_email |

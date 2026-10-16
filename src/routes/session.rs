@@ -403,24 +403,44 @@ pub async fn create(
     if blocked {
         return Err(Unsupported("screened IP addresses").into());
     }
-    // authenticate_second_factor: only its failures are ported.
+    // authenticate_second_factor
     let enabled = crate::second_factor::Enabled::load(&mut conn, &settings, user.id).await?;
-    if enabled.any() {
-        let outcome = crate::second_factor::authenticate(
-            &mut conn,
-            &state.i18n,
-            user.id,
-            &enabled,
-            param(&form, "second_factor_method"),
-            param(&form, "second_factor_token"),
-            crate::clock::now().timestamp(),
-        )
-        .await?;
-        match outcome {
-            Err(failure) => return Ok(json_response(failure)),
-            Ok(_) => return Err(Unsupported("logging in with a second factor").into()),
+    let used_2fa_method = match crate::second_factor::authenticate(
+        &mut conn,
+        &state.i18n,
+        user.id,
+        &enabled,
+        param(&form, "second_factor_method"),
+        param(&form, "second_factor_token"),
+        crate::clock::now().timestamp(),
+        crate::second_factor::backup_code_iterations(state.config.rails_env),
+    )
+    .await?
+    {
+        Ok(used) => used,
+        Err(failure) => {
+            let mut cookie = None;
+            let failure = if enabled.security_keys {
+                let mut session = crate::session::forum::load_forum_session(&state, &headers);
+                let session_id = session.server_session_id();
+                let failure = crate::second_factor::stage_failure(
+                    &mut conn,
+                    &session_id,
+                    user.id,
+                    &enabled,
+                    failure,
+                )
+                .await?;
+                cookie = session.set_cookie(&state, &settings)?;
+                failure
+            } else {
+                failure
+            };
+            return super::accounts::with_session_cookie(json_response(failure), cookie);
         }
-    }
+    };
+    // confirmed_2fa_during_login: a second factor other than a backup code.
+    let confirmed_2fa = used_2fa_method.is_some_and(|m| m != crate::second_factor::BACKUP_CODES);
     // user.active && user.email_confirmed?
     let email_confirmed = match &email {
         Some(email) => {
@@ -524,7 +544,14 @@ pub async fn create(
             ),
         ];
         let mut response = super::discourse_connect::provider_after_login(
-            &state, &settings, &headers, &uri, user.id, &payload, cookies,
+            &state,
+            &settings,
+            &headers,
+            &uri,
+            user.id,
+            &payload,
+            cookies,
+            confirmed_2fa,
         )
         .await?;
         response.headers_mut().insert(

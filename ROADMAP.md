@@ -1448,7 +1448,18 @@ generate_theme_screenshot_thumbnails (171).
     the security tab's writes (adding, editing and removing
     authenticators, security keys, backup codes and passkeys:
     routes/user_security.rs:297), confirming a session with a passkey
-    (:163)
+    (:163). Split:
+    155a. ~~`feat/second-factor-totp`~~ (done) S: logging in with a TOTP
+    code or a backup code (POST /session, the invite login code, the
+    2FA page's backup codes), the webauthn challenge staged for a user
+    with security keys so TOTP still works beside them,
+    confirmed_2fa for a DiscourseConnect provider login,
+    second_factor_remaining_backup_codes, the login page's second
+    factor step
+    155b. `feat/second-factor-webauthn` M: security keys and passkeys
+    155c. `feat/second-factor-pages` M: the 2FA page's HTML, password
+    reset, enforce_second_factor, the email change, the security tab's
+    and second factor page's writes
 156. `feat/user-profile-rest` M: featured topics (users.rs:678;
     current_user.rs:709), the title, primary group and flair group
     (user_updater.rs:296), PUT /u's custom fields, external ids,

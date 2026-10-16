@@ -117,7 +117,12 @@ impl Private<'_> {
             .await?;
             out.insert("second_factor_backup_enabled".into(), json!(backup));
             if backup {
-                return Err(Unsupported("second_factor_remaining_backup_codes").into());
+                let remaining =
+                    crate::second_factor::remaining_backup_codes(&mut *self.conn, user.id).await?;
+                out.insert(
+                    "second_factor_remaining_backup_codes".into(),
+                    json!(remaining),
+                );
             }
             let accounts = crate::auth::associated_accounts(&mut *self.conn, self.i18n, user.id)
                 .await

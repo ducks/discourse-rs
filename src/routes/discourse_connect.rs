@@ -1058,6 +1058,7 @@ pub async fn sso_provider(
         &incoming,
         None,
         Vec::new(),
+        false,
     )
     .await
 }
@@ -1065,6 +1066,7 @@ pub async fn sso_provider(
 /// `sso_provider(payload, confirmed_2fa_during_login)` after a login
 /// (SessionController#login with an sso_payload cookie): the user just
 /// logged on, the provider's answer for them.
+#[allow(clippy::too_many_arguments)]
 pub(super) async fn provider_after_login(
     state: &AppState,
     settings: &SiteSettings,
@@ -1073,6 +1075,7 @@ pub(super) async fn provider_after_login(
     user_id: i32,
     payload: &str,
     cookies: Vec<String>,
+    confirmed_2fa_during_login: bool,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let user = crate::session::current::SessionUser::load(&mut conn, user_id)
@@ -1093,12 +1096,14 @@ pub(super) async fn provider_after_login(
         &incoming,
         Some(payload.to_string()),
         cookies,
+        confirmed_2fa_during_login,
     )
     .await
 }
 
 /// SessionController#sso_provider through run_second_factor! with
 /// SecondFactor::Actions::DiscourseConnectProvider.
+#[allow(clippy::too_many_arguments)]
 async fn provider(
     state: &AppState,
     settings: &SiteSettings,
@@ -1107,6 +1112,7 @@ async fn provider(
     incoming: &Incoming,
     payload: Option<String>,
     mut cookies: Vec<String>,
+    confirmed_2fa_during_login: bool,
 ) -> Result<Response, AppError> {
     if !settings.get("enable_discourse_connect_provider")?.truthy() {
         return Ok(super::topics::not_found_response(state));
@@ -1190,9 +1196,8 @@ async fn provider(
     };
     let logout = request.sso.flag("logout").unwrap_or(false);
     let require_2fa = request.sso.flag("require_2fa").unwrap_or(false);
-    // skip_second_factor_auth? (confirmed_2fa_during_login is never set:
-    // logging in with a second factor is not ported)
-    if user_id.is_none() || logout || !require_2fa {
+    // skip_second_factor_auth?
+    if user_id.is_none() || logout || !require_2fa || confirmed_2fa_during_login {
         if logout {
             // destroy(trusted_return_url: return_sso_url)
             let return_url = request.sso.get("return_sso_url").unwrap_or("").to_string();
@@ -1232,6 +1237,11 @@ async fn provider(
             user_id,
         )
         .await?;
+        if confirmed_2fa_during_login {
+            request
+                .sso
+                .set("confirmed_2fa", discourse_connect::Field::Bool(true));
+        }
         let url = sso_return_url(&request);
         if is_xhr(headers) {
             cookies.push(format!(

@@ -1962,16 +1962,83 @@ pub async fn verify_login_code(
     .bind(&email)
     .fetch_optional(&mut *tx)
     .await?;
+    // process_verified_login_code: the user's second factor first.
     if let Some((id, _, _)) = matched {
-        let factors: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled) \
-             OR EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled)",
-        )
-        .bind(id)
-        .fetch_one(&mut *tx)
-        .await?;
-        if factors {
-            return Err(Unsupported("login codes for users with second factors").into());
+        let enabled = crate::second_factor::Enabled::load(&mut tx, &s, id).await?;
+        if enabled.any() {
+            let token = string("second_factor_token").filter(|t| !t.trim().is_empty());
+            let mut session = crate::session::forum::load_forum_session(&state, &headers);
+            let Some(token) = token else {
+                // login_code_second_factor_info
+                let mut out = serde_json::Map::new();
+                out.insert("second_factor_required".into(), json!(true));
+                if enabled.totp || enabled.backup {
+                    out.insert("totp_enabled".into(), json!(enabled.totp));
+                    out.insert("backup_codes_enabled".into(), json!(enabled.backup));
+                }
+                if enabled.security_keys {
+                    let session_id = session.server_session_id();
+                    crate::webauthn::stage_challenge(&mut tx, &session_id, Some(id)).await?;
+                    out.extend(
+                        crate::webauthn::allowed_credentials(
+                            &mut tx,
+                            &session_id,
+                            id,
+                            &enabled,
+                            false,
+                        )
+                        .await?,
+                    );
+                    out.insert("security_key_required".into(), json!(true));
+                }
+                tx.commit().await?;
+                let cookie = session.set_cookie(&state, &s)?;
+                return super::accounts::with_session_cookie(
+                    Json(Value::Object(out)).into_response(),
+                    cookie,
+                );
+            };
+            // rate_limit_second_factor!(matched_user)
+            let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_one(&mut *tx)
+                .await?;
+            if let Err(refused) = crate::rate_limiter::perform_each(
+                &state.pool,
+                state.config.rate_limits,
+                vec![
+                    RateLimiter::new(None, &format!("second-factor-min-{ip}"), 6, 60),
+                    RateLimiter::new(None, &format!("second-factor-min-{username}"), 6, 60),
+                ],
+            )
+            .await?
+            {
+                tx.commit().await?;
+                return Ok(refused.into_response(&state.i18n));
+            }
+            let outcome = crate::second_factor::authenticate(
+                &mut tx,
+                &state.i18n,
+                id,
+                &enabled,
+                string("second_factor_method").as_deref(),
+                Some(token.as_str()),
+                crate::clock::now().timestamp(),
+                crate::second_factor::backup_code_iterations(state.config.rails_env),
+            )
+            .await?;
+            if let Err(failure) = outcome {
+                let failure = if enabled.security_keys {
+                    let session_id = session.server_session_id();
+                    crate::second_factor::stage_failure(&mut tx, &session_id, id, &enabled, failure)
+                        .await?
+                } else {
+                    failure
+                };
+                tx.commit().await?;
+                let cookie = session.set_cookie(&state, &s)?;
+                return super::accounts::with_session_cookie(Json(failure).into_response(), cookie);
+            }
         }
     }
     // process_verified_invite_login_code

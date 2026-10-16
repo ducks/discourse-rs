@@ -1,0 +1,325 @@
+{
+  "name": "code_verify_second_factor",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}",
+        "second_factor_token": "000000",
+        "second_factor_method": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}",
+        "second_factor_token": "{{totp:JBSWY3DPEHPK3PXP}}",
+        "second_factor_method": "1"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T19:21:31.066694",
+  "transaction_started_at": "2026-10-16T19:21:27.021579",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "bc7f09c3c2422e74207ae20be151de03",
+        "challenge": "d6f10e8afe93f81922a15ae5870f500b",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "second_factor_required": true,
+        "totp_enabled": true,
+        "backup_codes_enabled": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "Invalid authentication code. Each code can only be used once.",
+        "reason": "invalid_second_factor",
+        "backup_enabled": true,
+        "security_key_enabled": false,
+        "totp_enabled": true,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "redirect_url": "/t/parity-fixture-replies-and-posters/35"
+      }
+    }
+  ],
+  "changes": {
+    "email_login_codes": {
+      "inserted": [
+        {
+          "id": 1,
+          "email": "user2@example.com",
+          "purpose": 0,
+          "attempts": 0,
+          "code_hash": "7db55f5cd5a30d831216b117e67f35cf8feb9eda4726986e3251c9522b23609b",
+          "created_at": "2026-10-16T19:21:31.790848",
+          "expires_at": "2026-10-16T19:31:31.78654",
+          "updated_at": "2026-10-16T19:21:31.790848",
+          "consumed_at": "2026-10-16T19:21:32.187363"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invited_users": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 4,
+          "invite_id": 900,
+          "created_at": "2026-10-16T19:21:32.240182",
+          "updated_at": "2026-10-16T19:21:32.298397",
+          "redeemed_at": "2026-10-16T19:21:32.230551"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "admin": false,
+            "email": null,
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T19:21:27.021579",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T19:21:27.021579",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-13T19:21:27.021579",
+            "description": "for the book club",
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 5
+          },
+          "after": {
+            "id": 900,
+            "admin": false,
+            "email": null,
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-13T19:21:27.021579",
+            "deleted_at": null,
+            "expires_at": "2026-11-15T19:21:27.021579",
+            "invite_key": "Fixture900",
+            "updated_at": "2026-10-13T19:21:27.021579",
+            "description": "for the book club",
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": null,
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 1,
+            "max_redemptions_allowed": 5
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"display_username\":\"user2\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-16T19:21:32.310749",
+          "updated_at": "2026-10-16T19:21:32.310749",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 8
+        },
+        {
+          "id": 54,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"display_username\":\"user1\",\"original_user_id\":3,\"original_username\":\"user1\"}",
+          "read": false,
+          "user_id": 4,
+          "topic_id": 35,
+          "created_at": "2026-10-16T19:21:32.508962",
+          "updated_at": "2026-10-16T19:21:32.508962",
+          "post_number": 1,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 13
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_token_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "path": "/session/login-code/verify.json",
+          "action": "generate",
+          "user_id": 4,
+          "client_ip": "127.0.0.1",
+          "auth_token": "w9PVPmnzJjXc+K2nWvjpksLnu24=",
+          "created_at": "2026-10-16T19:21:32.655461",
+          "user_agent": null,
+          "user_auth_token_id": 365
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [
+        {
+          "id": 365,
+          "seen_at": null,
+          "user_id": 4,
+          "client_ip": "127.0.0.1",
+          "auth_token": "w9PVPmnzJjXc+K2nWvjpksLnu24=",
+          "created_at": "2026-10-16T19:21:32.632773",
+          "rotated_at": "2026-10-16T19:21:32.620219",
+          "updated_at": "2026-10-16T19:21:32.632773",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "w9PVPmnzJjXc+K2nWvjpksLnu24=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_second_factors": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9301,
+            "data": "JBSWY3DPEHPK3PXP",
+            "name": "parity",
+            "method": 1,
+            "enabled": true,
+            "user_id": 4,
+            "last_used": null,
+            "created_at": "2026-10-16T19:21:27.021579",
+            "updated_at": "2026-10-16T19:21:27.021579"
+          },
+          "after": {
+            "id": 9301,
+            "data": "JBSWY3DPEHPK3PXP",
+            "name": "parity",
+            "method": 1,
+            "enabled": true,
+            "user_id": 4,
+            "last_used": "2026-10-16T19:21:32.113636",
+            "created_at": "2026-10-16T19:21:27.021579",
+            "updated_at": "2026-10-16T19:21:32.117461"
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "send_email_login_code",
+      {
+        "to_address": "user2@example.com",
+        "code": "385096"
+      }
+    ],
+    [
+      "user_email in 20s",
+      {
+        "type": "user_invited_to_topic",
+        "user_id": 4,
+        "notification_id": 54,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "display_username": "user1",
+          "original_user_id": 3,
+          "original_username": "user1"
+        },
+        "notification_type": "invited_to_topic",
+        "post_id": 35
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_login_codes": 1,
+    "invited_users": 1,
+    "notifications": 53,
+    "user_auth_token_logs": 1,
+    "user_auth_tokens": 365
+  },
+  "setup": [
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL)",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 4, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9302, 4, 2, '{\"salt\":\"5a17\",\"code_hash\":\"543475d7ec5f98c7432d86efdc20c85667c465675d50ebc44548bbd34a7393c9\"}', true, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "18222da326abb42d60e70b5b2755e38b2c6526ba02a49985b64b0d17e41f821c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

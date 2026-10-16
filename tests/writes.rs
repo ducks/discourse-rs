@@ -1421,6 +1421,17 @@ fn discourse_connect_query(dc: &Value) -> String {
     format!("sso={escaped}&sig={sig}")
 }
 
+/// `{{totp:SECRET}}`: the code a base32 TOTP secret gives now (the
+/// shifted clock's now, as the recorder's is Rails').
+fn totp_codes(s: &str) -> String {
+    static TOTP: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\{\{totp:([A-Z2-7]+)\}\}").unwrap());
+    TOTP.replace_all(s, |c: &regex::Captures| {
+        discourse_rs::second_factor::code_at(&c[1], discourse_rs::clock::now().timestamp()).unwrap()
+    })
+    .into_owned()
+}
+
 /// `{{path.to.value}}` with an optional `|reverse`, `|last_segment`,
 /// `|request_param` (a url's `request` query value), `|state_param` (its
 /// `state`, an OAuth authorize redirect's) or `|sso_nonce` (the nonce in a
@@ -1440,7 +1451,7 @@ fn resolve(value: &Value, state: &Value) -> Value {
         ),
         Value::Array(a) => Value::Array(a.iter().map(|v| resolve(v, state)).collect()),
         Value::String(s) => Value::String(
-            REF.replace_all(s, |c: &regex::Captures| {
+            REF.replace_all(&totp_codes(s), |c: &regex::Captures| {
                 let mut found = state;
                 for key in c[1].split('.') {
                     found = match key.parse::<usize>() {

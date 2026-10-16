@@ -1,0 +1,55 @@
+{
+  "setup": [
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL)",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 4, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9302, 4, 2, '{\"salt\":\"5a17\",\"code_hash\":\"543475d7ec5f98c7432d86efdc20c85667c465675d50ebc44548bbd34a7393c9\"}', true, NULL, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}",
+        "second_factor_token": "000000",
+        "second_factor_method": "1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code/verify.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "user2@example.com",
+        "code": "{{jobs.send_email_login_code.code}}",
+        "second_factor_token": "{{totp:JBSWY3DPEHPK3PXP}}",
+        "second_factor_method": "1"
+      }
+    }
+  ]
+}

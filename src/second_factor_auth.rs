@@ -121,34 +121,7 @@ pub async fn valid_method_for_user(
     method: i64,
 ) -> Result<bool, AppError> {
     let enabled = crate::second_factor::Enabled::load(&mut *conn, settings, user_id).await?;
-    Ok(match method {
-        crate::second_factor::TOTP => enabled.totp,
-        crate::second_factor::BACKUP_CODES => enabled.backup,
-        crate::second_factor::SECURITY_KEY => enabled.security_keys,
-        crate::second_factor::PASSKEY => passkeys_for_2fa(conn, settings, user_id).await?,
-        _ => false,
-    })
-}
-
-/// `passkeys_available_as_second_factor?`
-pub async fn passkeys_for_2fa(
-    conn: &mut PgConnection,
-    settings: &SiteSettings,
-    user_id: i32,
-) -> Result<bool, AppError> {
-    if !(settings.get("allow_passkeys_for_2fa")?.truthy()
-        && settings.get("enable_passkeys")?.truthy()
-        && !settings.get("enable_discourse_connect")?.truthy()
-        && settings.get("enable_local_logins")?.truthy())
-    {
-        return Ok(false);
-    }
-    Ok(sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled AND factor_type = 1)",
-    )
-    .bind(user_id)
-    .fetch_one(conn)
-    .await?)
+    Ok(enabled.valid_method(method))
 }
 
 /// `SecondFactorRequired`'s response: the nonce to an xhr request, else
