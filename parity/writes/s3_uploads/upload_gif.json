@@ -1,0 +1,161 @@
+{
+  "name": "upload_gif",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T21:41:38.001977",
+  "transaction_started_at": "2026-10-16T21:41:36.055181",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//s3-upload-gif.minio.localhost:9122/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+        "original_filename": "static.gif",
+        "filesize": 44,
+        "width": 4,
+        "height": 3,
+        "thumbnail_width": 4,
+        "thumbnail_height": 3,
+        "extension": "gif",
+        "short_url": "upload://z4vVnIK0A1RovKkbGEQhlgvyG1s.gif",
+        "short_path": "/uploads/short-url/z4vVnIK0A1RovKkbGEQhlgvyG1s.gif",
+        "retain_hours": null,
+        "human_filesize": "44 Bytes",
+        "dominant_color": "3366CC",
+        "thumbnail": null
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "//s3-upload-gif.minio.localhost:9122/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+          "etag": "2169a6fd05eeea0231b2baa090caaccf",
+          "sha1": "f5cebe42706fcad01568026c8db70c8ec640d4a2",
+          "width": 4,
+          "height": 3,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": false,
+          "filesize": 44,
+          "extension": "gif",
+          "created_at": "2026-10-16T21:41:38.087385",
+          "updated_at": "2026-10-16T21:41:38.166628",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "3366CC",
+          "thumbnail_width": 4,
+          "thumbnail_height": 3,
+          "original_filename": "static.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vvwkWvIPwK/4pwdXkWDsFsZTE6c=",
+            "created_at": "2026-10-16T21:41:36.805282",
+            "rotated_at": "2026-10-16T21:41:36.803155",
+            "updated_at": "2026-10-16T21:41:36.805282",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vvwkWvIPwK/4pwdXkWDsFsZTE6c=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T21:41:38.028231",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vvwkWvIPwK/4pwdXkWDsFsZTE6c=",
+            "created_at": "2026-10-16T21:41:36.805282",
+            "rotated_at": "2026-10-16T21:41:36.803155",
+            "updated_at": "2026-10-16T21:41:36.805282",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vvwkWvIPwK/4pwdXkWDsFsZTE6c=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 3,
+          "upload_id": 36,
+          "created_at": "2026-10-16T21:41:38.177614"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-upload-gif",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "s3": {
+    "buckets": [
+      "s3-upload-gif"
+    ]
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-upload-gif",
+      "key": "original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+      "size": 44,
+      "etag": "2169a6fd05eeea0231b2baa090caaccf",
+      "content_type": "image/gif",
+      "cache_control": "max-age=31556952, public, immutable",
+      "content_disposition": "inline; filename=\"static.gif\"; filename*=UTF-8''static.gif",
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "ae341c234bd1fdd85f95c589b49f0a99c38818cb7f190fbb29ad23094342c97a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

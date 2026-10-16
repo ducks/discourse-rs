@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "s3": {
+    "buckets": ["s3-upload-gif"]
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-upload-gif",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ]
+}

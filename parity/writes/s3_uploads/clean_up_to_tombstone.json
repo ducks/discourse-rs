@@ -1,0 +1,131 @@
+{
+  "name": "clean_up_to_tombstone",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-16T21:41:28.953699",
+  "transaction_started_at": "2026-10-16T21:41:25.667877",
+  "responses": [],
+  "changes": {
+    "optimized_images": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "url": "//s3-cleanup.minio.localhost:9122/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif",
+          "etag": null,
+          "sha1": "x",
+          "width": 10,
+          "height": 10,
+          "version": 2,
+          "filesize": 10,
+          "extension": ".gif",
+          "upload_id": 9601,
+          "created_at": "2026-10-16T21:41:25.667877",
+          "updated_at": "2026-10-16T21:41:25.667877"
+        }
+      ],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "url": "//s3-cleanup.minio.localhost:9122/original/1X/0000000000000000000000000000000000002581.gif",
+          "etag": null,
+          "sha1": "0000000000000000000000000000000000002581",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "gif",
+          "created_at": "2026-10-13T21:41:25.667877",
+          "updated_at": "2026-10-13T21:41:25.667877",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9601.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_upload_bucket": "s3-cleanup",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, created_at, updated_at) VALUES (9601, 3, 'o9601.gif', 100, '//s3-cleanup.minio.localhost:9122/original/1X/0000000000000000000000000000000000002581.gif', '0000000000000000000000000000000000002581', 'gif', now() - interval '3 days', now() - interval '3 days'), (9602, 3, 'o9602.gif', 100, '//s3-cleanup.minio.localhost:9122/original/1X/0000000000000000000000000000000000002582.gif', '0000000000000000000000000000000000002582', 'gif', now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (9602, 'Post', 35, now(), now())",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, version, created_at, updated_at) VALUES (9601, 'x', '.gif', 10, 10, 9601, '//s3-cleanup.minio.localhost:9122/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif', 10, 2, now(), now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "s3": {
+    "buckets": [
+      "s3-cleanup"
+    ],
+    "objects": {
+      "s3-cleanup/original/1X/0000000000000000000000000000000000002581.gif": "static.gif",
+      "s3-cleanup/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif": "static.gif",
+      "s3-cleanup/original/1X/0000000000000000000000000000000000002582.gif": "animated.gif"
+    }
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-cleanup",
+      "key": "original/1X/0000000000000000000000000000000000002582.gif",
+      "size": 93,
+      "etag": "3ebb8b8e0e5a36894dbb311bc3e4c30e",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-cleanup",
+      "key": "tombstone/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif",
+      "size": 44,
+      "etag": "2169a6fd05eeea0231b2baa090caaccf",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-cleanup",
+      "key": "tombstone/original/1X/0000000000000000000000000000000000002581.gif",
+      "size": 44,
+      "etag": "2169a6fd05eeea0231b2baa090caaccf",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "a4ba9ac517cd1afc3309aabb97b274376880d4c753d208c3303552e11dc8fd0b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

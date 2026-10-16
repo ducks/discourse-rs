@@ -16,10 +16,10 @@ const MAX_PROCESSED_GIF_IMAGES: i64 = 200;
 /// `Upload.backfill_dominant_colors!(count)`'s count.
 const DOMINANT_COLORS_BATCH: i64 = 25;
 
-/// A url outside the store: fetched over HTTP by Rails, which the port
+/// A url with a scheme: fetched over HTTP by FastImage, which the port
 /// does not do.
 fn remote(url: &str) -> bool {
-    !url.starts_with('/') || url.starts_with("//")
+    url.starts_with("http://") || url.starts_with("https://")
 }
 
 async fn store(state: &AppState) -> Result<(SiteSettings, FileStore), AppError> {
@@ -46,6 +46,12 @@ pub async fn update_animated_uploads(state: &AppState) -> Result<(), AppError> {
     for (id, url) in rows {
         if remote(&url) {
             return Err(Unsupported("checking remote uploads for animation").into());
+        }
+        // FastImage.animated?(path_for(upload) || url): a protocol-relative
+        // url (an external store's) reads as a missing file, so nil, and
+        // update!(animated: nil) changes nothing.
+        if url.starts_with("//") {
+            continue;
         }
         let Some(bytes) = store.read(&url).await? else {
             continue;
@@ -112,6 +118,8 @@ pub async fn backfill_dominant_colors(state: &AppState) -> Result<(), AppError> 
         let color = if !supported {
             String::new()
         } else {
+            // path_for, or the external store's download (from the bucket,
+            // where Rails fetches the public url).
             if remote(&url) {
                 return Err(Unsupported("downloading remote uploads").into());
             }

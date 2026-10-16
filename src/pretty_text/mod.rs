@@ -123,6 +123,10 @@ impl From<crate::file_store::StoreError> for CookError {
             StoreError::Setting(e) => CookError::Setting(e),
             StoreError::Url(e) => CookError::Url(e),
             StoreError::Unsupported(e) => CookError::Unsupported(e),
+            StoreError::Io(e) => CookError::Io(e),
+            e @ (StoreError::SettingMissing(_) | StoreError::Storage(_)) => {
+                CookError::App(e.into())
+            }
         }
     }
 }

@@ -1,0 +1,49 @@
+{
+  "name": "purge_deleted_uploads",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-16T21:41:35.524357",
+  "transaction_started_at": "2026-10-16T21:41:33.935876",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_upload_bucket": "s3-purge/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "purge_deleted_uploads_grace_period_days": 7
+  },
+  "enqueue": [
+    [
+      "purge_deleted_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "s3": {
+    "buckets": [
+      "s3-purge"
+    ],
+    "lifecycle": true
+  },
+  "s3_objects": [],
+  "s3_lifecycle": {
+    "s3-purge": [
+      {
+        "id": "purge_tombstone",
+        "status": "Enabled",
+        "days": 7,
+        "prefix": "forum/tombstone/"
+      }
+    ]
+  },
+  "recorded_from": {
+    "case": "d6212d229ed0300ee3eb7a6d0321f2c3497eb6acea8ac52b117966fea5c96462",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

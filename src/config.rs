@@ -42,6 +42,11 @@ pub struct Config {
     /// each request URL, so tests can stand in for the providers. Empty
     /// outside tests.
     pub auth_provider_hosts: Vec<(String, String)>,
+    /// Object storage endpoints (`s3_endpoint`) reached elsewhere: (the
+    /// endpoint as configured, where its requests go), so tests can run
+    /// the S3 server on a port of their own while urls keep the
+    /// configured one. Empty outside tests.
+    pub object_storage_endpoints: Vec<(String, String)>,
 }
 
 /// A site's part of the Config (RailsMultisite's connection spec).
@@ -251,6 +256,7 @@ impl Config {
             rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
             track_requests: rails_env != RailsEnv::Development || var("TRACK_REQUESTS").is_some(),
             auth_provider_hosts: Vec::new(),
+            object_storage_endpoints: Vec::new(),
         })
     }
 }

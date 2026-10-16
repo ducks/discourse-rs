@@ -116,6 +116,7 @@ pub mod notification_create;
 pub mod notification_emailer;
 pub mod notification_schedule;
 pub mod notifications;
+pub mod object_storage;
 pub mod onebox;
 pub mod optimized_images;
 pub mod owned_schema;

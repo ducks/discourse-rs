@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "s3": {
+    "buckets": ["s3-purge"],
+    "lifecycle": true
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-purge/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "purge_deleted_uploads_grace_period_days": 7
+  },
+  "requests": [],
+  "enqueue": [
+    [
+      "purge_deleted_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "purge_deleted_uploads"
+  ]
+}
