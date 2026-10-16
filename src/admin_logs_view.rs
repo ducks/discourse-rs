@@ -1152,7 +1152,7 @@ pub fn email_logs(
     let i18n = cx.i18n;
     let (headers, filter_columns) = tab.columns();
     let mut out = String::from(
-        "<div class=\"admin-container\"><div><div class=\"horizontal-scroll-sync__container\"><div class=\"horizontal-scroll-sync__top-scroll\"><div class=\"horizontal-scroll-sync__fake-content\"></div></div><div class=\"horizontal-scroll-sync__content\"><table class=\"table email-list\"><thead><tr>",
+        "<div class=\"admin-container\"><div><div class=\"horizontal-scroll-sync__container\" data-loads-rows><div class=\"horizontal-scroll-sync__top-scroll\"><div class=\"horizontal-scroll-sync__fake-content\"></div></div><div class=\"horizontal-scroll-sync__content\"><table class=\"table email-list\"><thead><tr>",
     );
     out.push_str(&format!(
         "<th>{}</th>",
