@@ -224,6 +224,7 @@ pub mod username_changer;
 pub mod users;
 pub mod watched_words;
 pub mod web_hooks;
+pub mod webauthn;
 pub mod wildcard_url;
 pub mod wizard;
 pub mod word_watcher;

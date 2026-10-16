@@ -78,8 +78,7 @@ pub async fn show(
                 .ok_or(Unsupported("a second factor challenge without its user"))?;
             let enabled =
                 crate::second_factor::Enabled::load(&mut conn, &settings, user_id).await?;
-            let passkeys = auth::passkeys_for_2fa(&mut conn, &settings, user_id).await?;
-            if enabled.security_keys || passkeys {
+            if enabled.security_keys || enabled.passkeys {
                 return Err(
                     Unsupported("security keys and passkeys on the 2FA page (webauthn)").into(),
                 );
@@ -196,6 +195,7 @@ pub async fn perform(
             method_param.as_deref(),
             token.as_deref(),
             crate::clock::now().timestamp(),
+            crate::second_factor::backup_code_iterations(state.config.rails_env),
         )
         .await?;
         match outcome {
@@ -212,8 +212,7 @@ pub async fn perform(
                     (StatusCode::BAD_REQUEST, Json(body)).into_response(),
                 );
             }
-            Ok(factor_id) => {
-                crate::second_factor::mark_used(&mut conn, factor_id).await?;
+            Ok(_) => {
                 challenge.insert("successful".into(), json!(true));
                 let generated_at = challenge
                     .get("generated_at")

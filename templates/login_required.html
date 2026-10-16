@@ -52,6 +52,25 @@
         hx-on::after-request="loggedIn(event)">
     <label>Username or email <input name="login" autocomplete="username" required autofocus></label>
     <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+    {#- local-login-form's SecondFactorForm, shown when POST /session asks
+        for the second factor; the method toggles between the authenticator
+        app and a backup code as SecondFactorForm#toggleSecondFactorMethod
+        does. -#}
+    <input type="hidden" name="second_factor_method" value="1" disabled>
+    <div id="second-factor" hidden
+         data-totp-title="{{ chrome.t("login.second_factor_title") }}"
+         data-totp-description="{{ chrome.t("login.second_factor_description") }}"
+         data-totp-link="{{ chrome.t("login.second_factor_backup") }}"
+         data-backup-title="{{ chrome.t("login.second_factor_backup_title") }}"
+         data-backup-description="{{ chrome.t("login.second_factor_backup_description") }}"
+         data-backup-link="{{ chrome.t("login.second_factor") }}">
+      <h3>{{ chrome.t("login.second_factor_title") }}</h3>
+      <p class="second-factor__description">{{ chrome.t("login.second_factor_description") }}</p>
+      <input id="login-second-factor" class="second-factor-token-input" name="second_factor_token"
+             type="text" autocapitalize="off" autocorrect="off" autocomplete="one-time-code"
+             inputmode="numeric" maxlength="32" disabled>
+      <p hidden><a class="toggle-second-factor-method" href>{{ chrome.t("login.second_factor_backup") }}</a></p>
+    </div>
     <p class="login-error" role="alert" hidden></p>
     <button type="submit">Log in</button>
   </form>
@@ -80,9 +99,46 @@
         return;
       }
       var error = document.querySelector(".login-error");
+      // login.js's localLogin: the first answer naming a second factor
+      // shows its form instead of the error.
+      var factor = document.getElementById("second-factor");
+      if (body.totp_enabled && factor.hidden) {
+        factor.hidden = false;
+        var form = factor.closest("form");
+        form.querySelector("[name=login]").readOnly = true;
+        form.querySelector("[name=password]").readOnly = true;
+        form.querySelector("[name=second_factor_method]").disabled = false;
+        var token = document.getElementById("login-second-factor");
+        token.disabled = false;
+        token.required = true;
+        token.focus();
+        factor.querySelector(".toggle-second-factor-method").parentNode.hidden =
+          !body.backup_enabled;
+        error.hidden = true;
+        return;
+      }
       error.textContent = body.error || "Could not log in.";
       error.hidden = false;
     }
+    (function () {
+      var factor = document.getElementById("second-factor");
+      if (!factor) return;
+      factor.querySelector(".toggle-second-factor-method").addEventListener("click", function (e) {
+        e.preventDefault();
+        var method = factor.closest("form").querySelector("[name=second_factor_method]");
+        var backup = method.value === "1";
+        method.value = backup ? "2" : "1";
+        var which = backup ? "backup" : "totp";
+        factor.querySelector("h3").textContent = factor.dataset[which + "Title"];
+        factor.querySelector(".second-factor__description").textContent =
+          factor.dataset[which + "Description"];
+        this.textContent = factor.dataset[which + "Link"];
+        var token = document.getElementById("login-second-factor");
+        token.value = "";
+        token.inputMode = backup ? "text" : "numeric";
+        token.focus();
+      });
+    })();
   </script>
   {% endif %}
 </div>

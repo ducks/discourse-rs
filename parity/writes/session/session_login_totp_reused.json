@@ -1,0 +1,45 @@
+{
+  "name": "session_login_totp_reused",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_token": "{{totp:JBSWY3DPEHPK3PXP}}",
+        "second_factor_method": 1
+      }
+    }
+  ],
+  "started_at": "2026-10-16T19:22:04.853225",
+  "transaction_started_at": "2026-10-16T19:22:01.871605",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "Invalid authentication code. Each code can only be used once.",
+        "reason": "invalid_second_factor",
+        "backup_enabled": false,
+        "security_key_enabled": false,
+        "totp_enabled": true,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, last_used, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now() + interval '1 minute', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "a6652ea0119588f031a94f81375e33d00c79cbc44666c70ed6e3910468e61d4d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

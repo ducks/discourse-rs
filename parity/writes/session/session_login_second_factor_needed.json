@@ -1,0 +1,44 @@
+{
+  "name": "session_login_second_factor_needed",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T19:21:49.920417",
+  "transaction_started_at": "2026-10-16T19:21:46.062271",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "ok": false,
+        "error": "The selected two-factor method is invalid.",
+        "reason": "invalid_second_factor_method",
+        "backup_enabled": true,
+        "security_key_enabled": false,
+        "totp_enabled": true,
+        "multiple_second_factor_methods": false,
+        "used_2fa_method": null
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9302, 3, 2, '{\"salt\":\"5a17\",\"code_hash\":\"543475d7ec5f98c7432d86efdc20c85667c465675d50ebc44548bbd34a7393c9\"}', true, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "a993950bbd469c31519d2a06d14b566377d91824976928822697736c27da763a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

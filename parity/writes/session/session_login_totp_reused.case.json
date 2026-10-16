@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, last_used, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now() + interval '1 minute', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_token": "{{totp:JBSWY3DPEHPK3PXP}}",
+        "second_factor_method": 1
+      }
+    }
+  ]
+}

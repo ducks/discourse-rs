@@ -1761,7 +1761,7 @@ async fn user_found(
     user_id: i32,
 ) -> Result<Option<String>, AppError> {
     let enabled = crate::second_factor::Enabled::load(&mut *conn, settings, user_id).await?;
-    if enabled.any()
+    if enabled.has_any()
         && settings
             .get("enforce_second_factor_on_external_auth")?
             .truthy()

@@ -123,6 +123,12 @@ def resolve(value, state)
   when Array
     value.map { |v| resolve(v, state) }
   when String
+    # `{{totp:SECRET}}`: the code a base32 TOTP secret gives now.
+    value =
+      value.gsub(/\{\{totp:([A-Z2-7]+)\}\}/) do
+        require "rotp"
+        ROTP::TOTP.new(Regexp.last_match(1)).now
+      end
     value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce)?\}\}/) do
       path, filter = Regexp.last_match(1), Regexp.last_match(2)
       found = path.split(".").reduce(state) { |acc, k| acc.is_a?(Array) ? acc[k.to_i] : acc&.[](k) }
