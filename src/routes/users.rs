@@ -119,6 +119,8 @@ enum Routed {
     CheckSso(String, bool),
     /// `/u/:username/invited(/:filter).json`: users#invited.
     Invited(String, Option<String>),
+    /// The HTML of `/u/:username/invited(/:filter)`: the Invites tab.
+    InvitedPage(String, Option<String>),
     /// The HTML of `/u/:username/notifications(/<tab>)`.
     Notifications(String, crate::user_notifications_view::Route),
     /// A path users#show answers that the Ember app has no route for: its
@@ -158,15 +160,24 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     if rest == "sso-email" || rest == "sso-payload" {
         return Ok(Routed::CheckSso(username, rest == "sso-email"));
     }
-    // users#invited (`/invited` and `/invited/:filter`)
-    if json && rest == "invited" {
-        return Ok(Routed::Invited(username, None));
+    // users#invited (`/invited` and `/invited/:filter`), and the Invites
+    // tab's pages.
+    if rest == "invited" {
+        return Ok(if json {
+            Routed::Invited(username, None)
+        } else {
+            Routed::InvitedPage(username, None)
+        });
     }
-    if json
-        && let Some(filter) = rest.strip_prefix("invited/")
+    if let Some(filter) = rest.strip_prefix("invited/")
         && !filter.contains('/')
     {
-        return Ok(Routed::Invited(username, Some(filter.to_string())));
+        let filter = Some(filter.to_string());
+        return Ok(if json {
+            Routed::Invited(username, filter)
+        } else {
+            Routed::InvitedPage(username, filter)
+        });
     }
     if !json && (rest == "notifications" || rest.starts_with("notifications/")) {
         return Ok(match super::user_notifications::route(rest) {
@@ -188,10 +199,6 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
         "summary" => Action::Summary,
         "badges" if !json => Action::Badges,
         "deleted-posts" if !json => Action::DeletedPosts,
-        "invited" if !json => return Err(Unsupported("the invites pages (192)")),
-        r if !json && r.starts_with("invited/") => {
-            return Err(Unsupported("the invites pages (192)"));
-        }
         "badges" | "notifications" | "messages" | "private-messages" | "deleted-posts" => {
             Action::Show
         }
@@ -372,6 +379,9 @@ pub async fn show_with_tail(
                 &uri,
             )
             .await;
+        }
+        Routed::InvitedPage(username, filter) => {
+            return invited_page(state, incoming, username, filter, headers, uri).await;
         }
         Routed::CheckEmails(username) => {
             let context = crate::params::parse(uri.query(), &headers, &axum::body::Bytes::new())
@@ -1678,4 +1688,210 @@ async fn posts_feed(
         posts.push(Value::Object(post));
     }
     Ok(Json(Value::Array(posts)).into_response())
+}
+
+/// The HTML of `/u/:username/invited(/:filter)`: the profile with the
+/// Invites tab (user-invited, user-invited/show), its list from
+/// users#invited. The index route goes to the pending invites, and a
+/// viewer who may not see them to the redeemed ones; a list the viewer
+/// may not load leaves Ember's exception page in the profile's place.
+async fn invited_page(
+    state: AppState,
+    incoming: crate::session::current::Incoming,
+    username: String,
+    filter: Option<String>,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    let guardian = incoming.guardian.clone();
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let noindex = [("x-robots-tag", "noindex")];
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if settings.get("hide_user_profiles_from_public")?.truthy() && guardian.is_anonymous() {
+        return Ok((noindex, invalid_access(&state)).into_response());
+    }
+    let Some(user) = User::find_active(&mut conn, &username).await? else {
+        return Ok((noindex, super::topics::not_found_response(&state)).into_response());
+    };
+    let user_path = format!("{base_path}/u/{}", user.username.to_lowercase());
+    // UserInvitedIndex#beforeModel
+    let Some(filter) = filter else {
+        return Ok(super::user_activity::found(
+            &headers,
+            format!("{user_path}/invited/pending"),
+        ));
+    };
+    // The search the page's field keeps in its URL (the controller's
+    // searchTerm), from the first invite.
+    let search = crate::params::parse_query(uri.query().unwrap_or(""))
+        .get("search")
+        .and_then(crate::params::scalar)
+        .unwrap_or_default();
+    let query = format!(
+        "filter={}&search={}",
+        crate::ruby::cgi_escape(&filter),
+        crate::ruby::cgi_escape(&search)
+    );
+    let loaded =
+        super::invites::invited_doc(&state, &guardian, &user.username, Some(&filter), &query)
+            .await?;
+    // UserInvitedShow#afterModel
+    if let Ok(doc) = &loaded
+        && doc["can_see_invite_details"] != true
+        && filter != "redeemed"
+    {
+        return Ok(super::user_activity::found(
+            &headers,
+            format!("{user_path}/invited/redeemed"),
+        ));
+    }
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let auth_token: Option<String> = incoming
+        .session
+        .as_ref()
+        .map(|s| s.token.auth_token.clone());
+    let show = Users {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        base_path: &base_path,
+        auth_token: auth_token.as_deref(),
+    }
+    .show(&user)
+    .await?;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
+    site.bus_position = bus_position;
+    site.chrome
+        .set_search_context("user", &user.username.to_lowercase());
+    let doc = match loaded {
+        Ok(doc) => doc,
+        Err(_) => {
+            let page_html = ProfilePage {
+                site_title: site.site_title,
+                viewer: site.viewer,
+                bus_position: site.bus_position,
+                chrome: site.chrome,
+                lang: site.lang,
+                base_path: site.base_path,
+                crawler: Crawler::default(),
+                page_title: format!(
+                    "{} - {}",
+                    crate::topic_list_view::t(&cx, "user.profile"),
+                    user.username
+                ),
+                main: crate::messages_view::exception(
+                    &cx,
+                    403,
+                    &format!("{user_path}/invited.json"),
+                ),
+            };
+            let response = (
+                noindex,
+                Html(page_html.render().map_err(crate::html::HtmlError::from)?),
+            )
+                .into_response();
+            return Ok(crate::html::with_viewer_headers(response, &vs));
+        }
+    };
+    let content = crate::invite_page_view::invited(&crate::invite_page_view::InvitedView {
+        cx: &cx,
+        doc: &doc,
+        filter: &filter,
+        user_path: &user_path,
+        can_invite_to_forum: guardian.can_invite_to_forum(&settings)?
+            && show["user"]["profile_hidden"] != true,
+        viewing_self: guardian.is_me(user.id),
+        viewer_admin: guardian.is_admin(),
+        viewer_staff: guardian.is_staff(),
+        allow_bulk_invite: settings.get("allow_bulk_invite")?.truthy(),
+        mobile: crate::mobile::mobile_view(),
+        search: &search,
+    });
+    let strings = json!({
+        "remove_all_confirm": crate::topic_list_view::t(&cx, "user.invited.remove_all_confirm"),
+        "removed_all": crate::topic_list_view::t(&cx, "user.invited.removed_all"),
+        "reinvite_all_confirm": crate::topic_list_view::t(&cx, "user.invited.reinvite_all_confirm"),
+        "reinvited_all": crate::topic_list_view::t(&cx, "user.invited.reinvited_all"),
+        "username": user.username,
+    })
+    .to_string()
+    .replace('<', "\\u003c");
+    let t = |key: &str| crate::topic_list_view::t(&cx, key);
+    let dialog = json!({
+        "ok_value": t("ok_value"),
+        "cancel": t("cancel_value"),
+        "yes_value": t("yes_value"),
+        "no_value": t("no_value"),
+        "delete": t("delete"),
+        "modal.close": t("modal.close"),
+    })
+    .to_string()
+    .replace('<', "\\u003c");
+    let main = format!(
+        "{content}<script type=\"application/json\" id=\"user-invited-strings\">{strings}</script><script type=\"application/json\" id=\"dialog-strings\">{dialog}</script>"
+    );
+    let mut page = profile_page(
+        &mut conn,
+        site,
+        &state.i18n,
+        &guardian,
+        &user,
+        &show,
+        &Tab::Invited(main),
+        &settings,
+    )
+    .await?;
+    page.chrome.body_classes.push_str(" user-invites-page");
+    // UserInvitedShow#titleToken, the user's.
+    page.page_title = format!(
+        "{} - {}",
+        crate::topic_list_view::t(&cx, &format!("user.invited.{filter}_tab")),
+        user.username
+    );
+    let avatar = show["user"]["avatar_template"]
+        .as_str()
+        .map(|t| urls.absolute(&t.replace("{size}", "45")))
+        .transpose()?;
+    let mut crawler = Crawler::for_request(&urls, &uri, None)?.with_meta(
+        urls.settings.emojis(),
+        &user.username,
+        "",
+        avatar,
+    );
+    crawler.description = settings.get("site_description")?.to_s();
+    page.crawler = crawler;
+    let response = (
+        noindex,
+        Html(page.render().map_err(crate::html::HtmlError::from)?),
+    )
+        .into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }

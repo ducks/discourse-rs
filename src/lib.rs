@@ -86,6 +86,7 @@ pub mod i18n;
 pub mod images;
 pub mod impersonation;
 pub mod invite_mailer;
+pub mod invite_page_view;
 pub mod invites;
 pub mod jobs;
 pub mod letter_avatar;

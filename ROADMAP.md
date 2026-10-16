@@ -1904,8 +1904,17 @@ route table has been made, so this list may be short.
     recipient gets (user_posted_pm_staged, no unsubscribe link or respond
     instructions). Refused: a staged recipient of a topic started by
     email (IncomingEmail's subject)
-    192d. `feat/invites-pages` M: the accept page (invites/show) and the
-    profile's Invited tab (user-invited/show) in Ember's markup
+    192d. ~~`feat/invites-pages`~~ (done) M: the accept page
+    (invites/show: the progress bar, who invited, CodeLoginForm's email,
+    code and username steps, the classic signup form without login
+    codes, a member's Accept Invitation) and the profile's Invites tab
+    (user-invited: pending, expired and redeemed lists, removing,
+    copying, removing the expired, resending all, search) in Ember's
+    markup with common.css's rules (static/css/invites.css),
+    static/js/invite.js and user-invited.js; a staff member redeeming
+    refreshes the staff groups. Left: the invite modals (create, edit,
+    bulk) and the avatar picker while signing up, which say they are
+    not ported; invites past the first page (DLoadMore)
     192e. `feat/invites-bulk` S: POST /invites/upload_csv,
     Jobs::BulkInvite and ProcessBulkInviteEmails
 100. `feat/message-bus` L, after 192, moved down from Phase 8: a

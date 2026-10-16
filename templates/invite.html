@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}{{ title }} - {{ site_title }}{% endblock %}
+{% block content %}
+{#- invites/show: the page src/invite_page_view.rs draws, its strings for
+    the steps static/js/invite.js draws after the first. -#}
+{{ section|safe }}
+<script type="application/json" id="invite-strings">{{ strings|safe }}</script>
+<script src="{{ crate::assets::url(base_path, "invite.js") }}" defer></script>
+{% endblock %}

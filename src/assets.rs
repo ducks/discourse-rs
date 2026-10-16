@@ -69,6 +69,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/spoiler-alert.css"),
+    include_str!("../static/css/invites.css"),
     // The mobile view's rules, last as each follows its base rule.
     include_str!("../static/css/mobile.css"),
 );
@@ -200,6 +201,12 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/quote-controls.js"),
     ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
+    ("invite.js", JS, include_str!("../static/js/invite.js")),
+    (
+        "user-invited.js",
+        JS,
+        include_str!("../static/js/user-invited.js"),
+    ),
     // The admin pages: Rails' compiled admin stylesheet, which it serves to
     // staff (static/vendor/README), the admin shell's and the dashboard's
     // scripts, and Chart.js with its moment adapter, which Discourse's

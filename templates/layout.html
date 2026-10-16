@@ -198,12 +198,14 @@
                   <div id="notification-alert" class="notification-alert" role="status" aria-live="polite"></div>
                   {% else %}
                   <span class="header-buttons">
+                    {%- if !chrome.hide_auth_buttons %}
                     <span class="auth-buttons">
                       {%- if chrome.can_signup %}
                       <a class="btn btn-primary btn-small sign-up-button" href="{{ base_path }}/signup"><span class="d-button-label">{{ chrome.t("sign_up") }}</span></a>
                       {%- endif %}
                       <a class="btn btn-icon-text btn-primary btn-small login-button" href="{{ base_path }}/login"><svg class="fa d-icon d-icon-user svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true"><use href="#user"></use></svg><span class="d-button-label">{{ chrome.t("log_in") }}</span></a>
                     </span>
+                    {%- endif %}
                   </span>
                   <ul class="icons d-header-icons">
                     {%- call search_button() %}

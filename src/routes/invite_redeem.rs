@@ -885,7 +885,7 @@ async fn after_redeem(
         .await?;
     }
     if staff {
-        return Err(Unsupported("refreshing the staff groups after an invite").into());
+        crate::roles::refresh_staff_groups(&mut *conn, &state.i18n).await?;
     }
     if process {
         let has_password: bool =
@@ -1326,6 +1326,197 @@ async fn error_page(
         .into_response())
 }
 
+#[derive(askama::Template)]
+#[template(path = "invite.html")]
+struct InvitePage {
+    site_title: String,
+    lang: String,
+    base_path: String,
+    crawler: crate::html::Crawler,
+    viewer: Option<crate::html::Viewer>,
+    bus_position: String,
+    chrome: crate::html::Chrome,
+    title: String,
+    section: String,
+    strings: String,
+}
+
+/// A legal page's url (Site's tos_url, privacy_policy_url): the setting,
+/// else the topic's path when it exists.
+async fn legal_url(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    base_path: &str,
+    url_setting: &str,
+    topic_setting: &str,
+    path: &str,
+) -> Result<Option<String>, AppError> {
+    if let Some(url) = s.get(url_setting)?.presence() {
+        return Ok(Some(url));
+    }
+    let topic_id = s.get(topic_setting)?.to_i();
+    if topic_id <= 0 {
+        return Ok(None);
+    }
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1)")
+        .bind(i32::try_from(topic_id).unwrap_or(0))
+        .fetch_one(conn)
+        .await?;
+    Ok(exists.then(|| format!("{base_path}{path}")))
+}
+
+/// invites/show in the application layout: no sidebar, and no search,
+/// log in, sign up or menu buttons in the header.
+#[allow(clippy::too_many_arguments)]
+async fn accept_page(
+    state: &AppState,
+    s: &SiteSettings,
+    guardian: &Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    key: &str,
+    info: &Value,
+    csrf: &str,
+) -> Result<Response, AppError> {
+    use askama::Template;
+    let base_path = state.config.globals.relative_url_root();
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    let vs = super::session::viewer_state(state, headers, s, guardian)?;
+    let mut site = crate::html::Site::from_settings(s, base_path)?;
+    site.viewer = vs.viewer.clone().map(|mut v| {
+        v.csrf_token = csrf.to_string();
+        v
+    });
+    let mut conn = state.pool.acquire().await?;
+    site.load_chrome(&mut conn, state, s, guardian, crate::sidebar::Active::None)
+        .await?;
+    site.bus_position = bus_position;
+    // hideApplicationSidebar, hideApplicationHeaderButtons
+    site.chrome.sidebar.clear();
+    site.chrome.hamburger.clear();
+    site.chrome.sidebar_toggle = false;
+    site.chrome.hide_search_button = true;
+    site.chrome.hide_auth_buttons = true;
+    site.chrome.body_classes = format!(
+        "{} invite-page",
+        site.chrome.body_classes.replace("has-sidebar-page", "")
+    )
+    .split_whitespace()
+    .collect::<Vec<_>>()
+    .join(" ");
+    let t = |key: &str| site.chrome.t(key);
+    let categories = std::collections::HashMap::new();
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(s)?,
+    };
+    let tos = legal_url(&mut conn, s, base_path, "tos_url", "tos_topic_id", "/tos").await?;
+    let privacy = legal_url(
+        &mut conn,
+        s,
+        base_path,
+        "privacy_policy_url",
+        "privacy_topic_id",
+        "/privacy",
+    )
+    .await?;
+    let disclaimer = match (tos, privacy) {
+        (Some(tos), Some(privacy)) => Some(
+            t("create_account.disclaimer")
+                .replace("%{tos_link}", &crate::topic_list_view::escape(&tos))
+                .replace("%{privacy_link}", &crate::topic_list_view::escape(&privacy)),
+        ),
+        _ => None,
+    };
+    let code_form = guardian
+        .upcoming_change_enabled(&mut conn, s, "enable_local_logins_via_code")
+        .await?
+        && s.get("enable_local_logins_via_email")?.truthy()
+        && s.get("enable_local_logins")?.truthy();
+    let full_name = s.get("full_name_requirement")?.to_s();
+    let section = crate::invite_page_view::render(&crate::invite_page_view::InviteView {
+        t: &t,
+        cx: &cx,
+        info,
+        key,
+        site_title: &site.site_title,
+        discourse_connect: s.get("enable_discourse_connect")?.truthy(),
+        local_logins: s.get("enable_local_logins")?.truthy(),
+        code_form,
+        must_approve: s.get("must_approve_users")?.truthy(),
+        full_name_visible: full_name != "hidden_at_signup",
+        full_name_required: full_name == "required_at_signup",
+        max_username_length: s.get("max_username_length")?.to_i(),
+        disclaimer,
+        base_path,
+        csrf_token: csrf,
+    });
+    let mut strings = Map::new();
+    for (name, key) in [
+        ("success", "invites.success"),
+        ("check_your_email", "code_login.check_your_email"),
+        ("code_instructions", "code_login.code_instructions"),
+        ("verify", "code_login.verify_button"),
+        ("resend", "code_login.resend"),
+        ("resend_countdown", "code_login.resend_countdown"),
+        ("code_resent", "code_login.code_resent"),
+        ("use_different_email", "code_login.use_different_email"),
+        ("signup_details_title", "code_login.signup_details_title"),
+        ("username_label", "code_login.username_label"),
+        ("username_placeholder", "code_login.username_placeholder"),
+        (
+            "account_ready_continue",
+            "code_login.account_ready_continue",
+        ),
+        ("change_avatar", "code_login.change_avatar"),
+        ("email_required", "form_kit.errors.required"),
+        ("generic_error", "generic_error"),
+    ] {
+        strings.insert(name.into(), json!(t(key)));
+    }
+    // DOtp's six slots.
+    strings.insert(
+        "otp_label".into(),
+        json!(t("d_otp.screen_reader.other").replace("%{count}", "6")),
+    );
+    let strings = Value::Object(strings).to_string().replace("</", "<\\/");
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: s,
+    };
+    let crawler = crate::html::Crawler::for_request(&urls, uri, None)?;
+    let page = InvitePage {
+        title: t("invites.accept_title"),
+        site_title: site.site_title.clone(),
+        lang: site.lang.clone(),
+        base_path: site.base_path.clone(),
+        crawler,
+        viewer: site.viewer.clone(),
+        bus_position: site.bus_position.clone(),
+        chrome: site.chrome.clone(),
+        section,
+        strings,
+    };
+    let html = page.render().map_err(crate::html::HtmlError::from)?;
+    let response = (
+        [(header::CACHE_CONTROL, "no-cache, no-store")],
+        axum::response::Html(html),
+    )
+        .into_response();
+    let mut response = response;
+    if let Some(v) = &site.viewer
+        && let Ok(value) = HeaderValue::from_str(&v.username)
+    {
+        response.headers_mut().insert("x-discourse-username", value);
+    }
+    Ok(response)
+}
+
 /// GET /invites/:id: InvitesController#show, the invite's info as JSON
 /// or the page that accepts it.
 pub async fn show(
@@ -1371,6 +1562,9 @@ pub async fn show(
     )
     .await?;
     tx.commit().await?;
+    // The page's forms post with this session's token.
+    let csrf = crate::session::csrf::mask(&session.csrf_token())
+        .ok_or(Unsupported("session csrf token not decodable"))?;
     let cookie = session.set_cookie(&state, &s)?;
     let response = match shown {
         None => super::topics::not_found_response(&state),
@@ -1385,12 +1579,21 @@ pub async fn show(
             if json_format {
                 Json(info).into_response()
             } else {
-                return Err(Unsupported("the invite accept page (192d)").into());
+                accept_page(&state, &s, &guardian, &headers, &uri, &id, &info, &csrf).await?
             }
         }
     };
     let cookies: Vec<String> = cookie.into_iter().collect();
     with_cookies(response, &cookies)
+}
+
+/// verify_authenticity_token for a POST.
+fn csrf_passes(state: &AppState, headers: &HeaderMap, uri: &Uri, p: &Map<String, Value>) -> bool {
+    let pairs: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    super::session::csrf_ok(state, headers, &pairs, uri.path(), "POST")
 }
 
 /// `login_code_honeypot_fails?` (never for API requests, not ported).
@@ -1439,6 +1642,9 @@ pub async fn create_login_code(
     body: Bytes,
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_passes(&state, &headers, &uri, &p) {
+        return Ok(super::session::bad_csrf());
+    }
     let mut tx = state.pool.begin().await?;
     let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     if let Err(refused) = login_code_allowed(&mut tx, &state, &s, &guardian).await? {
@@ -1577,6 +1783,9 @@ pub async fn verify_login_code(
     body: Bytes,
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_passes(&state, &headers, &uri, &p) {
+        return Ok(super::session::bad_csrf());
+    }
     let mut tx = state.pool.begin().await?;
     let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     if let Err(refused) = login_code_allowed(&mut tx, &state, &s, &guardian).await? {

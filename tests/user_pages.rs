@@ -230,9 +230,13 @@ async fn the_routes_the_app_lacks_and_the_deleted_posts_page() {
     assert!(html.contains("class=\"error-page\""));
     let (status, _, _) = get(&db.pool, "/posts/user1/deleted.json").await;
     assert_eq!(status, StatusCode::FORBIDDEN);
-    // The invites pages are 192's.
+    // The invites pages go to the pending ones, which an anonymous reader
+    // may not load: Ember's exception page.
     let (status, _, _) = get(&db.pool, "/u/user1/invited").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(status, StatusCode::FOUND);
+    let (status, _, html) = get(&db.pool, "/u/user1/invited/pending").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("class=\"error-page\""));
 }
 
 #[tokio::test]
