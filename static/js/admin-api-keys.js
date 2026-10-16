@@ -322,42 +322,6 @@
     });
   }
 
-  // EmailGroupUserChooser, one user: /u/search/users as the chooser
-  // searches.
-  var searchTimer = null;
-  function searchUsers(chooser, term) {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(function () {
-      ui.ajax("GET", "/u/search/users.json?include_groups=false&limit=6&term=" + encodeURIComponent(term))
-        .then(function (result) {
-          var body = chooser.querySelector(".select-kit-body");
-          var list = body.querySelector(".select-kit-collection");
-          if (!list) {
-            list = document.createElement("div");
-            list.className = "select-kit-collection";
-            list.setAttribute("role", "listbox");
-            body.appendChild(list);
-          }
-          list.innerHTML = (result.users || [])
-            .map(function (u) {
-              return (
-                '<div class="select-kit-row email-group-user-chooser-row" role="option" tabindex="0" data-value="' +
-                escapeHtml(u.username) +
-                '"><img alt="" class="avatar" height="24" width="24" src="' +
-                escapeHtml(String(u.avatar_template || "").replace("{size}", "24")) +
-                '"><span class="identifier">' +
-                escapeHtml(u.username) +
-                '</span><span class="name">' +
-                escapeHtml(u.name || "") +
-                "</span></div>"
-              );
-            })
-            .join("");
-        })
-        .catch(function () {});
-    }, 300);
-  }
-
   document.addEventListener("click", function (event) {
     var root = page();
     if (!root) {
@@ -389,46 +353,6 @@
           .catch(ui.failed);
       }
       return;
-    }
-    var row = event.target.closest(".email-group-user-chooser .select-kit-row");
-    if (row) {
-      var chooser = row.closest(".email-group-user-chooser");
-      chooser.dataset.value = row.dataset.value;
-      chooser.classList.add("has-selection");
-      chooser.querySelector(".formatted-selection").textContent = row.dataset.value;
-      chooser.querySelector("summary").dataset.name = row.dataset.value;
-      chooser.open = false;
-    }
-  });
-
-  // The chooser's body as select-kit opens it: the filter, then the
-  // matching users as they are typed.
-  document.addEventListener(
-    "toggle",
-    function (event) {
-      var chooser = event.target;
-      if (!chooser.matches || !chooser.matches(".email-group-user-chooser")) {
-        return;
-      }
-      chooser.classList.toggle("is-expanded", chooser.open);
-      var body = chooser.querySelector(".select-kit-body");
-      if (!chooser.open) {
-        body.innerHTML = "";
-        return;
-      }
-      body.innerHTML =
-        '<div class="select-kit-filter multi-select-filter email-group-user-chooser-filter is-expanded"><input autocapitalize="off" autocomplete="off" autocorrect="off" class="filter-input" name="filter-input-search" placeholder="' +
-        escapeHtml(chooser.dataset.placeholder || "") +
-        '" spellcheck="false" tabindex="0" type="search"></div>';
-      body.querySelector(".filter-input").focus();
-    },
-    true
-  );
-
-  document.addEventListener("input", function (event) {
-    var input = event.target.closest(".email-group-user-chooser .filter-input");
-    if (input) {
-      searchUsers(input.closest(".email-group-user-chooser"), input.value);
     }
   });
 

@@ -15,3 +15,10 @@
 # new hook's form; a hook's own pages are in tests/admin_advanced_pages.
 /admin/api/web_hooks as=admin
 /admin/api/web_hooks/new as=admin
+# Email (90g8). Masked: the delivery settings, which are the environment's,
+# and the summary, which is as of the day.
+/admin/email as=admin
+/admin/email/server-settings as=admin mask=.server-settings>.admin-container>.table
+/admin/email/preview-digest as=admin mask=.preview-output
+/admin/email/advanced-test as=admin
+/admin/email/templates as=admin

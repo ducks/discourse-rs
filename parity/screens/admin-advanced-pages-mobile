@@ -8,3 +8,8 @@
 /admin/api/keys/settings as=admin
 /admin/api/web_hooks as=admin
 /admin/api/web_hooks/new as=admin
+/admin/email as=admin
+/admin/email/server-settings as=admin mask=.server-settings>.admin-container>.table
+/admin/email/preview-digest as=admin mask=.preview-output
+/admin/email/advanced-test as=admin
+/admin/email/templates as=admin

@@ -183,11 +183,26 @@ pub fn menu(class: &str, identifier: &str, icon_name: &str, title: &str, content
 }
 
 /// DPageSubheader with its title, actions and description (HTML).
+/// The attributes admin-ui.js's EmailGroupUserChooser reads: the header
+/// with no one chosen, and its choice's Delete label (`%{name}` left).
+pub fn chooser_labels(cx: &AdminCx) -> String {
+    format!(
+        " data-none=\"{}\" data-delete-label=\"{}\"",
+        escape(&t(cx.i18n, "select_kit.default_header_text")),
+        escape(&t(cx.i18n, "select_kit.delete_item"))
+    )
+}
+
+/// An empty title draws no heading.
 pub fn subheader(title: &str, actions: &str, description: Option<&str>) -> String {
-    let mut out = format!(
-        "<div class=\"d-page-subheader\"><div class=\"d-page-subheader__title-row\"><h2 class=\"d-page-subheader__title\">{}</h2>",
-        escape(title)
-    );
+    let mut out =
+        String::from("<div class=\"d-page-subheader\"><div class=\"d-page-subheader__title-row\">");
+    if !title.is_empty() {
+        out.push_str(&format!(
+            "<h2 class=\"d-page-subheader__title\">{}</h2>",
+            escape(title)
+        ));
+    }
     if !actions.is_empty() {
         out.push_str(&format!(
             "<div class=\"d-page-subheader__actions\">{actions}</div>"
@@ -203,16 +218,24 @@ pub fn subheader(title: &str, actions: &str, description: Option<&str>) -> Strin
     out
 }
 
-/// DNavItems: (class, path, label key, active) under the base path.
+/// DNavItems: (class, path, label key, active) under the base path. An
+/// empty class gives the item none.
 pub fn tabs(cx: &AdminCx, items: &[(&str, &str, &str, bool)]) -> String {
     items
         .iter()
         .map(|(class, path, key, active)| {
-            crate::admin_users_view::nav_item(
-                class,
-                &format!("{}{path}", cx.base_path),
-                &t(cx.i18n, key),
-                *active,
+            let class = match (class.is_empty(), *active) {
+                (true, true) => " class=\"active\"".to_string(),
+                (true, false) => String::new(),
+                (false, true) => format!(" class=\"active {class}\""),
+                (false, false) => format!(" class=\"{class}\""),
+            };
+            format!(
+                "<li{class}><a{} href=\"{}{}\">{}</a></li>",
+                if *active { " class=\"active\"" } else { "" },
+                cx.base_path,
+                escape(path),
+                escape(&t(cx.i18n, key))
             )
         })
         .collect()

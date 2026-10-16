@@ -398,23 +398,48 @@ pub async fn index(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&uri, &headers)?;
+    if super::admin_email::html_request(&uri, &headers) {
+        return super::admin_email_pages::page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin_email_view::Tab::Templates,
+        )
+        .await;
+    }
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    english(&mut conn, &s, guardian.user_id().unwrap_or_default()).await?;
+    let doc = document(
+        &mut conn,
+        &state,
+        &s,
+        guardian.user_id().unwrap_or_default(),
+    )
+    .await?;
+    Ok(axum::Json(doc).into_response())
+}
+
+/// The templates' document, the locale's texts as they stand.
+pub(super) async fn document(
+    conn: &mut PgConnection,
+    state: &AppState,
+    s: &SiteSettings,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    english(&mut *conn, s, user_id).await?;
     let all: Vec<String> = EMAIL_KEYS.iter().flat_map(|k| template_keys(k)).collect();
-    if overridden(&mut conn, &all).await? {
+    if overridden(&mut *conn, &all).await? {
         return Err(Unsupported("customized email templates (translation overrides)").into());
     }
     let templates = EMAIL_KEYS
         .iter()
         .map(|k| serialize(&state.i18n, k))
         .collect::<Result<Vec<_>, _>>()?;
-    Ok(axum::Json(json!({
+    Ok(json!({
         "email_templates": templates,
         "__rest_serializer": "1",
     }))
-    .into_response())
 }
 
 /// GET /admin/email/templates/:id: an empty action.
