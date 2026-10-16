@@ -412,19 +412,11 @@ async fn watch_topic(
     let watch = |reason| TopicUserAttr::NotificationLevel(notification_levels::WATCHING, reason);
     if let Some(owner) = owner {
         change_topic_user(
-            &mut *conn,
-            owner,
-            topic_id,
-            &[watch(notification_reasons::CREATED_TOPIC)],
-        )
-        .await?;
-        crate::bus::publish_notification_level_change(
             ctx.bus,
             &mut *conn,
             owner,
             topic_id,
-            notification_levels::WATCHING,
-            Some(notification_reasons::CREATED_TOPIC),
+            &[watch(notification_reasons::CREATED_TOPIC)],
         )
         .await?;
     }
@@ -439,19 +431,11 @@ async fn watch_topic(
             continue;
         }
         change_topic_user(
-            &mut *conn,
-            user_id,
-            topic_id,
-            &[watch(notification_reasons::USER_CHANGED)],
-        )
-        .await?;
-        crate::bus::publish_notification_level_change(
             ctx.bus,
             &mut *conn,
             user_id,
             topic_id,
-            notification_levels::WATCHING,
-            Some(notification_reasons::USER_CHANGED),
+            &[watch(notification_reasons::USER_CHANGED)],
         )
         .await?;
     }

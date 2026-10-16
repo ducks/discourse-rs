@@ -282,6 +282,7 @@ async fn add_inner(
     }
     // track_topic
     change_topic_user(
+        ctx.bus,
         &mut *conn,
         user_id,
         topic_id,
@@ -300,6 +301,7 @@ async fn add_inner(
     if staged {
         // auto_notification_for_staging
         change_topic_user(
+            ctx.bus,
             &mut *conn,
             user_id,
             topic_id,
@@ -318,6 +320,7 @@ async fn add_inner(
         .await?
         .flatten();
         super::auto_notification(
+            ctx.bus,
             &mut *conn,
             user_id,
             topic_id,
@@ -382,6 +385,7 @@ async fn add_inner(
     .fetch_one(&mut *conn)
     .await?;
     change_topic_user(
+        ctx.bus,
         &mut *conn,
         user_id,
         topic_id,

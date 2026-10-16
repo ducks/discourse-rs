@@ -406,3 +406,85 @@ async fn editing_a_wiki_first_post_bumps_the_topic() {
         .collect();
     assert!(types.contains(&"latest"), "{types:?}");
 }
+
+/// TopicUser.change: setting a level tells the user, with its reason;
+/// creating the row tells them the level create_missing_record picked
+/// (a watched category's here); changing anything else says nothing.
+#[tokio::test(flavor = "multi_thread")]
+async fn topic_user_change_announces_the_level_it_sets() {
+    use discourse_rs::posting::{
+        TopicUserAttr, change_topic_user, notification_levels, notification_reasons,
+    };
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (_, topic_id, category_id, author, _) = public_reply(&db.pool).await;
+    let user: i32 =
+        sqlx::query_scalar("SELECT id FROM users WHERE id > 0 AND id <> $1 ORDER BY id LIMIT 1")
+            .bind(author)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    sqlx::query("DELETE FROM topic_users WHERE topic_id = $1 AND user_id = $2")
+        .bind(topic_id)
+        .bind(user)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("DELETE FROM category_users WHERE user_id = $1")
+        .bind(user)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO category_users (category_id, user_id, notification_level) VALUES ($1, $2, 3)",
+    )
+    .bind(category_id)
+    .bind(user)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let topic = format!("/topic/{topic_id}");
+    let change = |attrs: Vec<TopicUserAttr>| {
+        let (st, topic) = (&st, &topic);
+        async move {
+            let from = st.bus.now().await.unwrap();
+            let mut tx = st.pool.begin().await.unwrap();
+            change_topic_user(&st.bus, &mut tx, user, topic_id, &attrs)
+                .await
+                .unwrap();
+            tx.commit().await.unwrap();
+            bus_messages(st, from, &[topic]).await
+        }
+    };
+
+    let messages = change(vec![TopicUserAttr::Bookmarked(false)]).await;
+    assert_eq!(messages.len(), 1, "{messages:?}");
+    assert_eq!(messages[0].audience, Some(vec![format!("user:{user}")]));
+    assert_eq!(
+        messages[0].data,
+        json!({
+            "notification_level_change": notification_levels::WATCHING,
+            "notifications_reason_id": notification_reasons::AUTO_WATCH_CATEGORY,
+        })
+    );
+
+    let messages = change(vec![TopicUserAttr::NotificationLevel(
+        notification_levels::TRACKING,
+        notification_reasons::USER_CHANGED,
+    )])
+    .await;
+    assert_eq!(messages.len(), 1, "{messages:?}");
+    assert_eq!(
+        messages[0].data,
+        json!({
+            "notification_level_change": notification_levels::TRACKING,
+            "notifications_reason_id": notification_reasons::USER_CHANGED,
+        })
+    );
+
+    assert!(
+        change(vec![TopicUserAttr::Bookmarked(true)])
+            .await
+            .is_empty()
+    );
+}

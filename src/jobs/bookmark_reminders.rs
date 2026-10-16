@@ -78,7 +78,8 @@ async fn send_notification(state: &AppState, bookmark_id: i32) -> Result<(), App
         None => false,
     };
     if notified && bookmark.auto_delete_preference == WHEN_REMINDER_SENT {
-        crate::bookmark_manager::destroy(&mut tx, bookmark.user_id, bookmark.id).await?;
+        crate::bookmark_manager::destroy(&state.bus, &mut tx, bookmark.user_id, bookmark.id)
+            .await?;
     } else {
         clear_reminder(&mut tx, &bookmark).await?;
     }

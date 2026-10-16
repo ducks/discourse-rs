@@ -614,6 +614,7 @@ impl<'a, 'b> BulkAction<'a, 'b> {
                 continue;
             }
             change_topic_user(
+                self.ctx.bus,
                 &mut *self.conn,
                 user_id,
                 topic_id,
@@ -621,15 +622,6 @@ impl<'a, 'b> BulkAction<'a, 'b> {
                     level,
                     crate::posting::notification_reasons::USER_CHANGED,
                 )],
-            )
-            .await?;
-            crate::bus::publish_notification_level_change(
-                self.ctx.bus,
-                &mut *self.conn,
-                user_id,
-                topic_id,
-                level,
-                Some(crate::posting::notification_reasons::USER_CHANGED),
             )
             .await?;
             self.changed.push(topic_id);

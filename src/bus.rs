@@ -49,25 +49,16 @@ pub fn group_tag(group_id: i32) -> String {
     format!("group:{group_id}")
 }
 
-/// The tags a viewer holds: their user and every group they are in,
-/// automatic groups (staff, trust levels) included, and for a member who
-/// can chat, chat's audience id for each of those groups (MessageBus's
-/// group ids, Chat.message_bus_group_ids_for). Anonymous viewers hold none
-/// and hear only messages without an audience.
+/// The tags a viewer holds: their user and MessageBus's group ids for
+/// them ([`group_ids`]), and when one of those may chat, chat's audience
+/// id for each (Chat.message_bus_group_ids_for).
 pub async fn tags(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: Option<i32>,
 ) -> Result<Vec<String>, AppError> {
-    let Some(user_id) = user_id else {
-        return Ok(Vec::new());
-    };
-    let groups: Vec<i32> =
-        sqlx::query_scalar("SELECT group_id FROM group_users WHERE user_id = $1 ORDER BY group_id")
-            .bind(user_id)
-            .fetch_all(&mut *conn)
-            .await?;
-    let mut tags = vec![user_tag(user_id)];
+    let groups = group_ids(conn, settings, user_id).await?;
+    let mut tags: Vec<String> = user_id.map(user_tag).into_iter().collect();
     tags.extend(groups.iter().copied().map(group_tag));
     if crate::plugins::chat::enabled(settings)? {
         let allowed = crate::plugins::chat::message_bus_allowed_group_ids(settings)?;
@@ -76,6 +67,44 @@ pub async fn tags(
         }
     }
     Ok(tags)
+}
+
+/// `MessageBus.group_ids_lookup` (config/initializers/004-message_bus.rb):
+/// an admin is in every group, a member in the groups they belong to,
+/// both in logged_in_users (and everyone, without
+/// granular_anonymous_and_logged_in_groups_permissions); an anonymous
+/// viewer is in anonymous_users.
+pub async fn group_ids(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: Option<i32>,
+) -> Result<Vec<i32>, AppError> {
+    use crate::guardian::auto_groups;
+    let Some(user_id) = user_id else {
+        return Ok(vec![auto_groups::ANONYMOUS_USERS as i32]);
+    };
+    let admin: Option<bool> = sqlx::query_scalar("SELECT admin FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+    let mut groups: Vec<i32> = if admin == Some(true) {
+        sqlx::query_scalar("SELECT id FROM groups ORDER BY id")
+            .fetch_all(&mut *conn)
+            .await?
+    } else {
+        sqlx::query_scalar("SELECT group_id FROM group_users WHERE user_id = $1 ORDER BY group_id")
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?
+    };
+    groups.push(auto_groups::LOGGED_IN_USERS as i32);
+    if !settings
+        .get("granular_anonymous_and_logged_in_groups_permissions")?
+        .truthy()
+    {
+        groups.push(auto_groups::EVERYONE as i32);
+    }
+    Ok(groups)
 }
 
 /// `Chat.restricted_category_message_bus_audience_id(group_id)` as a tag:
@@ -472,7 +501,8 @@ async fn basic_user(
 
 /// `TopicUser.notification_level_change`: the user's own notification
 /// level for a topic, on the topic's channel to them alone, with the
-/// reason when one is given.
+/// reason when one is given. TopicUser.change sends it whenever it sets a
+/// level (crate::posting::change_topic_user).
 pub async fn publish_notification_level_change(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,

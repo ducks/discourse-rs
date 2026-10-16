@@ -2934,3 +2934,89 @@ async fn grant_admin_through_the_second_factor_challenge() {
         .await;
     assert_eq!(reply.status, StatusCode::NOT_FOUND, "{}", reply.body);
 }
+
+/// The tags a /bus subscriber holds follow MessageBus.group_ids_lookup:
+/// an admin holds every group, a member their own plus logged_in_users
+/// and everyone (only logged_in_users with granular permissions), and an
+/// anonymous viewer anonymous_users.
+#[tokio::test(flavor = "multi_thread")]
+async fn bus_tags_follow_message_bus_group_ids() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let tags = |viewer: Option<i32>| {
+        let app_state = &app_state;
+        async move {
+            let mut conn = app_state.pool.acquire().await.unwrap();
+            let settings = discourse_rs::site_settings::SiteSettings::load(
+                &mut conn,
+                &app_state.site_setting_defs,
+                &app_state.config.globals,
+            )
+            .await
+            .unwrap();
+            discourse_rs::bus::tags(&mut conn, &settings, viewer)
+                .await
+                .unwrap()
+        }
+    };
+    let ids = |sql: &'static str| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_scalar::<_, i32>(sql)
+                .fetch_all(&pool)
+                .await
+                .unwrap()
+        }
+    };
+    let group_tags = |tags: &[String]| -> Vec<String> {
+        let mut g: Vec<String> = tags
+            .iter()
+            .filter(|t| t.starts_with("group:") && !t.contains("chat-restricted"))
+            .cloned()
+            .collect();
+        g.sort();
+        g.dedup();
+        g
+    };
+    let sorted = |ids: Vec<i32>| -> Vec<String> {
+        let mut g: Vec<String> = ids.into_iter().map(discourse_rs::bus::group_tag).collect();
+        g.sort();
+        g.dedup();
+        g
+    };
+
+    assert_eq!(tags(None).await, vec!["group:4".to_string()]);
+
+    let admin = ids("SELECT id FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1").await[0];
+    let mut every = ids("SELECT id FROM groups").await;
+    every.extend([5, 0]);
+    let held = tags(Some(admin)).await;
+    assert!(held.contains(&format!("user:{admin}")), "{held:?}");
+    assert_eq!(group_tags(&held), sorted(every));
+
+    let member =
+        ids("SELECT id FROM users WHERE NOT admin AND id > 0 ORDER BY id LIMIT 1").await[0];
+    let mut own: Vec<i32> =
+        sqlx::query_scalar("SELECT group_id FROM group_users WHERE user_id = $1")
+            .bind(member)
+            .fetch_all(&db.pool)
+            .await
+            .unwrap();
+    own.push(5);
+    for (granular, everyone) in [("t", false), ("f", true)] {
+        set_setting(
+            &db.pool,
+            "granular_anonymous_and_logged_in_groups_permissions",
+            BOOL,
+            granular,
+        )
+        .await;
+        let mut want = own.clone();
+        if everyone {
+            want.push(0);
+        }
+        let held = tags(Some(member)).await;
+        assert!(held.contains(&format!("user:{member}")), "{held:?}");
+        assert_eq!(group_tags(&held), sorted(want), "granular {granular}");
+    }
+}

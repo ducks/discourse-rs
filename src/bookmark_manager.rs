@@ -85,12 +85,14 @@ async fn bookmarked_in_topic(
 
 /// `sync_topic_user_bookmarked`
 async fn sync_topic_user(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
 ) -> Result<bool, AppError> {
     let bookmarked = bookmarked_in_topic(&mut *conn, user_id, topic_id).await?;
     change_topic_user(
+        bus,
         &mut *conn,
         user_id,
         topic_id,
@@ -251,7 +253,7 @@ pub async fn create(
     .fetch_one(&mut *conn)
     .await?;
     // after_create
-    sync_topic_user(&mut *conn, user_id, topic_id).await?;
+    sync_topic_user(ctx.bus, &mut *conn, user_id, topic_id).await?;
     Ok(Outcome::Created(bookmark_id))
 }
 
@@ -348,6 +350,7 @@ pub async fn toggle_pin(
 
 /// `BookmarkManager#destroy`, then `bookmark_metadata`.
 pub async fn destroy(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     bookmark_id: i32,
@@ -394,7 +397,7 @@ pub async fn destroy(
             > 0
     };
     // after_destroy, then the metadata.
-    let topic_bookmarked = sync_topic_user(&mut *conn, user_id, topic_id).await?;
+    let topic_bookmarked = sync_topic_user(bus, &mut *conn, user_id, topic_id).await?;
     Ok(Outcome::Destroyed {
         topic_bookmarked,
         reminders_deleted,

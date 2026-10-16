@@ -386,7 +386,7 @@ pub async fn bulk_bookmarks(
             break;
         }
         if kind == "delete" {
-            match crate::bookmark_manager::destroy(&mut tx, user_id, id as i32).await? {
+            match crate::bookmark_manager::destroy(&state.bus, &mut tx, user_id, id as i32).await? {
                 crate::bookmark_manager::Outcome::Destroyed {
                     reminders_deleted: deleted,
                     ..

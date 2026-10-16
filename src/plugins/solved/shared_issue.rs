@@ -95,6 +95,7 @@ pub async fn toggle(
         .flatten();
         if level.unwrap_or(1) < TRACKING {
             crate::posting::change_topic_user(
+                bus,
                 &mut *conn,
                 user_id,
                 topic_id,
@@ -102,15 +103,6 @@ pub async fn toggle(
                     TRACKING,
                     USER_CHANGED,
                 )],
-            )
-            .await?;
-            crate::bus::publish_notification_level_change(
-                bus,
-                &mut *conn,
-                user_id,
-                topic_id,
-                TRACKING,
-                Some(USER_CHANGED),
             )
             .await?;
         }

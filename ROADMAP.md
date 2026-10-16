@@ -918,7 +918,7 @@ with the viewport, guessing from the user agent without it
 Open in phases 9 and 10 (2026-10-15): 89 items, 120-208. By size: 23 S,
 46 M, 20 L. Phase 9: 68 (21 S, 37 M, 10 L); phase 10: 21 (2 S, 9 M,
 10 L). Not counted here: the open items above (90g, 92b), 100 (in Phase
-10, after 192) and 101-119.
+10, dropped 2026-10-16) and 101-119.
 
 Next, in order (2026-10-15): the gaps a logged-in member meets first,
 so a member can use the port without telling it from Rails. 188 topic
@@ -929,7 +929,7 @@ Then 208 multisite (done, 208a-208d), ahead of the other large items: its cost g
 every feature written against one AppState, and many forums in one
 process is the port's clearest win for self-hosting.
 Then the rest of Phase 10's core forum actions (190 categories writes,
-191 external auth, 192 invites), then 100.
+191 external auth, 192 invites); 100 was then dropped (2026-10-16).
 
 The refusals of merged items, grouped by feature and ordered by how
 often a real site meets them (reading and posting first, then
@@ -948,7 +948,7 @@ cited by its main sites.
 Already owned elsewhere, so not repeated here: the admin's Ember pages
 (28 "(Ember)" and "admin ... page" refusals, the wizards' two
 (routes/wizard.rs:62,163) among them) are 90g; MessageBus's own ids and
-positions are 100.
+positions were 100, dropped: they stay placeholders.
 
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146), notify_post_revision (137),
@@ -1939,12 +1939,31 @@ route table has been made, so this list may be short.
     avatar and profile, the session's authenticated_with_oauth), the
     invite page with external logins enabled (LoginButtons,
     social_login_available)
-100. `feat/message-bus` L, after 192, moved down from Phase 8: a
-    compatibility layer, not a gap in the port's own pages, which get
-    live updates over pg-bus's /bus already (MessageBus on pg-bus, so
-    clients that speak Rails' protocol work against the port: bots and
-    integrations on message-bus-client, apps acting through user API
-    keys). Three branches, done together:
+100. ~~`feat/message-bus`~~ (dropped, the owner's decision 2026-10-16)
+    L, after 192, moved down from Phase 8: a compatibility layer, not a
+    gap in the port's own pages, which get live updates over pg-bus's
+    /bus already (MessageBus on pg-bus, so clients that speak Rails'
+    protocol work against the port: bots and integrations on
+    message-bus-client, apps acting through user API keys). Not ported:
+    outside clients move to the port's /bus (GET /bus/events and
+    /bus/poll, docs/live-updates.md), which carries the same channels
+    and payloads with pg-bus positions instead of MessageBus ids. The
+    fields Rails fills with MessageBus.last_id (topic view's
+    `message_bus_last_id`, chat's `channel_message_bus_last_id` and
+    `message_bus_last_ids`, user status's `message_bus_last_id`,
+    `do_not_disturb_channel_position`) stay placeholders, with their
+    parity ignores; backup logs still reach every tab of the admin
+    (no client ids), and a presence state's `last_message_id` stays a
+    pg-bus position. Carried over from 100b, as they need no new pg-bus
+    API (`fix/bus-publish-and-audience`): TopicUser.change publishing
+    notification_level_change whenever it sets a level, the level
+    create_missing_record picks included, rather than its callers doing
+    it (a new message's author and recipient watches were never
+    published), and the tags a /bus subscriber holds following
+    MessageBus.group_ids_lookup (admins every group, members
+    logged_in_users and, without granular permissions, everyone,
+    anonymous viewers anonymous_users). The plan as it stood, three
+    branches done together:
     100a. pg-bus (its own repo, released with `make release`) M:
     per-channel ids as MessageBus numbers them (1, 2, 3... per channel),
     derived rather than stored, so publishing takes no lock: a message's

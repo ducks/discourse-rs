@@ -81,19 +81,11 @@ pub async fn set_notifications(
     // TopicUser.change: notifications_reason_id ||= user_changed.
     let reason = notification_reasons::USER_CHANGED;
     change_topic_user(
-        &mut tx,
-        user_id,
-        topic_id,
-        &[TopicUserAttr::NotificationLevel(level, reason)],
-    )
-    .await?;
-    crate::bus::publish_notification_level_change(
         &state.bus,
         &mut tx,
         user_id,
         topic_id,
-        level,
-        Some(reason),
+        &[TopicUserAttr::NotificationLevel(level, reason)],
     )
     .await?;
     tx.commit().await?;
