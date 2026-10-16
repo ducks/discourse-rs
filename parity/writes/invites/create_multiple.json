@@ -1,0 +1,267 @@
+{
+  "name": "create_multiple",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/create-multiple.json",
+      "params": {
+        "email": [
+          "one@example.com",
+          "user1@example.com",
+          "two@example.com"
+        ],
+        "group_ids": [
+          9001
+        ],
+        "skip_email": true
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:10.531655",
+  "transaction_started_at": "2026-10-16T04:45:08.979728",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "num_successfully_created_invitations": 2,
+        "num_failed_invitations": 1,
+        "failed_invitations": [
+          {
+            "email": "user1@example.com",
+            "error": "There was a problem with your request."
+          }
+        ],
+        "successful_invitations": [
+          {
+            "invite": {
+              "id": 1,
+              "invite_key": "MmyS4DrDRE",
+              "link": "http://localhost:3050/invites/MmyS4DrDRE",
+              "description": null,
+              "domain": null,
+              "emailed": false,
+              "can_delete_invite": true,
+              "custom_message": null,
+              "created_at": "2026-10-16T04:45:10.573Z",
+              "updated_at": "2026-10-16T04:45:10.573Z",
+              "expires_at": "2027-01-14T04:45:10.563Z",
+              "expired": false,
+              "grants_admin": false,
+              "grants_moderator": false,
+              "topics": [],
+              "groups": [
+                {
+                  "id": 9001,
+                  "automatic": false,
+                  "name": "testers",
+                  "user_count": 0,
+                  "mentionable_level": 0,
+                  "messageable_level": 0,
+                  "visibility_level": 0,
+                  "primary_group": false,
+                  "title": null,
+                  "grant_trust_level": null,
+                  "incoming_email": null,
+                  "has_messages": false,
+                  "flair_url": null,
+                  "flair_bg_color": null,
+                  "flair_color": null,
+                  "bio_raw": null,
+                  "bio_cooked": null,
+                  "bio_excerpt": null,
+                  "public_admission": false,
+                  "public_exit": false,
+                  "allow_membership_requests": false,
+                  "full_name": null,
+                  "default_notification_level": 3,
+                  "membership_request_template": null,
+                  "members_visibility_level": 0,
+                  "can_see_members": true,
+                  "can_admin_group": true,
+                  "can_edit_group": true,
+                  "publish_read_state": false
+                }
+              ]
+            }
+          },
+          {
+            "invite": {
+              "id": 2,
+              "invite_key": "bCFc7b18TX",
+              "link": "http://localhost:3050/invites/bCFc7b18TX",
+              "description": null,
+              "domain": null,
+              "emailed": false,
+              "can_delete_invite": true,
+              "custom_message": null,
+              "created_at": "2026-10-16T04:45:10.597Z",
+              "updated_at": "2026-10-16T04:45:10.597Z",
+              "expires_at": "2027-01-14T04:45:10.592Z",
+              "expired": false,
+              "grants_admin": false,
+              "grants_moderator": false,
+              "topics": [],
+              "groups": [
+                {
+                  "id": 9001,
+                  "automatic": false,
+                  "name": "testers",
+                  "user_count": 0,
+                  "mentionable_level": 0,
+                  "messageable_level": 0,
+                  "visibility_level": 0,
+                  "primary_group": false,
+                  "title": null,
+                  "grant_trust_level": null,
+                  "incoming_email": null,
+                  "has_messages": false,
+                  "flair_url": null,
+                  "flair_bg_color": null,
+                  "flair_color": null,
+                  "bio_raw": null,
+                  "bio_cooked": null,
+                  "bio_excerpt": null,
+                  "public_admission": false,
+                  "public_exit": false,
+                  "allow_membership_requests": false,
+                  "full_name": null,
+                  "default_notification_level": 3,
+                  "membership_request_template": null,
+                  "members_visibility_level": 0,
+                  "can_see_members": true,
+                  "can_admin_group": true,
+                  "can_edit_group": true,
+                  "publish_read_state": false
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 1,
+          "created_at": "2026-10-16T04:45:10.580323",
+          "updated_at": "2026-10-16T04:45:10.580323"
+        },
+        {
+          "id": 2,
+          "group_id": 9001,
+          "invite_id": 2,
+          "created_at": "2026-10-16T04:45:10.603115",
+          "updated_at": "2026-10-16T04:45:10.603115"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "one@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T04:45:10.573929",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T04:45:10.563358",
+          "invite_key": "MmyS4DrDRE",
+          "updated_at": "2026-10-16T04:45:10.573929",
+          "description": null,
+          "email_token": "31306c11a6e3cfe0ccab30016d610650",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        },
+        {
+          "id": 2,
+          "admin": false,
+          "email": "two@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T04:45:10.597543",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T04:45:10.592868",
+          "invite_key": "bCFc7b18TX",
+          "updated_at": "2026-10-16T04:45:10.597543",
+          "description": null,
+          "email_token": "7a71e4ff585a84616bd2c05ee1c79a08",
+          "deleted_by_id": null,
+          "invited_by_id": 1,
+          "custom_message": null,
+          "emailed_status": 0,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sDSDM3xjvbVM+UDHxxDovNq2fEs=",
+            "created_at": "2026-10-16T04:45:09.520241",
+            "rotated_at": "2026-10-16T04:45:09.518666",
+            "updated_at": "2026-10-16T04:45:09.520241",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sDSDM3xjvbVM+UDHxxDovNq2fEs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:10.540934",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sDSDM3xjvbVM+UDHxxDovNq2fEs=",
+            "created_at": "2026-10-16T04:45:09.520241",
+            "rotated_at": "2026-10-16T04:45:09.518666",
+            "updated_at": "2026-10-16T04:45:09.520241",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sDSDM3xjvbVM+UDHxxDovNq2fEs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "invited_groups": 1,
+    "invites": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "10abbc2c0d6840954693c098e38c5f19aa61ddd384f32a96e8211e55413ed5b3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

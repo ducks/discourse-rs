@@ -117,6 +117,8 @@ enum Routed {
     /// `/u/:username/sso-email` (true) and `/sso-payload`:
     /// users#check_sso_email and #check_sso_payload.
     CheckSso(String, bool),
+    /// `/u/:username/invited(/:filter).json`: users#invited.
+    Invited(String, Option<String>),
     /// The HTML of `/u/:username/notifications(/<tab>)`.
     Notifications(String, crate::user_notifications_view::Route),
     /// A path users#show answers that the Ember app has no route for: its
@@ -155,6 +157,16 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     }
     if rest == "sso-email" || rest == "sso-payload" {
         return Ok(Routed::CheckSso(username, rest == "sso-email"));
+    }
+    // users#invited (`/invited` and `/invited/:filter`)
+    if json && rest == "invited" {
+        return Ok(Routed::Invited(username, None));
+    }
+    if json
+        && let Some(filter) = rest.strip_prefix("invited/")
+        && !filter.contains('/')
+    {
+        return Ok(Routed::Invited(username, Some(filter.to_string())));
     }
     if !json && (rest == "notifications" || rest.starts_with("notifications/")) {
         return Ok(match super::user_notifications::route(rest) {
@@ -348,6 +360,16 @@ pub async fn show_with_tail(
         Routed::Preferences(username, route, false) => {
             return super::user_preferences::page(
                 state, incoming, username, route, headers, peer, uri,
+            )
+            .await;
+        }
+        Routed::Invited(username, filter) => {
+            return super::invites::invited_json(
+                &state,
+                &incoming.guardian,
+                &username,
+                filter.as_deref(),
+                &uri,
             )
             .await;
         }

@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "max_api_invites": 1
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/create-multiple.json",
+      "params": {
+        "email": [
+          "one@example.com",
+          "two@example.com"
+        ]
+      }
+    }
+  ]
+}

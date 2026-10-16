@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "invite_email"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "newbie@example.com",
+        "custom_message": "Join us!",
+        "topic_id": 35,
+        "invite_to_topic": true
+      }
+    }
+  ]
+}

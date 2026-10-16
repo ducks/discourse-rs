@@ -1,0 +1,73 @@
+{
+  "name": "create_by_tl1",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-16T04:44:39.892209",
+  "transaction_started_at": "2026-10-16T04:44:38.54802",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xnYX+FmwuNrKX7VMcqXN9x81nFs=",
+            "created_at": "2026-10-16T04:44:39.166687",
+            "rotated_at": "2026-10-16T04:44:39.165392",
+            "updated_at": "2026-10-16T04:44:39.166687",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xnYX+FmwuNrKX7VMcqXN9x81nFs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:44:39.901043",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xnYX+FmwuNrKX7VMcqXN9x81nFs=",
+            "created_at": "2026-10-16T04:44:39.166687",
+            "rotated_at": "2026-10-16T04:44:39.165392",
+            "updated_at": "2026-10-16T04:44:39.166687",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xnYX+FmwuNrKX7VMcqXN9x81nFs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "c0d38fda45c3ff9c183b156038ddfa023214e0a155fe7988d3120105d3943367",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

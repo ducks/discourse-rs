@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {
+    "invite_allowed_groups": "12"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user0/invited.json"
+    }
+  ]
+}

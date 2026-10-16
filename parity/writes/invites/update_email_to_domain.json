@@ -1,0 +1,144 @@
+{
+  "name": "update_email_to_domain",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/invites/901.json",
+      "params": {
+        "domain": "example.org"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:46:41.425537",
+  "transaction_started_at": "2026-10-16T04:46:40.209655",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 901,
+        "invite_key": "Fixture901",
+        "link": "http://localhost:3050/invites/Fixture901",
+        "description": null,
+        "domain": "example.org",
+        "can_delete_invite": true,
+        "max_redemptions_allowed": 1,
+        "redemption_count": 0,
+        "created_at": "2026-10-14T04:46:40.209Z",
+        "updated_at": "2026-10-16T04:46:41.450Z",
+        "expires_at": "2026-12-15T04:46:40.209Z",
+        "expired": false,
+        "grants_admin": false,
+        "grants_moderator": false,
+        "topics": [],
+        "groups": []
+      }
+    }
+  ],
+  "changes": {
+    "invites": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 901,
+            "admin": false,
+            "email": "friend@example.com",
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-14T04:46:40.209655",
+            "deleted_at": null,
+            "expires_at": "2026-12-15T04:46:40.209655",
+            "invite_key": "Fixture901",
+            "updated_at": "2026-10-14T04:46:40.209655",
+            "description": null,
+            "email_token": "0123456789abcdef0123456789abcdef",
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": "Come along",
+            "emailed_status": 4,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 1
+          },
+          "after": {
+            "id": 901,
+            "admin": false,
+            "email": null,
+            "domain": "example.org",
+            "moderator": false,
+            "created_at": "2026-10-14T04:46:40.209655",
+            "deleted_at": null,
+            "expires_at": "2026-12-15T04:46:40.209655",
+            "invite_key": "Fixture901",
+            "updated_at": "2026-10-16T04:46:41.450394",
+            "description": null,
+            "email_token": null,
+            "deleted_by_id": null,
+            "invited_by_id": 3,
+            "custom_message": "Come along",
+            "emailed_status": 0,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kbG3HAaemR0rQ+5Qk/1NZRmWKPw=",
+            "created_at": "2026-10-16T04:46:40.597859",
+            "rotated_at": "2026-10-16T04:46:40.596637",
+            "updated_at": "2026-10-16T04:46:40.597859",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kbG3HAaemR0rQ+5Qk/1NZRmWKPw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:46:41.433281",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kbG3HAaemR0rQ+5Qk/1NZRmWKPw=",
+            "created_at": "2026-10-16T04:46:40.597859",
+            "rotated_at": "2026-10-16T04:46:40.596637",
+            "updated_at": "2026-10-16T04:46:40.597859",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kbG3HAaemR0rQ+5Qk/1NZRmWKPw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "dccbc4cb6b27c713885edbd0cddf6dfbe8e3f52ab2059881b5554add74f95bd3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

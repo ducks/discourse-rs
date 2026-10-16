@@ -1,0 +1,9 @@
+{
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {}
+    }
+  ]
+}

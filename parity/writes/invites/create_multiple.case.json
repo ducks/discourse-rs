@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/create-multiple.json",
+      "params": {
+        "email": [
+          "one@example.com",
+          "user1@example.com",
+          "two@example.com"
+        ],
+        "group_ids": [
+          9001
+        ],
+        "skip_email": true
+      }
+    }
+  ]
+}

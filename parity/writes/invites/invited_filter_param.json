@@ -1,0 +1,143 @@
+{
+  "name": "invited_filter_param",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/invited.json?filter=pending&offset=1"
+    }
+  ],
+  "started_at": "2026-10-16T04:46:04.694494",
+  "transaction_started_at": "2026-10-16T04:46:03.68085",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "invites": [
+          {
+            "id": 900,
+            "invite_key": "Fixture900",
+            "link": "http://localhost:3050/invites/Fixture900",
+            "description": "for the book club",
+            "email": null,
+            "domain": null,
+            "can_delete_invite": true,
+            "max_redemptions_allowed": 5,
+            "redemption_count": 0,
+            "created_at": "2026-10-13T04:46:03.680Z",
+            "updated_at": "2026-10-13T04:46:03.680Z",
+            "expires_at": "2026-11-15T04:46:03.680Z",
+            "expired": false,
+            "grants_admin": false,
+            "grants_moderator": false,
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5
+              }
+            ],
+            "groups": [
+              {
+                "id": 9001,
+                "automatic": false,
+                "name": "testers",
+                "user_count": 0,
+                "mentionable_level": 0,
+                "messageable_level": 0,
+                "visibility_level": 0,
+                "primary_group": false,
+                "title": null,
+                "grant_trust_level": null,
+                "incoming_email": null,
+                "has_messages": false,
+                "flair_url": null,
+                "flair_bg_color": null,
+                "flair_color": null,
+                "bio_raw": null,
+                "bio_cooked": null,
+                "bio_excerpt": null,
+                "public_admission": false,
+                "public_exit": false,
+                "allow_membership_requests": false,
+                "full_name": null,
+                "default_notification_level": 3,
+                "membership_request_template": null,
+                "members_visibility_level": 0,
+                "can_see_members": true,
+                "can_admin_group": true,
+                "can_edit_group": true,
+                "publish_read_state": false
+              }
+            ]
+          }
+        ],
+        "can_see_invite_details": true,
+        "counts": {
+          "pending": 2,
+          "expired": 1,
+          "redeemed": 1,
+          "total": 3
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RZdLt/L2z7ZB1+XOqDcqSYOikJE=",
+            "created_at": "2026-10-16T04:46:04.068908",
+            "rotated_at": "2026-10-16T04:46:04.067914",
+            "updated_at": "2026-10-16T04:46:04.068908",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RZdLt/L2z7ZB1+XOqDcqSYOikJE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:46:04.702579",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RZdLt/L2z7ZB1+XOqDcqSYOikJE=",
+            "created_at": "2026-10-16T04:46:04.068908",
+            "rotated_at": "2026-10-16T04:46:04.067914",
+            "updated_at": "2026-10-16T04:46:04.068908",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RZdLt/L2z7ZB1+XOqDcqSYOikJE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "6aa7c0c49f67957ae0ed7edb7bd5913f1224fcb87cca2a06d4e991e2a8190716",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

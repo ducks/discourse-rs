@@ -1,0 +1,135 @@
+{
+  "name": "reinvite_all",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/reinvite-all.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-16T04:46:19.080689",
+  "transaction_started_at": "2026-10-16T04:46:17.761816",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "invites": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 901,
+            "admin": false,
+            "email": "friend@example.com",
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-14T04:46:17.761816",
+            "deleted_at": null,
+            "expires_at": "2026-12-15T04:46:17.761816",
+            "invite_key": "Fixture901",
+            "updated_at": "2026-10-14T04:46:17.761816",
+            "description": null,
+            "email_token": "0123456789abcdef0123456789abcdef",
+            "deleted_by_id": null,
+            "invited_by_id": 1,
+            "custom_message": "Come along",
+            "emailed_status": 4,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 1
+          },
+          "after": {
+            "id": 901,
+            "admin": false,
+            "email": "friend@example.com",
+            "domain": null,
+            "moderator": false,
+            "created_at": "2026-10-14T04:46:17.761816",
+            "deleted_at": null,
+            "expires_at": "2027-01-14T04:46:19.098853",
+            "invite_key": "Fixture901",
+            "updated_at": "2026-10-16T04:46:19.098798",
+            "description": null,
+            "email_token": "0123456789abcdef0123456789abcdef",
+            "deleted_by_id": null,
+            "invited_by_id": 1,
+            "custom_message": "Come along",
+            "emailed_status": 4,
+            "invalidated_at": null,
+            "redemption_count": 0,
+            "max_redemptions_allowed": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "created_at": "2026-10-16T04:46:18.406389",
+            "rotated_at": "2026-10-16T04:46:18.404506",
+            "updated_at": "2026-10-16T04:46:18.406389",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:46:19.087895",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "created_at": "2026-10-16T04:46:18.406389",
+            "rotated_at": "2026-10-16T04:46:18.404506",
+            "updated_at": "2026-10-16T04:46:18.406389",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 901
+      }
+    ]
+  ],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days')",
+    "UPDATE invites SET invited_by_id = 1 WHERE id IN (900, 901, 903)"
+  ],
+  "recorded_from": {
+    "case": "ffe7bd00e17231287155649c57d834242d9703ec959b74c9342b2fb4579961b9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

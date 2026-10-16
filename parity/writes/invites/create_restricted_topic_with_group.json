@@ -1,0 +1,197 @@
+{
+  "name": "create_restricted_topic_with_group",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "topic_id": 4,
+        "group_ids": "9001",
+        "email": "staffer@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:39.802497",
+  "transaction_started_at": "2026-10-16T04:45:31.675657",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "invite_key": "h6qnP3u5vu",
+        "link": "http://localhost:3050/invites/h6qnP3u5vu",
+        "description": null,
+        "email": "staffer@example.com",
+        "domain": null,
+        "emailed": true,
+        "can_delete_invite": true,
+        "custom_message": null,
+        "created_at": "2026-10-16T04:45:39.977Z",
+        "updated_at": "2026-10-16T04:45:39.977Z",
+        "expires_at": "2027-01-14T04:45:39.967Z",
+        "expired": false,
+        "grants_admin": false,
+        "grants_moderator": false,
+        "topics": [
+          {
+            "fancy_title": "Guidelines",
+            "id": 4,
+            "title": "Guidelines",
+            "slug": "guidelines",
+            "posts_count": 2
+          }
+        ],
+        "groups": [
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "invited_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 9001,
+          "invite_id": 1,
+          "created_at": "2026-10-16T04:45:40.04162",
+          "updated_at": "2026-10-16T04:45:40.04162"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "staffer@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T04:45:39.977124",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T04:45:39.967404",
+          "invite_key": "h6qnP3u5vu",
+          "updated_at": "2026-10-16T04:45:39.977124",
+          "description": null,
+          "email_token": "7aea24193234d9c5bc3ba76cd6eaaa03",
+          "deleted_by_id": null,
+          "invited_by_id": 3,
+          "custom_message": null,
+          "emailed_status": 3,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "topic_id": 4,
+          "invite_id": 1,
+          "created_at": "2026-10-16T04:45:40.016179",
+          "updated_at": "2026-10-16T04:45:40.016179"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lYlmMWx0Omo1zHawIyDwocfRxi8=",
+            "created_at": "2026-10-16T04:45:34.174868",
+            "rotated_at": "2026-10-16T04:45:34.171671",
+            "updated_at": "2026-10-16T04:45:34.174868",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lYlmMWx0Omo1zHawIyDwocfRxi8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:39.822517",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lYlmMWx0Omo1zHawIyDwocfRxi8=",
+            "created_at": "2026-10-16T04:45:34.174868",
+            "rotated_at": "2026-10-16T04:45:34.171671",
+            "updated_at": "2026-10-16T04:45:34.174868",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lYlmMWx0Omo1zHawIyDwocfRxi8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 1,
+        "invite_to_topic": null
+      }
+    ]
+  ],
+  "next_ids": {
+    "invited_groups": 1,
+    "invites": 1,
+    "topic_invites": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (3, 9001, 1, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "88919b76a0f0e371aec3698c5fb2eb6f2ed2e0408dc8fb0a17216adf4e9c4349",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

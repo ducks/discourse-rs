@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "many@example.com",
+        "max_redemptions_allowed": 3
+      }
+    }
+  ]
+}

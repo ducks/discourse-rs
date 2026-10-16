@@ -1,0 +1,74 @@
+{
+  "name": "create_long_description",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:03.767168",
+  "transaction_started_at": "2026-10-16T04:45:02.432155",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Description is too long (maximum is 100 characters)"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/jorUFIH8hCvrfl/U5wDtV+h1G8=",
+            "created_at": "2026-10-16T04:45:02.812543",
+            "rotated_at": "2026-10-16T04:45:02.811415",
+            "updated_at": "2026-10-16T04:45:02.812543",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/jorUFIH8hCvrfl/U5wDtV+h1G8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:03.776826",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/jorUFIH8hCvrfl/U5wDtV+h1G8=",
+            "created_at": "2026-10-16T04:45:02.812543",
+            "rotated_at": "2026-10-16T04:45:02.811415",
+            "updated_at": "2026-10-16T04:45:02.812543",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/jorUFIH8hCvrfl/U5wDtV+h1G8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "8e577d1acfb6faefee3ab57b8edbb887d01dc422aadecd3777f5ad269d3d46c8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

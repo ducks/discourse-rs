@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "run_jobs": [
+    "invite_email"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "email": "Friend@Example.com"
+      }
+    }
+  ]
+}

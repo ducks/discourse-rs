@@ -799,6 +799,25 @@ fn hide_secrets(doc: &mut Value) {
             secrets.push((v.replace('-', ""), "<reply_key>"));
         }
     }
+    // Invite keys (SecureRandom.base58) and email tokens, in the row and
+    // in the links and emails that carry them.
+    for row in inserted("invites") {
+        if let Some(v) = row["invite_key"].as_str() {
+            secrets.push((v.to_string(), "<invite_key>"));
+        }
+        if let Some(v) = row["email_token"].as_str() {
+            secrets.push((v.to_string(), "<invite_email_token>"));
+        }
+    }
+    for change in doc["changes"]["invites"]["updated"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default()
+    {
+        if let Some(v) = change["after"]["email_token"].as_str() {
+            secrets.push((v.to_string(), "<invite_email_token>"));
+        }
+    }
     for row in inserted("email_logs") {
         if let Some(v) = row["bounce_key"].as_str() {
             secrets.push((v.to_string(), "<bounce_key>"));

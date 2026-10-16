@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites/create-multiple.json",
+      "params": {
+        "email": [
+          "one@example.com"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "name": "create_pm_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/invites.json",
+      "params": {
+        "topic_id": 42,
+        "email": "pm@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T04:45:16.621689",
+  "transaction_started_at": "2026-10-16T04:45:14.373199",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "invite_key": "oqRdCSSWUr",
+        "link": "http://localhost:3050/invites/oqRdCSSWUr",
+        "description": null,
+        "email": "pm@example.com",
+        "domain": null,
+        "emailed": true,
+        "can_delete_invite": true,
+        "custom_message": null,
+        "created_at": "2026-10-16T04:45:16.779Z",
+        "updated_at": "2026-10-16T04:45:16.779Z",
+        "expires_at": "2027-01-14T04:45:16.772Z",
+        "expired": false,
+        "grants_admin": false,
+        "grants_moderator": false,
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 42,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "posts_count": 2
+          }
+        ],
+        "groups": []
+      }
+    }
+  ],
+  "changes": {
+    "invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "admin": false,
+          "email": "pm@example.com",
+          "domain": null,
+          "moderator": false,
+          "created_at": "2026-10-16T04:45:16.779936",
+          "deleted_at": null,
+          "expires_at": "2027-01-14T04:45:16.772176",
+          "invite_key": "oqRdCSSWUr",
+          "updated_at": "2026-10-16T04:45:16.779936",
+          "description": null,
+          "email_token": "76b7805ea5b1225dd05c90e2da6c77ca",
+          "deleted_by_id": null,
+          "invited_by_id": 3,
+          "custom_message": null,
+          "emailed_status": 3,
+          "invalidated_at": null,
+          "redemption_count": 0,
+          "max_redemptions_allowed": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_invites": {
+      "inserted": [
+        {
+          "id": 1,
+          "topic_id": 42,
+          "invite_id": 1,
+          "created_at": "2026-10-16T04:45:16.793445",
+          "updated_at": "2026-10-16T04:45:16.793445"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cxHr7E49esFAxNGdBlJlWDOpqFg=",
+            "created_at": "2026-10-16T04:45:15.074",
+            "rotated_at": "2026-10-16T04:45:15.07189",
+            "updated_at": "2026-10-16T04:45:15.074",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "cxHr7E49esFAxNGdBlJlWDOpqFg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T04:45:16.635246",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cxHr7E49esFAxNGdBlJlWDOpqFg=",
+            "created_at": "2026-10-16T04:45:15.074",
+            "rotated_at": "2026-10-16T04:45:15.07189",
+            "updated_at": "2026-10-16T04:45:15.074",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "cxHr7E49esFAxNGdBlJlWDOpqFg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "invite_email",
+      {
+        "invite_id": 1,
+        "invite_to_topic": null
+      }
+    ]
+  ],
+  "next_ids": {
+    "invites": 1,
+    "topic_invites": 1
+  },
+  "recorded_from": {
+    "case": "35099ce5485ce2ae54fbd570b677f0dd42ab87adeb7b24b28a97d683734a394f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
