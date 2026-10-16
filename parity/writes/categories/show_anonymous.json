@@ -1,0 +1,123 @@
+{
+  "name": "show_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/2/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/3/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/999/show.json"
+    }
+  ],
+  "started_at": "2026-10-16T01:14:01.938422",
+  "transaction_started_at": "2026-10-16T01:14:00.84673",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "category": {
+          "id": 2,
+          "name": "Site Feedback",
+          "color": "808281",
+          "text_color": "FFFFFF",
+          "style_type": "emoji",
+          "icon": null,
+          "emoji": "thought_balloon",
+          "slug": "site-feedback",
+          "topic_count": 1,
+          "post_count": 1,
+          "position": 1,
+          "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+          "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "topic_url": "/t/about-the-site-feedback-category/1",
+          "read_restricted": false,
+          "permission": null,
+          "topic_template": null,
+          "topic_title_placeholder": null,
+          "has_children": null,
+          "subcategory_count": null,
+          "sort_order": null,
+          "sort_ascending": null,
+          "show_subcategory_list": false,
+          "num_featured_topics": 3,
+          "default_view": null,
+          "subcategory_list_style": "rows_with_featured_topics",
+          "default_top_period": "all",
+          "default_list_filter": "all",
+          "minimum_required_tags": 0,
+          "navigate_to_first_post_after_read": false,
+          "custom_fields": {},
+          "allow_global_tags": false,
+          "read_only_banner": null,
+          "form_template_ids": [],
+          "required_tag_groups": [],
+          "category_types": {
+            "discussion": {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            }
+          },
+          "locale": null,
+          "allowed_tag_groups": [],
+          "auto_close_hours": null,
+          "auto_close_based_on_last_post": false,
+          "mailinglist_mirror": false,
+          "all_topics_wiki": false,
+          "allow_unlimited_owner_edits_on_first_post": false,
+          "is_special": true,
+          "allow_badges": true,
+          "topic_featured_link_allowed": true,
+          "search_priority": 0,
+          "topic_posting_review_group_ids": [],
+          "reply_posting_review_group_ids": [],
+          "default_slow_mode_seconds": null,
+          "has_chat_channels": false,
+          "uploaded_logo": null,
+          "uploaded_logo_dark": null,
+          "uploaded_background": null,
+          "uploaded_background_dark": null,
+          "category_localizations": []
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "5ff27ffd9c56b080d201256b044aba27370d56227fee92d8f112b460cc7c31d1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

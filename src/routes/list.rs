@@ -471,6 +471,12 @@ pub async fn category(
         Some(p) => (p.to_string(), true),
         None => (path.clone(), false),
     };
+    // categories#show, find_by_slug, visible_groups and the editor.
+    if let Some(response) =
+        super::categories::dispatch(&state, &guardian, &headers, &path, json).await?
+    {
+        return Ok(response);
+    }
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if json {
         String::new()

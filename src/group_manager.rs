@@ -474,33 +474,51 @@ async fn bulk_publish_category_updates(
     if let [user_id] = user_ids
         && (category_ids.len() as i64) < PUBLISH_CATEGORIES_LIMIT
     {
-        // Category.set_permission! for the member: none for a category
-        // they cannot see.
+        // Category.set_permission! for the member: the categories with a
+        // permission go out through CategorySerializer (no scope), the
+        // others as deleted.
         let Some(user) = crate::session::current::SessionUser::load(&mut *conn, *user_id).await?
         else {
             return Ok(());
         };
         let guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
-        let secure = guardian
-            .secure_category_ids(&mut *conn, cx.promotion.settings)
-            .await?;
-        let restricted: Vec<i32> =
-            sqlx::query_scalar("SELECT id FROM categories WHERE id = ANY($1) AND read_restricted")
-                .bind(&category_ids)
-                .fetch_all(&mut *conn)
-                .await?;
-        let visible: Vec<i32> = category_ids
-            .iter()
-            .copied()
-            .filter(|id| !restricted.contains(id) || secure.contains(id))
-            .collect();
-        if !visible.is_empty() {
-            return Err(Unsupported("CategorySerializer in the /categories update").into());
+        let settings = cx.promotion.settings;
+        let anonymous = crate::guardian::Guardian::anonymous();
+        let mut updated = Vec::new();
+        let mut removed = Vec::new();
+        for id in &category_ids {
+            let Some(c) =
+                crate::category_serializer::GuardedCategory::load(&mut *conn, *id).await?
+            else {
+                continue;
+            };
+            match crate::category_serializer::set_permission(&mut *conn, settings, &guardian, &c)
+                .await?
+            {
+                Some(permission) => {
+                    let pre = crate::category_serializer::Preloaded {
+                        permission: Some(permission),
+                        ..Default::default()
+                    };
+                    updated.push(
+                        crate::category_serializer::serialize(
+                            &mut *conn,
+                            &crate::category_serializer::Cx::of(cx.state),
+                            settings,
+                            &anonymous,
+                            *id,
+                            &pre,
+                        )
+                        .await?,
+                    );
+                }
+                None => removed.push(*id),
+            }
         }
         bus.publish(
             &mut *conn,
             "/categories",
-            &json!({ "categories": [], "deleted_categories": category_ids }),
+            &json!({ "categories": updated, "deleted_categories": removed }),
             Some(&refresh(user_ids)),
         )
         .await?;

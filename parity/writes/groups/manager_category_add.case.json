@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'staff_readers', 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_groups (id, category_id, group_id, permission_type, created_at, updated_at) VALUES (9001, 3, 9001, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9002, 2, 9001, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/4/groups.json",
+      "params": {
+        "group_id": 9001
+      }
+    }
+  ]
+}

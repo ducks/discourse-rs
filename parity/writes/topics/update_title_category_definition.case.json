@@ -1,6 +1,5 @@
 {
   "user": "admin",
-  "not_yet": "a category description changing with its definition topic: publish_category sends CategorySerializer on /categories (190)",
   "requests": [
     {
       "method": "PUT",

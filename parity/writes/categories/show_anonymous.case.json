@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/2/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/3/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/999/show.json"
+    }
+  ]
+}

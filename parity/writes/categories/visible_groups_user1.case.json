@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/3/visible_groups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/general/visible_groups.json"
+    }
+  ]
+}

@@ -1337,8 +1337,8 @@ pub async fn messageable_route(
 }
 
 /// GET /groups/:name/permissions(.json): the group's category_groups the
-/// viewer can see, each with its category through CategorySerializer,
-/// which the port does not have yet: refused when there are any.
+/// viewer can see, by category name, each with its category through
+/// CategorySerializer and the group through BasicGroupSerializer.
 pub async fn permissions(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -1347,27 +1347,54 @@ pub async fn permissions(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let Some((group, _)) = find_visible(&mut conn, &guardian, Some(&name), None).await? else {
+    let Some((group, membership)) = find_visible(&mut conn, &guardian, Some(&name), None).await?
+    else {
         return Ok(not_found(&state));
     };
-    let category_ids: Vec<i32> =
-        sqlx::query_scalar("SELECT category_id FROM category_groups WHERE group_id = $1")
-            .bind(group.id)
-            .fetch_all(&mut *conn)
-            .await?;
-    let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
-    let restricted: Vec<i32> =
-        sqlx::query_scalar("SELECT id FROM categories WHERE id = ANY($1) AND read_restricted")
-            .bind(&category_ids)
-            .fetch_all(&mut *conn)
-            .await?;
-    let visible = category_ids
-        .iter()
-        .any(|id| !restricted.contains(id) || secure.contains(id));
-    if visible {
-        return Err(Unsupported("CategorySerializer in group permissions").into());
+    let rows: Vec<(i32, i32, String)> = sqlx::query_as(
+        "SELECT cg.category_id, cg.permission_type, c.name FROM category_groups cg \
+         JOIN categories c ON c.id = cg.category_id WHERE cg.group_id = $1 ORDER BY cg.id",
+    )
+    .bind(group.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut visible = Vec::new();
+    for (category_id, permission_type, category_name) in rows {
+        let Some(c) =
+            crate::category_serializer::GuardedCategory::load(&mut conn, category_id).await?
+        else {
+            continue;
+        };
+        if crate::category_serializer::can_see(&mut conn, &settings, &guardian, &c).await? {
+            visible.push((category_id, permission_type, category_name));
+        }
     }
-    Ok(Json(json!([])).into_response())
+    // sort_by category name (stable).
+    visible.sort_by(|a, b| a.2.cmp(&b.2));
+    let group_json = group.json(
+        &state.i18n,
+        &guardian,
+        &settings,
+        membership.map(|owner| (true, owner)),
+    )?;
+    let mut out = Vec::with_capacity(visible.len());
+    for (category_id, permission_type, _) in visible {
+        let category = crate::category_serializer::serialize(
+            &mut conn,
+            &crate::category_serializer::Cx::of(&state),
+            &settings,
+            &guardian,
+            category_id,
+            &Default::default(),
+        )
+        .await?;
+        out.push(json!({
+            "permission_type": permission_type,
+            "category": category,
+            "group": group_json,
+        }));
+    }
+    Ok(Json(Value::Array(out)).into_response())
 }
 
 /// The HTML of the groups pages (layout plus the route's content).

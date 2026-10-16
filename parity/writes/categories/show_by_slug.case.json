@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/site-feedback/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/sub-general/show.json"
+    }
+  ]
+}

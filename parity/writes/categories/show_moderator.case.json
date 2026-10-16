@@ -1,0 +1,19 @@
+{
+  "user": "user2",
+  "settings": {
+    "moderators_manage_categories": "true"
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/3/show.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/4/show.json"
+    }
+  ]
+}

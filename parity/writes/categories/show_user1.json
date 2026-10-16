@@ -1,0 +1,140 @@
+{
+  "name": "show_user1",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/4/show.json"
+    }
+  ],
+  "started_at": "2026-10-16T01:14:15.981808",
+  "transaction_started_at": "2026-10-16T01:14:14.398923",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "category": {
+          "id": 4,
+          "name": "General",
+          "color": "25AAE2",
+          "text_color": "FFFFFF",
+          "style_type": "emoji",
+          "icon": null,
+          "emoji": "blue_book",
+          "slug": "general",
+          "topic_count": 3,
+          "post_count": 6,
+          "position": 3,
+          "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+          "description_text": "Create topics here that don’t fit into any other existing category.",
+          "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+          "topic_url": "/t/about-the-general-category/3",
+          "read_restricted": false,
+          "permission": 1,
+          "notification_level": 1,
+          "topic_template": null,
+          "topic_title_placeholder": null,
+          "has_children": null,
+          "subcategory_count": null,
+          "sort_order": null,
+          "sort_ascending": null,
+          "show_subcategory_list": false,
+          "num_featured_topics": 3,
+          "default_view": null,
+          "subcategory_list_style": "rows_with_featured_topics",
+          "default_top_period": "all",
+          "default_list_filter": "all",
+          "minimum_required_tags": 0,
+          "navigate_to_first_post_after_read": false,
+          "custom_fields": {
+            "has_chat_enabled": true
+          },
+          "allow_global_tags": false,
+          "read_only_banner": null,
+          "form_template_ids": [],
+          "required_tag_groups": [],
+          "category_types": {
+            "discussion": {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            }
+          },
+          "locale": null,
+          "allowed_tag_groups": [],
+          "auto_close_hours": null,
+          "auto_close_based_on_last_post": false,
+          "mailinglist_mirror": false,
+          "all_topics_wiki": false,
+          "allow_unlimited_owner_edits_on_first_post": false,
+          "allow_badges": true,
+          "topic_featured_link_allowed": true,
+          "search_priority": 0,
+          "topic_posting_review_group_ids": [],
+          "reply_posting_review_group_ids": [],
+          "default_slow_mode_seconds": null,
+          "has_chat_channels": false,
+          "uploaded_logo": null,
+          "uploaded_logo_dark": null,
+          "uploaded_background": null,
+          "uploaded_background_dark": null,
+          "category_localizations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U9QfRZa1mA1zlBmXqmW3qyWPQDA=",
+            "created_at": "2026-10-16T01:14:15.111121",
+            "rotated_at": "2026-10-16T01:14:15.109787",
+            "updated_at": "2026-10-16T01:14:15.111121",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "U9QfRZa1mA1zlBmXqmW3qyWPQDA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T01:14:15.992035",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U9QfRZa1mA1zlBmXqmW3qyWPQDA=",
+            "created_at": "2026-10-16T01:14:15.111121",
+            "rotated_at": "2026-10-16T01:14:15.109787",
+            "updated_at": "2026-10-16T01:14:15.111121",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "U9QfRZa1mA1zlBmXqmW3qyWPQDA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d31f96bbedb7961a9e83b0aafdb25e3dbbb967612adaac998d523539a703c28d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

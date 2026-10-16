@@ -1,5 +1,4 @@
 {
-  "not_yet": "CategorySerializer (categories#show) is not ported",
   "user": "user1",
   "setup": [
     "INSERT INTO groups (id, name, full_name, bio_raw, bio_cooked, visibility_level, members_visibility_level, public_admission, public_exit, title, flair_icon, flair_bg_color, flair_color, mentionable_level, messageable_level, user_count, created_at, updated_at) VALUES (9001, 'testers', 'test team', 'We **test** things. See https://example.com', '<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>', 0, 0, TRUE, TRUE, 'Tester', 'bug', 'ff0000', '00ff00', 99, 99, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",

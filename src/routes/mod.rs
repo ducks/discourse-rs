@@ -62,6 +62,7 @@ pub(crate) use search::{invalid_access, invalid_access_at};
 pub(crate) use session::{csrf_ok, viewer_state};
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
+mod categories;
 mod category_notifications;
 mod chat;
 mod chat_pages;

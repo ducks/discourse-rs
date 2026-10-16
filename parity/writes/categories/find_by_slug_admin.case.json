@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/general/find_by_slug.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/staff/find_by_slug.json"
+    }
+  ]
+}

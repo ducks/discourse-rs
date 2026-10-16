@@ -1,0 +1,154 @@
+{
+  "name": "show_tags_user1",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/2/show.json"
+    }
+  ],
+  "started_at": "2026-10-16T01:14:13.943649",
+  "transaction_started_at": "2026-10-16T01:14:12.397202",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "category": {
+          "id": 2,
+          "name": "Site Feedback",
+          "color": "808281",
+          "text_color": "FFFFFF",
+          "style_type": "emoji",
+          "icon": null,
+          "emoji": "thought_balloon",
+          "slug": "site-feedback",
+          "topic_count": 1,
+          "post_count": 1,
+          "position": 1,
+          "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
+          "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "description_excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "topic_url": "/t/about-the-site-feedback-category/1",
+          "read_restricted": false,
+          "permission": 1,
+          "notification_level": 2,
+          "topic_template": null,
+          "topic_title_placeholder": null,
+          "has_children": null,
+          "subcategory_count": null,
+          "sort_order": null,
+          "sort_ascending": null,
+          "show_subcategory_list": false,
+          "num_featured_topics": 3,
+          "default_view": null,
+          "subcategory_list_style": "rows_with_featured_topics",
+          "default_top_period": "all",
+          "default_list_filter": "all",
+          "minimum_required_tags": 0,
+          "navigate_to_first_post_after_read": false,
+          "custom_fields": {},
+          "allow_global_tags": false,
+          "read_only_banner": null,
+          "form_template_ids": [],
+          "required_tag_groups": [
+            {
+              "min_count": 2
+            }
+          ],
+          "category_types": {
+            "discussion": {
+              "id": "discussion",
+              "name": "Discussion",
+              "title": "discussion",
+              "description": "A standard category with all the essentials for conversation.",
+              "icon": "memo",
+              "available": true,
+              "visible": true,
+              "configuration_schema": {}
+            }
+          },
+          "locale": null,
+          "allowed_tag_groups": [
+            "Greek"
+          ],
+          "auto_close_hours": null,
+          "auto_close_based_on_last_post": false,
+          "mailinglist_mirror": false,
+          "all_topics_wiki": false,
+          "allow_unlimited_owner_edits_on_first_post": false,
+          "is_special": true,
+          "allow_badges": true,
+          "topic_featured_link_allowed": true,
+          "search_priority": 0,
+          "topic_posting_review_group_ids": [],
+          "reply_posting_review_group_ids": [],
+          "default_slow_mode_seconds": null,
+          "has_chat_channels": false,
+          "uploaded_logo": null,
+          "uploaded_logo_dark": null,
+          "uploaded_background": null,
+          "uploaded_background_dark": null,
+          "category_localizations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 257,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uIXd4LhHIfEsupCsXq+qweimP+I=",
+            "created_at": "2026-10-16T01:14:13.044795",
+            "rotated_at": "2026-10-16T01:14:13.043157",
+            "updated_at": "2026-10-16T01:14:13.044795",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uIXd4LhHIfEsupCsXq+qweimP+I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 257,
+            "seen_at": "2026-10-16T01:14:13.957557",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uIXd4LhHIfEsupCsXq+qweimP+I=",
+            "created_at": "2026-10-16T01:14:13.044795",
+            "rotated_at": "2026-10-16T01:14:13.043157",
+            "updated_at": "2026-10-16T01:14:13.044795",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uIXd4LhHIfEsupCsXq+qweimP+I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tags (id, name, slug, created_at, updated_at) VALUES (9001, 'alpha', 'alpha', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9001, 'Greek', '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9002, 'Hidden', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9001, 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9002, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (2, 9001, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tag_groups (category_id, tag_group_id, created_at, updated_at) VALUES (2, 9001, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (2, 9002, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_required_tag_groups (category_id, tag_group_id, min_count, \"order\", created_at, updated_at) VALUES (2, 9001, 2, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (2, 3, 2) ON CONFLICT (category_id, user_id) DO UPDATE SET notification_level = EXCLUDED.notification_level"
+  ],
+  "recorded_from": {
+    "case": "9fc86c33e254a97b635096c522a7f0e9f0c58ffd00b1eefd7ea37b5e51d8bb91",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
