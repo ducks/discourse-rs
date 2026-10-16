@@ -1,0 +1,79 @@
+{
+  "name": "accept_signed_in_wrong_email",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/invites/show/Fixture901.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-16T05:13:03.605806",
+  "transaction_started_at": "2026-10-16T05:13:01.969217",
+  "responses": [
+    {
+      "status": 412,
+      "body": {
+        "failed": "FAILED",
+        "message": "Your email address and the email address associated with the invite token do not match. Please contact staff."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 358,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yeqzHh+2ciHSBNAechOz2iTSQCY=",
+            "created_at": "2026-10-16T05:13:02.677736",
+            "rotated_at": "2026-10-16T05:13:02.676084",
+            "updated_at": "2026-10-16T05:13:02.677736",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yeqzHh+2ciHSBNAechOz2iTSQCY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 358,
+            "seen_at": "2026-10-16T05:13:03.617475",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yeqzHh+2ciHSBNAechOz2iTSQCY=",
+            "created_at": "2026-10-16T05:13:02.677736",
+            "rotated_at": "2026-10-16T05:13:02.676084",
+            "updated_at": "2026-10-16T05:13:02.677736",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yeqzHh+2ciHSBNAechOz2iTSQCY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL), (904, 'Fixture904', 'user2@example.com', 3, now() - interval '1 day', now() - interval '1 day', 4, 1, 0, now() + interval '60 days', 'abcdefabcdefabcdefabcdefabcdefab', NULL, NULL), (905, 'Fixture905', NULL, 3, now() - interval '1 day', now() - interval '1 day', 0, 5, 0, now() + interval '30 days', NULL, NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days'), (901, 35, 905, now() - interval '1 day', now() - interval '1 day'), (902, 35, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days'), (901, 9001, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "8de8310a4a06933684afd8a2bc76951b68e0892544b34e86b675ef9d925132f9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

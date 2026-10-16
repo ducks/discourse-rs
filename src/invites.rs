@@ -1269,6 +1269,20 @@ pub async fn invites_page(
     .await
 }
 
+/// `Invite.invalidate_for_email(email)`: the invite to that email (the
+/// first found) can no longer log anyone in (`update_attribute`, so
+/// updated_at moves too).
+pub async fn invalidate_for_email(conn: &mut PgConnection, email: &str) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE invites SET invalidated_at = clock_timestamp(), updated_at = clock_timestamp() \
+         WHERE id = (SELECT id FROM invites WHERE email = $1 AND deleted_at IS NULL ORDER BY id LIMIT 1)",
+    )
+    .bind(email_downcase(email))
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
 /// A redeemed invitation: the invite, its redeemer and when.
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct Redeemed {

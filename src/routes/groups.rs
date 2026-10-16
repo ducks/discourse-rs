@@ -375,7 +375,7 @@ pub(super) async fn username_exists(
 }
 
 /// `User.username_available?(name)` (reserved names not allowed).
-pub(super) async fn username_available(
+pub(crate) async fn username_available(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,
@@ -389,7 +389,7 @@ pub(super) async fn username_available(
 
 /// `User.username_available?(name, email, allow_reserved_username:)`: a
 /// taken name is free to the staged user whose primary email it is.
-pub(super) async fn username_available_for(
+pub(crate) async fn username_available_for(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,
@@ -418,7 +418,7 @@ pub(super) async fn username_available_for(
 
 /// `UserNameSuggester.suggest(name)` for a name that passed the format
 /// check: numbered after the name, from the first free number.
-pub(super) async fn suggest_username(
+pub(crate) async fn suggest_username(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     name: &str,

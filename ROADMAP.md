@@ -1884,13 +1884,17 @@ route table has been made, so this list may be short.
     (InviteMailer's four templates), users#invited's JSON (pending,
     expired and redeemed lists, search, counts), inviting to restricted
     categories as an owner of one of their groups (topic_guardian.rs)
-    192b. `feat/invites-redeem` M: GET /invites/:id (JSON, the preloaded
-    invite_info, no_ember's errors), PUT /invites/show/:id
-    (InviteRedeemer for a new or signed-in user, its welcome message,
-    activation email or password instructions, topic notifications), the
-    login code for an invite (/session/login-code with invite_key),
-    redeeming on activation (EmailToken.confirm), invalidating on
-    password reset, invite-only ReviewableUser, invite codes at signup
+    192b. ~~`feat/invites-redeem`~~ (done) M: GET /invites/:id (its
+    invite_info as JSON, the signed-in redirect to the topic, no_ember's
+    errors), PUT /invites/show/:id (InviteRedeemer for a new or
+    signed-in user, its activation email or password instructions,
+    Jobs::InvitePasswordInstructionsEmail, topic notifications), the
+    login code for an invite (/session/login-code(/verify) with
+    invite_key; plain code logins still refuse), redeeming on activation
+    (EmailToken.confirm), invalidating on password reset, invite-only
+    ReviewableUser, invite codes at signup. Refused: redeeming admin and
+    moderator invites (grant_moderation!, AdminConfirmation), user fields
+    and staged users on redemption
     192c. `feat/invites-elsewhere` M: adding group members by email,
     inviting to a message by email (Topic#invite), messages to email
     addresses (TopicCreator#add_emails, staged users)

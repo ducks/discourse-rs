@@ -650,17 +650,11 @@ pub async fn password_reset_update(
         .bind(user_id)
         .execute(&mut *tx)
         .await?;
-    // Invite.invalidate_for_email
-    let invites: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM invites WHERE lower(email) = lower($1) AND invalidated_at IS NULL \
-           AND deleted_at IS NULL)",
-    )
-    .bind(&owner.email)
-    .fetch_one(&mut *tx)
-    .await?;
-    if invites {
-        return Err(crate::Unsupported("invalidating invites on password reset").into());
-    }
+    // Invite.invalidate_for_email: the invite link can't log in anymore.
+    let Some(owner_email) = owner.email.as_deref() else {
+        return Err(crate::Unsupported("a password reset for a user without an email").into());
+    };
+    crate::invites::invalidate_for_email(&mut tx, owner_email).await?;
     crate::session::server::delete(&mut tx, &session_id, &format!("password-{token}")).await?;
     crate::session::server::delete(&mut tx, &session_id, &format!("second-factor-{token}")).await?;
     if settings
@@ -856,6 +850,12 @@ pub(crate) async fn confirm_email_token(
         config: &state.config,
     };
     crate::web_hooks::enqueue_user_hooks(conn, &payloads, "user_confirmed_email", user_id).await?;
+    if scope == token_scopes::SIGNUP {
+        Box::pin(super::invite_redeem::redeem_for_existing_user(
+            conn, state, settings, user_id,
+        ))
+        .await?;
+    }
     Ok(Some(user_id))
 }
 
@@ -888,7 +888,7 @@ async fn server_session_value(
 }
 
 /// `honeypot_or_challenge_fails?(params)`
-async fn honeypot_or_challenge_fails(
+pub(crate) async fn honeypot_or_challenge_fails(
     conn: &mut sqlx::PgConnection,
     session_id: &str,
     p: &Map<String, Value>,
@@ -969,6 +969,11 @@ pub async fn create_user(
     let Some(username) = params::string(&p, "username").filter(|u| !u.is_empty()) else {
         return Ok(param_missing("username"));
     };
+    // params.require(:invite_code) if SiteSetting.require_invite_code
+    let invite_code = params::string(&p, "invite_code").filter(|c| !c.is_empty());
+    if settings.get("invite_code")?.presence().is_some() && invite_code.is_none() {
+        return Ok(param_missing("invite_code"));
+    }
     let name = params::string(&p, "name");
     let password = params::string(&p, "password");
     let locale = params::string(&p, "locale");
@@ -1012,6 +1017,7 @@ pub async fn create_user(
             ip: &ip,
             user_fields: p.get("user_fields"),
             auth: auth.as_ref().map(|a| (a, provides_groups)),
+            invite_code: invite_code.as_deref(),
         },
     )
     .await?;

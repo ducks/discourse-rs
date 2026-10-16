@@ -3,8 +3,7 @@
 //! makes when none exists, and `perform(:approve_user, allow_reviewed:)`.
 //!
 //! Refused: users with an uploaded avatar (the payload's URL and the
-//! avatar snapshot), invite-only sites without must_approve_users, a
-//! reviewable claimed or for a group.
+//! avatar snapshot), a reviewable claimed or for a group.
 
 use serde_json::json;
 use sqlx::PgConnection;
@@ -49,7 +48,7 @@ pub async fn find_or_create(
     let reason = if s.get("must_approve_users")?.truthy() {
         "must_approve_users"
     } else if s.get("invite_only")?.truthy() {
-        return Err(Unsupported("user reviewables on invite-only sites").into());
+        "invite_only"
     } else {
         return Ok(None);
     };

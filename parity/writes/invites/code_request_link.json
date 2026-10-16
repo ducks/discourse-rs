@@ -1,0 +1,82 @@
+{
+  "name": "code_request_link",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/session/login-code.json",
+      "params": {
+        "invite_key": "Fixture900",
+        "email": "newbie@example.com",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T05:13:10.198303",
+  "transaction_started_at": "2026-10-16T05:13:08.924192",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "9a279db47496b74f1b11cff080457c94",
+        "challenge": "621d7236f355f6056f5e586511bdfa22",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "email_login_codes": {
+      "inserted": [
+        {
+          "id": 1,
+          "email": "newbie@example.com",
+          "purpose": 0,
+          "attempts": 0,
+          "code_hash": "6f70b1ec9456246dc7b430f1740509e794123353b71c049e5d5a69013f40dac6",
+          "created_at": "2026-10-16T05:13:10.24887",
+          "expires_at": "2026-10-16T05:23:10.248537",
+          "updated_at": "2026-10-16T05:13:10.24887",
+          "consumed_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "send_email_login_code",
+      {
+        "to_address": "newbie@example.com",
+        "code": "628688"
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_login_codes": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
+    "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL), (901, 'Fixture901', 'friend@example.com', 3, now() - interval '2 days', now() - interval '2 days', 4, 1, 0, now() + interval '60 days', '0123456789abcdef0123456789abcdef', NULL, 'Come along'), (902, 'Fixture902', NULL, 3, now() - interval '10 days', now() - interval '5 days', 0, 1, 1, now() + interval '80 days', NULL, NULL, NULL), (903, 'Fixture903', 'old@example.com', 3, now() - interval '100 days', now() - interval '100 days', 4, 1, 0, now() - interval '10 days', 'fedcba9876543210fedcba9876543210', NULL, NULL), (904, 'Fixture904', 'user2@example.com', 3, now() - interval '1 day', now() - interval '1 day', 4, 1, 0, now() + interval '60 days', 'abcdefabcdefabcdefabcdefabcdefab', NULL, NULL), (905, 'Fixture905', NULL, 3, now() - interval '1 day', now() - interval '1 day', 0, 5, 0, now() + interval '30 days', NULL, NULL, NULL)",
+    "INSERT INTO invited_users (id, user_id, invite_id, redeemed_at, created_at, updated_at) VALUES (900, 2, 902, now() - interval '5 days', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO topic_invites (id, topic_id, invite_id, created_at, updated_at) VALUES (900, 35, 900, now() - interval '3 days', now() - interval '3 days'), (901, 35, 905, now() - interval '1 day', now() - interval '1 day'), (902, 35, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO invited_groups (id, group_id, invite_id, created_at, updated_at) VALUES (900, 9001, 900, now() - interval '3 days', now() - interval '3 days'), (901, 9001, 901, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9001, 3, TRUE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "recorded_from": {
+    "case": "3e58a30c76da0d7904dc499de9208446765222d75c3ee329db98c61c2bdbcc78",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

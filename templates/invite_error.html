@@ -1,0 +1,17 @@
+{% extends "no_ember.html" %}
+{% block content %}
+{#- invites/show.html.erb: the flash error of an invite that can't be
+    redeemed (or of a site closed to new accounts). -#}
+<div id='simple-container'>
+{%- if !error.is_empty() %}
+    <div class='invite-error'>
+      <div class="error-image">
+        <img src="{{ base_path }}/images/sweat-smile-face.svg" alt="sweat-smile-face emoji">
+      </div>
+      <div class="error-info">
+        {{ error|safe }}
+      </div>
+    </div>
+{%- endif %}
+</div>
+{% endblock %}

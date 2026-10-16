@@ -530,6 +530,12 @@ fn unrandom(s: &str) -> String {
     static BACKUP_TOKEN: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"\?token=[0-9a-f]{32}\b").unwrap());
     let s = BACKUP_TOKEN.replace_all(&s, "?token=<hex>");
+    // A password reset token (SecureRandom.hex) in a mailed link whose
+    // job doesn't carry it (InviteMailer's password instructions).
+    static RESET_TOKEN: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"/u/password-reset/[0-9a-f]{32}\b").unwrap()
+    });
+    let s = RESET_TOKEN.replace_all(&s, "/u/password-reset/<hex>");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");

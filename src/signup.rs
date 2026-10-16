@@ -180,6 +180,8 @@ pub struct Signup<'a> {
     /// The external login the server session kept (UserAuthenticator),
     /// with whether its authenticator provides groups.
     pub auth: Option<(&'a crate::auth::managed::AuthResult, bool)>,
+    /// `params[:invite_code]`
+    pub invite_code: Option<&'a str>,
 }
 
 fn fail_with(i18n: &I18n, key: &str) -> Created {
@@ -199,9 +201,6 @@ pub async fn create(
         i18n,
         config: &state.config,
     };
-    if settings.get("invite_code")?.presence().is_some() {
-        return Err(Unsupported("invite codes at signup").into());
-    }
     if settings.get("enable_discourse_connect")?.truthy() {
         return Ok(fail_with(
             i18n,
@@ -219,6 +218,12 @@ pub async fn create(
     }
     if s.email.len() > 254 + 1 + 253 {
         return Ok(fail_with(i18n, "login.email_too_long"));
+    }
+    // require_invite_code (the route required the param)
+    if let Some(code) = settings.get("invite_code")?.presence()
+        && code.trim().to_lowercase() != s.invite_code.unwrap_or("").trim().to_lowercase()
+    {
+        return Ok(fail_with(i18n, "login.wrong_invite_code"));
     }
     if reserved_username(settings, s.username)? {
         return Ok(fail_with(i18n, "login.reserved_username"));
@@ -414,7 +419,10 @@ pub async fn create(
             name,
             email: &email,
             password: s.password,
+            trust_level: settings.get("default_trust_level")?.to_i() as i32,
             active: authenticated,
+            approved: false,
+            moderator: false,
             locale: Some(s.locale.filter(|l| !l.is_empty()).unwrap_or("en")),
             ip: Some(s.ip),
             custom_fields: &custom_fields,
@@ -507,14 +515,19 @@ pub async fn create(
     Ok(Created::Signed { user_id, body })
 }
 
-/// A user record to save (`User.new(...).save!` past its validations).
+/// A user record to save (`User.new(...).save!` past its validations):
+/// what signup, external logins and InviteRedeemer set.
 pub struct NewUser<'a> {
     pub username: &'a str,
     pub name: Option<&'a str>,
     /// The primary email, downcased.
     pub email: &'a str,
     pub password: Option<&'a str>,
+    pub trust_level: i32,
     pub active: bool,
+    /// `ReviewableUser.set_approved_fields!(user, system)`
+    pub approved: bool,
+    pub moderator: bool,
     pub locale: Option<&'a str>,
     /// `ip_address` and `registration_ip_address`.
     pub ip: Option<&'a str>,
@@ -536,20 +549,23 @@ pub async fn insert_user(
     let email = u.email;
     let normalized = normalize_email(email);
     let custom_fields = u.custom_fields;
-    let trust_level = settings.get("default_trust_level")?.to_i() as i32;
+    let trust_level = u.trust_level;
     let user_id: i32 = sqlx::query_scalar(
-        "INSERT INTO users (username, username_lower, name, active, approved, trust_level, ip_address, \
-                            registration_ip_address, locale, created_at, updated_at) \
-         VALUES ($1, $2, $3, $7, FALSE, $4, $5::inet, $5::inet, $6, clock_timestamp(), clock_timestamp()) \
+        "INSERT INTO users (username, username_lower, name, active, approved, approved_by_id, approved_at, \
+                            moderator, trust_level, ip_address, registration_ip_address, locale, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, CASE WHEN $5 THEN -1 END, CASE WHEN $5 THEN clock_timestamp() END, \
+                 $6, $7, $8::inet, $8::inet, $9, clock_timestamp(), clock_timestamp()) \
          RETURNING id",
     )
     .bind(u.username)
     .bind(accounts::normalize_username(u.username)?)
     .bind(u.name)
+    .bind(u.active)
+    .bind(u.approved)
+    .bind(u.moderator)
     .bind(trust_level)
     .bind(u.ip)
     .bind(u.locale)
-    .bind(u.active)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(
@@ -727,7 +743,7 @@ pub(crate) fn email_allowed(settings: &SiteSettings, email: &str) -> Result<bool
 
 /// `SpamHandler.should_prevent_registration_from_ip?`, its allowed-IP
 /// match recorded as ScreenedIpAddress.is_allowed? does.
-async fn prevent_registration_from_ip(
+pub(crate) async fn prevent_registration_from_ip(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     ip: &str,
