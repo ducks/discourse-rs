@@ -103,9 +103,31 @@ plan_cache_mode=force_generic_plan per session took about a tenth off),
 the server 15 ms, half of it brotli (the same page without
 Accept-Encoding: 345 against 265 req/s).
 
-Not changed here, because they are the multisite work's (the pool
-construction, the middleware chain): the statement cache capacity on
-the pool's connect options; the compression level or moving the SVG
+perf/statement-cache then sets the capacity on every site's pool
+(multisite::connect_pool, 1000 per connection as ActiveRecord keeps).
+Against main 69d014e, fresh seed, user1, c=16, one scripts/bench run
+(load 12 to 16 from other builds, so lower absolute numbers again):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | main (user) | 4258 | 3.7 | 6.3 | 0 |
+| /srv/status | cache (user) | 4643 | 3.4 | 7.3 | 0 |
+| /latest.json | main (user) | 1199 | 13 | 21.2 | 0 |
+| /latest.json | cache (user) | 1219 | 12.8 | 21.1 | 0 |
+| /latest | main (user) | 304 | 51.6 | 90.8 | 0 |
+| /latest | cache (user) | 296 | 52.6 | 96.8 | 0 |
+| /t/welcome-to-discourse/5.json | main (user) | 463 | 34 | 66.2 | 0 |
+| /t/welcome-to-discourse/5.json | cache (user) | 474 | 33.3 | 66.3 | 0 |
+| /t/welcome-to-discourse/5 | main (user) | 81 | 203.7 | 244 | 0 |
+| /t/welcome-to-discourse/5 | cache (user) | 215 | 73.7 | 111 | 0 |
+
+Three more alternating runs (medians): the topic page 81 against 216
+req/s (p50 202 against 75 ms), its JSON 455 against 482, /latest 292
+against 309; /latest.json and /srv/status were swamped by a load spike
+to 25 during those runs and are left out.
+
+Not changed here, because they are the multisite work's (the
+middleware chain) or for later: the compression level or moving the SVG
 sprite out of every page; four SiteSettings::load and three or four
 readonly-mode reads per request across the middleware; the ping sqlx's
 test_before_acquire sends on each of a request's pool acquisitions (2
