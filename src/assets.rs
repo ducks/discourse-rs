@@ -95,6 +95,33 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/vendor/htmx-ext-sse.js"),
     ),
+    // Ace, as Discourse's ace-editor-bundle imports it (static/vendor/README):
+    // the editor, the modes and themes the admin's code editors use, search.
+    (
+        "ace-editor-bundle.js",
+        JS,
+        concat!(
+            include_str!("../static/vendor/ace/ace.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-scss.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-html.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-yaml.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-sql.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-javascript.js"),
+            "\n",
+            include_str!("../static/vendor/ace/mode-text.js"),
+            "\n",
+            include_str!("../static/vendor/ace/theme-chaos.js"),
+            "\n",
+            include_str!("../static/vendor/ace/theme-chrome.js"),
+            "\n",
+            include_str!("../static/vendor/ace/ext-searchbox.js"),
+        ),
+    ),
     // @floating-ui/dom, which float-kit positions with (static/vendor/README).
     (
         "floating-ui.core.umd.min.js",

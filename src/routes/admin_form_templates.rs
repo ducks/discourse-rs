@@ -2,8 +2,11 @@
 //! (AdminConstraint: a 404 for anyone else) and FormTemplatesController's
 //! /form-templates, both behind enable_form_templates.
 //!
-//! Refused: the Ember pages (an HTML request), a valid preview and the
-//! public show, which re-dump the template with Psych (`process!`).
+//! A page request for the list, new or a template is the Ember page
+//! (crate::routes::admin_customize::form_templates_page).
+//!
+//! Refused: a valid preview and the public show, which re-dump the
+//! template with Psych (`process!`).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -94,12 +97,18 @@ pub async fn index(
     if let Err(r) = admin_guard(&state, &guardian, &mut conn).await? {
         return Ok(r);
     }
-    refuse_html(&headers, &uri)?;
     let list: Vec<Value> = form_templates::all(&mut conn)
         .await?
         .iter()
         .map(form_templates::serialize)
         .collect();
+    drop(conn);
+    if !json_request(&headers, &uri) {
+        return super::admin_customize::form_templates_page(
+            &state, &guardian, &headers, &uri, &list, None,
+        )
+        .await;
+    }
     Ok(Json(json!({ "form_templates": list })).into_response())
 }
 
@@ -171,7 +180,31 @@ pub async fn show(
         Ok(s) => s,
         Err(r) => return Ok(r),
     };
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        // adminCustomizeFormTemplates.new, or .edit for the template.
+        let template = if id == "new" {
+            None
+        } else {
+            let found = match id_of(&id) {
+                Some(id) => form_templates::find(&mut conn, id).await?,
+                None => None,
+            };
+            match found {
+                Some(t) => Some(form_templates::serialize(&t)),
+                None => return Ok(super::topics::not_found_response(&state)),
+            }
+        };
+        drop(conn);
+        return super::admin_customize::form_templates_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            &[],
+            Some(template.as_ref()),
+        )
+        .await;
+    }
     match strip_json(&id) {
         "new" => return Ok(StatusCode::NO_CONTENT.into_response()),
         "preview" => {
@@ -249,7 +282,10 @@ pub async fn edit(
     if let Err(r) = admin_guard(&state, &guardian, &mut conn).await? {
         return Ok(r);
     }
-    refuse_html(&headers, &uri)?;
+    // No Ember route has this path.
+    if !json_request(&headers, &uri) {
+        return Ok(super::topics::not_found_response(&state));
+    }
     let found = match id_of(&id) {
         Some(id) => form_templates::find(&mut conn, id).await?,
         None => None,

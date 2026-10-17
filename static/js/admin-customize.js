@@ -2577,6 +2577,430 @@
     markUnsaved(form);
   });
 
+  // --- AceEditor -------------------------------------------------------------
+  //
+  // div.ace[data-ace-mode] (src/admin_code_view.rs ace_editor): Ace loaded
+  // from the bundle once, the editor made as AceEditor's setupAce makes it,
+  // its value the element's text. A change fires `ace-change` on the
+  // element (detail: the value); the editor is the element's aceEditor.
+
+  var acePromise = null;
+
+  function loadAce(src) {
+    if (!acePromise) {
+      acePromise = new Promise(function (resolve, reject) {
+        if (window.ace) {
+          resolve(window.ace);
+          return;
+        }
+        var script = document.createElement("script");
+        script.src = src;
+        script.onload = function () {
+          resolve(window.ace);
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    return acePromise;
+  }
+
+  function setupAce(el) {
+    if (el.aceEditor) {
+      return Promise.resolve(el.aceEditor);
+    }
+    return loadAce(el.dataset.aceSrc).then(function (ace) {
+      if (el.aceEditor || !document.contains(el)) {
+        return el.aceEditor;
+      }
+      ace.config.set("useWorker", false);
+      var editor = ace.edit(el);
+      editor.setShowPrintMargin(false);
+      editor.setOptions({ fontSize: "14px" });
+      var session = editor.getSession();
+      session.setMode("ace/mode/" + (el.dataset.aceMode || "css"));
+      editor.on("change", function () {
+        el.dispatchEvent(new CustomEvent("ace-change", { bubbles: true, detail: session.getValue() }));
+      });
+      editor.$blockScrolling = Infinity;
+      editor.renderer.setScrollMargin(10, 10);
+      var disabled = el.dataset.aceDisabled === "true";
+      editor.setOptions({
+        readOnly: disabled,
+        highlightActiveLine: !disabled,
+        highlightGutterLine: !disabled,
+      });
+      editor.container.parentNode.parentNode.setAttribute("data-disabled", String(disabled));
+      var scheme = getComputedStyle(document.body).getPropertyValue("--scheme-type").trim();
+      editor.setTheme("ace/theme/" + (scheme === "dark" ? "chaos" : "chrome"));
+      el.aceEditor = editor;
+      return editor;
+    });
+  }
+
+  function setupAces() {
+    document.querySelectorAll(".admin-contents div.ace[data-ace-mode]").forEach(function (el) {
+      setupAce(el).catch(function () {});
+    });
+  }
+
+  // --- email style -----------------------------------------------------------
+
+  function emailStyleRoot() {
+    return document.querySelector(".admin-contents.admin-customize-email-style");
+  }
+
+  function emailStyleData() {
+    var el = document.getElementById("email-style-data");
+    return el ? JSON.parse(el.textContent) : null;
+  }
+
+  var emailStyleChanged = false;
+
+  function emailStyleButtons(root) {
+    var data = emailStyleData();
+    var editor = root.querySelector("div.ace").aceEditor;
+    var value = editor ? editor.getValue() : data.style[data.field];
+    var buttons = root.querySelectorAll(".admin-footer .buttons button");
+    // Reset, inside the editor's footer; Save, the page's.
+    buttons[0].disabled = value === data.style["default_" + data.field];
+    buttons[1].disabled = !emailStyleChanged;
+  }
+
+  document.addEventListener("ace-change", function (event) {
+    var root = emailStyleRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = emailStyleData();
+    data.style[data.field] = event.detail;
+    document.getElementById("email-style-data").textContent = JSON.stringify(data);
+    emailStyleChanged = true;
+    emailStyleButtons(root);
+  });
+
+  document.addEventListener("click", function (event) {
+    var root = emailStyleRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = emailStyleData();
+    var button = event.target.closest(".admin-footer .buttons button");
+    if (!button) {
+      return;
+    }
+    var editor = root.querySelector("div.ace").aceEditor;
+    if (button.classList.contains("btn-default")) {
+      Discourse.dialog.yesNoConfirm({
+        message: t("admin.customize.email_style.reset_confirm", {
+          fieldName: t("admin.customize.email_style." + data.field),
+        }),
+        didConfirm: function () {
+          if (editor) {
+            editor.getSession().setValue(data.style["default_" + data.field]);
+          }
+        },
+      });
+      return;
+    }
+    if (button.classList.contains("btn-primary")) {
+      button.disabled = true;
+      button.querySelector(".d-button-label").textContent = t("saving");
+      ui()
+        .ajax("PUT", "/admin/customize/email_style", {
+          email_style: { html: data.style.html, css: data.style.css },
+        })
+        .catch(function (e) {
+          var errors = e.json && e.json.errors;
+          Discourse.dialog.alert(
+            errors
+              ? t("admin.customize.email_style.save_error_with_reason", { error: [].concat(errors).join(". ") })
+              : t("generic_error")
+          );
+        })
+        .then(function () {
+          emailStyleChanged = false;
+          button.querySelector(".d-button-label").textContent = t("admin.customize.save");
+          emailStyleButtons(root);
+        });
+    }
+  });
+
+  // The edit route's willTransition: leaving with unsaved changes asks to
+  // discard or stay (ahead of the boosted navigation, in capture).
+  document.addEventListener(
+    "click",
+    function (event) {
+      var root = emailStyleRoot();
+      var link = event.target.closest && event.target.closest("a[href]");
+      if (!root || !link || !emailStyleChanged || link.classList.contains("active")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      Discourse.dialog.confirm({
+        message: t("admin.customize.theme.unsaved_changes_alert"),
+        confirmLabel: t("admin.customize.theme.discard"),
+        cancelLabel: t("admin.customize.theme.stay"),
+        didConfirm: function () {
+          emailStyleChanged = false;
+          go(link.getAttribute("href").replace(ui().base(), ""));
+        },
+      });
+    },
+    true
+  );
+
+  // --- form templates ----------------------------------------------------------
+
+  function formTemplatesRoot() {
+    return document.querySelector(".admin-contents.admin-customize-form-templates");
+  }
+
+  function formTemplatesData() {
+    var el = document.getElementById("form-templates-data");
+    return el ? JSON.parse(el.textContent) : { templates: [] };
+  }
+
+  // templateFormFields' structures.
+  function fieldStructure(type) {
+    var p = function (k) {
+      return t("admin.form_templates.field_placeholders." + k);
+    };
+    var id = "  id: " + p("id");
+    var label = '    label: "' + p("label") + '"';
+    var placeholder = '    placeholder: "' + p("placeholder") + '"';
+    var validations = "  validations:\n    # " + p("validations");
+    var choices =
+      '  choices:\n    - "' + p("choices.first") + '"\n    - "' + p("choices.second") + '"\n    - "' + p("choices.third") + '"';
+    var noneLabel = '    none_label: "' + p("none_label") + '"';
+    switch (type) {
+      case "checkbox":
+        return ["- type: checkbox", id, "  attributes:", label, validations].join("\n");
+      case "input":
+        return ["- type: input", id, "  attributes:", label, placeholder, validations].join("\n");
+      case "textarea":
+        return ["- type: textarea", id, "  attributes:", label, placeholder, validations].join("\n");
+      case "dropdown":
+        return ["- type: dropdown", id, choices, "  attributes:", noneLabel, label, validations].join("\n");
+      case "upload":
+        return [
+          "- type: upload",
+          id,
+          "  attributes:",
+          '    file_types: ".jpg, .png, .gif"',
+          "    allow_multiple: false",
+          label,
+          validations,
+        ].join("\n");
+      case "multiselect":
+        return ["- type: multi-select", id, choices, "  attributes:", noneLabel, label, validations].join("\n");
+      case "tagchooser":
+        return [
+          "- type: tag-chooser",
+          id,
+          '  tag_group: ""',
+          "  attributes:",
+          noneLabel,
+          label,
+          "    multiple: true",
+          validations,
+        ].join("\n");
+      case "composer":
+        return ["- type: composer", id, "  attributes:", label].join("\n");
+    }
+    return "";
+  }
+
+  function formTemplateState(root) {
+    var form = root.querySelector(".form-templates__form");
+    if (!form) {
+      return;
+    }
+    var name = form.querySelector(".form-templates__form-name-input").value;
+    var editor = form.querySelector("div.ace").aceEditor;
+    var content = editor ? editor.getValue() : form.querySelector("div.ace").textContent;
+    var empty = !name.length || !content.length;
+    form.querySelector(".form-templates__preview-button").disabled = empty;
+    form.querySelector(".footer-buttons .btn-primary").disabled = empty;
+  }
+
+  document.addEventListener("ace-change", function (event) {
+    var root = formTemplatesRoot();
+    if (root && root.contains(event.target)) {
+      formTemplateState(root);
+    }
+  });
+
+  document.addEventListener("input", function (event) {
+    var root = formTemplatesRoot();
+    if (root && event.target.classList.contains("form-templates__form-name-input")) {
+      formTemplateState(root);
+    }
+  });
+
+  function validationsModal() {
+    var prefix = "admin.form_templates.validations_modal.";
+    Discourse.modal.show({
+      className: "form-templates__validation-options admin-form-template-validation-options-modal",
+      title: t(prefix + "modal_title"),
+      body: function (body) {
+        body.innerHTML =
+          "<table><thead><tr>" +
+          ["key", "type", "description"]
+            .map(function (h) {
+              return "<th>" + escapeHtml(t(prefix + "table_headers." + h)) + "</th>";
+            })
+            .join("") +
+          "</tr></thead><tbody>" +
+          ["required", "minimum", "maximum", "pattern", "type"]
+            .map(function (v) {
+              var k = function (part) {
+                return escapeHtml(t(prefix + "validations." + v + "." + part));
+              };
+              return "<tr><td><pre>" + k("key") + "</pre></td><td>" + k("type") + "</td><td>" + k("description") + "</td></tr>";
+            })
+            .join("") +
+          "</tbody></table>";
+      },
+    });
+  }
+
+  function deleteTemplate(id) {
+    Discourse.dialog.deleteConfirm({
+      title: t("admin.form_templates.delete_confirm"),
+      didConfirm: function () {
+        ui()
+          .ajax("DELETE", "/admin/customize/form-templates/" + id + ".json")
+          .then(function () {
+            go("/admin/customize/form-templates");
+          })
+          .catch(ui().failed);
+      },
+    });
+  }
+
+  // CustomizeFormTemplateView: the template's YAML, edit, delete, close.
+  function viewTemplateModal(template) {
+    Discourse.modal.show({
+      className: "customize-form-template-view-modal",
+      title: template.name,
+      body: function (body) {
+        body.innerHTML =
+          '<div class="control-group"><button class="btn btn-default form-templates__preview-toggle" type="button"><span class="d-button-label">' +
+          escapeHtml(t("admin.form_templates.view_template.toggle_preview")) +
+          '</span></button></div><pre><code class="language-yaml"></code></pre>';
+        body.querySelector("code").textContent = template.template;
+        body.querySelector(".form-templates__preview-toggle").addEventListener("click", function () {
+          ui().unsupported("the form template preview (Psych's YAML.dump)");
+        });
+      },
+      footer: function (footer, close) {
+        footer.innerHTML =
+          '<button class="btn btn-icon-text btn-primary" type="button">' +
+          ui().icon("pencil") +
+          '<span class="d-button-label">' +
+          escapeHtml(t("admin.form_templates.view_template.edit")) +
+          '</span></button><button class="btn btn-icon-text btn-danger" type="button">' +
+          ui().icon("trash-can") +
+          '<span class="d-button-label">' +
+          escapeHtml(t("admin.form_templates.view_template.delete")) +
+          '</span></button><button class="btn btn-default" type="button"><span class="d-button-label">' +
+          escapeHtml(t("admin.form_templates.view_template.close")) +
+          "</span></button>";
+        var buttons = footer.querySelectorAll("button");
+        buttons[0].addEventListener("click", function () {
+          close();
+          go("/admin/customize/form-templates/" + template.id);
+        });
+        buttons[1].addEventListener("click", function () {
+          close();
+          deleteTemplate(template.id);
+        });
+        buttons[2].addEventListener("click", close);
+      },
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    var root = formTemplatesRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = formTemplatesData();
+    var row = event.target.closest("tr[data-template-id]");
+    if (row) {
+      var template = data.templates.find(function (x) {
+        return String(x.id) === row.dataset.templateId;
+      });
+      if (event.target.closest(".btn-view-template")) {
+        viewTemplateModal(template);
+      } else if (event.target.closest(".btn-edit-template")) {
+        go("/admin/customize/form-templates/" + template.id);
+      } else if (event.target.closest(".btn-delete-template")) {
+        deleteTemplate(template.id);
+      }
+      return;
+    }
+    var form = root.querySelector(".form-templates__form");
+    if (!form) {
+      return;
+    }
+    var id = form.dataset.templateId;
+    var aceEl = form.querySelector("div.ace");
+    var quick = event.target.closest("[data-field-type]");
+    if (quick && aceEl.aceEditor) {
+      var structure = fieldStructure(quick.dataset.fieldType);
+      var current = aceEl.aceEditor.getValue();
+      aceEl.aceEditor.getSession().setValue(current.length ? current + "\n" + structure : structure);
+      formTemplateState(root);
+      return;
+    }
+    if (event.target.closest(".form-templates__validations-modal-button")) {
+      validationsModal();
+      return;
+    }
+    if (event.target.closest(".form-templates__preview-button")) {
+      var params = new URLSearchParams();
+      params.set("name", form.querySelector(".form-templates__form-name-input").value);
+      params.set("template", aceEl.aceEditor ? aceEl.aceEditor.getValue() : "");
+      if (id) {
+        params.set("id", id);
+      }
+      ui()
+        .ajax("GET", "/admin/customize/form-templates/preview.json?" + params)
+        .then(function () {
+          ui().unsupported("the form template preview (Psych's YAML.dump)");
+        })
+        .catch(ui().failed);
+      return;
+    }
+    var footer = event.target.closest(".footer-buttons button");
+    if (!footer) {
+      return;
+    }
+    if (footer.classList.contains("btn-primary")) {
+      var payload = {
+        name: form.querySelector(".form-templates__form-name-input").value,
+        template: aceEl.aceEditor ? aceEl.aceEditor.getValue() : aceEl.textContent,
+      };
+      footer.disabled = true;
+      ui()
+        .ajax(id ? "PUT" : "POST", "/admin/customize/form-templates" + (id ? "/" + id : "") + ".json", payload)
+        .then(function () {
+          go("/admin/customize/form-templates");
+        })
+        .catch(function (e) {
+          footer.disabled = false;
+          ui().failed(e);
+        });
+    } else if (footer.classList.contains("btn-danger")) {
+      deleteTemplate(id);
+    } else {
+      go("/admin/customize/form-templates");
+    }
+  });
+
   // --- robots.txt ----------------------------------------------------------
 
   // AdminCustomizeRobotsTxtController: the buffered text against the
@@ -2676,6 +3100,8 @@
     siteTextPage = 0;
     document.querySelectorAll(".admin-contents textarea.--expandable").forEach(expand);
     paletteChanged = {};
+    emailStyleChanged = false;
+    setupAces();
     var email = emailTemplate();
     emailActive = null;
     emailCursor = null;

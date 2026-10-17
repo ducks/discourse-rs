@@ -92,3 +92,15 @@ script that reads window.moment and window.Chart, so both load before it.
               admin pages, which take it whole. To update, fetch the
               admin_<digest>.css a reference page links and strip the same
               two things.
+
+  ace/*.js      ace-builds@1.44.0, src-min-noconflict/: ace.js,
+                mode-{scss,html,yaml,sql,javascript,text}.js,
+                theme-{chaos,chrome}.js, ext-searchbox.js (served
+                concatenated as /assets/ace-editor-bundle.js)
+  ace/LICENSE   ace-builds@1.44.0, LICENSE (BSD-3-Clause)
+
+Ace is the version frontend/discourse/package.json resolves (^1.44.0 in
+the reference's node_modules), the files its ace-editor-bundle
+(static/ace-editor-bundle.js) imports, in the minified noconflict build;
+checked against the tarball's npm integrity (sha512), ace.js
+byte-identical to the reference's node_modules.

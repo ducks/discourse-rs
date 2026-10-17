@@ -386,3 +386,58 @@ async fn the_color_palettes_pages() {
     assert_eq!(status, StatusCode::OK);
     assert!(body.starts_with("{\"palettes\":"));
 }
+
+#[tokio::test]
+async fn the_email_style_and_form_templates_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, location) = admin.page("/admin/customize/email_style").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/customize/email_style/html");
+    let (status, html) = admin.page("/admin/customize/email_style/css").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(
+        "<div class=\"admin-contents admin-customize admin-customize-email-style edit\">"
+    ));
+    assert!(html.contains("<h1 class=\"d-page-header__title\">Appearance</h1>"));
+    assert!(html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/customize/email_style/css\">CSS</a></li>"));
+    assert!(html.contains(
+        "<div class=\"ace\" data-ace-mode=\"scss\" data-ace-src=\"/assets/ace-editor-bundle.js"
+    ));
+    let (status, html) = admin.page("/admin/customize/email_style/html").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("data-ace-mode=\"html\""));
+    assert!(html.contains("&lt;!DOCTYPE html"));
+    // The bundle is served.
+    let (status, body) = admin
+        .send(Method::GET, "/assets/ace-editor-bundle.js", "", false)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains("ace/mode/yaml"));
+    // Form templates: the list, new, a template's form.
+    let (status, html) = admin.page("/admin/customize/form-templates").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<div class=\"form-templates--info\"><h2>Form Templates</h2>"));
+    assert!(!html.contains("form-templates__table"));
+    let (_, html) = admin.page("/admin/customize/form-templates/new").await;
+    assert!(html.contains("<div class=\"new-form-template\">"));
+    assert!(html.contains("quick-insert-tagchooser"));
+    let id: i64 = sqlx::query_scalar(
+        "INSERT INTO form_templates (name, template, created_at, updated_at) VALUES ('Bugs', '- type: input\n  id: what', now(), now()) RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let (_, html) = admin.page("/admin/customize/form-templates").await;
+    assert!(html.contains("<td class=\"col first\">Bugs</td>"));
+    let (status, html) = admin
+        .page(&format!("/admin/customize/form-templates/{id}"))
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<div class=\"edit-form-template\">"));
+    assert!(html.contains("value=\"Bugs\""));
+    assert!(html.contains("btn-danger"));
+    let (status, _) = admin.page("/admin/customize/form-templates/9999").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

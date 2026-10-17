@@ -2468,6 +2468,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/post-decorations.js", get(asset))
         .route("/assets/codeblock-buttons.js", get(asset))
         .route("/assets/quote-controls.js", get(asset))
+        .route("/assets/ace-editor-bundle.js", get(asset))
         .route("/assets/floating-ui.core.umd.min.js", get(asset))
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))
         .route("/assets/float.js", get(asset))
