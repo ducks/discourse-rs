@@ -1,0 +1,999 @@
+[
+  {
+    "kind": "tool",
+    "identifier": "chat_channel_list",
+    "title": "List chat channels",
+    "description": "Lists chat channels followed by the authenticated user, including direct-message channels.",
+    "provider": "chat",
+    "risk": "read",
+    "required_scopes": [
+      "chat:read"
+    ],
+    "schema_bytes": 46,
+    "consent_relevant": false,
+    "plugin": "chat",
+    "enabled_setting": "chat_enabled",
+    "available_when": [
+      "chat_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "chat_message_create",
+    "title": "Create chat message",
+    "description": "Creates a message in a chat channel as the authenticated user.",
+    "provider": "chat",
+    "risk": "write",
+    "required_scopes": [
+      "chat:write"
+    ],
+    "schema_bytes": 255,
+    "consent_relevant": false,
+    "plugin": "chat",
+    "enabled_setting": "chat_enabled",
+    "available_when": [
+      "chat_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_bookmark_list",
+    "title": "List bookmarks",
+    "description": "Lists the authenticated user's bookmarks.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 128,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_calendar_event_list",
+    "title": "List events",
+    "description": "Lists upcoming events whose posts are visible to the authenticated user.",
+    "provider": "discourse-events",
+    "risk": "read",
+    "required_scopes": [
+      "discourse-calendar:read"
+    ],
+    "schema_bytes": 114,
+    "consent_relevant": false,
+    "plugin": "discourse-events",
+    "enabled_setting": "discourse_events_enabled",
+    "available_when": [
+      "discourse_events_enabled",
+      "discourse_post_event_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_category_list",
+    "title": "List categories",
+    "description": "Lists the visible category hierarchy.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 46,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_post",
+    "title": "Create post",
+    "description": "Creates a reply in a topic as the authenticated user.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 308,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_private_message",
+    "title": "Create private message",
+    "description": "Creates a private message as the authenticated user.",
+    "provider": "core",
+    "risk": "external_side_effect",
+    "required_scopes": [
+      "mcp:private-messages:write"
+    ],
+    "schema_bytes": 559,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_theme",
+    "title": "Create theme",
+    "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 953,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_topic",
+    "title": "Create topic",
+    "description": "Creates a topic as the authenticated user.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 362,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_current_user_get",
+    "title": "Get current user",
+    "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:profile:read"
+    ],
+    "schema_bytes": 46,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_delete_draft",
+    "title": "Delete draft",
+    "description": "Deletes one of the authenticated user's drafts at its current sequence.",
+    "provider": "core",
+    "risk": "destructive",
+    "required_scopes": [
+      "mcp:drafts:write"
+    ],
+    "schema_bytes": 198,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_filter_topics",
+    "title": "Filter topics",
+    "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 409,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_chat_messages",
+    "title": "Get chat messages",
+    "description": "Reads a bounded page of messages from a visible chat channel.",
+    "provider": "chat",
+    "risk": "read",
+    "required_scopes": [
+      "chat:read"
+    ],
+    "schema_bytes": 359,
+    "consent_relevant": false,
+    "plugin": "chat",
+    "enabled_setting": "chat_enabled",
+    "available_when": [
+      "chat_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_draft",
+    "title": "Get draft",
+    "description": "Retrieves one of the authenticated user's drafts by key.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:drafts:read"
+    ],
+    "schema_bytes": 187,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_post_replies",
+    "title": "Get post replies",
+    "description": "Read reply relationships for a post as recursive descendant IDs, bounded rich direct replies, or the upstream-bounded ancestor history. Preserves upstream ordering and references.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 277,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_post_revision",
+    "title": "Get post revision",
+    "description": "Returns a post revision visible to the authenticated reviewer.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 217,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_query",
+    "title": "Get Data Explorer query",
+    "description": "Returns the definition of a saved Data Explorer query. Requires an admin account.",
+    "provider": "discourse-data-explorer",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:data-explorer:read"
+    ],
+    "schema_bytes": 115,
+    "consent_relevant": true,
+    "plugin": "discourse-data-explorer",
+    "enabled_setting": "data_explorer_enabled",
+    "available_when": [
+      "data_explorer_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_review_queue_count",
+    "title": "Get review queue count",
+    "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 46,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_reviewable",
+    "title": "Get reviewable",
+    "description": "Returns one visible reviewable with its current version, evidence, and available actions.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 178,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_theme",
+    "title": "Get theme",
+    "description": "Reads a theme or theme component and its fields. Requires administrator access.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:read"
+    ],
+    "schema_bytes": 115,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_topic_view_stats",
+    "title": "Get topic view stats",
+    "description": "Get up to 300 ascending daily topic view counts. Views combine anonymous and logged-in views; they are not unique viewers or an engagement judgment.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 257,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_user",
+    "title": "Get user",
+    "description": "Reads a user profile visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 143,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_user_moderation_summary",
+    "title": "Get user moderation summary",
+    "description": "Returns staff-visible moderation counters for a user.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 143,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_user_summary",
+    "title": "Get user summary",
+    "description": "Returns profile-visible aggregate activity for a user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 143,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_invite_to_private_message",
+    "title": "Invite to private message",
+    "description": "Adds one user or group, or submits one email invitation, to a private message.",
+    "provider": "core",
+    "risk": "external_side_effect",
+    "required_scopes": [
+      "mcp:private-messages:write"
+    ],
+    "schema_bytes": 470,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_directory_items",
+    "title": "List directory items",
+    "description": "List user-directory metrics with authoritative totals and continuation. Supports Discourse periods, ordering, visible groups, page 0-10, and up to 50 rows.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 657,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_latest_posts",
+    "title": "List latest posts",
+    "description": "List the site's latest visible posts using Discourse's fixed 50-post page and post-ID cursor. Results are a feed, not an exhaustive history.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 157,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_private_messages",
+    "title": "List private messages",
+    "description": "Lists a personal or group private-message mailbox visible to the user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:private-messages:read"
+    ],
+    "schema_bytes": 408,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_reviewable_topics",
+    "title": "List reviewable topics",
+    "description": "Lists topic-level signals from pending reviewables visible to the authenticated reviewer.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 194,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_reviewables",
+    "title": "List reviewables",
+    "description": "Lists reviewable records visible to the authenticated reviewer, including their current actions.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:read"
+    ],
+    "schema_bytes": 944,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_site_settings",
+    "title": "List site settings",
+    "description": "Lists admin-visible site settings while masking secret and credential-like values.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:site-settings:read"
+    ],
+    "schema_bytes": 495,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_user_actions",
+    "title": "List user actions",
+    "description": "Lists a user's visible activity using named action types.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 560,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_user_posts",
+    "title": "List user posts",
+    "description": "Lists a user's visible topics and replies with zero-based pagination.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 233,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_notification_list",
+    "title": "List notifications",
+    "description": "Lists the authenticated user's notifications.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 128,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_perform_reviewable_action",
+    "title": "Perform reviewable action",
+    "description": "Performs one currently available action on a visible reviewable after a fresh permission check.",
+    "provider": "core",
+    "risk": "moderation",
+    "required_scopes": [
+      "mcp:moderation:write"
+    ],
+    "schema_bytes": 520,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_post_set_deleted",
+    "title": "Delete or recover own post",
+    "description": "Deletes or recovers a post owned by the authenticated user.",
+    "provider": "core",
+    "risk": "destructive",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 164,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_reactions_post_reaction_set",
+    "title": "Set post reaction",
+    "description": "Adds, changes, or removes the authenticated user's reaction to a visible post.",
+    "provider": "discourse-reactions",
+    "risk": "write",
+    "required_scopes": [
+      "discourse-reactions:write"
+    ],
+    "schema_bytes": 195,
+    "consent_relevant": false,
+    "plugin": "discourse-reactions",
+    "enabled_setting": "discourse_reactions_enabled",
+    "available_when": [
+      "discourse_reactions_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_read_post",
+    "title": "Read post",
+    "description": "Reads one visible post.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 125,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_read_private_message",
+    "title": "Read private message",
+    "description": "Reads a private message visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:private-messages:read"
+    ],
+    "schema_bytes": 247,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_read_topic",
+    "title": "Read topic",
+    "description": "Reads a topic and a bounded set of posts visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 247,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_read_topic_posts",
+    "title": "Read selected topic posts",
+    "description": "Read exact, earliest, latest, around-post, or username-filtered topic evidence. Selection is bounded to 50 posts and reports the visible stream size without claiming the entire topic was loaded.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 581,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_reply_private_message",
+    "title": "Reply to private message",
+    "description": "Replies to a private message visible to the authenticated user.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:private-messages:write"
+    ],
+    "schema_bytes": 308,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_run_query",
+    "title": "Run Data Explorer query",
+    "description": "Runs a saved Data Explorer query that the authenticated user can access.",
+    "provider": "discourse-data-explorer",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:data-explorer:read"
+    ],
+    "schema_bytes": 258,
+    "consent_relevant": false,
+    "plugin": "discourse-data-explorer",
+    "enabled_setting": "data_explorer_enabled",
+    "available_when": [
+      "data_explorer_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_save_draft",
+    "title": "Save draft",
+    "description": "Creates or updates a draft for the authenticated user.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:drafts:write"
+    ],
+    "schema_bytes": 542,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_search",
+    "title": "Search Discourse",
+    "description": "Searches topics and posts visible to the authenticated user using Discourse search syntax.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 209,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_search_posts",
+    "title": "Search posts",
+    "description": "Search post-level evidence with Discourse query syntax. Preserves matched posts, highlighted excerpts, authors, topics, categories, and bounded continuation. This is keyword search, not semantic search.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 201,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_solved_solution_set",
+    "title": "Set accepted solution",
+    "description": "Accepts or unaccepts a post as the topic solution when permitted.",
+    "provider": "discourse-solved",
+    "risk": "write",
+    "required_scopes": [
+      "discourse-solved:write"
+    ],
+    "schema_bytes": 166,
+    "consent_relevant": false,
+    "plugin": "discourse-solved",
+    "enabled_setting": "solved_enabled",
+    "available_when": [
+      "solved_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_tag_list",
+    "title": "List tags",
+    "description": "Lists visible tags ordered by usage.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 128,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_topic_list",
+    "title": "List topics",
+    "description": "Lists recent topics visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 127,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_topic_voting_vote_set",
+    "title": "Set topic vote",
+    "description": "Casts or removes the authenticated user's vote on a visible votable topic.",
+    "provider": "discourse-topic-voting",
+    "risk": "write",
+    "required_scopes": [
+      "discourse-topic-voting:write"
+    ],
+    "schema_bytes": 162,
+    "consent_relevant": false,
+    "plugin": "discourse-topic-voting",
+    "enabled_setting": "topic_voting_enabled",
+    "available_when": [
+      "topic_voting_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_post",
+    "title": "Update post",
+    "description": "Edits a post when the authenticated user has permission.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 235,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_site_setting",
+    "title": "Update site setting",
+    "description": "Sets or resets one ordinary site setting after a current-value check and explicit confirmation.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:site-settings:write"
+    ],
+    "schema_bytes": 758,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_theme",
+    "title": "Update theme",
+    "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 1189,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_topic",
+    "title": "Update topic",
+    "description": "Updates fields on a topic when the user may edit it.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 527,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_user",
+    "title": "Update user",
+    "description": "Updates the authenticated user's own profile.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:profile:write"
+    ],
+    "schema_bytes": 628,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_upload_file",
+    "title": "Upload file",
+    "description": "Uploads base64 data or a remote HTTP(S) file for the authenticated user.",
+    "provider": "core",
+    "risk": "external_side_effect",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 388,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_user_status_set",
+    "title": "Set user status",
+    "description": "Sets or clears the authenticated user's status.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:content:write"
+    ],
+    "schema_bytes": 389,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": [
+      "enable_user_status"
+    ]
+  },
+  {
+    "kind": "resource_template",
+    "identifier": "discourse.post",
+    "title": "Discourse post",
+    "description": "A post visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 142,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "resource_template",
+    "identifier": "discourse.topic",
+    "title": "Discourse topic",
+    "description": "A topic visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 143,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "prompt",
+    "identifier": "discourse.draft_reply",
+    "title": "Draft a reply",
+    "description": "Builds a prompt for drafting a grounded reply to a visible topic.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 177,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "prompt",
+    "identifier": "discourse.research_topic",
+    "title": "Research discussions",
+    "description": "Builds a prompt for researching visible Discourse discussions.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 145,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  }
+]

@@ -855,7 +855,16 @@ then by what running a forum needs (milestone 6). Briefs:
     enable_discourse_workflows (its PluginEnableHandler). Left: the
     descriptions' setting links point at the all settings page until
     90g9 rewrites them.
-    Left: watched words, MCP, what's new; the
+    Then feat/admin-mcp-backend: Admin::McpController (the overview,
+    the group access rules with McpGroupScope.ensure_admins!, the
+    primitives' policies and emergency blocks with the fresh consent
+    they require), Admin::McpAuthorizationsController (the page with
+    DiscourseMcp::AuthorizationStatus, revoking) and
+    Admin::McpActivityController (McpActivityReport with its metrics),
+    over the primitives core and the bundled plugins register, recorded
+    from the reference with what their availability reads
+    (scripts/record-mcp-primitives, write cases admin_mcp/*).
+    Left: watched words, MCP's OAuth clients and pages, what's new; the
     settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L, in part (done,

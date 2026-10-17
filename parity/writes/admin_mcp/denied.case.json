@@ -1,0 +1,14 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/admin/mcp/overview.json" },
+    { "method": "GET", "path": "/admin/mcp/access.json" },
+    { "method": "PUT", "path": "/admin/mcp/access/11.json", "params": { "scopes": ["mcp:content:read"] } },
+    { "method": "PUT", "path": "/admin/mcp/capabilities.json", "params": { "primitive_ids": ["tool:discourse_search"] } },
+    { "method": "GET", "path": "/admin/mcp/authorizations.json" },
+    { "method": "GET", "path": "/admin/mcp/activity.json" }
+  ]
+}

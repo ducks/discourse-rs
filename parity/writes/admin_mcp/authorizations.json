@@ -1,0 +1,774 @@
+{
+  "name": "authorizations",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "limit": "2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "limit": "2",
+        "cursor": "603"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "filter": "content:read"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "filter": "Blocked"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "limit": "101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json",
+      "params": {
+        "cursor": "0"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/mcp/authorizations/601.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/mcp/authorizations/999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/authorizations.json"
+    }
+  ],
+  "started_at": "2026-10-17T08:29:28.297721",
+  "transaction_started_at": "2026-10-17T08:29:23.374347",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 606,
+            "username": null,
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "user_unavailable",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 605,
+            "username": "user2",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "revoked",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 604,
+            "username": "admin",
+            "client_name": "Metadata client",
+            "client_id": "https://cimd.example.org/client.json",
+            "resource": "http://localhost/mcp",
+            "status": "active",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 603,
+            "username": "admin",
+            "client_name": "Blocked client",
+            "client_id": "https://blocked.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "client_blocked",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 602,
+            "username": "user1",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "access_removed",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 1
+          },
+          {
+            "id": 601,
+            "username": "admin",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "active",
+            "scopes": [
+              "mcp:profile:read",
+              "mcp:content:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": "2026-10-02T10:00:00.000Z",
+            "token_count": 1
+          }
+        ],
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 606,
+            "username": null,
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "user_unavailable",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 605,
+            "username": "user2",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "revoked",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          }
+        ],
+        "meta": {
+          "next_cursor": 605
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 602,
+            "username": "user1",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "access_removed",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 1
+          },
+          {
+            "id": 601,
+            "username": "admin",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "active",
+            "scopes": [
+              "mcp:profile:read",
+              "mcp:content:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": "2026-10-02T10:00:00.000Z",
+            "token_count": 1
+          }
+        ],
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 601,
+            "username": "admin",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "active",
+            "scopes": [
+              "mcp:profile:read",
+              "mcp:content:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": "2026-10-02T10:00:00.000Z",
+            "token_count": 1
+          }
+        ],
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 603,
+            "username": "admin",
+            "client_name": "Blocked client",
+            "client_id": "https://blocked.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "client_blocked",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          }
+        ],
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: limit"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: cursor"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 404,
+      "body": "ActiveRecord::RecordNotFound in Admin::McpAuthorizationsController#destroy\n\nCouldn't find McpOauthAuthorization with 'id'=\"999\"\nExtracted source (around line #279):\n\n#277 \n#278         cached_find_by([primary_key], [id]) ||\n*279 [\"          \", \"raise\", \"(RecordNotFound.new(\\\"Couldn't find \\#{name} with '\\#{primary_key}'=\\#{id.inspect}\\\", name, primary_key, id))\\n\"]#280       end\n#281 \n#282       def find_by(*args) # :nodoc:\n\nExtracted source (around line #24):\n\n#22 \n#23   def destroy\n*24 [\"    authorization = McpOauthAuthorization\", \".find\", \"(params[:id])\\n\"]#25     authorization.revoke!(by_user: current_user, reason: \"admin_revoked\")\n#26     StaffActionLogger.new(current_user).log_custom(\n#27       \"mcp_authorization_revoked\",\n\nExtracted source (around line #8):\n\n#6   module BasicImplicitRender # :nodoc:\n#7     def send_action(method, *args)\n*8       ret = super\n#9       default_render unless performed?\n#10       ret\n#11     end\n\n\nRails.root: /var/www/discourse\n\nApplication Trace\n/var/www/discourse/app/controllers/admin/mcp_authorizations_controller.rb:24:in 'Admin::McpAuthorizationsController#destroy'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n\nFramework Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:40:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:43:in 'ActionDispatch::Integration::RequestHelpers#delete'\n/tmp/record_writes.rb:556:in 'Kernel#public_send'\n/tmp/record_writes.rb:556:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:537:in 'Array#each'\n/tmp/record_writes.rb:537:in 'block in <compiled>'\n/tmp/record_writes.rb:480:in 'Array#each'\n/tmp/record_writes.rb:480:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\nFull Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/var/www/discourse/app/controllers/admin/mcp_authorizations_controller.rb:24:in 'Admin::McpAuthorizationsController#destroy'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:32:in 'block in <class:Constraints>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/mapper.rb:62:in 'ActionDispatch::Routing::Mapper::Constraints#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:40:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:43:in 'ActionDispatch::Integration::RequestHelpers#delete'\n/tmp/record_writes.rb:556:in 'Kernel#public_send'\n/tmp/record_writes.rb:556:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:537:in 'Array#each'\n/tmp/record_writes.rb:537:in 'block in <compiled>'\n/tmp/record_writes.rb:480:in 'Array#each'\n/tmp/record_writes.rb:480:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\n\n\nRequest parameters\n{\"id\" => \"999\",\n \"format\" => \"json\",\n \"mcp_authorization\" => {}}\n\nSession dump\nserver_session_id: \"ab0db8c46055b8fc6891a7c72a290b1b\"\nsession_id: \"0ba3bef7299fd63a1b2f25459b66a1ee\"\n\nEnv dump\nHTTP_ACCEPT: \"application/json\"\nHTTP_VERSION: \"HTTP/1.0\"\nORIGINAL_SCRIPT_NAME: \"\"\nREMOTE_ADDR: \"127.0.0.1\"\nSERVER_NAME: \"localhost\"\nSERVER_PROTOCOL: \"HTTP/1.0\"\n\nResponse headers\nNone\n\n"
+    },
+    {
+      "status": 200,
+      "body": {
+        "authorizations": [
+          {
+            "id": 606,
+            "username": null,
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "user_unavailable",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 605,
+            "username": "user2",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "revoked",
+            "scopes": [],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 604,
+            "username": "admin",
+            "client_name": "Metadata client",
+            "client_id": "https://cimd.example.org/client.json",
+            "resource": "http://localhost/mcp",
+            "status": "active",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 603,
+            "username": "admin",
+            "client_name": "Blocked client",
+            "client_id": "https://blocked.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "client_blocked",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 0
+          },
+          {
+            "id": 602,
+            "username": "user1",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "access_removed",
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": null,
+            "last_used_at": null,
+            "token_count": 1
+          },
+          {
+            "id": 601,
+            "username": "admin",
+            "client_name": "Example client",
+            "client_id": "https://client.example.com/oauth",
+            "resource": "http://localhost/mcp",
+            "status": "revoked",
+            "scopes": [
+              "mcp:profile:read",
+              "mcp:content:read"
+            ],
+            "consented_at": "2026-10-16T08:29:23.374Z",
+            "revoked_at": "2026-10-17T08:29:28.692Z",
+            "last_used_at": "2026-10-02T10:00:00.000Z",
+            "token_count": 0
+          }
+        ],
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    }
+  ],
+  "changes": {
+    "mcp_group_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "scope": "chat:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 2,
+          "scope": "chat:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 3,
+          "scope": "discourse-calendar:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 4,
+          "scope": "discourse-reactions:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 5,
+          "scope": "discourse-solved:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 6,
+          "scope": "discourse-topic-voting:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 7,
+          "scope": "mcp:content:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 8,
+          "scope": "mcp:content:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 9,
+          "scope": "mcp:data-explorer:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 10,
+          "scope": "mcp:drafts:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 11,
+          "scope": "mcp:drafts:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 12,
+          "scope": "mcp:moderation:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 13,
+          "scope": "mcp:moderation:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 14,
+          "scope": "mcp:private-messages:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 15,
+          "scope": "mcp:private-messages:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 16,
+          "scope": "mcp:profile:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 17,
+          "scope": "mcp:profile:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 18,
+          "scope": "mcp:site-settings:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 19,
+          "scope": "mcp:site-settings:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 20,
+          "scope": "mcp:themes:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        },
+        {
+          "id": 21,
+          "scope": "mcp:themes:write",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:29:28.375664",
+          "updated_at": "2026-10-17T08:29:28.375664"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "mcp_oauth_access_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 801,
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-17T08:29:23.374347",
+            "expires_at": "2026-10-17T09:29:23.374347",
+            "revoked_at": null,
+            "token_hash": "hash-a",
+            "updated_at": "2026-10-17T08:29:23.374347",
+            "last_used_at": "2026-10-01T10:00:00",
+            "grant_version": 1,
+            "mcp_oauth_client_id": 501,
+            "mcp_oauth_authorization_id": 601
+          },
+          "after": {
+            "id": 801,
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-17T08:29:23.374347",
+            "expires_at": "2026-10-17T09:29:23.374347",
+            "revoked_at": "2026-10-17T08:29:28.696422",
+            "token_hash": "hash-a",
+            "updated_at": "2026-10-17T08:29:23.374347",
+            "last_used_at": "2026-10-01T10:00:00",
+            "grant_version": 1,
+            "mcp_oauth_client_id": 501,
+            "mcp_oauth_authorization_id": 601
+          }
+        },
+        {
+          "before": {
+            "id": 802,
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-17T08:29:23.374347",
+            "expires_at": "2026-10-17T07:29:23.374347",
+            "revoked_at": null,
+            "token_hash": "hash-b",
+            "updated_at": "2026-10-17T08:29:23.374347",
+            "last_used_at": "2026-10-02T10:00:00",
+            "grant_version": 1,
+            "mcp_oauth_client_id": 501,
+            "mcp_oauth_authorization_id": 601
+          },
+          "after": {
+            "id": 802,
+            "scopes": [
+              "mcp:profile:read"
+            ],
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-17T08:29:23.374347",
+            "expires_at": "2026-10-17T07:29:23.374347",
+            "revoked_at": "2026-10-17T08:29:28.696422",
+            "token_hash": "hash-b",
+            "updated_at": "2026-10-17T08:29:23.374347",
+            "last_used_at": "2026-10-02T10:00:00",
+            "grant_version": 1,
+            "mcp_oauth_client_id": 501,
+            "mcp_oauth_authorization_id": 601
+          }
+        }
+      ]
+    },
+    "mcp_oauth_authorizations": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 601,
+            "status": "active",
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-16T08:29:23.374347",
+            "revoked_at": null,
+            "updated_at": "2026-10-16T08:29:23.374347",
+            "consented_at": "2026-10-16T08:29:23.374347",
+            "grant_version": 1,
+            "revoked_reason": null,
+            "revoked_by_user_id": null,
+            "mcp_oauth_client_id": 501,
+            "client_metadata_hash": null
+          },
+          "after": {
+            "id": 601,
+            "status": "revoked",
+            "user_id": 1,
+            "resource": "http://localhost/mcp",
+            "created_at": "2026-10-16T08:29:23.374347",
+            "revoked_at": "2026-10-17T08:29:28.692276",
+            "updated_at": "2026-10-17T08:29:28.692756",
+            "consented_at": "2026-10-16T08:29:23.374347",
+            "grant_version": 1,
+            "revoked_reason": "admin_revoked",
+            "revoked_by_user_id": 1,
+            "mcp_oauth_client_id": 501,
+            "client_metadata_hash": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 412,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XCy5a0t9XyhhysodiOgJKh58gyw=",
+            "created_at": "2026-10-17T08:29:25.56371",
+            "rotated_at": "2026-10-17T08:29:25.557501",
+            "updated_at": "2026-10-17T08:29:25.56371",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XCy5a0t9XyhhysodiOgJKh58gyw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 412,
+            "seen_at": "2026-10-17T08:29:28.31145",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XCy5a0t9XyhhysodiOgJKh58gyw=",
+            "created_at": "2026-10-17T08:29:25.56371",
+            "rotated_at": "2026-10-17T08:29:25.557501",
+            "updated_at": "2026-10-17T08:29:25.56371",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XCy5a0t9XyhhysodiOgJKh58gyw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "authorization_id: 601\nsubject_user_id: 1\nclient_id: 501",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T08:29:28.714771",
+          "ip_address": null,
+          "updated_at": "2026-10-17T08:29:28.714771",
+          "category_id": null,
+          "custom_type": "mcp_authorization_revoked",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "mcp_group_scopes": 1,
+    "user_histories": 74
+  },
+  "settings": {
+    "mcp_server_enabled": true
+  },
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, redirect_uris, metadata_hash, created_at, updated_at) VALUES (501, 'https://client.example.com/oauth', 'Example client', 'pre_registered', 'approved', '{https://client.example.com/callback}', NULL, now() - interval '2 days', now() - interval '2 days'), (502, 'https://blocked.example.com/oauth', 'Blocked client', 'pre_registered', 'blocked', '{https://blocked.example.com/callback}', NULL, now() - interval '2 days', now() - interval '2 days'), (503, 'https://cimd.example.org/client.json', 'Metadata client', 'cimd', 'approved', '{https://cimd.example.org/callback}', 'abc', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO mcp_oauth_authorizations (id, user_id, mcp_oauth_client_id, resource, status, client_metadata_hash, consented_at, created_at, updated_at) VALUES (601, 1, 501, 'http://localhost/mcp', 'active', NULL, now() - interval '1 day', now() - interval '1 day', now() - interval '1 day'), (602, 3, 501, 'http://localhost/mcp', 'active', NULL, now() - interval '1 day', now() - interval '1 day', now() - interval '1 day'), (603, 1, 502, 'http://localhost/mcp', 'active', NULL, now() - interval '1 day', now() - interval '1 day', now() - interval '1 day'), (604, 1, 503, 'http://localhost/mcp', 'active', 'abc', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day'), (605, 4, 501, 'http://localhost/mcp', 'revoked', NULL, now() - interval '1 day', now() - interval '1 day', now() - interval '1 day'), (606, 9999, 501, 'http://localhost/mcp', 'active', NULL, now() - interval '1 day', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO mcp_oauth_authorization_scopes (id, mcp_oauth_authorization_id, name, created_at, updated_at) VALUES (701, 601, 'mcp:profile:read', now(), now()), (702, 601, 'mcp:content:read', now(), now()), (703, 602, 'mcp:profile:read', now(), now()), (704, 603, 'mcp:profile:read', now(), now()), (705, 604, 'mcp:profile:read', now(), now())",
+    "INSERT INTO mcp_oauth_access_tokens (id, token_hash, mcp_oauth_authorization_id, mcp_oauth_client_id, user_id, resource, scopes, grant_version, expires_at, last_used_at, created_at, updated_at) VALUES (801, 'hash-a', 601, 501, 1, 'http://localhost/mcp', '{mcp:profile:read}', 1, now() + interval '1 hour', '2026-10-01 10:00:00', now(), now()), (802, 'hash-b', 601, 501, 1, 'http://localhost/mcp', '{mcp:profile:read}', 1, now() - interval '1 hour', '2026-10-02 10:00:00', now(), now()), (803, 'hash-c', 602, 501, 3, 'http://localhost/mcp', '{mcp:profile:read}', 1, now() + interval '1 hour', NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "7868d077d62baf6208373edbb8f407e4dd29e032ef324a209813d9fb3b2cec7b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

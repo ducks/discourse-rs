@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "GET", "path": "/admin/mcp/overview.json" },
+    { "method": "GET", "path": "/admin/mcp/access.json" },
+    { "method": "GET", "path": "/admin/mcp/capabilities.json" }
+  ]
+}

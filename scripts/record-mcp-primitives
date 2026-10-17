@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Record the MCP primitives core and the bundled plugins register
+# (DiscourseMcp.registry) from a reference agent into
+# vendor/discourse/config/mcp_primitives.json, for the admin MCP endpoints
+# (src/mcp.rs). Run after vendoring, from an agent at the vendored commit
+# with the bundled plugins.
+#
+# Usage: scripts/record-mcp-primitives <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but vendor/ is from $vendored" >&2
+  exit 1
+fi
+dv copy "$root/scripts/mcp_primitives_export.rb" "$agent:/tmp/mcp_primitives_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/mcp_primitives_export.rb /tmp/mcp_primitives.json | tail -1
+dv copy "$agent:/tmp/mcp_primitives.json" "$root/vendor/discourse/config/mcp_primitives.json" > /dev/null
