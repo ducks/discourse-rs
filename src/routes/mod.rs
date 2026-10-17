@@ -8,6 +8,7 @@ mod admin_config;
 mod admin_config_about;
 mod admin_config_branding;
 mod admin_config_category_management;
+mod admin_config_mcp;
 mod admin_config_upcoming_changes;
 mod admin_customize;
 mod admin_dashboard;
@@ -2530,6 +2531,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/popular-themes.js", get(asset))
         .route("/assets/admin-category-management.js", get(asset))
         .route("/assets/admin-upcoming-changes.js", get(asset))
+        .route("/assets/date-range-picker.js", get(asset))
+        .route("/assets/admin-mcp.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))
@@ -2652,6 +2655,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     router = admin_config_branding::routes(router);
     router = admin_config_about::routes(router);
     router = admin_config_category_management::routes(router);
+    router = admin_config_mcp::routes(router);
     router = admin_config_upcoming_changes::routes(router);
     router = admin_mcp::routes(router);
     router = admin_mcp_clients::routes(router);

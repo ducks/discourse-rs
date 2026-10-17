@@ -873,7 +873,23 @@ then by what running a forum needs (milestone 6). Briefs:
     an https fixture host); a client ID on localhost refuses with
     InvalidAccess where Rails answers 500 (its ECONNREFUSED escapes the
     resolver's rescue).
-    Left: watched words, MCP's pages, what's new; the
+    Then feat/admin-shell-config-mcp: the MCP server pages (the
+    overview with its setup checklist; the capabilities' primitive
+    picker with its text, group by, impact and state filters, groups,
+    visible selection, save with the floating actions and emergency
+    blocks; the access rules with their delete and form (GroupChooser,
+    the scopes' DMultiSelect with their primitive counts, the initial
+    scope kept); the OAuth clients with their filter, next pages, block
+    and refresh, the new client's presets and form, a client's details;
+    the authorizations with their filter, next pages and revoke; the
+    activity with its filter, outcome, DashboardDateRange (its picker
+    now date-range-picker.js, shared with the dashboard) and next pages;
+    the settings tab), common/base/_mcp.scss in static/css/admin-mcp.css,
+    and UserSerializer#show_mcp_authorizations with the server on
+    (DiscourseMcp::Access.eligible_for_exposed_primitive?, write case
+    admin_mcp/show_authorizations). Left: the controls' generated ids,
+    and values drawn as attributes where Ember sets the property.
+    Left: watched words, what's new; the
     settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L, in part (done,

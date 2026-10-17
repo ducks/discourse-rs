@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "settings": {
+    "mcp_server_enabled": true
+  },
+  "setup": [
+    "INSERT INTO mcp_primitives (id, kind, identifier, enabled, emergency_blocked, created_at, updated_at) VALUES (901, 'tool', 'discourse_search', true, false, now(), now())"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/u/admin.json" },
+    { "method": "GET", "path": "/u/user1.json" }
+  ]
+}

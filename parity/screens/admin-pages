@@ -122,3 +122,13 @@
 # The upcoming changes page (90g6).
 /admin/config/upcoming-changes as=admin
 /admin/config/upcoming-changes?changeNamesFilter=zzzz as=admin
+# The MCP server pages (90g6).
+/admin/config/mcp as=admin
+/admin/config/mcp/capabilities as=admin
+/admin/config/mcp/access as=admin
+/admin/config/mcp/access/new as=admin
+/admin/config/mcp/clients as=admin
+/admin/config/mcp/clients/new as=admin
+/admin/config/mcp/authorizations as=admin
+/admin/config/mcp/activity as=admin
+/admin/config/mcp/settings as=admin

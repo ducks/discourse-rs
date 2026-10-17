@@ -460,29 +460,7 @@ impl Dashboard<'_> {
     /// DashboardDateRange's DMenu trigger, with what admin-dashboard.js
     /// fills its menu from.
     fn date_range_trigger(&self) -> String {
-        let label = if PERIODS.contains(&self.range.period.as_str()) {
-            self.t(&format!("date_range_picker.presets.{}", self.range.period))
-        } else {
-            format_range(self.range.start, self.range.end)
-        };
-        let presets: Vec<Value> = PERIODS
-            .iter()
-            .map(|p| {
-                serde_json::json!({
-                    "id": p,
-                    "label": self.t(&format!("date_range_picker.presets.{p}")),
-                })
-            })
-            .collect();
-        format!(
-            "<button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger db-date-range-menu-trigger btn-default db-date-range__trigger\" data-identifier=\"db-date-range-menu\" data-trigger=\"\" type=\"button\" data-presets=\"{}\" data-active=\"{}\" data-from=\"{}\" data-to=\"{}\">{}<span class=\"d-button-label\">{}</span></button>",
-            escape(&Value::Array(presets).to_string()),
-            escape(&self.range.period),
-            self.range.start.format("%Y-%m-%d"),
-            self.range.end.format("%Y-%m-%d"),
-            icon("calendar-days", None),
-            escape(&label)
-        )
+        date_range_trigger(self.admin, self.range)
     }
 
     /// DashboardSiteAdvice: the problems by priority, then id.
@@ -2167,6 +2145,37 @@ fn format_minutes_seconds(cx: &AdminCx, seconds: f64) -> String {
             ("minutes", &(total / 60).to_string()),
             ("seconds", &(total % 60).to_string()),
         ],
+    )
+}
+
+/// DashboardDateRange's DMenu trigger, with what date-range-picker.js
+/// fills its menu from: the preset's label, or the range's dates.
+pub fn date_range_trigger(cx: &crate::admin_view::AdminCx, range: &Range) -> String {
+    let label = if PERIODS.contains(&range.period.as_str()) {
+        t(
+            cx.i18n,
+            &format!("date_range_picker.presets.{}", range.period),
+        )
+    } else {
+        format_range(range.start, range.end)
+    };
+    let presets: Vec<Value> = PERIODS
+        .iter()
+        .map(|p| {
+            serde_json::json!({
+                "id": p,
+                "label": t(cx.i18n, &format!("date_range_picker.presets.{p}")),
+            })
+        })
+        .collect();
+    format!(
+        "<button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger db-date-range-menu-trigger btn-default db-date-range__trigger\" data-identifier=\"db-date-range-menu\" data-trigger=\"\" type=\"button\" data-presets=\"{}\" data-active=\"{}\" data-from=\"{}\" data-to=\"{}\">{}<span class=\"d-button-label\">{}</span></button>",
+        escape(&Value::Array(presets).to_string()),
+        escape(&range.period),
+        range.start.format("%Y-%m-%d"),
+        range.end.format("%Y-%m-%d"),
+        icon("calendar-days", None),
+        escape(&label)
     )
 }
 

@@ -603,6 +603,65 @@ pub async fn overview(
     }))
 }
 
+/// `DiscourseMcp::Access.eligible_scopes(user)`: the scopes the user's
+/// groups grant (with the initial one), none for an unavailable user.
+pub async fn eligible_scopes(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Vec<String>, AppError> {
+    let user: Option<(bool, bool, bool, bool)> = sqlx::query_as(
+        "SELECT active, (suspended_till IS NOT NULL AND suspended_till > now()), staged, admin \
+         FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((active, suspended, staged, admin)) = user else {
+        return Ok(Vec::new());
+    };
+    if !user_available(active, suspended, staged) {
+        return Ok(Vec::new());
+    }
+    if admin {
+        ensure_admins(&mut *conn).await?;
+    }
+    let mut scopes: Vec<String> = sqlx::query_scalar(
+        "SELECT DISTINCT s.scope FROM mcp_group_scopes s \
+         JOIN group_users gu ON gu.group_id = s.group_id \
+         WHERE gu.user_id = $1 AND s.scope = ANY($2)",
+    )
+    .bind(user_id)
+    .bind(scopes())
+    .fetch_all(&mut *conn)
+    .await?;
+    if !scopes.is_empty() && !scopes.iter().any(|s| s == INITIAL_SCOPE) {
+        scopes.push(INITIAL_SCOPE.into());
+    }
+    scopes.sort();
+    Ok(scopes)
+}
+
+/// `DiscourseMcp::Access.eligible_for_exposed_primitive?`: the server on,
+/// and an exposed, available primitive whose scopes the user may grant.
+pub async fn eligible_for_exposed_primitive(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<bool, AppError> {
+    if !settings.get("mcp_server_enabled")?.truthy() {
+        return Ok(false);
+    }
+    let eligible = eligible_scopes(&mut *conn, user_id).await?;
+    if eligible.is_empty() {
+        return Ok(false);
+    }
+    Ok(exposed(&mut *conn).await?.into_iter().any(|(_, p)| {
+        p.is_some_and(|p| {
+            p.available(settings) && p.required_scopes.iter().all(|s| eligible.contains(s))
+        })
+    }))
+}
+
 /// `DiscourseMcp::Access.user_available?`
 fn user_available(active: bool, suspended: bool, staged: bool) -> bool {
     active && !suspended && !staged
