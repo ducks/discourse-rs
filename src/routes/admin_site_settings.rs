@@ -71,6 +71,7 @@ pub async fn update(
         *backfill
             && name.starts_with("default_")
             && !site_setting_update::SIDEBAR_DEFAULTS.contains(&name.as_str())
+            && !crate::user_option_defaults::is_user_option(name)
     }) {
         return Err(Unsupported("backfilling user preferences (update_existing_user)").into());
     }
@@ -83,6 +84,7 @@ pub async fn update(
         let outcome = site_setting_update::update(
             &mut tx,
             &state.bus,
+            &state.config,
             &state.site_setting_defs,
             &settings,
             &state.i18n,
@@ -103,37 +105,6 @@ pub async fn update(
     tx.commit().await?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }
-
-/// `SiteSettingUpdateExistingUsers.user_options`' settings.
-const USER_OPTION_DEFAULTS: [&str; 27] = [
-    "default_email_mailing_list_mode",
-    "default_email_mailing_list_mode_frequency",
-    "default_email_level",
-    "default_email_messages_level",
-    "default_topics_automatic_unpin",
-    "default_email_previous_replies",
-    "default_email_in_reply_to",
-    "default_other_enable_quoting",
-    "default_other_enable_smart_lists",
-    "default_other_external_links_in_new_tab",
-    "default_other_dynamic_favicon",
-    "default_other_new_topic_duration_minutes",
-    "default_other_auto_track_topics_after_msecs",
-    "default_other_notification_level_when_replying",
-    "default_other_like_notification_frequency",
-    "default_other_skip_new_user_tips",
-    "default_other_enable_markdown_monospace_font",
-    "default_email_digest_frequency",
-    "default_include_tl0_in_digests",
-    "default_text_size",
-    "default_title_count_mode",
-    "default_hide_profile",
-    "default_hide_presence",
-    "default_sidebar_link_to_filtered_list",
-    "default_sidebar_show_count_of_new_items",
-    "default_composition_mode",
-    "default_watched_precedence_over_muted",
-];
 
 /// PUT /admin/site_settings/:id/user_count: how many users a backfill of
 /// a default_* setting to `params[id]` would change.
@@ -181,11 +152,12 @@ pub async fn user_count(
             "user_count".into(),
             json!(backfiller.number_of_users_to_backfill(&mut conn).await?),
         );
-    } else if USER_OPTION_DEFAULTS.contains(&id.as_str())
-        || id.starts_with("default_categories_")
-        || id.starts_with("default_tags_")
+    } else if let Some(count) =
+        crate::user_option_defaults::count(&mut conn, &id, settings.get(&id)?).await?
     {
-        return Err(Unsupported("user counts of user preference defaults").into());
+        body.insert("user_count".into(), json!(count));
+    } else if id.starts_with("default_categories_") || id.starts_with("default_tags_") {
+        return Err(Unsupported("user counts of category and tag defaults").into());
     }
     Ok(Json(Value::Object(body)).into_response())
 }

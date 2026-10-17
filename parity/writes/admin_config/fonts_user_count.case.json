@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_text_size/user_count.json",
+      "params": {
+        "default_text_size": "larger"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_other_enable_quoting/user_count.json",
+      "params": {
+        "default_other_enable_quoting": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_email_digest_frequency.json",
+      "params": {
+        "default_email_digest_frequency": "0",
+        "update_existing_user": "true"
+      }
+    }
+  ]
+}

@@ -278,6 +278,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/admin-emoji.js"),
     ),
     (
+        "admin-branding.js",
+        JS,
+        include_str!("../static/js/admin-branding.js"),
+    ),
+    (
         "admin-web-hooks.js",
         JS,
         include_str!("../static/js/admin-web-hooks.js"),

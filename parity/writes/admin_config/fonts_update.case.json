@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/fonts.json",
+      "params": {
+        "base_font": "roboto",
+        "heading_font": "lato",
+        "default_text_size": "larger",
+        "update_existing_users": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/fonts.json"
+    }
+  ]
+}

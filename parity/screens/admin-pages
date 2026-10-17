@@ -109,3 +109,6 @@
 /admin/config/emoji/new as=admin
 /admin/config/emoji/import as=admin
 /admin/config/emoji/settings as=admin
+# The logo and fonts pages (90g6).
+/admin/config/logo as=admin
+/admin/config/fonts as=admin

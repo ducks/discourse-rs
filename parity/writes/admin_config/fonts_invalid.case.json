@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/fonts.json",
+      "params": {
+        "base_font": "comic_sans",
+        "heading_font": "inter",
+        "default_text_size": "normal"
+      }
+    }
+  ]
+}

@@ -55,6 +55,14 @@ FILES=(
   vendor/assets/svg-icons/fontawesome/solid.svg
   vendor/assets/svg-icons/fontawesome/regular.svg
   vendor/assets/svg-icons/fontawesome/brands.svg
+  # The stock site images the seed's uploads -1 to -6 are, originals of
+  # the site icons' optimized copies (crate::site_icons).
+  public/images/d-logo-sketch.png
+  public/images/d-logo-sketch-small.png
+  public/images/discourse-logo-sketch.png
+  public/images/discourse-logo-sketch-small.png
+  public/images/default-favicon.ico
+  public/images/default-apple-touch-icon.png
 )
 
 if [ $# -lt 1 ]; then

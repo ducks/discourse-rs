@@ -338,7 +338,10 @@ impl FileStore {
         if let Some(path) = self.path_for(url) {
             return match tokio::fs::read(&path).await {
                 Ok(bytes) => Ok(Some(bytes)),
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+                // Rails' public/images holds the stock site images.
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    Ok(crate::site_icons::stock_image(url).map(<[u8]>::to_vec))
+                }
                 Err(e) => Err(e.into()),
             };
         }

@@ -410,3 +410,39 @@ async fn the_emoji_pages() {
     let (status, _) = user.page("/admin/config/emoji/settings").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_logo_and_fonts_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/logo").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Logo - Admin - "), "{html}");
+    assert!(html.contains("<form class=\"form-kit admin-logo-form\""));
+    // The seeded logo with its measured size, the square icon's
+    // placeholder, the collapsed sections' fields waiting.
+    assert!(
+        html.contains("data-target-height=\"512\" data-target-width=\"1858\""),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"placeholder-overlay\" style=\"background-image: url(http://test.localhost/images/discourse-logo-sketch-small.png)\">"), "{html}");
+    assert!(html.contains("<template class=\"admin-config-area-card-section__template\"><div class=\"admin-config-area-card-section__content\"><div class=\"form-kit__container form-kit__field form-kit__field-image\" data-control-type=\"image\" data-name=\"mobile_logo\""));
+    assert!(
+        html.contains("<template class=\"admin-logo-form__dark\" data-for=\"logo_dark_required\">")
+    );
+    let (_, html) = admin.page("/admin/config/fonts").await;
+    assert!(html.contains("<title>Fonts - Admin - "), "{html}");
+    assert!(html.contains("admin-fonts-form__button-option font btn-flat body-font-inter active\" type=\"button\" data-value=\"inter\">Inter</button>"), "{html}");
+    assert!(html.contains("text-size btn-flat normal active"));
+    // The controllers' index answers JSON with no content.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/fonts.json", "", true)
+        .await;
+    assert_eq!((status, body.as_str()), (StatusCode::NO_CONTENT, ""));
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/config/logo")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

@@ -21,6 +21,45 @@ struct Icon {
     resize_required: bool,
 }
 
+/// The stock images of Discourse's public/images that the seed's uploads
+/// -1 to -6 are (vendored with the schema): what a missing public
+/// directory or Discourse checkout leaves the site icons' originals.
+pub fn stock_image(url: &str) -> Option<&'static [u8]> {
+    const IMAGES: [(&str, &[u8]); 6] = [
+        (
+            "/images/d-logo-sketch.png",
+            include_bytes!("../vendor/discourse/public/images/d-logo-sketch.png"),
+        ),
+        (
+            "/images/d-logo-sketch-small.png",
+            include_bytes!("../vendor/discourse/public/images/d-logo-sketch-small.png"),
+        ),
+        (
+            "/images/discourse-logo-sketch.png",
+            include_bytes!("../vendor/discourse/public/images/discourse-logo-sketch.png"),
+        ),
+        (
+            "/images/discourse-logo-sketch-small.png",
+            include_bytes!("../vendor/discourse/public/images/discourse-logo-sketch-small.png"),
+        ),
+        (
+            "/images/default-favicon.ico",
+            include_bytes!("../vendor/discourse/public/images/default-favicon.ico"),
+        ),
+        (
+            "/images/default-apple-touch-icon.png",
+            include_bytes!("../vendor/discourse/public/images/default-apple-touch-icon.png"),
+        ),
+    ];
+    IMAGES.iter().find(|(u, _)| *u == url).map(|(_, b)| *b)
+}
+
+/// `SiteIconManager::WATCHED_SETTINGS`: the icons and the logos, whose
+/// change makes the icons' missing optimized copies.
+pub fn watched(name: &str) -> bool {
+    matches!(name, "logo" | "logo_small") || ICONS.iter().any(|i| i.name == name)
+}
+
 /// `SiteIconManager::ICONS`
 const ICONS: &[Icon] = &[
     Icon {

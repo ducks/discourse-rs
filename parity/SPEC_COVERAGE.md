@@ -60,8 +60,10 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Direct uploads (ExternalUploadHelpers, uploads and backups) | 26 | 19 | 15 | 2 |
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
 | ReviewablesController#perform | 3 | 2 | 1 | 16 |
-| Admin::SiteSettingsController#update | 14 | 3 | 2 | 21 |
+| Admin::SiteSettingsController#update | 20 | 3 | 2 | 15 |
 | Admin::Config::SiteSettingsController#index | 6 | 1 | 0 | 0 |
+| Admin::Config::LogoController | 3 | 1 | 0 | 8 |
+| Admin::Config::FontsController | 4 | 0 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
@@ -910,11 +912,11 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 330 | admin > sanitizes integer values ("1,000") | covered | setting_integer_delimited (new, matches) |
 | 337 | admin > sanitizes file_size_restriction values | unported | Unsupported "setting types other than string, number, bool and enum" |
 | 344 | admin > sanitizes negative integer values | recordable | setting_negative_integer (pending_users_reminder_delay_minutes "-1", min -1) |
-| 358 | admin > default user options > updates, doesn't update, email_digests (x3) | unported | Unsupported "default_* settings" |
+| 358 | admin > default user options > updates, doesn't update, email_digests (x3) | covered | admin_config/fonts_update, fonts_no_backfill, fonts_user_count (new; the digest frequency's backfill with email_digests) |
 | 405 | admin > default navigation menu > backfill job or not (x3) | unported | Unsupported "default_* settings" / "backfilling user preferences" |
 | 478 | admin > default categories > update or not, MessageBus (x3) | unported | Unsupported "default_* settings" |
 | 580 | admin > default tags > update or not, MessageBus (x3) | unported | Unsupported "default_* settings" |
-| 636 | admin > upload site settings > remove, reset, update (x3) | unported | Unsupported "setting types other than string, number, bool and enum" (upload) |
+| 636 | admin > upload site settings > remove, reset, update (x3) | covered | admin_config/logo_update, logo_unchanged (new; through LogoController, SiteSetting::Update's upload cast, log and references) |
 | 681 | admin > logs the change | covered | setting_string (change_site_setting user_histories row) |
 | 692 | admin > does not allow changing hidden settings | covered | setting_hidden |
 | 707 | admin > does not allow globally shadowed settings | needs-harness | stubs SiteSetting.shadowed_settings |
@@ -942,6 +944,36 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 56 | admin > site settings by exact name | covered | config_index_names (new) |
 | 67 | admin > site settings by area | covered | config_index_flags (new) |
 | - | (no spec it) by category, by the users area | covered | config_index_groups, config_index_area (new) |
+
+## Admin::Config::LogoController
+
+`spec/requests/admin/config/logo_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 17 | og_image_preview > admin > base64 data URI for the topic | unported | Unsupported "the topic Open Graph image preview (TopicOgImageGenerator)" |
+| 26 | og_image_preview > admin > 400 without topic_id | unported | the same refusal |
+| 31 | og_image_preview > admin > 404 for a missing topic | unported | the same refusal |
+| 36 | og_image_preview > admin > 422 when generation fails | unported | the same refusal |
+| 42 | og_image_preview > admin > 422 when login_required | unported | the same refusal |
+| 49 | og_image_preview > admin > 422 for personal messages | unported | the same refusal |
+| 56 | og_image_preview > admin > 422 for a read-restricted category | unported | the same refusal |
+| 64 | og_image_preview > admin > does not persist an Upload | unported | the same refusal |
+| 74 | og_image_preview > moderator > denies access | covered | admin_config/fonts_moderator (new) |
+| 83 | og_image_preview > regular user > denies access | covered | admin_config/logo_member (new; the update and index) |
+| 90 | og_image_preview > not logged in > denies access | recordable | logo_anonymous (no user) |
+| - | (no spec it) update: uploads by url, cleared, unchanged | covered | admin_config/logo_update, logo_unchanged (new) |
+
+## Admin::Config::FontsController
+
+`spec/requests/admin/config/fonts_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 12 | admin > updates the fonts and text size | covered | admin_config/fonts_update, fonts_no_backfill (new) |
+| 26 | admin > validates values | covered | admin_config/fonts_invalid (new) |
+| 43 | moderator > denies access with a 403 | covered | admin_config/fonts_moderator (new) |
+| 60 | non-staff > denies access with a 404 | covered | admin_config/logo_member (new; LogoController, the same AdminController) |
 
 ## Admin::UsersController#suspend
 

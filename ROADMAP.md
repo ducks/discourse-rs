@@ -776,8 +776,24 @@ then by what running a forum needs (milestone 6). Briefs:
     import's preview and confirm, the settings tab; and
     discourse-reactions' like reaction leading its enabled reactions'
     list, not editable, as the plugin's modifyClass of EmojiValueList
-    draws it. Left: about,
-    category management, watched words, logo, fonts, welcome
+    draws it. Then feat/admin-shell-config-logo-fonts: the logo page
+    (AdminLogoForm's image fields with their upload, delete, lightbox
+    and placeholders, the dark logos' toggles, the collapsed mobile,
+    email and social media sections, the manifest screenshots' list)
+    and the fonts page (AdminFontChooser with More fonts, the text
+    sizes, the user count and backfill question), with
+    Admin::Config::LogoController and FontsController's updates now
+    ported: SiteSetting::Update over several settings in their declared
+    order, upload settings by URL (logged as URLs, their upload
+    references, SiteIconManager's missing optimized icons from the
+    vendored stock images), the font and simple lists with their
+    choices, enum classes' recorded values, x_summary_large_image's
+    validation, the user options' defaults with their backfill and user
+    count (write cases admin_config/logo_*, fonts_*). Refused: the topic
+    OG image preview (TopicOgImageGenerator). Left: the font buttons
+    are not drawn in their own font (only Inter's and JetBrains Mono's
+    files are vendored). Left: about,
+    category management, watched words, welcome
     banner, MCP, upcoming changes, what's new; the settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L
