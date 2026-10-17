@@ -429,6 +429,21 @@ input[type="color"]:focus {
   outline-offset: -2px;
 }
 
+/* discourse.scss:406, the color input's own */
+input[type="color"] {
+  border: var(--d-input-border);
+  border-radius: var(--d-input-border-radius);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
+
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-decoration {
   appearance: none;

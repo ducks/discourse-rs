@@ -171,6 +171,104 @@ pub async fn og_image_preview(
 pub enum Page {
     Logo,
     Fonts,
+    WelcomeBanner,
+}
+
+/// What AdminWelcomeBannerForm loads: the themes with the banner's
+/// theme setting, the settings, the site texts in the user's locale.
+async fn welcome_banner(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    shell: &Shell,
+) -> Result<String, AppError> {
+    let themes: Vec<(i64, String, bool)> = super::themes::welcome_banner_theme_list(state, conn)
+        .await?
+        .iter()
+        .map(|t| {
+            (
+                t["id"].as_i64().unwrap_or_default(),
+                t["name"].as_str().unwrap_or_default().to_string(),
+                t["enable_welcome_banner"].as_bool().unwrap_or_default(),
+            )
+        })
+        .collect();
+    let get = |name: &str| {
+        shell
+            .settings
+            .get(name)
+            .map(|v| v.to_s())
+            .unwrap_or_default()
+    };
+    // The upload setting's URL (getURL'd by the client).
+    let image_id = crate::ruby::to_i(&get("welcome_banner_image"));
+    let image: Option<String> = if image_id == 0 {
+        None
+    } else {
+        sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+            .bind(image_id as i32)
+            .fetch_optional(&mut *conn)
+            .await?
+    };
+    let image = image
+        .map(|u| format!("{}{u}", shell.site.base_path))
+        .unwrap_or_default();
+    // I18n.currentLocale(): the site's locale here.
+    let locale = shell.site.lang.clone();
+    let locales: Vec<(String, String)> = crate::setting_enums::recorded("default_locale")
+        .and_then(|r| r.get("valid_values"))
+        .and_then(serde_json::Value::as_array)
+        .map(|values| {
+            values
+                .iter()
+                .map(|v| {
+                    // translate_names: the name is a client key.
+                    let name = v["name"].as_str().unwrap_or_default();
+                    (
+                        v["value"].as_str().unwrap_or_default().to_string(),
+                        crate::admin_view::t_opt(&state.i18n, name)
+                            .unwrap_or_else(|| name.to_string()),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let overrides = crate::site_texts::Overrides::load(&mut *conn, &locale).await?;
+    let mut texts = Vec::new();
+    for (name, key, ..) in crate::admin_branding_view::WELCOME_BANNER_TEXTS {
+        let record = crate::site_texts::record_for(&overrides, key, None, &locale)?;
+        texts.push((
+            name.to_string(),
+            record.value.as_str().unwrap_or_default().to_string(),
+        ));
+    }
+    let (color, visibility, location) = (
+        get("welcome_banner_text_color"),
+        get("welcome_banner_page_visibility"),
+        get("welcome_banner_location"),
+    );
+    Ok(crate::admin_branding_view::welcome_banner(
+        &shell.cx(state),
+        &crate::admin_branding_view::WelcomeBanner {
+            themes: &themes,
+            image: &image,
+            text_color: &color,
+            page_visibility: &visibility,
+            location: &location,
+            locale: &locale,
+            locales: &locales,
+            texts: &texts,
+        },
+    ))
+}
+
+/// GET /admin/config/welcome-banner(.json)
+pub async fn welcome_banner_page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    page(&state, &guardian, &headers, &uri, Page::WelcomeBanner).await
 }
 
 /// GET /admin/config/logo and /admin/config/fonts: the page, or for JSON
@@ -192,6 +290,7 @@ pub async fn page(
     let (link, key) = match page {
         Page::Logo => ("admin_logo", "logo"),
         Page::Fonts => ("admin_fonts", "fonts"),
+        Page::WelcomeBanner => ("admin_welcome_banner", "admin-welcome-banner"),
     };
     let shell = Shell::load(&mut conn, state, guardian, headers, link).await?;
     let content = match page {
@@ -212,6 +311,7 @@ pub async fn page(
             crate::admin_branding_view::logo(&shell.cx(state), &settings)
         }
         Page::Fonts => crate::admin_branding_view::fonts(&shell.cx(state)),
+        Page::WelcomeBanner => welcome_banner(state, &mut conn, &shell).await?,
     };
     let cx = shell.cx(state);
     let strings = crate::admin_ui::strings(
@@ -223,7 +323,11 @@ pub async fn page(
         &format!("admin-config {key}"),
         &format!("{content}{strings}"),
     );
-    let title = crate::admin_view::t(cx.i18n, &format!("admin.config.{key}.title"));
+    // The welcome banner's route has no title token.
+    let title = match page {
+        Page::WelcomeBanner => String::new(),
+        _ => crate::admin_view::t(cx.i18n, &format!("admin.config.{key}.title")),
+    };
     shell.render(
         state,
         uri,
@@ -270,6 +374,10 @@ pub(super) fn routes(mut router: axum::Router<AppState>) -> axum::Router<AppStat
             .route(
                 &format!("/admin/config/logo/og-image-preview{suffix}"),
                 get(og_image_preview),
+            )
+            .route(
+                &format!("/admin/config/welcome-banner{suffix}"),
+                get(welcome_banner_page),
             );
     }
     router

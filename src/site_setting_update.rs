@@ -116,6 +116,33 @@ pub fn is_hidden(def: &crate::site_settings::Definition) -> bool {
     opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true)))
 }
 
+/// CssColorValidator#valid_value?: a 3 or 6 digit hex color, or one of
+/// its named colors.
+fn css_color(value: &str) -> bool {
+    const COLORS: &str = "aliceblue antiquewhite aqua aquamarine azure beige bisque black \
+        blanchedalmond blue blueviolet brown burlywood cadetblue chartreuse chocolate coral \
+        cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray darkgreen \
+        darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon \
+        darkseagreen darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink \
+        deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia \
+        gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink \
+        indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue \
+        lightcoral lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink \
+        lightsalmon lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue \
+        lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue \
+        mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen \
+        mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite \
+        navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen \
+        paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple red \
+        rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver \
+        skyblue slateblue slategray slategrey snow springgreen steelblue tan teal thistle \
+        tomato turquoise violet wheat white whitesmoke yellow yellowgreen";
+    let hex = value
+        .strip_prefix('#')
+        .is_some_and(|h| matches!(h.len(), 3 | 6) && h.chars().all(|c| c.is_ascii_hexdigit()));
+    hex || COLORS.split_whitespace().any(|c| c == value.to_lowercase())
+}
+
 /// An upload setting's Upload's URL (nil for none).
 async fn upload_url(conn: &mut PgConnection, value: &Value) -> Result<Option<String>, sqlx::Error> {
     if value.is_blank() {
@@ -228,7 +255,12 @@ pub async fn update(
     if CHANGE_HANDLERS_WRITE.contains(&name) {
         return Err(Unsupported("settings whose change handlers write").into());
     }
-    if CUSTOM_VALIDATIONS.contains(&name) || opt(def, "validator").is_some() {
+    let validator = opt(def, "validator").and_then(Yaml::as_str);
+    let css_validator = matches!(
+        validator,
+        Some("CssColorValidator" | "CssColorWithBlankValidator")
+    );
+    if CUSTOM_VALIDATIONS.contains(&name) || (validator.is_some() && !css_validator) {
         return Err(Unsupported("settings with custom validations").into());
     }
     if name.starts_with("default_")
@@ -253,7 +285,7 @@ pub async fn update(
         }
         DataType::Float => Value::Float(crate::ruby::to_f(value)),
         DataType::Bool => Value::Bool(matches!(value, "t" | "true")),
-        DataType::String => Value::Str(value.to_string()),
+        DataType::String | DataType::Color => Value::Str(value.to_string()),
         DataType::CategoryList | DataType::TagList if SIDEBAR_DEFAULTS.contains(&name) => {
             Value::Str(value.to_string())
         }
@@ -342,6 +374,18 @@ pub async fn update(
         }
     } else if let Some(message) = invalid(def, &new_value, i18n)? {
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
+    }
+    // The type supervisor's validator: CssColorValidator (blank allowed
+    // by CssColorWithBlankValidator).
+    if css_validator {
+        let v = new_value.to_s();
+        let blank_ok = validator == Some("CssColorWithBlankValidator") && crate::ruby::is_blank(&v);
+        if !blank_ok && !css_color(&v) {
+            let message = i18n
+                .t("site_settings.errors.invalid_css_color")
+                .unwrap_or_default();
+            return Ok(Outcome::Invalid(format!("{name}: {message}")));
+        }
     }
     // SiteSettings::Validations#validate_x_summary_large_image
     if name == "x_summary_large_image" && !new_value.is_blank() {

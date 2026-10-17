@@ -1,0 +1,78 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner/themes-with-setting.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_image",
+      "params": {
+        "welcome_banner_image": "/images/d-logo-sketch.png"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_text_color",
+      "params": {
+        "welcome_banner_text_color": "#ff0000"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_text_color",
+      "params": {
+        "welcome_banner_text_color": "notacolor"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_location",
+      "params": {
+        "welcome_banner_location": "below_site_header"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_page_visibility",
+      "params": {
+        "welcome_banner_page_visibility": "nowhere"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/welcome_banner_page_visibility",
+      "params": {
+        "welcome_banner_page_visibility": "homepage"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.welcome_banner.header.new_members",
+      "params": {
+        "locale": "en",
+        "site_text": {
+          "value": "Hello, %{preferred_display_name}!",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/-1/site-setting",
+      "params": {
+        "name": "enable_welcome_banner",
+        "value": "false"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner/themes-with-setting.json"
+    }
+  ]
+}

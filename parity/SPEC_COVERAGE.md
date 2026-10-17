@@ -64,6 +64,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::SiteSettingsController#index | 6 | 1 | 0 | 0 |
 | Admin::Config::LogoController | 3 | 1 | 0 | 8 |
 | Admin::Config::FontsController | 4 | 0 | 0 | 0 |
+| Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
@@ -963,6 +964,21 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 83 | og_image_preview > regular user > denies access | covered | admin_config/logo_member (new; the update and index) |
 | 90 | og_image_preview > not logged in > denies access | recordable | logo_anonymous (no user) |
 | - | (no spec it) update: uploads by url, cleared, unchanged | covered | admin_config/logo_update, logo_unchanged (new) |
+
+## Admin::Config::WelcomeBannerController#themes_with_setting
+
+`spec/requests/admin/config/welcome_banner_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 19 | admin > user selectable themes and the default theme | covered | admin_config/welcome_banner_save (new; the default theme) |
+| 32 | admin > excludes components | recordable | welcome_banner_components (setup: a component theme) |
+| 41 | admin > the setting's value when present | covered | admin_config/welcome_banner_save (new; after the theme's PUT) |
+| 57 | admin > false when the theme disables it | covered | admin_config/welcome_banner_save (new) |
+| 73 | admin > the effective default when not present | covered | admin_config/welcome_banner_save (new; the first request) |
+| 86 | moderator > denies access with a 403 | covered | admin_config/fonts_moderator (new) |
+| 95 | non-staff > denies access with a 404 | recordable | welcome_banner_member |
+| - | (no spec it) index: 204 for JSON | covered | admin_config/welcome_banner_save (new) |
 
 ## Admin::Config::FontsController
 
