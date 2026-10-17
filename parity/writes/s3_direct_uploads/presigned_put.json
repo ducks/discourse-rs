@@ -1,0 +1,164 @@
+{
+  "name": "presigned_put",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {
+        "file_name": "static.gif",
+        "file_size": 44,
+        "type": "composer",
+        "metadata": {
+          "sha1-checksum": "f5cebe42706fcad01568026c8db70c8ec640d4a2",
+          "other": "dropped"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {
+        "file_name": "empty.txt",
+        "file_size": 0,
+        "type": "composer"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {
+        "file_name": "big.zip",
+        "file_size": 999999999,
+        "type": "composer"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {
+        "unique_identifier": "{{responses.0.body.unique_identifier}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {
+        "unique_identifier": "00000000-0000-4000-8000-000000000009"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T22:54:00.488152",
+  "transaction_started_at": "2026-10-16T22:53:57.343242",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "url": "http://s3-direct-put.minio.localhost:9122/temp/uploads/default/a3706678ff626f123b1b97f44b5fb3de/84dd58d0b66df7114042c8ec3eb4d213.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261016T225400Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host%3Bx-amz-acl%3Bx-amz-meta-sha1-checksum&X-Amz-Signature=19c9301a34c69c9e842de03d45393f85a6a4ec6b52cba5875d1567c2b3aa7efe",
+        "key": "temp/uploads/default/a3706678ff626f123b1b97f44b5fb3de/84dd58d0b66df7114042c8ec3eb4d213.gif",
+        "unique_identifier": "61bac847-8bb7-4bee-8d9d-de2cef7fbe16",
+        "signed_headers": {
+          "x-amz-acl": "private",
+          "x-amz-meta-sha1-checksum": "f5cebe42706fcad01568026c8db70c8ec640d4a2"
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, it looks like something has gone wrong, the file you are trying to upload is 0 bytes. Please try again."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, the file you are trying to upload is too big (maximum size is 10 MB)."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, but your upload failed. Please try again."
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0zJfNFHbEWt/nrWS7SC1DniRu8s=",
+            "created_at": "2026-10-16T22:53:58.567364",
+            "rotated_at": "2026-10-16T22:53:58.565569",
+            "updated_at": "2026-10-16T22:53:58.567364",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "0zJfNFHbEWt/nrWS7SC1DniRu8s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:54:00.500002",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0zJfNFHbEWt/nrWS7SC1DniRu8s=",
+            "created_at": "2026-10-16T22:53:58.567364",
+            "rotated_at": "2026-10-16T22:53:58.565569",
+            "updated_at": "2026-10-16T22:53:58.567364",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "0zJfNFHbEWt/nrWS7SC1DniRu8s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_upload_bucket": "s3-direct-put",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true
+  },
+  "s3": {
+    "buckets": [
+      "s3-direct-put"
+    ]
+  },
+  "s3_objects": [],
+  "recorded_from": {
+    "case": "ca4f91a23f365ce9d6d31288311dd453d660d4c657359f87f6bd620f473a1aaa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "user": "user1",
+  "s3": {
+    "buckets": ["s3-direct-complete"],
+    "objects": {
+      "s3-direct-complete/temp/0123456789abcdef0123456789abcdef/fedcba9876543210fedcba9876543210.gif": "static.gif",
+      "s3-direct-complete/temp/11111111111111111111111111111111/22222222222222222222222222222222.txt": "notes.txt"
+    }
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-direct-complete",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true,
+    "allowed_internal_hosts": "s3-direct-complete.minio.localhost",
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+  },
+  "setup": [
+    "INSERT INTO external_upload_stubs (id, key, original_filename, status, unique_identifier, created_by_id, upload_type, filesize, created_at, updated_at) VALUES (9601, 'temp/0123456789abcdef0123456789abcdef/fedcba9876543210fedcba9876543210.gif', 'static.gif', 1, '00000000-0000-4000-8000-000000000001', 3, 'composer', 44, now(), now()), (9602, 'temp/11111111111111111111111111111111/22222222222222222222222222222222.txt', 'notes.txt', 1, '00000000-0000-4000-8000-000000000002', 3, 'composer', 999, now(), now()), (9603, 'temp/33333333333333333333333333333333/44444444444444444444444444444444.gif', 'gone.gif', 2, '00000000-0000-4000-8000-000000000003', 3, 'composer', 44, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {"unique_identifier": "00000000-0000-4000-8000-000000000001"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {"unique_identifier": "00000000-0000-4000-8000-000000000002"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {"unique_identifier": "00000000-0000-4000-8000-000000000003"}
+    }
+  ]
+}

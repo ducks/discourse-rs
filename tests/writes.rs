@@ -551,6 +551,20 @@ fn unrandom(s: &str) -> String {
         regex::Regex::new(r"(X-Amz-Credential=[^%&]+%2F)\d{8}%2F").unwrap()
     });
     let s = AMZ_SCOPE.replace_all(&s, "${1}<date>%2F");
+    // A temporary upload key (BaseStore.temporary_upload_path, two
+    // SecureRandom.hex) and a multipart upload's id.
+    static TEMP_KEY: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(temp/(?:[a-z0-9_.-]+/)*?)[0-9a-f]{32}/[0-9a-f]{32}").unwrap()
+    });
+    let s = TEMP_KEY.replace_all(&s, "${1}<hex>/<hex>");
+    // A presigned URL's host: the replay's MinIO listens on a port of its
+    // own (Config::object_storage_endpoints).
+    static MINIO_PORT: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\.minio\.localhost:\d+/").unwrap());
+    let s = MINIO_PORT.replace_all(&s, ".minio.localhost:<port>/");
+    static UPLOAD_ID: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"uploadId=[A-Za-z0-9%._~-]+").unwrap());
+    let s = UPLOAD_ID.replace_all(&s, "uploadId=<id>");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");

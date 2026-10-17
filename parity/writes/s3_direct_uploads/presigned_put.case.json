@@ -1,0 +1,47 @@
+{
+  "user": "user1",
+  "s3": {
+    "buckets": ["s3-direct-put"]
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-direct-put",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {
+        "file_name": "static.gif",
+        "file_size": 44,
+        "type": "composer",
+        "metadata": {"sha1-checksum": "f5cebe42706fcad01568026c8db70c8ec640d4a2", "other": "dropped"}
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {"file_name": "empty.txt", "file_size": 0, "type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {"file_name": "big.zip", "file_size": 999999999, "type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {"unique_identifier": "{{responses.0.body.unique_identifier}}"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {"unique_identifier": "00000000-0000-4000-8000-000000000009"}
+    }
+  ]
+}

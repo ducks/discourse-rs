@@ -2,7 +2,7 @@
 //! routing 404): the backups list and status, emailing a download link
 //! and downloading with its token, deleting, uploading in chunks, and the
 //! read-only toggle. The admin pages themselves (index and logs as HTML)
-//! are Ember's; direct multipart uploads to S3 are refused.
+//! are Ember's; direct multipart uploads are routes/external_uploads.rs.
 
 use axum::Json;
 use axum::body::{Body, Bytes};
@@ -16,7 +16,7 @@ use crate::backup_restore::store::{self, BackupStore, BackupStoreError, LocalBac
 use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// The largest chunk request taken: the uploader sends 5 MB chunks (Rails
 /// leaves the limit to the proxy in front of it).
@@ -675,18 +675,6 @@ pub async fn create_upload_url(
         }
         Err(e) => storage_error(e),
     }
-}
-
-/// POST /admin/backups/{create,complete,abort}-multipart and
-/// batch-presign-multipart-parts: S3 direct uploads.
-pub async fn multipart(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-) -> Result<Response, AppError> {
-    if let Some(r) = admin_only(&state, &guardian) {
-        return Ok(r);
-    }
-    Err(Unsupported("direct S3 backup uploads").into())
 }
 
 /// POST /admin/backups(.json) (#create): a backup started (the port

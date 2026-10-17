@@ -40,6 +40,7 @@ mod do_not_disturb;
 mod drafts;
 mod email;
 mod emojis;
+mod external_uploads;
 mod group_membership;
 mod groups;
 mod hashtags;
@@ -1778,31 +1779,37 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/backups/upload_url.json",
             get(backups::create_upload_url),
         )
-        .route("/admin/backups/create-multipart", post(backups::multipart))
+        .route(
+            "/admin/backups/create-multipart",
+            post(external_uploads::backups::create_multipart),
+        )
         .route(
             "/admin/backups/create-multipart.json",
-            post(backups::multipart),
+            post(external_uploads::backups::create_multipart),
         )
         .route(
             "/admin/backups/complete-multipart",
-            post(backups::multipart),
+            post(external_uploads::backups::complete_multipart),
         )
         .route(
             "/admin/backups/complete-multipart.json",
-            post(backups::multipart),
+            post(external_uploads::backups::complete_multipart),
         )
-        .route("/admin/backups/abort-multipart", post(backups::multipart))
+        .route(
+            "/admin/backups/abort-multipart",
+            post(external_uploads::backups::abort_multipart),
+        )
         .route(
             "/admin/backups/abort-multipart.json",
-            post(backups::multipart),
+            post(external_uploads::backups::abort_multipart),
         )
         .route(
             "/admin/backups/batch-presign-multipart-parts",
-            post(backups::multipart),
+            post(external_uploads::backups::batch_presign_multipart_parts),
         )
         .route(
             "/admin/backups/batch-presign-multipart-parts.json",
-            post(backups::multipart),
+            post(external_uploads::backups::batch_presign_multipart_parts),
         )
         .route(
             "/admin/backups/{id}",
@@ -1952,6 +1959,54 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/users/email-login.json", post(accounts::email_login))
         .route("/uploads.json", post(uploads::create))
         .route("/uploads/lookup-urls", post(uploads::lookup_urls))
+        .route(
+            "/uploads/generate-presigned-put",
+            post(external_uploads::generate_presigned_put),
+        )
+        .route(
+            "/uploads/generate-presigned-put.json",
+            post(external_uploads::generate_presigned_put),
+        )
+        .route(
+            "/uploads/complete-external-upload",
+            post(external_uploads::complete_external_upload),
+        )
+        .route(
+            "/uploads/complete-external-upload.json",
+            post(external_uploads::complete_external_upload),
+        )
+        .route(
+            "/uploads/create-multipart",
+            post(external_uploads::uploads::create_multipart),
+        )
+        .route(
+            "/uploads/create-multipart.json",
+            post(external_uploads::uploads::create_multipart),
+        )
+        .route(
+            "/uploads/complete-multipart",
+            post(external_uploads::uploads::complete_multipart),
+        )
+        .route(
+            "/uploads/complete-multipart.json",
+            post(external_uploads::uploads::complete_multipart),
+        )
+        .route(
+            "/uploads/abort-multipart",
+            post(external_uploads::uploads::abort_multipart),
+        )
+        .route(
+            "/uploads/abort-multipart.json",
+            post(external_uploads::uploads::abort_multipart),
+        )
+        .route(
+            "/uploads/batch-presign-multipart-parts",
+            post(external_uploads::uploads::batch_presign_multipart_parts),
+        )
+        .route(
+            "/uploads/batch-presign-multipart-parts.json",
+            post(external_uploads::uploads::batch_presign_multipart_parts),
+        )
         .route("/review", get(review::page))
         .route("/review.json", get(review::index))
         .route(

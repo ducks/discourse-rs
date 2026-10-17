@@ -192,6 +192,31 @@ pub async fn show(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let store = crate::file_store::FileStore::for_site(&state.config, &settings)?;
+    // An external store serves the avatar sizes only: another size is
+    // sent to the closest.
+    if store.external() {
+        let sizes = crate::avatar::avatar_sizes(&settings)?;
+        let wanted = i64::from(size);
+        if !sizes.iter().any(|s| i64::from(*s) == wanted) {
+            let mut closest: Option<u32> = None;
+            for s in &sizes {
+                if closest
+                    .is_none_or(|c| (wanted - i64::from(*s)).abs() < (wanted - i64::from(c)).abs())
+                {
+                    closest = Some(*s);
+                }
+            }
+            if let Some(closest) = closest {
+                let location = format!(
+                    "{}/user_avatar/{hostname}/{}/{closest}/{upload_id}_{}.png",
+                    state.config.globals.relative_url_root(),
+                    crate::avatar::encode_component(&username_lower),
+                    crate::optimized_images::VERSION
+                );
+                return Ok(found(&headers, &location));
+            }
+        }
+    }
 
     let in_user_avatar: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM user_avatars a JOIN users u ON u.id = a.user_id \
@@ -240,6 +265,79 @@ pub async fn show(
             None => return render_blank(&state).await,
         }
     };
+    // An external store's file: redirect_s3_avatar, or proxy_avatar
+    // (Rails downloads its url; the port reads the object).
+    if store.path_for(&url).is_none() && store.external() {
+        let cdn = store.cdn_url(&url);
+        if state
+            .config
+            .globals
+            .get("redirect_avatar_requests")
+            .is_some_and(|v| v == "true")
+        {
+            let location = if cdn.starts_with("//") {
+                format!(
+                    "{}:{cdn}",
+                    if settings.get("force_https")?.truthy() {
+                        "https"
+                    } else {
+                        "http"
+                    }
+                )
+            } else {
+                cdn
+            };
+            let mut response = (StatusCode::FOUND, [(header::LOCATION, location)]).into_response();
+            response.headers_mut().insert(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static(
+                    "max-age=3600, public, immutable, stale-while-revalidate=86400",
+                ),
+            );
+            return Ok(response);
+        }
+        let Some(bytes) = store.read(&url).await? else {
+            return render_blank(&state).await;
+        };
+        let created_at: chrono::NaiveDateTime =
+            sqlx::query_scalar("SELECT created_at FROM uploads WHERE id = $1")
+                .bind(upload.id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let modified = created_at
+            .and_utc()
+            .format("%a, %d %b %Y %H:%M:%S GMT")
+            .to_string();
+        let len = bytes.len();
+        let mut response = png_modified(
+            bytes,
+            "max-age=31556952, public, immutable",
+            HeaderValue::from_str(&modified)?,
+        );
+        let h = response.headers_mut();
+        h.insert(header::CONTENT_LENGTH, HeaderValue::from(len));
+        if let Some(kind) = crate::file_store::mime_type(&url) {
+            h.insert(header::CONTENT_TYPE, HeaderValue::from_static(kind));
+        }
+        if attachment {
+            h.insert(
+                header::CONTENT_SECURITY_POLICY,
+                HeaderValue::from_static("sandbox;"),
+            );
+            h.insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("image/svg+xml"),
+            );
+            h.insert(
+                header::CONTENT_DISPOSITION,
+                HeaderValue::from_str(&format!(
+                    "attachment; filename=\"{}\"",
+                    url.rsplit('/').next().unwrap_or_default()
+                ))?,
+            );
+        }
+        return Ok(response);
+    }
     let Some(path) = store.path_for(&url) else {
         return render_blank(&state).await;
     };

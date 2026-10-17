@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "settings": {
+    "s3_upload_bucket": "s3-direct-disabled",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {"file_name": "static.gif", "file_size": 44, "type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/create-multipart.json",
+      "params": {"file_name": "movie.mp4", "file_size": 7340032, "upload_type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/abort-multipart.json",
+      "params": {"external_upload_identifier": "x"}
+    }
+  ]
+}

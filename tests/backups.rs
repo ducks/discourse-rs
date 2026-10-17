@@ -376,6 +376,9 @@ async fn a_backup_to_s3_is_uploaded_and_listed_there() {
         ("s3_region", common::s3::REGION),
         ("s3_endpoint", common::s3::ENDPOINT),
         ("backup_location", "s3"),
+        ("s3_upload_bucket", "s3-uploads/forum"),
+        ("s3_cdn_url", "https://cdn.example.com"),
+        ("enable_s3_uploads", "t"),
     ] {
         let data_type = st.site_setting_defs.get(name).unwrap().data_type as i32;
         common::set_setting(&db.pool, name, data_type, value).await;
@@ -410,6 +413,26 @@ async fn a_backup_to_s3_is_uploaded_and_listed_there() {
         .unwrap()
         .expect("the archive in the bucket");
     assert_eq!(object.content_type.as_deref(), Some("application/gzip"));
+    // The metadata names the uploads' S3 urls, for a restore to remap.
+    let metadata: Vec<(String, Option<String>)> = sqlx::query_as(
+        "SELECT name, value FROM backup_metadata WHERE name LIKE 's3%' ORDER BY name",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        metadata,
+        [
+            (
+                "s3_base_url".to_string(),
+                Some("//s3-uploads.minio.localhost:9122/forum".to_string())
+            ),
+            (
+                "s3_cdn_url".to_string(),
+                Some("https://cdn.example.com".to_string())
+            ),
+        ]
+    );
 
     let mut conn = db.pool.acquire().await.unwrap();
     let settings = discourse_rs::site_settings::SiteSettings::load(
