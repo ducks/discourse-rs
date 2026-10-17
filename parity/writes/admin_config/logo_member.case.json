@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/logo.json",
+      "params": {
+        "logo": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/logo.json"
+    }
+  ]
+}

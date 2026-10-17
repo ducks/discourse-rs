@@ -1,0 +1,419 @@
+{
+  "name": "logo_unchanged",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/logo.json",
+      "params": {
+        "logo": "/images/discourse-logo-sketch.png",
+        "logo_dark": "",
+        "large_icon": "",
+        "favicon": "",
+        "logo_small": "/images/discourse-logo-sketch-small.png",
+        "logo_small_dark": "",
+        "mobile_logo": "",
+        "mobile_logo_dark": "",
+        "manifest_icon": "",
+        "manifest_screenshots": "",
+        "apple_touch_icon": "",
+        "digest_logo": "",
+        "opengraph_image": "",
+        "x_summary_large_image": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-17T01:57:37.925358",
+  "transaction_started_at": "2026-10-17T01:57:34.308795",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "digest_logo",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:37.995422",
+          "updated_at": "2026-10-17T01:57:37.995422"
+        },
+        {
+          "id": 38,
+          "name": "mobile_logo",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.036293",
+          "updated_at": "2026-10-17T01:57:38.036293"
+        },
+        {
+          "id": 39,
+          "name": "logo_dark",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.055882",
+          "updated_at": "2026-10-17T01:57:38.055882"
+        },
+        {
+          "id": 40,
+          "name": "logo_small_dark",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.074629",
+          "updated_at": "2026-10-17T01:57:38.074629"
+        },
+        {
+          "id": 41,
+          "name": "mobile_logo_dark",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.094216",
+          "updated_at": "2026-10-17T01:57:38.094216"
+        },
+        {
+          "id": 42,
+          "name": "large_icon",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.111617",
+          "updated_at": "2026-10-17T01:57:38.111617"
+        },
+        {
+          "id": 43,
+          "name": "manifest_icon",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.128538",
+          "updated_at": "2026-10-17T01:57:38.128538"
+        },
+        {
+          "id": 44,
+          "name": "favicon",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.146212",
+          "updated_at": "2026-10-17T01:57:38.146212"
+        },
+        {
+          "id": 45,
+          "name": "apple_touch_icon",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.163999",
+          "updated_at": "2026-10-17T01:57:38.163999"
+        },
+        {
+          "id": 46,
+          "name": "opengraph_image",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.181639",
+          "updated_at": "2026-10-17T01:57:38.181639"
+        },
+        {
+          "id": 47,
+          "name": "x_summary_large_image",
+          "value": "",
+          "data_type": 18,
+          "created_at": "2026-10-17T01:57:38.200356",
+          "updated_at": "2026-10-17T01:57:38.200356"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 359,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OKxx3N4HL5L+JShD4LWIU3GhwoE=",
+            "created_at": "2026-10-17T01:57:35.442621",
+            "rotated_at": "2026-10-17T01:57:35.44017",
+            "updated_at": "2026-10-17T01:57:35.442621",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OKxx3N4HL5L+JShD4LWIU3GhwoE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 359,
+            "seen_at": "2026-10-17T01:57:37.93535",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OKxx3N4HL5L+JShD4LWIU3GhwoE=",
+            "created_at": "2026-10-17T01:57:35.442621",
+            "rotated_at": "2026-10-17T01:57:35.44017",
+            "updated_at": "2026-10-17T01:57:35.442621",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OKxx3N4HL5L+JShD4LWIU3GhwoE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "digest_logo",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.026873",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.026873",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "mobile_logo",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.04674",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.04674",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "logo_dark",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.064335",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.064335",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "logo_small_dark",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.08574",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.08574",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "mobile_logo_dark",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.103342",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.103342",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 79,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "large_icon",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.120162",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.120162",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 80,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "manifest_icon",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.137185",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.137185",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 81,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "favicon",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.155274",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.155274",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 82,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "apple_touch_icon",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.172384",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.172384",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 83,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "opengraph_image",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.19104",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.19104",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 84,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "x_summary_large_image",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:38.209983",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:38.209983",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "72f8ccb663b4fd557385187947997094ee9bf870c5ed66e87e50e5b1abcc6ac4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

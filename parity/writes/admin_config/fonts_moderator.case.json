@@ -1,0 +1,35 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/fonts.json",
+      "params": {
+        "base_font": "roboto",
+        "heading_font": "lato",
+        "default_text_size": "larger"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/logo.json",
+      "params": {
+        "logo": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/logo.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/logo/og-image-preview.json",
+      "params": {
+        "topic_id": "1"
+      }
+    }
+  ]
+}

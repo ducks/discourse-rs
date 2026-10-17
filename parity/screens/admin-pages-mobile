@@ -69,3 +69,6 @@
 # The emoji pages (90g6).
 /admin/config/emoji as=admin
 /admin/config/emoji/settings as=admin
+# The logo and fonts pages (90g6).
+/admin/config/logo as=admin
+/admin/config/fonts as=admin

@@ -4,14 +4,19 @@
 //! change_site_setting staff log).
 //!
 //! Ported for core's and the bundled plugins' settings of the plain types
-//! (string, integer, float, bool, enum with listed choices), a plugin
+//! (string, integer, float, bool, enum with listed, recorded or enum
+//! class choices), uploads (by URL: the staff log's URLs, the upload
+//! reference, SiteIconManager's optimized icons), the font and simple
+//! lists (with their choices), a plugin
 //! setting's change running the handlers of the plugins the port
-//! has started (crate::plugins::site_setting_changed). Refused: enabling a
+//! has started (crate::plugins::site_setting_changed), and the default
+//! user preferences that are user options with their backfill
+//! (crate::user_option_defaults). Refused: enabling a
 //! bundled plugin the port has not started (unless the reference has
 //! it on by default), themeable and upcoming change settings, the other
-//! types (lists, uploads, groups,
+//! types (the other lists, uploaded image lists, groups,
 //! categories, objects...), settings with a validator class or a custom
-//! validation, default user preferences (their backfill), client strings
+//! validation, the category and tag defaults (their backfill), client strings
 //! with markup (sanitize_field), settings shadowed by a global setting,
 //! bulk updates, an archived site, and the settings whose change handlers
 //! write (the welcome topic for title and site_description, approving
@@ -91,7 +96,6 @@ const CUSTOM_VALIDATIONS: &[&str] = &[
     "share_quote_buttons",
     "slow_down_crawler_user_agents",
     "strip_image_metadata",
-    "x_summary_large_image",
 ];
 
 /// How an update ends when it isn't a server error.
@@ -112,6 +116,52 @@ pub fn is_hidden(def: &crate::site_settings::Definition) -> bool {
     opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true)))
 }
 
+/// An upload setting's Upload's URL (nil for none).
+async fn upload_url(conn: &mut PgConnection, value: &Value) -> Result<Option<String>, sqlx::Error> {
+    if value.is_blank() {
+        return Ok(None);
+    }
+    sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+        .bind(value.to_i() as i32)
+        .fetch_optional(conn)
+        .await
+}
+
+/// A list setting's `list_type`.
+fn list_type(def: &crate::site_settings::Definition) -> Option<&str> {
+    opt(def, "list_type").and_then(Yaml::as_str)
+}
+
+/// The setting's choices (`@choices[name]`'s values): listed in its
+/// definition, or, for a Ruby expression (`BaseFontSetting.values`), as
+/// recorded from the reference (crate::setting_enums).
+fn choice_values(def: &crate::site_settings::Definition) -> Vec<String> {
+    match opt(def, "choices") {
+        Some(Yaml::Sequence(choices)) => choices
+            .iter()
+            .filter_map(|c| match c {
+                Yaml::String(s) => Some(s.clone()),
+                Yaml::Number(n) => Some(n.to_string()),
+                _ => None,
+            })
+            .collect(),
+        _ => crate::setting_enums::recorded(&def.name)
+            .and_then(|r| r.get("valid_values").or_else(|| r.get("choices")))
+            .and_then(serde_json::Value::as_array)
+            .map(|values| {
+                values
+                    .iter()
+                    .filter_map(|v| match v.get("value").unwrap_or(v) {
+                        serde_json::Value::String(s) => Some(s.clone()),
+                        serde_json::Value::Number(n) => Some(n.to_string()),
+                        _ => None,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+    }
+}
+
 /// ActionView's `number_with_delimiter`.
 fn delimited(n: i64) -> String {
     let digits = n.unsigned_abs().to_string();
@@ -130,6 +180,7 @@ fn delimited(n: i64) -> String {
 pub async fn update(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
+    config: &crate::config::Config,
     defs: &Definitions,
     settings: &SiteSettings,
     i18n: &crate::i18n::I18n,
@@ -180,7 +231,10 @@ pub async fn update(
     if CUSTOM_VALIDATIONS.contains(&name) || opt(def, "validator").is_some() {
         return Err(Unsupported("settings with custom validations").into());
     }
-    if name.starts_with("default_") && !SIDEBAR_DEFAULTS.contains(&name) {
+    if name.starts_with("default_")
+        && !SIDEBAR_DEFAULTS.contains(&name)
+        && !crate::user_option_defaults::is_user_option(name)
+    {
         return Err(Unsupported("default_* settings (user preference backfills)").into());
     }
     if opt(def, "shadowed_by_global").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
@@ -207,6 +261,18 @@ pub async fn update(
             Value::Int(_) => Value::Int(crate::ruby::to_i(value)),
             _ => Value::Str(value.to_string()),
         },
+        // `Upload.get_from_url(raw_value) || ""`: the upload's id.
+        DataType::Upload => {
+            match crate::upload_references::get_from_url(&mut *conn, value).await? {
+                Some((id, _)) => Value::Int(i64::from(id)),
+                None => Value::Str(String::new()),
+            }
+        }
+        // The list kinds kept as strings (`|` separated), with no change
+        // handler or validator beyond their choices.
+        DataType::List if matches!(list_type(def), Some("font" | "simple")) => {
+            Value::Str(value.to_string())
+        }
         _ => {
             return Err(
                 Unsupported("setting types other than string, number, bool and enum").into(),
@@ -226,15 +292,72 @@ pub async fn update(
         return Ok(Outcome::Invalid(message));
     }
 
-    // set_and_log: nothing when the value is unchanged.
+    // set_and_log: nothing when the value is unchanged. An upload
+    // setting's value is its Upload (nil without one), which "" never
+    // equals.
     let previous = settings.get(name)?.clone();
-    if previous == new_value {
+    let unchanged = if def.data_type == DataType::Upload {
+        matches!(new_value, Value::Int(id) if !previous.is_blank() && previous.to_i() == id)
+    } else {
+        previous == new_value
+    };
+    if unchanged {
         return Ok(Outcome::Done);
     }
 
-    // TypeSupervisor#validate_value
-    if let Some(message) = invalid(def, &new_value, i18n)? {
+    // TypeSupervisor#validate_value: a list that allows no other values
+    // than its choices raises the invalid choices.
+    if def.data_type == DataType::List
+        && opt(def, "allow_any").is_some_and(|v| matches!(v, Yaml::Bool(false)))
+    {
+        let choices = choice_values(def);
+        let wanted = new_value.to_s();
+        let diff: Vec<&str> = wanted
+            .split('|')
+            .filter(|v| !v.is_empty() && !choices.iter().any(|c| c == v))
+            .collect();
+        if !diff.is_empty() {
+            let message = i18n
+                .t_count(
+                    "errors.site_settings.invalid_choice",
+                    diff.len() as i64,
+                    &[("name", &diff.join(","))],
+                )
+                .unwrap_or_default();
+            return Ok(Outcome::Invalid(message));
+        }
+    }
+    // An enum class's valid_value? (recorded values), whose refusal is
+    // its own message.
+    if def.data_type == DataType::Enum && opt(def, "enum").is_some() {
+        let choices = choice_values(def);
+        if choices.is_empty() {
+            return Err(Unsupported("enum settings with an enum class not recorded").into());
+        }
+        let wanted = new_value.to_s();
+        if !choices.contains(&wanted) {
+            return Ok(Outcome::Invalid(format!(
+                "Invalid value `{wanted}` for `{name}`"
+            )));
+        }
+    } else if let Some(message) = invalid(def, &new_value, i18n)? {
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
+    }
+    // SiteSettings::Validations#validate_x_summary_large_image
+    if name == "x_summary_large_image" && !new_value.is_blank() {
+        let svg: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM uploads WHERE id = $1 AND extension = 'svg')",
+        )
+        .bind(new_value.to_i() as i32)
+        .fetch_one(&mut *conn)
+        .await?;
+        if svg {
+            let message = i18n
+                .t("errors.site_settings.x_summary_large_image_no_svg")
+                .unwrap_or_default()
+                .to_string();
+            return Ok(Outcome::Invalid(message));
+        }
     }
     // A plugin's enabled setting turned on: the plugin's behaviour, which
     // the port has only for the plugins it has started porting (and runs the
@@ -249,7 +372,8 @@ pub async fn update(
     }
     // SiteSetting::Update#save: default user preferences log whether
     // existing users were updated; #backfill enqueues the sidebar job.
-    let details = if SIDEBAR_DEFAULTS.contains(&name) {
+    let user_option = crate::user_option_defaults::is_user_option(name);
+    let details = if SIDEBAR_DEFAULTS.contains(&name) || user_option {
         let answer = i18n
             .t(if backfill {
                 "csv_export.boolean_yes"
@@ -276,6 +400,16 @@ pub async fn update(
     .await?;
     crate::plugins::site_setting_changed(&mut *conn, defs, settings, name, &previous, &new_value)
         .await?;
+    // SiteIconManager.ensure_optimized! for the icons' settings, with the
+    // settings as they are now.
+    if crate::site_icons::watched(name) {
+        let now = SiteSettings::load(&mut *conn, defs, &config.globals).await?;
+        let store = crate::file_store::FileStore::for_site(config, &now)?;
+        crate::site_icons::create_optimized(&mut *conn, &now, &store).await?;
+    }
+    if backfill && user_option {
+        crate::user_option_defaults::backfill(&mut *conn, name, &new_value, &previous).await?;
+    }
     if backfill && SIDEBAR_DEFAULTS.contains(&name) {
         crate::jobs::enqueue(
             &mut *conn,
@@ -371,9 +505,30 @@ pub async fn set_and_log_details(
         other => other.to_s(),
     };
     save_override(&mut *conn, def, &db_value).await?;
+    // An upload setting's value is its Upload, whose to_s is its URL.
+    let urls = if def.data_type == DataType::Upload {
+        // SiteSetting's after_save: UploadReference.ensure_exist! for the
+        // row's upload.
+        let row_id: i64 =
+            sqlx::query_scalar("SELECT id::bigint FROM site_settings WHERE name = $1")
+                .bind(name)
+                .fetch_one(&mut *conn)
+                .await?;
+        let upload_id = (!new_value.is_blank()).then(|| new_value.to_i());
+        crate::upload_references::ensure_exist(&mut *conn, "SiteSetting", row_id, upload_id)
+            .await?;
+        let previous_url = upload_url(&mut *conn, previous).await?;
+        let new_url = upload_url(&mut *conn, new_value).await?.unwrap_or_default();
+        Some((previous_url, new_url))
+    } else {
+        None
+    };
     // notify_clients!: the new value to every client, for client settings.
     if def.client {
         let value = match &stored {
+            Value::Int(_) if urls.is_some() => {
+                serde_json::json!(urls.as_ref().map(|(_, new)| new.clone()))
+            }
             Value::Bool(b) => serde_json::json!(b),
             Value::Int(i) => serde_json::json!(i),
             Value::Float(f) => serde_json::json!(f),
@@ -393,9 +548,11 @@ pub async fn set_and_log_details(
     }
     let secret = opt(def, "secret").is_some_and(|v| matches!(v, Yaml::Bool(true)));
     let (previous, new_value) = if secret {
-        ("[FILTERED]".to_string(), "[FILTERED]".to_string())
+        (Some("[FILTERED]".to_string()), "[FILTERED]".to_string())
+    } else if let Some((previous, new_value)) = urls {
+        (previous, new_value)
     } else {
-        (previous.to_s(), new_value.to_s())
+        (Some(previous.to_s()), new_value.to_s())
     };
     // StaffActionLogger#log_site_setting_change
     sqlx::query(
@@ -556,15 +713,15 @@ fn invalid(
     let t = |key: &str, args: &[(&str, &str)]| i18n.t_with(key, args).unwrap_or_default();
     match def.data_type {
         DataType::Enum => {
-            let Some(Yaml::Sequence(choices)) = opt(def, "choices") else {
+            if opt(def, "enum").is_some() {
                 return Err(Unsupported("enum settings with an enum class"));
-            };
+            }
+            let choices = choice_values(def);
+            if choices.is_empty() {
+                return Err(Unsupported("enum settings without listed choices"));
+            }
             let wanted = value.to_s();
-            let listed = choices.iter().any(|c| match c {
-                Yaml::String(s) => *s == wanted,
-                Yaml::Number(n) => n.to_string() == wanted,
-                _ => false,
-            });
+            let listed = choices.contains(&wanted);
             if !listed {
                 // Discourse::InvalidParameters.new(:value)
                 return Ok(Some("value".to_string()));

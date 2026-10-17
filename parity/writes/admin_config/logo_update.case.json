@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/logo.json",
+      "params": {
+        "logo": "/images/d-logo-sketch.png",
+        "logo_dark": "",
+        "large_icon": "/images/d-logo-sketch-small.png",
+        "favicon": "",
+        "logo_small": "",
+        "logo_small_dark": "",
+        "mobile_logo": "",
+        "mobile_logo_dark": "",
+        "manifest_icon": "",
+        "manifest_screenshots": "",
+        "apple_touch_icon": "",
+        "digest_logo": "",
+        "opengraph_image": "",
+        "x_summary_large_image": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/site_settings.json",
+      "params": {
+        "categories": ["branding"]
+      }
+    }
+  ]
+}

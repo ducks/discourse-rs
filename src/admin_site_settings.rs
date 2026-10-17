@@ -301,6 +301,22 @@ async fn entry(
                 .await?;
                 if let Some(row) = row {
                     let (width, height) = dimensions(cx, &row).await?;
+                    // Upload#width's fix_dimensions! saves what it measured.
+                    if let (None, Some(w), Some(h)) = (row.width.or(row.height), width, height) {
+                        let (thumb_w, thumb_h) =
+                            crate::uploads::image_sizer_resize(cx.settings, w as u32, h as u32)?;
+                        sqlx::query(
+                            "UPDATE uploads SET width = $2, height = $3, thumbnail_width = $4, \
+                             thumbnail_height = $5 WHERE id = $1",
+                        )
+                        .bind(id)
+                        .bind(w)
+                        .bind(h)
+                        .bind(thumb_w as i32)
+                        .bind(thumb_h as i32)
+                        .execute(&mut *conn)
+                        .await?;
+                    }
                     upload = Some(json!({
                         "original_filename": row.original_filename,
                         "human_filesize": human_filesize(row.filesize),
