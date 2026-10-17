@@ -598,7 +598,7 @@ pub async fn set_and_log_details(
     } else {
         (Some(previous.to_s()), new_value.to_s())
     };
-    log_change(conn, actor_id, name, &previous, &new_value, details).await
+    log_change(conn, actor_id, name, previous.as_deref(), &new_value, details).await
 }
 
 /// StaffActionLogger#log_site_setting_change.
@@ -609,14 +609,14 @@ pub async fn log_site_setting_change(
     previous: &str,
     new_value: &str,
 ) -> Result<(), AppError> {
-    log_change(conn, actor_id, name, previous, new_value, None).await
+    log_change(conn, actor_id, name, Some(previous), new_value, None).await
 }
 
 async fn log_change(
     conn: &mut PgConnection,
     actor_id: i32,
     name: &str,
-    previous: &str,
+    previous: Option<&str>,
     new_value: &str,
     details: Option<&str>,
 ) -> Result<(), AppError> {
