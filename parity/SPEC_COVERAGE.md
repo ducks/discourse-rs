@@ -67,6 +67,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::AboutController | 11 | 1 | 0 | 0 |
 | Admin::Config::CategoryManagementController#categories | 5 | 1 | 0 | 0 |
 | Admin::Config::UpcomingChangesController | 19 | 0 | 1 | 0 |
+| Admin::SearchController | 2 | 0 | 0 | 0 |
 | Admin::McpController | 14 | 0 | 0 | 0 |
 | Admin::McpAuthorizationsController | 4 | 0 | 0 | 0 |
 | Admin::McpActivityController | 7 | 0 | 0 | 0 |
@@ -1036,6 +1037,16 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 259 | toggle_change > 404 when setting_name is invalid | covered | admin_config/upcoming_changes_toggle (new) |
 | 269 | toggle_change > rejects settings that are not upcoming changes | covered | admin_config/upcoming_changes_toggle (new) |
 | - | (no spec it) a moderator; groups a change doesn't allow; remove_and_replace_uncategorized's handler (its snapshot, the restore) | covered | admin_config/upcoming_changes_denied, upcoming_changes_toggle, upcoming_changes_uncategorized, upcoming_changes_uncategorized_restore, upcoming_changes_uncategorized_snapshot (new) |
+
+## Admin::SearchController
+
+`spec/requests/admin/search_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 9 | index > settings, themes and components, reports and upcoming changes | covered | admin_search/all (new) |
+| 20 | index > default_locale in a general search | covered | admin_search/all, admin_search/filtered (new) |
+| - | (no spec it) the contract's filters (names, areas, plugin, categories), no setting left (204), a moderator (403), a non-staff user (404) | covered | admin_search/filtered, admin_search/denied, admin_search/not_staff (new) |
 
 ## Admin::McpController
 

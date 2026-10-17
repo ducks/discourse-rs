@@ -281,7 +281,7 @@ const CONFIG_ALLOWED_HIDDEN: [&str; 3] = [
 ];
 
 /// `Array.wrap(params[key])` of strings, None when blank.
-fn param_list(p: &Map<String, Value>, key: &str) -> Option<Vec<String>> {
+pub(super) fn param_list(p: &Map<String, Value>, key: &str) -> Option<Vec<String>> {
     let values: Vec<String> = match p.get(key) {
         Some(Value::Array(items)) => items.iter().filter_map(params::scalar).collect(),
         Some(v) => params::scalar(v).into_iter().collect(),
@@ -324,6 +324,7 @@ pub fn config_filters(
                 .map(|s| s.to_string())
                 .collect(),
         ),
+        basic: false,
     })
 }
 

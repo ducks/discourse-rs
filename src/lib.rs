@@ -31,6 +31,8 @@ pub mod admin_plugins_view;
 pub mod admin_problem_checks_view;
 pub mod admin_report_view;
 pub mod admin_reports_view;
+pub mod admin_search;
+pub mod admin_search_view;
 pub mod admin_setting_links;
 pub mod admin_site_settings;
 pub mod admin_site_settings_view;

@@ -5,8 +5,9 @@
 //! section, the admin search or, for moderators, the links' filter),
 //! templates/admin.gjs's wrapper, and DPageHeader with DBreadcrumbsItem.
 //!
-//! The admin search the panel's search opens (90g9) and the design
-//! wizard its Appearance section's button launches (90f) are not ported.
+//! The admin search the panel's search opens is crate::admin_search; the
+//! design wizard its Appearance section's button launches (90f) is not
+//! ported.
 
 use serde_json::Value;
 
@@ -115,7 +116,7 @@ struct NavSection {
 }
 
 /// ADMIN_NAV_MAP's links with the paths their routes resolve to (the sub
-/// links, which only the admin search lists, are left to 90g9).
+/// links, which only the admin search lists, are crate::admin_search's).
 const NAV_MAP: &[NavSection] = &[
     NavSection {
         name: "root",
@@ -848,6 +849,42 @@ struct Link {
     /// The plugins' links carry their humanized name as a title.
     title: Option<String>,
     icon: String,
+    /// `labelOrText(link)`, as the admin search labels it: a plugin's
+    /// humanized name, else the label's text.
+    search_label: String,
+    /// A plugin link's description (the plugin's about).
+    description: Option<String>,
+}
+
+/// A link of the admin nav as the admin search indexes it.
+pub struct SearchLink {
+    pub name: String,
+    pub href: String,
+    pub label: String,
+    pub icon: String,
+    pub description: Option<String>,
+}
+
+/// The visible nav's sections, `labelOrText(section)` each (empty for
+/// the root), with their links, for the admin search.
+pub fn search_sections(cx: &AdminCx) -> Result<Vec<(String, Vec<SearchLink>)>, SettingError> {
+    Ok(sections(cx)?
+        .into_iter()
+        .map(|(section, links)| {
+            let label = section.label.map(|l| t(cx.i18n, l)).unwrap_or_default();
+            let links = links
+                .into_iter()
+                .map(|l| SearchLink {
+                    name: l.name,
+                    href: l.href,
+                    label: l.search_label,
+                    icon: l.icon,
+                    description: l.description,
+                })
+                .collect();
+            (label, links)
+        })
+        .collect())
 }
 
 /// `stripDiscoursePrefix`
@@ -881,6 +918,8 @@ fn plugin_links(cx: &AdminCx) -> Result<Vec<Link>, SettingError> {
             text: strip_discourse_prefix(&text),
             title: Some(p.humanized_name.to_string()),
             icon: p.icon.to_string(),
+            search_label: p.humanized_name.to_string(),
+            description: crate::admin_plugins::about(p.name),
         });
     }
     // localeCompare on these names: case-insensitively, then by case.
@@ -897,6 +936,8 @@ fn core_link(cx: &AdminCx, l: &NavLink) -> Link {
         text: strip_discourse_prefix(&t(cx.i18n, l.label)),
         title: None,
         icon: l.icon.to_string(),
+        search_label: t(cx.i18n, l.label),
+        description: None,
     }
 }
 
@@ -1009,7 +1050,7 @@ pub fn panel(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
     );
     out.push_str("</div><div class=\"sidebar-panel-header__row\">");
     if cx.viewer.admin {
-        // The search opens the admin search (90g9), which is not ported.
+        // The search opens the admin search's modal (admin-search.js).
         out.push_str(&format!(
             "<div class=\"sidebar-search\"><div class=\"sidebar-search__input-container\">{}<input class=\"sidebar-search__input\" enterkeyhint=\"done\" placeholder=\"{}\" type=\"text\">{}</div></div>",
             icon_button("btn-transparent sidebar-search__icon", "magnifying-glass", None),
@@ -1023,7 +1064,25 @@ pub fn panel(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
         ));
     }
     out.push_str("</div></div>");
-    for (section, links) in sections(cx)? {
+    let sections = sections(cx)?;
+    if !cx.viewer.admin {
+        // The links' keywords the filter matches too, by link name.
+        let keywords: serde_json::Map<String, serde_json::Value> = sections
+            .iter()
+            .flat_map(|(_, links)| links)
+            .filter_map(|l| {
+                let keywords = crate::admin_search::link_keywords(cx, &l.name);
+                (!keywords.is_empty()).then(|| (l.name.clone(), serde_json::json!(keywords)))
+            })
+            .collect();
+        out.push_str(&format!(
+            "<script type=\"application/json\" class=\"admin-sidebar-keywords\">{}</script>",
+            serde_json::Value::Object(keywords)
+                .to_string()
+                .replace('<', "\\u003c")
+        ));
+    }
+    for (section, links) in sections {
         let mut html = String::new();
         let mut has_active = false;
         for l in &links {
@@ -1308,6 +1367,19 @@ mod tests {
         assert!(html.contains("class=\"sidebar-filter__input\""));
         assert!(!html.contains("class=\"sidebar-search__input\""));
         assert!(html.contains("<a class=\"active sidebar-section-link sidebar-row admin-sidebar-nav-link\" data-link-name=\"admin_users\" href=\"/admin/users\">"));
+        // The links' keywords for the filter.
+        let start = html
+            .find("<script type=\"application/json\" class=\"admin-sidebar-keywords\">")
+            .expect("keywords");
+        let json = &html[start..];
+        let json = &json[json.find('>').unwrap() + 1..json.find("</script>").unwrap()];
+        let keywords: serde_json::Value = serde_json::from_str(json).unwrap();
+        assert!(
+            keywords["admin_logs_staff_action_logs"]
+                .as_array()
+                .is_some_and(|k| !k.is_empty()),
+            "{keywords}"
+        );
     }
 
     #[test]
