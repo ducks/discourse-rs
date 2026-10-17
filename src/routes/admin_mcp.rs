@@ -18,7 +18,7 @@ use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported, params};
 
 /// `params.require(key)`'s 400.
-fn param_missing(key: &str) -> Response {
+pub(super) fn param_missing(key: &str) -> Response {
     (
         StatusCode::BAD_REQUEST,
         Json(json!({
@@ -47,7 +47,7 @@ fn present(v: Option<&Value>) -> bool {
 }
 
 /// A list param's strings (a scalar becomes a list of one).
-fn strings(v: Option<&Value>) -> Vec<String> {
+pub(super) fn strings(v: Option<&Value>) -> Vec<String> {
     match v {
         None | Some(Value::Null) => Vec::new(),
         Some(Value::Array(items)) => items.iter().filter_map(params::scalar).collect(),
@@ -79,7 +79,7 @@ fn int_param(
 
 /// ActiveModel's boolean cast: blank is nil, then "false", "f", "0",
 /// "off" (any case) are false and everything else true.
-fn cast_bool(v: &Value) -> Option<bool> {
+pub(super) fn cast_bool(v: &Value) -> Option<bool> {
     match v {
         Value::Bool(b) => Some(*b),
         Value::Null => None,
@@ -99,7 +99,7 @@ fn cast_bool(v: &Value) -> Option<bool> {
 
 /// The request's params, the CSRF token checked for writes; Err is the
 /// response to give.
-fn request(
+pub(super) fn request(
     state: &AppState,
     guardian: &crate::guardian::Guardian,
     headers: &HeaderMap,
@@ -120,14 +120,14 @@ fn request(
     Ok(p)
 }
 
-fn acting(guardian: &crate::guardian::Guardian) -> Result<i32, AppError> {
+pub(super) fn acting(guardian: &crate::guardian::Guardian) -> Result<i32, AppError> {
     Ok(guardian
         .user_id()
         .ok_or(Unsupported("an admin without a user"))?)
 }
 
 /// `"123.json"` → 123, the path's id.
-fn path_id(raw: &str) -> String {
+pub(super) fn path_id(raw: &str) -> String {
     raw.strip_suffix(".json").unwrap_or(raw).to_string()
 }
 
@@ -301,7 +301,7 @@ pub async fn emergency_block(
 
 /// The page params the reports share: `limit` (default 50, max 100),
 /// `cursor` (min 1) and a filter of at most 200 characters.
-fn page_params(
+pub(super) fn page_params(
     state: &AppState,
     p: &Map<String, Value>,
 ) -> Result<(i64, Option<i64>, String), Box<Response>> {

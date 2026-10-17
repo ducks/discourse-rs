@@ -70,6 +70,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::McpController | 14 | 0 | 0 | 0 |
 | Admin::McpAuthorizationsController | 4 | 0 | 0 | 0 |
 | Admin::McpActivityController | 7 | 0 | 0 | 0 |
+| Admin::McpClientsController | 3 | 0 | 1 | 0 |
 | Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
@@ -118,7 +119,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (87 sections)** | **569** | **340** | **228** | **518** |
+| **All (88 sections)** | **572** | **340** | **229** | **518** |
 
 ## Cases added from this inventory
 
@@ -1082,6 +1083,18 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 165 | index > filters before pagination, no metrics with a cursor | covered | admin_mcp/activity (new) |
 | 200 | index > rejects invalid filter and date values | covered | admin_mcp/activity (new) |
 | 224 | index > not for moderators | covered | admin_mcp/denied (new) |
+
+## Admin::McpClientsController
+
+`spec/requests/admin/mcp_clients_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 13 | index > paginates | covered | admin_mcp/clients (new) |
+| 31 | index > filters before the page limit | covered | admin_mcp/clients (new) |
+| 43 | create > a non-URL client ID starting with https | covered | admin_mcp/clients (new) |
+| 60 | refresh > refreshes the metadata of an approved domain | needs-harness | the document must be served over https from a public address; the harness's remote fixtures are http on loopback |
+| - | (no spec it) show, invalid creations, block and unblock with the authorizations revoked, refresh refusals (not a metadata client, policy, blocked, root path, unreachable), moderators | covered | admin_mcp/clients, clients_refresh_refused, clients_refresh_unreachable, clients_denied (new) |
 
 ## Admin::Config::WelcomeBannerController#themes_with_setting
 

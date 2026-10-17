@@ -119,6 +119,7 @@ pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;
 pub mod mcp;
+pub mod mcp_clients;
 pub mod message_format;
 pub mod messages_view;
 pub mod mobile;

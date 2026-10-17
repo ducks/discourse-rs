@@ -23,6 +23,7 @@ mod admin_form_templates;
 mod admin_groups;
 mod admin_logs;
 mod admin_mcp;
+mod admin_mcp_clients;
 mod admin_pages;
 mod admin_plugins;
 mod admin_reports;
@@ -2653,6 +2654,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     router = admin_config_category_management::routes(router);
     router = admin_config_upcoming_changes::routes(router);
     router = admin_mcp::routes(router);
+    router = admin_mcp_clients::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.
     if let Some(src) = &config.discourse_src {

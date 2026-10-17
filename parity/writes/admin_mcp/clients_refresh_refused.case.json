@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "settings": {
+    "mcp_oauth_client_id_metadata_policy": "approved_domains",
+    "mcp_oauth_client_id_metadata_domains": "allowed.example.org"
+  },
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, metadata_uri, redirect_uris, created_at, updated_at) VALUES (502, 'https://cimd.example.org/client.json', 'Metadata client', 'cimd', 'approved', 'https://cimd.example.org/client.json', '{https://cimd.example.org/callback}', now(), now()), (504, 'https://blocked.example.org/client.json', 'Blocked metadata client', 'cimd', 'blocked', 'https://blocked.example.org/client.json', '{https://blocked.example.org/callback}', now(), now()), (505, 'https://allowed.example.org/', 'Root client', 'cimd', 'approved', 'https://allowed.example.org/', '{https://allowed.example.org/callback}', now(), now())"
+  ],
+  "requests": [
+    { "method": "POST", "path": "/admin/mcp/clients/502/refresh.json" },
+    { "method": "POST", "path": "/admin/mcp/clients/504/refresh.json" },
+    { "method": "POST", "path": "/admin/mcp/clients/505/refresh.json" }
+  ]
+}

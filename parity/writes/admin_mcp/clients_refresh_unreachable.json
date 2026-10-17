@@ -1,0 +1,75 @@
+{
+  "name": "clients_refresh_unreachable",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients/502/refresh.json"
+    }
+  ],
+  "started_at": "2026-10-17T08:49:34.0759",
+  "transaction_started_at": "2026-10-17T08:49:31.304047",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 412,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fD24uthO0Q6rYOul0IhxzGftu6A=",
+            "created_at": "2026-10-17T08:49:32.49937",
+            "rotated_at": "2026-10-17T08:49:32.494833",
+            "updated_at": "2026-10-17T08:49:32.49937",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "fD24uthO0Q6rYOul0IhxzGftu6A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 412,
+            "seen_at": "2026-10-17T08:49:34.082485",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fD24uthO0Q6rYOul0IhxzGftu6A=",
+            "created_at": "2026-10-17T08:49:32.49937",
+            "rotated_at": "2026-10-17T08:49:32.494833",
+            "updated_at": "2026-10-17T08:49:32.49937",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "fD24uthO0Q6rYOul0IhxzGftu6A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, metadata_uri, redirect_uris, created_at, updated_at) VALUES (502, 'https://cimd.invalid/client.json', 'Metadata client', 'cimd', 'approved', 'https://cimd.invalid/client.json', '{https://cimd.invalid/callback}', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "7be888ce85e896391f07ea7f5af57494f8bfb6164e07c65dc428f3ecb2efe9f0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
