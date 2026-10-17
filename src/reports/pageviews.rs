@@ -3,7 +3,7 @@
 //! the browser pageview rollups' top entry URLs, countries and
 //! referrers, and the storage stats.
 
-use chrono::{Duration, NaiveDate, NaiveDateTime};
+use chrono::{Duration, NaiveDate};
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
@@ -492,49 +492,49 @@ pub async fn storage_stats(
     cx: &Cx<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    if cx.settings.get("backup_location")?.to_s() != "local" {
-        return Err(Unsupported("storage stats of a remote backup store").into());
-    }
     let config = cx.urls.config;
-    if config.globals.use_s3() || cx.settings.get("enable_s3_uploads")?.truthy() {
-        return Err(Unsupported("storage stats of uploads on S3").into());
-    }
-    let public = &config.public_dir;
-    // LocalBackupStore.base_directory makes the directory if need be.
-    let backups_dir = public.join("backups").join(&config.site.db);
-    std::fs::create_dir_all(&backups_dir)?;
-    let mut files: Vec<(u64, NaiveDateTime)> = Vec::new();
-    for entry in std::fs::read_dir(&backups_dir)? {
-        let entry = entry?;
-        let name = entry.file_name().to_string_lossy().to_string();
-        if !(name.ends_with(".gz") || name.ends_with(".tgz")) || name.starts_with('.') {
-            continue;
+    // A remote store's StorageError leaves the backups out.
+    let store = crate::backup_restore::store::BackupStore::create(config, cx.settings)?;
+    let backups = match store.stats().await {
+        Ok(stats) => json!({
+            "used_bytes": stats.used_bytes,
+            "free_bytes": stats.free_bytes,
+            "count": stats.count,
+            "last_backup_taken_at": stats
+                .last_backup_taken_at
+                .map(|t| t.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()),
+        }),
+        Err(e)
+            if e.downcast_ref::<crate::backup_restore::store::BackupStoreError>()
+                .is_some_and(|e| {
+                    matches!(
+                        e,
+                        crate::backup_restore::store::BackupStoreError::Storage(_)
+                    )
+                }) =>
+        {
+            Value::Null
         }
-        let meta = entry.metadata()?;
-        if !meta.is_file() {
-            continue;
-        }
-        let modified: chrono::DateTime<chrono::Utc> = meta.modified()?.into();
-        files.push((meta.len(), modified.naive_utc()));
-    }
-    let used: u64 = files.iter().map(|f| f.0).sum();
-    let latest = files.iter().map(|f| f.1).max();
-    let uploads_dir = public.join("uploads").join(&config.site.db);
-    let uploads_free_at = if uploads_dir.exists() {
-        uploads_dir
+        Err(e) => return Err(e),
+    };
+    // DiskSpace.uploads_free_bytes: none for an external store.
+    let store = crate::file_store::FileStore::for_site(config, cx.settings)?;
+    let uploads_free = if store.external() {
+        None
     } else {
-        public.clone()
+        let public = &config.public_dir;
+        let uploads_dir = public.join("uploads").join(&config.site.db);
+        Some(free_bytes(if uploads_dir.exists() {
+            &uploads_dir
+        } else {
+            public
+        })?)
     };
     r.data = json!({
-        "backups": {
-            "used_bytes": used,
-            "free_bytes": free_bytes(&backups_dir)?,
-            "count": files.len(),
-            "last_backup_taken_at": latest.map(|t| t.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()),
-        },
+        "backups": backups,
         "uploads": {
             "used_bytes": uploads_used_bytes(conn).await?,
-            "free_bytes": free_bytes(&uploads_free_at)?,
+            "free_bytes": uploads_free,
         },
     });
     Ok(())

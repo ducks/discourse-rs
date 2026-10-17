@@ -11,7 +11,8 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Map, Value, json};
 
-use crate::backup_restore::{self, store, store::LocalBackupStore};
+use crate::backup_restore;
+use crate::backup_restore::store::{self, BackupStore, BackupStoreError, LocalBackupStore};
 use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
@@ -64,6 +65,19 @@ fn unsupported_media_type(state: &AppState, key: &str) -> Response {
         .into_response()
 }
 
+/// `rescue BackupStore::StorageError => e; render_json_error(e)`: a 422
+/// with the remote store's message; any other error stays one.
+fn storage_error(e: AppError) -> Result<Response, AppError> {
+    match e.downcast_ref::<BackupStoreError>() {
+        Some(BackupStoreError::Storage(message)) => Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": [message] })),
+        )
+            .into_response()),
+        _ => Err(e),
+    }
+}
+
 async fn settings(state: &AppState) -> Result<SiteSettings, AppError> {
     let mut conn = state.pool.acquire().await?;
     Ok(SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?)
@@ -109,9 +123,14 @@ pub async fn index(
         return page(&state, &guardian, &headers, &uri, tab).await;
     }
     let settings = settings(&state).await?;
-    let store = LocalBackupStore::create(&state, &settings)?;
-    let files: Vec<Value> = store.files()?.iter().map(store::BackupFile::json).collect();
-    Ok(Json(Value::Array(files)).into_response())
+    let store = BackupStore::create(&state.config, &settings)?;
+    match store.files().await {
+        Ok(files) => Ok(Json(Value::Array(
+            files.iter().map(store::BackupFile::json).collect(),
+        ))
+        .into_response()),
+        Err(e) => storage_error(e),
+    }
 }
 
 /// GET /admin/backups/logs: the logs page, with the operation's status and
@@ -161,8 +180,13 @@ async fn page(
     let cx = shell.cx(state);
     let content = match tab {
         Tab::Files => {
-            let store = LocalBackupStore::create(state, &shell.settings)?;
-            let files: Vec<Value> = store.files()?.iter().map(store::BackupFile::json).collect();
+            let store = BackupStore::create(&state.config, &shell.settings)?;
+            let files: Vec<Value> = store
+                .files()
+                .await?
+                .iter()
+                .map(store::BackupFile::json)
+                .collect();
             crate::admin_backups_view::index(&cx, &status, &files)
         }
         Tab::Logs => {
@@ -291,8 +315,8 @@ pub async fn show(
         *response.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
         return Ok(response);
     }
-    let store = LocalBackupStore::create(&state, &settings)?;
-    let Some(backup) = store.file(&id)? else {
+    let store = BackupStore::create(&state.config, &settings)?;
+    let Some(backup) = store.file(&id, true).await? else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
     let mut tx = state.pool.begin().await?;
@@ -300,15 +324,27 @@ pub async fn show(
     backup_restore::log_staff_action(&mut tx, "backup_download", user_id, Some(&backup.filename))
         .await?;
     tx.commit().await?;
-    send_file(&backup).await
+    match &backup.source {
+        // A remote store: the presigned download.
+        Some(store::Source::Url(url)) => Ok((
+            StatusCode::FOUND,
+            [(header::LOCATION, HeaderValue::from_str(url)?)],
+        )
+            .into_response()),
+        Some(store::Source::File(path)) => send_file(&backup, path).await,
+        None => Ok(StatusCode::NOT_FOUND.into_response()),
+    }
 }
 
 /// `send_file`: the file streamed as an attachment, typed by its
 /// extension as Mime::Type knows it (`.gz` only).
-async fn send_file(backup: &store::BackupFile) -> Result<Response, AppError> {
+async fn send_file(
+    backup: &store::BackupFile,
+    path: &std::path::Path,
+) -> Result<Response, AppError> {
     use futures_util::StreamExt;
     use tokio::io::AsyncReadExt;
-    let file = tokio::fs::File::open(&backup.path).await?;
+    let file = tokio::fs::File::open(path).await?;
     let stream = futures_util::stream::unfold(file, |mut file| async move {
         let mut buf = vec![0u8; 64 * 1024];
         match file.read(&mut buf).await {
@@ -384,8 +420,8 @@ pub async fn email(
         return Ok(super::session::render_empty());
     }
     let settings = settings(&state).await?;
-    let store = LocalBackupStore::create(&state, &settings)?;
-    if store.file(&id)?.is_none() {
+    let store = BackupStore::create(&state.config, &settings)?;
+    if store.file(&id, false).await?.is_none() {
         return Ok(StatusCode::NOT_FOUND.into_response());
     }
     let mut conn = state.pool.acquire().await?;
@@ -424,8 +460,8 @@ pub async fn destroy(
     if let Some(r) = backups_disabled(&state, &settings)? {
         return Ok(r);
     }
-    let store = LocalBackupStore::create(&state, &settings)?;
-    let Some(backup) = store.file(&id)? else {
+    let store = BackupStore::create(&state.config, &settings)?;
+    let Some(backup) = store.file(&id, false).await? else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
     let mut conn = state.pool.acquire().await?;
@@ -436,7 +472,7 @@ pub async fn destroy(
         Some(&backup.filename),
     )
     .await?;
-    store.delete_file(&backup.filename)?;
+    store.delete_file(&backup.filename).await?;
     Ok(StatusCode::OK.into_response())
 }
 
@@ -484,7 +520,8 @@ pub async fn check_backup_chunk(
             "resumableFilename",
         ));
     }
-    let store = LocalBackupStore::create(&state, &settings)?;
+    // LocalBackupStore.chunk_path, whatever backup_location says.
+    let store = LocalBackupStore::at(&state.config.public_dir, &state.config.site.db)?;
     let chunk = store.chunk_path(identifier, filename, chunk_number);
     let current = crate::ruby::to_i(current);
     let uploaded = std::fs::metadata(&chunk)
@@ -541,7 +578,8 @@ pub async fn upload_backup_chunk(
             "backup.backup_file_should_be_tar_gz",
         ));
     }
-    let store = LocalBackupStore::create(&state, &settings)?;
+    // LocalBackupStore.chunk_path, whatever backup_location says.
+    let store = LocalBackupStore::at(&state.config.public_dir, &state.config.site.db)?;
     let free = store::free_bytes(&state.config.public_dir.join("backups"))?;
     if i64::try_from(free).unwrap_or(i64::MAX) <= total_size {
         return Ok(unsupported_media_type(
@@ -629,8 +667,14 @@ pub async fn create_upload_url(
     if !store::valid_filename(&filename) {
         return Ok(error("backup.invalid_filename"));
     }
-    LocalBackupStore::create(&state, &settings)?;
-    Err(Unsupported("backup upload URLs (direct S3 uploads)").into())
+    let store = BackupStore::create(&state.config, &settings)?;
+    match store.generate_upload_url(&filename).await {
+        Ok(url) => Ok(Json(json!({ "success": "OK", "url": url })).into_response()),
+        Err(e) if matches!(e.downcast_ref(), Some(BackupStoreError::FileExists)) => {
+            Ok(error("backup.file_exists"))
+        }
+        Err(e) => storage_error(e),
+    }
 }
 
 /// POST /admin/backups/{create,complete,abort}-multipart and

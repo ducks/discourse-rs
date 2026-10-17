@@ -14,7 +14,7 @@ use std::process::Stdio;
 use serde_json::json;
 use tokio::io::{AsyncBufReadExt, BufReader};
 
-use super::store::LocalBackupStore;
+use super::store::{BackupStore, LocalBackupStore};
 use crate::config::RailsEnv;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
@@ -201,7 +201,7 @@ struct Run<'a> {
     settings: SiteSettings,
     user: Option<(i32, String)>,
     with_uploads: bool,
-    store: LocalBackupStore,
+    store: BackupStore,
     tmp_directory: PathBuf,
     dump_filename: PathBuf,
     archive_directory: PathBuf,
@@ -220,7 +220,7 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
     if settings.get("enable_s3_uploads")?.truthy() || state.config.globals.use_s3() {
         return Err(Unsupported("backups of a site whose uploads are on S3").into());
     }
-    let store = LocalBackupStore::create(state, &settings)?;
+    let store = BackupStore::create(&state.config, &settings)?;
     let user: Option<(i32, String)> =
         sqlx::query_as("SELECT id, username FROM users WHERE id = $1")
             .bind(user_id)
@@ -239,7 +239,10 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
         .join("backups")
         .join(&state.config.site.db)
         .join(&timestamp);
-    let archive_directory = store.directory().to_path_buf();
+    // LocalBackupStore.base_directory: the archive is made there, then
+    // uploaded to a remote store.
+    let archive_directory =
+        LocalBackupStore::base_directory(&state.config.public_dir, &state.config.site.db)?;
     let title = parameterize(&settings.get("title")?.to_s());
     let title: String = title.chars().take(64).collect();
     let name = opts.filename.clone().unwrap_or_else(|| {
@@ -362,7 +365,7 @@ impl Run<'_> {
             } else {
                 self.move_dump_backup().await?;
             }
-            // upload_archive: the local store keeps it where it is.
+            self.upload_archive().await?;
             self.log
                 .log("Executing the after_create_hook for the backup...")
                 .await;
@@ -587,6 +590,38 @@ impl Run<'_> {
         }
     }
 
+    /// `upload_archive`: a remote store gets the archive (the local store
+    /// made it in place).
+    async fn upload_archive(&mut self) -> Result<(), AppError> {
+        if !self.store.remote() {
+            return Ok(());
+        }
+        self.log.log("Uploading archive...").await;
+        // MiniMime: both .tar.gz and .sql.gz are gzip.
+        let path = self.archive_directory.join(&self.backup_filename);
+        self.store
+            .upload_file(&self.backup_filename, &path, "application/gzip")
+            .await
+    }
+
+    /// `delete_uploaded_archive`: the local copy of an archive a remote
+    /// store took.
+    async fn delete_uploaded_archive(&mut self) {
+        if !self.store.remote() {
+            return;
+        }
+        let path = self.archive_directory.join(&self.backup_filename);
+        if path.exists() {
+            self.log.log("Removing archive from local storage...").await;
+            if let Err(e) = std::fs::remove_file(&path) {
+                self.log
+                    .log("Something went wrong while deleting uploaded archive from local storage.")
+                    .await;
+                tracing::error!("{e}");
+            }
+        }
+    }
+
     /// `delete_old`: past maximum_backups the oldest go; not in
     /// development.
     async fn delete_old(&mut self) {
@@ -595,7 +630,7 @@ impl Run<'_> {
         }
         self.log.log("Deleting old backups...").await;
         let deleted = match self.settings.get("maximum_backups") {
-            Ok(max) => self.store.delete_old(max.to_i()),
+            Ok(max) => self.store.delete_old(max.to_i()).await,
             Err(e) => Err(e.into()),
         };
         if let Err(e) = deleted {
@@ -608,6 +643,7 @@ impl Run<'_> {
 
     async fn clean_up(&mut self, success: bool) {
         self.log.log("Cleaning stuff up...").await;
+        self.delete_uploaded_archive().await;
         self.log.log("Removing '.tar' leftovers...").await;
         if let Ok(entries) = std::fs::read_dir(&self.archive_directory) {
             for entry in entries.flatten() {
