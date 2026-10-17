@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Record the vendored Discourse's commits of the year before it from a
+# reference agent into vendor/discourse/commits.txt, for what's new
+# (src/new_features.rs answers GitUtils.has_commit? from it). Run after
+# vendoring, from an agent at the vendored commit.
+#
+# Usage: scripts/record-discourse-commits <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but vendor/ is from $vendored" >&2
+  exit 1
+fi
+dv copy "$root/scripts/discourse_commits_export.rb" "$agent:/tmp/discourse_commits_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/discourse_commits_export.rb /tmp/discourse_commits.txt | tail -1
+dv copy "$agent:/tmp/discourse_commits.txt" "$root/vendor/discourse/commits.txt" > /dev/null

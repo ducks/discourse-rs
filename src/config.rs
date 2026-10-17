@@ -42,6 +42,9 @@ pub struct Config {
     /// each request URL, so tests can stand in for the providers. Empty
     /// outside tests.
     pub auth_provider_hosts: Vec<(String, String)>,
+    /// `DiscourseUpdates.new_features_endpoint`: meta's feed in production,
+    /// else DISCOURSE_NEW_FEATURES_ENDPOINT or the local server's.
+    pub new_features_endpoint: String,
     /// Object storage endpoints (`s3_endpoint`) reached elsewhere: (the
     /// endpoint as configured, where its requests go), so tests can run
     /// the S3 server on a port of their own while urls keep the
@@ -256,6 +259,13 @@ impl Config {
             rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
             track_requests: rails_env != RailsEnv::Development || var("TRACK_REQUESTS").is_some(),
             auth_provider_hosts: Vec::new(),
+            new_features_endpoint: if rails_env == RailsEnv::Production {
+                crate::new_features::META_ENDPOINT.to_string()
+            } else {
+                var("DISCOURSE_NEW_FEATURES_ENDPOINT")
+                    .unwrap_or("http://localhost:3000/new-features.json")
+                    .to_string()
+            },
             object_storage_endpoints: Vec::new(),
         })
     }

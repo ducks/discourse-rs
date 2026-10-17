@@ -228,7 +228,15 @@ pub async fn consolidate_or_create(
     match n.notification_type {
         types::LIKED | types::REACTION => consolidate_likes(conn, bus, settings, n).await,
         types::LINKED => Err(Unsupported("linked notification consolidation").into()),
-        types::NEW_FEATURES => Err(Unsupported("new features notification consolidation").into()),
+        types::NEW_FEATURES => {
+            // DeletePreviousNotifications: the user's earlier ones go.
+            sqlx::query("DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2")
+                .bind(n.user_id)
+                .bind(types::NEW_FEATURES)
+                .execute(&mut *conn)
+                .await?;
+            create(conn, bus, settings, n).await
+        }
         types::GROUP_MESSAGE_SUMMARY => {
             // DeletePreviousNotifications on the data's group_id.
             if let Some(group_id) = n.data.get("group_id").filter(|v| present(v)) {

@@ -108,6 +108,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
             }
         }
         "process_email" => process_email(state, &job.args).await,
+        crate::new_features::REFRESH_JOB => refresh_latest_new_feature(state).await,
         "index_user_fields_for_search" => index_user_fields_for_search(state, &job.args).await,
         "create_avatar_thumbnails" => create_avatar_thumbnails(state, &job.args).await,
         "update_gravatar" => update_gravatar(state, &job.args).await,
@@ -169,6 +170,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// `Jobs::RefreshLatestNewFeature`
+async fn refresh_latest_new_feature(state: &AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    crate::new_features::refresh_latest(&mut conn, state).await
 }
 
 /// `Jobs::CreateAvatarThumbnails`

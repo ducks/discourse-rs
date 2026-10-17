@@ -422,8 +422,23 @@ pub async fn toggle(
     if !guardian.is_staff() {
         return Ok(super::topics::not_found_response(&state));
     }
+    let unavailable = super::topics::not_found_response(&state);
+    toggle_change(&state, &guardian, &p, unavailable).await
+}
+
+/// UpcomingChanges::Toggle for a staff member's params: the contract, the
+/// admin policy, then `unavailable` for a setting that is not an upcoming
+/// change (NotFound here, InvalidAccess from the dashboard's
+/// toggle_feature).
+pub(super) async fn toggle_change(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    p: &serde_json::Map<String, Value>,
+    unavailable: Response,
+) -> Result<Response, AppError> {
+    let state = state.clone();
     // The contract.
-    let name = params::string(&p, "setting_name").unwrap_or_default();
+    let name = params::string(p, "setting_name").unwrap_or_default();
     let enabled = cast_bool(p.get("enabled"));
     let mut errors = Vec::new();
     if crate::ruby::is_blank(&name) {
@@ -439,7 +454,7 @@ pub async fn toggle(
         return Ok(super::search::invalid_access(&state));
     }
     let Some(def) = change_def(&state, &name) else {
-        return Ok(super::topics::not_found_response(&state));
+        return Ok(unavailable);
     };
     let acting = guardian
         .user_id()

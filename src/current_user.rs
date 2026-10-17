@@ -781,20 +781,11 @@ pub async fn serialize(
         ),
     );
     if g.is_staff() {
-        // DiscourseUpdates.has_unseen_features?: false until the background
-        // job has cached the latest feature's date, and the job is queued
-        // (once a minute) to do so. The job itself, reading the feed, is not
-        // ported, so nothing is ever cached and it stays false.
-        if crate::owned_schema::cached_get(&mut *conn, "latest_new_feature_created_at")
-            .await?
-            .is_some()
-        {
-            return Err(Unsupported("unseen new features").into());
-        }
-        if crate::owned_schema::set_once(&mut *conn, "refresh_latest_new_feature_lock", 60).await? {
-            crate::jobs::enqueue(&mut *conn, "refresh_latest_new_feature", json!({})).await?;
-        }
-        out.insert("has_unseen_features".into(), json!(false));
+        // DiscourseUpdates.has_unseen_features?
+        out.insert(
+            "has_unseen_features".into(),
+            json!(crate::new_features::has_unseen(&mut *conn, uid).await?),
+        );
         let last_visited: Option<Option<String>> = sqlx::query_scalar(
             "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = 'last_visited_upcoming_changes_at' ORDER BY id LIMIT 1",
         )

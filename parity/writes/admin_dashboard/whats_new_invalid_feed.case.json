@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "redis": {"new_features": "INVALID JSON"},
+  "requests": [
+    {"method": "GET", "path": "/admin/whats-new.json"}
+  ]
+}

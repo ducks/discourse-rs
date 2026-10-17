@@ -34,6 +34,7 @@ mod admin_user_fields;
 mod admin_users;
 mod admin_watched_words;
 mod admin_web_hooks;
+mod admin_whats_new;
 mod archive_message;
 mod backups;
 mod badges;
@@ -1189,30 +1190,6 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/dashboard/site-traffic-explorer.json",
             get(admin_dashboard_sections::traffic),
-        )
-        .route(
-            "/admin/dashboard/whats-new",
-            get(admin_dashboard_sections::upcoming_changes),
-        )
-        .route(
-            "/admin/dashboard/whats-new.json",
-            get(admin_dashboard_sections::upcoming_changes),
-        )
-        .route(
-            "/admin/whats-new",
-            get(admin_dashboard_sections::upcoming_changes),
-        )
-        .route(
-            "/admin/whats-new.json",
-            get(admin_dashboard_sections::upcoming_changes),
-        )
-        .route(
-            "/admin/toggle-feature",
-            post(admin_dashboard_sections::upcoming_changes),
-        )
-        .route(
-            "/admin/toggle-feature.json",
-            post(admin_dashboard_sections::upcoming_changes),
         )
         .route("/admin/dashboard/problems", post(admin_dashboard::problems))
         .route(
@@ -2532,6 +2509,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/popular-themes.js", get(asset))
         .route("/assets/admin-category-management.js", get(asset))
         .route("/assets/admin-search.js", get(asset))
+        .route("/assets/admin-whats-new.js", get(asset))
         .route("/assets/admin-upcoming-changes.js", get(asset))
         .route("/assets/date-range-picker.js", get(asset))
         .route("/assets/admin-mcp.js", get(asset))
@@ -2660,6 +2638,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     router = admin_config_mcp::routes(router);
     router = admin_config_upcoming_changes::routes(router);
     router = admin_search::routes(router);
+    router = admin_whats_new::routes(router);
     router = admin_mcp::routes(router);
     router = admin_mcp_clients::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),

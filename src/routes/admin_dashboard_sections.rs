@@ -470,16 +470,3 @@ pub async fn traffic(
             .into_response(),
     })
 }
-
-/// GET /admin/dashboard/whats-new and /admin/whats-new(.json), POST
-/// /admin/toggle-feature: what's new reads the upcoming changes list
-/// (UpcomingChanges::List) and the meta feed, the toggle writes them.
-pub async fn upcoming_changes(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-) -> Result<Response, AppError> {
-    if !guardian.is_staff() {
-        return Ok(not_found(&state));
-    }
-    Err(Unsupported("what's new and toggling features (the upcoming changes list)").into())
-}

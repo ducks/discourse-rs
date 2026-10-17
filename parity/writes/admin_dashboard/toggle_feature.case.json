@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {"setting_name": "enable_unified_new", "enabled": "false"}},
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {}},
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {"setting_name": "title", "enabled": "true"}},
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {"setting_name": "enable_unified_new", "enabled": "true"}}
+  ]
+}

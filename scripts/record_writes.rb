@@ -211,7 +211,10 @@ def clear_redis_state
   # minute ban after a size mismatch, which would refuse later cases.
   # user-profile-view:*: UserProfileView.add's once-a-day marks, which
   # would leave out a profile an earlier case viewed.
-  %w[ban_user_from_external_uploads_* user-profile-view:* readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled].each do |pattern|
+  # new_features*, latest_new_feature_created_at, refresh_latest_new_feature_lock,
+  # last_viewed_feature_dates_for_users_hash: DiscourseUpdates' feed and
+  # what each admin has seen of it (a case's `redis`, its requests).
+  %w[ban_user_from_external_uploads_* user-profile-view:* readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -414,6 +417,8 @@ end
 # replay runs on): request targets and what each answers, `{status,
 # headers, body}`; anything else is a 404. tests/writes.rs serves the same.
 REMOTE = {}
+# A case's `env` values' previous ones, put back after it.
+ENV_BEFORE = {}
 if cases.any? { |c| c["remote"] }
   # "::" takes IPv4 too.
   server = TCPServer.new("::", 8099)
@@ -429,7 +434,9 @@ if cases.any? { |c| c["remote"] }
         rest = rest.to_s
         rest << s.readpartial(4096) while rest.bytesize < length
         method, target = head.lines.first.to_s.split(" ")
-        page = REMOTE[target] || {}
+        # A target given without a query answers whatever query is sent
+        # (a date the request computes).
+        page = REMOTE[target] || REMOTE[target.to_s.split("?", 2).first] || {}
         body = page["body"].to_s
         s.write "HTTP/1.1 #{page["status"] || 404} X\r\nConnection: close\r\nContent-Length: #{body.bytesize}\r\n"
         (page["headers"] || {}).each { |k, v| s.write "#{k}: #{v}\r\n" }
@@ -496,7 +503,13 @@ cases.each do |c|
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
-    REMOTE.replace(c["remote"] || {})
+    # A page's `{"fixture": name}` body: that file's text.
+    REMOTE.replace(
+      (c["remote"] || {}).transform_values do |page|
+        next page if !page["body"].is_a?(Hash)
+        page.merge("body" => File.read(File.join(files_dir, page["body"]["fixture"])))
+      end,
+    )
     if c["s3"]
       s3_empty(s3_buckets(c))
       (c.dig("s3", "objects") || {}).each do |path, name|
@@ -520,8 +533,16 @@ cases.each do |c|
     # Discourse.enable_readonly_mode sets them, less the TTL keep-alive.
     (c["readonly"] || []).each { |key| Discourse.redis.set(key, 1) }
     # `redis`: other Redis values the case's requests read (a backup
-    # download token, the backups' running flag), set without a TTL.
-    (c["redis"] || {}).each { |key, value| Discourse.redis.set(key, value) }
+    # download token, the backups' running flag, a `{"fixture": name}`'s
+    # file: the new features feed), set without a TTL.
+    (c["redis"] || {}).each do |key, value|
+      value = File.read(File.join(files_dir, value["fixture"])) if value.is_a?(Hash)
+      Discourse.redis.set(key, value)
+    end
+    # `env`: environment variables for the case (the new features
+    # endpoint), restored after it.
+    ENV_BEFORE.replace((c["env"] || {}).to_h { |k, _| [k, ENV[k]] })
+    (c["env"] || {}).each { |k, v| ENV[k] = v }
     # `rate_limits`: the limiter on for the case's requests and jobs only
     # (after the login and setup, which would count otherwise).
     RateLimiter.enable if c["rate_limits"]
@@ -624,6 +645,7 @@ cases.each do |c|
     record[:random_delays] = c["random_delays"] if c["random_delays"]
     record[:files] = c["files"] if c["files"]
     record[:remote] = c["remote"] if c["remote"]
+    record[:env] = c["env"] if c["env"]
     record[:remote_hosts] = c["remote_hosts"] if c["remote_hosts"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
     record[:keep_headers] = c["keep_headers"] if c["keep_headers"]
@@ -657,6 +679,8 @@ cases.each do |c|
     # Nor are a case's objects.
     s3_empty(s3_buckets(c)) if c["s3"]
     RateLimiter.disable
+    ENV_BEFORE.each { |k, v| ENV[k] = v }
+    ENV_BEFORE.clear
     clear_redis_state
     pool.unpin_connection!
     # Always: a case's requests or jobs may set settings too

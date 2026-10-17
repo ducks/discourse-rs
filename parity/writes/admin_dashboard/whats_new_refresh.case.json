@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "env": {"DISCOURSE_NEW_FEATURES_ENDPOINT": "http://fixtures.localhost:8099/new-features.json"},
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "remote": {
+    "/new-features.json": {"status": 200, "headers": {"Content-Type": "application/json"}, "body": {"fixture": "new_features_feed.json"}}
+  },
+  "requests": [
+    {"method": "GET", "path": "/admin/whats-new.json", "params": {"force_refresh": "true"}},
+    {"method": "GET", "path": "/session/current.json"}
+  ]
+}

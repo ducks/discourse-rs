@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "env": {"DISCOURSE_NEW_FEATURES_ENDPOINT": "http://fixtures.localhost:8099/new-features.json"},
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "remote": {
+    "/new-features.json": {"status": 200, "headers": {"Content-Type": "application/json"}, "body": {"fixture": "new_features_feed.json"}}
+  },
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, data, read, created_at, updated_at, high_priority) VALUES (37, 1, '{}', false, now() - interval '3 days', now() - interval '3 days', false)"
+  ],
+  "requests": [],
+  "enqueue": [["check_new_features", {}]],
+  "run_jobs": ["check_new_features", "refresh_latest_new_feature"]
+}

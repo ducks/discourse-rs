@@ -1603,6 +1603,16 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
 /// resolves to loopback here and in the reference's container.
 const REMOTE_ADDRS: [&str; 2] = ["127.0.0.1:8099", "[::1]:8099"];
 
+/// A file of parity/writes/files as text.
+fn fixture_text(name: &str) -> String {
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/writes/files")
+            .join(name),
+    )
+    .unwrap_or_else(|e| panic!("fixture {name}: {e}"))
+}
+
 /// A case's `remote`: request targets (path and query) on
 /// http://fixtures.localhost:8099 and what each answers, `{status,
 /// headers, body}`, as scripts/record_writes.rb serves them; anything else
@@ -1611,7 +1621,14 @@ async fn serve_remote(case: &Value) -> Vec<tokio::task::JoinHandle<()>> {
     let Some(pages) = case["remote"].as_object() else {
         return Vec::new();
     };
-    let pages = std::sync::Arc::new(pages.clone());
+    // A `{"fixture": name}` body: that file of parity/writes/files.
+    let mut pages = pages.clone();
+    for page in pages.values_mut() {
+        if let Some(name) = page["body"]["fixture"].as_str() {
+            page["body"] = Value::String(fixture_text(name));
+        }
+    }
+    let pages = std::sync::Arc::new(pages);
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(300);
     let listeners = loop {
         let mut bound = Vec::new();
@@ -1683,7 +1700,10 @@ async fn answer_remote(
     let mut line = request.lines().next().unwrap_or("").split(' ');
     let method = line.next().unwrap_or("");
     let target = line.next().unwrap_or("");
-    let page = pages.get(target);
+    // A target given without a query answers whatever query is sent.
+    let page = pages
+        .get(target)
+        .or_else(|| pages.get(target.split('?').next().unwrap_or(target)));
     let status = page.and_then(|p| p["status"].as_u64()).unwrap_or(404);
     let body = page.and_then(|p| p["body"].as_str()).unwrap_or("");
     let mut head = format!(
@@ -1734,6 +1754,11 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     config.public_dir = public.clone();
     // RateLimiter: off, as the recorder runs Rails, unless the case asks.
     config.rate_limits = case["rate_limits"] == true;
+    // `env`: the variables the recorder set for the case (the new
+    // features endpoint).
+    if let Some(endpoint) = case["env"]["DISCOURSE_NEW_FEATURES_ENDPOINT"].as_str() {
+        config.new_features_endpoint = endpoint.to_string();
+    }
     // `remote_hosts`: login providers' fixed endpoints on the fixtures
     // server, as the recorder rewrites Faraday's URLs.
     config.auth_provider_hosts = case["remote_hosts"]
@@ -1845,14 +1870,13 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     // them (no TTL): the port keeps them in discourse_rs.cached_values.
     for (key, value) in case["redis"].as_object().into_iter().flatten() {
         let mut conn = db.pool.acquire().await.unwrap();
-        discourse_rs::owned_schema::cached_setex(
-            &mut conn,
-            key,
-            100 * 365 * 24 * 3600,
-            value.as_str().unwrap(),
-        )
-        .await
-        .unwrap();
+        let value = match value["fixture"].as_str() {
+            Some(name) => fixture_text(name),
+            None => value.as_str().unwrap().to_string(),
+        };
+        discourse_rs::owned_schema::cached_setex(&mut conn, key, 100 * 365 * 24 * 3600, &value)
+            .await
+            .unwrap();
     }
     // The recorder drops what the login and setup enqueued (ENQUEUED.clear),
     // such as a staff login's suspicious_login.

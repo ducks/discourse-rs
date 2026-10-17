@@ -25,6 +25,7 @@ pub mod event_types {
     pub const AUTOMATICALLY_PROMOTED: i32 = 2;
     pub const MANUAL_OPT_IN: i32 = 3;
     pub const MANUAL_OPT_OUT: i32 = 4;
+    pub const STATUS_CHANGED: i32 = 5;
     pub const ADMINS_NOTIFIED_AVAILABLE_CHANGE: i32 = 6;
     pub const ADMINS_NOTIFIED_AUTOMATIC_PROMOTION: i32 = 7;
 }

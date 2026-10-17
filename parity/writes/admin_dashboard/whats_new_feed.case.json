@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "redis": {"new_features": {"fixture": "new_features_feed.json"}},
+  "requests": [
+    {"method": "GET", "path": "/session/current.json"},
+    {"method": "GET", "path": "/admin/whats-new.json"},
+    {"method": "GET", "path": "/admin/dashboard/whats-new.json", "params": {"force_refresh": "false"}},
+    {"method": "GET", "path": "/session/current.json"}
+  ]
+}

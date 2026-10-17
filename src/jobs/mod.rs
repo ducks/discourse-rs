@@ -253,6 +253,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     (bookmark_reminders::JOB, Duration::from_secs(300)),
     (
+        crate::new_features::CHECK_JOB,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
         crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS,
         Duration::from_secs(300),
     ),
@@ -557,6 +561,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
         bookmark_reminders::JOB => bookmark_reminders::run(state).await,
+        crate::new_features::CHECK_JOB => crate::new_features::check(state).await,
         topic_timers::ENQUEUER => topic_timers::enqueue_pending(state).await,
         crate::badge_granter::PROCESS_BADGE_BACKLOG => {
             crate::badge_granter::process_badge_backlog(state).await

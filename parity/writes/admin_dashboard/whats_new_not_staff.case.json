@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/admin/whats-new.json"},
+    {"method": "GET", "path": "/admin/dashboard/whats-new.json"},
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {"setting_name": "enable_unified_new", "enabled": "false"}}
+  ]
+}
