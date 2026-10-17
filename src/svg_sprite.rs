@@ -12,10 +12,8 @@
 //! and the icons the plugins register. The Font Awesome icons are CC BY
 //! 4.0.
 //!
-//! A built sprite is kept by what it is built from (the icons and the
-//! custom symbols), as Rails keeps it in its DistributedCache, so a change
-//! to a badge, group, setting or theme gives a new version without an
-//! expiry hook.
+//! Each site's sprite is kept in process per theme (for_site), checked
+//! against one fingerprint of what it is built from on each page.
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::{Arc, Mutex, OnceLock};
@@ -176,54 +174,8 @@ fn icon_strings(schema: &Value, objects: &[Value]) -> Vec<String> {
 
 /// `theme_icons(theme_ids)`: the themes' settings named `*_icon*` or typed
 /// icon, their objects settings' icon properties, and their modifiers'
-/// svg_icons. The settings' part is kept by the themes' fields and
-/// settings rows (their latest update and count), so a page doesn't parse
-/// the themes' settings each time.
+/// svg_icons.
 async fn theme_icons(
-    conn: &mut PgConnection,
-    vcx: &crate::themes::ValueCx<'_>,
-    theme_ids: &[i32],
-) -> Result<Vec<String>, AppError> {
-    type Kept = HashMap<(Vec<i32>, String), Vec<String>>;
-    static KEPT: OnceLock<Mutex<Kept>> = OnceLock::new();
-    let fingerprint: String = sqlx::query_scalar(
-        "SELECT concat_ws(',', current_database(), \
-           (SELECT max(updated_at)::text || count(*) FROM theme_fields WHERE theme_id = ANY($1)), \
-           (SELECT max(updated_at)::text || count(*) FROM theme_settings WHERE theme_id = ANY($1)), \
-           (SELECT max(updated_at)::text || count(*) FROM uploads WHERE id IN \
-              (SELECT upload_id FROM theme_fields WHERE theme_id = ANY($1))))",
-    )
-    .bind(theme_ids)
-    .fetch_one(&mut *conn)
-    .await?;
-    let key = (theme_ids.to_vec(), fingerprint);
-    let kept = KEPT.get_or_init(Default::default);
-    let cached = kept.lock().expect("theme icons").get(&key).cloned();
-    let mut out = match cached {
-        Some(icons) => icons,
-        None => {
-            let icons = theme_setting_icons(conn, vcx, theme_ids).await?;
-            let mut guard = kept.lock().expect("theme icons");
-            if guard.len() >= 32 {
-                guard.clear();
-            }
-            guard.insert(key, icons.clone());
-            icons
-        }
-    };
-    // ThemeModifierHelper#svg_icons: the sets' arrays, flattened.
-    let modifiers: Vec<Vec<String>> = sqlx::query_scalar(
-        "SELECT svg_icons FROM theme_modifier_sets \
-         WHERE theme_id = ANY($1) AND svg_icons IS NOT NULL",
-    )
-    .bind(theme_ids)
-    .fetch_all(&mut *conn)
-    .await?;
-    out.extend(modifiers.into_iter().flatten());
-    Ok(out)
-}
-
-async fn theme_setting_icons(
     conn: &mut PgConnection,
     vcx: &crate::themes::ValueCx<'_>,
     theme_ids: &[i32],
@@ -249,20 +201,75 @@ async fn theme_setting_icons(
             }
         }
     }
+    // ThemeModifierHelper#svg_icons: the sets' arrays, flattened.
+    let modifiers: Vec<Vec<String>> = sqlx::query_scalar(
+        "SELECT svg_icons FROM theme_modifier_sets \
+         WHERE theme_id = ANY($1) AND svg_icons IS NOT NULL",
+    )
+    .bind(theme_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    out.extend(modifiers.into_iter().flatten());
     Ok(out)
 }
 
-/// The site's sprite for a theme (`theme_id` None for none).
+/// The site's sprite for a theme (`theme_id` None for none), kept per
+/// site and theme as SvgSprite keeps it in its DistributedCache, and
+/// built again only when what it is built from has changed.
+///
+/// Rails expires that cache (SvgSprite.expire_cache) when a badge, group,
+/// theme, theme field, theme modifier set, theme sprite or Boards column
+/// is saved, and when an icon setting changes. Here those tables, with
+/// the site settings and the child and remote themes transform_ids reads,
+/// give one fingerprint, read in a single query a page. A write from any
+/// path and in any process is seen by the next request, as the site
+/// settings' own cache sees its table change (SiteSettings::load). The
+/// cache is keyed by the database, so each site of a multisite process
+/// keeps its own.
 pub async fn for_site(
     conn: &mut PgConnection,
     state: &crate::AppState,
     settings: &SiteSettings,
     theme_id: Option<i64>,
 ) -> Result<Arc<Built>, AppError> {
+    type Kept = HashMap<(String, Option<i64>), (String, Arc<Built>)>;
+    static KEPT: OnceLock<Mutex<Kept>> = OnceLock::new();
+    let (database, fingerprint): (String, String) =
+        sqlx::query_as(FINGERPRINT).fetch_one(&mut *conn).await?;
+    let key = (database, theme_id);
+    let kept = KEPT.get_or_init(Default::default);
+    if let Some((cached, built)) = kept.lock().expect("sprite cache").get(&key)
+        && *cached == fingerprint
+    {
+        return Ok(built.clone());
+    }
     let store = crate::file_store::FileStore::for_site(&state.config, settings)?;
     let inputs = inputs(conn, &state.site_setting_defs, settings, &store, theme_id).await?;
-    Ok(build(&inputs))
+    let built = build(&inputs);
+    let mut guard = kept.lock().expect("sprite cache");
+    if guard.len() >= 256 {
+        guard.clear();
+    }
+    guard.insert(key, (fingerprint, built.clone()));
+    Ok(built)
 }
+
+/// The database, and what a site's sprite is built from as one string:
+/// each table's latest update and row count (theme_modifier_sets, which
+/// has no timestamps, by its svg_icons).
+const FINGERPRINT: &str = "SELECT current_database()::text, concat_ws('/', \
+     (SELECT max(updated_at)::text || count(*) FROM site_settings), \
+     (SELECT max(updated_at)::text || count(*) FROM badges), \
+     (SELECT max(updated_at)::text || count(*) FROM groups), \
+     (SELECT max(updated_at)::text || count(*) FROM themes), \
+     (SELECT max(updated_at)::text || count(*) FROM child_themes), \
+     (SELECT max(updated_at)::text || count(*) FROM remote_themes), \
+     (SELECT max(updated_at)::text || count(*) FROM theme_fields), \
+     (SELECT max(updated_at)::text || count(*) FROM theme_settings), \
+     (SELECT max(updated_at)::text || count(*) FROM theme_svg_sprites), \
+     (SELECT md5(string_agg(theme_id || ':' || coalesce(svg_icons::text, ''), ',' \
+        ORDER BY theme_id)) FROM theme_modifier_sets), \
+     (SELECT max(updated_at)::text || count(*) FROM discourse_kanban_columns))";
 
 /// What a site's sprite is built from for a theme.
 pub struct Inputs {
