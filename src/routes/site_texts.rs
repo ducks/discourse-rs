@@ -516,7 +516,7 @@ async fn site_text_response(
 }
 
 /// `StaffActionLogger#log_site_text_change`
-async fn log_change(
+pub(super) async fn log_change(
     conn: &mut PgConnection,
     acting_user_id: i32,
     subject: &str,
@@ -610,78 +610,14 @@ pub async fn update(
     let old_value = overrides.translate(&id)?;
     let old_value = string_value(&old_value)?.to_string();
 
-    // TranslationOverride.upsert!
-    if id.ends_with("_MF") {
-        return Err(Unsupported("MessageFormat site texts (MessageFormat.compile)").into());
-    }
-    let sanitized = match &value {
-        Some(v) => Some(crate::sanitize_field::sanitize_field(
-            v,
-            &["data-auto-route", "target"],
-        )?),
-        None => None,
-    };
-    let mut errors = Vec::new();
-    let blank = sanitized.as_deref().is_none_or(crate::ruby::is_blank);
-    if blank {
-        errors.push("Value can't be blank".to_string());
-    } else {
-        let invalid =
-            site_texts::invalid_interpolation_keys(&id, sanitized.as_deref().unwrap_or(""))?;
-        if !invalid.is_empty() {
-            let comma = state.i18n.t("word_connector.comma").unwrap_or(", ");
-            let message = state
-                .i18n
-                .t_count(
-                    "activerecord.errors.models.translation_overrides.attributes.value.invalid_interpolation_keys",
-                    invalid.len() as i64,
-                    &[("keys", &invalid.join(comma))],
-                )
-                .ok_or(Unsupported("a missing validation message"))?;
-            errors.push(message);
-        }
-    }
-    if !errors.is_empty() {
+    if let Err(errors) =
+        upsert_override(&mut tx, &state.i18n, &locale, &id, value.as_deref()).await?
+    {
         return Ok((
             StatusCode::UNPROCESSABLE_ENTITY,
             Json(json!({"failed": "FAILED", "message": errors.join("\n\n")})),
         )
             .into_response());
-    }
-    let sanitized = sanitized.unwrap_or_default();
-    let original = site_texts::tree().default_value(&site_texts::transform_pluralized_key(&id))?;
-    let original = string_value(&original)?.to_string();
-    match site_texts::find_override(&mut tx, &locale, &id).await? {
-        None => {
-            sqlx::query(
-                "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, \
-                 status, created_at, updated_at) VALUES ($1, $2, $3, $4, 0, now(), now())",
-            )
-            .bind(&locale)
-            .bind(&id)
-            .bind(&sanitized)
-            .bind(&original)
-            .execute(&mut *tx)
-            .await?;
-        }
-        Some(row) => {
-            let (original, status) = site_texts::refreshed_status(&id, &sanitized)?;
-            if row.value != sanitized
-                || row.original_translation != original
-                || row.status != status
-            {
-                sqlx::query(
-                    "UPDATE translation_overrides SET value = $2, original_translation = $3, status = $4, \
-                     updated_at = now() WHERE id = $1",
-                )
-                .bind(row.id)
-                .bind(&sanitized)
-                .bind(&original)
-                .bind(status)
-                .execute(&mut *tx)
-                .await?;
-            }
-        }
     }
     log_change(&mut tx, acting, &id, value.as_deref(), Some(&old_value)).await?;
     let parts: Vec<&str> = id.split('.').collect();
@@ -994,4 +930,84 @@ pub async fn reseed_options(
 /// and topics.
 pub async fn reseed() -> Result<Response, AppError> {
     Err(Unsupported("reseeding categories and topics").into())
+}
+
+/// `TranslationOverride.upsert!(locale, key, value)`: the sanitized value
+/// written over the key (the default its original), or the record's
+/// validation errors as full messages, nothing written.
+pub(super) async fn upsert_override(
+    conn: &mut PgConnection,
+    i18n: &crate::i18n::I18n,
+    locale: &str,
+    id: &str,
+    value: Option<&str>,
+) -> Result<Result<(), Vec<String>>, AppError> {
+    if id.ends_with("_MF") {
+        return Err(Unsupported("MessageFormat site texts (MessageFormat.compile)").into());
+    }
+    let sanitized = match value {
+        Some(v) => Some(crate::sanitize_field::sanitize_field(
+            v,
+            &["data-auto-route", "target"],
+        )?),
+        None => None,
+    };
+    let mut errors = Vec::new();
+    let blank = sanitized.as_deref().is_none_or(crate::ruby::is_blank);
+    if blank {
+        errors.push("Value can't be blank".to_string());
+    } else {
+        let invalid =
+            site_texts::invalid_interpolation_keys(id, sanitized.as_deref().unwrap_or(""))?;
+        if !invalid.is_empty() {
+            let comma = i18n.t("word_connector.comma").unwrap_or(", ");
+            let message = i18n
+                .t_count(
+                    "activerecord.errors.models.translation_overrides.attributes.value.invalid_interpolation_keys",
+                    invalid.len() as i64,
+                    &[("keys", &invalid.join(comma))],
+                )
+                .ok_or(Unsupported("a missing validation message"))?;
+            errors.push(message);
+        }
+    }
+    if !errors.is_empty() {
+        return Ok(Err(errors));
+    }
+    let sanitized = sanitized.unwrap_or_default();
+    let original = site_texts::tree().default_value(&site_texts::transform_pluralized_key(id))?;
+    let original = string_value(&original)?.to_string();
+    match site_texts::find_override(&mut *conn, locale, id).await? {
+        None => {
+            sqlx::query(
+                "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, \
+                 status, created_at, updated_at) VALUES ($1, $2, $3, $4, 0, now(), now())",
+            )
+            .bind(locale)
+            .bind(id)
+            .bind(&sanitized)
+            .bind(&original)
+            .execute(&mut *conn)
+            .await?;
+        }
+        Some(row) => {
+            let (original, status) = site_texts::refreshed_status(id, &sanitized)?;
+            if row.value != sanitized
+                || row.original_translation != original
+                || row.status != status
+            {
+                sqlx::query(
+                    "UPDATE translation_overrides SET value = $2, original_translation = $3, status = $4, \
+                     updated_at = now() WHERE id = $1",
+                )
+                .bind(row.id)
+                .bind(&sanitized)
+                .bind(&original)
+                .bind(status)
+                .execute(&mut *conn)
+                .await?;
+            }
+        }
+    }
+    Ok(Ok(()))
 }

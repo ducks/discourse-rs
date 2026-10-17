@@ -1,0 +1,2063 @@
+{
+  "name": "email_templates_update_plural",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/templates.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/email/templates/system_messages.pending_users_reminder",
+      "params": {
+        "email_template": {
+          "subject": "Users wait",
+          "body": "A body"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/system_messages.pending_users_reminder"
+    }
+  ],
+  "started_at": "2026-10-17T03:49:07.238333",
+  "transaction_started_at": "2026-10-17T03:49:05.761469",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email_templates": [
+          {
+            "id": "admin_confirmation_mailer",
+            "title": "Admin Confirmation",
+            "subject": "[%{email_prefix}] Confirm new Admin Account",
+            "body": "Please confirm that you'd like to add **%{target_username} (%{target_email})** as an administrator for your forum.\n\n[Confirm Administrator Account](%{admin_confirm_url})\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "admin_confirm_url",
+              "email_prefix",
+              "target_email",
+              "target_username"
+            ]
+          },
+          {
+            "id": "custom_invite_forum_mailer",
+            "title": "Custom Invite Forum Mailer",
+            "subject": "%{inviter_name} invited you to join %{site_domain_name}",
+            "body": "%{inviter_name} invited you to join\n\n> **%{site_title}**\n>\n> %{site_description}\n\nWith this note\n\n> %{user_custom_message}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "invite_link",
+              "inviter_name",
+              "site_description",
+              "site_domain_name",
+              "site_title",
+              "user_custom_message"
+            ]
+          },
+          {
+            "id": "custom_invite_mailer",
+            "title": "Custom Invite Mailer",
+            "subject": "%{inviter_name} invited you to '%{topic_title}' on %{site_domain_name}",
+            "body": "%{inviter_name} invited you to a discussion\n\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nat\n\n> %{site_title} -- %{site_description}\n\nWith this note\n\n> %{user_custom_message}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "invite_link",
+              "inviter_name",
+              "site_description",
+              "site_domain_name",
+              "site_title",
+              "topic_excerpt",
+              "topic_title",
+              "user_custom_message"
+            ]
+          },
+          {
+            "id": "download_backup_mailer",
+            "title": "Download Backup Mailer",
+            "subject": "[%{email_prefix}] Site Backup Download",
+            "body": "Here's the [site backup download](%{backup_file_path}) you requested.\n\nWe sent this download link to your validated email address for security reasons.\n\n(If you *didn't* request this download, you should be seriously concerned -- someone has admin access to your site.)\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "backup_file_path",
+              "email_prefix"
+            ]
+          },
+          {
+            "id": "email_login_code_mailer",
+            "title": "Email Login Code Mailer",
+            "subject": "%{code} is your login code",
+            "body": "Use this code to finish logging in to %{site_name}:\n\n## %{code}\n\nThis code expires in %{minutes} minutes. If you didn't request it, you can safely ignore this email.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "code",
+              "minutes",
+              "site_name"
+            ]
+          },
+          {
+            "id": "invite_forum_mailer",
+            "title": "Invite Forum Mailer",
+            "subject": "%{inviter_name} invited you to join %{site_domain_name}",
+            "body": "%{inviter_name} invited you to join\n\n> **%{site_title}**\n>\n> %{site_description}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "invite_link",
+              "inviter_name",
+              "site_description",
+              "site_domain_name",
+              "site_title"
+            ]
+          },
+          {
+            "id": "invite_mailer",
+            "title": "Invite Mailer",
+            "subject": "%{inviter_name} invited you to '%{topic_title}' on %{site_domain_name}",
+            "body": "%{inviter_name} invited you to a discussion\n\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nat\n\n> %{site_title} -- %{site_description}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "invite_link",
+              "inviter_name",
+              "site_description",
+              "site_domain_name",
+              "site_title",
+              "topic_excerpt",
+              "topic_title"
+            ]
+          },
+          {
+            "id": "invite_password_instructions",
+            "title": "Invite Password Instructions",
+            "subject": "Set password for your %{site_name} account",
+            "body": "Thanks for accepting your invitation to %{site_name} -- welcome!\n\nClick this link to choose a password now:\n%{base_url}/u/password-reset/%{email_token}\n\n(If the link above has expired, choose \"I forgot my password\" when logging in with your email address.)\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "new_version_mailer",
+            "title": "New Version Mailer",
+            "subject": "[%{email_prefix}] New Discourse version, update available",
+            "body": "Hooray, a new version of [Discourse](https://www.discourse.org) is available!\n\nYour version: %{installed_version}\nNew version: **%{new_version}**\n\n- Update using our easy **[one-click browser update](%{base_url}/admin/update)**\n\n- See what's new in the [release notes](https://releases.discourse.org/changelog/v%{new_version})\n\n- Visit [meta.discourse.org](https://meta.discourse.org) for news, discussion, and support for Discourse\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "installed_version",
+              "new_version"
+            ]
+          },
+          {
+            "id": "new_version_mailer_with_notes",
+            "title": "New Version Mailer with Notes",
+            "subject": "[%{email_prefix}] update available",
+            "body": "Hooray, a new version of [Discourse](https://www.discourse.org) is available!\n\nYour version: %{installed_version}\nNew version: **%{new_version}**\n\n- Update using our easy **[one-click browser update](%{base_url}/admin/update)**\n\n- See what's new in the [release notes](https://releases.discourse.org/changelog/v%{new_version})\n\n- Visit [meta.discourse.org](https://meta.discourse.org) for news, discussion, and support for Discourse\n\n### Release notes\n\n%{notes}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "installed_version",
+              "new_version",
+              "notes"
+            ]
+          },
+          {
+            "id": "password_reset_code_mailer",
+            "title": "Password reset code",
+            "subject": "%{code} is your password reset code",
+            "body": "Use this code to reset your password on %{site_name}:\n\n## %{code}\n\nThis code expires in %{minutes} minutes. If you didn't request it, you can safely ignore this email.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "code",
+              "minutes",
+              "site_name"
+            ]
+          },
+          {
+            "id": "system_messages.backup_failed",
+            "title": "Backup Failed",
+            "subject": "Backup failed",
+            "body": "The backup has failed.\n\nHere's the log:\n\n%{logs}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "logs"
+            ]
+          },
+          {
+            "id": "system_messages.backup_succeeded",
+            "title": "Backup Succeeded",
+            "subject": "Backup completed successfully",
+            "body": "The backup was successful.\n\nVisit the [admin > backup section](%{base_url}/admin/backups) to download your new backup.\n\nHere's the log:\n\n%{logs}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "logs"
+            ]
+          },
+          {
+            "id": "system_messages.bulk_invite_failed",
+            "title": "Bulk Invite Failed",
+            "subject": "Bulk user invite processed with errors",
+            "body": "Your bulk user invite file was processed, %{sent} invites mailed, %{skipped} skipped, %{warnings} warning(s) and %{failed} error(s).\n\nSkipped Invites for Emails:\n\n``` text\n%{skipped_emails}\n```\n\nFailed Invites for Emails:\n\n``` text\n%{failed_emails}\n```\n\nHere's the log:\n\n``` text\n%{logs}\n```\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "failed",
+              "failed_emails",
+              "logs",
+              "sent",
+              "skipped",
+              "skipped_emails",
+              "warnings"
+            ]
+          },
+          {
+            "id": "system_messages.bulk_invite_succeeded",
+            "title": "Bulk Invite Succeeded",
+            "subject": "Bulk user invite processed successfully",
+            "body": "Your bulk user invite file was processed, %{sent} invites mailed, %{skipped} skipped and %{warnings} warning(s).\n\nSkipped Invites for Emails:\n\n``` text\n%{skipped_emails}\n```\n\n``` text\n%{logs}\n```\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "logs",
+              "sent",
+              "skipped",
+              "skipped_emails",
+              "warnings"
+            ]
+          },
+          {
+            "id": "system_messages.csv_export_failed",
+            "title": "CSV Export Failed",
+            "subject": "Data export failed",
+            "body": "We're sorry, but your data export failed. Please check the logs or [contact a staff member](%{base_url}/about).",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url"
+            ]
+          },
+          {
+            "id": "system_messages.csv_export_succeeded",
+            "title": "CSV Export Succeeded",
+            "subject": "[%{export_title}] Data export complete",
+            "body": "Your data export was successful! :dvd:\n\n%{download_link}\n\nThe above download link will be valid for 48 hours.\n\nThe data is compressed as a zip archive. If the archive does not extract itself when you open it, use the tool recommended here: https://www.7-zip.org/\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "download_link",
+              "export_title"
+            ]
+          },
+          {
+            "id": "system_messages.download_remote_images_disabled",
+            "title": "Download Remote Images Disabled",
+            "subject": "Downloading remote images disabled",
+            "body": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "system_messages.email_error_notification",
+            "title": "Email Error Notification",
+            "subject": "[%{email_prefix}] Email issue -- POP authentication error",
+            "body": "Unfortunately, there was an authentication error while polling mails from the POP server.\n\nPlease make sure you have properly configured the POP credentials in [the site settings](%{base_url}/admin/site_settings/category/email).\n\nIf there is a web UI for the POP email account, you may need to log in on the web and check your settings there.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_attachment",
+            "title": "Email Attachment Rejected",
+            "subject": "[%{email_prefix}] Email issue -- Attachment Rejected",
+            "body": "Unfortunately some attachments in your email message to %{destination} (titled %{former_title}) were rejected.\n\nDetails:\n%{rejected_errors}\n\nIf you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title",
+              "rejected_errors"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_auto_generated",
+            "title": "Email Reject Auto Generated",
+            "subject": "[%{email_prefix}] Email issue -- Auto Generated Reply",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour email was marked as \"auto generated\", which means it was automatically created by a computer instead of being typed by a human; we can't accept those kinds of emails. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_bad_destination_address",
+            "title": "Email Reject Bad Destination Address",
+            "subject": "[%{email_prefix}] Email issue -- Unknown To: Address",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nHere are some things to check:\n\n  - Do you use more than one email address? Did you reply from a different email address than the one you originally used? Email replies require that you use the same email address when replying.\n\n  - Did your email software properly use the Reply-To: email address when replying? Unfortunately, some email software incorrectly sends replies to the From: address, which won’t work.\n\n  - Was the Message-ID header in the email modified? The Message-ID must be consistent and unchanged.\n\nNeed more help? Reach out to us via the Contact Us details at %{base_url}/about\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_email_alias",
+            "title": "Email Reject Email Alias",
+            "subject": "[%{email_prefix}] Email issue -- unrecognized email address",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nWe couldn't match the address you sent from to an account on this site. Try sending from the email address you signed up with, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_empty",
+            "title": "Email Reject Empty",
+            "subject": "[%{email_prefix}] Email issue -- No Content",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nWe couldn't find any reply content in your email.\n\nIf you're getting this and you _did_ include a reply, try again with simpler formatting.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_inactive_user",
+            "title": "Email Reject Inactive User",
+            "subject": "[%{email_prefix}] Email issue -- Inactive User",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour account associated with this email address is not activated. Please activate your account before sending emails in.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_insufficient_trust_level",
+            "title": "Email Reject insufficient Trust Level",
+            "subject": "[%{email_prefix}] Email issue -- Insufficient Trust Level",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour account does not have the required trust level to post new topics to this email address. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_invalid_access",
+            "title": "Email Reject Invalid Access",
+            "subject": "[%{email_prefix}] Email issue -- Invalid Access",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour account does not have the privileges to post new topics in that category. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_invalid_post",
+            "title": "Email Reject Invalid Post",
+            "subject": "[%{email_prefix}] Email issue -- Posting error",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nSome possible causes are: complex formatting, message too large, message too small. Please try again, or post via the website if this continues.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_invalid_post_action",
+            "title": "Email Reject Invalid Post Action",
+            "subject": "[%{email_prefix}] Email issue -- Invalid Post Action",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe Post Action was not recognized. Please try again, or post via the website if this continues.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_invalid_post_specified",
+            "title": "Email Reject Invalid Post Specified",
+            "subject": "[%{email_prefix}] Email issue -- Posting error",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nReason:\n\n%{post_error}\n\nIf you can correct the problem, please try again.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title",
+              "post_error"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_not_allowed_email",
+            "title": "Email Reject Not Allowed Email",
+            "subject": "[%{email_prefix}] Email issue -- blocked email",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour reply was sent from a blocked email address. Try sending from another email address, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_old_destination",
+            "title": "Email Reject Old Destination",
+            "subject": "[%{email_prefix}] Email issue -- You are trying to reply to an old notification",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nWe only accept replies to original notifications for %{number_of_days} days. Please [visit the topic](%{short_url}) to continue the conversation.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title",
+              "number_of_days",
+              "short_url"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_parsing",
+            "title": "Email Reject Parsing",
+            "subject": "[%{email_prefix}] Email issue -- Content Unrecognized",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nWe couldn't find your reply in the email. **Make sure your reply is at the top of the email** -- we can't process inline replies.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_post_too_short",
+            "title": "Email Reject Post Too Short",
+            "subject": "[%{email_prefix}] Email issue -- Post too short",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nTo promote more in depth conversations, very short replies are not allowed. Can you please reply with at least %{count} characters? Alternatively, you can like a post via email by replying with \"+1\".\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "count",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_reply_key",
+            "title": "Email Reject Reply Key",
+            "subject": "[%{email_prefix}] Email issue -- Unknown Reply Key",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe reply key in the email is invalid or unknown, so we can't figure out what this email is in reply to. [Contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_reply_not_allowed",
+            "title": "Email Reject Reply Not Allowed",
+            "subject": "[%{email_prefix}] Email issue -- Reply Not Allowed",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_reply_to_digest",
+            "title": "Email Reject Reply To Summary",
+            "subject": "[%{email_prefix}] Email issue -- Reply To Summary",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYou replied to a Summary email, which is not accepted.\n\nIf you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_reply_user_not_matching",
+            "title": "Email Reject User Not Matching",
+            "subject": "[%{email_prefix}] Email issue -- Unexpected Reply Address",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour reply was sent from a different email address than the one we expected, so we're not sure if this is the same person. Try sending from another email address, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_screened_email",
+            "title": "Email Reject Screened Email",
+            "subject": "[%{email_prefix}] Email issue -- Blocked Email",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour reply was sent from a blocked email address. Try sending from another email address, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_silenced_user",
+            "title": "Email Reject Silenced User",
+            "subject": "[%{email_prefix}] Email issue -- Silenced User",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour account associated with this email address has been silenced.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_strangers_not_allowed",
+            "title": "Email Reject Strangers Not Allowed",
+            "subject": "[%{email_prefix}] Email issue -- Invalid Access",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe category you sent this email to only allows replies from users with valid accounts and known email addresses. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_too_many_recipients",
+            "title": "Email Reject Too Many Recipients",
+            "subject": "[%{email_prefix}] Email issue -- Too Many Recipients",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYou attempted to email more than %{max_recipients_count} people and our system automatically tagged your email as spam.\n\nIf you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title",
+              "max_recipients_count"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_topic_closed",
+            "title": "Email Reject Topic Closed",
+            "subject": "[%{email_prefix}] Email issue -- Topic Closed",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe topic you are replying to is currently closed and no longer accepting replies. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_topic_not_found",
+            "title": "Email Reject Topic Not Found",
+            "subject": "[%{email_prefix}] Email issue -- Topic Not Found",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe topic you are replying to no longer exists -- perhaps it was deleted? If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_unrecognized_error",
+            "title": "Email Reject Unrecognized Error",
+            "subject": "[%{email_prefix}] Email issue -- Unrecognized Error",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThere was an unrecognized error while processing your email and it wasn't posted. You should try again, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_user_not_found",
+            "title": "Email Reject User Not Found",
+            "subject": "[%{email_prefix}] Email issue -- User Not Found",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYour reply was sent from an unknown email address. Try sending from another email address, or [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_revoked",
+            "title": "Email Revoked",
+            "subject": "Is your email address correct?",
+            "body": "We’re sorry, but we’re having trouble reaching you via email. Our last few emails to you have all bounced back as undeliverable.\n\nCan you make sure [your email address](%{base_url}/my/preferences/email) is valid and working? You may also wish to add our email address to your address book / contact list to improve deliverability.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url"
+            ]
+          },
+          {
+            "id": "system_messages.flags_agreed_and_post_deleted",
+            "title": "Flagged post removed by staff",
+            "subject": "Flagged post removed by staff",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{url}) was removed.\n\n%{flag_reason}\n\nThis post was flagged by the community and a staff member opted to remove it.\n\n``` markdown\n%{flagged_post_raw_content}\n```\n\nPlease review our [community guidelines](%{base_url}/guidelines) for details.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "flag_reason",
+              "flagged_post_raw_content",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.flags_agreed_and_post_deleted_for_responders",
+            "title": "Reply removed from flagged post by staff",
+            "subject": "Reply removed from flagged post by staff",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that a [post](%{base_url}%{url}) you replied to was removed.\n\n%{flag_reason}\n\nThis post was flagged by the community and a staff member opted to remove it.\n\n``` markdown\n%{flagged_post_raw_content}\n```\n\nTo which you responded\n\n``` markdown\n%{flagged_post_response_raw_content}\n```\n\nFor more details on the reason for removal, please review our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "flag_reason",
+              "flagged_post_raw_content",
+              "flagged_post_response_raw_content",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.flags_disagreed",
+            "title": "Flagged post restored by staff",
+            "subject": "Flagged post restored by staff",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{url}) was restored.\n\nThis post was flagged by the community and a staff member opted to restore it.\n\n[details=\"Click to expand restored post\"]\n``` markdown\n%{flagged_post_raw_content}\n```\n[/details]\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "flagged_post_raw_content",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.ignored_users_summary",
+            "title": "Ignored User passed threshold",
+            "subject": "A user is being ignored by many other users",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to inform you that @%{username} has been ignored by %{ignores_threshold} users. This could indicate a problem is developing in your community.\n\nYou might want to [review recent posts](%{base_url}/u/%{username}/summary) from this user, and potentially other users in the [ignored and muted user report](%{base_url}/admin/reports/top_ignored_users).\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "ignores_threshold",
+              "site_name",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.new_user_of_the_month",
+            "title": "You're a New User of the Month!",
+            "subject": "You're a new user of the month!",
+            "body": "Congratulations, you've earned the **New User of the Month award for %{month_year}**. :trophy:\n\nThis award is only granted to two new users per month, and it will be permanently visible on [the badges page](%{url}).\n\nYou've quickly become a valuable member of our community. Thanks for joining, and keep up the great work!\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "month_year",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.pending_users_reminder",
+            "title": "Pending Users Reminder",
+            "subject": null,
+            "body": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url"
+            ]
+          },
+          {
+            "id": "system_messages.post_hidden",
+            "title": "Post Hidden",
+            "subject": "Post hidden by community flags",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden.\n\n<%{base_url}%{url}>\n\n%{flag_reason}\n\nThis post was hidden due to flags from the community, so please consider how you might revise your post to reflect their feedback. **You can edit your post after %{edit_delay} minutes, and it will be automatically unhidden.**\n\nHowever, if the post is hidden by the community a second time, it will remain hidden until handled by staff.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "edit_delay",
+              "flag_reason",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.post_hidden_again",
+            "title": "Post Hidden again",
+            "subject": "Post hidden by community flags, staff notified",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden again.\n\n<%{base_url}%{url}>\n\n%{flag_reason}\n\nThe community flagged this post and now it is hidden. **Because this post has been hidden more than once, your post will now remain hidden until it is handled by a staff member.**\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "flag_reason",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.queued_by_staff",
+            "title": "Post Needs Approval",
+            "subject": "Post hidden by staff, awaiting approval",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden.\n\n<%{base_url}%{url}>\n\nYour post will remain hidden until a staff member reviews it.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "site_name",
+              "url"
+            ]
+          },
+          {
+            "id": "system_messages.queued_posts_reminder",
+            "title": "Queued Posts Reminder",
+            "subject": null,
+            "body": "Hello,\n\nPosts from new users were held for moderation and are currently waiting to be reviewed. [Approve or reject them here](%{base_url}/review?type=ReviewableQueuedPost).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url"
+            ]
+          },
+          {
+            "id": "system_messages.restore_failed",
+            "title": "Restore Failed",
+            "subject": "Restore failed",
+            "body": "The restore has failed.\n\nHere's the log:\n\n%{logs}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "logs"
+            ]
+          },
+          {
+            "id": "system_messages.restore_succeeded",
+            "title": "Restore Succeeded",
+            "subject": "Restore completed successfully",
+            "body": "The restore was successful.\n\nHere's the log:\n\n%{logs}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "logs"
+            ]
+          },
+          {
+            "id": "system_messages.reviewable_queued_post_revise_and_reject",
+            "title": "Feedback on your post",
+            "subject": "Feedback on your post in %{topic_title}",
+            "body": "Hi %{username},\n\nWe've reviewed your post in [%{topic_title}](%{topic_url}) and have some feedback for you.\n\nReason: %{reason}\n\nFeedback: %{feedback}\n\n%{edit_instructions}\n\n--------\n\n%{original_post}\n\n--------\n\nThanks,\n%{site_name} Moderators\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "edit_instructions",
+              "feedback",
+              "original_post",
+              "reason",
+              "site_name",
+              "topic_title",
+              "topic_url",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.reviewable_queued_post_revise_and_reject_new_topic",
+            "title": "Feedback on your topic",
+            "subject": "Feedback on new topic titled \"%{topic_title}\"",
+            "body": "Hi %{username},\n\nWe've reviewed your new topic titled \"%{topic_title}\" and have some feedback for you.\n\nReason: %{reason}\n\nFeedback: %{feedback}\n\n%{edit_instructions}\n\n--------\n\n%{original_post}\n\n--------\n\nThanks,\n%{site_name} Moderators\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "edit_instructions",
+              "feedback",
+              "original_post",
+              "reason",
+              "site_name",
+              "topic_title",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.reviewables_reminder",
+            "title": "Reviewables Reminder",
+            "subject": "There are items in the review queue that need reviewing",
+            "body": {
+              "one": "%{mentions} Items were submitted over %{count} hour ago. [Please review them](%{base_url}/review).",
+              "other": "%{mentions} Items were submitted over %{count} hours ago. [Please review them](%{base_url}/review)."
+            },
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "system_messages.silenced_by_staff",
+            "title": "Silenced by Staff",
+            "subject": "Account temporarily on hold",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been temporarily placed on hold as a precautionary measure.\n\nPlease do continue to browse, but you won't be able to reply or create topics until a [staff member](%{base_url}/about) reviews your most recent posts. We apologize for the inconvenience.\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "site_name"
+            ]
+          },
+          {
+            "id": "system_messages.spam_post_blocked",
+            "title": "Spam Post Blocked",
+            "subject": "New user %{username} posts blocked due to repeated links",
+            "body": "This is an automated message.\n\nThe new user [%{username}](%{user_url}) tried to create multiple posts with links to %{domains}, but those posts were blocked to avoid spam. The user is still able to create new posts that do not link to %{domains}.\n\nPlease [review the user](%{user_url}).\n\nThis can be modified via the `newuser_spam_host_threshold` and `allowed_spam_host_domains` site settings. Consider adding %{domains} to the allowlist if they should be exempt.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "domains",
+              "user_url",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.tl2_promotion_message",
+            "title": "Tl2 Promotion Message",
+            "subject": "Congratulations on your trust level promotion!",
+            "body": "We’ve promoted you up another [trust level](https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/)!\n\nAchieving Trust Level 2 means that you have read and actively participated enough to be considered a member of this community.\n\nAs an experienced user, you might appreciate [this list of handy tips and tricks](https://blog.discourse.org/2016/12/discourse-new-user-tips-and-tricks/).\n\nWe invite you to keep getting involved – we enjoy having you around.\n",
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "system_messages.too_many_spam_flags",
+            "title": "Too Many Spam Flags",
+            "subject": "New account on hold",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your posts have been temporarily hidden because they were flagged by the community.\n\nAs a precautionary measure, your new account has been silenced and will be unable to create replies or topics until a staff member can review your account. We apologize for the inconvenience.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "site_name"
+            ]
+          },
+          {
+            "id": "system_messages.too_many_tl3_flags",
+            "title": "Too Many TL3 Flags",
+            "subject": "New account on hold",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know you that your account has been placed on hold due to a large number of community flags.\n\nAs a precautionary measure, your new account has been silenced from creating new replies or topics until a staff member can review your account. We apologize for the inconvenience.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "site_name"
+            ]
+          },
+          {
+            "id": "system_messages.unsilenced",
+            "title": "Unsilenced",
+            "subject": "Account no longer on hold",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account is no longer on hold after staff review.\n\nYou can now create new replies and topics again. Thank you for your patience.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "site_name"
+            ]
+          },
+          {
+            "id": "system_messages.user_added_to_group_as_member",
+            "title": "Added to Group as Member",
+            "subject": "You have been added as a member of the %{group_name} group",
+            "body": "You have been added as a member of the [%{group_name}](%{base_url}%{group_path}) group.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "group_name",
+              "group_path"
+            ]
+          },
+          {
+            "id": "system_messages.user_added_to_group_as_owner",
+            "title": "Added to Group as Owner",
+            "subject": "You have been added as an owner of the %{group_name} group",
+            "body": "You have been added as an owner of the [%{group_name}](%{base_url}%{group_path}) group.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "group_name",
+              "group_path"
+            ]
+          },
+          {
+            "id": "system_messages.user_automatically_silenced",
+            "title": "User Automatically Silenced",
+            "subject": "New user %{username} silenced by community flags",
+            "body": "This is an automated message.\n\nThe new user [%{username}](%{user_url}) was automatically silenced.\n\nPlease [review the flags](%{base_url}/review). If %{username} was incorrectly silenced from posting, click the unsilence button on [the admin page for this user](%{user_url}).\n\nThis threshold can be changed via the `silence_new_user` site settings.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "user_url",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.user_automatically_silenced_with_reason",
+            "title": "User Automatically Silenced",
+            "subject": "New user %{username} silenced by community flags",
+            "body": "This is an automated message.\n\nThe new user [%{username}](%{user_url}) was automatically silenced.\n\nReason - %{reason}\n\nPlease [review the flags](%{base_url}/review). If %{username} was incorrectly silenced from posting, click the unsilence button on [the admin page for this user](%{user_url}).\n\nThis threshold can be changed via the `silence_new_user` site settings.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "reason",
+              "user_url",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.user_posts_deleted",
+            "title": "User Posts Deleted",
+            "subject": "All of %{user}'s posts have been deleted",
+            "body": {
+              "one": "%{count} post from @%{user} has been deleted by @%{staff_user}.",
+              "other": "%{count} posts from @%{user} have been deleted by @%{staff_user}."
+            },
+            "can_revert": false,
+            "interpolation_keys": [
+              "user"
+            ]
+          },
+          {
+            "id": "system_messages.welcome_invite",
+            "title": "Welcome Invite",
+            "subject": "Welcome to %{site_name}!",
+            "body": "Thanks for accepting your invitation to %{site_name} -- welcome!\n\n- We've created this new account **%{username}** for you. Change your name or password by visiting [your user profile][prefs].\n\n- When you log in, please **use the same email address from your original invitation** — otherwise we won't be able to tell it's you!\n\n%{new_user_tips}\n\nWe believe in [civilized community behavior](%{base_url}/guidelines) at all times.\n\nEnjoy your stay!\n\n[prefs]: %{user_preferences_url}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "new_user_tips",
+              "site_name",
+              "user_preferences_url",
+              "username"
+            ]
+          },
+          {
+            "id": "system_messages.welcome_staff",
+            "title": "Welcome Staff",
+            "subject": "Congratulations, you’ve been granted %{role} status!",
+            "body": "You’ve been granted %{role} status by a fellow staff member.\n\nAs a %{role}, you now have access to the <a href='%{base_url}/admin' target='_blank'>admin interface</a>.\n\nWith great power comes great responsibility. If you’re new to moderating, please refer to the [Moderation Guide](https://meta.discourse.org/t/discourse-moderation-guide/63116).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "role"
+            ]
+          },
+          {
+            "id": "system_messages.welcome_tl1_user",
+            "title": "Welcome TL1 User",
+            "subject": "Thanks for spending time with us",
+            "body": "Hey there. We see you’ve been busy reading, which is fantastic, so we’ve promoted you up a [trust level!](https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/)\n\nWe’re really glad you’re spending time with us and we’d love to know more about you. Take a moment to [fill out your profile](%{base_url}/my/preferences/profile), or feel free to [start a new topic](%{base_url}/categories).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url"
+            ]
+          },
+          {
+            "id": "system_messages.welcome_user",
+            "title": "Welcome User",
+            "subject": "Welcome to %{site_name}!",
+            "body": "Thanks for joining %{site_name}, and welcome!\n\n%{new_user_tips}\n\nWe believe in [civilized community behavior](%{base_url}/guidelines) at all times.\n\nEnjoy your stay!\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "name",
+              "name_or_username",
+              "new_user_tips",
+              "site_name",
+              "username"
+            ]
+          },
+          {
+            "id": "test_mailer",
+            "title": "Test Mailer",
+            "subject": "[%{email_prefix}] Email Deliverability Test",
+            "body": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix"
+            ]
+          },
+          {
+            "id": "unsubscribe_mailer",
+            "title": "Unsubscribe Mailer",
+            "subject": "Confirm you no longer want to receive email updates from %{site_title}",
+            "body": "Someone (possibly you?) requested to no longer send email updates from %{site_domain_name} to this address.\nIf you wish to confirm this, please click this link:\n\n%{confirm_unsubscribe_link}\n\n\nIf you want to continue receiving email updates, you may ignore this email.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "confirm_unsubscribe_link",
+              "site_domain_name",
+              "site_title"
+            ]
+          },
+          {
+            "id": "user_notifications.account_created",
+            "title": "Account Created",
+            "subject": "[%{email_prefix}] Your new account",
+            "body": "A new account was created for you at %{site_name}\n\nClick the following link to choose a password for your new account:\n%{base_url}/u/password-reset/%{email_token}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.account_deleted",
+            "title": "Account Deleted",
+            "subject": "[%{email_prefix}] Your account has been deleted",
+            "body": "Hello,\n\nThis is an automated message from [%{site_name}](%{base_url}) to let you know that the user account associated with this email address has been deleted by a staff member.\n\n%{flag_reason}\n\nPlease review our [community guidelines](%{base_url}/guidelines) for details.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "flag_reason",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.account_exists",
+            "title": "Account already exists",
+            "subject": "[%{email_prefix}] Account already exists",
+            "body": "You just tried to create an account at %{site_name}, or tried to change the email of an account to %{email}. However, an account already exists for %{email}.\n\nIf you forgot your password, [reset it now](%{base_url}/password-reset).\n\nIf you didn’t try to create an account for %{email} or change your email address, don’t worry – you can safely ignore this message.\n\nIf you have any questions, [contact our friendly staff](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email",
+              "email_prefix",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.account_second_factor_disabled",
+            "title": "Two-Factor Authentication disabled",
+            "subject": "[%{email_prefix}] Two-Factor Authentication disabled",
+            "body": "Two-factor authentication has been disabled on your account at %{site_name}. You can now log in with only your password; an additional authentication code is no longer required.\n\nIf you did not choose to disable two-factor authentication (2FA), someone may have compromised your account.\n\nIf you have any questions, [contact our friendly staff](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.account_silenced",
+            "title": "Account Silenced",
+            "subject": "[%{email_prefix}] Your account has been silenced",
+            "body": "You have been silenced from the forum until %{silenced_till}.\n\nReason - %{reason}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "reason",
+              "silenced_till"
+            ]
+          },
+          {
+            "id": "user_notifications.account_silenced_forever",
+            "title": "Account Silenced",
+            "subject": "[%{email_prefix}] Your account has been silenced",
+            "body": "You have been silenced from the forum.\n\nReason - %{reason}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "reason"
+            ]
+          },
+          {
+            "id": "user_notifications.account_suspended",
+            "title": "Account Suspended",
+            "subject": "[%{email_prefix}] Your account has been suspended",
+            "body": "You have been suspended from the forum until %{suspended_till}.\n\nReason - %{reason}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "reason",
+              "suspended_till"
+            ]
+          },
+          {
+            "id": "user_notifications.account_suspended_forever",
+            "title": "Account Suspended",
+            "subject": "[%{email_prefix}] Your account has been suspended",
+            "body": "You have been suspended from the forum.\n\nReason - %{reason}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "reason"
+            ]
+          },
+          {
+            "id": "user_notifications.activation_reminder",
+            "title": "Activation Reminder",
+            "subject": "[%{email_prefix}] Reminder to confirm your account",
+            "body": "Welcome to %{site_name}!\n\nThis is a friendly reminder to activate your account.\n\nClick the following link to confirm and activate your new account:\n%{base_url}/u/activate-account/%{email_token}\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.admin_login",
+            "title": "Admin Login",
+            "subject": "[%{email_prefix}] Login",
+            "body": "Somebody asked to log in to your account on [%{site_name}](%{base_url}).\n\nIf you did not make this request, you can safely ignore this email.\n\nClick the following link to log in:\n%{base_url}/session/email-login/%{email_token}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.confirm_new_email",
+            "title": "Confirm New Email",
+            "subject": "[%{email_prefix}] Confirm your new email address",
+            "body": "Confirm your new email address for %{site_name} by clicking on the following link:\n\n%{base_url}/u/confirm-new-email/%{email_token}\n\nIf you did not request this change, please contact a [site admin](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.confirm_new_email_via_admin",
+            "title": "Confirm New Email",
+            "subject": "[%{email_prefix}] Confirm your new email address",
+            "body": "Confirm your new email address for %{site_name} by clicking on the following link:\n\n%{base_url}/u/confirm-new-email/%{email_token}\n\nThis email change was requested by a site admin. If you did not request this change, please contact a [site admin](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.email_login",
+            "title": "Log in via link",
+            "subject": "[%{email_prefix}] Log in via link",
+            "body": "Here's your link to log in at [%{site_name}](%{base_url}).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\n%{base_url}/session/email-login/%{email_token}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.forgot_password",
+            "title": "Forgot Password",
+            "subject": "[%{email_prefix}] Password reset",
+            "body": "Somebody asked to reset your password on [%{site_name}](%{base_url}).\n\nIf it was not you, you can safely ignore this email.\n\nClick the following link to choose a new password:\n%{base_url}/u/password-reset/%{email_token}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.notify_old_email",
+            "title": "Notify Old Email",
+            "subject": "[%{email_prefix}] Your email address has been changed",
+            "body": "This is an automated message to let you know that your email address for\n%{site_name} has been changed. If this was done in error, please contact\na site administrator.\n\nYour email address has been changed to:\n\n%{new_email}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "new_email",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.notify_old_email_add",
+            "title": "Notify Old Email (Add)",
+            "subject": "[%{email_prefix}] A new email address has been added",
+            "body": "This is an automated message to let you know that an email address for\n%{site_name} has been added. If this was done in error, please contact\na site administrator.\n\nYour added email address is:\n\n%{new_email}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "new_email",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.post_approved",
+            "title": "Your post was approved",
+            "subject": "[%{site_name}] Your post was approved",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{post_url}) was approved.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "post_url",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.set_password",
+            "title": "Set Password",
+            "subject": "[%{email_prefix}] Set password",
+            "body": "Somebody asked to add a password to your account on [%{site_name}](%{base_url}). Alternatively, you can log in using any supported online service (Google, Facebook, etc) that is associated with this validated email address.\n\nIf you did not make this request, you can safely ignore this email.\n\nClick the following link to choose a password:\n%{base_url}/u/password-reset/%{email_token}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.signup",
+            "title": "Signup",
+            "subject": "[%{email_prefix}] Confirm your new account",
+            "body": "Welcome to %{site_name}!\n\nClick the following link to confirm and activate your new account:\n%{base_url}/u/activate-account/%{email_token}\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "email_token",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.signup_after_approval",
+            "title": "Signup After Approval",
+            "subject": "You've been approved on %{site_name}!",
+            "body": "Welcome to %{site_name}!\n\nA staff member approved your account on %{site_name}.\n\nYou can now access your new account by logging in at:\n%{login_url}\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n\n%{new_user_tips}\n\nWe believe in [civilized community behavior](%{base_url}/guidelines) at all times.\n\nEnjoy your stay!\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "login_url",
+              "new_user_tips",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.signup_after_reject",
+            "title": "Signup After Reject",
+            "subject": "You've been rejected on %{site_name}",
+            "body": "A staff member rejected your account on %{site_name}.\n\n%{reject_reason}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "reject_reason",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.suspicious_login",
+            "title": "New Login Alert",
+            "subject": "[%{site_name}] New login from %{location}",
+            "body": "Hello,\n\nWe noticed a login from a device or location you don’t usually use. Was this you?\n\n - Location: %{location} (%{client_ip})\n - Browser: %{browser}\n - Device: %{device} – %{os}\n\nIf this was you, great! There’s nothing else you need to do.\n\nIf this was not you, please [review your existing sessions](%{base_url}/my/preferences/security) and consider changing your password.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "browser",
+              "client_ip",
+              "device",
+              "location",
+              "os",
+              "site_name"
+            ]
+          },
+          {
+            "id": "user_notifications.user_group_mentioned",
+            "title": "User Group Mentioned",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_group_mentioned_pm",
+            "title": "User Group Mentioned PM",
+            "subject": "[%{email_prefix}] [PM] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_group_mentioned_pm_group",
+            "title": "User Group Mentioned PM",
+            "subject": "[%{email_prefix}] [PM] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_invited_to_private_message_pm",
+            "title": "User Invited to PM",
+            "subject": "[%{email_prefix}] %{username} invited you to a message '%{topic_title}'",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_invited_to_private_message_pm_group",
+            "title": "User Invited Group to PM",
+            "subject": "[%{email_prefix}] %{username} invited @%{group_name} to a message '%{topic_title}'",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_invited_to_private_message_pm_staged",
+            "title": "User Invited to PM Staged",
+            "subject": "[%{email_prefix}] %{username} invited you to a message '%{topic_title}'",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_invited_to_topic",
+            "title": "User Invited to Topic",
+            "subject": "[%{email_prefix}] %{username} invited you to '%{topic_title}'",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_linked",
+            "title": "User Linked",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_mentioned",
+            "title": "User Mentioned",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_mentioned_pm",
+            "title": "User Mentioned PM",
+            "subject": "[%{email_prefix}] [PM] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_posted",
+            "title": "User Posted",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_posted_pm",
+            "title": "User Posted PM",
+            "subject": "[%{email_prefix}] [PM] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_posted_pm_staged",
+            "title": "User Posted PM Staged",
+            "subject": "%{optional_re}%{topic_title}",
+            "body": "\n%{message}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "group_name",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_quoted",
+            "title": "User Quoted",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_replied",
+            "title": "User Replied",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_replied_pm",
+            "title": "User Replied PM",
+            "subject": "[%{email_prefix}] [PM] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_watching_category_or_tag",
+            "title": "User Watching Category or Tag",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          },
+          {
+            "id": "user_notifications.user_watching_first_post",
+            "title": "User Watching First Post",
+            "subject": "[%{email_prefix}] %{topic_title}",
+            "body": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "context",
+              "email_prefix",
+              "group_name",
+              "header_instructions",
+              "message",
+              "optional_cat",
+              "optional_pm",
+              "optional_re",
+              "optional_tags",
+              "participants",
+              "post_id",
+              "recipient_username",
+              "respond_instructions",
+              "site_description",
+              "site_name",
+              "site_title",
+              "site_title_url_encoded",
+              "subject_pm",
+              "topic_id",
+              "topic_title",
+              "topic_title_url_encoded",
+              "unsubscribe_url",
+              "url",
+              "username"
+            ]
+          }
+        ],
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "email_template": {
+          "id": "system_messages.pending_users_reminder",
+          "title": "Pending Users Reminder",
+          "subject": null,
+          "body": "A body",
+          "can_revert": true,
+          "interpolation_keys": [
+            "base_url"
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "email_template": {
+          "id": "system_messages.pending_users_reminder",
+          "title": "Pending Users Reminder",
+          "subject": null,
+          "body": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "can_revert": false,
+          "interpolation_keys": [
+            "base_url"
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 251,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EnTPZbRPE2pitoSbixfTFwklliA=",
+            "created_at": "2026-10-17T03:49:06.347922",
+            "rotated_at": "2026-10-17T03:49:06.346217",
+            "updated_at": "2026-10-17T03:49:06.347922",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EnTPZbRPE2pitoSbixfTFwklliA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 251,
+            "seen_at": "2026-10-17T03:49:07.246543",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EnTPZbRPE2pitoSbixfTFwklliA=",
+            "created_at": "2026-10-17T03:49:06.347922",
+            "rotated_at": "2026-10-17T03:49:06.346217",
+            "updated_at": "2026-10-17T03:49:06.347922",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EnTPZbRPE2pitoSbixfTFwklliA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.subject_template",
+          "topic_id": null,
+          "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "admin_only": true,
+          "created_at": "2026-10-17T03:49:07.487891",
+          "ip_address": null,
+          "updated_at": "2026-10-17T03:49:07.487891",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.text_body_template",
+          "topic_id": null,
+          "new_value": "A body",
+          "admin_only": true,
+          "created_at": "2026-10-17T03:49:07.492055",
+          "ip_address": null,
+          "updated_at": "2026-10-17T03:49:07.492055",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.subject_template",
+          "topic_id": null,
+          "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "admin_only": true,
+          "created_at": "2026-10-17T03:49:07.68296",
+          "ip_address": null,
+          "updated_at": "2026-10-17T03:49:07.68296",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "system_messages.pending_users_reminder.text_body_template",
+          "topic_id": null,
+          "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
+          "admin_only": true,
+          "created_at": "2026-10-17T03:49:07.689545",
+          "ip_address": null,
+          "updated_at": "2026-10-17T03:49:07.689545",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "A body",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 75
+  },
+  "recorded_from": {
+    "case": "45a55f1a82768e33ce5f41b84f4e983b60ef7a83fb8de21531470dff110f3e6a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

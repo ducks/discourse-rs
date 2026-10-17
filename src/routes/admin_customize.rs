@@ -289,6 +289,89 @@ pub(super) async fn site_text_page(
     )
 }
 
+/// GET /admin/email/templates/:id as the page (adminEmailTemplates.edit):
+/// the email pages' header over the template's editor, the template the
+/// parent route's list holds (none: the outlet left empty).
+pub(super) async fn email_template_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    id: &str,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_server_setup").await?;
+    let doc = super::admin_email_templates::document(
+        &mut conn,
+        state,
+        &shell.settings,
+        guardian.user_id().unwrap_or_default(),
+    )
+    .await?;
+    let template = doc["email_templates"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|t| t["id"].as_str() == Some(id));
+    let cx = shell.cx(state);
+    let editor = template
+        .map(|t| crate::admin_site_texts_view::email_template(&cx, t))
+        .unwrap_or_default();
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-customize-strings",
+        &[
+            "admin.customize.email_templates.revert",
+            "admin.customize.email_templates.revert_confirm",
+            "admin.site_text.interpolation_key_invalid",
+            "admin.site_text.interpolation_key_used",
+            "admin.site_text.interpolation_key_insert",
+            "composer.heading_level_n",
+            "composer.heading_level_paragraph",
+            "composer.ulist_title",
+            "composer.olist_title",
+            "composer.bold_text",
+            "composer.italic_text",
+            "composer.blockquote_text",
+            "composer.code_text",
+            "composer.list_item",
+            "composer.emoji",
+            "save",
+            "saving",
+            "saved",
+            "generic_error",
+        ],
+    );
+    let data = format!(
+        "<script type=\"application/json\" id=\"email-template-data\">{}</script>",
+        serde_json::json!({
+            "template": template,
+            "preview_wasm": format!(
+                "{}/assets/markdown.wasm?v={}",
+                shell.site.base_path,
+                super::composer::MARKDOWN_WASM_VERSION
+            ),
+            "preview_settings": format!("{}/assets/markdown-settings.json", shell.site.base_path),
+        })
+        .to_string()
+        .replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_email_view::render(&cx, crate::admin_email_view::Tab::Templates, &editor)
+    );
+    let main = crate::admin_view::contents("admin-email admin-email-templates edit", &content);
+    let title = crate::admin_view::t(cx.i18n, "admin.config.email.title");
+    shell.render(
+        state,
+        uri,
+        &title,
+        main,
+        "admin-customize.js",
+        StatusCode::OK,
+    )
+}
+
 /// GET /admin/customize/embedding and its tabs and forms as the page
 /// (adminEmbedding): `sub` is what follows the path (empty for the hosts,
 /// settings, posts_and_topics, crawlers, new, or a host's id).
