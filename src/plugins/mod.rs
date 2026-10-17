@@ -20,6 +20,7 @@
 pub mod apple;
 pub mod auth_providers;
 pub mod chat;
+pub mod footnote;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;

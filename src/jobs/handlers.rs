@@ -1034,7 +1034,8 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         post.raw = raw;
     }
     // DiscourseEvent :before_post_process_cooked, on the cooked html as
-    // the processor starts with it.
+    // the processor starts with it (footnote's handler runs inside
+    // post_process, on its document).
     crate::plugins::local_dates::before_post_process_cooked(&mut conn, &s, post_id, &post.cooked)
         .await?;
     let html = cooked_post_processor::post_process(
