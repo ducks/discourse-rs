@@ -643,3 +643,45 @@ async fn the_upcoming_changes_page() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_mcp_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/mcp").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>MCP server - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-config mcp\">"));
+    assert!(html.contains("<div class=\"admin-mcp__overview-grid\">"));
+    // The setup checklist while the server is off.
+    assert!(html.contains("admin-mcp__checklist"));
+    let (_, html) = admin.page("/admin/config/mcp/capabilities").await;
+    assert!(html.contains("data-primitive-id=\"tool:discourse_search\""));
+    assert!(html.contains("/admin-mcp.js"));
+    let (_, html) = admin.page("/admin/config/mcp/access").await;
+    // Admins' rule, created as the access page is read.
+    assert!(html.contains("data-group-id=\"1\""), "{html}");
+    let (_, html) = admin.page("/admin/config/mcp/access/new").await;
+    assert!(html.contains("admin-mcp__access-form"));
+    assert!(!html.contains("d-page-header__title"));
+    let (status, _) = admin.page("/admin/config/mcp/access/99/edit").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (_, html) = admin.page("/admin/config/mcp/clients").await;
+    assert!(html.contains("admin-config-area-empty-list"));
+    let (_, html) = admin
+        .page("/admin/config/mcp/clients/new?fragment=1&preset=codex")
+        .await;
+    assert!(html.contains("value=\"codex\""), "{html}");
+    let (_, html) = admin.page("/admin/config/mcp/activity").await;
+    assert!(html.contains("db-date-range__trigger"));
+    let (_, body) = admin
+        .page("/admin/config/mcp/authorizations?fragment=1")
+        .await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["count"], 0);
+    let (_, html) = admin.page("/admin/config/mcp/settings").await;
+    assert!(html.contains("data-setting=\"mcp_server_enabled\""));
+    let (status, _) = admin.page("/admin/config/mcp/nonsense").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

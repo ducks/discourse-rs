@@ -152,21 +152,21 @@ impl Private<'_> {
             }
         }
         if me {
-            if self
-                .settings
-                .get("mcp_server_enabled")
-                .map(|v| v.truthy())
-                .unwrap_or(false)
-            {
-                return Err(Unsupported("show_mcp_authorizations with the MCP server on").into());
-            }
             let any: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM mcp_oauth_authorizations WHERE user_id = $1)",
             )
             .bind(user.id)
             .fetch_one(&mut *self.conn)
             .await?;
-            out.insert("show_mcp_authorizations".into(), json!(any));
+            let show = any
+                || crate::mcp::eligible_for_exposed_primitive(
+                    &mut *self.conn,
+                    self.settings,
+                    user.id,
+                )
+                .await
+                .map_err(UsersError::App)?;
+            out.insert("show_mcp_authorizations".into(), json!(show));
         }
         Ok(())
     }

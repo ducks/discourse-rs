@@ -549,7 +549,8 @@
                     '" data-value="' +
                     escapeHtml(i.value) +
                     '"><span class="d-multi-select__result-label">' +
-                    escapeHtml(i.name) +
+                    // A loader may give the result's own markup (its :result block).
+                    (i.resultHtml || escapeHtml(i.name)) +
                     "</span></li>"
                   );
                 })

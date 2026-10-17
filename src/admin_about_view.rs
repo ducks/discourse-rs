@@ -91,7 +91,7 @@ fn input(name: &str, kind: &str, value: &str, placeholder: Option<String>) -> St
 
 /// A select-kit MultiSelect chooser (UserChooser, GroupChooser), closed:
 /// the selection's names or Select…, the choices for admin-about.js.
-fn chooser(
+pub(crate) fn chooser(
     cx: &AdminCx,
     class: &str,
     name: &str,

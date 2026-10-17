@@ -76,6 +76,9 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/invites.css"),
     // The mobile view's rules, last as each follows its base rule.
     include_str!("../static/css/mobile.css"),
+    // common/base/_mcp.scss compiles after table-layout.scss, whose mobile
+    // rules its own (the access table's controls) override.
+    include_str!("../static/css/admin-mcp.css"),
 );
 
 const CSS: &str = "text/css; charset=utf-8";
@@ -325,6 +328,16 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "admin-category-management.js",
         JS,
         include_str!("../static/js/admin-category-management.js"),
+    ),
+    (
+        "date-range-picker.js",
+        JS,
+        include_str!("../static/js/date-range-picker.js"),
+    ),
+    (
+        "admin-mcp.js",
+        JS,
+        include_str!("../static/js/admin-mcp.js"),
     ),
     (
         "admin-upcoming-changes.js",

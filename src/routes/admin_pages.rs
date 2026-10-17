@@ -231,6 +231,11 @@ pub async fn dashboard(
         use_legacy_pageviews: shell.settings.get("use_legacy_pageviews")?.truthy(),
     }
     .render()?;
+    // The date range picker it shares with the MCP activity.
+    let content = format!(
+        "{content}<script src=\"{}\"></script>",
+        crate::assets::url(cx.base_path, "date-range-picker.js")
+    );
     let main = crate::admin_view::contents("dashboard general dashboard-next", &content);
     let title = crate::admin_view::t(&state.i18n, "admin.config.dashboard.title");
     let status = if guardian.is_admin() {
