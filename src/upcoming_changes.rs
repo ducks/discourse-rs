@@ -390,7 +390,7 @@ pub async fn update_last_visited(conn: &mut PgConnection, user_id: i32) -> Resul
     if user_id <= 0 {
         return Ok(());
     }
-    let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+    let now = crate::clock::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
     crate::user_fields::save_custom_field(
         conn,
         user_id,

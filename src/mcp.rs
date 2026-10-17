@@ -994,7 +994,7 @@ pub async fn activity(
         return Ok(Err("start_date"));
     };
     // Time.zone is UTC on the reference.
-    let today = chrono::Utc::now().date_naive();
+    let today = crate::clock::now().date_naive();
     let end = end.unwrap_or(today);
     let start = start.unwrap_or(today - chrono::Duration::days(6));
     if q.filter.chars().count() > 200 {
