@@ -562,3 +562,84 @@ async fn the_category_management_pages() {
     assert!(html.contains("<title>Settings - Category management - Admin - "));
     assert!(html.contains("data-setting=\"desktop_category_page_style\""));
 }
+
+#[tokio::test]
+async fn the_upcoming_changes_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/upcoming-changes").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>Upcoming changes - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"admin-contents admin-config upcoming-changes\">"));
+    // The page lists the statuses short of permanent.
+    assert!(html.contains("data-upcoming-change=\"enable_unified_new\""));
+    assert!(!html.contains("data-upcoming-change=\"enable_new_checkbox_style\""));
+    assert!(html.contains("/admin-upcoming-changes.js"));
+    // The JSON, with the given statuses only; the visit is remembered.
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            "/admin/config/upcoming-changes.json?filter_statuses=permanent",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let changes = json["upcoming_changes"].as_array().unwrap();
+    assert!(!changes.is_empty());
+    assert!(
+        changes
+            .iter()
+            .all(|c| c["upcoming_change"]["status"] == "permanent")
+    );
+    let visited: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_custom_fields WHERE name = 'last_visited_upcoming_changes_at'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(visited, 1);
+    // Enabled for staff: the groups, then the toggle.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/config/upcoming-changes/groups.json",
+            "setting=enable_category_hashtag_cards&group_names%5B%5D=staff",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/config/upcoming-changes/toggle.json",
+            "setting_name=enable_category_hashtag_cards&enabled=true",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let (_, body) = admin
+        .send(Method::GET, "/admin/config/upcoming-changes.json", "", true)
+        .await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let change = json["upcoming_changes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["setting"] == "enable_category_hashtag_cards")
+        .unwrap();
+    assert_eq!(change["value"], true);
+    assert_eq!(change["upcoming_change"]["enabled_for"], "staff");
+    assert_eq!(change["groups"], "staff");
+    // StaffConstraint: not found for anyone else.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/config/upcoming-changes")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

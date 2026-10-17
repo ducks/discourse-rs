@@ -119,3 +119,6 @@
 /admin/config/category-management/all as=admin
 /admin/config/category-management/discussion as=admin
 /admin/config/category-management/settings as=admin
+# The upcoming changes page (90g6).
+/admin/config/upcoming-changes as=admin
+/admin/config/upcoming-changes?changeNamesFilter=zzzz as=admin

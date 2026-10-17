@@ -182,3 +182,11 @@ pub fn stock_upload_dimensions(url: &str) -> Option<(i32, i32)> {
     let size = record().get("_stock_upload_dimensions")?.get(url)?;
     Some((size[0].as_i64()? as i32, size[1].as_i64()? as i32))
 }
+
+/// `UpcomingChanges.image_path` and `image_data`'s measured size of the
+/// change's image, when it has one, for when Discourse's public directory
+/// is not beside the port.
+pub fn upcoming_change_image(name: &str) -> Option<(&'static str, i64, i64)> {
+    let image = record().get("_upcoming_change_images")?.get(name)?;
+    Some((image[0].as_str()?, image[1].as_i64()?, image[2].as_i64()?))
+}

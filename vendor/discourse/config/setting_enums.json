@@ -4341,6 +4341,93 @@
       512
     ]
   },
+  "_upcoming_change_images": {
+    "ai_bot_enable_docked_composer": [
+      "plugins/discourse-ai/images/upcoming_changes/ai_bot_enable_docked_composer.png",
+      1920,
+      911
+    ],
+    "boards_enabled": [
+      "plugins/boards/images/upcoming_changes/boards_enabled.png",
+      1250,
+      851
+    ],
+    "enable_composer_redesign": [
+      "images/upcoming_changes/enable_composer_redesign.png",
+      1620,
+      1544
+    ],
+    "enable_discourse_workflows": [
+      "plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
+      1200,
+      687
+    ],
+    "enable_improved_event_reminders": [
+      "plugins/discourse-events/images/upcoming_changes/enable_improved_event_reminders.png",
+      1013,
+      407
+    ],
+    "enable_invite_modal_with_roles": [
+      "images/upcoming_changes/enable_invite_modal_with_roles.png",
+      700,
+      410
+    ],
+    "enable_local_logins_via_code": [
+      "images/upcoming_changes/enable_local_logins_via_code.png",
+      806,
+      730
+    ],
+    "enable_new_chat_reactions_popup": [
+      "plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
+      826,
+      1368
+    ],
+    "enable_new_checkbox_style": [
+      "images/upcoming_changes/enable_new_checkbox_style.png",
+      758,
+      396
+    ],
+    "enable_new_post_reactions_menu": [
+      "images/upcoming_changes/enable_new_post_reactions_menu.png",
+      269,
+      343
+    ],
+    "enable_new_post_reply_count_position": [
+      "plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
+      319,
+      132
+    ],
+    "enable_simplified_category_creation": [
+      "images/upcoming_changes/enable_simplified_category_creation.png",
+      1113,
+      653
+    ],
+    "enable_solved_shared_issues": [
+      "plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
+      1200,
+      330
+    ],
+    "enable_support_category_type_setup": [
+      "plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
+      1031,
+      467
+    ],
+    "enable_unified_new": [
+      "images/upcoming_changes/enable_unified_new.png",
+      1112,
+      436
+    ],
+    "floating_dismiss_topics_on_mobile": [
+      "images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
+      486,
+      1077
+    ],
+    "voice_enabled": [
+      "plugins/voice/images/upcoming_changes/voice_enabled.png",
+      752,
+      407
+    ]
+  },
   "default_locale": {
     "valid_values": [
       {

@@ -1306,7 +1306,17 @@ async fn setup_insert_counts(pool: &PgPool, case: &Value) -> Option<HashMap<Stri
     let mut counts = HashMap::new();
     // apply_settings inserts a site_settings row per setting after the
     // sequences are aligned, as SiteSetting.set did before Rails' requests.
-    let settings = case["settings"].as_object().map_or(0, |s| s.len() as i64);
+    // Only those not stored yet: a stored one is updated in place.
+    let names: Vec<String> = case["settings"]
+        .as_object()
+        .map(|s| s.keys().cloned().collect())
+        .unwrap_or_default();
+    let stored: i64 = sqlx::query_scalar("SELECT count(*) FROM site_settings WHERE name = ANY($1)")
+        .bind(&names)
+        .fetch_one(pool)
+        .await
+        .ok()?;
+    let settings = names.len() as i64 - stored;
     if settings > 0 {
         counts.insert("site_settings".to_string(), settings);
     }
@@ -1562,21 +1572,30 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
             Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        sqlx::query("DELETE FROM site_settings WHERE name = $1")
-            .bind(name)
-            .execute(pool)
-            .await
-            .unwrap();
-        sqlx::query(
-            "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
-             VALUES ($1, $2, $3, now(), now())",
+        // DbProvider#save: a stored row is updated in place (taking no id),
+        // else one is inserted.
+        let updated = sqlx::query(
+            "UPDATE site_settings SET value = $3, data_type = $2, updated_at = now() WHERE name = $1",
         )
         .bind(name)
         .bind(def.data_type as i32)
-        .bind(value)
+        .bind(&value)
         .execute(pool)
         .await
-        .unwrap();
+        .unwrap()
+        .rows_affected();
+        if updated == 0 {
+            sqlx::query(
+                "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+                 VALUES ($1, $2, $3, now(), now())",
+            )
+            .bind(name)
+            .bind(def.data_type as i32)
+            .bind(value)
+            .execute(pool)
+            .await
+            .unwrap();
+        }
     }
 }
 

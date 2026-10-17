@@ -57,6 +57,15 @@ pub fn find(settings: &SiteSettings, name: &str) -> Result<Option<Value>, AppErr
     found.map(|p| serialize(settings, p)).transpose()
 }
 
+/// `Plugin::Instance#humanized_name` of a bundled plugin, by name.
+pub fn humanized_name(name: &str) -> Option<String> {
+    recorded()
+        .iter()
+        .find(|p| p["name"] == name)
+        .and_then(|p| p["humanized_name"].as_str())
+        .map(str::to_string)
+}
+
 /// Whether the plugin's admin initializers add a configuration nav, whose
 /// pages are the plugin's own.
 pub fn has_config_nav(id: &str) -> bool {

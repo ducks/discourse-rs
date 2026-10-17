@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "settings": {
+    "allow_uncategorized_topics": true,
+    "uncategorized_category_id": 1,
+    "default_composer_category": ""
+  },
+  "setup": [
+    "UPDATE upcoming_change_events SET event_data = NULL WHERE upcoming_change_name = 'remove_and_replace_uncategorized'",
+    "DELETE FROM category_custom_fields WHERE name = 'skip_category_definition'"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    }
+  ]
+}
