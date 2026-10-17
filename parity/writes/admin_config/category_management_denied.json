@@ -1,0 +1,88 @@
+{
+  "name": "category_management_denied",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management.json"
+    }
+  ],
+  "started_at": "2026-10-17T05:50:01.612177",
+  "transaction_started_at": "2026-10-17T05:49:58.750305",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 387,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "++T47n+ieoOGIbNkX6V91PbpJT0=",
+            "created_at": "2026-10-17T05:49:59.977066",
+            "rotated_at": "2026-10-17T05:49:59.972761",
+            "updated_at": "2026-10-17T05:49:59.977066",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "++T47n+ieoOGIbNkX6V91PbpJT0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 387,
+            "seen_at": "2026-10-17T05:50:01.619748",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "++T47n+ieoOGIbNkX6V91PbpJT0=",
+            "created_at": "2026-10-17T05:49:59.977066",
+            "rotated_at": "2026-10-17T05:49:59.972761",
+            "updated_at": "2026-10-17T05:49:59.977066",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "++T47n+ieoOGIbNkX6V91PbpJT0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "185a249cf675e3ca16120813797e8471af58d1975e0401967ecb7e3640b3cc67",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

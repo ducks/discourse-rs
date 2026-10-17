@@ -1,0 +1,68 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "per_page": "2",
+        "page": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "support"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "filter": "gen",
+        "visibility": "public"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "visibility": "restricted"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "nonsense"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "ideas",
+        "per_page": "500"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/all.json"
+    }
+  ]
+}

@@ -820,8 +820,20 @@ then by what running a forum needs (milestone 6). Briefs:
     description's composer is drawn in its Markdown mode (the rich
     editor is not ported); the wizard's title step still refuses (its
     rewrite isn't wired there yet).
-    Left: category management, watched words, MCP, upcoming
-    changes, what's new; the settings' links to
+    Then feat/admin-shell-config-category-management: the category
+    management pages (the header with Create category and a tab for
+    settings, all categories and each registered category type; each
+    type's AdminCategoryManagementList with its filter, visibility,
+    reset and next pages; the settings tab) with
+    Admin::Config::CategoryManagementController#categories ported
+    (ListAdminCategories over Categories::TypeRegistry's types and their
+    matches, AdminCategorySerializer's badge chains, types and edit
+    URLs); the config site settings JSON answers a moderator
+    InvalidAccess (write cases admin_config/category_management_*).
+    Left: the settings tab's category chooser still shows the name, not
+    the badge (as on the site settings page).
+    Left: watched words, MCP, upcoming changes, what's new; the
+    settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color
