@@ -28,6 +28,7 @@ mod admin_mcp_clients;
 mod admin_pages;
 mod admin_plugins;
 mod admin_reports;
+mod admin_search;
 mod admin_site_settings;
 mod admin_user_fields;
 mod admin_users;
@@ -2530,6 +2531,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-customize.js", get(asset))
         .route("/assets/popular-themes.js", get(asset))
         .route("/assets/admin-category-management.js", get(asset))
+        .route("/assets/admin-search.js", get(asset))
         .route("/assets/admin-upcoming-changes.js", get(asset))
         .route("/assets/date-range-picker.js", get(asset))
         .route("/assets/admin-mcp.js", get(asset))
@@ -2657,6 +2659,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     router = admin_config_category_management::routes(router);
     router = admin_config_mcp::routes(router);
     router = admin_config_upcoming_changes::routes(router);
+    router = admin_search::routes(router);
     router = admin_mcp::routes(router);
     router = admin_mcp_clients::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),

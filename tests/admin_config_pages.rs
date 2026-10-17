@@ -685,3 +685,63 @@ async fn the_mcp_pages() {
     let (status, _) = admin.page("/admin/config/mcp/nonsense").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_admin_search() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/search?filter=logo").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Search - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-search\">"));
+    // The spinner until the items load, and the modal on every page.
+    assert!(html.contains("class=\"loading-container visible\" data-loading=\"true\""));
+    assert!(html.contains("<template id=\"admin-search-modal-template\">"));
+    assert!(html.contains("/admin-search.js"));
+    let (_, dashboard) = admin.page("/admin").await;
+    assert!(dashboard.contains("<template id=\"admin-search-modal-template\">"));
+
+    // The data source's items, the pages first; the visit to the
+    // upcoming changes is remembered.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/search?fragment", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let items = json["items"].as_array().unwrap();
+    assert_eq!(items[0]["type"], "page");
+    let find = |url: &str| {
+        items
+            .iter()
+            .find(|i| i["url"] == url)
+            .unwrap_or_else(|| panic!("no item for {url}"))
+            .clone()
+    };
+    let logo = find("/admin/config/logo");
+    assert_eq!(logo["label"], "Appearance > Logo");
+    assert_eq!(logo["icon"], "fab-discourse");
+    let hooks = find("/admin/plugins/chat/hooks");
+    assert_eq!(hooks["label"], "Plugins > Chat > Incoming webhooks");
+    let force_https = find("/admin/config/security?filter=force_https");
+    assert_eq!(force_https["label"], "Security > Force HTTPS");
+    assert_eq!(force_https["type"], "setting");
+    let slack = find(
+        "/admin/site_settings/category/discourse_chat_integration?filter=chat_integration_slack_icon_url",
+    );
+    assert_eq!(slack["label"], "Plugins > Chat integration Slack icon URL");
+    assert!(items.iter().any(|i| i["type"] == "report"));
+    assert!(items.iter().any(|i| i["type"] == "upcoming_change"));
+    let visited: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_custom_fields WHERE name = 'last_visited_upcoming_changes_at'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(visited, 1);
+
+    // /admin/search/all as HTML renders nothing.
+    let (status, body) = admin.page("/admin/search/all").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.is_empty());
+}

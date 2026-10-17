@@ -27,6 +27,9 @@ pub struct Filters {
     /// `include_hidden: true, filter_allowed_hidden:` these.
     pub allowed_hidden: Option<Vec<String>>,
     pub include_locale_setting: bool,
+    /// `basic_attributes: true`: the setting, its names, description,
+    /// keywords, category, area, plugin and upload only.
+    pub basic: bool,
 }
 
 impl Default for Filters {
@@ -38,6 +41,7 @@ impl Default for Filters {
             area: None,
             allowed_hidden: None,
             include_locale_setting: true,
+            basic: false,
         }
     }
 }
@@ -75,13 +79,8 @@ pub async fn all_settings(
     }
     let filtering =
         filters.categories.as_ref().is_some_and(|c| !c.is_empty()) || filters.plugin.is_some();
-    if filters.include_locale_setting
-        && !filtering
-        && filters
-            .names
-            .as_ref()
-            .is_none_or(|n| n.iter().any(|n| n == "default_locale"))
-    {
+    // Put first after the filter_names select, whatever the names.
+    if filters.include_locale_setting && !filtering {
         out.push(locale_setting(cx)?);
     }
     for def in cx.defs.iter() {
@@ -111,9 +110,14 @@ pub async fn all_settings(
         if let Some(names) = &filters.names
             && !names.contains(&def.name)
         {
+            // Mapped before filter_names selects: the upload's dimensions
+            // measured on the way (the config areas' did so above).
+            if filters.allowed_hidden.is_none() {
+                fix_upload_dimension(&mut *conn, cx, def).await?;
+            }
             continue;
         }
-        out.push(entry(conn, cx, def).await?);
+        out.push(entry(conn, cx, def, filters.basic).await?);
     }
     Ok(out)
 }
@@ -263,6 +267,7 @@ async fn entry(
     conn: &mut PgConnection,
     cx: &Context<'_>,
     def: &Definition,
+    basic: bool,
 ) -> Result<Json, AppError> {
     let name = def.name.as_str();
     let mut default = default_for(cx, def)?.to_s();
@@ -331,8 +336,9 @@ async fn entry(
         }
         // hydrate_objects_setting_value: a value under a schema reads as
         // its objects, upload ids as their urls, serialized with to_json
-        // (the stored text as a JSON string otherwise).
-        DataType::Objects => {
+        // (the stored text as a JSON string otherwise). basic_attributes
+        // leave the value out.
+        DataType::Objects if !basic => {
             let text = if opt(def, "schema").is_some() && !crate::ruby::is_blank(&value) {
                 let objects: Json = serde_json::from_str(&value).map_err(|_| {
                     std::io::Error::other("JSON::ParserError: an objects setting's value")
@@ -367,6 +373,15 @@ async fn entry(
     e.insert("keywords".into(), json!(keywords(cx, name)));
     e.insert("category".into(), json!(def.category));
     e.insert("primary_area".into(), json!(primary_area(def)));
+    if basic {
+        if let Some(plugin) = &def.plugin {
+            e.insert("plugin".into(), json!(plugin));
+        }
+        if let Some(upload) = upload {
+            e.insert("upload".into(), upload);
+        }
+        return Ok(Json::Object(e));
+    }
     e.insert("default".into(), json!(default));
     e.insert(
         "value".into(),
@@ -834,61 +849,70 @@ pub(crate) async fn fix_upload_dimensions(
     include_hidden: bool,
 ) -> Result<(), AppError> {
     for def in cx.defs.iter() {
-        if !matches!(def.data_type, DataType::Upload) || (!include_hidden && hidden(cx, def)?) {
+        if !include_hidden && hidden(cx, def)? {
             continue;
         }
-        let mut value = cx.settings.get(&def.name)?.to_s();
-        if def.themeable {
-            let row: Option<(i32, Option<String>)> = sqlx::query_as(
-                "SELECT data_type, value FROM theme_site_settings WHERE theme_id = $1 AND name = $2",
-            )
-            .bind(cx.settings.get("default_theme_id")?.to_i() as i32)
-            .bind(&def.name)
-            .fetch_optional(&mut *conn)
-            .await?;
-            if let Some((data_type, raw)) = row {
-                value = crate::site_settings::to_rb_value(
-                    cx.defs,
-                    &def.name,
-                    data_type,
-                    raw.as_deref(),
-                )?
-                .to_s();
-            }
+        fix_upload_dimension(&mut *conn, cx, def).await?;
+    }
+    Ok(())
+}
+
+/// fix_upload_dimensions for one setting, when it is an upload setting.
+async fn fix_upload_dimension(
+    conn: &mut PgConnection,
+    cx: &Context<'_>,
+    def: &Definition,
+) -> Result<(), AppError> {
+    if !matches!(def.data_type, DataType::Upload) {
+        return Ok(());
+    }
+    let mut value = cx.settings.get(&def.name)?.to_s();
+    if def.themeable {
+        let row: Option<(i32, Option<String>)> = sqlx::query_as(
+            "SELECT data_type, value FROM theme_site_settings WHERE theme_id = $1 AND name = $2",
+        )
+        .bind(cx.settings.get("default_theme_id")?.to_i() as i32)
+        .bind(&def.name)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if let Some((data_type, raw)) = row {
+            value =
+                crate::site_settings::to_rb_value(cx.defs, &def.name, data_type, raw.as_deref())?
+                    .to_s();
         }
-        let id = crate::ruby::to_i(&value) as i32;
-        if id == 0 {
-            continue;
-        }
-        let row: Option<UploadRow> = sqlx::query_as(
+    }
+    let id = crate::ruby::to_i(&value) as i32;
+    if id == 0 {
+        return Ok(());
+    }
+    let row: Option<UploadRow> = sqlx::query_as(
             "SELECT url, original_filename, filesize, width, height, extension FROM uploads WHERE id = $1",
         )
         .bind(id)
         .fetch_optional(&mut *conn)
         .await?;
-        let Some(row) = row else {
-            continue;
-        };
-        if row.width.is_some() && row.height.is_some() {
-            continue;
-        }
-        let (Some(width), Some(height)) = dimensions(cx, &row).await? else {
-            continue;
-        };
-        let (thumb_w, thumb_h) =
-            crate::uploads::image_sizer_resize(cx.settings, width as u32, height as u32)?;
-        sqlx::query(
-            "UPDATE uploads SET width = $2, height = $3, thumbnail_width = $4, thumbnail_height = $5 \
-             WHERE id = $1",
-        )
-        .bind(id)
-        .bind(width)
-        .bind(height)
-        .bind(thumb_w as i32)
-        .bind(thumb_h as i32)
-        .execute(&mut *conn)
-        .await?;
+    let Some(row) = row else {
+        return Ok(());
+    };
+    if row.width.is_some() && row.height.is_some() {
+        return Ok(());
     }
+    let (Some(width), Some(height)) = dimensions(cx, &row).await? else {
+        return Ok(());
+    };
+    let (thumb_w, thumb_h) =
+        crate::uploads::image_sizer_resize(cx.settings, width as u32, height as u32)?;
+    sqlx::query(
+        "UPDATE uploads SET width = $2, height = $3, thumbnail_width = $4, thumbnail_height = $5 \
+             WHERE id = $1",
+    )
+    .bind(id)
+    .bind(width)
+    .bind(height)
+    .bind(thumb_w as i32)
+    .bind(thumb_h as i32)
+    .execute(&mut *conn)
+    .await?;
     Ok(())
 }
 

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Record the admin sidebar's nav map (admin-nav-map.js) from a reference
+# agent into vendor/discourse/config/admin_nav_map.json, for the admin
+# search (src/admin_search.rs). Run after vendoring, from an agent at the
+# vendored commit.
+#
+# Usage: scripts/record-admin-nav-map <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but vendor/ is from $vendored" >&2
+  exit 1
+fi
+dv copy "$root/scripts/admin_nav_map_export.rb" "$agent:/tmp/admin_nav_map_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/admin_nav_map_export.rb /tmp/admin_nav_map.json | tail -1
+dv copy "$agent:/tmp/admin_nav_map.json" "$root/vendor/discourse/config/admin_nav_map.json" > /dev/null

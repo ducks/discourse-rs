@@ -1,0 +1,54 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "filter_names": ["title", "logo", "chat_enabled"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "filter_area": "localization"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "filter_area": "security"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search.json",
+      "params": {
+        "plugin": "poll"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "categories": ["spam", "rate_limits"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "categories": "spam"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/search/all.json",
+      "params": {
+        "filter_area": "no_such_area"
+      }
+    }
+  ]
+}

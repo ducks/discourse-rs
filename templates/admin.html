@@ -1,11 +1,16 @@
 {% extends "layout.html" %}
 {% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+{% block head %}{{ search|safe }}{% endblock %}
 {% block content %}
 {{ main|safe }}
 {#- The admin panel's filter and section toggles, and the dialogs the
     pages' actions confirm and report with. -#}
 <script src="{{ crate::assets::url(base_path, "admin.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>
+{%- if !search.is_empty() %}
+{#- The admin search: its modal on every page, and its page. -#}
+<script src="{{ crate::assets::url(base_path, "admin-search.js") }}"></script>
+{%- endif %}
 {%- if script == "admin-dashboard.js" || script == "admin-report.js" %}
 {#- The reports' charts: Chart.js with its moment adapter, as
     Discourse's chart-js-bundle loads them, and the chart code the

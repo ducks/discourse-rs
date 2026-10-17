@@ -637,8 +637,8 @@ then by what running a forum needs (milestone 6). Briefs:
     admin page for moderators, whose current user's reviewable counts
     are refused already. Left, saying so when used: the manage reports,
     compare groups and category pickers, dragging a card's corner, the
-    report modes other than the charts in a card, the design wizard
-    (90f) and the admin search (90g9); not drawn: the sidebar footer's
+    report modes other than the charts in a card and the design wizard
+    (90f; the admin search done in 90g9); not drawn: the sidebar footer's
     keyboard shortcuts, as on the forum's sidebar), 90g2.
     ~~`feat/admin-shell-users`~~ (done) M (/admin/users and /admin/users/list
     sent on to the active list; /admin/users/list/:query for every tab
@@ -1020,8 +1020,21 @@ then by what running a forum needs (milestone 6). Briefs:
     rest the recording marks), enabling a bundled plugin the port
     doesn't implement (refused by the settings update)),
     90g9.
-    `feat/admin-shell-search` S (the admin search modal and the sidebar
-    filter's keyword index), 90h.
+    ~~`feat/admin-shell-search`~~ (done) S (Admin::SearchController:
+    /admin/search/all.json with Admin::Search::List's settings in
+    basic_attributes, themes, reports and upcoming changes (the visit
+    remembered); the /admin/search page and the modal the sidebar's
+    search box and mod+/ open, on every admin page: AdminSearch with
+    AdminSearchDataSource's items formatted server side (the pages from
+    the visible nav with the nav map's descriptions, keywords and tabs,
+    recorded from admin-nav-map.js by scripts/record-admin-nav-map, the
+    plugins' configuration tabs; the settings with SettingLinkFormatter's
+    labels and urls) and scored in admin-search.js as `search` does; the
+    shortcut sentence where there is a keyboard; the moderators' panel
+    filter matching the section headers and the links' keywords.
+    Found on the way: all_settings puts default_locale first whatever
+    filter_names says, and measures every mapped upload setting before
+    filter_names selects), 90h.
     ~~`feat/template-client-strings`~~ (done) M (the templates' and
     views' literal English client strings through the locale with
     Ember's keys, site texts included: the header's buttons, the topic

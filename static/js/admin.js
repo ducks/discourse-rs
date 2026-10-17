@@ -2,8 +2,8 @@
 // every sidebar: the header's ToggleAllSections, which opens every section
 // or, when all are open, closes them, its icon and title following; and
 // the moderators' Filter, which shows only the links whose text holds what
-// is typed, every section open while it does (the admin search the
-// admins' search box opens is not ported).
+// is typed, every section open while it does (admin-search.js opens the
+// admins' search).
 (function () {
   "use strict";
 
@@ -164,15 +164,10 @@
       syncToggle(panel);
       return;
     }
-    var missing = event.target.closest(
-      ".sidebar-search__input, .sidebar-search__icon, [data-sidebar-action-id='design_wizard']"
-    );
-    if (missing) {
+    if (event.target.closest("[data-sidebar-action-id='design_wizard']")) {
       var error = document.getElementById("page-error");
       if (error) {
-        error.textContent = missing.closest(".sidebar-search")
-          ? "Not ported yet: the admin search."
-          : "Not ported yet: the design wizard.";
+        error.textContent = "Not ported yet: the design wizard.";
         error.hidden = false;
       }
       return;
@@ -225,11 +220,31 @@
     }
     var panel = input.closest(".admin-panel");
     var filter = input.value.trim().toLowerCase();
+    var keywords = {};
+    var keywordsScript = panel.querySelector("script.admin-sidebar-keywords");
+    if (keywordsScript) {
+      try {
+        keywords = JSON.parse(keywordsScript.textContent);
+      } catch (e) {
+        keywords = {};
+      }
+    }
+    var has = function (text) {
+      return text.toLowerCase().indexOf(filter) !== -1;
+    };
     panel.querySelectorAll(".sidebar-section[data-section-name]").forEach(function (section) {
       var shown = 0;
+      // A section whose header matches keeps all its links.
+      var header = section.querySelector(".sidebar-section-header-text");
+      var sectionMatch = header && has(header.textContent.trim());
       section.querySelectorAll(".sidebar-section-link-wrapper").forEach(function (li) {
         var text = li.querySelector(".sidebar-section-link-content-text");
-        var match = !filter || (text && text.textContent.toLowerCase().indexOf(filter) !== -1);
+        var link = li.querySelector("[data-link-name]");
+        var match =
+          !filter ||
+          sectionMatch ||
+          (text && has(text.textContent)) ||
+          (link && (keywords[link.dataset.linkName] || []).some(has));
         li.hidden = !match;
         if (match) {
           shown += 1;

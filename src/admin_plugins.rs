@@ -69,6 +69,24 @@ pub fn admin_route_location(settings: &SiteSettings, name: &str) -> Option<Strin
     enabled.then(|| location.to_string())
 }
 
+/// The admin page's label key of an enabled plugin with one, by name
+/// (the admin search labels the plugin's settings with it).
+pub fn admin_route_label(settings: &SiteSettings, name: &str) -> Option<String> {
+    admin_route_location(settings, name)?;
+    recorded().iter().find(|p| p["name"] == name)?["admin_route"]["label"]
+        .as_str()
+        .map(str::to_string)
+}
+
+/// A bundled plugin's `about` (its description), by name.
+pub fn about(name: &str) -> Option<String> {
+    recorded()
+        .iter()
+        .find(|p| p["name"] == name)
+        .and_then(|p| p["about"].as_str())
+        .map(str::to_string)
+}
+
 /// `Plugin::Instance#humanized_name` of a bundled plugin, by name.
 pub fn humanized_name(name: &str) -> Option<String> {
     recorded()

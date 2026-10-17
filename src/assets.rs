@@ -340,6 +340,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/admin-mcp.js"),
     ),
     (
+        "admin-search.js",
+        JS,
+        include_str!("../static/js/admin-search.js"),
+    ),
+    (
         "admin-upcoming-changes.js",
         JS,
         include_str!("../static/js/admin-upcoming-changes.js"),

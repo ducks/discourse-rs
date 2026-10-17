@@ -55,7 +55,7 @@ fn cast_bool(v: Option<&Value>) -> Option<bool> {
 }
 
 /// The settings and the labels' context, for the list.
-async fn list_for(
+pub(super) async fn list_for(
     conn: &mut PgConnection,
     state: &AppState,
     settings: &SiteSettings,

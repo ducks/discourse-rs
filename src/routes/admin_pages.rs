@@ -30,6 +30,8 @@ pub struct AdminHtml {
     pub main: String,
     /// The page's own script (assets name), empty for none.
     pub script: &'static str,
+    /// The admin search's strings and modal (admins only), empty for none.
+    pub search: String,
 }
 
 /// What every admin page loads: the settings, the shell's chrome with the
@@ -122,6 +124,11 @@ impl Shell {
         };
         let mut crawler = crate::html::Crawler::for_request(&urls, uri, None)?;
         crawler.description = String::new();
+        let search = if self.admin.admin {
+            crate::admin_search_view::head(&self.cx(state))
+        } else {
+            String::new()
+        };
         let page = AdminHtml {
             site_title: self.site.site_title,
             lang: self.site.lang,
@@ -141,6 +148,7 @@ impl Shell {
             },
             main,
             script,
+            search,
         };
         let body = page.render().map_err(crate::html::HtmlError::from)?;
         let mut response =

@@ -81,6 +81,10 @@ pub fn url_for_setting(settings: &SiteSettings, base_path: &str, s: &SettingRef<
             ),
         };
     }
+    // The GIFs link (and so its area) is in the nav while GIFs are enabled.
+    if s.area == Some("gifs") && settings.get("enable_gifs").is_ok_and(|v| v.truthy()) {
+        return format!("{base_path}/admin/config/gifs{filter}");
+    }
     let page = s
         .area
         .and_then(|a| AREAS.iter().find(|(k, _)| *k == a))
