@@ -1549,10 +1549,11 @@ generate_theme_screenshot_thumbnails (171).
     empty states (plugins/chat/view.rs:276,341,345), the mobile footer's
     search and starred routes (99), chat's notification sounds (the
     preferences' sound preview, static/js/preferences.js)
-163. `feat/solved-rest` S: discourse-solved's auto close timers, web
-    hooks, crawler schema markup, search filters and lists by solved
-    status (milestone 5), the dashboard's support section
-    (admin_dashboard.rs:290,1350), accepted solutions' related items
+163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
+    lists by solved status (its auto close timers, web hooks and search
+    filters are done, 143d, 143e; the rest of solved's gaps: 233-235),
+    the dashboard's support section (admin_dashboard.rs:290,1350),
+    accepted solutions' related items
     without a viewer (reports/counts.rs:1145)
 164. `feat/site-settings-types` L: setting types beyond string, number,
     bool and enum: lists, uploads, groups, categories, objects
@@ -2229,7 +2230,8 @@ route table has been made, so this list may be short.
     from the drafts tab, 193c), the ForgotPassword modal a password
     reset code opens (from the security tab, 193e). Split when started
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
-    with topic voting's votes filters; the topic_ids and state list
+    with topic voting's votes filters and discourse-solved's
+    status:solved and status:unsolved; the topic_ids and state list
     filters (routes/list.rs:54; topic_query.rs:368)
 198. `feat/posts-show` S: GET /posts/:id.json (PostsController#show; the
     `not_yet` case solved/post_as_admin)
@@ -2348,9 +2350,10 @@ route table has been made, so this list may be short.
     attributes and a small script formats them in the browser, so
     cached pages stay shareable between viewers; the first paint must
     not flash UTC text
-210. `docs/plugin-audits` M, decided 2026-10-16: a parity audit of every
-    bundled plugin the port has started (crate::plugins::STARTED). A
-    plugin is done only when it has all of the reference plugin's
+210. ~~`docs/plugin-audits`~~ (done, docs/plugin-audits.md) M, decided
+    2026-10-16: a parity audit of every bundled plugin the port has
+    started (crate::plugins::STARTED). A plugin is done only when it
+    has all of the reference plugin's
     features; having its markdown, a few routes or most of its pages
     makes it started, not done. Each audit compares the reference
     plugin (plugin.rb, routes, controllers, serializers, jobs, events
@@ -2359,7 +2362,361 @@ route table has been made, so this list may be short.
     after the plugin. Started: chat, poll, reactions, solved, topic
     voting, presence, local dates, lazy videos, checklist, details,
     footnote, spoiler, LTI, OAuth2 basic, OpenID Connect, Apple. None is
-    done
+    done: every one has gaps. Those no earlier item covered are 211-249
+    (Phase 11): core's anonymous actions, MCP server, composer messages
+    and CSP that several plugins wait on (211-214), chat (215-227), poll
+    (228-230), reactions (231-232), solved (233-235), topic voting
+    (236-237), presence (238), local dates (239, 244), lazy videos
+    (240-241), checklist (242), footnote (243), spoiler and details
+    (244), LTI (214), OAuth2 basic (245-247), OpenID Connect (245, 246,
+    248, 249), Apple (247). The audit names the earlier items that cover
+    the rest
+
+### Phase 11: the bundled plugins' gaps (210)
+
+From the plugin parity audit (docs/plugin-audits.md, 2026-10-17): every
+gap a started plugin has against the reference plugin that no earlier
+item covers, as branches named after the plugin. The audit's section for
+each plugin names the Rails file:line of every gap and the existing items
+it leaves to (160-164, 120, 133, 143, 148, 150, 167, 168, 188i4, 195, 196,
+197, 200, 202). A plugin is done when its section's gaps and these items
+are all crossed off; none is today. Four core pieces several plugins
+wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
+
+211. `feat/anonymous-actions` M: core's AnonymousAction: the
+    `anonymous_action` cookie, POST /anonymous-actions and its replay in
+    log_on_user (session/login.rs:25-27; routes/user_api_key_auth.rs:1167;
+    routes/invite_redeem.rs:841, all refusing the cookie today), with the
+    three plugin handlers and their client deferrals: poll's `vote_poll`
+    (single choice only, DiscoursePoll::Error swallowed; the item 39
+    note), discourse-reactions' `react_to_post` with the picker usable
+    logged out instead of the plain /login link
+    (plugins/reactions/view.rs:181), topic voting's `vote_topic`, doing
+    nothing on a closed or archived topic (plugins/topic_voting/view.rs:84)
+212. `feat/mcp-server` L: the port has no MCP server and no item named
+    one. Core's MCP endpoint with its OAuth authorizations (184 names the
+    authorizations' deletion) and register_mcp_tool's registry, then the
+    bundled plugins' tools: chat's chat_channel_list,
+    discourse_get_chat_messages and chat_message_create
+    (plugins/chat/plugin.rb:660-753), discourse-reactions'
+    discourse_reactions_post_reaction_set, discourse-solved's
+    discourse_solved_solution_set and topic voting's
+    discourse_topic_voting_vote_set, each with its scope, output schema
+    and availability. Split core from the tools when started
+213. `feat/composer-messages` M: GET /composer_messages
+    (ComposerMessagesFinder), not routed, with discourse-solved's
+    check_topic_is_solved education message and
+    disable_solved_education_message
+214. `feat/csp` M: the content_security_policy settings and header with a
+    per-request nonce (only the problem check reads the setting,
+    problem_checks.rs:227), and discourse-lti's resubmit page script
+    taking that nonce (plugins/lti.rs:54; routes/omniauth.rs:676-693) so
+    its auto-submit runs under strict-dynamic
+215. `feat/chat-channel-settings` M: a channel's info pages and what they
+    edit: /chat/c/:slug/:id/info, /info/settings and /info/members
+    (routes/chat_pages.rs:410 404s them; the navbar title,
+    plugins/chat/page.rs:544, and the card's members, :1791, link there),
+    the name, slug and description modals, auto join, channel-wide
+    mentions, PUT notifications-settings/me (levels and mute), PUT
+    .../status with its publish, DELETE /chat/api/channels/:id
+    (TrashChannel, Jobs::Chat::ChannelDelete), leaving, the members list
+    with add members and invites (POST .../invites, chat_invitation
+    notifications), PUT /chat/user_chat_enabled/:user_id, the global
+    channel subscriptions (new channel, status, edits, kick;
+    routes/live.rs:146), deleting a category whose channel is empty
+    (category_writes.rs:2876), editing messages of deleted channels
+    (plugins/chat/modify.rs:107)
+216. `feat/chat-channel-create` M: POST /chat/api/channels
+    (CreateCategoryChannel, the auto join limiter) with the create
+    channel modal behind the browse page's New channel button
+    (plugins/chat/page.rs:1624), GET category-chatables/:id/permissions,
+    archiving (POST archives, ChannelArchiveService,
+    Jobs::Chat::ChannelArchive, chat_allow_archiving_channels,
+    chat_archive_destination_topic_status), the channel list options
+    menus (plugins/chat/view.rs:350,732,739: create, browse, new DM, new
+    group, filter, sort) and the sidebar channel hover menu (:788),
+    channel and DM validation errors (plugins/chat/dm_groups.rs:498;
+    plugins/chat/dm_create.rs:285). 162's archived channel reads land
+    with it
+217. `feat/chat-moderation` L: flagging (POST messages/:id/flags,
+    FlagMessage, ReviewQueue) with the flag menu entry and the flag mark
+    in the info line (static/js/chat.js:1468 drops the entry;
+    plugins/chat/page.rs:1228's data is drawn nowhere),
+    Chat::ReviewableMessage's actions and its queue entries
+    (review_list.rs:570, with 148), auto silence from flags
+    (chat_auto_silence_from_flags_duration,
+    chat_silence_user_sensitivity), select mode with bulk delete (DELETE
+    .../messages, TrashMessages) and move to channel (POST
+    messages/moves, MessageMover, MoveMessageToChannel), the
+    self_flagged bus message (static/js/chat.js:1805)
+218. `feat/chat-message-actions` M: the message actions left after 217:
+    select mode's quote to topic and copy (ChatToTopicSelector, POST
+    /chat/:id/quote, TranscriptService), the reaction users popover (GET
+    /chat/:id/:message_id/reactions-users), stop streaming (DELETE
+    messages/:id/streaming), message interactions (POST
+    messages/:id/interactions, the :chat_message_interaction event), the
+    composer's group mention warnings (GET /chat/api/mentions/groups),
+    copy text and the mobile long-press action sheet, the author's name
+    under enable_names (plugins/chat/page.rs:1449), the
+    DuplicateMessageValidator's exemptions for bots, upload-only messages
+    and small DMs (plugins/chat/create.rs:257; plugins/chat/modify.rs:363,
+    which check every message today), non-ISO target dates
+    (plugins/chat/messages.rs:1027), edits too large to diff
+    (plugins/chat/modify.rs:431)
+219. `feat/chat-pins` S: GET pins, PUT pins/read, POST and DELETE
+    messages/:id/pin (ListChannelPins, PinMessage, UnpinMessage,
+    MarkPinsAsRead, chat_pinning_messages_allowed_groups) and their
+    publishes, the pins route (routes/chat_pages.rs:412 404s it), the
+    pin and unpin menu entries (static/js/chat.js:1468), the pinned
+    message bar and the pin and unpin bus messages (:1805)
+220. `feat/chat-search` S: GET /chat/api/search (SearchMessage over
+    chat_message_search_data, which posting/search_index.rs:631 already
+    writes and nothing reads); the /chat/search page stays with 162
+221. `feat/chat-admin` M: chat's admin plugin page
+    (routes/admin_plugins.rs:110)
+    with its configuration nav; incoming webhooks: POST /chat/hooks/:key
+    and /:key/slack (SlackCompatibility, the per-hook rate limit,
+    chat_debug_webhook_payloads), the six /admin/plugins/chat/hooks
+    routes with the list, new, edit and delete pages; the messages
+    export (POST /chat/api/admin/export/messages, Chat::MessagesExporter,
+    log_entity_export, with 200); the category editor's Chat tab
+    (category_edit_view.rs:369). Drawing webhook messages stays with 162
+    (plugins/chat/messages.rs:598)
+222. `feat/chat-new-message` M: /chat/new-message and the new message
+    modal (the message creator's chatable search, new group, add
+    members), the Cmd/Ctrl+K quick palette, the user card's and
+    profile's Chat buttons (user_card_view.rs:338;
+    user_profile_view.rs:485), the browse empty state's button
+    (plugins/chat/page.rs:1705)
+223. `feat/chat-drawer` L: the chat drawer in the below-footer outlet with
+    its routes (browse, channel, info, pins, DMs, starred, search), its
+    size and resizer, the full page or drawer preference and the header
+    icon toggling it, the navbar's open-drawer, full page and close
+    buttons (plugins/chat/page.rs:572,1630), the "-" and Esc shortcuts,
+    kept across page loads (milestone 4.5's "the chat drawer next"),
+    ChatHistory's back-to-forum URL (routes/chat_pages.rs:118). Split
+    when started
+224. `feat/chat-pane` M: the channel pane's paging and jumps: older and
+    newer messages on scroll, jumping to and highlighting a target
+    message, the scroll-to-bottom arrow (plugins/chat/page.rs:256),
+    /chat/message/:id, the /chat/channel/... redirects, a channel
+    without a slug (routes/chat_pages.rs:406) and a target message that
+    can't load (plugins/chat/page.rs:126); reactions without an emoji
+    image (:1478), the retention reminder's dismiss (:510), chat notices
+    with mention_without_membership's invite (:173), the composer's "+"
+    menu (:811: GIFs, local dates, the mobile emoji button), the
+    in-channel filter (:565), the stop-streaming button, the message
+    decorators chat.js lacks (spoiler, hashtag icons, code block
+    buttons; static/js/chat.js:170), the channels list without a member
+    or chat options (plugins/chat/view.rs:319,322)
+225. `feat/chat-notify-client` S: desktop notifications for chat, the new
+    message sound (ChatAudioManager), the title counter,
+    ChatNewMessageAnnouncer under chat_announce_new_messages, the chat
+    keyboard shortcuts (channel switching, composer formatting, Shift+Esc
+    to mark all read) and their section in the shortcuts help
+226. `feat/chat-site-integration` M: chat's keys on core: /site.json's
+    markdown_additional_options.chat (emitted as `{}`),
+    hashtag_configurations (chat-composer, the channel type in
+    topic-composer) and hashtag_icons.channel (site.rs:452,1022), GET
+    /notifications/totals with chat_notifications (not routed),
+    chat_quoted notifications from posts quoting messages
+    (PostNotificationHandler) and the transcript post stripper, the
+    remap_hashtag job with chat's MessageHashtagStore (no handler;
+    category_writes.rs:2461; tag_writes.rs:274), secure_uploads' change
+    handler and the chat-composer public upload type, the chat_summary
+    unsubscriber (email/unsubscribe.rs:108), the chat:create_message API
+    key scope, the four stats, Chat::Seeder, and chat's keys dropped
+    from the parity ignore lists (parity/cases:12-15,97-116,163-166,
+    247-249,321-327) with cases for them
+227. `feat/chat-pages-rest` S: the small refusals no item names: DMs
+    missing their row or with multi-valued custom fields
+    (plugins/chat/direct_messages.rs:63,319), DM titles without a viewer
+    or with every participant deleted (:132,393;
+    routes/chat_pages.rs:388; plugins/chat/notify.rs:409;
+    plugins/chat/create.rs:568), a web hook whose message is gone
+    (plugins/chat/web_hooks.rs:37), a site without its system user
+    (plugins/chat/dm_groups.rs:323)
+228. `feat/poll-ui` L: poll has no client: nothing in static/js or the
+    templates draws a poll, so a post shows its cooked list with a "0
+    voters" stub. Split into 228a. `feat/poll-ui-vote` M (each cooked
+    `div.poll`, quoted ones too, replaced by the widget from the post's
+    polls and polls_votes: voting, Cast Votes, changing and removing a
+    vote, poll-info's counts, hints, close countdown and closed by, the
+    `/polls/<topic_id>` subscription, poll.scss; static/css/cooked.css:109
+    has only the emoji rule), 228b. `feat/poll-ui-results` M (standard
+    results with even-round percentages and the tally toggle, the pie
+    chart, ranked choice's rank dropdowns with Abstain and its outcome
+    and rounds tabs, the voters lists with load more over
+    /polls/voters.json), 228c. `feat/poll-ui-breakdown` S (the actions
+    dropdown's close and open with their confirm and the breakdown modal
+    over /polls/grouped_poll_results with per-group pies,
+    poll-breakdown.scss). Export results waits for data explorer (202)
+229. `feat/poll-builder` M: the Build Poll modal from the composer's
+    options menu (composer_view.rs:280-285 marks it not ported): the type
+    tabs, title, options editor with its count help, min, max and step
+    validation, results visibility, public defaulting to
+    poll_default_public, bar or pie, the groups chooser, automatic close,
+    dynamic, Insert as BBCode; the menu's condition gains
+    pm_with_non_human_user (html.rs:1099). The rich editor's node view
+    follows 196
+230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
+    (the options without ids, the link_to_poll link, polls of trashed
+    posts dropped; email/notification.rs:821-856 passes the raw widget
+    markup), the clean_up_inactive_users modifier sparing poll voters
+    (jobs/user_cleanup.rs:106-119 would delete them), reduce_excerpt
+    through `I18n.t("poll.poll")` (excerpt.rs:203-206 hardcodes English),
+    extraction cooking with the post's topic and user ids
+    (plugins/poll/mod.rs:143-147), non-integer ranked choice ranks cast as
+    Rails casts them (plugins/poll/vote.rs:243), a poll whose content is
+    not a list (crates/markdown/src/render/poll.rs:202), and
+    current_user's can_create_poll dropped from the ignore lists
+    (parity/cases:163-166) with a case per role
+231. `feat/reactions-lifecycle` S/M: discourse-reactions' server hooks:
+    a destroyed user's reaction users deleted (plugins/mod.rs:200), the
+    regular Jobs::DiscourseReactions::LikeSynchronizer and the
+    excluded_from_like change handler re-enqueueing it five minutes out
+    (plugins/mod.rs:310; jobs/mod.rs:596; it fires once 164 saves list
+    settings), the sync's MigrationReport logging
+    (plugins/reactions/like_sync.rs:22), op_reactions_data on topic list
+    items and suggested topics behind the two
+    include_discourse_reactions_data modifiers, the post_action_users_list
+    filter with core's /post_action_users (not routed). Also corrects the
+    stale "reactions in messages are refused" note
+    (plugins/reactions/toggle.rs:11): no refusal is left and the react_pm
+    cases cover them
+232. `feat/reactions-ui` M: the allow-any-emoji picker button
+    (plugins/reactions/view.rs:190), infinite scroll on the Reactions tab
+    and the reactions received page past the first 20
+    (routes/users.rs:757; routes/user_notifications.rs:145;
+    user_profile_view.rs:1418), reactions received's acting_username and
+    include_likes, which notification links send
+    (routes/user_notifications.rs:148-153), the `l` shortcut, the admin
+    emoji list's locked like reaction (admin_site_settings_view.rs:1486),
+    touch long press, vibration and the animations
+    (static/js/discourse-reactions.js:7), the mobile users modal and
+    stylesheet, the user nav links once core's user nav panel exists
+233. `feat/solved-lifecycle` M: what core's events and services owe
+    discourse-solved: unaccepting a destroyed answer
+    (on(:post_destroyed), absent from post_destroyer.rs), unaccepting
+    when a revision takes the topic out of solved and the refresh_stream
+    flag (before_post_publish_changes; posting/revise_topic.rs:958 calls
+    only voting), PostMoverExtension re-homing or unaccepting moved
+    answers (post_mover.rs), auto bump skipping solved topics
+    (jobs/periodical.rs:251), AcceptAnswer's reload_topic message with a
+    new auto close timer (routes/solved.rs:167), accepting a post whose
+    user is gone (plugins/solved/answers.rs:266), by_user's negative
+    limit (routes/solved.rs:243), SeedAdminDashboardReports with
+    discourse_solved_admin_dashboard_seeded; the stale "Not ported: web
+    hooks" note dropped (plugins/solved/answers.rs:8)
+234. `feat/solved-ui-rest` M: show_who_marked_solved's tooltip
+    (plugins/solved/view.rs:9), the confetti
+    (static/js/discourse-solved.js:7), the notification.solved.* icons
+    (user_menu_view.rs:580), solved's tracking and watching descriptions
+    (left in 98), SolvedRemovalConfirmation with its don't-show-again key
+    and the stream refresh on a solved change, MoveSolutionConfirmation
+    (after core's move-to-topic modal), the accepted_solutions related
+    items under the report (static/js/admin-report.js:1607), the solutions
+    column on the users page (routes/directory.rs:200)
+235. `feat/solved-category-fields` S: the preloaded category custom fields
+    on /site.json and /categories.json: solved's enable_accepted_answers,
+    notify_on_staff_accept_solved, empty_box_on_unsolved and
+    enable_shared_issues, topic voting's enable_topic_voting
+    (categories.rs:311), with `/categories/*/custom_fields` dropped from
+    the ignore lists (parity/cases:16,44,201,222-224,242-243)
+236. `feat/topic-voting-ui-rest` M: the docked header's vote box (core's
+    docked header topic info isn't ported either), full-page search's
+    Most Votes order (search_view.rs:45; static/js/search-page.js:16),
+    votes among the category editor's default view and sort order
+    choices (category_edit_view.rs:307, free text today), the
+    voting_closed icon as `lock` (user_menu_view.rs:611 draws
+    far-envelope), the voters modal on mobile
+237. `feat/topic-voting-rest` S: the vote and unvote integer check, a
+    400 where the port 404s (routes/topic_voting.rs:86), voted_by with
+    `period` (:210); the stale "Not ported: web hooks" note dropped
+    (plugins/topic_voting/votes.rs:5)
+238. `feat/presence-translate` S, after 168: the composer's translate
+    state: Composer.ADD_TRANSLATION, ComposerPresenceDisplay's
+    `/discourse-presence/translate/<post>` subscription and announce
+    (static/js/topic-presence.js:132-141,171-179), the
+    presence.translating strings in the composer's data
+    (html.rs:1078-1084). The whisper state follows 196's whisper toggle
+    (topic-presence.js:139)
+239. `feat/local-dates-cook-rest` S: the dates the markdown refuses and
+    Rails cooks, each recorded against Rails: times moment reads through
+    Date (`9:00`) and loose offsets
+    (crates/markdown/src/render/local_dates.rs:134,141,164), years past
+    9999 (:67), `[date]` without a date (:585), era tokens in a format
+    (:528), email timezones chrono-tz lacks or without an abbreviation
+    (:590,601)
+240. `feat/lazy-videos-ui` S: discourse-lazy-videos' client: LazyVideo's
+    thumbnail button, title bar, dominant color, provider icon and
+    play_video label, LazyIframe's YouTube (list, start time), Vimeo and
+    TikTok embeds, the per-provider settings, lazy-videos.scss
+    (src/assets.rs); the email reduce_cooked turning each video into a
+    paragraph link (email/notification.rs:833-856)
+241. `feat/lazy-videos-crawler` S: CrawlerPostEnd's VideoObject JSON-LD
+    per video at the end of each crawler post
+    (server:topic-show-crawler-post-end); with 163's solved schema
+    markup, it needs the crawler view's per-post markup
+    (topics/show.html.erb), which the port's crawler topic page
+    (routes/topics.rs:477) doesn't draw
+242. `feat/checklist-toggle` M: checking a box: PUT /checklist/toggle
+    (ToggleCheckbox's contract, policies, rate limit, its
+    200/400/403/404/409/422 answers), CheckboxLocator and SourceMap
+    resolving `data-chk-src` and index targets in the raw,
+    Checkbox#replace_in, the revise with bypass_bump and expected_raw and
+    core PostRevisor's preserve_cooked_token; the client decorator (a new
+    static/js/checklist.js: clickable boxes, accessibility, quote
+    exclusion, debounced batches, conflict retries, optimistic updates)
+    and the checklist strings. The list menu item and rich editor stay
+    with 196
+243. `feat/footnote-post-process` S: footnote's before_post_process_cooked
+    rewrite of `#fn<n>`/`#fnref<n>` to post-scoped ids
+    (plugins/footnote/plugin.rb:18-46), absent from the process_post job
+    (jobs/handlers.rs:840 runs only local dates'), so two footnoted posts
+    on one page collide; gated on enable_markdown_footnotes, with
+    static/js/inline-footnotes.js finding the new ids
+244. `feat/spoiler-email` S: spoiler-alert's reduce_cooked in emails
+    (each spoiler a link to the post with excerpt_spoiler;
+    email/notification.rs:833-856 sends spoilers in the clear), and the
+    enabled-setting gate Plugin#on puts on every handler
+    (lib/plugin/instance.rb:692): the excerpt's spoiler removal
+    (excerpt.rs:196), discourse-details' email reduce_cooked
+    (email/notification.rs:833), local dates' excerpt " (UTC)"
+    (excerpt.rs:210)
+245. `feat/oauth2-basic-rest` S: oauth2_debug_auth (an OAuth2LogRedactor
+    and every `log` call) and the always-on token and user_json failure
+    warnings (plugins/oauth2_basic.rs:349-355; routes/omniauth.rs:1118),
+    oauth2_request_timeout_seconds from the global settings
+    (plugins/oauth2_basic.rs:19, 10s hardcoded), every
+    oauth2_authorize_options entry forwarded (:75-79, only scope today),
+    `recurse` over the AccessToken's other readers (:90-112), a token
+    endpoint answering with a redirect followed as the oauth2 gem does
+    (auth/oauth2.rs:567, OIDC's too). The additional and required JSON
+    path registries wait for 203-206 (only third-party plugins fill them)
+246. `feat/oauth2-oidc-admin-login-tabs` S: admin_config_login_routes
+    with `oauth2` and `oidc` (site.rs:506 returns `[]`), the
+    /admin/config/login-and-authentication/oauth2 and /oidc tabs with
+    their setting areas (routes/admin_config.rs:669-707), the admin
+    sidebar's links and labels. Their list and objects settings need 164
+247. `feat/auth-login-buttons` S: the external login buttons on /signup
+    posting `signup=true` (templates/signup.html;
+    templates/login_required.html:40), so oauth2_authorize_signup_url
+    can be reached; the single-external-login /signup redirect; the
+    buttons' aria-label from `js.login.<name>.sr_title` (Apple's one gap
+    besides 164)
+248. `feat/openid-connect-mtls` M: mutual TLS client authentication for
+    the token and userinfo requests: the PEM certificate and key with
+    passcode, the tls_client_auth scheme, the parse failure logged then
+    raised (auth/oauth2.rs:532-533; plugins/openid_connect.rs:7,126-127);
+    needs a FinalDestination path carrying a client identity
+249. `feat/openid-connect-logging` S: openid_connect_verbose_logging (the
+    request and response formatter and every verbose_log site, the
+    logout hook's too), the error-level groups claim and request failure
+    logs (plugins/openid_connect.rs:572-584; routes/omniauth.rs:1112-1116),
+    openid_connect_request_timeout_seconds from the global settings
+    (plugins/openid_connect.rs:18), the groups claim falling back to the
+    ID token when the userinfo claim is false (:566-571)
 
 ## Milestone 1: a hostable read-only mirror
 
@@ -2820,25 +3177,15 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       plugins are Rust in src/plugins/ on lifecycle phases; third-party
       plugins a sandboxed runtime later (Luau spike on
       spike/plugin-runtime)
-- [ ] The bundled plugins, default-on first: solved (topic list, topic
-      view, posts, users, accepting and unaccepting answers, the by_user
-      list, shared issues, and the UI on the pages; left: auto close
-      timers, web hooks, crawler schema markup, search filters, lists
-      filtered by solved status and the admin dashboard),
-      topic voting (done but for what core doesn't port yet: the votes
-      RSS feed, search's min_vote_count: and order:votes, /filter's votes
-      filters, the release and reclaim hooks on topic recovery, category
-      edits and merges, the category editor's voting toggle, the docked
-      header's vote box, and an anonymous vote cast after login; web hooks
-      and discourse-workflows triggers are refused), reactions (done but
-      for what core doesn't port yet: the Reactions received notifications
-      page, the allow-any-emoji picker; reactions in messages are refused,
-      as likes there are; the animations and touch gestures are not
-      ported), presence, templates, narrative-bot, chat, poll's voting.
-      Presence and poll's voting (39) done; solved's leftovers: 163;
-      chat's: 160-162; voting's and reactions' follow core's items (195,
-      143, 197); templates, narrative-bot's tutorials and the plugins not
-      started: 202
+- [ ] The bundled plugins: all sixteen started (crate::plugins::STARTED),
+      none done. The parity audit (210, docs/plugin-audits.md, 2026-10-17)
+      lists every gap of chat, poll, reactions, solved, topic voting,
+      presence, local dates, lazy videos, checklist, details, footnote,
+      spoiler, LTI, OAuth2 basic, OpenID Connect and Apple against the
+      reference plugin; the uncovered ones are 211-249, the rest earlier
+      items (chat 160-162, solved 163, voting and reactions core's 143,
+      150, 188i4, 195, 197, the settings 164). Templates, narrative-bot's
+      tutorials and the plugins not started: 202
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`:
       203
