@@ -156,11 +156,31 @@ pub async fn show(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin color palettes page").into());
-    }
     let mut conn = state.pool.acquire().await?;
-    match ColorScheme::find(&mut conn, id_of(&raw)).await? {
+    let found = ColorScheme::find(&mut conn, id_of(&raw)).await?;
+    drop(conn);
+    if !json_request(&headers, &uri) {
+        // adminConfig.colorPalettes.show: a palette that isn't there sends
+        // the route back to the list.
+        return match found {
+            Some(scheme) => {
+                super::admin_customize::color_palette_page(
+                    &state,
+                    &guardian,
+                    &headers,
+                    &uri,
+                    &scheme.serialize()?,
+                )
+                .await
+            }
+            None => Ok(axum::response::Redirect::to(&format!(
+                "{}/admin/config/colors",
+                state.config.globals.relative_url_root()
+            ))
+            .into_response()),
+        };
+    }
+    match found {
         Some(scheme) => Ok(Json(scheme.serialize()?).into_response()),
         None => Ok(super::topics::not_found_response(&state)),
     }

@@ -345,12 +345,10 @@ pub async fn config_colors(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin color palettes page").into());
-    }
+    let page = !json_request(&headers, &uri);
     let mut conn = state.pool.acquire().await?;
     let conn = &mut *conn;
-    with_ctx!(state, conn, |cx| {
+    let doc = with_ctx!(state, conn, |cx| {
         let default_id = cx.settings.get("default_theme_id")?.to_i() as i32;
         let default_theme = Theme::find(conn, default_id).await?;
         let light = default_theme.as_ref().and_then(|t| t.color_scheme_id);
@@ -425,12 +423,16 @@ pub async fn config_colors(
             Some(t) => themes::serialize(conn, &cx, t, false).await?,
             None => Value::Null,
         };
-        Ok(Json(json!({
+        json!({
             "palettes": out,
             "extras": {"default_theme": default_theme_json},
-        }))
-        .into_response())
-    })
+        })
+    });
+    if page {
+        // adminConfig.colorPalettes.index, over the same document.
+        return super::admin_customize::colors_page(&state, &guardian, &headers, &uri, &doc).await;
+    }
+    Ok(Json(doc).into_response())
 }
 
 /// PUT /admin/themes/:id/site-setting(.json): Themes::ThemeSiteSettingManager.

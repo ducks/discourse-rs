@@ -52,3 +52,8 @@
 # The email template editor (90g7, with the site texts' overrides).
 /admin/email/templates/user_notifications.signup as=admin
 /admin/email/templates/system_messages.pending_users_reminder as=admin
+# Color palettes (90g7): the list, a palette's editor, a theme's palette.
+/admin/config/colors as=admin
+/admin/config/colors?type=from_theme as=admin
+/admin/config/colors/13 as=admin
+/admin/config/colors/1 as=admin

@@ -6,6 +6,7 @@ pub mod admin_backups_view;
 pub mod admin_badges;
 pub mod admin_badges_view;
 pub mod admin_branding_view;
+pub mod admin_colors_view;
 pub mod admin_config_view;
 pub mod admin_confirmation;
 pub mod admin_customize_kit;

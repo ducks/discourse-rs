@@ -7,6 +7,155 @@ use axum::response::{IntoResponse, Response};
 use super::admin_pages::Shell;
 use crate::{AppError, AppState};
 
+/// GET /admin/customize/colors(/:id): Rails' color_schemes#index for the
+/// JSON; a page request goes on to the color palettes' page, as the
+/// adminCustomize.colors and colors-show routes' replaceWith do.
+pub async fn customize_colors(
+    state: axum::extract::State<AppState>,
+    guardian: crate::session::current::AuthGuardian,
+    id: Option<axum::extract::Path<String>>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.0.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if super::admin_pages::wants_json(&uri, &headers) {
+        return super::color_schemes::index(state, guardian, headers, uri).await;
+    }
+    let mut to = format!(
+        "{}/admin/config/colors",
+        state.config.globals.relative_url_root()
+    );
+    if let Some(axum::extract::Path(id)) = id {
+        to.push('/');
+        to.push_str(&id);
+    }
+    Ok(axum::response::Redirect::to(&to).into_response())
+}
+
+/// GET /admin/config/colors as the page (adminConfig.colorPalettes.index)
+/// over its document; `filter` and `type` are DFilterControls' query
+/// params.
+pub(super) async fn colors_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_color_palettes").await?;
+    drop(conn);
+    let query = crate::params::parse_query(uri.query().unwrap_or(""));
+    let filters = crate::admin_colors_view::ListFilters {
+        filter: crate::params::string(&query, "filter").unwrap_or_default(),
+        kind: crate::params::string(&query, "type").unwrap_or_default(),
+    };
+    let theme = default_theme(&doc["extras"]["default_theme"]);
+    let cx = shell.cx(state);
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-customize-strings",
+        &[
+            "admin.customize.colors.select_base.title",
+            "admin.customize.colors.select_base.description",
+            "admin.customize.colors.new_name",
+            "admin.customize.colors.delete_confirm",
+            "admin.customize.colors.set_default_success",
+            "admin.customize.colors.default_error",
+            "admin.customize.colors.filters.no_results",
+            "admin.customize.new",
+            "admin.customize.delete",
+            "cancel",
+            "generic_error",
+        ],
+    );
+    let data = format!(
+        "<script type=\"application/json\" id=\"color-palettes-data\">{}</script>",
+        doc.to_string().replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_colors_view::list(&cx, doc, theme.as_ref(), &filters)
+    );
+    let main = crate::admin_view::contents("admin-config color-palettes", &content);
+    shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
+}
+
+/// The default theme's ids and name from its serialization.
+fn default_theme(theme: &serde_json::Value) -> Option<crate::admin_colors_view::DefaultTheme> {
+    Some(crate::admin_colors_view::DefaultTheme {
+        id: theme["id"].as_i64()?,
+        name: theme["name"].as_str().unwrap_or_default().to_string(),
+        color_scheme_id: theme["color_scheme_id"].as_i64(),
+        dark_color_scheme_id: theme["dark_color_scheme_id"].as_i64(),
+    })
+}
+
+/// GET /admin/config/colors/:id as the page (adminConfig.colorPalettes
+/// .show): the palette's editor, the default theme the site's
+/// user_themes name.
+pub(super) async fn color_palette_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    palette: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_color_palettes").await?;
+    let default_id = shell.settings.get("default_theme_id")?.to_i();
+    let row: Option<(i32, String, Option<i32>, Option<i32>)> = sqlx::query_as(
+        "SELECT id, name, color_scheme_id, dark_color_scheme_id FROM themes WHERE id = $1",
+    )
+    .bind(default_id as i32)
+    .fetch_optional(&mut *conn)
+    .await?;
+    drop(conn);
+    let theme = row.map(
+        |(id, name, light, dark)| crate::admin_colors_view::DefaultTheme {
+            id: id.into(),
+            name,
+            color_scheme_id: light.map(Into::into),
+            dark_color_scheme_id: dark.map(Into::into),
+        },
+    );
+    let cx = shell.cx(state);
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-customize-strings",
+        &[
+            "admin.config_areas.color_palettes.palette_name",
+            "admin.config_areas.color_palettes.unsaved_changes",
+            "admin.config_areas.color_palettes.copied_to_clipboard",
+            "admin.config_areas.color_palettes.copy_to_clipboard_error",
+            "admin.config_areas.color_palettes.copy_of",
+            "admin.config_areas.color_palettes.copy_created",
+            "admin.config_areas.color_palettes.delete_confirm",
+            "admin.config_areas.color_palettes.illegal_character_in_color",
+            "admin.config_areas.color_palettes.invalid_color_length",
+            "admin.customize.delete",
+            "form_kit.errors_summary_title.one",
+            "form_kit.errors_summary_title.other",
+            "form_kit.errors.required",
+            "saved",
+            "cancel",
+            "generic_error",
+        ],
+    );
+    let data = format!(
+        "<script type=\"application/json\" id=\"color-palette-data\">{}</script>",
+        palette.to_string().replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_colors_view::editor(&cx, palette, theme.as_ref())
+    );
+    let main = crate::admin_view::contents("admin-config color-palettes", &content);
+    shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
+}
+
 /// GET /admin/customize/robots as the page (adminCustomizeRobotsTxt) from
 /// the controller's document. The route has no title token.
 pub(super) async fn robots_page(
