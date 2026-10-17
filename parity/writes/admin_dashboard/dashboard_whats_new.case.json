@@ -1,6 +1,5 @@
 {
   "user": "admin",
-  "not_yet": "what's new reads UpcomingChanges::List, not ported",
   "requests": [
     {"method": "GET", "path": "/admin/dashboard/whats-new.json"},
     {"method": "GET", "path": "/admin/whats-new.json"}

@@ -472,8 +472,8 @@ then by what running a forum needs (milestone 6). Briefs:
     highlights, reports, traffic, engagement, search and system sections,
     the vendored version (call_discourse_hub enqueued, never run),
     warm_dashboard_reports. Refused: discourse-solved's support section,
-    data explorer's report source, what's new and toggle-feature (the
-    upcoming changes list), the traffic explorer until 89d),
+    data explorer's report source, the traffic explorer until 89d; what's
+    new and toggle-feature done in 90g9),
     89d. ~~`feat/pageview-tracking`~~ (done) L (the rollup and pageview
     housekeeping jobs; RequestTracker's logging where Rails loads it
     (outside development, or TRACK_REQUESTS): application_requests and
@@ -892,7 +892,24 @@ then by what running a forum needs (milestone 6). Briefs:
     `{{setting:name}}` link goes to its plugin's settings page or the
     page of its area or category (the admin search's settingPageMap,
     crate::admin_setting_links), the JSON keeping the server's link.
-    Left: what's new (the meta feed)), 90g7. `feat/admin-shell-customize` L, in part (done,
+    Then feat/admin-whats-new: /admin/whats-new (the page and its JSON,
+    /admin/dashboard/whats-new too) and /admin/toggle-feature;
+    DiscourseUpdates' new features in crate::new_features: the meta feed
+    fetched through crate::final_destination (force_refresh, rate
+    limited, and the daily Jobs::CheckNewFeatures with its new_features
+    notifications, the previous ones deleted), filtered by version, by
+    GitUtils.has_commit? (answered from vendor/discourse/commits.txt, the
+    vendored commit's last year, scripts/record-discourse-commits) and by
+    plugin, merged with the permanent upcoming changes; unseen state,
+    seen marks and last viewed dates in discourse_rs.cached_values;
+    Jobs::RefreshLatestNewFeature; the current user's
+    has_unseen_features. The page cooks each description server side
+    (DCookText) and groups the months in the browser's zone as moment
+    does. The feed is a recorded fixture
+    (parity/writes/files/new_features_feed.json), served by the fixtures
+    server: record_writes.rb and tests/writes.rs take a case's `env`
+    (the endpoint), fixture-file `redis` values and remote bodies, and
+    a remote target without a query for any query), 90g7. `feat/admin-shell-customize` L, in part (done,
     in feat/admin-shell-customize-content: /admin/customize/watched_words
     (on to the first action) and an action's page: the filter (the
     route's query param), the action nav with its counts and the mobile
@@ -1842,14 +1859,11 @@ generate_theme_screenshot_thumbnails (171).
     customized email templates (routes/admin_email_templates.rs:407,444,
     478), unblocked by 90a's override layer
 173. `feat/upcoming-changes` S: UpcomingChanges::List is ported
-    (crate::upcoming_changes, 90g6); left: what's new and
-    toggle-feature (routes/admin_dashboard_sections.rs:439; the
-    `not_yet` case admin_dashboard/dashboard_whats_new), undeclared
-    changes and display conditions reading themes or categories
-    (problem_checks.rs:546,576), upcoming change settings
-    (site_setting_update.rs:174), unseen new features and their
-    notifications (current_user.rs:779; notification_create.rs:231), the
-    refresh_latest_new_feature job
+    (crate::upcoming_changes, 90g6), and what's new with toggle-feature,
+    unseen new features, their notifications and both jobs
+    (crate::new_features, 90g9); left: undeclared changes and display
+    conditions reading themes or categories (problem_checks.rs:546,576),
+    upcoming change settings (site_setting_update.rs:174)
 174. `feat/ruby-regex` M: Ruby regexps the port can't run as Ruby does:
     watched words outside the engines' shared grammar, with full case
     folding or past the backtracking limit (word_watcher.rs:102,125,212,

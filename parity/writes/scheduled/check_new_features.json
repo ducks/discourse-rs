@@ -1,0 +1,79 @@
+{
+  "name": "check_new_features",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-17T12:51:25.275879",
+  "transaction_started_at": "2026-10-17T12:51:23.942425",
+  "responses": [],
+  "changes": {
+    "notifications": {
+      "inserted": [
+        {
+          "id": 54,
+          "data": "{}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-17T12:51:25.424827",
+          "updated_at": "2026-10-17T12:51:25.424827",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 37
+        }
+      ],
+      "deleted": [
+        {
+          "id": 53,
+          "data": "{}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-14T12:51:23.942425",
+          "updated_at": "2026-10-14T12:51:23.942425",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 37
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "notifications": 54
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, data, read, created_at, updated_at, high_priority) VALUES (37, 1, '{}', false, now() - interval '3 days', now() - interval '3 days', false)"
+  ],
+  "enqueue": [
+    [
+      "check_new_features",
+      {}
+    ]
+  ],
+  "remote": {
+    "/new-features.json": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "fixture": "new_features_feed.json"
+      }
+    }
+  },
+  "env": {
+    "DISCOURSE_NEW_FEATURES_ENDPOINT": "http://fixtures.localhost:8099/new-features.json"
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c1d0e813ed6248507d761fc745b07e87e616b8a9dec909fdaa452fc6b1cf0487",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

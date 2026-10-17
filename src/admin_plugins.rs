@@ -78,6 +78,11 @@ pub fn admin_route_label(settings: &SiteSettings, name: &str) -> Option<String> 
         .map(str::to_string)
 }
 
+/// `Discourse.plugins_by_name[name].present?`: a bundled plugin by name.
+pub fn exists(name: &str) -> bool {
+    recorded().iter().any(|p| p["name"] == name)
+}
+
 /// A bundled plugin's `about` (its description), by name.
 pub fn about(name: &str) -> Option<String> {
     recorded()

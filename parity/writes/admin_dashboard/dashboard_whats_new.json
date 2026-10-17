@@ -11,8 +11,8 @@
       "path": "/admin/whats-new.json"
     }
   ],
-  "started_at": "2026-10-14T16:16:16.907333",
-  "transaction_started_at": "2026-10-14T16:16:12.121551",
+  "started_at": "2026-10-17T12:51:06.448259",
+  "transaction_started_at": "2026-10-17T12:51:01.843819",
   "responses": [
     {
       "status": 200,
@@ -35,7 +35,7 @@
             "created_at": "2026-09-30T06:20:37.304Z",
             "updated_at": "2026-09-30T06:20:37.304Z",
             "released_at": "2026-09-30T06:20:37.304Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
             "upcoming_change_setting_name": "floating_dismiss_topics_on_mobile"
           },
           {
@@ -45,7 +45,7 @@
             "created_at": "2026-09-30T06:20:37.288Z",
             "updated_at": "2026-09-30T06:20:37.288Z",
             "released_at": "2026-09-30T06:20:37.288Z",
-            "screenshot_url": "http://localhost:3050/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
             "upcoming_change_setting_name": "enable_support_category_type_setup"
           },
           {
@@ -55,7 +55,7 @@
             "created_at": "2026-09-30T06:20:37.254Z",
             "updated_at": "2026-09-30T06:20:37.254Z",
             "released_at": "2026-09-30T06:20:37.254Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_simplified_category_creation.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_simplified_category_creation.png",
             "upcoming_change_setting_name": "enable_simplified_category_creation"
           },
           {
@@ -65,7 +65,7 @@
             "created_at": "2026-09-30T06:20:37.221Z",
             "updated_at": "2026-09-30T06:20:37.221Z",
             "released_at": "2026-09-30T06:20:37.221Z",
-            "screenshot_url": "http://localhost:3050/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
             "upcoming_change_setting_name": "enable_new_post_reply_count_position"
           },
           {
@@ -75,7 +75,7 @@
             "created_at": "2026-09-30T06:20:37.197Z",
             "updated_at": "2026-09-30T06:20:37.197Z",
             "released_at": "2026-09-30T06:20:37.197Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_new_post_reactions_menu.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_post_reactions_menu.png",
             "upcoming_change_setting_name": "enable_new_post_reactions_menu"
           },
           {
@@ -95,7 +95,7 @@
             "created_at": "2026-09-30T06:20:37.141Z",
             "updated_at": "2026-09-30T06:20:37.141Z",
             "released_at": "2026-09-30T06:20:37.141Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_new_checkbox_style.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_checkbox_style.png",
             "upcoming_change_setting_name": "enable_new_checkbox_style"
           },
           {
@@ -105,7 +105,7 @@
             "created_at": "2026-09-30T06:20:37.100Z",
             "updated_at": "2026-09-30T06:20:37.100Z",
             "released_at": "2026-09-30T06:20:37.100Z",
-            "screenshot_url": "http://localhost:3050/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
+            "screenshot_url": "http://localhost:3048/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
             "upcoming_change_setting_name": "enable_new_chat_reactions_popup"
           },
           {
@@ -164,7 +164,7 @@
             "created_at": "2026-09-30T06:20:37.304Z",
             "updated_at": "2026-09-30T06:20:37.304Z",
             "released_at": "2026-09-30T06:20:37.304Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
             "upcoming_change_setting_name": "floating_dismiss_topics_on_mobile"
           },
           {
@@ -174,7 +174,7 @@
             "created_at": "2026-09-30T06:20:37.288Z",
             "updated_at": "2026-09-30T06:20:37.288Z",
             "released_at": "2026-09-30T06:20:37.288Z",
-            "screenshot_url": "http://localhost:3050/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
             "upcoming_change_setting_name": "enable_support_category_type_setup"
           },
           {
@@ -184,7 +184,7 @@
             "created_at": "2026-09-30T06:20:37.254Z",
             "updated_at": "2026-09-30T06:20:37.254Z",
             "released_at": "2026-09-30T06:20:37.254Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_simplified_category_creation.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_simplified_category_creation.png",
             "upcoming_change_setting_name": "enable_simplified_category_creation"
           },
           {
@@ -194,7 +194,7 @@
             "created_at": "2026-09-30T06:20:37.221Z",
             "updated_at": "2026-09-30T06:20:37.221Z",
             "released_at": "2026-09-30T06:20:37.221Z",
-            "screenshot_url": "http://localhost:3050/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
             "upcoming_change_setting_name": "enable_new_post_reply_count_position"
           },
           {
@@ -204,7 +204,7 @@
             "created_at": "2026-09-30T06:20:37.197Z",
             "updated_at": "2026-09-30T06:20:37.197Z",
             "released_at": "2026-09-30T06:20:37.197Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_new_post_reactions_menu.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_post_reactions_menu.png",
             "upcoming_change_setting_name": "enable_new_post_reactions_menu"
           },
           {
@@ -224,7 +224,7 @@
             "created_at": "2026-09-30T06:20:37.141Z",
             "updated_at": "2026-09-30T06:20:37.141Z",
             "released_at": "2026-09-30T06:20:37.141Z",
-            "screenshot_url": "http://localhost:3050/images/upcoming_changes/enable_new_checkbox_style.png",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_checkbox_style.png",
             "upcoming_change_setting_name": "enable_new_checkbox_style"
           },
           {
@@ -234,7 +234,7 @@
             "created_at": "2026-09-30T06:20:37.100Z",
             "updated_at": "2026-09-30T06:20:37.100Z",
             "released_at": "2026-09-30T06:20:37.100Z",
-            "screenshot_url": "http://localhost:3050/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
+            "screenshot_url": "http://localhost:3048/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
             "upcoming_change_setting_name": "enable_new_chat_reactions_popup"
           },
           {
@@ -280,33 +280,33 @@
       "updated": [
         {
           "before": {
-            "id": 222,
+            "id": 461,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "fSsSoBxdVvQXrb8udCZ3YNYj98s=",
-            "created_at": "2026-10-14T16:16:14.429152",
-            "rotated_at": "2026-10-14T16:16:14.41898",
-            "updated_at": "2026-10-14T16:16:14.429152",
+            "auth_token": "3TFmTG+0UEPzo0iwbEm/sxo3tjc=",
+            "created_at": "2026-10-17T12:51:03.731051",
+            "rotated_at": "2026-10-17T12:51:03.72182",
+            "updated_at": "2026-10-17T12:51:03.731051",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "fSsSoBxdVvQXrb8udCZ3YNYj98s=",
+            "prev_auth_token": "3TFmTG+0UEPzo0iwbEm/sxo3tjc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 222,
-            "seen_at": "2026-10-14T16:16:16.919845",
+            "id": 461,
+            "seen_at": "2026-10-17T12:51:06.463242",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "fSsSoBxdVvQXrb8udCZ3YNYj98s=",
-            "created_at": "2026-10-14T16:16:14.429152",
-            "rotated_at": "2026-10-14T16:16:14.41898",
-            "updated_at": "2026-10-14T16:16:14.429152",
+            "auth_token": "3TFmTG+0UEPzo0iwbEm/sxo3tjc=",
+            "created_at": "2026-10-17T12:51:03.731051",
+            "rotated_at": "2026-10-17T12:51:03.72182",
+            "updated_at": "2026-10-17T12:51:03.731051",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "fSsSoBxdVvQXrb8udCZ3YNYj98s=",
+            "prev_auth_token": "3TFmTG+0UEPzo0iwbEm/sxo3tjc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null

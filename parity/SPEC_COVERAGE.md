@@ -68,6 +68,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::CategoryManagementController#categories | 5 | 1 | 0 | 0 |
 | Admin::Config::UpcomingChangesController | 19 | 0 | 1 | 0 |
 | Admin::SearchController | 2 | 0 | 0 | 0 |
+| Admin::DashboardController#new_features | 10 | 0 | 2 | 0 |
 | Admin::McpController | 14 | 0 | 0 | 0 |
 | Admin::McpAuthorizationsController | 4 | 0 | 0 | 0 |
 | Admin::McpActivityController | 7 | 0 | 0 | 0 |
@@ -1047,6 +1048,28 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 9 | index > settings, themes and components, reports and upcoming changes | covered | admin_search/all (new) |
 | 20 | index > default_locale in a general search | covered | admin_search/all, admin_search/filtered (new) |
 | - | (no spec it) the contract's filters (names, areas, plugin, categories), no setting left (204), a moderator (403), a non-staff user (404) | covered | admin_search/filtered, admin_search/denied, admin_search/not_staff (new) |
+
+## Admin::DashboardController#new_features
+
+`spec/requests/admin/dashboard_controller_spec.rb` (the meta feed is
+parity/writes/files/new_features_feed.json, recorded from
+meta.discourse.org/new-features.json and served by the fixtures server)
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 1061 | admin > empty by default | covered | admin_dashboard/dashboard_whats_new |
+| 1068 | admin > invalid JSON | covered | admin_dashboard/whats_new_invalid_feed (new) |
+| 1076 | admin > includes new features | covered | admin_dashboard/whats_new_feed (new) |
+| 1089 | admin > force refresh busts the cache | covered | admin_dashboard/whats_new_refresh, whats_new_refresh_failed (new) |
+| 1121 | admin > unseen feature state | covered | admin_dashboard/whats_new_feed, whats_new_refresh (new) |
+| 1132 | admin > bumps the last viewed feature date | needs-harness | a Redis hash the responses don't show (the daily job's notifications read it: scheduled/check_new_features) |
+| 1155 | admin > marks new features as seen | covered | admin_dashboard/whats_new_feed (the current user's has_unseen_features after) (new) |
+| 1173 | admin > no new features | covered | admin_dashboard/dashboard_whats_new |
+| 1208 | admin > a permanent upcoming change with an empty feed | covered | admin_dashboard/dashboard_whats_new |
+| 1233 | moderator > includes new features | covered | admin_dashboard/whats_new_moderator (new) |
+| 1246 | moderator > no last viewed date | needs-harness | the same Redis hash |
+| 1260 | non-staff > 404 | covered | admin_dashboard/whats_new_not_staff (new) |
+| - | (no spec it) toggle_feature (a moderator 403, a non-upcoming setting 403, the contract's 400); Jobs::CheckNewFeatures | covered | admin_dashboard/toggle_feature, whats_new_moderator, whats_new_not_staff, scheduled/check_new_features (new) |
 
 ## Admin::McpController
 

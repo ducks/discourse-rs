@@ -745,3 +745,47 @@ async fn the_admin_search() {
     assert_eq!(status, StatusCode::OK);
     assert!(body.is_empty());
 }
+
+#[tokio::test]
+async fn the_whats_new_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let feed = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/writes/files/new_features_feed.json"),
+    )
+    .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    discourse_rs::new_features::update(&mut conn, &st, &feed)
+        .await
+        .unwrap();
+    drop(conn);
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // Unseen until the page is visited.
+    let (_, current) = admin
+        .send(Method::GET, "/session/current.json", "", true)
+        .await;
+    assert!(
+        current.contains("\"has_unseen_features\":true"),
+        "{current}"
+    );
+    let (status, html) = admin.page("/admin/whats-new").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("new? - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents whats-new\">"));
+    // A feed entry (its description cooked), a permanent change, and the
+    // calendar plugin's entries left out (the site has no such plugin).
+    assert!(html.contains("id=\"what-users-are-asking-with-ask-ai\""));
+    assert!(html.contains("<a href=\"https://meta.discourse.org/t/search-better-in-your-community-with-ask-ai/411346\">Ask AI</a>"));
+    assert!(html.contains("id=\"upcoming-change-enable_new_checkbox_style\""));
+    assert!(!html.contains("Run Zoom webinars in your community"));
+    assert!(html.contains("data-new-features-group=\"September 2026\""));
+    assert!(html.contains("/admin-whats-new.js"));
+    let (_, current) = admin
+        .send(Method::GET, "/session/current.json", "", true)
+        .await;
+    assert!(
+        current.contains("\"has_unseen_features\":false"),
+        "{current}"
+    );
+}

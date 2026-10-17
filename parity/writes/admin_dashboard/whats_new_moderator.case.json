@@ -1,0 +1,11 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "redis": {"new_features": {"fixture": "new_features_feed.json"}},
+  "requests": [
+    {"method": "GET", "path": "/admin/whats-new.json"},
+    {"method": "POST", "path": "/admin/toggle-feature.json", "params": {"setting_name": "enable_unified_new", "enabled": "false"}}
+  ]
+}

@@ -222,6 +222,7 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         rate_limits: false,
         track_requests: false,
         auth_provider_hosts: Vec::new(),
+        new_features_endpoint: "http://localhost:3000/new-features.json".into(),
         object_storage_endpoints: Vec::new(),
         globals: GlobalSettings::from_vars(globals.iter().copied()),
     }

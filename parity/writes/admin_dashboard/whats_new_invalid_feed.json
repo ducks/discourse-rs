@@ -1,0 +1,200 @@
+{
+  "name": "whats_new_invalid_feed",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/whats-new.json"
+    }
+  ],
+  "started_at": "2026-10-17T13:09:30.033908",
+  "transaction_started_at": "2026-10-17T13:09:25.222904",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "new_features": [
+          {
+            "title": "Reporting improvements",
+            "description": "Improvements to navigation, design, and usability for Discourse's admin reports.",
+            "link": "https://meta.discourse.org/t/-/395768",
+            "created_at": "2026-09-30T06:20:37.380Z",
+            "updated_at": "2026-09-30T06:20:37.380Z",
+            "released_at": "2026-09-30T06:20:37.380Z",
+            "screenshot_url": null,
+            "upcoming_change_setting_name": "reporting_improvements"
+          },
+          {
+            "title": "Floating dismiss topics on mobile",
+            "description": "Shows a floating 'Dismiss...' button on mobile for the topic list for easier access and to free up space in the top of the topic list",
+            "link": "https://meta.discourse.org/t/-/387322",
+            "created_at": "2026-09-30T06:20:37.304Z",
+            "updated_at": "2026-09-30T06:20:37.304Z",
+            "released_at": "2026-09-30T06:20:37.304Z",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
+            "upcoming_change_setting_name": "floating_dismiss_topics_on_mobile"
+          },
+          {
+            "title": "Enable support category type setup",
+            "description": "Enables the Support category type option during category creation setup.",
+            "link": "https://meta.discourse.org/t/-/398338",
+            "created_at": "2026-09-30T06:20:37.288Z",
+            "updated_at": "2026-09-30T06:20:37.288Z",
+            "released_at": "2026-09-30T06:20:37.288Z",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
+            "upcoming_change_setting_name": "enable_support_category_type_setup"
+          },
+          {
+            "title": "Enable simplified category creation",
+            "description": "Enables a simplified category creation flow with fewer options and a cleaner interface.",
+            "link": "https://meta.discourse.org/t/-/394971",
+            "created_at": "2026-09-30T06:20:37.254Z",
+            "updated_at": "2026-09-30T06:20:37.254Z",
+            "released_at": "2026-09-30T06:20:37.254Z",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_simplified_category_creation.png",
+            "upcoming_change_setting_name": "enable_simplified_category_creation"
+          },
+          {
+            "title": "Enable new post reply count position",
+            "description": "Move the post reactions summary before the reply count in the post controls.",
+            "link": "https://meta.discourse.org/t/-/403390",
+            "created_at": "2026-09-30T06:20:37.221Z",
+            "updated_at": "2026-09-30T06:20:37.221Z",
+            "released_at": "2026-09-30T06:20:37.221Z",
+            "screenshot_url": "http://localhost:3048/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
+            "upcoming_change_setting_name": "enable_new_post_reply_count_position"
+          },
+          {
+            "title": "Enable new post reactions menu",
+            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
+            "link": "https://meta.discourse.org/t/-/389820",
+            "created_at": "2026-09-30T06:20:37.197Z",
+            "updated_at": "2026-09-30T06:20:37.197Z",
+            "released_at": "2026-09-30T06:20:37.197Z",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_post_reactions_menu.png",
+            "upcoming_change_setting_name": "enable_new_post_reactions_menu"
+          },
+          {
+            "title": "Enable new defaults for trust level 3 requirements",
+            "description": "We have updated the TL3 default requirements so they’re more reasonable for members of large, active communities. If you have previously overridden these settings, this upcoming change will have no effect.",
+            "link": "https://meta.discourse.org/t/-/397098",
+            "created_at": "2026-09-30T06:20:37.173Z",
+            "updated_at": "2026-09-30T06:20:37.173Z",
+            "released_at": "2026-09-30T06:20:37.173Z",
+            "screenshot_url": null,
+            "upcoming_change_setting_name": "enable_new_defaults_for_trust_level_3_requirements"
+          },
+          {
+            "title": "Enable new checkbox style",
+            "description": "Enable the redesigned checkbox style for FormKit checkboxes.",
+            "link": "https://meta.discourse.org/t/-/403284",
+            "created_at": "2026-09-30T06:20:37.141Z",
+            "updated_at": "2026-09-30T06:20:37.141Z",
+            "released_at": "2026-09-30T06:20:37.141Z",
+            "screenshot_url": "http://localhost:3048/images/upcoming_changes/enable_new_checkbox_style.png",
+            "upcoming_change_setting_name": "enable_new_checkbox_style"
+          },
+          {
+            "title": "Enable new chat reactions popup",
+            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "link": "https://meta.discourse.org/t/-/406004",
+            "created_at": "2026-09-30T06:20:37.100Z",
+            "updated_at": "2026-09-30T06:20:37.100Z",
+            "released_at": "2026-09-30T06:20:37.100Z",
+            "screenshot_url": "http://localhost:3048/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
+            "upcoming_change_setting_name": "enable_new_chat_reactions_popup"
+          },
+          {
+            "title": "Enable ideas category type setup",
+            "description": "Enables the Ideas category type option during category creation setup.",
+            "link": "https://meta.discourse.org/t/-/399365",
+            "created_at": "2026-09-30T06:20:36.893Z",
+            "updated_at": "2026-09-30T06:20:36.893Z",
+            "released_at": "2026-09-30T06:20:36.893Z",
+            "screenshot_url": null,
+            "upcoming_change_setting_name": "enable_ideas_category_type_setup"
+          },
+          {
+            "title": "Enable events category type setup",
+            "description": "Enables the Events category type option during category creation setup.",
+            "link": "https://meta.discourse.org/t/-/401309",
+            "created_at": "2026-09-30T06:20:36.585Z",
+            "updated_at": "2026-09-30T06:20:36.585Z",
+            "released_at": "2026-09-30T06:20:36.585Z",
+            "screenshot_url": null,
+            "upcoming_change_setting_name": "enable_events_category_type_setup"
+          },
+          {
+            "title": "Enable Discourse reactions by default",
+            "description": "Changes the default value for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=discourse_reactions_enabled\" data-setting-name=\"discourse_reactions_enabled\" data-setting-category=\"discourse_reactions\" data-setting-plugin=\"discourse-reactions\">Discourse reactions enabled</a> setting from disabled to enabled when this upcoming change is enabled.",
+            "link": "https://meta.discourse.org/t/-/403795",
+            "created_at": "2026-09-30T06:20:36.541Z",
+            "updated_at": "2026-09-30T06:20:36.541Z",
+            "released_at": "2026-09-30T06:20:36.541Z",
+            "screenshot_url": null,
+            "upcoming_change_setting_name": "enable_discourse_reactions_by_default"
+          }
+        ],
+        "has_unseen_features": false,
+        "release_notes_link": "https://meta.discourse.org/c/announcements/67?tags=release-notes&before=0"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+bnb/siwVy8zYIUU42wZGO3f2do=",
+            "created_at": "2026-10-17T13:09:27.198113",
+            "rotated_at": "2026-10-17T13:09:27.191724",
+            "updated_at": "2026-10-17T13:09:27.198113",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "+bnb/siwVy8zYIUU42wZGO3f2do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-17T13:09:30.051925",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+bnb/siwVy8zYIUU42wZGO3f2do=",
+            "created_at": "2026-10-17T13:09:27.198113",
+            "rotated_at": "2026-10-17T13:09:27.191724",
+            "updated_at": "2026-10-17T13:09:27.198113",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "+bnb/siwVy8zYIUU42wZGO3f2do=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "refresh_latest_new_feature",
+      {}
+    ]
+  ],
+  "next_ids": {},
+  "redis": {
+    "new_features": "INVALID JSON"
+  },
+  "recorded_from": {
+    "case": "8e6d8db6bbe01556a918dcda91a5f4a1896ea98937e0c0cb32b7cedb07658202",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
