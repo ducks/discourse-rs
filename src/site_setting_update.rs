@@ -598,7 +598,15 @@ pub async fn set_and_log_details(
     } else {
         (Some(previous.to_s()), new_value.to_s())
     };
-    log_change(conn, actor_id, name, previous.as_deref(), &new_value, details).await
+    log_change(
+        conn,
+        actor_id,
+        name,
+        previous.as_deref(),
+        &new_value,
+        details,
+    )
+    .await
 }
 
 /// StaffActionLogger#log_site_setting_change.
