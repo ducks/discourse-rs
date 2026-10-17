@@ -1,0 +1,246 @@
+{
+  "name": "complete_external_upload",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {
+        "unique_identifier": "00000000-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {
+        "unique_identifier": "00000000-0000-4000-8000-000000000002"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-external-upload.json",
+      "params": {
+        "unique_identifier": "00000000-0000-4000-8000-000000000003"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T22:53:44.056099",
+  "transaction_started_at": "2026-10-16T22:53:40.795997",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//s3-direct-complete.minio.localhost:9122/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+        "original_filename": "static.gif",
+        "filesize": 44,
+        "width": 4,
+        "height": 3,
+        "thumbnail_width": 4,
+        "thumbnail_height": 3,
+        "extension": "gif",
+        "short_url": "upload://z4vVnIK0A1RovKkbGEQhlgvyG1s.gif",
+        "short_path": "/uploads/short-url/z4vVnIK0A1RovKkbGEQhlgvyG1s.gif",
+        "retain_hours": null,
+        "human_filesize": "44 Bytes",
+        "dominant_color": "3366CC",
+        "thumbnail": null
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, but your upload failed. Please try again."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, but your upload failed. Please try again."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "external_upload_stubs": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "key": "temp/0123456789abcdef0123456789abcdef/fedcba9876543210fedcba9876543210.gif",
+          "status": 1,
+          "filesize": 44,
+          "multipart": false,
+          "created_at": "2026-10-16T22:53:40.795997",
+          "updated_at": "2026-10-16T22:53:40.795997",
+          "upload_type": "composer",
+          "created_by_id": 3,
+          "original_filename": "static.gif",
+          "unique_identifier": "00000000-0000-4000-8000-000000000001",
+          "external_upload_identifier": null
+        },
+        {
+          "id": 9602,
+          "key": "temp/11111111111111111111111111111111/22222222222222222222222222222222.txt",
+          "status": 1,
+          "filesize": 999,
+          "multipart": false,
+          "created_at": "2026-10-16T22:53:40.795997",
+          "updated_at": "2026-10-16T22:53:40.795997",
+          "upload_type": "composer",
+          "created_by_id": 3,
+          "original_filename": "notes.txt",
+          "unique_identifier": "00000000-0000-4000-8000-000000000002",
+          "external_upload_identifier": null
+        },
+        {
+          "id": 9603,
+          "key": "temp/33333333333333333333333333333333/44444444444444444444444444444444.gif",
+          "status": 2,
+          "filesize": 44,
+          "multipart": false,
+          "created_at": "2026-10-16T22:53:40.795997",
+          "updated_at": "2026-10-16T22:53:40.795997",
+          "upload_type": "composer",
+          "created_by_id": 3,
+          "original_filename": "gone.gif",
+          "unique_identifier": "00000000-0000-4000-8000-000000000003",
+          "external_upload_identifier": null
+        }
+      ],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "//s3-direct-complete.minio.localhost:9122/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+          "etag": "2169a6fd05eeea0231b2baa090caaccf",
+          "sha1": "f5cebe42706fcad01568026c8db70c8ec640d4a2",
+          "width": 4,
+          "height": 3,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": false,
+          "filesize": 44,
+          "extension": "gif",
+          "created_at": "2026-10-16T22:53:44.247994",
+          "updated_at": "2026-10-16T22:53:44.304515",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "3366CC",
+          "thumbnail_width": 4,
+          "thumbnail_height": 3,
+          "original_filename": "static.gif",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1hwB6/Lwg0hYLKVXTE++HMfyMKU=",
+            "created_at": "2026-10-16T22:53:42.021122",
+            "rotated_at": "2026-10-16T22:53:42.016429",
+            "updated_at": "2026-10-16T22:53:42.021122",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "1hwB6/Lwg0hYLKVXTE++HMfyMKU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:53:44.074364",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1hwB6/Lwg0hYLKVXTE++HMfyMKU=",
+            "created_at": "2026-10-16T22:53:42.021122",
+            "rotated_at": "2026-10-16T22:53:42.016429",
+            "updated_at": "2026-10-16T22:53:42.021122",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "1hwB6/Lwg0hYLKVXTE++HMfyMKU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 3,
+          "upload_id": 36,
+          "created_at": "2026-10-16T22:53:44.320464"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-direct-complete",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true,
+    "allowed_internal_hosts": "s3-direct-complete.minio.localhost",
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+  },
+  "setup": [
+    "INSERT INTO external_upload_stubs (id, key, original_filename, status, unique_identifier, created_by_id, upload_type, filesize, created_at, updated_at) VALUES (9601, 'temp/0123456789abcdef0123456789abcdef/fedcba9876543210fedcba9876543210.gif', 'static.gif', 1, '00000000-0000-4000-8000-000000000001', 3, 'composer', 44, now(), now()), (9602, 'temp/11111111111111111111111111111111/22222222222222222222222222222222.txt', 'notes.txt', 1, '00000000-0000-4000-8000-000000000002', 3, 'composer', 999, now(), now()), (9603, 'temp/33333333333333333333333333333333/44444444444444444444444444444444.gif', 'gone.gif', 2, '00000000-0000-4000-8000-000000000003', 3, 'composer', 44, now(), now())"
+  ],
+  "s3": {
+    "buckets": [
+      "s3-direct-complete"
+    ],
+    "objects": {
+      "s3-direct-complete/temp/0123456789abcdef0123456789abcdef/fedcba9876543210fedcba9876543210.gif": "static.gif",
+      "s3-direct-complete/temp/11111111111111111111111111111111/22222222222222222222222222222222.txt": "notes.txt"
+    }
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-direct-complete",
+      "key": "original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
+      "size": 44,
+      "etag": "2169a6fd05eeea0231b2baa090caaccf",
+      "content_type": "image/gif",
+      "cache_control": "max-age=31556952, public, immutable",
+      "content_disposition": "inline; filename=\"static.gif\"; filename*=UTF-8''static.gif",
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "80e0c559049016730effb87660791d43a43058bc4f7c3a04fdf3cfe218ffeb6e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

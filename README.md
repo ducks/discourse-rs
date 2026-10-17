@@ -57,6 +57,15 @@ Rails) changes URL generation the same way, and every `DISCOURSE_*` env var is
 a GlobalSetting, shadowing the site setting of the same name
 (`DISCOURSE_HOSTNAME`, `DISCOURSE_CDN_URL`, `DISCOURSE_TITLE`, ...).
 
+Uploads and backups can live in any S3-compatible object store (AWS, R2,
+B2, MinIO, Wasabi, Spaces, Garage), configured as in Discourse: the
+`enable_s3_uploads`, `s3_upload_bucket`, `s3_endpoint`, `s3_region`,
+`s3_access_key_id`, `s3_secret_access_key`, `s3_cdn_url`,
+`backup_location` and `s3_backup_bucket` site settings, or the
+`DISCOURSE_S3_*` globals. Requests address the bucket in the host, or in
+the path for an IP endpoint; `DISCOURSE_S3_FORCE_PATH_STYLE=true` (the
+port's own, Rails has none) asks for the path for any endpoint.
+
 To run against a real Discourse database, point `DATABASE_URL` at it. Extra
 migrations (newer Discourse, third-party plugins) are logged and tolerated.
 

@@ -351,6 +351,51 @@ impl FileStore {
         }
     }
 
+    /// The external store, for what only it does (direct uploads).
+    pub fn as_external(&self) -> Option<&ExternalStore> {
+        match self {
+            FileStore::Local(_) => None,
+            FileStore::External(s) => Some(s),
+        }
+    }
+
+    /// `S3Store#move_existing_stored_upload`: an object a browser put at
+    /// `existing_key` copied where the upload belongs (with the store's
+    /// headers for its filename), then deleted.
+    pub async fn move_existing_stored_upload(
+        &self,
+        existing_key: &str,
+        upload_id: i32,
+        sha1: &str,
+        extension: &str,
+        original_filename: &str,
+    ) -> Result<Stored, StoreError> {
+        let FileStore::External(s) = self else {
+            return Err(Unsupported("moving an upload within the local store").into());
+        };
+        let path = get_path_for("original", upload_id, sha1, extension);
+        let key = s.s3_path(&s.multisite_path(&path));
+        let opts = s.put_options(original_filename, false);
+        s.backend.ensure_bucket().await?;
+        let etag = s.backend.copy(existing_key, &key, Some(&opts)).await?;
+        s.backend.delete(existing_key).await?;
+        Ok(Stored {
+            url: format!("{}/{key}", s.absolute_base_url),
+            etag: Some(etag),
+        })
+    }
+
+    /// `S3Store#delete_file`: an object deleted outright, no tombstone.
+    pub async fn delete_file(&self, key: &str) -> Result<(), StoreError> {
+        match self {
+            FileStore::Local(_) => Ok(()),
+            FileStore::External(s) => {
+                s.backend.ensure_bucket().await?;
+                Ok(s.backend.delete(key).await?)
+            }
+        }
+    }
+
     /// `remove_file`: the local store moves the file to the tombstone
     /// (`/uploads/` -> `/uploads/tombstone/`, replacing an older copy) and
     /// touches it, where purge_tombstone later finds it; the external one
@@ -681,6 +726,26 @@ fn use_dualstack_endpoint(config: &Config, settings: &SiteSettings) -> Result<bo
     Ok(!obj.text("s3_region", "s3_region")?.starts_with("cn-"))
 }
 
+/// `SiteSetting::Upload.enable_s3_uploads`: the site setting, or the S3
+/// global settings.
+pub fn s3_uploads_enabled(config: &Config, settings: &SiteSettings) -> Result<bool, SettingError> {
+    Ok(settings.get("enable_s3_uploads")?.truthy() || config.globals.use_s3())
+}
+
+/// `SiteSetting::Upload.s3_cdn_url`, None when blank.
+pub fn upload_s3_cdn_url(
+    config: &Config,
+    settings: &SiteSettings,
+) -> Result<Option<String>, SettingError> {
+    let obj = UploadSettings {
+        config,
+        settings,
+        site: settings.get("enable_s3_uploads")?.truthy(),
+    };
+    let cdn = obj.text("s3_cdn_url", "s3_cdn_url")?;
+    Ok((!ruby::is_blank(&cdn)).then_some(cdn))
+}
+
 /// `SiteSetting::Upload.s3_upload_bucket` (the site's, or GlobalSetting's
 /// `s3_bucket`) as S3Store#s3_bucket reads it: lowercase, its name and
 /// its folder. Blank is Discourse::SiteSettingMissing.
@@ -927,6 +992,85 @@ impl ExternalStore {
         (acl, tagging)
     }
 
+    /// How `store_file` writes an object named `filename`: cache control,
+    /// type and disposition by its name, ACL and tag.
+    fn put_options(&self, filename: &str, secure: bool) -> PutOptions {
+        let (acl, tagging) = self.access_options(secure);
+        let disposition = content_disposition_for(filename);
+        PutOptions {
+            content_type: mime_type(filename).map(str::to_string),
+            cache_control: Some(self.cache_control.clone()),
+            content_disposition: (!disposition.is_empty()).then_some(disposition),
+            acl,
+            tagging,
+            metadata: Vec::new(),
+        }
+    }
+
+    /// The bucket the store keeps its objects in.
+    pub fn backend(&self) -> &Backend {
+        &self.backend
+    }
+
+    /// `S3Store#temporary_upload_path`: `temp/[<folder>/]uploads/<db>/<hex>/<hex><ext>`,
+    /// where a browser puts a file before it is an upload.
+    pub fn temporary_upload_path(&self, file_name: &str) -> String {
+        let upload_path = format!("uploads/{}", self.local.db);
+        let prefix = match &self.folder {
+            Some(folder) => format!("{}/{upload_path}", folder.trim_end_matches('/')),
+            None => upload_path,
+        };
+        temporary_upload_path(file_name, &prefix)
+    }
+
+    /// `S3Store#signed_request_for_temporary_upload`: a temporary key and
+    /// a PUT presigned for ten minutes with the metadata given, private.
+    pub fn signed_request_for_temporary_upload(
+        &self,
+        file_name: &str,
+        metadata: Vec<(String, String)>,
+    ) -> Result<(String, std::collections::BTreeMap<String, String>), StoreError> {
+        let key = self.temporary_upload_path(file_name);
+        let (acl, tagging) = self.access_options(true);
+        let opts = PutOptions {
+            acl,
+            tagging,
+            metadata,
+            ..Default::default()
+        };
+        Ok(self
+            .backend
+            .presigned_put(&key, UPLOAD_URL_EXPIRES_AFTER_SECONDS, &opts)?)
+    }
+
+    /// `S3Store#create_multipart`: a multipart upload at a temporary key,
+    /// private; its id and key.
+    pub async fn create_multipart(
+        &self,
+        file_name: &str,
+        content_type: Option<&str>,
+        metadata: Vec<(String, String)>,
+    ) -> Result<(String, String), StoreError> {
+        let key = self.temporary_upload_path(file_name);
+        let (acl, tagging) = self.access_options(true);
+        let opts = PutOptions {
+            content_type: content_type.map(str::to_string),
+            acl,
+            tagging,
+            metadata,
+            ..Default::default()
+        };
+        let upload_id = self.backend.create_multipart(&key, &opts).await?;
+        Ok((upload_id, key))
+    }
+
+    /// `signed_url_for_path(key, include_content_disposition: false)`.
+    pub fn presigned_get(&self, key: &str) -> Result<String, StoreError> {
+        Ok(self
+            .backend
+            .presigned_get(key, self.presigned_get_expires, None)?)
+    }
+
     /// `S3Store#store_file`: the object written with its cache control,
     /// type and disposition (by its filename), ACL and tags; its url
     /// (`absolute_base_url/<key>`) and etag.
@@ -940,16 +1084,7 @@ impl ExternalStore {
             Some(f) => f.to_string(),
             None => path.rsplit('/').next().unwrap_or(path).to_string(),
         };
-        let (acl, tagging) = self.access_options(false);
-        let disposition = content_disposition_for(&filename);
-        let opts = PutOptions {
-            content_type: mime_type(&filename).map(str::to_string),
-            cache_control: Some(self.cache_control.clone()),
-            content_disposition: (!disposition.is_empty()).then_some(disposition),
-            acl,
-            tagging,
-            metadata: Vec::new(),
-        };
+        let opts = self.put_options(&filename, false);
         let key = self.s3_path(&self.multisite_path(path));
         self.backend.ensure_bucket().await?;
         let etag = self.backend.put(&key, bytes.to_vec(), &opts).await?;
@@ -1012,6 +1147,37 @@ impl ExternalStore {
             Some(cdn) => s3_cdn_url(&self.absolute_base_url, self.folder.as_deref(), cdn, url),
             None => url.to_string(),
         }
+    }
+}
+
+/// S3Helper::UPLOAD_URL_EXPIRES_AFTER_SECONDS: presigned uploads last ten
+/// minutes.
+pub const UPLOAD_URL_EXPIRES_AFTER_SECONDS: u64 = 600;
+
+/// `BaseStore.temporary_upload_path(file_name, folder_prefix:)`:
+/// `temp/<prefix>/<hex>/<hex><extname>`, the name itself left out.
+pub fn temporary_upload_path(file_name: &str, folder_prefix: &str) -> String {
+    let hex = || {
+        let bytes: [u8; 16] = rand::random();
+        bytes.iter().map(|b| format!("{b:02x}")).collect::<String>()
+    };
+    let mut parts = vec!["temp".to_string()];
+    if !folder_prefix.is_empty() {
+        parts.push(folder_prefix.trim_matches('/').to_string());
+    }
+    parts.push(hex());
+    parts.push(format!("{}{}", hex(), extname(file_name)));
+    parts.join("/")
+}
+
+/// Ruby's `File.extname`: the last extension of the basename (`.` for a
+/// name ending in one), none for a dotfile.
+pub fn extname(file_name: &str) -> &str {
+    let base = file_name.rsplit('/').next().unwrap_or(file_name);
+    let trimmed = base.trim_start_matches('.');
+    match trimmed.rfind('.') {
+        Some(i) => &trimmed[i..],
+        None => "",
     }
 }
 
@@ -1224,6 +1390,20 @@ mod tests {
             get_path_for("optimized", 5000, "abcdef", "_2_10x10.gif"),
             "optimized/2X/a/abcdef_2_10x10.gif"
         );
+    }
+
+    #[test]
+    fn extnames_as_ruby_reads_them() {
+        assert_eq!(extname("fresh.tar.gz"), ".gz");
+        assert_eq!(extname("static.gif"), ".gif");
+        assert_eq!(extname(".bashrc"), "");
+        assert_eq!(extname("noext"), "");
+        assert_eq!(extname("dot."), ".");
+        let path = temporary_upload_path("a.png", "uploads/default");
+        let parts: Vec<&str> = path.split('/').collect();
+        assert_eq!(&parts[..3], ["temp", "uploads", "default"]);
+        assert_eq!(parts[3].len(), 32);
+        assert!(parts[4].ends_with(".png") && parts[4].len() == 36);
     }
 
     #[test]

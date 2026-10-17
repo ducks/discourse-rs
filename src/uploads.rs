@@ -358,6 +358,24 @@ pub async fn create(
     store: &FileStore,
     up: &NewUpload<'_>,
 ) -> Result<Outcome, AppError> {
+    create_with(conn, s, i18n, urls, store, up, None).await
+}
+
+/// `UploadCreator#create_for` with `existing_external_upload_key`: the
+/// file a browser put in the external store at that key, downloaded as
+/// `up.bytes`. Unchanged by processing, the object is moved where the
+/// upload belongs; changed, the new bytes are stored and the object
+/// deleted.
+pub async fn create_with(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    urls: &Urls<'_>,
+    store: &FileStore,
+    up: &NewUpload<'_>,
+    existing_external_key: Option<&str>,
+) -> Result<Outcome, AppError> {
+    let sha1_before_changes = format!("{:x}", Sha1::digest(up.bytes));
     let t = |key: &str| i18n.t(key).unwrap_or(key).to_string();
     if up.bytes.is_empty() {
         return Ok(Outcome::Invalid(vec![t("upload.empty")]));
@@ -554,9 +572,25 @@ pub async fn create(
     } else {
         format!(".{extension}")
     };
-    let stored = store
-        .store_upload(&bytes, id, &sha1, &ext, &original_filename)
-        .await?;
+    let stored = match existing_external_key.filter(|_| store.external()) {
+        Some(key) if sha1 == sha1_before_changes => {
+            store
+                .move_existing_stored_upload(key, id, &sha1, &ext, &original_filename)
+                .await?
+        }
+        Some(key) => {
+            let stored = store
+                .store_upload(&bytes, id, &sha1, &ext, &original_filename)
+                .await?;
+            store.delete_file(key).await?;
+            stored
+        }
+        None => {
+            store
+                .store_upload(&bytes, id, &sha1, &ext, &original_filename)
+                .await?
+        }
+    };
     // calculate_dominant_color! on the processed file; one that does not
     // decode saves an empty colour.
     let color = match image_type.and_then(crate::images::Format::from_extension) {

@@ -1062,21 +1062,25 @@ generate_theme_screenshot_thumbnails (171).
     pretty_text/cleanup.rs:607; pretty_text/cooked_post_processor.rs:759;
     topic_list.rs:1025; users.rs:1074; badges_view.rs:112;
     reports/tables.rs:561)
-122. `feat/s3-store` L: the S3 store for uploads and backups
-    (file_store.rs:88; plugins/mod.rs:73; backup_restore/store.rs:55;
-    backup_restore/creator.rs:221; backup_restore/restorer.rs:831,933;
-    routes/backups.rs:522,534; reports/pageviews.rs:497,501;
-    jobs/upload_jobs.rs:48,116). Needs: an S3 client and an S3-compatible
-    store beside the reference for the harness. Decided 2026-10-16: as
-    provider agnostic as possible. Uploads and backups go through one
-    store interface with local and S3-API backends, and nothing outside
-    the store knows which. The S3 backend works with any S3-compatible
-    service (AWS, R2, B2, MinIO, Wasabi, Spaces, Garage): configurable
-    endpoint, region and path-style or virtual-host addressing, no
-    AWS-only features unless a setting asks, no amazonaws.com
-    assumptions in URLs. Tested against a local MinIO or Garage, not
-    AWS. The interface leaves room for non-S3 backends (Azure Blob, GCS)
-    without changing callers
+122. ~~`feat/s3-store`~~ (done: feat/s3-store-interface, feat/s3-store-uploads,
+    feat/s3-backups, feat/s3-direct-uploads) L: the S3 store for uploads
+    and backups. src/object_storage (one Backend enum; the S3 API
+    backend on rusty-s3 signing and the port's reqwest, for any
+    S3-compatible service: endpoint, region, virtual-host or path-style,
+    AWS hosts only without an endpoint) under FileStore::External and
+    BackupStore::External; direct uploads (presigned PUT, multipart,
+    completion) for uploads and backups; s3_cdn_url in the url helpers,
+    cooking and reports; S3 backup metadata and remaps; avatars proxied.
+    Measured on MinIO (`s3` write cases, scripts/s3-test-server,
+    tests/object_storage.rs, tests/direct_uploads.rs). Left, each
+    refused where it would run: s3_role_arn and instance-profile
+    credentials without the AWS env keys (file_store.rs), restoring
+    uploads into S3 and remapping AWS S3 urls (restorer.rs),
+    include_s3_uploads_in_backups (creator.rs), promoting a direct upload
+    of 100 MB or more (routes/external_uploads.rs), remote http(s) upload
+    urls in the upload jobs; setting writes for the S3 settings wait on
+    their validators (regex, enum class); GET /uploads/short-url (the
+    external store's redirect, the local store's send_file) is not routed
 123. `feat/secure-uploads` M, after 122: secure uploads and media
     (uploads.rs:342; posting/rebake.rs:49; pretty_text/helpers.rs:338;
     pretty_text/cooked_post_processor.rs:756; upload_references.rs:373;

@@ -203,9 +203,11 @@ def clear_redis_state
   # the backups' download tokens and running state (a case's `redis`).
   # _CACHE:reports:*, *-dashboard-data-*: cached reports and dashboard
   # stats (Report.cache, StatsCacheable), kept up to an hour.
+  # ban_user_from_external_uploads_*: ExternalUploadManager's five
+  # minute ban after a size mismatch, which would refuse later cases.
   # user-profile-view:*: UserProfileView.add's once-a-day marks, which
   # would leave out a profile an earlier case viewed.
-  %w[user-profile-view:* readonly_mode*email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled].each do |pattern|
+  %w[ban_user_from_external_uploads_* user-profile-view:* readonly_mode*email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

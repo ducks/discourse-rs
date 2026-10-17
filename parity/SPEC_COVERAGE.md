@@ -57,6 +57,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | UsersController#bookmarks | 10 | 1 | 1 | 6 |
 | UsersController#user_menu_bookmarks | 3 | 5 | 1 | 1 |
 | UploadsController#create | 6 | 10 | 2 | 8 |
+| Direct uploads (ExternalUploadHelpers, uploads and backups) | 26 | 19 | 15 | 2 |
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
 | ReviewablesController#perform | 3 | 2 | 1 | 16 |
 | Admin::SiteSettingsController#update | 14 | 3 | 2 | 21 |
@@ -103,7 +104,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (72 sections)** | **441** | **309** | **212** | **514** |
+| **All (73 sections)** | **467** | **328** | **227** | **516** |
 
 ## Cases added from this inventory
 
@@ -760,6 +761,80 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 311 | system user > errors when system_user_max_attachment_size_kb is unset | recordable | upload_system_user_too_large: system via an api_keys setup row + Api-Key/Api-Username headers (as incoming_reply_api_key), large.txt |
 | 324 | system user > accepts large files from the system user | recordable | upload_system_user_large (system_user_max_attachment_size_kb above large.txt's size, max_attachment_size_kb 1) |
 | 332 | system user > rejects above the system limit; both limits low; above the attachment limit (x3) | recordable | upload_system_user_limits_* (same api key setup; large.txt must be over 10 KB for the "10 KB" variants) |
+
+## UploadsController and Admin::BackupsController direct uploads (ExternalUploadHelpers)
+
+`spec/requests/uploads_controller_spec.rb` (#generate_presigned_put,
+#create_multipart, #batch_presign_multipart_parts, #complete_multipart,
+#abort_multipart, #complete_external_upload) and
+`spec/requests/admin/backups_controller_spec.rb` ("S3 multipart
+uploads"). The cases run on MinIO (`s3`, parity/writes/s3_direct_uploads);
+what a browser does between the requests (the PUT to a presigned URL,
+each part's PUT) is in tests/direct_uploads.rs.
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 1061 | presigned put > errors if the correct params are not provided | recordable | presigned_put_missing_params |
+| 1068 | presigned put > generates a presigned URL and creates an external upload stub | covered | presigned_put (new, matches) |
+| 1094 | presigned put > includes accepted metadata | covered | presigned_put (sha1-checksum signed and returned, other keys dropped) |
+| 1121 | presigned put > s3-accelerate endpoint | needs-harness | AWS's own endpoint; the request host is unit-tested (object_storage::s3) |
+| 1144 | presigned put > rate limits | needs-harness | rate limits |
+| 1168 | presigned put > 404 when the store is not external | covered | local_store (new, matches) |
+| 1182 | presigned put > 404 with direct uploads off | covered | disabled (new, matches) |
+| 1207 | create multipart > params missing | recordable | multipart_missing_params |
+| 1214 | create multipart > 422 when the create request errors | recordable | multipart_create_error (a wrong secret) |
+| 1224 | create multipart > attachment too big | covered | presigned_put (the same validate_file_size) |
+| 1234 | create multipart > gif too big | recordable | multipart_gif_too_big |
+| 1244 | create multipart > 0 bytes | covered | presigned_put (the same validate_file_size) |
+| 1307 | create multipart > creates the upload and a multipart stub | covered | multipart (new, matches) |
+| 1332 | create multipart > no backup multipart uploads through /uploads | covered | backup_multipart: at the vendored commit an admin's backup type is let through (200), as the port does |
+| 1348 | create multipart > only allowed metadata keys | recordable | multipart_metadata |
+| 1375 | create multipart > rate limits | needs-harness | rate limits |
+| 1401 | create multipart > 404 when the store is not external | covered | disabled |
+| 1467 | batch presign > params missing | recordable | batch_presign_missing_params |
+| 1472 | batch presign > part numbers between 1 and 10000 | covered | multipart |
+| 1493 | batch presign > 404 when the stub does not exist | covered | multipart (after the abort) |
+| 1502 | batch presign > 404 when the stub is another user's | needs-harness | several users in one case |
+| 1512 | batch presign > 404 when the multipart upload does not exist | recordable | batch_presign_upload_gone (a stub row with a made-up upload id) |
+| 1525 | batch presign > presigned URLs keyed by part number | covered | multipart, backup_multipart |
+| 1547 | batch presign > dualstack endpoint by region | needs-harness | AWS's own endpoint; unit-tested |
+| 1563 | batch presign > s3-accelerate endpoint | needs-harness | AWS's own endpoint; unit-tested |
+| 1581 | batch presign > rate limits | needs-harness | rate limits |
+| 1607 | batch presign > 404 when the store is not external | recordable | local_store variant |
+| 1675 | complete multipart > params missing | recordable | complete_multipart_missing_params |
+| 1680 | complete multipart > part numbers between 1 and 10000 | recordable | complete_multipart_bad_part |
+| 1711 | complete multipart > parts with missing values | covered | multipart |
+| 1722 | complete multipart > 404 when the stub does not exist | recordable | complete_multipart_no_stub |
+| 1731 | complete multipart > 422 when the complete request errors | covered | multipart (a made-up etag) |
+| 1745 | complete multipart > 404 when the stub is another user's | needs-harness | several users in one case |
+| 1755 | complete multipart > 404 when the multipart upload does not exist | recordable | complete_multipart_upload_gone |
+| 1768 | complete multipart > completes, creates and returns the upload | needs-harness | the parts are a browser's PUTs: tests/direct_uploads.rs |
+| 1817 | complete multipart > passes site_setting_name | unported | Unsupported "site setting uploads" |
+| 1857 | complete multipart > rate limits | needs-harness | rate limits |
+| 1879 | complete multipart > 404 when the store is not external | covered | local_store |
+| 1921 | abort > params missing | recordable | abort_missing_params |
+| 1926 | abort > 200 when the stub is already gone | covered | multipart |
+| 1932 | abort > 404 when the stub is another user's | needs-harness | several users in one case |
+| 1941 | abort > aborts the upload and deletes the stub | covered | multipart, backup_multipart |
+| 1953 | abort > 422 when the abort request errors | needs-harness | stubs an S3 error |
+| 1969 | abort > 404 when the store is not external | covered | disabled |
+| 1993 | complete external > 404 when the stub does not exist | covered | presigned_put |
+| 1998 | complete external > 404 when the stub is another user's | needs-harness | several users in one case |
+| 2007 | complete external > ChecksumMismatchError | needs-harness | the object needs its sha1-checksum metadata, which `s3.objects` doesn't set |
+| 2022 | complete external > SizeMismatchError | covered | complete_external_upload (new, matches) |
+| 2037 | complete external > CannotPromoteError | covered | complete_external_upload |
+| 2050 | complete external > DownloadFailedError and NotFound | covered | presigned_put (completed before any PUT) |
+| 2073 | complete external > a generic upload failure | needs-harness | stubs an exception |
+| 2083 | complete external > validation errors on the upload | recordable | complete_external_upload_unauthorized (an object with an extension not authorized) |
+| 2094 | complete external > deletes the stub and returns the upload | covered | complete_external_upload |
+| 2118 | complete external > passes site_setting_name | unported | Unsupported "site setting uploads" |
+| 2137 | complete external > no site_setting_name without for_site_setting | recordable | complete_external_upload_for_site_setting_false |
+| backups 1096 | backups multipart > 404 for moderators and non-staff (x2) | recordable | backup_multipart_not_admin (the admin constraint) |
+| backups 1143 | backups multipart > creates the multipart upload | covered | backup_multipart (new, matches) |
+| backups 1169 | backups multipart > in readonly mode | recordable | backup_multipart_readonly |
+| backups 1186 | backups multipart > a backup of that name exists | covered | backup_multipart |
+| backups 1199 | backups multipart > invalid filename | recordable | backup_multipart_bad_name |
+| backups 1212 | backups multipart > invalid extension | covered | backup_multipart |
 
 ## ReviewablesController#index
 

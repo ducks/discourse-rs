@@ -1,0 +1,212 @@
+{
+  "name": "backup_multipart",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/create-multipart.json",
+      "params": {
+        "file_name": "fresh.tar.gz",
+        "file_size": 10485760,
+        "upload_type": "backup"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/create-multipart.json",
+      "params": {
+        "file_name": "taken.tar.gz",
+        "file_size": 10485760,
+        "upload_type": "backup"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/create-multipart.json",
+      "params": {
+        "file_name": "x.zip",
+        "file_size": 10485760,
+        "upload_type": "backup"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/batch-presign-multipart-parts.json",
+      "params": {
+        "part_numbers": [
+          "1"
+        ],
+        "unique_identifier": "{{responses.0.body.unique_identifier}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/abort-multipart.json",
+      "params": {
+        "external_upload_identifier": "{{responses.0.body.external_upload_identifier}}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/create-multipart.json",
+      "params": {
+        "file_name": "sneaky.tar.gz",
+        "file_size": 100,
+        "upload_type": "backup"
+      }
+    }
+  ],
+  "started_at": "2026-10-16T22:53:39.203841",
+  "transaction_started_at": "2026-10-16T22:53:32.124548",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "external_upload_identifier": "NGRlNjJiMTMtNWI5Mi00ZTQxLWJiYjgtODQwNjA2OWI4ZGUzLjllMjhmYzc1LWM2YzItNGVlMy1iMmQ3LWFkY2NiYTU3NjI4N3gxNzkyMTkxMjE5MzU3MjI2MTc3",
+        "key": "temp/default/2a04a50dbfe118a63e3f76005ed1029b/d8a3fe3669cdab7ac0043f53c6ae22f9.gz",
+        "unique_identifier": "bab93db0-946c-4465-9082-f7dc9d867f37"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The file you are trying to upload already exists."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The backup file should be a .tar.gz archive."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "presigned_urls": {
+          "1": "http://s3-direct-backups-b.minio.localhost:9122/temp/default/2a04a50dbfe118a63e3f76005ed1029b/d8a3fe3669cdab7ac0043f53c6ae22f9.gz?partNumber=1&uploadId=NGRlNjJiMTMtNWI5Mi00ZTQxLWJiYjgtODQwNjA2OWI4ZGUzLjllMjhmYzc1LWM2YzItNGVlMy1iMmQ3LWFkY2NiYTU3NjI4N3gxNzkyMTkxMjE5MzU3MjI2MTc3&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261016T225339Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=34c548db56d8af62801e4f9a2c6560350ce36de4448751a90c0b091c6a63d03d"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "external_upload_identifier": "NGRlNjJiMTMtNWI5Mi00ZTQxLWJiYjgtODQwNjA2OWI4ZGUzLjU1ZTZhZjgyLThjMzUtNDRlNy1iYjA2LWEyZmZhMDJlNDAxMXgxNzkyMTkxMjE5NjI1MTk1MzU3",
+        "key": "temp/default/13acfdc2293e26f3efa30c5d4bed048a/a0637a9827639adfe60d4c076fa5fc21.gz",
+        "unique_identifier": "3d9d8515-1f7e-4a9a-b8ff-b460fd927540"
+      }
+    }
+  ],
+  "changes": {
+    "external_upload_stubs": {
+      "inserted": [
+        {
+          "id": 2,
+          "key": "temp/default/13acfdc2293e26f3efa30c5d4bed048a/a0637a9827639adfe60d4c076fa5fc21.gz",
+          "status": 1,
+          "filesize": 100,
+          "multipart": true,
+          "created_at": "2026-10-16T22:53:39.660624",
+          "updated_at": "2026-10-16T22:53:39.660624",
+          "upload_type": "backup",
+          "created_by_id": 1,
+          "original_filename": "sneaky.tar.gz",
+          "unique_identifier": "3d9d8515-1f7e-4a9a-b8ff-b460fd927540",
+          "external_upload_identifier": "NGRlNjJiMTMtNWI5Mi00ZTQxLWJiYjgtODQwNjA2OWI4ZGUzLjU1ZTZhZjgyLThjMzUtNDRlNy1iYjA2LWEyZmZhMDJlNDAxMXgxNzkyMTkxMjE5NjI1MTk1MzU3"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YKlZUVKX7ozMuuYodT+PFbOZs7g=",
+            "created_at": "2026-10-16T22:53:35.147723",
+            "rotated_at": "2026-10-16T22:53:35.137399",
+            "updated_at": "2026-10-16T22:53:35.147723",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YKlZUVKX7ozMuuYodT+PFbOZs7g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:53:39.25222",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YKlZUVKX7ozMuuYodT+PFbOZs7g=",
+            "created_at": "2026-10-16T22:53:35.147723",
+            "rotated_at": "2026-10-16T22:53:35.137399",
+            "updated_at": "2026-10-16T22:53:35.147723",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YKlZUVKX7ozMuuYodT+PFbOZs7g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "external_upload_stubs": 1
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-direct-uploads-b",
+    "s3_backup_bucket": "s3-direct-backups-b",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true,
+    "backup_location": "s3"
+  },
+  "s3": {
+    "buckets": [
+      "s3-direct-uploads-b",
+      "s3-direct-backups-b"
+    ],
+    "objects": {
+      "s3-direct-backups-b/default/taken.tar.gz": "backup.tar.gz"
+    }
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-direct-backups-b",
+      "key": "default/taken.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "4185a511d9bb1aefc3c8b7c428ba1778d5f17d0021e9f9e3ecdea6237a1a6087",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

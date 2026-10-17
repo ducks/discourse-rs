@@ -1,0 +1,58 @@
+{
+  "user": "user1",
+  "s3": {
+    "buckets": ["s3-direct-multipart"]
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-direct-multipart",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true,
+    "enable_direct_s3_uploads": true
+  },
+  "ignore": ["/responses/0/body/external_upload_identifier"],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/create-multipart.json",
+      "params": {"file_name": "photo.png", "file_size": 7340032, "upload_type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/batch-presign-multipart-parts.json",
+      "params": {"part_numbers": ["1", "2"], "unique_identifier": "{{responses.0.body.unique_identifier}}"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/batch-presign-multipart-parts.json",
+      "params": {"part_numbers": ["0"], "unique_identifier": "{{responses.0.body.unique_identifier}}"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-multipart.json",
+      "params": {"unique_identifier": "{{responses.0.body.unique_identifier}}", "parts": [{"part_number": 1, "etag": "not-an-etag"}]}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-multipart.json",
+      "params": {"unique_identifier": "{{responses.0.body.unique_identifier}}", "parts": [{"part_number": 1}]}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/abort-multipart.json",
+      "params": {"external_upload_identifier": "{{responses.0.body.external_upload_identifier}}"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/abort-multipart.json",
+      "params": {"external_upload_identifier": "{{responses.0.body.external_upload_identifier}}"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/batch-presign-multipart-parts.json",
+      "params": {"part_numbers": ["1"], "unique_identifier": "{{responses.0.body.unique_identifier}}"}
+    }
+  ]
+}

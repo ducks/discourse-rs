@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_direct_s3_uploads": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/generate-presigned-put.json",
+      "params": {"file_name": "static.gif", "file_size": 44, "type": "composer"}
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/complete-multipart.json",
+      "params": {"unique_identifier": "x", "parts": []}
+    }
+  ]
+}

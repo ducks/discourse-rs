@@ -935,10 +935,59 @@ impl Restore<'_> {
         {
             self.remap(&old, &base_url, &settings).await?;
         }
-        if metadata_value(pool, "s3_base_url").await?.is_some()
-            || metadata_value(pool, "s3_cdn_url").await?.is_some()
+        let was_multisite = metadata_value(pool, "multisite").await?.as_deref() == Some("t");
+        let uploads_folder = if was_multisite {
+            "/".to_string()
+        } else {
+            upload_path.clone()
+        };
+        // SiteSetting::Upload.s3_base_url and s3_cdn_url now, with S3
+        // uploads on.
+        let s3_on = crate::file_store::s3_uploads_enabled(&self.state.config, &settings)?;
+        let current_s3_base_url = if s3_on {
+            let (_, folder) = crate::file_store::upload_bucket(&self.state.config, &settings)?;
+            let base = crate::file_store::upload_absolute_base_url(&self.state.config, &settings)?;
+            Some(match folder {
+                Some(folder) => format!("{base}/{folder}"),
+                None => base,
+            })
+        } else {
+            None
+        };
+        if let Some(old) = metadata_value(pool, "s3_base_url").await?
+            && Some(&old) != current_s3_base_url.as_ref()
         {
-            return Err(Unsupported("remapping a backup's S3 upload URLs").into());
+            // remap_s3: AWS's urls by a regex over their host forms.
+            if old.contains("amazonaws.com") {
+                return Err(Unsupported(
+                    "remapping a backup's AWS S3 upload URLs (DbHelper.regexp_replace)",
+                )
+                .into());
+            }
+            self.remap(&format!("{old}/"), &uploads_folder, &settings)
+                .await?;
+        }
+        let current_s3_cdn_url = if s3_on {
+            crate::file_store::upload_s3_cdn_url(&self.state.config, &settings)?
+        } else {
+            None
+        };
+        if let Some(old_cdn) = metadata_value(pool, "s3_cdn_url").await?
+            && Some(&old_cdn) != current_s3_cdn_url.as_ref()
+        {
+            let base = current_s3_cdn_url.unwrap_or_else(|| base_url.clone());
+            self.remap(
+                &format!("{old_cdn}/"),
+                &schemaless(&format!("{base}{uploads_folder}")),
+                &settings,
+            )
+            .await?;
+            let (old_host, new_host) = (url_host(&old_cdn), url_host(&base));
+            if let (Some(old_host), Some(new_host)) = (old_host, new_host)
+                && old_host != new_host
+            {
+                self.remap(&old_host, &new_host, &settings).await?;
+            }
         }
         if let Some(old_cdn) = metadata_value(pool, "cdn_url").await?
             && Some(&old_cdn) != asset_host.as_ref()

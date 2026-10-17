@@ -1,12 +1,13 @@
 //! BackupRestore::Creator: a backup of the site. The backup_metadata rows
 //! rewritten, pg_dump of the public schema, then either the dump alone
 //! (`<name>.sql.gz`) or a tar of it and the local uploads gzipped
-//! (`<name>.tar.gz`), in the local store; every step logged, on
-//! `/admin/backups/logs` when asked, and the logs sent to the admin who
-//! asked as a system message. Cancelled through the shutdown flag.
+//! (`<name>.tar.gz`), made locally and uploaded to a remote store; every
+//! step logged, on `/admin/backups/logs` when asked, and the logs sent
+//! to the admin who asked as a system message. Cancelled through the
+//! shutdown flag.
 //!
-//! Refused: sites with S3 uploads (the S3 URLs in the metadata, the
-//! remote uploads in the archive) and the S3 store.
+//! Refused: the uploads of an S3 store in the archive
+//! (include_s3_uploads_in_backups, hidden and off by default).
 
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
@@ -217,9 +218,6 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    if settings.get("enable_s3_uploads")?.truthy() || state.config.globals.use_s3() {
-        return Err(Unsupported("backups of a site whose uploads are on S3").into());
-    }
     let store = BackupStore::create(&state.config, &settings)?;
     let user: Option<(i32, String)> =
         sqlx::query_as("SELECT id, username FROM users WHERE id = $1")
@@ -232,6 +230,14 @@ pub async fn run(state: &AppState, user_id: i32, opts: Options) -> Result<Outcom
     } else {
         has_local_uploads || settings.get("include_s3_uploads_in_backups")?.truthy()
     };
+    if with_uploads
+        && crate::file_store::s3_uploads_enabled(&state.config, &settings)?
+        && settings.get("include_s3_uploads_in_backups")?.truthy()
+    {
+        return Err(
+            Unsupported("backups with the uploads on S3 (include_s3_uploads_in_backups)").into(),
+        );
+    }
     let timestamp = crate::clock::now().format("%Y-%m-%d-%H%M%S").to_string();
     let tmp_directory = state
         .config
@@ -385,6 +391,25 @@ impl Run<'_> {
         };
         let base_url = urls.base_url()?;
         let cdn_url = urls.asset_host().map(str::to_string);
+        // SiteSetting::Upload.s3_base_url and s3_cdn_url, with S3 uploads on.
+        let (s3_base_url, s3_cdn_url) =
+            if crate::file_store::s3_uploads_enabled(&self.state.config, &self.settings)? {
+                let (_, folder) =
+                    crate::file_store::upload_bucket(&self.state.config, &self.settings)?;
+                let base = crate::file_store::upload_absolute_base_url(
+                    &self.state.config,
+                    &self.settings,
+                )?;
+                (
+                    Some(match folder {
+                        Some(folder) => format!("{base}/{folder}"),
+                        None => base,
+                    }),
+                    crate::file_store::upload_s3_cdn_url(&self.state.config, &self.settings)?,
+                )
+            } else {
+                (None, None)
+            };
         let mut tx = self.state.pool.begin().await?;
         sqlx::query("DELETE FROM backup_metadata")
             .execute(&mut *tx)
@@ -392,8 +417,8 @@ impl Run<'_> {
         for (name, value) in [
             ("base_url", Some(base_url)),
             ("cdn_url", cdn_url),
-            ("s3_base_url", None),
-            ("s3_cdn_url", None),
+            ("s3_base_url", s3_base_url),
+            ("s3_cdn_url", s3_cdn_url),
             ("db_name", Some(self.state.config.site.db.clone())),
             // Rails.configuration.multisite, a boolean in a string column.
             (
@@ -548,6 +573,11 @@ impl Run<'_> {
             self.log
                 .log("No local uploads found. Skipping archiving of local uploads...")
                 .await;
+        }
+        // add_remote_uploads_to_archive
+        // (include_s3_uploads_in_backups is refused before the run.)
+        if crate::file_store::s3_uploads_enabled(&self.state.config, &self.settings)? {
+            self.log.log("Skipping uploads stored on S3.").await;
         }
         self.remove_tmp_directory().await;
         self.log

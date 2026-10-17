@@ -557,8 +557,11 @@ pub async fn top_uploads(
         {"type": "text", "property": "extension", "title": cx.t("reports.top_uploads.labels.extension")?},
         {"type": "bytes", "property": "filesize", "title": cx.t("reports.top_uploads.labels.filesize")?},
     ]);
-    if cx.urls.config.globals.cdn_url().is_some() || cx.urls.config.globals.use_s3() {
-        return Err(Unsupported("top uploads' urls behind a CDN or on S3").into());
+    // Discourse.store.cdn_url: the external store's s3_cdn_url; the local
+    // store's CDN is refused.
+    let store = crate::file_store::FileStore::for_site(cx.urls.config, cx.settings)?;
+    if store.internal() && cx.urls.config.globals.cdn_url().is_some() {
+        return Err(Unsupported("top uploads' urls behind a CDN").into());
     }
     let limit = r.limit.unwrap_or(250);
     let mut wheres = vec![
@@ -605,7 +608,7 @@ pub async fn top_uploads(
             "author_avatar_template": cx.avatar_template(id, &username, avatar)?,
             "filesize": size,
             "extension": ext,
-            "file_url": url,
+            "file_url": store.cdn_url(&url),
             "file_name": truncate(&name, 25),
         }));
     }

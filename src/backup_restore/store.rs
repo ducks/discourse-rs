@@ -116,6 +116,8 @@ pub struct ExternalBackupStore {
     cleanup_allowed: bool,
     /// `s3_install_cors_rule`
     install_cors_rule: bool,
+    /// `s3_use_acls`
+    use_acls: bool,
 }
 
 /// S3BackupStore::UPLOAD_URL_EXPIRES_AFTER_SECONDS (six hours).
@@ -148,6 +150,7 @@ impl ExternalBackupStore {
                 .max(0) as u64,
             cleanup_allowed: !settings.get("s3_disable_cleanup")?.truthy(),
             install_cors_rule: settings.get("s3_install_cors_rule")?.truthy(),
+            use_acls: settings.get("s3_use_acls")?.truthy(),
         })
     }
 
@@ -219,6 +222,57 @@ impl ExternalBackupStore {
             last_modified: meta.last_modified,
             source,
         }))
+    }
+
+    /// The bucket the store keeps its backups in.
+    pub fn backend(&self) -> &Backend {
+        &self.backend
+    }
+
+    /// `S3BackupStore#temporary_upload_path`: `temp/<folder>/<hex>/<hex><ext>`.
+    pub fn temporary_upload_path(&self, file_name: &str) -> String {
+        crate::file_store::temporary_upload_path(file_name, &self.folder)
+    }
+
+    /// `S3BackupStore#create_multipart`: refused for a name taken, else a
+    /// private multipart upload at a temporary key; its id and key.
+    pub async fn create_multipart(
+        &self,
+        file_name: &str,
+        content_type: Option<&str>,
+        metadata: Vec<(String, String)>,
+    ) -> Result<(String, String), AppError> {
+        self.backend.ensure_bucket().await?;
+        if self.backend.head(&self.key(file_name)).await?.is_some() {
+            return Err(BackupStoreError::FileExists.into());
+        }
+        let key = self.temporary_upload_path(file_name);
+        let opts = PutOptions {
+            content_type: content_type.map(str::to_string),
+            acl: self.use_acls.then(|| "private".to_string()),
+            metadata,
+            ..Default::default()
+        };
+        let upload_id = self.backend.create_multipart(&key, &opts).await?;
+        Ok((upload_id, key))
+    }
+
+    /// `S3BackupStore#move_existing_stored_upload`: the uploaded object
+    /// copied to its name in the folder (private), then deleted.
+    pub async fn move_existing_stored_upload(
+        &self,
+        existing_key: &str,
+        original_filename: &str,
+    ) -> Result<(), AppError> {
+        let opts = PutOptions {
+            acl: self.use_acls.then(|| "private".to_string()),
+            ..Default::default()
+        };
+        self.backend
+            .copy(existing_key, &self.key(original_filename), Some(&opts))
+            .await?;
+        self.backend.delete(existing_key).await?;
+        Ok(())
     }
 
     /// `generate_upload_url`: refused for a name taken, the bucket's CORS
