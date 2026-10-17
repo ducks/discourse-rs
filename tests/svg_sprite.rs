@@ -103,7 +103,7 @@ async fn the_sprite_follows_what_names_icons() {
     assert!(body.contains("<symbol id=\\\"discobot\\\""));
     assert!(!body.contains("<symbol id=\\\"otter\\\""));
     // A badge with the icon: a new version holding it.
-    sqlx::query("UPDATE badges SET icon = 'otter' WHERE id = 1")
+    sqlx::query("UPDATE badges SET icon = 'otter', updated_at = now() WHERE id = 1")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -115,7 +115,7 @@ async fn the_sprite_follows_what_names_icons() {
     assert_eq!(status, StatusCode::FOUND);
     assert!(location.ends_with(&new_path), "{location}");
     // A group's flair and an icon setting.
-    sqlx::query("UPDATE groups SET flair_icon = 'hippo' WHERE id = 10")
+    sqlx::query("UPDATE groups SET flair_icon = 'hippo', updated_at = now() WHERE id = 10")
         .execute(&db.pool)
         .await
         .unwrap();

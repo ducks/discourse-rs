@@ -567,6 +567,33 @@ async fn a_path_hostname_picks_the_site() {
     // The user_avatar route's shape is checked in multisite::tests.
 }
 
+/// Each site keeps its own sprite: a badge icon on one site is in its
+/// sprite only, and the other's version stays.
+#[tokio::test]
+async fn each_site_has_its_own_sprite() {
+    let (a, b) = two_sites(|| config(RailsEnv::Test, &[])).await;
+    let mut client_a = Client::new(&a, "127.0.0.1");
+    let mut client_b = Client::new(&b, "127.0.0.1");
+    let path = |page: &str| {
+        let start = page.find("/svg-sprite/").expect("sprite script");
+        page[start..start + page[start..].find('"').unwrap()].to_string()
+    };
+    let a_before = path(&client_a.get("/latest?a=1").await.body);
+    let b_before = path(&client_b.get("/latest?b=1").await.body);
+    sqlx::query("UPDATE badges SET icon = 'otter', updated_at = now() WHERE id = 1")
+        .execute(&b.db.pool)
+        .await
+        .unwrap();
+    let a_after = path(&client_a.get("/latest?a=2").await.body);
+    let b_after = path(&client_b.get("/latest?b=2").await.body);
+    assert_eq!(a_before, a_after);
+    assert_ne!(b_before, b_after);
+    let sprite = client_b.get(&b_after).await;
+    assert!(sprite.body.contains("<symbol id=\\\"otter\\\""));
+    let sprite = client_a.get(&a_after).await;
+    assert!(!sprite.body.contains("<symbol id=\\\"otter\\\""));
+}
+
 /// A session is its site's: user 3's cookie from one site is anonymous on
 /// the other (its token is in the other site's database only).
 #[tokio::test]
