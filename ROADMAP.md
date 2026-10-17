@@ -638,8 +638,7 @@ then by what running a forum needs (milestone 6). Briefs:
     are refused already. Left, saying so when used: the manage reports,
     compare groups and category pickers, dragging a card's corner, the
     report modes other than the charts in a card, the design wizard
-    (90f) and the admin search (90g9); not drawn: the setting links'
-    rewrite to their config pages (90g9) and the sidebar footer's
+    (90f) and the admin search (90g9); not drawn: the sidebar footer's
     keyboard shortcuts, as on the forum's sidebar), 90g2.
     ~~`feat/admin-shell-users`~~ (done) M (/admin/users and /admin/users/list
     sent on to the active list; /admin/users/list/:query for every tab
@@ -852,9 +851,7 @@ then by what running a forum needs (milestone 6). Briefs:
     upcoming_changes_*). The write harness's `settings` now update a
     stored row in place, as DbProvider#save does. Refused: toggling
     voice_enabled (the voice plugin's on_enabled_change) and enabling
-    enable_discourse_workflows (its PluginEnableHandler). Left: the
-    descriptions' setting links point at the all settings page until
-    90g9 rewrites them.
+    enable_discourse_workflows (its PluginEnableHandler).
     Then feat/admin-mcp-backend: Admin::McpController (the overview,
     the group access rules with McpGroupScope.ensure_admins!, the
     primitives' policies and emergency blocks with the fresh consent
@@ -889,10 +886,13 @@ then by what running a forum needs (milestone 6). Briefs:
     (DiscourseMcp::Access.eligible_for_exposed_primitive?, write case
     admin_mcp/show_authorizations). Left: the controls' generated ids,
     and values drawn as attributes where Ember sets the property.
-    Left: watched words, what's new; the
-    settings' links to
-    their area's page (linkifySettingLinks, from the admin search's data
-    source, 90g9)), 90g7. `feat/admin-shell-customize` L, in part (done,
+    Then feat/admin-setting-links: linkifySettingLinks on the pages that
+    draw setting descriptions (the site settings rows and checkboxes,
+    the upcoming changes, the dashboard's site advice): each
+    `{{setting:name}}` link goes to its plugin's settings page or the
+    page of its area or category (the admin search's settingPageMap,
+    crate::admin_setting_links), the JSON keeping the server's link.
+    Left: what's new (the meta feed)), 90g7. `feat/admin-shell-customize` L, in part (done,
     in feat/admin-shell-customize-content: /admin/customize/watched_words
     (on to the first action) and an action's page: the filter (the
     route's query param), the action nav with its counts and the mobile

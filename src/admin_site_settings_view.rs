@@ -652,7 +652,10 @@ fn setting_row(cx: &AdminCx, page: &Page, setting: &Value) -> String {
     } else {
         None
     };
-    let description = format!("<div class=\"desc\">{}</div>", s(&setting["description"]));
+    let description = format!(
+        "<div class=\"desc\">{}</div>",
+        crate::admin_setting_links::linkify(cx.settings, cx.base_path, s(&setting["description"]))
+    );
     let validation = format!(
         "<div><div class=\"validation-error hidden\">{} </div></div>",
         icon("xmark", None)
@@ -853,7 +856,11 @@ fn form_kit(cx: &AdminCx, page: &Page, setting: &Value, control: &str, disabled:
             "<label class=\"form-kit__control-checkbox-label\"><input class=\"form-kit__control-checkbox\" id=\"{id}\" name=\"{name}\" type=\"checkbox\"{}{dis}><span class=\"form-kit__control-checkbox-checkmark\">{}</span><span class=\"form-kit__control-checkbox-content\"><span class=\"form-kit__control-checkbox-description\">{}</span></span></label>",
             if value == "true" { " checked" } else { "" },
             icon("check", None),
-            s(&setting["description"])
+            crate::admin_setting_links::linkify(
+                cx.settings,
+                cx.base_path,
+                s(&setting["description"])
+            )
         ),
         "select" => select(cx, setting, &id, &value, disabled),
         "custom" => match s(&setting["type"]) {
