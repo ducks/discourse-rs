@@ -10,15 +10,12 @@ use crate::site_settings::{SettingError, SiteSettings};
 #[derive(Debug)]
 pub enum UrlError {
     Setting(SettingError),
-    /// S3 upload stores aren't ported; producing a local URL would be wrong.
-    S3Unsupported,
 }
 
 impl fmt::Display for UrlError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             UrlError::Setting(e) => e.fmt(f),
-            UrlError::S3Unsupported => write!(f, "S3 upload CDN (s3_cdn_url) is not supported yet"),
         }
     }
 }
@@ -124,24 +121,14 @@ impl Urls<'_> {
         }
     }
 
-    /// `SiteSetting::Upload.s3_cdn_url`
-    fn s3_cdn_url(&self) -> Result<Option<String>, UrlError> {
-        Ok(if self.settings.get("enable_s3_uploads")?.truthy() {
-            self.settings.get("s3_cdn_url")?.presence()
-        } else {
-            self.config.globals.s3_cdn_url().map(str::to_string)
-        })
-    }
-
-    /// `GlobalPath#upload_cdn_path`
+    /// `GlobalPath#upload_cdn_path`: behind `s3_cdn_url`, the store's CDN
+    /// url first.
     fn upload_cdn_path(&self, path: &str) -> Result<String, UrlError> {
-        if self.s3_cdn_url()?.is_some() {
-            return Err(UrlError::S3Unsupported);
-        }
+        let path = crate::file_store::upload_cdn_url(self.config, self.settings, path)?;
         Ok(if path.starts_with("http") || path.starts_with("//") {
-            path.to_string()
+            path
         } else {
-            self.cdn_path(path)
+            self.cdn_path(&path)
         })
     }
 
@@ -186,6 +173,7 @@ mod tests {
             rate_limits: false,
             track_requests: false,
             auth_provider_hosts: Vec::new(),
+            object_storage_endpoints: Vec::new(),
             globals: GlobalSettings::from_vars(globals.iter().copied()),
         }
     }
@@ -317,16 +305,18 @@ mod tests {
     }
 
     #[test]
-    fn s3_cdn_is_an_explicit_error() {
+    fn s3_cdn_url_leaves_local_urls_without_s3_uploads() {
+        // GlobalSetting.s3_cdn_url without S3 uploads: Discourse.store is
+        // the local store, whose cdn_url changes nothing here.
         with(
             RailsEnv::Production,
             &[("s3_cdn_url", "https://s3cdn.test")],
             &[],
             |u| {
-                assert!(matches!(
-                    u.full_cdn_url("/images/a.png"),
-                    Err(UrlError::S3Unsupported)
-                ));
+                assert_eq!(
+                    u.full_cdn_url("/images/a.png").unwrap(),
+                    "http://www.example.com/images/a.png"
+                );
             },
         );
     }

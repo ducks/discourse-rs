@@ -269,7 +269,7 @@ pub async fn create_for(
     let Some(format) = Format::from_extension(ext) else {
         return Err(Unsupported("thumbnails of SVG or AVIF uploads").into());
     };
-    // store.path_for(upload); a remote store would download it.
+    // store.path_for(upload), or an external store's download.
     let Some(original) = store.read(&upload.url).await? else {
         tracing::error!(url = %upload.url, "could not find the file in the store");
         return Ok(None);
@@ -305,7 +305,7 @@ pub async fn create_for(
     .fetch_one(&mut *conn)
     .await?;
     // store_optimized_image, then the url saved.
-    let url = store
+    let stored = store
         .store_optimized_image(
             &bytes,
             upload.id,
@@ -313,11 +313,14 @@ pub async fn create_for(
             &format!("_{VERSION}_{width}x{height}{extension}"),
         )
         .await?;
+    let url = stored.url;
     sqlx::query(
-        "UPDATE optimized_images SET url = $2, updated_at = clock_timestamp() WHERE id = $1",
+        "UPDATE optimized_images SET url = $2, etag = COALESCE($3, etag), \
+                                     updated_at = clock_timestamp() WHERE id = $1",
     )
     .bind(id)
     .bind(&url)
+    .bind(&stored.etag)
     .execute(&mut *conn)
     .await?;
     Ok(Some(Optimized {

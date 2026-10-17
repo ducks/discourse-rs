@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# The S3 test server the write cases with `s3` run on: MinIO (shell.nix's,
+# or DISCOURSE_RS_MINIO) inside a reference agent, at
+# http://minio.localhost:9122 with buckets as hosts under minio.localhost
+# (virtual-hosted requests, as aws-sdk sends them to a named endpoint).
+# The replay (tests/writes.rs) starts a MinIO of its own per case
+# (tests/common/s3.rs); both are configured alike.
+#
+# It runs inside the agent because the agent and the host cannot reach
+# each other's ports (only the agent's published Rails port); each side
+# has its own server, and a case readies both the same way.
+#
+# Usage: scripts/s3-test-server start <agent-name>
+#        scripts/s3-test-server stop <agent-name>
+set -euo pipefail
+
+if [ $# -ne 2 ] || { [ "$1" != start ] && [ "$1" != stop ]; }; then
+  echo "usage: $0 start|stop <agent-name>" >&2
+  exit 64
+fi
+action="$1"
+agent="$2"
+
+# tests/common/s3.rs has the same.
+user=discourse-rs-test
+password=discourse-rs-test-secret
+domain=minio.localhost
+port=9122
+
+health() {
+  dv run --name "$agent" -- curl -sf -o /dev/null "http://127.0.0.1:$port/minio/health/ready" 2> /dev/null
+}
+
+if [ "$action" = stop ]; then
+  dv run --name "$agent" -- bash -c \
+    'if [ -f /tmp/minio.pid ]; then kill "$(cat /tmp/minio.pid)" 2> /dev/null || true; fi
+     rm -rf /tmp/minio /tmp/minio-data /tmp/minio.pid /tmp/minio.log'
+  echo "$agent: S3 test server stopped"
+  exit 0
+fi
+
+if health; then
+  echo "$agent: S3 test server already running on :$port"
+  exit 0
+fi
+minio="${DISCOURSE_RS_MINIO:-$(command -v minio || true)}"
+if [ -z "$minio" ]; then
+  echo "no MinIO: run inside nix-shell, or set DISCOURSE_RS_MINIO" >&2
+  exit 1
+fi
+dv copy "$(readlink -f "$minio")" "$agent:/tmp/minio" > /dev/null
+# The pid file holds MinIO's own pid: the shell writes its pid, then
+# becomes MinIO.
+dv run --name "$agent" -- bash -c \
+  "chmod +x /tmp/minio && mkdir -p /tmp/minio-data &&
+   MINIO_ROOT_USER=$user MINIO_ROOT_PASSWORD=$password MINIO_DOMAIN=$domain MINIO_BROWSER=off \
+   setsid nohup bash -c 'echo \$\$ > /tmp/minio.pid; exec /tmp/minio server --quiet --address :$port /tmp/minio-data' \
+     > /tmp/minio.log 2>&1 < /dev/null &"
+for _ in $(seq 1 60); do
+  if health; then
+    echo "$agent: S3 test server on http://$domain:$port"
+    exit 0
+  fi
+  sleep 1
+done
+echo "$agent: MinIO did not come up (see /tmp/minio.log in the agent)" >&2
+exit 1

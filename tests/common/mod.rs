@@ -1,6 +1,8 @@
 // Each test crate uses a different subset of these helpers.
 #![allow(dead_code)]
 
+pub mod s3;
+
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -220,6 +222,7 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         rate_limits: false,
         track_requests: false,
         auth_provider_hosts: Vec::new(),
+        object_storage_endpoints: Vec::new(),
         globals: GlobalSettings::from_vars(globals.iter().copied()),
     }
 }

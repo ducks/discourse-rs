@@ -246,6 +246,89 @@ end
 # Every file and directory under public/backups.
 def backup_files = Dir.glob(File.join(Rails.root, "public", "backups", "**", "*"))
 
+# `s3`: the case runs on the S3 test server (MinIO at
+# http://minio.localhost:9122, which scripts/record-writes starts in the
+# agent; tests/writes.rs starts its own): its `buckets` made if missing
+# and emptied before and after, its `objects` ({"bucket/key": fixture})
+# put first, and the objects in the buckets afterwards recorded
+# (`s3_objects`). The case's settings point the site at the server.
+require "aws-sdk-s3"
+S3_TEST = {
+  endpoint: "http://minio.localhost:9122",
+  region: "us-east-1",
+  access_key_id: "discourse-rs-test",
+  secret_access_key: "discourse-rs-test-secret",
+  force_path_style: true,
+}
+def s3_test_client = (@s3_test_client ||= Aws::S3::Client.new(**S3_TEST))
+
+def s3_buckets(c) = Array(c.dig("s3", "buckets"))
+
+def s3_empty(buckets)
+  client = s3_test_client
+  buckets.each do |bucket|
+    begin
+      client.head_bucket(bucket:)
+    rescue Aws::S3::Errors::NotFound
+      client.create_bucket(bucket:)
+      next
+    end
+    client.list_multipart_uploads(bucket:).uploads.each do |u|
+      client.abort_multipart_upload(bucket:, key: u.key, upload_id: u.upload_id)
+    end
+    loop do
+      keys = client.list_objects_v2(bucket:).contents.map(&:key)
+      break if keys.empty?
+      client.delete_objects(bucket:, delete: { objects: keys.map { |k| { key: k } } })
+    end
+    begin
+      client.delete_bucket_lifecycle(bucket:)
+    rescue Aws::S3::Errors::ServiceError
+      nil
+    end
+  end
+end
+
+# `s3.lifecycle`: the buckets' expiry rules recorded too.
+def s3_lifecycle(buckets)
+  buckets.to_h do |bucket|
+    rules =
+      begin
+        s3_test_client
+          .get_bucket_lifecycle_configuration(bucket:)
+          .rules
+          .map do |r|
+            { id: r.id, status: r.status, days: r.expiration&.days, prefix: r.filter&.prefix || r.prefix }
+          end
+      rescue Aws::S3::Errors::NoSuchLifecycleConfiguration
+        []
+      end
+    [bucket, rules]
+  end
+end
+
+def s3_objects(buckets)
+  client = s3_test_client
+  buckets.flat_map do |bucket|
+    client
+      .list_objects_v2(bucket:)
+      .contents
+      .map do |o|
+        h = client.head_object(bucket:, key: o.key)
+        {
+          bucket:,
+          key: o.key,
+          size: h.content_length,
+          etag: h.etag.to_s.delete('"'),
+          content_type: h.content_type.presence,
+          cache_control: h.cache_control.presence,
+          content_disposition: h.content_disposition.presence,
+          metadata: h.metadata,
+        }
+      end
+  end
+end
+
 def checksums
   (TABLES.keys - (BACKGROUND_TABLES - INCLUDED_TABLES)).to_h do |t|
     [t, db.select_value("SELECT md5(COALESCE(string_agg(x::text, '|' ORDER BY x::text), '')) FROM #{db.quote_table_name(t)} x")]
@@ -408,6 +491,13 @@ cases.each do |c|
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
     REMOTE.replace(c["remote"] || {})
+    if c["s3"]
+      s3_empty(s3_buckets(c))
+      (c.dig("s3", "objects") || {}).each do |path, name|
+        bucket, key = path.split("/", 2)
+        s3_test_client.put_object(bucket:, key:, body: File.binread(File.join(files_dir, name)))
+      end
+    end
     # `files`: fixture files stored at upload urls, for rows the setup
     # inserts (they are not rolled back: removed after the case).
     (c["files"] || {}).each do |url, name|
@@ -533,6 +623,11 @@ cases.each do |c|
     record[:keep_headers] = c["keep_headers"] if c["keep_headers"]
     record[:fragment] = c["fragment"] if c["fragment"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
+    if c["s3"]
+      record[:s3] = c["s3"]
+      record[:s3_objects] = s3_objects(s3_buckets(c))
+      record[:s3_lifecycle] = s3_lifecycle(s3_buckets(c)) if c.dig("s3", "lifecycle")
+    end
     record[:emails] = emails if emails.any?
     record[:request_emails] = request_emails if request_emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
@@ -553,6 +648,8 @@ cases.each do |c|
     # Backups a case's requests or jobs wrote (uploaded chunks, merged
     # uploads) are not rolled back either.
     (backup_files - backups_before).sort.reverse.each { |p| File.directory?(p) ? Dir.rmdir(p) : File.delete(p) }
+    # Nor are a case's objects.
+    s3_empty(s3_buckets(c)) if c["s3"]
     RateLimiter.disable
     clear_redis_state
     pool.unpin_connection!

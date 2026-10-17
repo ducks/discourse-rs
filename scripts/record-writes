@@ -64,6 +64,12 @@ for entry in "${selected[@]}"; do
   jq --arg name "${entry#*/}" '{name: $name} + del(.not_yet, .ignore)' "$dest/$entry.case.json"
 done | jq -s . > "$cases"
 
+# Cases with `s3` run on the S3 test server, started in the agent for the
+# recording and stopped after.
+if jq -e 'any(.[]; .s3 != null)' "$cases" > /dev/null; then
+  "$root/scripts/s3-test-server" start "$agent"
+  trap 'rm -f "$cases"; "$root/scripts/s3-test-server" stop "$agent"' EXIT
+fi
 dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null
 dv copy "$cases" "$agent:/tmp/write_cases.json" > /dev/null
 # The files cases upload (parity/writes/files).

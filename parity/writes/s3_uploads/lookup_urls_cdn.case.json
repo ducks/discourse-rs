@@ -1,0 +1,24 @@
+{
+  "user": "user1",
+  "settings": {
+    "s3_upload_bucket": "s3-lookup-urls",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "s3_cdn_url": "https://cdn.example.com/files",
+    "enable_s3_uploads": true
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, created_at, updated_at) VALUES (9601, 3, 'cat.png', 100, '//s3-lookup-urls.minio.localhost:9122/original/1X/0000000000000000000000000000000000002581.png', '0000000000000000000000000000000000002581', 'png', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/lookup-urls",
+      "params": {
+        "short_urls": ["upload://2uR.png", "upload://zzzz.png"]
+      }
+    }
+  ]
+}

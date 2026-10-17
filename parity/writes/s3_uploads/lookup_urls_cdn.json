@@ -1,0 +1,91 @@
+{
+  "name": "lookup_urls_cdn",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads/lookup-urls",
+      "params": {
+        "short_urls": [
+          "upload://2uR.png",
+          "upload://zzzz.png"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-16T21:41:33.479552",
+  "transaction_started_at": "2026-10-16T21:41:29.795593",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "short_url": "upload://2uR.png",
+          "url": "https://cdn.example.com/files/original/1X/0000000000000000000000000000000000002581.png",
+          "short_path": "/uploads/short-url/2uR.png"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/91lw6OKEFvNHLsdME59PNav8Os=",
+            "created_at": "2026-10-16T21:41:31.150502",
+            "rotated_at": "2026-10-16T21:41:31.141554",
+            "updated_at": "2026-10-16T21:41:31.150502",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/91lw6OKEFvNHLsdME59PNav8Os=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T21:41:33.528412",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/91lw6OKEFvNHLsdME59PNav8Os=",
+            "created_at": "2026-10-16T21:41:31.150502",
+            "rotated_at": "2026-10-16T21:41:31.141554",
+            "updated_at": "2026-10-16T21:41:31.150502",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/91lw6OKEFvNHLsdME59PNav8Os=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_upload_bucket": "s3-lookup-urls",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "s3_cdn_url": "https://cdn.example.com/files",
+    "enable_s3_uploads": true
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, created_at, updated_at) VALUES (9601, 3, 'cat.png', 100, '//s3-lookup-urls.minio.localhost:9122/original/1X/0000000000000000000000000000000000002581.png', '0000000000000000000000000000000000002581', 'png', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "22a42f50a30a06b64d173d562a6c069e18371d3c3b82850a2b18cf9a4faec66a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

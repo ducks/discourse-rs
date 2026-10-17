@@ -36,6 +36,9 @@ pkgs.mkShell {
     oha
     jq
     curl
+
+    # The S3 test server (tests/common/s3.rs, scripts/s3-test-server)
+    minio
   ] ++ postgres.buildInputs;
 
   shellHook = ''

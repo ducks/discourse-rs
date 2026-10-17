@@ -333,14 +333,18 @@ impl<'a> Helpers<'a> {
                 .fetch_all(&mut *self.conn)
                 .await?;
         let base_path = self.host.config.globals.relative_url_root();
+        let store = crate::file_store::FileStore::for_site(&self.host.config, self.settings)?;
         for (sha1, url, extension, secure) in uploads {
             if secure && self.settings.get("secure_uploads")?.truthy() {
                 return Err(Unsupported("secure uploads in cooking").into());
             }
-            // Discourse.store.cdn_url, which only rewrites behind a CDN.
-            if self.urls().asset_host().is_some() {
+            // Discourse.store.cdn_url, which only rewrites behind a CDN:
+            // the external store's s3_cdn_url here, the local store's CDN
+            // refused.
+            if store.internal() && self.urls().asset_host().is_some() {
                 return Err(Unsupported("upload URLs behind a CDN in cooking").into());
             }
+            let url = store.cdn_url(&url);
             let Some(base62) = base62_sha1(&sha1) else {
                 continue;
             };

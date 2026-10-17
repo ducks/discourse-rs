@@ -1,0 +1,162 @@
+{
+  "name": "upload_text_in_folder",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-16T21:41:44.145872",
+  "transaction_started_at": "2026-10-16T21:41:41.592474",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//s3-upload-text.minio.localhost:9122/forum/original/1X/311636e2685aa479f552e491ec528013c4b6e8ce.txt",
+        "original_filename": "notes.txt",
+        "filesize": 48,
+        "width": null,
+        "height": null,
+        "thumbnail_width": null,
+        "thumbnail_height": null,
+        "extension": "txt",
+        "short_url": "upload://70eZocIam32y7fMFWvRhxrWUpxI.txt",
+        "short_path": "/uploads/short-url/70eZocIam32y7fMFWvRhxrWUpxI.txt",
+        "retain_hours": null,
+        "human_filesize": "48 Bytes",
+        "dominant_color": null,
+        "thumbnail": null
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "//s3-upload-text.minio.localhost:9122/forum/original/1X/311636e2685aa479f552e491ec528013c4b6e8ce.txt",
+          "etag": "17f7e0047572106ee23287c1c6e8859c",
+          "sha1": "311636e2685aa479f552e491ec528013c4b6e8ce",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 48,
+          "extension": "txt",
+          "created_at": "2026-10-16T21:41:44.19337",
+          "updated_at": "2026-10-16T21:41:44.260049",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "notes.txt",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n469oOHv8SI6I/tR/W0JPtX1blQ=",
+            "created_at": "2026-10-16T21:41:42.349304",
+            "rotated_at": "2026-10-16T21:41:42.346652",
+            "updated_at": "2026-10-16T21:41:42.349304",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "n469oOHv8SI6I/tR/W0JPtX1blQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T21:41:44.164649",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n469oOHv8SI6I/tR/W0JPtX1blQ=",
+            "created_at": "2026-10-16T21:41:42.349304",
+            "rotated_at": "2026-10-16T21:41:42.346652",
+            "updated_at": "2026-10-16T21:41:42.349304",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "n469oOHv8SI6I/tR/W0JPtX1blQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 3,
+          "upload_id": 36,
+          "created_at": "2026-10-16T21:41:44.271257"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "uploads": 36,
+    "user_uploads": 36
+  },
+  "settings": {
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt",
+    "s3_upload_bucket": "s3-upload-text/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "s3": {
+    "buckets": [
+      "s3-upload-text"
+    ]
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-upload-text",
+      "key": "forum/original/1X/311636e2685aa479f552e491ec528013c4b6e8ce.txt",
+      "size": 48,
+      "etag": "17f7e0047572106ee23287c1c6e8859c",
+      "content_type": "text/plain",
+      "cache_control": "max-age=31556952, public, immutable",
+      "content_disposition": "attachment; filename=\"notes.txt\"; filename*=UTF-8''notes.txt",
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "1b8173a5bc9e8cd2532195bd6bf9d125fa804bb8c413cd926b6ac8b2d0a67b5b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

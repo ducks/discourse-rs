@@ -547,13 +547,16 @@ pub async fn create(
     .fetch_one(&mut *conn)
     .await?;
 
-    // FileStore::LocalStore#store_upload, then the url saved.
+    // Discourse.store.store_upload, then the url (and an external
+    // store's etag) saved.
     let ext = if extension.is_empty() {
         String::new()
     } else {
         format!(".{extension}")
     };
-    let url = store.store_upload(&bytes, id, &sha1, &ext).await?;
+    let stored = store
+        .store_upload(&bytes, id, &sha1, &ext, &original_filename)
+        .await?;
     // calculate_dominant_color! on the processed file; one that does not
     // decode saves an empty colour.
     let color = match image_type.and_then(crate::images::Format::from_extension) {
@@ -570,11 +573,13 @@ pub async fn create(
         None => None,
     };
     sqlx::query(
-        "UPDATE uploads SET url = $2, dominant_color = $3, updated_at = clock_timestamp() WHERE id = $1",
+        "UPDATE uploads SET url = $2, dominant_color = $3, etag = COALESCE($4, etag), \
+                            updated_at = clock_timestamp() WHERE id = $1",
     )
     .bind(id)
-    .bind(&url)
+    .bind(&stored.url)
     .bind(&color)
+    .bind(&stored.etag)
     .execute(&mut *conn)
     .await?;
     if image_type.is_some() && up.upload_type == "avatar" {

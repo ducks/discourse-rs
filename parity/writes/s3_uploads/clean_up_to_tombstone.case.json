@@ -1,0 +1,34 @@
+{
+  "user": null,
+  "s3": {
+    "buckets": ["s3-cleanup"],
+    "objects": {
+      "s3-cleanup/original/1X/0000000000000000000000000000000000002581.gif": "static.gif",
+      "s3-cleanup/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif": "static.gif",
+      "s3-cleanup/original/1X/0000000000000000000000000000000000002582.gif": "animated.gif"
+    }
+  },
+  "settings": {
+    "s3_upload_bucket": "s3-cleanup",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, created_at, updated_at) VALUES (9601, 3, 'o9601.gif', 100, '//s3-cleanup.minio.localhost:9122/original/1X/0000000000000000000000000000000000002581.gif', '0000000000000000000000000000000000002581', 'gif', now() - interval '3 days', now() - interval '3 days'), (9602, 3, 'o9602.gif', 100, '//s3-cleanup.minio.localhost:9122/original/1X/0000000000000000000000000000000000002582.gif', '0000000000000000000000000000000000002582', 'gif', now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (9602, 'Post', 35, now(), now())",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, version, created_at, updated_at) VALUES (9601, 'x', '.gif', 10, 10, 9601, '//s3-cleanup.minio.localhost:9122/optimized/1X/0000000000000000000000000000000000002581_2_10x10.gif', 10, 2, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "clean_up_uploads"
+  ]
+}

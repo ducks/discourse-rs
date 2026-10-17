@@ -54,6 +54,12 @@ lettre = { version = "0.11", default-features = false, features = ["smtp-transpo
 mail-parser = "0.11"
 # Letter avatars: the glyph outlines ImageMagick draws with FreeType.
 ab_glyph = "0.2"
+# Object storage: S3 API request signing (SigV4) and responses; sent with
+# reqwest. Its crypto (hmac 0.12, sha2 0.10, md-5 0.10) is the port's own.
+rusty-s3 = "0.8.1"
+jiff = { version = "0.2", default-features = false, features = ["std"] }
+percent-encoding = "2"
+url = "2"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
 fast_image_resize = { version = "6.1.0", features = ["image"] }
 oxipng = { version = "10.2.1", default-features = false }

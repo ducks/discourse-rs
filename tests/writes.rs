@@ -1699,6 +1699,40 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             )
         })
         .collect();
+    // `s3`: a MinIO of the case's own, its `buckets` made and its
+    // `objects` (`bucket/key` to a fixture file) put, as the recorder
+    // readies the reference's; the port's requests reach it through
+    // object_storage_endpoints.
+    let s3 = match case.get("s3") {
+        Some(spec) => {
+            let server = common::s3::S3Server::start()
+                .unwrap_or_else(|e| panic!("the case needs the S3 test server: {e}"));
+            config.object_storage_endpoints = vec![server.endpoint_mapping()];
+            for bucket in s3_buckets(spec) {
+                server
+                    .bucket(&bucket)
+                    .ensure_bucket()
+                    .await
+                    .unwrap_or_else(|e| panic!("bucket {bucket}: {e}"));
+            }
+            for (path, fixture) in spec["objects"].as_object().into_iter().flatten() {
+                let (bucket, key) = path.split_once('/').unwrap();
+                let bytes = std::fs::read(
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("parity/writes/files")
+                        .join(fixture.as_str().unwrap()),
+                )
+                .unwrap();
+                server
+                    .bucket(bucket)
+                    .put(key, bytes, &Default::default())
+                    .await
+                    .unwrap_or_else(|e| panic!("object {path}: {e}"));
+            }
+            Some(server)
+        }
+        None => None,
+    };
     let app_state = state(db.pool.clone(), config).await;
     // Counted before the sequences are set: the rolled-back run of the
     // setup still advances them.
@@ -1974,6 +2008,34 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     if let Some(mail) = case.get("request_emails") {
         rails["request_emails"] = mail.clone();
     }
+    // `s3`: the objects in the case's buckets afterwards.
+    if let (Some(spec), Some(server)) = (case.get("s3"), &s3) {
+        rails["s3_objects"] = case["s3_objects"].clone();
+        ours["s3_objects"] = s3_objects(server, spec).await;
+        if spec["lifecycle"] == true {
+            rails["s3_lifecycle"] = case["s3_lifecycle"].clone();
+            let mut lifecycle = Map::new();
+            for bucket in s3_buckets(spec) {
+                let rules = server
+                    .bucket(&bucket)
+                    .lifecycle_rules()
+                    .await
+                    .unwrap_or_else(|e| panic!("lifecycle of {bucket}: {e}"));
+                lifecycle.insert(
+                    bucket,
+                    rules
+                        .into_iter()
+                        .map(|r| {
+                            serde_json::json!({
+                                "id": r.id, "status": r.status, "days": r.days, "prefix": r.prefix,
+                            })
+                        })
+                        .collect(),
+                );
+            }
+            ours["s3_lifecycle"] = Value::Object(lifecycle);
+        }
+    }
     // The reference runs in development, where a route that does not match
     // (an admin route for a non-admin) renders the Routing Error page, and
     // a record not found its exception page; the port renders the
@@ -2070,8 +2132,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     // onto Rails': its file is checked against its own sha1.
     let encoded = encoded_uploads(&rails, &ours);
     for upload in &encoded {
-        let stored = public.join(upload.url.trim_start_matches('/'));
-        match std::fs::read(&stored) {
+        match stored_bytes(&public, s3.as_ref(), &upload.url).await {
             Ok(bytes) => {
                 use sha1::Digest;
                 let sha1 = format!("{:x}", sha1::Sha1::digest(&bytes));
@@ -2093,8 +2154,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             continue;
         }
         let url = upload["url"].as_str().unwrap_or_default();
-        let stored = public.join(url.trim_start_matches('/'));
-        match std::fs::read(&stored) {
+        match stored_bytes(&public, s3.as_ref(), url).await {
             Ok(bytes) => {
                 use sha1::Digest;
                 let sha1 = format!("{:x}", sha1::Sha1::digest(&bytes));
@@ -2147,6 +2207,69 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         &mut out,
     );
     out
+}
+
+/// A case's `s3.buckets`.
+fn s3_buckets(spec: &Value) -> Vec<String> {
+    spec["buckets"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|b| b.as_str().map(str::to_string))
+        .collect()
+}
+
+/// The objects in a case's buckets, as scripts/record_writes.rb records
+/// them: bucket, key, size, etag and the headers each is served with.
+async fn s3_objects(server: &common::s3::S3Server, spec: &Value) -> Value {
+    let mut out = Vec::new();
+    for bucket in s3_buckets(spec) {
+        let backend = server.bucket(&bucket);
+        let listed = backend
+            .list("")
+            .await
+            .unwrap_or_else(|e| panic!("listing {bucket}: {e}"));
+        for object in listed {
+            let meta = backend
+                .head(&object.key)
+                .await
+                .unwrap_or_else(|e| panic!("{bucket}/{}: {e}", object.key))
+                .unwrap_or_else(|| panic!("{bucket}/{} went away", object.key));
+            out.push(serde_json::json!({
+                "bucket": bucket,
+                "key": object.key,
+                "size": meta.size,
+                "etag": meta.etag,
+                "content_type": meta.content_type,
+                "cache_control": meta.cache_control,
+                "content_disposition": meta.content_disposition,
+                "metadata": meta.metadata,
+            }));
+        }
+    }
+    Value::Array(out)
+}
+
+/// What an upload url stored: a file under the case's public directory,
+/// or an object in the case's S3 server (`//<bucket>.<host>/<key>`).
+async fn stored_bytes(
+    public: &std::path::Path,
+    s3: Option<&common::s3::S3Server>,
+    url: &str,
+) -> Result<Vec<u8>, String> {
+    if let (Some(server), Some(rest)) = (s3, url.strip_prefix("//")) {
+        let (host, key) = rest.split_once('/').ok_or("no key")?;
+        let bucket = host
+            .split_once('.')
+            .map(|(b, _)| b)
+            .ok_or("no bucket in the host")?;
+        return match server.bucket(bucket).get(key).await {
+            Ok(Some(bytes)) => Ok(bytes),
+            Ok(None) => Err("no such object".into()),
+            Err(e) => Err(e.to_string()),
+        };
+    }
+    std::fs::read(public.join(url.trim_start_matches('/'))).map_err(|e| e.to_string())
 }
 
 /// An image upload of ours whose bytes differ from Rails' row of the same
@@ -2364,15 +2487,21 @@ fn main() {
     if args.test_threads.is_none() {
         args.test_threads = Some(4);
     }
+    // Cases on the S3 test server are skipped, saying why, without MinIO.
+    let minio = common::s3::S3Server::available();
     let trials = cases()
         .into_iter()
         .map(|case| {
             let label = format!("{}::{}", case.area, case.name);
-            let kind = if case.not_yet.is_some() {
+            let needs_s3 = case.recorded.get("s3").is_some();
+            let kind = if needs_s3 && minio.is_err() {
+                "needs MinIO"
+            } else if case.not_yet.is_some() {
                 "not_yet"
             } else {
                 ""
             };
+            let skip = needs_s3 && minio.is_err();
             libtest_mimic::Trial::test(label, move || {
                 if case.recorded.is_null() {
                     return Err(format!(
@@ -2396,7 +2525,11 @@ fn main() {
                 }
             })
             .with_kind(kind)
+            .with_ignored_flag(skip)
         })
         .collect();
+    if let Err(why) = &minio {
+        eprintln!("the S3 cases are skipped: {why}");
+    }
     libtest_mimic::run(&args, trials).exit();
 }

@@ -1,0 +1,27 @@
+{
+  "user": "user1",
+  "s3": {
+    "buckets": ["s3-upload-text"]
+  },
+  "settings": {
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt",
+    "s3_upload_bucket": "s3-upload-text/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "enable_s3_uploads": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    }
+  ]
+}

@@ -74,9 +74,6 @@ impl From<crate::avatar::AvatarError> for PluginError {
             AvatarError::Setting(e) | AvatarError::Url(UrlError::Setting(e)) => {
                 PluginError::Setting(e)
             }
-            AvatarError::Url(UrlError::S3Unsupported) => {
-                PluginError::Unsupported(crate::Unsupported("S3 upload stores"))
-            }
             AvatarError::Unsupported(e) => PluginError::Unsupported(e),
         }
     }

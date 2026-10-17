@@ -115,11 +115,29 @@ pub(crate) fn cook_url(
         return Ok(url.to_string());
     }
     // absolute_without_cdn, then schemaless.
-    let absolute = if url.starts_with('/') && !url.starts_with("//") && url.len() > 1 {
+    let mut absolute = if url.starts_with('/') && !url.starts_with("//") && url.len() > 1 {
         format!("{base_no_prefix}{url}")
     } else {
         url.to_string()
     };
+    // Discourse.store.cdn_url: the external store's `s3_cdn_url` (the
+    // local store's CDN is refused before cooking gets here), not for an
+    // attachment the CDN must not serve.
+    if store.external() {
+        let filename = match absolute.split_once('?') {
+            Some((path, _)) => path.rsplit('/').next().unwrap_or(path),
+            None => absolute.as_str(),
+        };
+        let is_attachment = !crate::file_store::is_supported_media(filename);
+        let no_cdn = urls.settings.get("login_required")?.truthy()
+            || urls
+                .settings
+                .get("prevent_anons_from_downloading_files")?
+                .truthy();
+        if !(is_attachment && no_cdn) {
+            absolute = store.cdn_url(&absolute);
+        }
+    }
     Ok(match absolute.get(..5) {
         Some(head) if head.eq_ignore_ascii_case("http:") => absolute[5..].to_string(),
         _ => absolute,
@@ -555,9 +573,10 @@ impl ImageSteps<'_> {
         };
         Ok(Some(Edit::Lightbox {
             href: cook_url(&img.src, &self.urls, self.base_path, self.store)?,
-            download: self
-                .store
-                .download_url(upload.sha1.as_deref().unwrap_or_default()),
+            download: self.store.download_url(
+                upload.sha1.as_deref().unwrap_or_default(),
+                upload.extension.as_deref(),
+            ),
             title: img
                 .title
                 .clone()
@@ -755,10 +774,13 @@ pub(crate) async fn post_process(
     if settings.get("secure_uploads")?.truthy() {
         return Err(Unsupported("secure uploads in the post processor").into());
     }
-    if config.globals.cdn_url().is_some() || config.globals.s3_cdn_url().is_some() {
+    let store = crate::file_store::FileStore::for_site(config, settings)?;
+    if config.globals.cdn_url().is_some()
+        || config.globals.s3_cdn_url().is_some()
+        || store.has_cdn()
+    {
         return Err(Unsupported("a CDN in the post processor").into());
     }
-    let store = crate::file_store::FileStore::for_site(config, settings)?;
     // post_process_oneboxes, before the images.
     let oneboxed;
     let html = if html.contains("onebox") {
