@@ -358,3 +358,55 @@ async fn the_content_and_login_areas() {
     assert_eq!(status, StatusCode::OK);
     assert!(body.starts_with("{\"site_settings\":["), "{body}");
 }
+
+#[tokio::test]
+async fn the_emoji_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/emoji").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Emoji - Admin - "), "{html}");
+    assert!(
+        html.contains("<div class=\"admin-emoji admin-config-page\"><div class=\"d-page-header\">")
+    );
+    assert!(html.contains("<li class=\"active admin-emoji-tabs__emoji\">"));
+    // No custom emoji: the empty list.
+    assert!(html.contains("admin-config-area-empty-list__cta-button admin-emoji__add-emoji"));
+    // The new and import routes hide the header.
+    let (_, html) = admin.page("/admin/config/emoji/new").await;
+    assert!(
+        html.contains("<div class=\"admin-contents admin-config admin-emojis new\""),
+        "{html}"
+    );
+    assert!(!html.contains("d-page-header__title"));
+    assert!(html.contains("id=\"emoji-group-selector\""));
+    assert!(html.contains("<h3 class=\"admin-config-area-card__title\">Add emoji</h3>"));
+    let (_, html) = admin.page("/admin/config/emoji/import").await;
+    assert!(html.contains("<title>Import - Emoji - Admin - "), "{html}");
+    assert!(html.contains("class=\"admin-emoji-import__file-input\""));
+    let (_, html) = admin.page("/admin/config/emoji/settings").await;
+    assert!(
+        html.contains("<title>Settings - Emoji - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("data-setting=\"enable_emoji\""));
+    // discourse-reactions' like reaction leads its enabled reactions.
+    assert!(
+        html.contains("data-fixed=\"heart\"><ul class=\"values emoji-value-list\"><li class=\"value\" data-index=\"0\" data-added=\"\"><button class=\"btn no-text btn-icon btn-default remove-value-btn btn-small\" disabled=\"\""),
+        "{html}"
+    );
+    // The JSON stays the controller's, on the routes' paths too.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/emoji.json", "", true)
+        .await;
+    assert_eq!((status, body.as_str()), (StatusCode::OK, "[]"));
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/emoji/new", "", true)
+        .await;
+    assert_eq!((status, body.as_str()), (StatusCode::OK, "[]"));
+    // AdminConstraint: not found for anyone else.
+    let mut user = Client::logged_in(st, "user1").await;
+    let (status, _) = user.page("/admin/config/emoji/settings").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

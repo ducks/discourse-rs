@@ -1487,15 +1487,34 @@ fn emoji_list(cx: &AdminCx, setting: &Value, values: &[&str]) -> String {
     let i18n = cx.i18n;
     let emojis = cx.settings.emojis();
     let url = |name: &str| emojis.url(name, cx.base_path).unwrap_or_default();
-    let small = |class: &str, name: &str| {
+    let small = |class: &str, name: &str, disabled: bool| {
         format!(
-            "<button class=\"btn no-text btn-icon btn-default {class} btn-small\" type=\"button\">{}<span aria-hidden=\"true\"> &#8203; </span></button>",
+            "<button class=\"btn no-text btn-icon btn-default {class} btn-small\"{} type=\"button\">{}<span aria-hidden=\"true\"> &#8203; </span></button>",
+            if disabled { " disabled=\"\"" } else { "" },
             icon(name, None)
         )
     };
+    // discourse-reactions' modifyClass of EmojiValueList: the like
+    // reaction leads its enabled reactions, not editable, added first
+    // when the value lacks it.
+    let fixed = if s(&setting["setting"]) == "discourse_reactions_enabled_reactions" {
+        cx.settings
+            .get("discourse_reactions_reaction_for_like")
+            .ok()
+            .map(|v| v.to_s())
+            .filter(|v| !v.is_empty())
+    } else {
+        None
+    };
+    let mut collection: Vec<&str> = values.to_vec();
+    let added = fixed
+        .as_deref()
+        .filter(|like| !values.contains(like))
+        .inspect(|like| collection.insert(0, like))
+        .is_some();
     let mut urls = serde_json::Map::new();
     let default = value_string(&setting["default"]);
-    for name in values
+    for name in collection
         .iter()
         .copied()
         .chain(default.split('|').filter(|v| !v.is_empty()))
@@ -1503,23 +1522,34 @@ fn emoji_list(cx: &AdminCx, setting: &Value, values: &[&str]) -> String {
         urls.insert(name.to_string(), Value::String(url(name)));
     }
     let mut out = format!(
-        "<div class=\"value-list emoji-list\" data-emoji-urls=\"{}\">",
-        escape(&Value::Object(urls).to_string())
+        "<div class=\"value-list emoji-list\" data-emoji-urls=\"{}\"{}>",
+        escape(&Value::Object(urls).to_string()),
+        fixed
+            .as_deref()
+            .map(|like| format!(" data-fixed=\"{}\"", escape(like)))
+            .unwrap_or_default()
     );
-    if !values.is_empty() {
+    if !collection.is_empty() {
         out.push_str("<ul class=\"values emoji-value-list\">");
-        for (i, v) in values.iter().enumerate() {
+        for (i, v) in collection.iter().enumerate() {
+            let editable = fixed.as_deref() != Some(*v);
             out.push_str(&format!(
-                "<li class=\"value\" data-index=\"{i}\">{} <div class=\"value-input emoji-details can-edit\" role=\"button\"> <img class=\"emoji-list-emoji\" height=\"15px\" src=\"{}\" width=\"15px\"> <span class=\"emoji-name\">{}</span> </div>",
-                small("remove-value-btn", "xmark"),
+                "<li class=\"value\" data-index=\"{i}\"{}>{} <div class=\"value-input emoji-details{}\" role=\"button\"> <img class=\"emoji-list-emoji\" height=\"15px\" src=\"{}\" width=\"15px\"> <span class=\"emoji-name\">{}</span> </div>",
+                if editable || !added {
+                    ""
+                } else {
+                    " data-added=\"\""
+                },
+                small("remove-value-btn", "xmark", !editable),
+                if editable { " can-edit" } else { "" },
                 escape(&url(v)),
                 escape(v)
             ));
-            if values.len() > 1 {
+            if collection.len() > 1 {
                 out.push_str(&format!(
                     " {} {}",
-                    small("shift-up-value-btn", "arrow-up"),
-                    small("shift-down-value-btn", "arrow-down")
+                    small("shift-up-value-btn", "arrow-up", false),
+                    small("shift-down-value-btn", "arrow-down", false)
                 ));
             }
             out.push_str("</li>");

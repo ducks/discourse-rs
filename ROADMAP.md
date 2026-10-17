@@ -768,8 +768,16 @@ then by what running a forum needs (milestone 6). Briefs:
     login's settings, authenticators and DiscourseConnect tabs, and a
     setting's preview (tag_style's). Refused: login's Discourse ID tab
     (Admin::Config::DiscourseIdController is not ported); the plugins'
-    login tabs (oauth2, oidc) wait for their plugins. Left: about,
-    category management, watched words, logo, fonts, emoji, welcome
+    login tabs (oauth2, oidc) wait for their plugins. Then
+    feat/admin-shell-config-emoji: the emoji list (DFilterControls'
+    name filter and groups dropdown, delete, selecting to export with
+    the export's zip), the new emoji form (the group ComboBox with
+    allowAny, each file posted with the name on the first), the
+    import's preview and confirm, the settings tab; and
+    discourse-reactions' like reaction leading its enabled reactions'
+    list, not editable, as the plugin's modifyClass of EmojiValueList
+    draws it. Left: about,
+    category management, watched words, logo, fonts, welcome
     banner, MCP, upcoming changes, what's new; the settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L

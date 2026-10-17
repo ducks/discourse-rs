@@ -12,6 +12,7 @@ pub mod admin_dashboard_headlines;
 pub mod admin_dashboard_traffic;
 pub mod admin_dashboard_view;
 pub mod admin_email_view;
+pub mod admin_emoji_view;
 pub mod admin_flags;
 pub mod admin_form_kit;
 pub mod admin_groups_view;
