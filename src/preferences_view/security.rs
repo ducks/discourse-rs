@@ -332,23 +332,36 @@ pub fn api_keys(p: &Prefs) -> String {
     };
     let mut rows = String::new();
     for key in keys {
-        let expires = match parse(&key["expires_at"]) {
-            Some(at) => format!(
-                "<span>{}</span> {}",
-                escape(&t(
+        // The date after the label in the viewer's zone: the div carries
+        // its template (crate::viewer_dates), its text drawn after the span.
+        let (expires_tz, expires) = match parse(&key["expires_at"]) {
+            Some(at) => {
+                let (tz, date) = crate::viewer_dates::text(
                     cx,
-                    if at <= cx.now {
-                        "user.api_expired_at"
-                    } else {
-                        "user.api_expires_at"
-                    }
-                )),
-                escape(&crate::topic_list_view::long_date(cx, at))
-            ),
-            None => format!(
-                "<span>{}</span> {}",
-                escape(&t(cx, "user.api_expires_at")),
-                escape(&t(cx, "user.api_expires_never"))
+                    &format!(" {}", crate::viewer_dates::long_marker(cx, at)),
+                );
+                (
+                    tz,
+                    format!(
+                        "<span>{}</span>{date}",
+                        escape(&t(
+                            cx,
+                            if at <= cx.now {
+                                "user.api_expired_at"
+                            } else {
+                                "user.api_expires_at"
+                            }
+                        )),
+                    ),
+                )
+            }
+            None => (
+                String::new(),
+                format!(
+                    "<span>{}</span> {}",
+                    escape(&t(cx, "user.api_expires_at")),
+                    escape(&t(cx, "user.api_expires_never"))
+                ),
             ),
         };
         let scopes: Vec<&str> = key["scopes"]
@@ -379,7 +392,7 @@ pub fn api_keys(p: &Prefs) -> String {
             )
         };
         rows.push_str(&format!(
-            "<div class=\"row user-api-key\" data-key-id=\"{}\"><div class=\"user-api-key__info\"><div class=\"user-api-key__name\">{}</div><div class=\"user-api-key__dates\"><div class=\"user-api-key__date-approved\"><span>{}</span> {}</div><div class=\"user-api-key__date-last-used\"><span>{}</span> {}</div><div class=\"user-api-key__date-expires\">{expires}</div></div></div><div class=\"user-api-key__actions\">{}{}</div>{scopes_html}</div>",
+            "<div class=\"row user-api-key\" data-key-id=\"{}\"><div class=\"user-api-key__info\"><div class=\"user-api-key__name\">{}</div><div class=\"user-api-key__dates\"><div class=\"user-api-key__date-approved\"><span>{}</span> {}</div><div class=\"user-api-key__date-last-used\"><span>{}</span> {}</div><div class=\"user-api-key__date-expires\"{expires_tz}>{expires}</div></div></div><div class=\"user-api-key__actions\">{}{}</div>{scopes_html}</div>",
             key["id"],
             escape(key["application_name"].as_str().unwrap_or_default()),
             escape(&t(cx, "user.api_approved")),

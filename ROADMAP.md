@@ -2333,7 +2333,13 @@ route table has been made, so this list may be short.
     salts against the Rails source (file_store/base_store.rb,
     backup_restore/local_backup_store.rb, lib/discourse.rb,
     rails_multisite's connection_management.rb and cookie_salt.rb)
-209. `feat/viewer-timezone` M, decided 2026-10-16: dates and times in the
+209. ~~`feat/viewer-timezone`, `feat/viewer-timezone-rest`~~ (done,
+    left: chat's channel list dates (calendar), which chat.js redraws
+    after the first paint; the
+    admin dashboard's day ranges and the report's day dates, kept on the
+    server's day; the post bookmark button's reminder title
+    (created_with_reminder_generic), not ported; mails, drawn on the
+    server as in Rails) M, decided 2026-10-16: dates and times in the
     viewer's timezone, as Ember draws them (the browser's zone, or the
     user's timezone option where Ember reads it), not UTC: relative and
     absolute dates in lists, topics, posts, profiles, notifications,

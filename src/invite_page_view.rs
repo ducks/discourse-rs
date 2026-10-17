@@ -290,10 +290,11 @@ fn date(cx: &ListContext, at: &Value) -> String {
     }
 }
 
+/// rawDate (longDate) as a crate::viewer_dates template.
 fn raw_date(cx: &ListContext, at: &Value) -> String {
     at.as_str()
         .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
-        .map(|at| escape(&crate::topic_list_view::long_date(cx, at.to_utc())))
+        .map(|at| crate::viewer_dates::long_marker(cx, at.to_utc()))
         .unwrap_or_default()
 }
 
@@ -437,8 +438,19 @@ fn header_cells(cx: &ListContext, keys: &[&str]) -> String {
 }
 
 fn detail_cell(cx: &ListContext, label_key: &str, classes: &str, content: &str) -> String {
+    detail_cell_with(cx, label_key, classes, "", content)
+}
+
+/// detail_cell with attributes (already escaped) for the cell.
+fn detail_cell_with(
+    cx: &ListContext,
+    label_key: &str,
+    classes: &str,
+    attrs: &str,
+    content: &str,
+) -> String {
     format!(
-        "<td class=\"d-table__cell --detail{classes}\"><div class=\"d-table__mobile-label\">{}</div>{content}</td>",
+        "<td class=\"d-table__cell --detail{classes}\"{attrs}><div class=\"d-table__mobile-label\">{}</div>{content}</td>",
         escape(&crate::topic_list_view::t(cx, label_key))
     )
 }
@@ -648,14 +660,18 @@ fn invite_table(cx: &ListContext, invites: &[Value], expired_tab: bool) -> Strin
             &date(cx, &invite["updated_at"]),
         ));
         let expires = if !expired_tab && invite["expired"] == true {
-            escape(&t(cx, "user.invited.expired"))
+            t(cx, "user.invited.expired")
         } else {
             raw_date(cx, &invite["expires_at"])
         };
-        out.push_str(&detail_cell(
+        // rawDate's text after the label, in the viewer's zone: the cell
+        // carries the template (crate::viewer_dates).
+        let (tz, expires) = crate::viewer_dates::text(cx, &expires);
+        out.push_str(&detail_cell_with(
             cx,
             "user.invited.expires_at",
             " invite-expires-at",
+            &tz,
             &expires,
         ));
         if invite["can_delete_invite"] == true {

@@ -129,7 +129,9 @@ async fn the_directory_lists_the_weeks_users() {
     assert!(html.contains("has-sidebar-page users-page\""));
     // The period chooser on the week, its rows ready to open.
     assert!(html.contains("<summary aria-label=\"Filter by period\" name=\"Filter by: weekly\" data-name=\"weekly\" data-value=\"weekly\""));
-    assert!(html.contains("<h2 class=\"selected-name\"><span class=\"date-section\">Week</span><span class=\"top-date-string\">"));
+    // The dates as templates for the viewer's zone (crate::viewer_dates).
+    assert!(html.contains("<h2 class=\"selected-name\"><span class=\"date-section\">Week</span><span class=\"top-date-string\" data-tz-text=\"%{"));
+    assert!(html.contains(":MMM D} – %{"), "{html}");
     assert!(html.contains(
         "aria-checked=\"true\" role=\"menuitemradio\" data-index=\"4\" data-name=\"weekly\""
     ));

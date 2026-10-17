@@ -7,9 +7,7 @@
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 
-use crate::topic_list_view::{
-    ListContext, escape, icon, long_date, relative_age_tiny, t, t_count, t_with,
-};
+use crate::topic_list_view::{ListContext, escape, icon, relative_age_tiny, t, t_count, t_with};
 use crate::user_profile_view::age_medium;
 
 /// DLoadMore's tail.
@@ -489,45 +487,6 @@ pub fn pending(cx: &ListContext, posts: &[(Value, String)], can_delete: bool) ->
     out
 }
 
-/// Ember's `capitalize`: the first character upper cased.
-fn capitalize(s: &str) -> String {
-    let mut chars = s.chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().chain(chars).collect(),
-        None => String::new(),
-    }
-}
-
-/// `formattedReminderTime(reminder_at, timezone)`
-fn formatted_reminder(cx: &ListContext, at: DateTime<Utc>, zone: chrono_tz::Tz) -> String {
-    use chrono::TimeZone;
-    let local = at.with_timezone(&zone);
-    let wall = Utc.from_utc_datetime(&local.naive_local());
-    let now = cx.now.with_timezone(&zone).date_naive();
-    let format = |f: &str| {
-        crate::pretty_text::render::local_dates::format_utc(wall, &t(cx, f)).unwrap_or_default()
-    };
-    if local.date_naive() == now + chrono::Duration::days(1) {
-        t_with(
-            cx,
-            "bookmarks.reminders.tomorrow_with_time",
-            &[("time", &format("dates.time"))],
-        )
-    } else if local.date_naive() == now {
-        t_with(
-            cx,
-            "bookmarks.reminders.today_with_time",
-            &[("time", &format("dates.time"))],
-        )
-    } else {
-        t_with(
-            cx,
-            "bookmarks.reminders.at_time",
-            &[("date_time", &format("dates.long_with_year"))],
-        )
-    }
-}
-
 /// What the bookmarks tab shows.
 pub enum Bookmarks<'a> {
     /// The list request failed (another member's bookmarks).
@@ -544,7 +503,7 @@ pub fn bookmarks(
     cx: &ListContext,
     shown: &Bookmarks,
     search: &str,
-    zone: chrono_tz::Tz,
+    zone: Option<chrono_tz::Tz>,
     mobile: bool,
     next_page: Option<i64>,
 ) -> String {
@@ -612,7 +571,7 @@ pub fn bookmarks(
     out
 }
 
-fn bookmark_row(cx: &ListContext, b: &Value, zone: chrono_tz::Tz, mobile: bool) -> String {
+fn bookmark_row(cx: &ListContext, b: &Value, zone: Option<chrono_tz::Tz>, mobile: bool) -> String {
     let reminder = date(&b["reminder_at"]);
     let name = b["name"].as_str().filter(|n| !n.is_empty());
     let excerpt = b["excerpt"].as_str().filter(|e| !e.is_empty());
@@ -629,15 +588,21 @@ fn bookmark_row(cx: &ListContext, b: &Value, zone: chrono_tz::Tz, mobile: bool) 
     if has_metadata {
         main.push_str("<div class=\"bookmark-metadata\">");
         if let Some(at) = reminder {
+            // Bookmark#formattedReminder, in the member's zone or the
+            // browser's (static/js/dates.js).
+            let (tz, text) = crate::viewer_dates::text_in(
+                cx,
+                &crate::viewer_dates::relative_marker(at, "reminder"),
+                zone,
+            );
             main.push_str(&format!(
-                "<span class=\"bookmark-metadata-item bookmark-reminder{}\">{}{}</span>",
+                "<span class=\"bookmark-metadata-item bookmark-reminder{}\"{tz}>{}{text}</span>",
                 if at < cx.now {
                     " bookmark-expired-reminder"
                 } else {
                     ""
                 },
                 icon("far-clock", None),
-                escape(&capitalize(&formatted_reminder(cx, at, zone)))
             ));
         }
         if let Some(name) = name {
@@ -756,8 +721,8 @@ fn bookmark_row(cx: &ListContext, b: &Value, zone: chrono_tz::Tz, mobile: bool) 
             "<td class=\"post-metadata topic-list-data updated-at\">{}</td>",
             updated
                 .map(|at| format!(
-                    "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
-                    escape(&long_date(cx, at)),
+                    "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>",
+                    crate::viewer_dates::long_title(cx, at),
                     at.timestamp_millis(),
                     escape(&relative_age_tiny(cx, at))
                 ))

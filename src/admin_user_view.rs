@@ -307,7 +307,7 @@ pub fn render(cx: &AdminCx, list: &ListContext, page: &UserPage, u: &Value) -> S
                 "{} - {}",
                 js_number(bounce),
                 parse(&u["reset_bounce_score_after"])
-                    .map(|at| crate::admin_dashboard_view::moment_format(at.date_naive(), "LL"))
+                    .map(|at| crate::viewer_dates::marker(at, "LL"))
                     .unwrap_or_default()
             )
         } else {
@@ -333,15 +333,24 @@ pub fn render(cx: &AdminCx, list: &ListContext, page: &UserPage, u: &Value) -> S
             i18n,
             &format!("admin.user.bounce_score_explanation.{explanation}"),
         )));
-        out.push_str(&row(
-            "bounce-score",
-            &format!(
-                "<a href=\"{base}/admin/email-logs/bounced\">{}</a>",
-                escape(&t(i18n, "admin.user.bounce_score"))
+        // The reset date in the viewer's zone (crate::viewer_dates).
+        let (bounce_tz, bounce_value) = crate::viewer_dates::text(list, &bounce_value);
+        out.push_str(
+            &row(
+                "bounce-score",
+                &format!(
+                    "<a href=\"{base}/admin/email-logs/bounced\">{}</a>",
+                    escape(&t(i18n, "admin.user.bounce_score"))
+                ),
+                &bounce_value,
+                Some(&controls),
+            )
+            .replacen(
+                "<div class=\"value\">",
+                &format!("<div class=\"value\"{bounce_tz}>"),
+                1,
             ),
-            &escape(&bounce_value),
-            Some(&controls),
-        ));
+        );
         // associated_accounts comes with the email (checkEmail), or with
         // the user when the email is shown.
         let accounts = match u.get("associated_accounts") {
@@ -926,17 +935,20 @@ fn penalty_rows(
         &u["silenced_till"]
     });
     let on = till.is_some_and(|t| t > page.now);
-    let mut value = yes_no(cx, on);
+    // yes_no unescaped: the template is escaped as a whole below.
+    let mut value = t(i18n, if on { "yes_value" } else { "no_value" });
     if let Some(till) = till.filter(|_| on)
         && !is_forever(page.now, till)
     {
         value.push(' ');
-        value.push_str(&escape(&t_with(
+        value.push_str(&t_with(
             i18n,
             "admin.user.suspended_until",
-            &[("until", &crate::topic_list_view::long_date(list, till))],
-        )));
+            &[("until", &crate::viewer_dates::long_marker(list, till))],
+        ));
     }
+    // The end in the viewer's zone (crate::viewer_dates).
+    let (value_tz, value) = crate::viewer_dates::text(list, &value);
     let (class, icon_name, label, explanation) = if suspend {
         (
             "suspend-user",
@@ -979,14 +991,14 @@ fn penalty_rows(
     }
     let mut out = if suspend {
         format!(
-            "<div class=\"user-suspended display-row {}\"><div class=\"field\">{}</div><div class=\"value\">{value}</div><div class=\"controls\">{controls}</div></div>",
+            "<div class=\"user-suspended display-row {}\"><div class=\"field\">{}</div><div class=\"value\"{value_tz}>{value}</div><div class=\"controls\">{controls}</div></div>",
             if on { "highlight-danger" } else { "" },
             escape(&t(i18n, "admin.user.suspended"))
         )
     } else {
         // DConditionalLoadingSpinner around the controls.
         format!(
-            "<div class=\"display-row {}\"><div class=\"field\">{}</div><div class=\"value\">{value}</div><div class=\"controls\"><div class=\"loading-container inline-spinner\">{controls}</div></div></div>",
+            "<div class=\"display-row {}\"><div class=\"field\">{}</div><div class=\"value\"{value_tz}>{value}</div><div class=\"controls\"><div class=\"loading-container inline-spinner\">{controls}</div></div></div>",
             if on { "highlight-danger" } else { "" },
             escape(&t(i18n, "admin.user.silenced"))
         )

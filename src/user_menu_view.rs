@@ -36,6 +36,8 @@ pub struct MenuContext<'a> {
     pub can_chat: bool,
     pub emojis: &'a Emojis,
     pub now: chrono::DateTime<chrono::Utc>,
+    /// `relative_date_duration`, for the ages it draws.
+    pub relative_date_duration: i64,
 }
 
 impl MenuContext<'_> {
@@ -1218,7 +1220,19 @@ pub fn profile_tab(cx: &MenuContext) -> String {
         "<li class=\"do-not-disturb{}\">{}</li>",
         if dnd_until.is_some() { " enabled" } else { "" },
         match dnd_until {
-            Some(_) => button("toggle-on", &format!("<span>{pause}</span>")),
+            // The end as dAgeWithTooltip, unless it is DoNotDisturb.forever.
+            Some(until) => button(
+                "toggle-on",
+                &format!(
+                    "<span>{pause}</span>{}",
+                    if until.format("%Y-%m-%d").to_string() == "3000-01-01" {
+                        String::new()
+                    } else {
+                        // The template's whitespace between the two.
+                        format!(" {}", crate::viewer_dates::tiny_span(cx, until))
+                    }
+                )
+            ),
             None => button("toggle-off", &pause),
         }
     ));

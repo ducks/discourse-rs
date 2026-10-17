@@ -239,14 +239,20 @@ fn duration(list: &ListContext, seconds: &Value) -> String {
 /// `rawDate`: the long date with the time.
 fn raw_date(list: &ListContext, at: &Value) -> Option<String> {
     let at = chrono::DateTime::parse_from_rfc3339(at.as_str()?).ok()?;
-    Some(crate::topic_list_view::long_date(list, at.to_utc()))
+    Some(crate::viewer_dates::long_marker(list, at.to_utc()))
 }
 
-fn cell(class: &str, title: Option<String>, label: &str, value: &str) -> String {
+fn cell(
+    list: &ListContext,
+    class: &str,
+    title: Option<String>,
+    label: &str,
+    value: &str,
+) -> String {
     format!(
         "<div class=\"directory-table__cell {class}\"{}><span class=\"directory-table__label\"><span>{}</span></span><span class=\"directory-table__value\">{value}</span></div>",
         title
-            .map(|t| format!(" title=\"{}\"", escape(&t)))
+            .map(|t| crate::viewer_dates::attr(list, "title", &t))
             .unwrap_or_default(),
         escape(label)
     )
@@ -284,20 +290,26 @@ pub fn row(cx: &AdminCx, list: &ListContext, s: &ListState, user: &Value) -> Str
         escape(user["email"].as_str().unwrap_or_default())
     ));
     out.push_str(&cell(
+        list,
         "last-emailed",
         raw_date(list, &user["last_emailed_at"]),
         &t(cx.i18n, "admin.users.last_emailed"),
         &duration(list, &user["last_emailed_age"]),
     ));
     out.push_str(&cell(
+        list,
         "last-seen",
-        Some(raw_date(list, &user["last_seen_at"]).unwrap_or_default()),
+        // rawDate(null) is longDate(new Date(null)): the epoch.
+        Some(raw_date(list, &user["last_seen_at"]).unwrap_or_else(|| {
+            crate::viewer_dates::long_marker(list, chrono::DateTime::UNIX_EPOCH)
+        })),
         &t(cx.i18n, "last_seen"),
         &duration(list, &user["last_seen_age"]),
     ));
     let reasons = s.query == "silenced" || s.query == "suspended";
     if !reasons {
         out.push_str(&cell(
+            list,
             "topics-entered",
             None,
             &t(cx.i18n, "admin.user.topics_entered"),
@@ -305,18 +317,21 @@ pub fn row(cx: &AdminCx, list: &ListContext, s: &ListState, user: &Value) -> Str
         ));
     }
     out.push_str(&cell(
+        list,
         "posts-read",
         None,
         &t(cx.i18n, "admin.user.posts_read_count"),
         &crate::user_profile_view::number(list, n("posts_read_count")),
     ));
     out.push_str(&cell(
+        list,
         "time-read",
         None,
         &t(cx.i18n, "admin.user.time_read"),
         &duration(list, &user["time_read"]),
     ));
     out.push_str(&cell(
+        list,
         "created",
         Some(raw_date(list, &user["created_at"]).unwrap_or_default()),
         &t(cx.i18n, "created"),
@@ -329,6 +344,7 @@ pub fn row(cx: &AdminCx, list: &ListContext, s: &ListState, user: &Value) -> Str
         if s.query == query {
             let reason = user[key].as_str().unwrap_or_default();
             out.push_str(&cell(
+                list,
                 class,
                 Some(strip_html(reason)),
                 &t(cx.i18n, &format!("admin.users.{key}")),

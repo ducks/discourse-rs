@@ -2441,6 +2441,37 @@ async fn the_composer_stays_across_pages() {
         "{}",
         menu.body
     );
+    // Paused notifications show their end (dAgeWithTooltip), drawn in the
+    // viewer's zone by dates.js; never for DoNotDisturb.forever.
+    sqlx::query(
+        "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) \
+         SELECT id, now(), '2099-03-04 05:06:00', false FROM users WHERE username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let menu = client.get("/user-menu?tab=profile").await;
+    assert!(
+        menu.body.contains(
+            "<span>Pause notifications</span> <span class=\"relative-date\" title=\"Mar 4, 2099 5:06 am\" data-tz-title=\"%{4076283960000:MMM D, YYYY h:mm a}\" data-time=\"4076283960000\" data-format=\"tiny\">"
+        ),
+        "{}",
+        menu.body
+    );
+    sqlx::query(
+        "UPDATE do_not_disturb_timings SET ends_at = '3000-01-01 00:00:00' \
+         WHERE user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let menu = client.get("/user-menu?tab=profile").await;
+    assert!(
+        menu.body
+            .contains("<span>Pause notifications</span></span>"),
+        "{}",
+        menu.body
+    );
 }
 
 /// A member who chats: every page keeps chat's header icon and sidebar
