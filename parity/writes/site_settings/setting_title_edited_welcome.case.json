@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET last_editor_id = 1 WHERE topic_id = 5 AND post_number = 1"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/title.json",
+      "params": {
+        "title": "Duck Pond"
+      }
+    }
+  ]
+}

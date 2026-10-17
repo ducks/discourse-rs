@@ -1,0 +1,44 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/about.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "general_settings": {
+          "name": "Ducks Forum",
+          "summary": "All about ducks",
+          "extended_description": "We talk **ducks** here.",
+          "about_banner_image": "/images/d-logo-sketch.png",
+          "community_title": "Ducks!"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/5.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "general_settings": {
+          "name": "Ducks Forum",
+          "summary": "",
+          "extended_description": "",
+          "about_banner_image": "",
+          "community_title": ""
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/2/body/message_bus_last_id"
+  ]
+}

@@ -1,0 +1,523 @@
+{
+  "name": "about_sections",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "Jake",
+          "contact_email": "contact@example.com",
+          "contact_url": "https://example.com/contact",
+          "contact_username": "admin",
+          "contact_group_name": "3"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "Jake",
+          "contact_email": "not-an-email",
+          "contact_url": "",
+          "contact_username": "",
+          "contact_group_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "",
+          "contact_email": "",
+          "contact_url": "",
+          "contact_username": "nobody_here",
+          "contact_group_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "your_organization": {
+          "company_name": "Ducks Inc",
+          "company_url": "https://ducks.example",
+          "governing_law": "Oregon",
+          "city_for_disputes": "Portland"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "extra_groups": {
+          "groups": "1|3",
+          "initial_members": "4",
+          "order": "order of creation",
+          "show_description": "true"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-17T04:34:58.079415",
+  "transaction_started_at": "2026-10-17T04:34:54.600413",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "contact_email",
+          "value": "contact@example.com",
+          "data_type": 14,
+          "created_at": "2026-10-17T04:34:58.125515",
+          "updated_at": "2026-10-17T04:34:58.125515"
+        },
+        {
+          "id": 38,
+          "name": "contact_url",
+          "value": "https://example.com/contact",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.139189",
+          "updated_at": "2026-10-17T04:34:58.139189"
+        },
+        {
+          "id": 39,
+          "name": "site_contact_username",
+          "value": "admin",
+          "data_type": 15,
+          "created_at": "2026-10-17T04:34:58.161489",
+          "updated_at": "2026-10-17T04:34:58.161489"
+        },
+        {
+          "id": 40,
+          "name": "site_contact_group_name",
+          "value": "3",
+          "data_type": 19,
+          "created_at": "2026-10-17T04:34:58.193216",
+          "updated_at": "2026-10-17T04:34:58.193216"
+        },
+        {
+          "id": 41,
+          "name": "community_owner",
+          "value": "Jake",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.205226",
+          "updated_at": "2026-10-17T04:34:58.205226"
+        },
+        {
+          "id": 42,
+          "name": "company_name",
+          "value": "Ducks Inc",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.436558",
+          "updated_at": "2026-10-17T04:34:58.436558"
+        },
+        {
+          "id": 43,
+          "name": "company_url",
+          "value": "https://ducks.example",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.447979",
+          "updated_at": "2026-10-17T04:34:58.447979"
+        },
+        {
+          "id": 44,
+          "name": "governing_law",
+          "value": "Oregon",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.464021",
+          "updated_at": "2026-10-17T04:34:58.464021"
+        },
+        {
+          "id": 45,
+          "name": "city_for_disputes",
+          "value": "Portland",
+          "data_type": 1,
+          "created_at": "2026-10-17T04:34:58.47576",
+          "updated_at": "2026-10-17T04:34:58.47576"
+        },
+        {
+          "id": 46,
+          "name": "about_page_extra_groups",
+          "value": "1|3",
+          "data_type": 20,
+          "created_at": "2026-10-17T04:34:58.543675",
+          "updated_at": "2026-10-17T04:34:58.543675"
+        },
+        {
+          "id": 47,
+          "name": "about_page_extra_groups_initial_members",
+          "value": "4",
+          "data_type": 3,
+          "created_at": "2026-10-17T04:34:58.561274",
+          "updated_at": "2026-10-17T04:34:58.561274"
+        },
+        {
+          "id": 48,
+          "name": "about_page_extra_groups_order",
+          "value": "order of creation",
+          "data_type": 7,
+          "created_at": "2026-10-17T04:34:58.576123",
+          "updated_at": "2026-10-17T04:34:58.576123"
+        },
+        {
+          "id": 49,
+          "name": "about_page_extra_groups_show_description",
+          "value": "t",
+          "data_type": 5,
+          "created_at": "2026-10-17T04:34:58.598637",
+          "updated_at": "2026-10-17T04:34:58.598637"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZLPrGKjxLpmRqvtEgx5HIRVRhj4=",
+            "created_at": "2026-10-17T04:34:55.659711",
+            "rotated_at": "2026-10-17T04:34:55.656865",
+            "updated_at": "2026-10-17T04:34:55.659711",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ZLPrGKjxLpmRqvtEgx5HIRVRhj4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-17T04:34:58.092167",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZLPrGKjxLpmRqvtEgx5HIRVRhj4=",
+            "created_at": "2026-10-17T04:34:55.659711",
+            "rotated_at": "2026-10-17T04:34:55.656865",
+            "updated_at": "2026-10-17T04:34:55.659711",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ZLPrGKjxLpmRqvtEgx5HIRVRhj4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "contact_email",
+          "topic_id": null,
+          "new_value": "contact@example.com",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.131959",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.131959",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "contact_url",
+          "topic_id": null,
+          "new_value": "https://example.com/contact",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.14514",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.14514",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "site_contact_username",
+          "topic_id": null,
+          "new_value": "admin",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.168219",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.168219",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "site_contact_group_name",
+          "topic_id": null,
+          "new_value": "3",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.198439",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.198439",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 80,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "company_name",
+          "topic_id": null,
+          "new_value": "Ducks Inc",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.440861",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.440861",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 81,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "company_url",
+          "topic_id": null,
+          "new_value": "https://ducks.example",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.453019",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.453019",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 82,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "governing_law",
+          "topic_id": null,
+          "new_value": "Oregon",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.469179",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.469179",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 83,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "city_for_disputes",
+          "topic_id": null,
+          "new_value": "Portland",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.479278",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.479278",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 84,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "about_page_extra_groups",
+          "topic_id": null,
+          "new_value": "1|3",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.550965",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.550965",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 85,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "about_page_extra_groups_initial_members",
+          "topic_id": null,
+          "new_value": "4",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.567306",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.567306",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "6",
+          "target_user_id": null
+        },
+        {
+          "id": 86,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "about_page_extra_groups_order",
+          "topic_id": null,
+          "new_value": "order of creation",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.589634",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.589634",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "alphabetically",
+          "target_user_id": null
+        },
+        {
+          "id": 87,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "about_page_extra_groups_show_description",
+          "topic_id": null,
+          "new_value": "true",
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:58.604698",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:58.604698",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "false",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "f97c790fddbd14e84fcf2ce2702244f05d0d7b1af6b762f865c04c2eecff08ce",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

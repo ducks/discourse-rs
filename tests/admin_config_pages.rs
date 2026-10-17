@@ -471,3 +471,44 @@ async fn the_welcome_banner_page() {
         .await;
     assert_eq!((status, body.as_str()), (StatusCode::NO_CONTENT, ""));
 }
+
+#[tokio::test]
+async fn the_about_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/about").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>About your site - Admin - "), "{html}");
+    // The four cards with their forms, the site's title in the first.
+    for class in [
+        "admin-config-area-about__general-settings-section",
+        "admin-config-area-about__contact-information-section",
+        "admin-config-area-about__your-organization-section",
+        "admin-config-area-about__extra-groups-section",
+    ] {
+        assert!(html.contains(class), "{class}");
+    }
+    assert!(
+        html.contains(
+            "name=\"name\" placeholder=\"Example Community\" type=\"text\" value=\"Discourse\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains(
+        "<textarea autocomplete=\"off\" class=\"d-editor-input\" name=\"extendedDescription\">"
+    ));
+    assert!(html.contains("selected=\"\" value=\"alphabetically\""));
+    // No language selector while content localization is off.
+    assert!(!html.contains("admin-config-area-about__language-toolbar"));
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/about.json", "", true)
+        .await;
+    assert_eq!((status, body.as_str()), (StatusCode::NO_CONTENT, ""));
+    // AdminConstraint: not found for anyone else.
+    let (status, _) = Client::logged_in(st, "user1")
+        .await
+        .page("/admin/config/about")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

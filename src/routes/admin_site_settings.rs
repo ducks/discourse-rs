@@ -92,6 +92,7 @@ pub async fn update(
             name,
             raw,
             *backfill,
+            &[],
         )
         .await?;
         if let Outcome::Invalid(message) = outcome {
@@ -103,7 +104,38 @@ pub async fn update(
         }
     }
     tx.commit().await?;
+    after_update(&state, &settings).await?;
     Ok(StatusCode::NO_CONTENT.into_response())
+}
+
+/// What the settings' change handlers do past the update's transaction:
+/// a changed title or site description rewrites the welcome topic
+/// (crate::seed_topics), with the settings as they now are.
+pub(super) async fn after_update(state: &AppState, before: &SiteSettings) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let now =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    drop(conn);
+    // Each changed setting's handler in the order the settings are saved
+    // (as declared), with the site as it is at that point.
+    let host = crate::pretty_text::Host::from_state(state);
+    let mut step = before.clone();
+    for name in ["title", "site_description"] {
+        let value = now.get(name)?.clone();
+        if *before.get(name)? == value {
+            continue;
+        }
+        step = step.with(name, value);
+        let ctx = crate::posting::Ctx {
+            host: &host,
+            settings: &step,
+            config: &state.config,
+            i18n: &state.i18n,
+            bus: &state.bus,
+        };
+        crate::seed_topics::update_welcome_topic(&state.pool, &ctx).await?;
+    }
+    Ok(())
 }
 
 /// PUT /admin/site_settings/:id/user_count: how many users a backfill of

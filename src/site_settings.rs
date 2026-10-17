@@ -821,6 +821,17 @@ pub struct SiteSettings {
 }
 
 impl SiteSettings {
+    /// These settings with one value replaced: what the site holds part
+    /// way through a multi-setting update.
+    pub fn with(&self, name: &str, value: Value) -> SiteSettings {
+        let mut values = (*self.values).clone();
+        values.insert(name.to_string(), value);
+        SiteSettings {
+            values: std::sync::Arc::new(values),
+            emojis: self.emojis.clone(),
+        }
+    }
+
     /// SiteSettingExtension#refresh!: defaults for the site's locale, then
     /// DB rows, then global-setting shadows.
     pub fn resolve(
