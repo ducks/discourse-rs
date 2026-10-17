@@ -129,7 +129,7 @@ def resolve(value, state)
         require "rotp"
         ROTP::TOTP.new(Regexp.last_match(1)).now
       end
-    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce)?\}\}/) do
+    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce|\|totp)?\}\}/) do
       path, filter = Regexp.last_match(1), Regexp.last_match(2)
       found = path.split(".").reduce(state) { |acc, k| acc.is_a?(Array) ? acc[k.to_i] : acc&.[](k) }
       raise "{{#{path}}} resolved to nothing" if found.nil?
@@ -144,6 +144,10 @@ def resolve(value, state)
       when "|sso_nonce"
         payload = CGI.unescape(found.to_s[/[?&]sso=([^&#]*)/, 1].to_s)
         Rack::Utils.parse_query(Base64.decode64(payload))["nonce"].to_s
+      # The code a TOTP secret (spaced as the key is shown) gives now.
+      when "|totp"
+        require "rotp"
+        ROTP::TOTP.new(found.to_s.delete(" ")).now
       else found.to_s
       end
     end

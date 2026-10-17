@@ -1,0 +1,94 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'phone', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9302, 3, 1, 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', true, 'tablet', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9303, 3, 2, '{\"salt\":\"5a17\",\"code_hash\":\"543475d7ec5f98c7432d86efdc20c85667c465675d50ebc44548bbd34a7393c9\"}', true, NULL, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9304, 3, 2, '{\"salt\":\"0f0f\",\"code_hash\":\"4d5a70cc81e4dcd6bb1bde1026026b3fff39b9f5a9e10e82446ea02e5e74691c\"}', false, NULL, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9311, 3, 'nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k=', 'pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=', 0, true, 'key one', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_security_keys (id, user_id, credential_id, public_key, factor_type, enabled, name, created_at, updated_at) VALUES (9312, 3, 'HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE=', 'pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=', 1, true, 'Passkey', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "1",
+        "id": "9301",
+        "name": "Work phone"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-session.json",
+      "params": {
+        "password": "password"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "1"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "1",
+        "id": "9999"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "1",
+        "id": "9301",
+        "name": "Work phone"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "1",
+        "id": "9302",
+        "disable": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "7"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/second_factor.json",
+      "params": {
+        "second_factor_target": "2",
+        "disable": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/disable_second_factor.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/second_factors.json"
+    }
+  ]
+}

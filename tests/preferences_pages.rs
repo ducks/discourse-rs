@@ -344,11 +344,118 @@ async fn a_confirmed_session_opens_the_second_factor_page() {
     assert!(page.html.contains("solo-preference second-factor"));
     assert!(page.html.contains("new-totp"));
     assert!(page.html.contains("new-security-key"));
-    // Adding one is 155's.
-    let refused = user1
+    // The authenticator's secret, staged with its QR code.
+    let created = user1
         .send(Method::POST, "/u/create_second_factor_totp.json", "")
         .await;
-    assert_eq!(user1.status, StatusCode::INTERNAL_SERVER_ERROR, "{refused}");
+    assert_eq!(user1.status, StatusCode::OK, "{created}");
+    let created: serde_json::Value = serde_json::from_str(&created).unwrap();
+    assert_eq!(created["key"].as_str().unwrap().len(), 39);
+    assert!(
+        created["qr"]
+            .as_str()
+            .unwrap()
+            .starts_with("data:image/png;base64,")
+    );
+}
+
+async fn enforce(db: &TestDb, value: &str) {
+    sqlx::query(
+        "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+         VALUES ('enforce_second_factor', 7, $1, now(), now())",
+    )
+    .bind(value)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
+async fn enforced_second_factors_send_members_without_one_to_add_one() {
+    let (db, mut user1) = client("user1").await;
+    enforce(&db, "all").await;
+    let page = user1.page("/latest").await;
+    assert_eq!(page.status, StatusCode::FOUND);
+    assert_eq!(
+        page.location.as_deref(),
+        Some("http://test.localhost/u/user1/preferences/second-factor")
+    );
+    // Not the page itself, and not JSON.
+    let page = user1.page("/u/user1/preferences/second-factor").await;
+    // (Its own redirect, for an unconfirmed session, is the security tab.)
+    assert_eq!(
+        page.location.as_deref(),
+        Some("http://test.localhost/u/user1/preferences/security")
+    );
+    user1.send(Method::GET, "/latest.json", "").await;
+    assert_eq!(user1.status, StatusCode::OK);
+    // With an authenticator, nothing.
+    sqlx::query(
+        "INSERT INTO user_second_factors (user_id, method, data, enabled, name, created_at, updated_at) \
+         SELECT id, 1, 'JBSWY3DPEHPK3PXP', true, 'phone', now(), now() FROM users WHERE username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(user1.page("/latest").await.status, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn enforcing_for_staff_leaves_members_be() {
+    let (db, mut user1) = client("user1").await;
+    enforce(&db, "staff").await;
+    assert_eq!(user1.page("/latest").await.status, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn the_second_factor_page_draws_the_challenge() {
+    let (db, mut user1) = client("user1").await;
+    sqlx::query(
+        "INSERT INTO user_second_factors (user_id, method, data, enabled, name, created_at, updated_at) \
+         SELECT id, 1, 'JBSWY3DPEHPK3PXP', true, 'phone', now(), now() FROM users WHERE username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let page = user1.page("/session/2fa?nonce=nope").await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.html.contains("id=\"second-factor-auth-data\""));
+    assert!(page.html.contains("\"load_error\":true"), "{}", page.html);
+    // A challenge staged by an email change's confirmation.
+    let token = "known-token-193d";
+    sqlx::query(
+        "INSERT INTO email_tokens (id, user_id, email, token_hash, scope, expired, confirmed, created_at, updated_at) \
+         SELECT 9601, id, 'user1-new@example.com', \
+         'c351f96f39d5ae3328d96a8e325d0cb426475009121f75c932d9aef4104096b9', 4, false, false, now(), now() \
+         FROM users WHERE username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO email_change_requests (user_id, old_email, new_email, new_email_token_id, change_state, created_at, updated_at) \
+         SELECT id, 'user1@example.com', 'user1-new@example.com', 9601, 2, now(), now() FROM users WHERE username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let challenge = user1
+        .send(
+            Method::PUT,
+            &format!("/u/confirm-new-email/{token}.json"),
+            "",
+        )
+        .await;
+    assert_eq!(user1.status, StatusCode::FORBIDDEN, "{challenge}");
+    let challenge: serde_json::Value = serde_json::from_str(&challenge).unwrap();
+    let nonce = challenge["second_factor_challenge_nonce"].as_str().unwrap();
+    let page = user1.page(&format!("/session/2fa?nonce={nonce}")).await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.html.contains("\"available\":[1]"), "{}", page.html);
+    assert!(page.html.contains("\"shown\":1"));
+    assert!(page.html.contains("\"totp_enabled\":true"));
+    // hideApplicationSidebar
+    assert!(!page.html.contains("sidebar.js"));
 }
 
 #[tokio::test]

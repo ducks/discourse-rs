@@ -121,6 +121,105 @@ fn skipped(path: &str, method: &axum::http::Method) -> bool {
     matches!(path, "/u" | "/u.json") && method == axum::http::Method::POST
 }
 
+/// UsersController's `skip_before_action :redirect_to_profile_if_required,
+/// only: %i[show staff_info update]`, which leave the login redirect on.
+fn profile_redirect_only(path: &str, method: &axum::http::Method) -> bool {
+    let Some(rest) = path.strip_prefix("/u/") else {
+        return false;
+    };
+    let rest = rest.strip_suffix(".json").unwrap_or(rest);
+    let segments: Vec<&str> = rest.split('/').collect();
+    // The actions that skip both.
+    if matches!(
+        segments[0],
+        "check_username"
+            | "check_email"
+            | "hp"
+            | "password-reset"
+            | "activate-account"
+            | "account-created"
+            | "confirm-admin"
+            | "email-login"
+            | "admin-login"
+            | "confirm-email-token"
+            | "generate-random-username"
+    ) {
+        return false;
+    }
+    match segments.as_slice() {
+        [_] => matches!(
+            *method,
+            axum::http::Method::GET | axum::http::Method::HEAD | axum::http::Method::PUT
+        ),
+        [_, "staff-info"] => true,
+        _ => false,
+    }
+}
+
+/// `should_enforce_2fa?`: enforce_second_factor names the user (staff, or
+/// everyone) and they have neither an authenticator nor a security key;
+/// not for an API request, an anonymous-mode user, or (unless
+/// enforce_second_factor_on_external_auth) an external login. The
+/// redirect to the second factor page, unless the request is for it.
+async fn enforce_second_factor(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    incoming: &Incoming,
+    fullpath: &str,
+    host: &str,
+    user_id: i32,
+    staff: bool,
+) -> Result<Option<Response>, AppError> {
+    let settings = crate::site_settings::SiteSettings::load(
+        conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
+    let enforce = settings.get("enforce_second_factor")?.to_s();
+    if !(enforce == "all" || (enforce == "staff" && staff)) {
+        return Ok(None);
+    }
+    // is_api?: no session cookie behind the user.
+    let Some(session) = &incoming.session else {
+        return Ok(None);
+    };
+    if incoming.guardian.is_anonymous() {
+        return Ok(None);
+    }
+    if !settings
+        .get("enforce_second_factor_on_external_auth")?
+        .truthy()
+        && session.token.authenticated_with_oauth.unwrap_or(false)
+    {
+        return Ok(None);
+    }
+    let enabled = crate::second_factor::Enabled::load(&mut *conn, &settings, user_id).await?;
+    if enabled.has_any() {
+        return Ok(None);
+    }
+    let username: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !username.is_ascii() {
+        return Err(crate::Unsupported("encoded_username for a non-ASCII username").into());
+    }
+    let base_path = state.config.globals.relative_url_root();
+    let redirect_path = format!("{base_path}/u/{username}/preferences/second-factor");
+    if fullpath.starts_with(&redirect_path) {
+        return Ok(None);
+    }
+    Ok(Some(
+        (
+            StatusCode::FOUND,
+            [(header::LOCATION, format!("http://{host}{redirect_path}"))],
+            Body::empty(),
+        )
+            .into_response(),
+    ))
+}
+
 pub async fn gate(
     State(state): State<AppState>,
     request: Request,
@@ -147,7 +246,39 @@ pub async fn gate(
     if path.ends_with(".json") || super::wants_json(request.uri().query(), request.headers()) {
         return Ok(next.run(request).await);
     }
-    if skipped(&path, request.method()) {
+    let skip = skipped(&path, request.method());
+    // redirect_to_login_if_required's tail, which runs first:
+    // should_enforce_2fa? sends the user to their second factor page.
+    // UsersController#show, #staff_info and #update skip only the profile
+    // redirect.
+    if !skip || profile_redirect_only(&path, request.method()) {
+        let incoming = request.extensions().get::<Incoming>().cloned();
+        let fullpath = request
+            .uri()
+            .path_and_query()
+            .map(|p| p.as_str().to_string())
+            .unwrap_or_default();
+        let host = request
+            .headers()
+            .get(header::HOST)
+            .and_then(|h| h.to_str().ok())
+            .unwrap_or("localhost")
+            .to_string();
+        let mut conn = state.pool.acquire().await?;
+        let redirect = match &incoming {
+            Some(incoming) => {
+                enforce_second_factor(
+                    &state, &mut conn, incoming, &fullpath, &host, user_id, staff,
+                )
+                .await?
+            }
+            None => None,
+        };
+        if let Some(redirect) = redirect {
+            return Ok(redirect);
+        }
+    }
+    if skip {
         return Ok(next.run(request).await);
     }
     let mut conn = state.pool.acquire().await?;

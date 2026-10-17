@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+{% block title %}{{ site_title }}{% endblock %}
+{% block content %}
+{#- templates/second-factor-auth.gjs, drawn by the script below from the
+    challenge's data (the 2fa_challenge_data Rails preloads): the method
+    shown (a passkey, then a security key, then the authenticator app,
+    then a backup code, of those the user has and the action allows), the
+    others offered as links. The answer goes to POST /session/2fa, then
+    the action is replayed with the nonce, as the controller's
+    verifySecondFactor does. -#}
+<script type="application/json" id="second-factor-auth-data">{{ data|safe }}</script>
+<script>
+  (function () {
+    var anchor = document.getElementById("second-factor-auth-data");
+    var data = JSON.parse(anchor.textContent);
+    var root = document.getElementById("main-outlet");
+    var rendered = [];
+    var S = data.strings;
+    var model = data.model;
+    var shown = data.shown;
+    var message = data.error ? { text: data.error, error: true } : null;
+    var token = "";
+    var busy = false;
+
+    function escape(text) {
+      var div = document.createElement("div");
+      div.textContent = text == null ? "" : String(text);
+      return div.innerHTML;
+    }
+    function otpMarkup() {
+      var slots = "";
+      for (var i = 0; i < 6; i++) {
+        var digit = token[i];
+        slots +=
+          '<div class="d-otp-slot' +
+          (digit ? "" : i === token.length ? " --is-focused --show-cursor" : " --placeholder") +
+          '" data-index="' + i + '"><span aria-hidden="true">&#8203;</span>' +
+          (digit ? escape(digit) : i === token.length ? "" : "-") +
+          "</div>";
+      }
+      return (
+        '<div class="d-otp second-factor-token-input"><div class="d-otp-group">' + slots +
+        '</div><div class="d-otp-input-wrapper"><input aria-label="' + escape(S.otp_label) +
+        '" autocapitalize="off" autocomplete="one-time-code" autocorrect="off" class="d-otp-input" data-slot="input-otp" inputmode="numeric" maxlength="6" spellcheck="false"></div></div>'
+      );
+    }
+    function render() {
+      var html = "";
+      if (message) {
+        html += '<div class="alert ' + (message.error ? "alert-error" : "alert-success") + '">' + escape(message.text) + "</div>";
+      }
+      if (!data.load_error) {
+        html += "<h3>" + escape(S.titles[shown]) + "</h3>";
+        if (model.description) {
+          html += '<p class="action-description">' + escape(model.description) + "</p>";
+        }
+        html += "<p>" + escape(S.descriptions[shown]) + "</p>";
+        if (shown === 4) {
+          html += '<div id="security-key"><button class="btn btn-icon-text btn-large btn-primary" id="passkey-authenticate-button" type="button">' +
+            data.icons.user + '<span class="d-button-label">' + escape(S.use_passkey) + "</span></button></div>";
+        } else if (shown === 3) {
+          html += '<div id="security-key"><button class="btn btn-icon-text btn-large btn-primary" id="security-key-authenticate-button" type="button">' +
+            data.icons.key + '<span class="d-button-label">' + escape(S.security_key_authenticate) + "</span></button></div>";
+        } else {
+          html += '<form class="' + (shown === 1 ? "totp-token" : "backup-code-token") + '">' +
+            (shown === 1
+              ? otpMarkup()
+              : '<input autocapitalize="off" autocorrect="off" autofocus="autofocus" class="second-factor-token-input" maxlength="32" pattern="[a-z0-9]{16}" type="text" value="' + escape(token) + '">') +
+            '<button class="btn btn-text btn-primary" type="submit"' + (token && !busy ? "" : " disabled") +
+            '><span class="d-button-label">' + escape(S.submit) + "</span></button></form>";
+        }
+        var alts = S.order.filter(function (m) {
+          return m !== shown && data.available.indexOf(m) !== -1;
+        });
+        if (alts.length) {
+          html += "<p>" + alts.map(function (m, i) {
+            return (i > 0 ? "<span>&middot;</span>" : "") +
+              '<span><a class="toggle-second-factor-method ' + S.classes[m] + '" href data-method="' + m + '">' +
+              escape(S.toggles[m]) + "</a></span>";
+          }).join("") + "</p>";
+        }
+      }
+      // In place of what was drawn before, ahead of the data.
+      rendered.forEach(function (node) {
+        node.remove();
+      });
+      var template = document.createElement("template");
+      template.innerHTML = html;
+      rendered = Array.prototype.slice.call(template.content.childNodes);
+      rendered.forEach(function (node) {
+        anchor.parentNode.insertBefore(node, anchor);
+      });
+      bind();
+    }
+    function bind() {
+      root.querySelectorAll(".toggle-second-factor-method").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          shown = Number(a.dataset.method);
+          token = "";
+          render();
+        });
+      });
+      var form = root.querySelector("form");
+      if (form) {
+        var input = form.querySelector("input");
+        input.value = token;
+        input.focus();
+        input.addEventListener("input", function () {
+          token = shown === 1 ? input.value.replace(/\D/g, "").slice(0, 6) : input.value;
+          if (shown === 1) {
+            render();
+            if (token.length === 6) verify(token);
+          } else {
+            form.querySelector("button").disabled = !token || busy;
+          }
+        });
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (token) verify(token);
+        });
+      }
+      var key = document.getElementById("security-key-authenticate-button");
+      if (key) {
+        key.addEventListener("click", function () {
+          webauthn(model.allowed_credential_ids, "discouraged", false);
+        });
+      }
+      var passkey = document.getElementById("passkey-authenticate-button");
+      if (passkey) {
+        passkey.addEventListener("click", function () {
+          webauthn(model.passkey_allowed_credential_ids, "required", false);
+        });
+      }
+    }
+    function encode(prefix, value, out) {
+      if (value !== null && typeof value === "object") {
+        Object.keys(value).forEach(function (k) {
+          encode(prefix + "[" + k + "]", value[k], out);
+        });
+      } else {
+        out.append(prefix, value == null ? "" : value);
+      }
+      return out;
+    }
+    function request(method, path, params) {
+      var body = new URLSearchParams();
+      Object.keys(params).forEach(function (k) {
+        encode(k, params[k], body);
+      });
+      var opts = {
+        method: method,
+        headers: { "X-CSRF-Token": data.csrf, "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      };
+      if (method === "GET") {
+        path += (path.indexOf("?") === -1 ? "?" : "&") + body.toString();
+      } else {
+        opts.body = body;
+      }
+      return fetch(path, opts).then(function (r) {
+        return r.text().then(function (text) {
+          var json = {};
+          try { json = JSON.parse(text); } catch (_) {}
+          if (!r.ok || json.failed) {
+            throw new Error((json.errors && json.errors[0]) || json.error || S.generic_error);
+          }
+          return json;
+        });
+      });
+    }
+    // verifySecondFactor
+    function verify(answer) {
+      busy = true;
+      request("POST", data.base_path + "/session/2fa", {
+        second_factor_token: answer,
+        second_factor_method: shown,
+        nonce: data.nonce,
+      })
+        .then(function (response) {
+          var params = { second_factor_nonce: data.nonce };
+          Object.keys(response.callback_params || {}).forEach(function (k) {
+            params[k] = response.callback_params[k];
+          });
+          return request(response.callback_method, response.callback_path, params).then(function (callback) {
+            message = { text: S.redirect_after_success, error: false };
+            render();
+            window.location.href = callback.redirect_url || response.redirect_url || data.base_path + "/";
+          });
+        })
+        .catch(function (err) {
+          busy = false;
+          message = { text: err.message, error: true };
+          render();
+        });
+    }
+    function toBuffer(s) {
+      return Uint8Array.from(s, function (c) { return c.charCodeAt(0); });
+    }
+    function toBase64(b) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(b)));
+    }
+    // getWebauthnCredential
+    function webauthn(allowed, userVerification, silent) {
+      navigator.credentials.get({ publicKey: {
+        challenge: toBuffer(model.challenge || ""),
+        allowCredentials: (allowed || []).map(function (id) {
+          return { id: toBuffer(atob(id)), type: "public-key" };
+        }),
+        timeout: 60000,
+        userVerification: userVerification,
+      } }).then(function (credential) {
+        verify({
+          signature: toBase64(credential.response.signature),
+          clientData: toBase64(credential.response.clientDataJSON),
+          authenticatorData: toBase64(credential.response.authenticatorData),
+          credentialId: toBase64(credential.rawId),
+        });
+      }).catch(function (err) {
+        if (silent) return;
+        message = { text: err.name === "NotAllowedError" ? S.not_allowed : String(err.message || err), error: true };
+        render();
+      });
+    }
+    render();
+    // maybeAutoTriggerPasskey
+    if (!data.load_error && data.available.indexOf(4) !== -1) {
+      webauthn(model.passkey_allowed_credential_ids, "required", true);
+    }
+  })();
+</script>
+{% endblock %}

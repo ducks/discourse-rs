@@ -1463,7 +1463,7 @@ fn totp_codes(s: &str) -> String {
 fn resolve(value: &Value, state: &Value) -> Value {
     static REF: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(
-            r"\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce)?\}\}",
+            r"\{\{([^}|]+)(\|reverse|\|last_segment|\|request_param|\|state_param|\|sso_nonce|\|totp)?\}\}",
         )
         .unwrap()
     });
@@ -1493,6 +1493,11 @@ fn resolve(value: &Value, state: &Value) -> Value {
                     Some("|last_segment") => text.rsplit('/').next().unwrap_or("").to_string(),
                     Some("|request_param") => query_param(&text, "request"),
                     Some("|state_param") => query_param(&text, "state"),
+                    Some("|totp") => discourse_rs::second_factor::code_at(
+                        &text.replace(' ', ""),
+                        discourse_rs::clock::now().timestamp(),
+                    )
+                    .unwrap_or_default(),
                     Some("|sso_nonce") => {
                         use base64::Engine;
                         let payload = query_param(&text, "sso");
