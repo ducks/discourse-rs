@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/robots.json"},
+    {"method": "PUT", "path": "/admin/customize/robots.json", "params": {"robots_txt": "User-agent: *\nDisallow: /secret/\n"}},
+    {"method": "GET", "path": "/admin/customize/robots.json"},
+    {"method": "GET", "path": "/robots-builder.json"},
+    {"method": "PUT", "path": "/admin/customize/robots.json", "params": {"robots_txt": ""}},
+    {"method": "PUT", "path": "/admin/customize/robots.json", "params": {}},
+    {"method": "DELETE", "path": "/admin/customize/robots.json"},
+    {"method": "GET", "path": "/admin/customize/robots.json"}
+  ]
+}

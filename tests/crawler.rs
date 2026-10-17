@@ -83,9 +83,10 @@ async fn robots_txt_follows_the_crawler_settings() {
 
     set_setting(&db.pool, "allow_index_in_robots_txt", BOOL, "f").await;
     let (_, _, body) = get(&db.pool, "/robots.txt").await;
+    // no_index.erb's trailing blank line, as the reference serves it.
     assert_eq!(
         body,
-        "User-agent: googlebot\nAllow: /\nDisallow: /uploads/*\n\nUser-agent: *\nDisallow: /\n"
+        "User-agent: googlebot\nAllow: /\nDisallow: /uploads/*\n\nUser-agent: *\nDisallow: /\n\n"
     );
 
     set_setting(

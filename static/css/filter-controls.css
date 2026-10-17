@@ -44,6 +44,10 @@
 .d-filter-controls .filter-input-container {
   flex: 1 1 auto;
 }
+.d-filter-controls.--dropdowns-in-filter-drawer {
+  display: flex;
+  flex-direction: column;
+}
 .filter-input.d-filter-controls__input {
   padding-left: 0;
 }

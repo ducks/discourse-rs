@@ -1,0 +1,286 @@
+{
+  "name": "admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/robots.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/robots.json",
+      "params": {
+        "robots_txt": "User-agent: *\nDisallow: /secret/\n"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/robots.json"
+    },
+    {
+      "method": "GET",
+      "path": "/robots-builder.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/robots.json",
+      "params": {
+        "robots_txt": ""
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/robots.json",
+      "params": {}
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/robots.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/robots.json"
+    }
+  ],
+  "started_at": "2026-10-17T01:57:59.697927",
+  "transaction_started_at": "2026-10-17T01:57:53.649712",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\n\n#\nUser-agent: mauibot\nDisallow: /\n\n\nUser-agent: semrushbot\nDisallow: /\n\n\nUser-agent: ahrefsbot\nDisallow: /\n\n\nUser-agent: blexbot\nDisallow: /\n\n\nUser-agent: seo spider\nDisallow: /\n\n\nUser-agent: *\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\nDisallow: /badges\nDisallow: /my\nDisallow: /search\nDisallow: /tag/*/l\nDisallow: /g\nDisallow: /t/*/*.rss\nDisallow: /c/*.rss\n\n\nUser-agent: Googlebot\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\n\n\n\nSitemap: http://localhost/sitemap.xml\n\n\n",
+        "overridden": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "User-agent: *\nDisallow: /secret/\n",
+        "overridden": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "User-agent: *\nDisallow: /secret/\n",
+        "overridden": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "header": "# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\n",
+        "agents": [
+          {
+            "name": "mauibot",
+            "disallow": [
+              "/"
+            ]
+          },
+          {
+            "name": "semrushbot",
+            "disallow": [
+              "/"
+            ]
+          },
+          {
+            "name": "ahrefsbot",
+            "disallow": [
+              "/"
+            ]
+          },
+          {
+            "name": "blexbot",
+            "disallow": [
+              "/"
+            ]
+          },
+          {
+            "name": "seo spider",
+            "disallow": [
+              "/"
+            ]
+          },
+          {
+            "name": "*",
+            "disallow": [
+              "/admin/",
+              "/auth/",
+              "/assets/js/browser-update*.js",
+              "/email/",
+              "/session",
+              "/user-api-key",
+              "/*?api_key*",
+              "/*?*api_key*",
+              "/badges",
+              "/my",
+              "/search",
+              "/tag/*/l",
+              "/g",
+              "/t/*/*.rss",
+              "/c/*.rss"
+            ]
+          },
+          {
+            "name": "Googlebot",
+            "disallow": [
+              "/admin/",
+              "/auth/",
+              "/assets/js/browser-update*.js",
+              "/email/",
+              "/session",
+              "/user-api-key",
+              "/*?api_key*",
+              "/*?*api_key*"
+            ]
+          }
+        ],
+        "overridden": "User-agent: *\nDisallow: /secret/\n"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: robots_txt"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: robots_txt"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\n\n#\nUser-agent: mauibot\nDisallow: /\n\n\nUser-agent: semrushbot\nDisallow: /\n\n\nUser-agent: ahrefsbot\nDisallow: /\n\n\nUser-agent: blexbot\nDisallow: /\n\n\nUser-agent: seo spider\nDisallow: /\n\n\nUser-agent: *\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\nDisallow: /badges\nDisallow: /my\nDisallow: /search\nDisallow: /tag/*/l\nDisallow: /g\nDisallow: /t/*/*.rss\nDisallow: /c/*.rss\n\n\nUser-agent: Googlebot\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\n\n\n\nSitemap: http://localhost/sitemap.xml\n\n\n",
+        "overridden": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\n\n#\nUser-agent: mauibot\nDisallow: /\n\n\nUser-agent: semrushbot\nDisallow: /\n\n\nUser-agent: ahrefsbot\nDisallow: /\n\n\nUser-agent: blexbot\nDisallow: /\n\n\nUser-agent: seo spider\nDisallow: /\n\n\nUser-agent: *\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\nDisallow: /badges\nDisallow: /my\nDisallow: /search\nDisallow: /tag/*/l\nDisallow: /g\nDisallow: /t/*/*.rss\nDisallow: /c/*.rss\n\n\nUser-agent: Googlebot\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\n\n\n\nSitemap: http://localhost/sitemap.xml\n\n\n",
+        "overridden": false
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "overridden_robots_txt",
+          "value": "",
+          "data_type": 1,
+          "created_at": "2026-10-17T01:57:59.795076",
+          "updated_at": "2026-10-17T01:58:00.014481"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 227,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MjZRqp0HKe2Y8W3WUDlcE0gkD4U=",
+            "created_at": "2026-10-17T01:57:56.138861",
+            "rotated_at": "2026-10-17T01:57:56.129828",
+            "updated_at": "2026-10-17T01:57:56.138861",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "MjZRqp0HKe2Y8W3WUDlcE0gkD4U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 227,
+            "seen_at": "2026-10-17T01:57:59.713355",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MjZRqp0HKe2Y8W3WUDlcE0gkD4U=",
+            "created_at": "2026-10-17T01:57:56.138861",
+            "rotated_at": "2026-10-17T01:57:56.129828",
+            "updated_at": "2026-10-17T01:57:56.138861",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "MjZRqp0HKe2Y8W3WUDlcE0gkD4U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "overridden_robots_txt",
+          "topic_id": null,
+          "new_value": "User-agent: *\nDisallow: /secret/\n",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:57:59.829657",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:57:59.829657",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "overridden_robots_txt",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T01:58:00.024782",
+          "ip_address": null,
+          "updated_at": "2026-10-17T01:58:00.024782",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "User-agent: *\nDisallow: /secret/\n",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "b7ead4cbb87c32f9902d3df602cb1d5f2e5bc6bbeff03ba6f4b3a2aa400386c2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

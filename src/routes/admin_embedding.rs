@@ -2,8 +2,11 @@
 //! Admin::EmbeddingController (/admin/customize/embedding), both under
 //! AdminConstraint: a 404 for anyone else.
 //!
-//! Refused: the Ember admin page (an HTML request), an unknown embedding
-//! type (Rails raises a NameError there), a missing host (NoMethodError).
+//! A page request for /admin/customize/embedding and its tabs and forms
+//! is the Ember page (crate::routes::admin_customize::embedding_page).
+//!
+//! Refused: an unknown embedding type (Rails raises a NameError there), a
+//! missing host (NoMethodError).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -56,6 +59,15 @@ async fn embedding_json(
     settings: &SiteSettings,
     written: &[(&'static str, crate::site_settings::Value)],
 ) -> Result<Response, AppError> {
+    Ok(Json(document(state, conn, settings, written).await?).into_response())
+}
+
+pub(super) async fn document(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    written: &[(&'static str, crate::site_settings::Value)],
+) -> Result<Value, AppError> {
     let mut hosts = Vec::new();
     let mut ids = Vec::new();
     for h in embedding::all(&mut *conn).await? {
@@ -83,12 +95,11 @@ async fn embedding_json(
     e.insert("base_url".into(), json!(urls.base_url()?));
     e.extend(embedding::settings_json(&values));
     e.insert("embeddable_host_ids".into(), json!(ids));
-    Ok(Json(json!({
+    Ok(json!({
         "embeddable_hosts": hosts,
         "embedding": e,
         "__rest_serializer": "1",
     }))
-    .into_response())
 }
 
 /// GET /admin/customize/embedding(.json)
@@ -101,7 +112,9 @@ pub async fn show(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return super::admin_customize::embedding_page(&state, &guardian, &headers, &uri, "").await;
+    }
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -112,14 +125,17 @@ pub async fn show(
 pub async fn edit(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
-    Path(_id): Path<String>,
+    Path(id): Path<String>,
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return super::admin_customize::embedding_page(&state, &guardian, &headers, &uri, &id)
+            .await;
+    }
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 

@@ -70,6 +70,9 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
 | Admin::UsersController#unsilence | 1 | 5 | 0 | 0 |
 | Admin::EmailController#handle_mail | 3 | 3 | 0 | 0 |
+| Admin::RobotsTxtController#show | 3 | 1 | 0 | 0 |
+| Admin::RobotsTxtController#update | 4 | 1 | 0 | 0 |
+| Admin::RobotsTxtController#reset | 3 | 1 | 0 | 0 |
 | UsersController#create | 11 | 17 | 16 | 41 |
 | UsersController#perform_account_activation | 4 | 3 | 2 | 2 |
 | UsersController#email_login | 4 | 1 | 3 | 0 |
@@ -1071,6 +1074,40 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 338 | admin > normalizes invalid UTF-8 bytes | covered | incoming_invalid_utf8 (new) |
 | 349 | moderator > 404 | recordable | incoming_moderator |
 | 349 | non-staff > 404 | recordable | incoming_not_staff |
+
+## Admin::RobotsTxtController#show
+
+`spec/requests/admin/robots_txt_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 12 | admin > default content without overrides | covered | robots/admin (new, matches) |
+| 20 | admin > overridden content | covered | robots/admin (new, matches) |
+| 31 | moderator > 404 | covered | robots/moderator (new, matches) |
+| 31 | non-staff > 404 | recordable | robots_not_staff |
+
+## Admin::RobotsTxtController#update
+
+`spec/requests/admin/robots_txt_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 56 | admin > overrides the default robots.txt | covered | robots/admin (new, matches) |
+| 68 | admin > logs the change | covered | robots/admin (new, matches) |
+| 83 | admin > robots_txt param required | covered | robots/admin (new, matches) |
+| 91 | moderator > 404 | covered | robots/moderator (new, matches) |
+| 91 | non-staff > 404 | recordable | robots_not_staff |
+
+## Admin::RobotsTxtController#reset
+
+`spec/requests/admin/robots_txt_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 117 | admin > resets to the default | covered | robots/admin, robots/no_index (new, match) |
+| 133 | admin > logs the reset | covered | robots/admin (new, matches) |
+| 150 | moderator > 404 | covered | robots/moderator (new, matches) |
+| 150 | non-staff > 404 | recordable | robots_not_staff |
 
 ## UsersController#create
 

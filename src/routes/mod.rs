@@ -6,6 +6,7 @@ mod admin_badges;
 mod admin_badges_pages;
 mod admin_config;
 mod admin_config_branding;
+mod admin_customize;
 mod admin_dashboard;
 mod admin_dashboard_sections;
 mod admin_email;
@@ -799,6 +800,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/c/{*path}", cached!(get(list::category)))
         .route("/robots.txt", get(robots::index))
         .route("/robots-builder.json", get(robots::builder))
+        .route(
+            "/admin/customize/robots",
+            get(robots::admin_show)
+                .put(robots::admin_update)
+                .delete(robots::admin_reset),
+        )
+        .route(
+            "/admin/customize/robots.json",
+            get(robots::admin_show)
+                .put(robots::admin_update)
+                .delete(robots::admin_reset),
+        )
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
@@ -2474,6 +2487,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-config.js", get(asset))
         .route("/assets/admin-emoji.js", get(asset))
         .route("/assets/admin-branding.js", get(asset))
+        .route("/assets/admin-customize.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))

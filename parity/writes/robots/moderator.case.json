@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET moderator = true WHERE id = 3"],
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/robots.json"},
+    {"method": "PUT", "path": "/admin/customize/robots.json", "params": {"robots_txt": "User-agent: *\n"}},
+    {"method": "DELETE", "path": "/admin/customize/robots.json"}
+  ]
+}

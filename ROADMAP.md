@@ -804,10 +804,31 @@ then by what running a forum needs (milestone 6). Briefs:
     Left: about, category management, watched words, MCP, upcoming
     changes, what's new; the settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
-    source, 90g9)), 90g7. `feat/admin-shell-customize` L
-    (themes and components with their editor, theme site settings, color
-    palettes, site texts, email style, form templates, embedding, robots
-    txt), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    source, 90g9)), 90g7. `feat/admin-shell-customize` L, in part (done,
+    in feat/admin-shell-customize-content: /admin/customize/watched_words
+    (on to the first action) and an action's page: the filter (the
+    route's query param), the action nav with its counts and the mobile
+    view's menu, the regular expression errors, WatchedWordForm (the
+    creatable WatchedWords and TagChooser MultiSelects, the replacement
+    and link fields, the case and HTML checkboxes, the duplicate check),
+    the show words checkbox and the list with each word's delete, clear
+    all, Add from file (the server's refusal of the upload stands), the
+    download link and the test modal; /admin/customize/robots with
+    Admin::RobotsTxtController now ported (show, update, reset and their
+    logs; write cases robots/*); /admin/customize/embedding: the hosts
+    (the full app toggle, the snippet's card, the table with each host's
+    menu and delete, the empty list), the settings tab, the posts and
+    topics and crawlers forms and the host form (CategoryChooser,
+    TagChooser and UserChooser over their searches); /admin/customize/
+    site_texts: the search, the language and theme ComboBoxes, the
+    filters' drawer with its checkboxes and reset, the recommended texts,
+    the results with their next pages, the Reseed modal (whose replace
+    the server still refuses), and a text's edit page (the default text,
+    the outdated and invalid notices with dismiss, DExpandingTextArea,
+    the interpolation keys' pills, save and revert). Left: the themes and
+    components with their editor, theme site settings, color palettes,
+    the email template editor (with site texts' translation overrides),
+    email style, form templates), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
     rollback, the read-only and archive mode toggles with their
