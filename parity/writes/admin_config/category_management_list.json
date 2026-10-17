@@ -1,0 +1,520 @@
+{
+  "name": "category_management_list",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "per_page": "2",
+        "page": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "support"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "filter": "gen",
+        "visibility": "public"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "all",
+        "visibility": "restricted"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "nonsense"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json",
+      "params": {
+        "type": "ideas",
+        "per_page": "500"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/all.json"
+    }
+  ],
+  "started_at": "2026-10-17T05:50:03.047208",
+  "transaction_started_at": "2026-10-17T05:50:01.924273",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 2,
+            "slug": "site-feedback",
+            "badge_chain": [
+              {
+                "id": 2,
+                "name": "Site Feedback",
+                "slug": "site-feedback",
+                "color": "808281",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "thought_balloon",
+                "read_restricted": false,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "read_restricted": false,
+            "topic_count": 1,
+            "edit_url": "/c/site-feedback/edit/general"
+          },
+          {
+            "id": 3,
+            "slug": "staff",
+            "badge_chain": [
+              {
+                "id": 3,
+                "name": "Staff",
+                "slug": "staff",
+                "color": "E45735",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "shield",
+                "read_restricted": true,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "read_restricted": true,
+            "topic_count": 2,
+            "edit_url": "/c/staff/edit/general"
+          },
+          {
+            "id": 34,
+            "slug": "sub-general",
+            "badge_chain": [
+              {
+                "id": 4,
+                "name": "General",
+                "slug": "general",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "read_restricted": false,
+                "parent_category_id": null
+              },
+              {
+                "id": 34,
+                "name": "Sub General",
+                "slug": "sub-general",
+                "color": "AB9364",
+                "text_color": "FFFFFF",
+                "style_type": "square",
+                "icon": null,
+                "emoji": null,
+                "read_restricted": false,
+                "parent_category_id": 4
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": null,
+            "read_restricted": false,
+            "topic_count": 1,
+            "edit_url": "/c/general/sub-general/edit/general"
+          },
+          {
+            "id": 1,
+            "slug": "uncategorized",
+            "badge_chain": [
+              {
+                "id": 1,
+                "name": "Uncategorized",
+                "slug": "uncategorized",
+                "color": "0088CC",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "card_file_box",
+                "read_restricted": false,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": null,
+            "read_restricted": false,
+            "topic_count": 0,
+            "edit_url": "/c/uncategorized/edit/general"
+          }
+        ],
+        "has_more": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 3,
+            "slug": "staff",
+            "badge_chain": [
+              {
+                "id": 3,
+                "name": "Staff",
+                "slug": "staff",
+                "color": "E45735",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "shield",
+                "read_restricted": true,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "read_restricted": true,
+            "topic_count": 2,
+            "edit_url": "/c/staff/edit/general"
+          },
+          {
+            "id": 34,
+            "slug": "sub-general",
+            "badge_chain": [
+              {
+                "id": 4,
+                "name": "General",
+                "slug": "general",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "read_restricted": false,
+                "parent_category_id": null
+              },
+              {
+                "id": 34,
+                "name": "Sub General",
+                "slug": "sub-general",
+                "color": "AB9364",
+                "text_color": "FFFFFF",
+                "style_type": "square",
+                "icon": null,
+                "emoji": null,
+                "read_restricted": false,
+                "parent_category_id": 4
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": null,
+            "read_restricted": false,
+            "topic_count": 1,
+            "edit_url": "/c/general/sub-general/edit/general"
+          }
+        ],
+        "has_more": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 4,
+            "slug": "general",
+            "badge_chain": [
+              {
+                "id": 4,
+                "name": "General",
+                "slug": "general",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "read_restricted": false,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              },
+              {
+                "id": "support",
+                "name": "Support"
+              }
+            ],
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "read_restricted": false,
+            "topic_count": 3,
+            "edit_url": "/c/general/edit/general"
+          }
+        ],
+        "has_more": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 4,
+            "slug": "general",
+            "badge_chain": [
+              {
+                "id": 4,
+                "name": "General",
+                "slug": "general",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "read_restricted": false,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              },
+              {
+                "id": "support",
+                "name": "Support"
+              }
+            ],
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "read_restricted": false,
+            "topic_count": 3,
+            "edit_url": "/c/general/edit/general"
+          },
+          {
+            "id": 34,
+            "slug": "sub-general",
+            "badge_chain": [
+              {
+                "id": 4,
+                "name": "General",
+                "slug": "general",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "read_restricted": false,
+                "parent_category_id": null
+              },
+              {
+                "id": 34,
+                "name": "Sub General",
+                "slug": "sub-general",
+                "color": "AB9364",
+                "text_color": "FFFFFF",
+                "style_type": "square",
+                "icon": null,
+                "emoji": null,
+                "read_restricted": false,
+                "parent_category_id": 4
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": null,
+            "read_restricted": false,
+            "topic_count": 1,
+            "edit_url": "/c/general/sub-general/edit/general"
+          }
+        ],
+        "has_more": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 3,
+            "slug": "staff",
+            "badge_chain": [
+              {
+                "id": 3,
+                "name": "Staff",
+                "slug": "staff",
+                "color": "E45735",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "shield",
+                "read_restricted": true,
+                "parent_category_id": null
+              }
+            ],
+            "category_types": [
+              {
+                "id": "discussion",
+                "name": "Discussion"
+              }
+            ],
+            "description_text": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "read_restricted": true,
+            "topic_count": 2,
+            "edit_url": "/c/staff/edit/general"
+          }
+        ],
+        "has_more": false
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "has_more": false
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 387,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "reo/VnjimG1F3CadrI+5zr1lN9A=",
+            "created_at": "2026-10-17T05:50:02.336196",
+            "rotated_at": "2026-10-17T05:50:02.334145",
+            "updated_at": "2026-10-17T05:50:02.336196",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "reo/VnjimG1F3CadrI+5zr1lN9A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 387,
+            "seen_at": "2026-10-17T05:50:03.051751",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "reo/VnjimG1F3CadrI+5zr1lN9A=",
+            "created_at": "2026-10-17T05:50:02.336196",
+            "rotated_at": "2026-10-17T05:50:02.334145",
+            "updated_at": "2026-10-17T05:50:02.336196",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "reo/VnjimG1F3CadrI+5zr1lN9A=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "4f37d755fb2b995fed3dea5ba42dfcfdb3f2993de607793d7397cff1bf22709e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

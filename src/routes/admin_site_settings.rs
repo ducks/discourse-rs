@@ -336,8 +336,10 @@ pub async fn config_index(
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    if !guardian.is_admin() {
-        return Ok(super::topics::not_found_response(&state));
+    // StaffConstraint, then Admin::AdminController: InvalidAccess for a
+    // moderator.
+    if let Some(refused) = super::admin_config_branding::admin_only(&state, &guardian) {
+        return Ok(refused);
     }
     let p = params::parse(uri.query(), &headers, &body);
     let Some(filters) = config_filters(&state, &p) else {

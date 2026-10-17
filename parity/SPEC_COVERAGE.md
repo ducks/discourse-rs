@@ -65,6 +65,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::LogoController | 3 | 1 | 0 | 8 |
 | Admin::Config::FontsController | 4 | 0 | 0 | 0 |
 | Admin::Config::AboutController | 11 | 1 | 0 | 0 |
+| Admin::Config::CategoryManagementController#categories | 5 | 1 | 0 | 0 |
 | Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
@@ -989,6 +990,19 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 156 | update_localizations > rejects when disabled | covered | admin_config/about_localizations_disabled (new) |
 | 170 | update_localizations > rejects moderators | covered | admin_config/about_denied (new) |
 | - | (no spec it) update: each section, the welcome topic's rewrite, invalid values unrendered | covered | admin_config/about_general, about_sections (new) |
+
+## Admin::Config::CategoryManagementController#categories
+
+`spec/requests/admin/config/category_management_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 19 | discussion categories with hierarchy data | covered | admin_config/category_management_list (new) |
+| 46 | all, discussion-only, and typed categories | covered | admin_config/category_management_list (new; support by its custom field) |
+| 108 | filters by hashtag reference | recordable | category_management_slug_ref (filter parent:child) |
+| 125 | orders by name and paginates | covered | admin_config/category_management_list (new) |
+| 156 | filters by visibility | covered | admin_config/category_management_list (new) |
+| - | (no spec it) an unknown type, a moderator | covered | admin_config/category_management_list, category_management_denied (new) |
 
 ## Admin::Config::WelcomeBannerController#themes_with_setting
 

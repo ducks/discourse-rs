@@ -512,3 +512,53 @@ async fn the_about_page() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_category_management_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // The index goes on to the list of all.
+    let (status, location) = admin.page("/admin/config/category-management").await;
+    assert_eq!(status, StatusCode::SEE_OTHER, "{location}");
+    assert_eq!(location, "/admin/config/category-management/all");
+    let (status, html) = admin.page("/admin/config/category-management/all").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<title>All categories - Category management - Admin - "),
+        "{html}"
+    );
+    assert!(html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/config/category-management/all\">All categories</a></li>"));
+    // Every category with its type badges, a subcategory with its parent.
+    assert!(
+        html.contains("<tr class=\"d-table__row\" data-category-id=\"4\">"),
+        "{html}"
+    );
+    assert!(html.contains("data-category-type=\"discussion\""));
+    assert!(html.contains("href=\"/c/general/sub-general/edit/general\""));
+    // A type's list: General is not a discussion category once it's a
+    // support one.
+    sqlx::query("INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = admin
+        .page("/admin/config/category-management/discussion")
+        .await;
+    assert!(!html.contains("data-category-id=\"4\">"), "{html}");
+    assert!(!html.contains("data-category-type="));
+    let (_, html) = admin
+        .page("/admin/config/category-management/support?fragment=1")
+        .await;
+    assert!(html.starts_with("<div><table"), "{html}");
+    assert!(html.contains("data-category-id=\"4\""));
+    let (status, _) = admin
+        .page("/admin/config/category-management/nonsense")
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (_, html) = admin
+        .page("/admin/config/category-management/settings")
+        .await;
+    assert!(html.contains("<title>Settings - Category management - Admin - "));
+    assert!(html.contains("data-setting=\"desktop_category_page_style\""));
+}

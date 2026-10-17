@@ -7,6 +7,7 @@ mod admin_badges_pages;
 mod admin_config;
 mod admin_config_about;
 mod admin_config_branding;
+mod admin_config_category_management;
 mod admin_customize;
 mod admin_dashboard;
 mod admin_dashboard_sections;
@@ -2524,6 +2525,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-branding.js", get(asset))
         .route("/assets/admin-customize.js", get(asset))
         .route("/assets/popular-themes.js", get(asset))
+        .route("/assets/admin-category-management.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))
@@ -2645,6 +2647,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     router = admin_config::routes(router);
     router = admin_config_branding::routes(router);
     router = admin_config_about::routes(router);
+    router = admin_config_category_management::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.
     if let Some(src) = &config.discourse_src {

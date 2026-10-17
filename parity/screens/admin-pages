@@ -114,3 +114,8 @@
 /admin/config/fonts as=admin
 # The welcome banner page (90g6).
 /admin/config/welcome-banner as=admin
+# The about and category management pages (90g6).
+/admin/config/about as=admin
+/admin/config/category-management/all as=admin
+/admin/config/category-management/discussion as=admin
+/admin/config/category-management/settings as=admin

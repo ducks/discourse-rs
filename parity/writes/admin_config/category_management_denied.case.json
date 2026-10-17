@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management/categories.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/category-management.json"
+    }
+  ]
+}
