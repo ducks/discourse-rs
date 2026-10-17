@@ -26,6 +26,14 @@
     },
     {
       "method": "GET",
+      "path": "/admin/config/welcome-banner.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner/themes-with-setting.json"
+    },
+    {
+      "method": "GET",
       "path": "/admin/config/logo/og-image-preview.json",
       "params": {
         "topic_id": "1"

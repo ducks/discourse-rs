@@ -7,6 +7,7 @@
 
 use serde_json::Value;
 
+use crate::admin_ui;
 use crate::admin_view::{AdminCx, Crumb, PageHeader, t};
 use crate::topic_list_view::{escape, icon};
 
@@ -49,6 +50,7 @@ fn field(
     control: &str,
     full: bool,
     title: &str,
+    // HTML.
     description: Option<&str>,
     help: Option<&str>,
     required: bool,
@@ -70,7 +72,7 @@ fn field(
     if let Some(d) = description {
         out.push_str(&format!(
             "<p class=\"form-kit-text form-kit__container-description\" id=\"{id}-description\">{}</p>",
-            escape(d)
+            d
         ));
     }
     out.push_str(&format!(
@@ -190,7 +192,7 @@ fn image_field(cx: &AdminCx, settings: &[Value], name: &str, with_placeholder: b
         "image",
         false,
         &k("title").unwrap_or_default(),
-        k("description").as_deref(),
+        k("description").map(|d| escape(&d)).as_deref(),
         k("help_text").as_deref(),
         false,
         &image_uploader(cx, &format!("{name}-field-{name}"), url, size, placeholder),
@@ -287,7 +289,7 @@ pub fn logo(cx: &AdminCx, settings: &[Value]) -> String {
             "custom",
             true,
             &k("manifest_screenshots.title"),
-            Some(&k("manifest_screenshots.description")),
+            Some(&escape(&k("manifest_screenshots.description"))),
             None,
             false,
             &format!(
@@ -323,7 +325,7 @@ pub fn logo(cx: &AdminCx, settings: &[Value]) -> String {
         "logo",
         "/admin/config/logo",
         &format!(
-            "<div class=\"loading-container\"><form class=\"form-kit admin-logo-form\" novalidate=\"\" data-values=\"{}\">{form}</form></div>",
+            "<div class=\"loading-container\"><form class=\"form-kit admin-logo-form\" novalidate=\"\" data-values=\"{}\" data-upload-type=\"branding\">{form}</form></div>",
             escape(&Value::Object(data).to_string())
         ),
     )
@@ -468,7 +470,7 @@ pub fn fonts(cx: &AdminCx) -> String {
             "custom",
             true,
             &k("default_text_size.title"),
-            Some(&k("default_text_size.description")),
+            Some(&escape(&k("default_text_size.description"))),
             None,
             true,
             &custom(sizes)
@@ -483,6 +485,337 @@ pub fn fonts(cx: &AdminCx) -> String {
             "<form class=\"form-kit admin-fonts-form\" novalidate=\"\" data-default-text-size=\"{}\">{form}</form>",
             escape(&size)
         ),
+    )
+}
+
+/// The welcome banner's site texts (AdminWelcomeBannerForm's fields
+/// and keys, with whether the field is required).
+pub const WELCOME_BANNER_TEXTS: [(&str, &str, &str, bool); 6] = [
+    (
+        "headerNewMembers",
+        "js.welcome_banner.header.new_members",
+        "header_new_members",
+        true,
+    ),
+    (
+        "headerLoggedInMembers",
+        "js.welcome_banner.header.logged_in_members",
+        "header_logged_in",
+        true,
+    ),
+    (
+        "headerAnonymousMembers",
+        "js.welcome_banner.header.anonymous_members",
+        "header_anonymous",
+        true,
+    ),
+    (
+        "subheaderLoggedInMembers",
+        "js.welcome_banner.subheader.logged_in_members",
+        "subheader_logged_in",
+        false,
+    ),
+    (
+        "subheaderAnonymousMembers",
+        "js.welcome_banner.subheader.anonymous_members",
+        "subheader_anonymous",
+        false,
+    ),
+    (
+        "searchPlaceholder",
+        "js.welcome_banner.search_placeholder",
+        "search_placeholder",
+        true,
+    ),
+];
+
+/// What AdminWelcomeBannerForm loads: the themes (id, name, enabled),
+/// the settings, the locale and its texts (by field name).
+pub struct WelcomeBanner<'a> {
+    pub themes: &'a [(i64, String, bool)],
+    pub image: &'a str,
+    pub text_color: &'a str,
+    pub page_visibility: &'a str,
+    pub location: &'a str,
+    pub locale: &'a str,
+    pub locales: &'a [(String, String)],
+    pub texts: &'a [(String, String)],
+}
+
+/// FKControlColor with `@prefixHex` and named colors allowed.
+fn color_control(name: &str, value: &str) -> String {
+    let bare = value.trim_start_matches('#');
+    let hex = bare.len() == 3 || bare.len() == 6;
+    let valid = hex && bare.chars().all(|c| c.is_ascii_hexdigit());
+    let light = if !valid {
+        true
+    } else {
+        let full: String = if bare.len() == 3 {
+            bare.chars().flat_map(|c| [c, c]).collect()
+        } else {
+            bare.to_string()
+        };
+        let channel = |i: usize| i64::from_str_radix(&full[i..i + 2], 16).unwrap_or(0) as f64;
+        (0.299 * channel(0) + 0.587 * channel(2) + 0.114 * channel(4)) / 255.0 > 0.5
+    };
+    format!(
+        "<div class=\"form-kit__control-color\"><div class=\"form-kit__control-color-input\"><span class=\"form-kit__control-color-input-prefix\">#</span><input class=\"form-kit__control-color-input-hex\" name=\"{name}\" type=\"text\" value=\"{}\"><span class=\"form-kit__control-color-picker-wrapper {}\"><input class=\"form-kit__control-color-input-picker\" type=\"color\" value=\"#{}\">{}</span></div></div>",
+        escape(bare),
+        if light { "--is-light" } else { "--is-dark" },
+        if valid {
+            escape(bare)
+        } else {
+            "000000".to_string()
+        },
+        icon("eye-dropper", None)
+    )
+}
+
+/// A field with `@format="large"`.
+fn large(html: &str, control: &str) -> String {
+    html.replacen(
+        &format!("form-kit__field-{control}\""),
+        &format!("form-kit__field-{control} --large\""),
+        1,
+    )
+}
+
+/// FKControlInput, its value given.
+fn text_input(name: &str, value: &str, placeholder: &str) -> String {
+    format!(
+        "<div class=\"form-kit__control-input-wrapper\"><input class=\"form-kit__control-input\" name=\"{name}\" placeholder=\"{}\" type=\"text\" value=\"{}\"></div>",
+        escape(placeholder),
+        escape(value)
+    )
+}
+
+/// The welcome banner page: AdminWelcomeBannerForm.
+pub fn welcome_banner(cx: &AdminCx, wb: &WelcomeBanner) -> String {
+    let k = |key: &str| t(cx.i18n, &format!("admin.config.welcome_banner.form.{key}"));
+    let select = |name: &str, key: &str, options: &[&str], selected: &str| {
+        let opts: Vec<(String, String)> = options
+            .iter()
+            .map(|o| (o.to_string(), k(&format!("{key}.options.{o}"))))
+            .collect();
+        crate::admin_form_kit::select(name, &opts, selected, None, false)
+    };
+    let selection: Vec<(String, String)> = wb
+        .themes
+        .iter()
+        .filter(|(_, _, on)| *on)
+        .map(|(id, name, _)| (id.to_string(), name.clone()))
+        .collect();
+    let themes = Value::Array(
+        wb.themes
+            .iter()
+            .map(|(id, name, _)| serde_json::json!({ "value": id.to_string(), "name": name }))
+            .collect(),
+    );
+    let mut form = String::new();
+    form.push_str(&field(
+        cx,
+        "enabledThemes",
+        "custom",
+        false,
+        &k("enabled_themes.label"),
+        Some(&escape(&k("enabled_themes.description"))),
+        None,
+        false,
+        &format!(
+            "<div class=\"form-kit__control-custom\">{}</div>",
+            admin_ui::multi_select_trigger(
+                "admin-welcome-banner-form__themes",
+                &k("enabled_themes.select_label"),
+                &selection
+            )
+        ),
+    ));
+    form.push_str(&field(
+        cx,
+        "welcomeBannerImage",
+        "image",
+        false,
+        &k("background_image.label"),
+        Some(&escape(&k("background_image.description"))),
+        None,
+        false,
+        &image_uploader(
+            cx,
+            "welcomeBannerImage-field-welcomeBannerImage",
+            wb.image,
+            None,
+            None,
+        ),
+    ));
+    form.push_str(&field(
+        cx,
+        "welcomeBannerTextColor",
+        "color",
+        false,
+        &k("text_color.label"),
+        Some(&escape(&k("text_color.description"))),
+        None,
+        false,
+        &color_control("welcomeBannerTextColor", wb.text_color),
+    ));
+    form.push_str(&field(
+        cx,
+        "welcomeBannerPageVisibility",
+        "select",
+        false,
+        &k("page_visibility.label"),
+        Some(&escape(&k("page_visibility.description"))),
+        None,
+        false,
+        &select(
+            "welcomeBannerPageVisibility",
+            "page_visibility",
+            &["top_menu_pages", "homepage", "discovery", "all_pages"],
+            wb.page_visibility,
+        ),
+    ));
+    form.push_str(&field(
+        cx,
+        "welcomeBannerLocation",
+        "select",
+        false,
+        &k("location.label"),
+        Some(&escape(&k("location.description"))),
+        None,
+        false,
+        &select(
+            "welcomeBannerLocation",
+            "location",
+            &["above_topic_content", "below_site_header"],
+            wb.location,
+        ),
+    ));
+    let mut section = field(
+        cx,
+        "localeSelector",
+        "custom",
+        false,
+        &k("text_section.locale_label"),
+        None,
+        None,
+        true,
+        &format!(
+            "<div class=\"form-kit__control-custom\">{}</div>",
+            admin_ui::combo_box(
+                cx,
+                "translation-selector",
+                wb.locales,
+                Some(wb.locale),
+                None
+            )
+        ),
+    );
+    for (name, _, key, required) in WELCOME_BANNER_TEXTS {
+        let value = wb
+            .texts
+            .iter()
+            .find(|(n, _)| n == name)
+            .map(|(_, v)| v.as_str())
+            .unwrap_or_default();
+        let control = if name.starts_with("subheader") {
+            "textarea"
+        } else {
+            "input"
+        };
+        let inner = if control == "textarea" {
+            format!(
+                "<textarea class=\"form-kit__control-textarea\" name=\"{name}\">{}</textarea>",
+                escape(value)
+            )
+        } else {
+            let placeholder = crate::admin_view::t_opt(
+                cx.i18n,
+                &format!("admin.config.welcome_banner.form.{key}.placeholder"),
+            )
+            .unwrap_or_default();
+            text_input(name, value, &placeholder)
+        };
+        // The headers' descriptions are HTML (trustHTML).
+        let description = t(
+            cx.i18n,
+            &format!("admin.config.welcome_banner.form.{key}.description"),
+        );
+        let description = if key.starts_with("header_") {
+            description
+        } else {
+            escape(&description)
+        };
+        let html = field(
+            cx,
+            name,
+            control,
+            false,
+            &k(&format!("{key}.label")),
+            Some(&description),
+            None,
+            required,
+            &inner,
+        );
+        section.push_str(&large(&html, control));
+    }
+    let mut form = large(&form, "custom");
+    form = form.replacen(
+        "form-kit__field-color\"",
+        "form-kit__field-color --large\"",
+        1,
+    );
+    let section = large(&section, "custom");
+    form.push_str(&format!(
+        "<div class=\"form-kit__section\"><div class=\"form-kit__section-header\"><div class=\"form-kit__section-heading\"><h2 class=\"form-kit__section-title\">{}</h2></div></div>{section}</div>",
+        escape(&k("text_section.title"))
+    ));
+    form.push_str(&submit(cx));
+    let original: serde_json::Map<String, Value> = wb
+        .texts
+        .iter()
+        .map(|(n, v)| (n.clone(), Value::String(v.clone())))
+        .chain([
+            (
+                "welcomeBannerImage".to_string(),
+                Value::String(wb.image.to_string()),
+            ),
+            (
+                "welcomeBannerTextColor".to_string(),
+                Value::String(wb.text_color.to_string()),
+            ),
+            (
+                "welcomeBannerPageVisibility".to_string(),
+                Value::String(wb.page_visibility.to_string()),
+            ),
+            (
+                "welcomeBannerLocation".to_string(),
+                Value::String(wb.location.to_string()),
+            ),
+        ])
+        .collect();
+    let title = t(cx.i18n, "admin.config.welcome_banner.title");
+    let header = PageHeader {
+        crumbs: vec![
+            Crumb {
+                label: t(cx.i18n, "admin_title"),
+                path: "/admin",
+            },
+            Crumb {
+                label: title.clone(),
+                path: "/admin/config/welcome-banner",
+            },
+        ],
+        title,
+        actions: String::new(),
+        description: Some(t(cx.i18n, "admin.config.welcome_banner.header_description")),
+        learn_more_url: None,
+        tabs: None,
+    }
+    .render(cx);
+    format!(
+        "<div class=\"admin-config-page\">{header}<div class=\"admin-config-area\"><div class=\"admin-config-area__primary-content\"><div class=\"loading-container\"><form class=\"form-kit admin-welcome-banner-form\" novalidate=\"\" data-original=\"{o}\" data-values=\"{o}\" data-upload-type=\"site_setting\" data-themes=\"{}\">{form}</form></div></div></div></div>",
+        escape(&themes.to_string()),
+        o = escape(&Value::Object(original).to_string()),
     )
 }
 
@@ -501,6 +834,9 @@ pub const STRINGS: &[&str] = &[
     "upload_selector.uploading",
     "expand",
     "generic_error",
+    "admin.config.welcome_banner.saved",
+    "multi_select.search",
+    "multi_select.no_results",
 ];
 
 /// LogoController#update's settings, in the order it names them.

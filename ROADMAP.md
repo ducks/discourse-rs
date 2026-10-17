@@ -792,9 +792,17 @@ then by what running a forum needs (milestone 6). Briefs:
     count (write cases admin_config/logo_*, fonts_*). Refused: the topic
     OG image preview (TopicOgImageGenerator). Left: the font buttons
     are not drawn in their own font (only Inter's and JetBrains Mono's
-    files are vendored). Left: about,
-    category management, watched words, welcome
-    banner, MCP, upcoming changes, what's new; the settings' links to
+    files are vendored). Then feat/admin-shell-config-welcome-banner:
+    AdminWelcomeBannerForm (the enabled themes' DMultiSelect, the
+    background image, FKControlColor, the page visibility and location,
+    the language and its site texts), saving through the site settings,
+    site texts and theme site setting endpoints; SiteSetting::Update
+    takes color settings with CssColorValidator; DMultiSelect's
+    stylesheet and the color input's own rule (discourse.scss) join the
+    port's CSS; themes_with_setting answers a moderator InvalidAccess
+    (write cases admin_config/welcome_banner_save, fonts_moderator).
+    Left: about, category management, watched words, MCP, upcoming
+    changes, what's new; the settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L
     (themes and components with their editor, theme site settings, color

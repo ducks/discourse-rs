@@ -446,3 +446,28 @@ async fn the_logo_and_fonts_pages() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_welcome_banner_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/welcome-banner").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    // The route has no title token.
+    assert!(html.contains("<title>Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-config admin-welcome-banner\">"));
+    // The enabled themes, the site texts in the site's locale, the
+    // settings' selects.
+    assert!(
+        html.contains("<span class=\"d-multi-select-trigger__selection-label\">Foundation</span>"),
+        "{html}"
+    );
+    assert!(html.contains("name=\"headerNewMembers\" placeholder=\"Welcome, %{preferred_display_name}!\" type=\"text\" value=\"Welcome, %{preferred_display_name}!\""), "{html}");
+    assert!(html.contains("selected=\"\" value=\"top_menu_pages\""));
+    assert!(html.contains("data-name=\"English\""), "{html}");
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/welcome-banner.json", "", true)
+        .await;
+    assert_eq!((status, body.as_str()), (StatusCode::NO_CONTENT, ""));
+}

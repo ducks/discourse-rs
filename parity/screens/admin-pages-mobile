@@ -72,3 +72,5 @@
 # The logo and fonts pages (90g6).
 /admin/config/logo as=admin
 /admin/config/fonts as=admin
+# The welcome banner page (90g6).
+/admin/config/welcome-banner as=admin

@@ -301,11 +301,21 @@ pub async fn welcome_banner_themes(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
 ) -> Result<Response, AppError> {
-    if let Some(r) = refuse_non_admin(&state, &guardian) {
+    // Admin::Config behind StaffConstraint: InvalidAccess for a moderator.
+    if let Some(r) = super::admin_config_branding::admin_only(&state, &guardian) {
         return Ok(r);
     }
     let mut conn = state.pool.acquire().await?;
-    let conn = &mut *conn;
+    let out = welcome_banner_theme_list(&state, &mut conn).await?;
+    Ok(Json(json!({ "themes": out })).into_response())
+}
+
+/// The default theme and the user selectable ones, each with its
+/// enable_welcome_banner.
+pub(super) async fn welcome_banner_theme_list(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+) -> Result<Vec<serde_json::Value>, AppError> {
     with_ctx!(state, conn, |cx| {
         let default_id = cx.settings.get("default_theme_id")?.to_i();
         // Theme.not_components.where(...): the table's order.
@@ -320,7 +330,7 @@ pub async fn welcome_banner_themes(
             let value = themes::welcome_banner_value(conn, &cx, id).await?;
             out.push(json!({"id": id, "name": name, "enable_welcome_banner": value}));
         }
-        Ok(Json(json!({ "themes": out })).into_response())
+        Ok(out)
     })
 }
 

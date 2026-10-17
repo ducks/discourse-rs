@@ -28,7 +28,8 @@
   // --- AdminLogoForm ---------------------------------------------------------
 
   function logoForm() {
-    return document.querySelector("form.admin-logo-form");
+    // The forms with image fields: the logo's and the welcome banner's.
+    return document.querySelector("form.admin-logo-form, form.admin-welcome-banner-form");
   }
 
   // formData: the values given, changed as the fields are.
@@ -119,7 +120,7 @@
       status.classList.remove("hidden");
     }
     var body = new FormData();
-    body.append("upload_type", "branding");
+    body.append("upload_type", form.dataset.uploadType || "branding");
     if (name === "favicon") {
       body.append("for_site_setting", "true");
       body.append("site_setting_name", "favicon");
@@ -492,6 +493,194 @@
     }
   });
 
+  // --- AdminWelcomeBannerForm ---------------------------------------------------
+
+  function bannerForm() {
+    return document.querySelector("form.admin-welcome-banner-form");
+  }
+
+  function parsed(form, key) {
+    try {
+      return JSON.parse(form.dataset[key] || "null");
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // The enabled themes' DMultiSelect: the loaded themes by name.
+  ui().multiSelect("admin-welcome-banner-form__themes", function (term) {
+    var form = bannerForm();
+    var themes = (form && parsed(form, "themes")) || [];
+    var filter = (term || "").toLowerCase();
+    return themes.filter(function (theme) {
+      return !filter || theme.name.toLowerCase().indexOf(filter) !== -1;
+    });
+  });
+
+  // FKControlColor: the hex text and the picker follow each other.
+  function luminanceClass(hex) {
+    if (!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) {
+      return "--is-light";
+    }
+    var full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
+    var r = parseInt(full.slice(0, 2), 16);
+    var g = parseInt(full.slice(2, 4), 16);
+    var b = parseInt(full.slice(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? "--is-light" : "--is-dark";
+  }
+
+  function syncColor(control, hex) {
+    var wrapper = control.querySelector(".form-kit__control-color-picker-wrapper");
+    wrapper.classList.remove("--is-light", "--is-dark");
+    wrapper.classList.add(luminanceClass(hex));
+  }
+
+  document.addEventListener("input", function (event) {
+    var control = event.target.closest && event.target.closest("form.admin-welcome-banner-form .form-kit__control-color");
+    if (!control) {
+      return;
+    }
+    var text = control.querySelector(".form-kit__control-color-input-hex");
+    var picker = control.querySelector(".form-kit__control-color-input-picker");
+    if (event.target === picker) {
+      text.value = picker.value.replace(/^#/, "");
+    } else if (/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(text.value.replace(/^#/, ""))) {
+      var hex = text.value.replace(/^#/, "");
+      picker.value = "#" + (hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex);
+    }
+    syncColor(control, text.value.replace(/^#/, ""));
+  });
+
+  var TEXTS = [
+    ["headerNewMembers", "js.welcome_banner.header.new_members"],
+    ["headerLoggedInMembers", "js.welcome_banner.header.logged_in_members"],
+    ["headerAnonymousMembers", "js.welcome_banner.header.anonymous_members"],
+    ["subheaderLoggedInMembers", "js.welcome_banner.subheader.logged_in_members"],
+    ["subheaderAnonymousMembers", "js.welcome_banner.subheader.anonymous_members"],
+    ["searchPlaceholder", "js.welcome_banner.search_placeholder"],
+  ];
+
+  function bannerLocale(form) {
+    var summary = form.querySelector(".translation-selector summary");
+    return summary ? summary.dataset.value : "en";
+  }
+
+  // updateLocale: the texts in the language chosen.
+  document.addEventListener("change", function (event) {
+    var form = bannerForm();
+    if (!form || !event.target.matches || !event.target.matches("details.translation-selector")) {
+      return;
+    }
+    var locale = event.target.dataset.value;
+    var summary = event.target.querySelector("summary");
+    summary.dataset.value = locale;
+    Promise.all(
+      TEXTS.map(function (pair) {
+        return ui()
+          .ajax("GET", "/admin/customize/site_texts/" + pair[1] + ".json?locale=" + encodeURIComponent(locale))
+          .then(
+            function (json) {
+              return json.site_text.value;
+            },
+            function () {
+              return "";
+            }
+          );
+      })
+    ).then(function (values) {
+      var original = parsed(form, "original") || {};
+      TEXTS.forEach(function (pair, i) {
+        form.querySelector("[name='" + pair[0] + "']").value = values[i] || "";
+        original[pair[0]] = values[i] || "";
+      });
+      form.dataset.original = JSON.stringify(original);
+    });
+  });
+
+  function bannerValue(form, name) {
+    var el = form.querySelector("[name='" + name + "']");
+    return el ? el.value : "";
+  }
+
+  function saveBanner(form) {
+    var original = parsed(form, "original") || {};
+    var current = values(form);
+    var locale = bannerLocale(form);
+    var chain = Promise.resolve();
+    var put = function (setting, value) {
+      chain = chain.then(function () {
+        var data = {};
+        data[setting] = value;
+        return ui().ajax("PUT", "/admin/site_settings/" + setting, data);
+      });
+    };
+    var image = current.welcomeBannerImage || "";
+    if (image !== (original.welcomeBannerImage || "")) {
+      put("welcome_banner_image", image);
+    }
+    var color = bannerValue(form, "welcomeBannerTextColor");
+    if (color && /^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)) {
+      color = "#" + color;
+    }
+    if (color !== (original.welcomeBannerTextColor || "")) {
+      put("welcome_banner_text_color", color || "");
+    }
+    var location = bannerValue(form, "welcomeBannerLocation");
+    if (location !== original.welcomeBannerLocation) {
+      put("welcome_banner_location", location);
+    }
+    var visibility = bannerValue(form, "welcomeBannerPageVisibility");
+    if (visibility !== original.welcomeBannerPageVisibility) {
+      put("welcome_banner_page_visibility", visibility);
+    }
+    TEXTS.forEach(function (pair) {
+      var value = bannerValue(form, pair[0]);
+      if (value === (original[pair[0]] || "")) {
+        return;
+      }
+      chain = chain.then(function () {
+        var path = "/admin/customize/site_texts/" + pair[1] + "?locale=" + encodeURIComponent(locale);
+        return value.trim() === ""
+          ? ui().ajax("DELETE", path)
+          : ui().ajax("PUT", path, { site_text: { value: value, locale: locale } });
+      });
+    });
+    chain
+      .then(function () {
+        var trigger = form.querySelector(".admin-welcome-banner-form__themes");
+        var enabled = Array.prototype.map.call(
+          trigger.querySelectorAll(".d-multi-select-trigger__selected-item"),
+          function (b) {
+            return b.dataset.value;
+          }
+        );
+        // Promise.allSettled over every theme.
+        return Promise.all(
+          (parsed(form, "themes") || []).map(function (theme) {
+            return ui()
+              .ajax("PUT", "/admin/themes/" + theme.value + "/site-setting", {
+                name: "enable_welcome_banner",
+                value: enabled.indexOf(theme.value) !== -1,
+              })
+              .catch(function () {});
+          })
+        );
+      })
+      .then(function () {
+        var now = Object.assign({}, original, {
+          welcomeBannerImage: image,
+          welcomeBannerTextColor: color,
+          welcomeBannerLocation: location,
+          welcomeBannerPageVisibility: visibility,
+        });
+        TEXTS.forEach(function (pair) {
+          now[pair[0]] = bannerValue(form, pair[0]);
+        });
+        form.dataset.original = JSON.stringify(now);
+        ui().toast(t("admin.config.welcome_banner.saved"));
+      }, ui().failed);
+  }
+
   // In the capture phase, before htmx's boosted form takes the submit.
   document.addEventListener(
     "submit",
@@ -505,6 +694,10 @@
         event.preventDefault();
         event.stopImmediatePropagation();
         submitFonts(form);
+      } else if (form.matches("form.admin-welcome-banner-form")) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        saveBanner(form);
       }
     },
     true
