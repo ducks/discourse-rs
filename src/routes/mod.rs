@@ -2471,6 +2471,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-report-charts.js", get(asset))
         .route("/assets/admin-report.js", get(asset))
         .route("/assets/admin-config.js", get(asset))
+        .route("/assets/admin-emoji.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))

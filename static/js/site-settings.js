@@ -525,7 +525,8 @@
   // shift buttons; a predefined list's ComboBox offers the choices left.
   function listValues(list) {
     if (list.classList.contains("emoji-list")) {
-      return Array.prototype.map.call(list.querySelectorAll(".values .emoji-name"), function (name) {
+      // A fixed entry the value lacks (data-added) is not part of it.
+      return Array.prototype.map.call(list.querySelectorAll(".values .value:not([data-added]) .emoji-name"), function (name) {
         return name.textContent;
       });
     }
@@ -541,19 +542,30 @@
     if (old) {
       old.remove();
     }
-    if (!values.length) {
+    // data-fixed (discourse-reactions' like reaction): first, not
+    // editable, added when the value lacks it.
+    var fixed = list.dataset.fixed;
+    var added = fixed && values.indexOf(fixed) === -1;
+    var collection = added ? [fixed].concat(values) : values;
+    if (!collection.length) {
       return;
     }
     var ul = document.createElement("ul");
     ul.className = "values emoji-value-list";
-    values.forEach(function (value, index) {
+    collection.forEach(function (value, index) {
       var item = document.createElement("li");
+      var editable = value !== fixed;
       item.className = "value";
       item.dataset.index = index;
+      if (added && !editable) {
+        item.dataset.added = "";
+      }
       item.innerHTML =
-        smallButton("remove-value-btn", "xmark") +
-        ' <div class="value-input emoji-details can-edit" role="button"> <img class="emoji-list-emoji" height="15px" width="15px"> <span class="emoji-name"></span> </div>' +
-        (values.length > 1
+        smallButton("remove-value-btn", "xmark").replace(' type="button"', editable ? ' type="button"' : ' disabled="" type="button"') +
+        ' <div class="value-input emoji-details' +
+        (editable ? " can-edit" : "") +
+        '" role="button"> <img class="emoji-list-emoji" height="15px" width="15px"> <span class="emoji-name"></span> </div>' +
+        (collection.length > 1
           ? " " + smallButton("shift-up-value-btn", "arrow-up") + " " + smallButton("shift-down-value-btn", "arrow-down")
           : "");
       item.querySelector("img").src = urls[value] || "";
@@ -1066,6 +1078,13 @@
       var simpleList = listButton.closest(".value-list");
       var items = listValues(simpleList);
       var index = Number(listButton.closest(".value").dataset.index);
+      // An added fixed entry leads the list but is not in the value.
+      if (simpleList.querySelector(".values .value[data-added]")) {
+        index -= 1;
+      }
+      if (index < 0) {
+        return;
+      }
       if (listButton.classList.contains("remove-value-btn")) {
         items.splice(index, 1);
       } else {

@@ -4,7 +4,8 @@
 //!
 //! Export, import preview and confirm (crate::custom_emoji_import) too.
 //!
-//! Refused: the Ember pages (an HTML request).
+//! The pages: the list, new, import and settings routes as Ember draws
+//! them (crate::admin_emoji_view).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -15,6 +16,7 @@ use serde_json::{Value, json};
 
 use super::session::{bad_csrf, csrf_ok};
 use super::uploads::{Form, read_form};
+use crate::admin_emoji_view::Tab;
 use crate::custom_emoji::{self, Created};
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
@@ -30,15 +32,7 @@ fn failed(messages: Vec<String>) -> Response {
         .into_response()
 }
 
-/// check_xhr: the admin pages themselves are Ember's.
-fn refuse_html(path: &str, headers: &HeaderMap) -> Result<(), AppError> {
-    if super::wants_json(None, headers) || path.ends_with(".json") {
-        return Ok(());
-    }
-    Err(Unsupported("the admin emoji pages (Ember)").into())
-}
-
-/// GET /admin/config/emoji(.json)
+/// GET /admin/config/emoji(.json): the list's JSON, or its page.
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -48,22 +42,113 @@ pub async fn index(
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(uri.path(), &headers)?;
+    if !super::admin_pages::wants_json(&uri, &headers) {
+        return emoji_page(&state, &guardian, &headers, &uri, Tab::List).await;
+    }
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     Ok(Json(custom_emoji::admin_index(settings.emojis())).into_response())
 }
 
-/// GET /admin/config/emoji/{new,settings,import}: Ember's pages.
+/// GET /admin/config/emoji/{new,settings,import}: the route's page; the
+/// JSON is EmojiController#index's, as Rails routes these paths.
 pub async fn page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    uri: axum::http::Uri,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    Err(Unsupported("the admin emoji pages (Ember)").into())
+    if super::admin_pages::wants_json(&uri, &headers) {
+        return index(State(state), AuthGuardian(guardian), uri, headers).await;
+    }
+    let tab = match uri.path().rsplit('/').next() {
+        Some("new") => Tab::New,
+        Some("import") => Tab::Import,
+        _ => Tab::Settings,
+    };
+    emoji_page(&state, &guardian, &headers, &uri, tab).await
+}
+
+/// The emoji route's page (templates/admin-emojis.gjs) with the tab's
+/// outlet; the list's emojis on the contents for admin-emoji.js.
+async fn emoji_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &axum::http::Uri,
+    tab: Tab,
+) -> Result<Response, AppError> {
+    use crate::admin_emoji_view as view;
+    let mut conn = state.pool.acquire().await?;
+    let shell =
+        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_emoji").await?;
+    let emojis = match custom_emoji::admin_index(shell.settings.emojis()) {
+        Value::Array(list) => list,
+        _ => Vec::new(),
+    };
+    let t = |key: &str| crate::admin_view::t(&state.i18n, key);
+    let (classes, outlet, title, script) = match tab {
+        Tab::List => (
+            "admin-config admin-emojis",
+            view::list(&shell.cx(state), &emojis),
+            None,
+            "admin-emoji.js",
+        ),
+        Tab::Settings => (
+            "admin-config admin-emojis settings",
+            super::admin_advanced::area_settings(
+                &mut conn,
+                state,
+                &shell,
+                uri,
+                json!({ "filter_area": "emojis" }),
+            )
+            .await?,
+            Some(t("settings")),
+            "site-settings.js",
+        ),
+        Tab::New => (
+            "admin-config admin-emojis new",
+            view::new(&shell.cx(state), &view::groups(&emojis)),
+            None,
+            "admin-emoji.js",
+        ),
+        Tab::Import => (
+            "admin-config admin-emojis import",
+            view::import(&shell.cx(state)),
+            Some(t("admin.emoji.import")),
+            "admin-emoji.js",
+        ),
+    };
+    let section = t("admin.emoji.title");
+    let title = match title {
+        Some(own) => format!("{own} - {section}"),
+        None => section,
+    };
+    let cx = shell.cx(state);
+    let strings = crate::admin_ui::strings(&cx, "admin-emoji-strings", view::STRINGS);
+    let data = format!(
+        " data-emojis=\"{}\" data-username=\"{}\"",
+        crate::topic_list_view::escape(&Value::Array(emojis).to_string()),
+        crate::topic_list_view::escape(
+            shell
+                .site
+                .viewer
+                .as_ref()
+                .map(|v| v.username.as_str())
+                .unwrap_or_default()
+        )
+    );
+    let main = crate::admin_ui::contents(
+        classes,
+        &data,
+        &format!("{}{strings}", view::page(&cx, tab, &outlet)),
+    );
+    shell.render(state, uri, &title, main, script, StatusCode::OK)
 }
 
 /// The create form: multipart from the admin page, else form or JSON

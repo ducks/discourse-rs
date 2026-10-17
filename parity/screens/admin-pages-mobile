@@ -66,3 +66,6 @@
 # The content and login areas (90g6).
 /admin/config/content as=admin
 /admin/config/login-and-authentication as=admin
+# The emoji pages (90g6).
+/admin/config/emoji as=admin
+/admin/config/emoji/settings as=admin
