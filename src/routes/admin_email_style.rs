@@ -41,13 +41,6 @@ async fn load_settings(
     Ok(SiteSettings::load(conn, &state.site_setting_defs, &state.config.globals).await?)
 }
 
-fn refuse_html(uri: &Uri, headers: &HeaderMap) -> Result<(), AppError> {
-    if super::wants_json(uri.query(), headers) || uri.path().ends_with(".json") {
-        return Ok(());
-    }
-    Err(Unsupported("the admin email style page (Ember)").into())
-}
-
 /// GET /admin/customize/email_style(.json), and /email_style/html and
 /// /email_style/css (the editor's tabs).
 pub async fn show(
@@ -56,13 +49,39 @@ pub async fn show(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
+    show_page(state, guardian, None, headers, uri).await
+}
+
+/// The JSON, or for a page request the editor of the field (the index
+/// going on to html, as its route's replaceWith does).
+async fn show_page(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    field: Option<&str>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
     if !guardian.is_admin() {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&uri, &headers)?;
     let mut conn = state.pool.acquire().await?;
     let s = load_settings(&state, &mut conn).await?;
-    Ok(axum::Json(serialized(&s)?).into_response())
+    let doc = serialized(&s)?;
+    drop(conn);
+    if !(super::wants_json(uri.query(), &headers) || uri.path().ends_with(".json")) {
+        let Some(field) = field else {
+            return Ok(axum::response::Redirect::to(&format!(
+                "{}/admin/customize/email_style/html",
+                state.config.globals.relative_url_root()
+            ))
+            .into_response());
+        };
+        return super::admin_customize::email_style_page(
+            &state, &guardian, &headers, &uri, &doc, field,
+        )
+        .await;
+    }
+    Ok(axum::Json(doc).into_response())
 }
 
 /// GET /admin/customize/email_style/:field, `field` html or css (the
@@ -78,7 +97,7 @@ pub async fn show_field(
     if !matches!(field, "html" | "css") {
         return Ok(super::topics::not_found_response(&state.0));
     }
-    show(state, guardian, headers, uri).await
+    show_page(state.0, guardian.0, Some(field), headers, uri).await
 }
 
 /// `provider.save(name, value, type)`: the row updated, or created.

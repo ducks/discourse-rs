@@ -156,6 +156,161 @@ pub(super) async fn color_palette_page(
     shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
 }
 
+/// GET /admin/customize/email_style/:field as the page
+/// (adminCustomizeEmailStyle.edit) over EmailStyleSerializer's document.
+pub(super) async fn email_style_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+    field: &str,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_appearance").await?;
+    drop(conn);
+    let cx = shell.cx(state);
+    let strings = crate::admin_ui::strings(
+        &cx,
+        "admin-customize-strings",
+        &[
+            "admin.customize.email_style.reset_confirm",
+            "admin.customize.email_style.html",
+            "admin.customize.email_style.css",
+            "admin.customize.email_style.save_error_with_reason",
+            "admin.customize.theme.unsaved_changes_alert",
+            "admin.customize.theme.discard",
+            "admin.customize.theme.stay",
+            "admin.customize.save",
+            "saving",
+            "generic_error",
+        ],
+    );
+    let data = format!(
+        "<script type=\"application/json\" id=\"email-style-data\">{}</script>",
+        serde_json::json!({ "style": doc["email_style"], "field": field })
+            .to_string()
+            .replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_customize_view::customize_page(&crate::admin_code_view::email_style(
+            &cx, doc, field
+        ))
+    );
+    let main =
+        crate::admin_view::contents("admin-customize admin-customize-email-style edit", &content);
+    shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
+}
+
+/// The form templates' pages (adminCustomizeFormTemplates): the list
+/// (`form` None), or the form for a new template (Some(None)) or the
+/// template given.
+pub(super) async fn form_templates_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    list: &[serde_json::Value],
+    form: Option<Option<&serde_json::Value>>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_customize_form_templates",
+    )
+    .await?;
+    // Each template's active categories: the site's categories that
+    // use it.
+    let mut templates = Vec::new();
+    for t in list {
+        let ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT category_id FROM category_form_templates WHERE form_template_id = $1 ORDER BY category_id",
+        )
+        .bind(t["id"].as_i64().unwrap_or_default())
+        .fetch_all(&mut *conn)
+        .await?;
+        let mut t = t.clone();
+        t["category_ids"] = serde_json::json!(ids);
+        templates.push(t);
+    }
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    drop(conn);
+    let list_cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let cx = shell.cx(state);
+    let (class, inner) = match form {
+        None => (
+            "admin-customize admin-customize-form-templates",
+            crate::admin_code_view::form_templates(&cx, &templates, &list_cx),
+        ),
+        Some(template) => (
+            if template.is_some() {
+                "admin-customize admin-customize-form-templates edit"
+            } else {
+                "admin-customize admin-customize-form-templates new"
+            },
+            crate::admin_code_view::form_template_page(&cx, template),
+        ),
+    };
+    let mut keys: Vec<String> = [
+        "admin.form_templates.delete_confirm",
+        "admin.form_templates.view_template.close",
+        "admin.form_templates.view_template.edit",
+        "admin.form_templates.view_template.delete",
+        "admin.form_templates.view_template.toggle_preview",
+        "admin.form_templates.validations_modal.modal_title",
+        "admin.form_templates.field_placeholders.id",
+        "admin.form_templates.field_placeholders.label",
+        "admin.form_templates.field_placeholders.placeholder",
+        "admin.form_templates.field_placeholders.validations",
+        "admin.form_templates.field_placeholders.none_label",
+        "admin.form_templates.field_placeholders.choices.first",
+        "admin.form_templates.field_placeholders.choices.second",
+        "admin.form_templates.field_placeholders.choices.third",
+        "generic_error",
+    ]
+    .iter()
+    .map(|k| k.to_string())
+    .collect();
+    for header in ["key", "type", "description"] {
+        keys.push(format!(
+            "admin.form_templates.validations_modal.table_headers.{header}"
+        ));
+    }
+    for v in ["required", "minimum", "maximum", "pattern", "type"] {
+        for part in ["key", "type", "description"] {
+            keys.push(format!(
+                "admin.form_templates.validations_modal.validations.{v}.{part}"
+            ));
+        }
+    }
+    let keys: Vec<&str> = keys.iter().map(String::as_str).collect();
+    let strings = crate::admin_ui::strings(&cx, "admin-customize-strings", &keys);
+    let data = format!(
+        "<script type=\"application/json\" id=\"form-templates-data\">{}</script>",
+        serde_json::json!({ "templates": templates, "template": form.flatten() })
+            .to_string()
+            .replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_customize_view::customize_page(&inner)
+    );
+    let main = crate::admin_view::contents(class, &content);
+    shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
+}
+
 /// GET /admin/customize/robots as the page (adminCustomizeRobotsTxt) from
 /// the controller's document. The route has no title token.
 pub(super) async fn robots_page(

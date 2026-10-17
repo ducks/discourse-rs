@@ -40,3 +40,7 @@
 /admin/config/colors?type=from_theme as=admin
 /admin/config/colors/13 as=admin
 /admin/config/colors/1 as=admin
+/admin/customize/email_style/html as=admin
+/admin/customize/email_style/css as=admin
+/admin/customize/form-templates as=admin
+/admin/customize/form-templates/new as=admin

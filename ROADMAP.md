@@ -819,9 +819,19 @@ then by what running a forum needs (milestone 6). Briefs:
     and hex inputs with their checks and revert, the unsaved changes
     note, Copy to Clipboard, Save changes), a palette that isn't there
     going back to the list; /admin/customize/colors(/:id) on to them.
-    Left: the themes and components with their editor, theme site
-    settings, email style, form templates; the base palette modal's
-    ColorPalettePicker is a native select), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    Then feat/admin-shell-email-style-form-templates: Ace vendored
+    (ace-builds 1.44.0, the modes, themes and search Discourse's
+    ace-editor-bundle imports) and AceEditor in admin-customize.js;
+    /admin/customize/email_style (on to html) and its html and css tabs:
+    the editor, Reset to default, Save, the unsaved changes' discard or
+    stay; /admin/customize/form-templates: the list (each template's
+    categories, its view modal with edit and delete, edit, delete), New
+    Template, and the new and edit forms (the name, the quick insert
+    fields, the validations modal, the YAML editor, save, cancel,
+    delete). Refused, saying so: the form template preview (the
+    server's preview, Psych's YAML.dump, is not ported). Left: the
+    themes and components with their editor, theme site settings; the
+    base palette modal's ColorPalettePicker is a native select), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
     rollback, the read-only and archive mode toggles with their
