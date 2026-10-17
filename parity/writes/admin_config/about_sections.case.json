@@ -1,0 +1,72 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "Jake",
+          "contact_email": "contact@example.com",
+          "contact_url": "https://example.com/contact",
+          "contact_username": "admin",
+          "contact_group_name": "3"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "Jake",
+          "contact_email": "not-an-email",
+          "contact_url": "",
+          "contact_username": "",
+          "contact_group_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "contact_information": {
+          "community_owner": "",
+          "contact_email": "",
+          "contact_url": "",
+          "contact_username": "nobody_here",
+          "contact_group_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "locale": "en",
+        "your_organization": {
+          "company_name": "Ducks Inc",
+          "company_url": "https://ducks.example",
+          "governing_law": "Oregon",
+          "city_for_disputes": "Portland"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "extra_groups": {
+          "groups": "1|3",
+          "initial_members": "4",
+          "order": "order of creation",
+          "show_description": "true"
+        }
+      }
+    }
+  ]
+}

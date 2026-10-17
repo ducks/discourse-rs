@@ -317,8 +317,8 @@ pub fn escape_emoji(s: &str, opts: EmojiEscape) -> Result<String, Unsupported> {
     Ok(out)
 }
 
-/// `Slug.for(title)` with slug_generation_method `ascii`, for titles
-/// without emoji codes, on English sites (other locales have their own
+/// `Slug.for(title)` with slug_generation_method `ascii` (emoji codes
+/// dropped), on English sites (other locales have their own
 /// transliteration rules).
 pub fn slug_for(title: &str, locale: &str) -> Result<String, Unsupported> {
     slug_with_default(title, locale, "topic")
@@ -332,9 +332,12 @@ pub fn slug_with_default(title: &str, locale: &str, default: &str) -> Result<Str
             "slugs for non-ASCII titles in locales other than English (I18n transliteration)",
         ));
     }
-    if crate::emoji::has_emoji_code(title) {
-        return Err(Unsupported("slugs for titles with emoji codes"));
-    }
+    // `string.gsub(Emoji::EMOJI_CODE_REGEXP, "")`
+    static EMOJI_CODE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r":([A-Za-z0-9_\-+]+(?::t\d)?):").expect("the emoji code pattern")
+    });
+    let stripped = EMOJI_CODE.replace_all(title, "");
+    let title: &str = &stripped;
     // tr("'", "").parameterize: transliterated, then everything but
     // letters, digits, dashes and underscores a separator.
     let title = transliterate(title);

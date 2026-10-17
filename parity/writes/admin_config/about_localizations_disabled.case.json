@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr",
+        "general_settings": {
+          "name": "x"
+        }
+      }
+    }
+  ]
+}

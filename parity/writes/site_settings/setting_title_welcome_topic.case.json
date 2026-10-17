@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/title.json",
+      "params": {
+        "title": "Duck Pond"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/site_description.json",
+      "params": {
+        "site_description": "Quack"
+      }
+    }
+  ]
+}

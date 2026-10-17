@@ -23,10 +23,11 @@ use crate::{AppError, AppState, Unsupported, params};
 /// setting, sorted as the settings are declared (the type supervisor's
 /// dependency order), in one transaction. Err(message) for what the
 /// controllers raise as Discourse::InvalidParameters.
-async fn update_settings(
+pub(super) async fn update_settings(
     state: &AppState,
     guardian: &crate::guardian::Guardian,
     mut updates: Vec<(String, String, bool)>,
+    allow_hidden: &[&str],
 ) -> Result<Result<(), String>, AppError> {
     let defs = &state.site_setting_defs;
     updates.sort_by_key(|(name, ..)| defs.position(name).unwrap_or(usize::MAX));
@@ -44,6 +45,7 @@ async fn update_settings(
             name,
             raw,
             *backfill,
+            allow_hidden,
         )
         .await?;
         if let Outcome::Invalid(message) = outcome {
@@ -51,6 +53,7 @@ async fn update_settings(
         }
     }
     tx.commit().await?;
+    super::admin_site_settings::after_update(state, &settings).await?;
     Ok(Ok(()))
 }
 
@@ -122,8 +125,12 @@ pub async fn logo_update(
         })
         .map(|name| (name.to_string(), param(&p, name), false))
         .collect();
-    let outcome = update_settings(&state, &guardian, updates).await?;
-    Ok(answer(&state, outcome))
+    let outcome = update_settings(&state, &guardian, updates, &[]).await?;
+    // No on_exceptions: an invalid value leaves the action unrendered.
+    Ok(match outcome {
+        Ok(()) => Json(json!({ "success": "OK" })).into_response(),
+        Err(_) => StatusCode::NO_CONTENT.into_response(),
+    })
 }
 
 /// PUT /admin/config/fonts(.json): the fonts and the default text size,
@@ -151,7 +158,7 @@ pub async fn fonts_update(
             backfill,
         ),
     ];
-    let outcome = update_settings(&state, &guardian, updates).await?;
+    let outcome = update_settings(&state, &guardian, updates, &[]).await?;
     Ok(answer(&state, outcome))
 }
 

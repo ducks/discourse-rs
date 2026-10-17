@@ -1,0 +1,262 @@
+{
+  "name": "about_localizations",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr",
+        "general_settings": {
+          "name": "Forum des canards",
+          "summary": "",
+          "extended_description": "Nous parlons de **canards**."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr",
+        "general_settings": {
+          "name": ""
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "en"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "ja"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json"
+    }
+  ],
+  "started_at": "2026-10-17T04:34:48.721197",
+  "transaction_started_at": "2026-10-17T04:34:45.243261",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "locale": "fr",
+        "localizations": {}
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "locale": "fr",
+        "localizations": {
+          "title": {
+            "value": "Forum des canards",
+            "cooked": null
+          },
+          "extended_site_description": {
+            "value": "Nous parlons de **canards**.",
+            "cooked": "<p>Nous parlons de <strong>canards</strong>.</p>"
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "locale": "fr",
+        "localizations": {
+          "title": {
+            "value": "Forum des canards",
+            "cooked": null
+          },
+          "extended_site_description": {
+            "value": "Nous parlons de **canards**.",
+            "cooked": "<p>Nous parlons de <strong>canards</strong>.</p>"
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "locale": "fr",
+        "localizations": {
+          "extended_site_description": {
+            "value": "Nous parlons de **canards**.",
+            "cooked": "<p>Nous parlons de <strong>canards</strong>.</p>"
+          }
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: locale"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: locale"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: locale"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "site_setting_localizations": {
+      "inserted": [
+        {
+          "id": 2,
+          "value": "Nous parlons de **canards**.",
+          "cooked": "<p>Nous parlons de <strong>canards</strong>.</p>",
+          "locale": "fr",
+          "created_at": "2026-10-17T04:34:49.014455",
+          "updated_at": "2026-10-17T04:34:49.014455",
+          "setting_name": "extended_site_description",
+          "localizer_user_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iFjn7ucGfqcXKtVJ0KER2E8QrZA=",
+            "created_at": "2026-10-17T04:34:46.588438",
+            "rotated_at": "2026-10-17T04:34:46.586354",
+            "updated_at": "2026-10-17T04:34:46.588438",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iFjn7ucGfqcXKtVJ0KER2E8QrZA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-17T04:34:48.770367",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iFjn7ucGfqcXKtVJ0KER2E8QrZA=",
+            "created_at": "2026-10-17T04:34:46.588438",
+            "rotated_at": "2026-10-17T04:34:46.586354",
+            "updated_at": "2026-10-17T04:34:46.588438",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iFjn7ucGfqcXKtVJ0KER2E8QrZA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "locale: fr\nsetting_names: extended_site_description|site_description|title",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:49.02751",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:49.02751",
+          "category_id": null,
+          "custom_type": "update_site_setting_localizations",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "locale: fr\nsetting_names: title",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T04:34:49.138621",
+          "ip_address": null,
+          "updated_at": "2026-10-17T04:34:49.138621",
+          "category_id": null,
+          "custom_type": "update_site_setting_localizations",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_setting_localizations": 1,
+    "user_histories": 74
+  },
+  "settings": {
+    "content_localization_enabled": true,
+    "content_localization_supported_locales": "fr|de"
+  },
+  "recorded_from": {
+    "case": "fbda1bd2aa30db03de8888934ca9e4fb5cd08e9140528a2780c0ce450db277d4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

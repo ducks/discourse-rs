@@ -64,7 +64,7 @@ fn field(
     );
     if !required {
         out.push_str(&format!(
-            "<span class=\"form-kit__container-optional\">({})</span>",
+            " <span class=\"form-kit__container-optional\">({})</span>",
             escape(&t(cx.i18n, "form_kit.optional"))
         ));
     }

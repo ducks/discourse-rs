@@ -801,7 +801,26 @@ then by what running a forum needs (milestone 6). Briefs:
     stylesheet and the color input's own rule (discourse.scss) join the
     port's CSS; themes_with_setting answers a moderator InvalidAccess
     (write cases admin_config/welcome_banner_save, fonts_moderator).
-    Left: about, category management, watched words, MCP, upcoming
+    Then feat/admin-shell-config-about: the about page
+    (AdminConfigAreasAbout's four cards, each form saving on its own,
+    the choosers, the banner image, the language selector under content
+    localization) with Admin::Config::AboutController ported: the
+    update over its sections (hidden settings allowed, the description
+    cooked, invalid values left unrendered as Rails leaves them) and the
+    About page's localizations (SiteSettingLocalization's show and
+    update, with their log); SiteSetting::Update takes the email,
+    username, group and group list types with their validators; title
+    and site_description no longer refused: their change handler
+    rewrites the welcome topic (SeedData::Topics#update, crate::
+    seed_topics) unless someone edited it, from the about page and the
+    site settings page alike; Slug.for drops emoji codes and
+    MaxEmojisValidator is ported for titles (unicode emoji in titles
+    stay refused); TopicLink skips users#my_redirect links (write cases
+    admin_config/about_*, site_settings/setting_title_*). Left: the
+    description's composer is drawn in its Markdown mode (the rich
+    editor is not ported); the wizard's title step still refuses (its
+    rewrite isn't wired there yet).
+    Left: category management, watched words, MCP, upcoming
     changes, what's new; the settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L

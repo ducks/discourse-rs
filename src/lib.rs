@@ -1,6 +1,7 @@
 pub mod about;
 pub mod about_view;
 pub mod accounts;
+pub mod admin_about_view;
 pub mod admin_api_keys_view;
 pub mod admin_backups_view;
 pub mod admin_badges;
@@ -171,6 +172,7 @@ pub mod search_menu_view;
 pub mod search_view;
 pub mod second_factor;
 pub mod second_factor_auth;
+pub mod seed_topics;
 pub mod session;
 pub mod setting_enums;
 pub mod sidebar;

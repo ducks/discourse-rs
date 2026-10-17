@@ -5,6 +5,7 @@ mod admin_api_keys;
 mod admin_badges;
 mod admin_badges_pages;
 mod admin_config;
+mod admin_config_about;
 mod admin_config_branding;
 mod admin_dashboard;
 mod admin_dashboard_sections;
@@ -2594,6 +2595,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
     }
     router = admin_config::routes(router);
     router = admin_config_branding::routes(router);
+    router = admin_config_about::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.
     if let Some(src) = &config.discourse_src {

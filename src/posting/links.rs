@@ -436,7 +436,12 @@ pub async fn extract_from(
             {
                 continue;
             }
-            if path.starts_with("/u/") || path.starts_with("/users/") || path == "/u" {
+            // The users controller's routes (users#my_redirect among them).
+            if path.starts_with("/u/")
+                || path.starts_with("/users/")
+                || path == "/u"
+                || path.starts_with("/my/")
+            {
                 continue;
             }
             if let Some(rest) = path.strip_prefix("/t/") {

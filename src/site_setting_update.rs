@@ -68,8 +68,6 @@ const DEPRECATED: &[(&str, &str, bool)] = &[
 /// Settings whose `site_setting_changed` handlers (config/initializers
 /// /014-track-setting-changes.rb) write more than caches.
 const CHANGE_HANDLERS_WRITE: &[&str] = &[
-    "title",
-    "site_description",
     "must_approve_users",
     "emoji_set",
     "slug_generation_method",
@@ -215,6 +213,8 @@ pub async fn update(
     name: &str,
     raw: &str,
     backfill: bool,
+    // `allow_changing_hidden:`, the hidden settings the caller may set.
+    allow_hidden: &[&str],
 ) -> Result<Outcome, AppError> {
     if settings.get("site_archived")?.truthy() && name != "site_archived" {
         return Err(Unsupported("changing settings of an archived site").into());
@@ -285,7 +285,12 @@ pub async fn update(
         }
         DataType::Float => Value::Float(crate::ruby::to_f(value)),
         DataType::Bool => Value::Bool(matches!(value, "t" | "true")),
-        DataType::String | DataType::Color => Value::Str(value.to_string()),
+        DataType::String
+        | DataType::Color
+        | DataType::Email
+        | DataType::Username
+        | DataType::Group
+        | DataType::GroupList => Value::Str(value.to_string()),
         DataType::CategoryList | DataType::TagList if SIDEBAR_DEFAULTS.contains(&name) => {
             Value::Str(value.to_string())
         }
@@ -314,7 +319,7 @@ pub async fn update(
 
     // settings_are_visible
     let hidden = opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true)));
-    if hidden && name != "enable_site_owner_onboarding" {
+    if hidden && name != "enable_site_owner_onboarding" && !allow_hidden.contains(&name) {
         let message = i18n
             .t_with(
                 "errors.site_settings.site_settings_are_hidden",
@@ -386,6 +391,37 @@ pub async fn update(
                 .unwrap_or_default();
             return Ok(Outcome::Invalid(format!("{name}: {message}")));
         }
+    }
+    // The type's validator: EmailSettingValidator, UsernameSettingValidator,
+    // GroupSettingValidator (each allowing blank).
+    let v = new_value.to_s();
+    let type_error = match def.data_type {
+        DataType::Email if !crate::ruby::is_blank(&v) && !crate::accounts::valid_email(&v) => {
+            Some("site_settings.errors.invalid_email")
+        }
+        DataType::Username if !crate::ruby::is_blank(&v) => {
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE username = $1)")
+                    .bind(&v)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            (!exists).then_some("site_settings.errors.invalid_username")
+        }
+        DataType::Group if !crate::ruby::is_blank(&v) => {
+            let exists = v.chars().all(|c| c.is_ascii_digit())
+                && sqlx::query_scalar::<_, bool>(
+                    "SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1::bigint)",
+                )
+                .bind(&v)
+                .fetch_one(&mut *conn)
+                .await?;
+            (!exists).then_some("site_settings.errors.invalid_group")
+        }
+        _ => None,
+    };
+    if let Some(key) = type_error {
+        let message = i18n.t(key).unwrap_or_default();
+        return Ok(Outcome::Invalid(format!("{name}: {message}")));
     }
     // SiteSettings::Validations#validate_x_summary_large_image
     if name == "x_summary_large_image" && !new_value.is_blank() {

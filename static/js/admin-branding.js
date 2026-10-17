@@ -6,6 +6,9 @@
 // AdminFontsForm: the font and text size choices, More fonts, the
 // default text size's user count and backfill question, the save (PUT
 // /admin/config/fonts) and the fonts and size it applies to the page.
+// AdminWelcomeBannerForm and AdminConfigAreasAbout (src/
+// admin_about_view.rs) share the image fields: their choosers, the
+// sections' saves and the about page's language selector.
 (function () {
   "use strict";
 
@@ -29,7 +32,9 @@
 
   function logoForm() {
     // The forms with image fields: the logo's and the welcome banner's.
-    return document.querySelector("form.admin-logo-form, form.admin-welcome-banner-form");
+    return document.querySelector(
+      "form.admin-logo-form, form.admin-welcome-banner-form, form[data-about-section='general_settings']"
+    );
   }
 
   // formData: the values given, changed as the fields are.
@@ -681,6 +686,295 @@
       }, ui().failed);
   }
 
+  // --- AdminConfigAreasAbout -----------------------------------------------------
+
+  function aboutArea() {
+    return document.querySelector(".admin-contents.about .admin-config-page__main-area[data-groups]");
+  }
+
+  // AdminConfigAreaCard's toggle: the content shown or hidden.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest && event.target.closest(".admin-config-area-card__toggle-button");
+    if (!button || !aboutArea()) {
+      return;
+    }
+    var content = button.closest(".admin-config-area-card").querySelector(".admin-config-area-card__content");
+    content.hidden = !content.hidden;
+    button.querySelector("svg").outerHTML = ui().icon(content.hidden ? "angle-right" : "angle-down");
+  });
+
+  // UserChooser and GroupChooser (data-maximum for one): the choices as
+  // the chooser opens, a row toggling its choice.
+  function chosenOf(details) {
+    return (details.dataset.value || "").split("|").filter(Boolean);
+  }
+
+  function setChosen(details, values, names) {
+    details.dataset.value = values.join("|");
+    var label = names.length ? names.join(", ") : t("select_kit.default_header_text");
+    details.querySelector(".formatted-selection").textContent = label;
+    details.querySelector("summary").dataset.name = names.join(",");
+    details.classList.toggle("has-selection", values.length > 0);
+  }
+
+  function chooserRows(details, term) {
+    var body = details.querySelector(".select-kit-body");
+    var list = body.querySelector(".select-kit-collection");
+    var chosen = chosenOf(details);
+    var render = function (items) {
+      list.innerHTML = items.length
+        ? items
+            .map(function (item) {
+              return (
+                '<li class="select-kit-row' +
+                (chosen.indexOf(item.value) !== -1 ? " is-selected" : "") +
+                '" role="menuitemradio" tabindex="0" data-value="' +
+                esc(item.value) +
+                '" data-name="' +
+                esc(item.name) +
+                '" title="' +
+                esc(item.name) +
+                '"><span class="name">' +
+                esc(item.name) +
+                "</span></li>"
+              );
+            })
+            .join("")
+        : '<li class="select-kit-row no-content">' + esc(t("select_kit.no_content")) + "</li>";
+    };
+    if (details.classList.contains("user-chooser")) {
+      if (!term) {
+        render([]);
+        return;
+      }
+      ui()
+        .ajax("GET", "/u/search/users.json?term=" + encodeURIComponent(term) + "&include_groups=false")
+        .then(function (json) {
+          render(
+            (json.users || []).map(function (u) {
+              return { value: u.username, name: u.username };
+            })
+          );
+        }, function () {});
+      return;
+    }
+    var groups = parsed(aboutArea(), "groups") || [];
+    var filter = (term || "").toLowerCase();
+    render(
+      groups.filter(function (g) {
+        return !filter || g.name.toLowerCase().indexOf(filter) !== -1;
+      })
+    );
+  }
+
+  document.addEventListener(
+    "toggle",
+    function (event) {
+      var details = event.target;
+      if (!details.matches || !details.matches(".admin-contents.about details.multi-select") || !details.open) {
+        return;
+      }
+      var body = details.querySelector(".select-kit-body");
+      body.innerHTML =
+        '<div class="select-kit-filter multi-select-filter is-expanded"><input autocapitalize="off" autocomplete="off" autocorrect="off" class="filter-input" placeholder="' +
+        esc(t("select_kit.filter_placeholder")) +
+        '" type="text"></div><ul class="select-kit-collection" role="menu"></ul>';
+      chooserRows(details, "");
+      body.querySelector(".filter-input").focus();
+    },
+    true
+  );
+
+  document.addEventListener("input", function (event) {
+    var input = event.target.closest && event.target.closest(".admin-contents.about details.multi-select .filter-input");
+    if (input) {
+      chooserRows(input.closest("details"), input.value.trim());
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var row = event.target.closest && event.target.closest(".admin-contents.about details.multi-select .select-kit-row[data-value]");
+    if (!row) {
+      return;
+    }
+    var details = row.closest("details");
+    var values = chosenOf(details);
+    var names = (details.dataset.names || "").split("|").filter(Boolean);
+    if (!names.length && values.length) {
+      names = details.querySelector(".formatted-selection").textContent.split(", ");
+    }
+    var at = values.indexOf(row.dataset.value);
+    if (at !== -1) {
+      values.splice(at, 1);
+      names.splice(at, 1);
+    } else if (details.dataset.maximum === "1") {
+      values = [row.dataset.value];
+      names = [row.dataset.name];
+    } else {
+      values.push(row.dataset.value);
+      names.push(row.dataset.name);
+    }
+    details.dataset.names = names.join("|");
+    setChosen(details, values, names);
+    details.open = false;
+  });
+
+  function field(form, name) {
+    var el = form.querySelector("[name='" + name + "']");
+    return el ? el.value : "";
+  }
+
+  function chooserValue(form, name) {
+    var details = form.querySelector("details[data-name='" + name + "']");
+    return details ? chosenOf(details) : [];
+  }
+
+  // The locale the forms are for: the selector's, or the default.
+  function aboutLocale() {
+    var select = document.querySelector(".admin-config-area-about__locale-selector-dropdown");
+    var area = aboutArea();
+    return select ? select.value : area.dataset.defaultLocale;
+  }
+
+  function isDefaultLocale() {
+    return aboutLocale() === aboutArea().dataset.defaultLocale;
+  }
+
+  var ABOUT_TOASTS = {
+    general_settings: "admin.config_areas.about.toasts.general_settings_saved",
+    contact_information: "admin.config_areas.about.toasts.contact_information_saved",
+    your_organization: "admin.config_areas.about.toasts.your_organization_saved",
+    extra_groups: "admin.config_areas.about.toasts.extra_groups_saved",
+  };
+
+  function saveAbout(form) {
+    var section = form.dataset.aboutSection;
+    var locale = aboutLocale();
+    var data = { locale: locale };
+    if (section === "general_settings") {
+      var name = field(form, "name");
+      if (isDefaultLocale() && name.trim() === "") {
+        Discourse.dialog.alert(t("form_kit.errors.required"));
+        return;
+      }
+      data.general_settings = {
+        name: name,
+        summary: field(form, "summary"),
+        extended_description: field(form, "extendedDescription"),
+      };
+      if (isDefaultLocale()) {
+        var v = values(form);
+        var banner = v.aboutBannerImage;
+        if (banner === undefined) {
+          var link = form.querySelector(".form-kit__control-image a.lightbox");
+          banner = link ? link.getAttribute("href") : null;
+        }
+        data.general_settings.about_banner_image = banner;
+        data.general_settings.community_title = field(form, "communityTitle");
+      }
+    } else if (section === "contact_information") {
+      data.contact_information = { community_owner: field(form, "communityOwner") };
+      if (isDefaultLocale()) {
+        data.contact_information.contact_email = field(form, "contactEmail");
+        data.contact_information.contact_url = field(form, "contactURL");
+        data.contact_information.contact_username = chooserValue(form, "contactUsername")[0] || null;
+        data.contact_information.contact_group_name = chooserValue(form, "contactGroupName")[0] || null;
+      }
+    } else if (section === "your_organization") {
+      data.your_organization = {
+        company_name: field(form, "companyName"),
+        company_url: field(form, "companyURL"),
+        governing_law: field(form, "governingLaw"),
+        city_for_disputes: field(form, "cityForDisputes"),
+      };
+    } else if (section === "extra_groups") {
+      delete data.locale;
+      data.extra_groups = {
+        groups: chooserValue(form, "aboutPageExtraGroups").join("|"),
+        initial_members: field(form, "aboutPageExtraGroupsInitialMembers"),
+        order: field(form, "aboutPageExtraGroupsOrder"),
+        show_description: form.querySelector("[name='aboutPageExtraGroupsShowDescription']").checked,
+      };
+    }
+    var path =
+      isDefaultLocale() || section === "extra_groups"
+        ? "/admin/config/about.json"
+        : "/admin/config/about/localizations.json";
+    var buttons = document.querySelectorAll(".admin-contents.about button[type=submit]");
+    buttons.forEach(function (b) {
+      b.disabled = true;
+    });
+    ui()
+      .ajax("PUT", path, data)
+      .then(function () {
+        ui().toast(t(ABOUT_TOASTS[section]));
+      }, ui().failed)
+      .then(function () {
+        buttons.forEach(function (b) {
+          b.disabled = false;
+        });
+      });
+  }
+
+  // The language selector: another locale shows only the localizable
+  // fields (and the general settings and contact cards), with its values.
+  document.addEventListener("change", function (event) {
+    var select = event.target.closest && event.target.closest(".admin-config-area-about__locale-selector-dropdown");
+    if (!select) {
+      return;
+    }
+    if (isDefaultLocale()) {
+      location.reload();
+      return;
+    }
+    var locale = select.value;
+    ui()
+      .ajax("GET", "/admin/config/about/localizations.json?locale=" + encodeURIComponent(locale))
+      .then(function (json) {
+        var l = json.localizations || {};
+        var get = function (s) {
+          return (l[s] && l[s].value) || "";
+        };
+        var area = aboutArea();
+        area
+          .querySelectorAll(
+            ".admin-config-area-about__your-organization-section, .admin-config-area-about__extra-groups-section"
+          )
+          .forEach(function (card) {
+            card.hidden = true;
+          });
+        ["communityTitle", "aboutBannerImage", "contactEmail", "contactURL", "contactUsername", "contactGroupName"].forEach(
+          function (name) {
+            var f = area.querySelector("[data-name='" + name + "']");
+            if (f) {
+              f.hidden = true;
+            }
+          }
+        );
+        var set = function (name, v) {
+          var el = area.querySelector("[name='" + name + "']");
+          if (el) {
+            el.value = v;
+          }
+        };
+        set("name", get("title"));
+        set("summary", get("site_description"));
+        set("extendedDescription", get("extended_site_description"));
+        set("communityOwner", get("community_owner"));
+        var help = select.closest(".form-kit__field").querySelector(".form-kit__container-help-text");
+        if (!help) {
+          select
+            .closest(".form-kit__container-content")
+            .insertAdjacentHTML(
+              "beforeend",
+              '<p class="form-kit-text form-kit__container-help-text">' +
+                esc(t("admin.config_areas.about.locale_selector.description")) +
+                "</p>"
+            );
+        }
+      }, ui().failed);
+  });
+
   // In the capture phase, before htmx's boosted form takes the submit.
   document.addEventListener(
     "submit",
@@ -698,14 +992,22 @@
         event.preventDefault();
         event.stopImmediatePropagation();
         saveBanner(form);
+      } else if (form.matches("form[data-about-section]")) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        saveAbout(form);
+      } else if (form.matches(".admin-config-area-about__locale-form")) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
       }
     },
     true
   );
 
   Discourse.onPage(function () {
-    if (logoForm() || fontsForm()) {
+    if (logoForm() || fontsForm() || bannerForm()) {
       ui().strings("admin-branding-strings");
+      ui().strings("admin-about-strings");
     }
     var form = logoForm();
     if (form) {

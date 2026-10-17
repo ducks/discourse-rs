@@ -763,9 +763,38 @@ pub async fn validate_topic_with(
                 errors.push(ctx.full_message(title_attr, &ctx.t(key)));
             }
         }
-        // max_emojis: titles with emoji are refused by the slug anyway.
-        if crate::emoji::has_emoji_code(title) || title.chars().any(|c| c as u32 > 0xffff) {
-            return Err(Unsupported("emoji in topic titles").into());
+        // MaxEmojisValidator: the emoji images the escaped title unescapes
+        // to, against max_emojis_in_title. Emoji.unicode_unescape (unicode
+        // emoji to codes) is not ported.
+        if title.chars().any(|c| c as u32 > 0xffff) {
+            return Err(Unsupported("unicode emoji in topic titles").into());
+        }
+        if crate::emoji::has_emoji_code(title) {
+            static EMOJI_IMG: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+                regex::Regex::new(r"<img.+?class\s*=\s*'(emoji|emoji emoji-custom)'")
+                    .expect("the emoji image pattern")
+            });
+            let base_path = ctx.config.globals.relative_url_root();
+            let unescaped = crate::topic_list_view::unescape_emoji(
+                &crate::topic_list_view::escape(title),
+                s.emojis(),
+                base_path,
+            );
+            let count = EMOJI_IMG.find_iter(&unescaped).count() as i64;
+            let max = s.get("max_emojis_in_title")?.to_i();
+            if count > max {
+                let message = if max > 0 {
+                    ctx.i18n.t_with(
+                        "errors.messages.max_emojis",
+                        &[("max_emojis_count", &max.to_string())],
+                    )
+                } else {
+                    ctx.i18n
+                        .t("errors.messages.emojis_disabled")
+                        .map(str::to_string)
+                };
+                errors.push(ctx.full_message(title_attr, &message.unwrap_or_default()));
+            }
         }
         // unique_among
         let rule = s.get("duplicate_topic_titles")?.to_s();

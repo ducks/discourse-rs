@@ -64,6 +64,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::SiteSettingsController#index | 6 | 1 | 0 | 0 |
 | Admin::Config::LogoController | 3 | 1 | 0 | 8 |
 | Admin::Config::FontsController | 4 | 0 | 0 | 0 |
+| Admin::Config::AboutController | 11 | 1 | 0 | 0 |
 | Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
@@ -902,7 +903,7 @@ each part's PUT) is in tests/direct_uploads.rs.
 
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
-| 248 | admin > sets the value when the param is present (title) | covered | setting_string (title itself is Unsupported "settings whose change handlers write") |
+| 248 | admin > sets the value when the param is present (title) | covered | setting_string, setting_title_welcome_topic and setting_title_edited_welcome (new; the welcome topic rewritten unless edited) |
 | 254 | admin > bulk updates settings | covered | bulk_update, bulk_update_invalid |
 | 271 | admin > error for hard deprecated settings | covered | setting_hard_deprecated (new) |
 | 282 | admin > works for soft deprecated settings | needs-harness | stub_deprecated_settings!(override: true); no real soft deprecation in SETTINGS |
@@ -964,6 +965,25 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 83 | og_image_preview > regular user > denies access | covered | admin_config/logo_member (new; the update and index) |
 | 90 | og_image_preview > not logged in > denies access | recordable | logo_anonymous (no user) |
 | - | (no spec it) update: uploads by url, cleared, unchanged | covered | admin_config/logo_update, logo_unchanged (new) |
+
+## Admin::Config::AboutController
+
+`spec/requests/admin/config/about_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 14 | localizations > for the requested locale | covered | admin_config/about_localizations (new) |
+| 36 | localizations > no blank localizations | covered | admin_config/about_localizations (new; summary saved blank) |
+| 47 | localizations > hyphenated locale names | recordable | about_localizations_hyphen (locale pt-BR supported) |
+| 54 | localizations > rejects the default locale | covered | admin_config/about_localizations (new) |
+| 62 | localizations > rejects when content localization is disabled | covered | admin_config/about_localizations_disabled (new) |
+| 70 | localizations > rejects moderators | covered | admin_config/about_denied (new; AdminConstraint, 404) |
+| 80 | update_localizations > saves and logs | covered | admin_config/about_localizations (new) |
+| 125 | update_localizations > removes a blank one | covered | admin_config/about_localizations (new) |
+| 144 | update_localizations > rejects unsupported locales | covered | admin_config/about_localizations (new; ja, none) |
+| 156 | update_localizations > rejects when disabled | covered | admin_config/about_localizations_disabled (new) |
+| 170 | update_localizations > rejects moderators | covered | admin_config/about_denied (new) |
+| - | (no spec it) update: each section, the welcome topic's rewrite, invalid values unrendered | covered | admin_config/about_general, about_sections (new) |
 
 ## Admin::Config::WelcomeBannerController#themes_with_setting
 

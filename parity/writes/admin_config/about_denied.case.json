@@ -1,0 +1,28 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/about.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/about.json",
+      "params": {
+        "general_settings": {
+          "name": "Nope"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/about/localizations.json",
+      "params": {
+        "locale": "fr"
+      }
+    }
+  ]
+}
