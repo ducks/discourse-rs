@@ -76,6 +76,16 @@
       <input id="login-second-factor" class="second-factor-token-input" name="second_factor_token"
              type="text" autocapitalize="off" autocorrect="off" autocomplete="one-time-code"
              inputmode="numeric" maxlength="32" disabled>
+      {#- DSecondFactorInput's DOtp for the authenticator app: six slots
+          over one input, the login sent once all six are in. -#}
+      <div class="d-otp second-factor-token-input" id="login-second-factor-otp" hidden>
+        <div class="d-otp-group">
+          {%- for i in 0..6 %}
+          <div class="d-otp-slot{% if i == 0 %} --is-focused --show-cursor{% else %} --placeholder{% endif %}" data-index="{{ i }}"><span aria-hidden="true">&#8203;</span>{% if i != 0 %}-{% endif %}</div>
+          {%- endfor %}
+        </div>
+        <div class="d-otp-input-wrapper"><input aria-label="{{ chrome.t("d_otp.screen_reader.other").replace("%{count}", "6") }}" autocapitalize="off" autocomplete="one-time-code" autocorrect="off" class="d-otp-input" data-slot="input-otp" inputmode="numeric" maxlength="6" spellcheck="false"></div>
+      </div>
       <p hidden><a class="toggle-second-factor-method" href>{{ chrome.t("login.second_factor_backup") }}</a></p>
       {#- SecurityKeyForm: the key's ceremony, or another way in. -#}
       <div id="security-key" hidden data-description="{{ chrome.t("login.security_key_description") }}"
@@ -138,7 +148,7 @@
         error.hidden = true;
         return;
       }
-      error.textContent = body.error || "Could not log in.";
+      error.textContent = body.error || (body.errors && body.errors[0]) || "Could not log in.";
       error.hidden = false;
     }
     // The authenticator app or backup code field, method 1 or 2.
@@ -154,12 +164,29 @@
       toggle.textContent = factor.dataset[which + "Link"];
       toggle.parentNode.hidden = !(factor.dataset.totp && factor.dataset.backup);
       var token = document.getElementById("login-second-factor");
-      token.hidden = false;
+      var otp = document.getElementById("login-second-factor-otp");
+      var totp = method === "1";
+      token.hidden = totp;
       token.disabled = false;
-      token.required = true;
+      token.required = !totp;
       token.value = "";
-      token.inputMode = method === "2" ? "text" : "numeric";
-      token.focus();
+      token.inputMode = totp ? "numeric" : "text";
+      otp.hidden = !totp;
+      paintOtp("");
+      (totp ? otp.querySelector(".d-otp-input") : token).focus();
+    }
+    // DOtp: the slots follow the code, which the token field carries.
+    function paintOtp(code) {
+      var otp = document.getElementById("login-second-factor-otp");
+      var input = otp.querySelector(".d-otp-input");
+      input.value = code;
+      otp.querySelectorAll(".d-otp-slot").forEach(function (slot, i) {
+        var digit = code[i];
+        slot.className = "d-otp-slot" + (digit ? "" : " --placeholder") +
+          (i === code.length ? " --is-focused --show-cursor" : "");
+        slot.innerHTML = '<span aria-hidden="true">&#8203;</span>' +
+          (digit ? digit : i === code.length ? "" : "-");
+      });
     }
     // SecurityKeyForm, method 3.
     function showSecurityKey(on) {
@@ -175,6 +202,7 @@
       token.hidden = true;
       token.disabled = true;
       token.required = false;
+      document.getElementById("login-second-factor-otp").hidden = true;
     }
     function toBuffer(s) {
       return Uint8Array.from(s, function (c) { return c.charCodeAt(0); });
@@ -204,6 +232,13 @@
     (function () {
       var factor = document.getElementById("second-factor");
       if (!factor) return;
+      // filledSecondFactorToken: all six in, the login goes.
+      factor.querySelector("#login-second-factor-otp .d-otp-input").addEventListener("input", function (e) {
+        var code = e.target.value.replace(/\D/g, "").slice(0, 6);
+        document.getElementById("login-second-factor").value = code;
+        paintOtp(code);
+        if (code.length === 6) factor.closest("form").requestSubmit();
+      });
       factor.querySelector(":scope > p > .toggle-second-factor-method").addEventListener("click", function (e) {
         e.preventDefault();
         var method = factor.closest("form").querySelector("[name=second_factor_method]");

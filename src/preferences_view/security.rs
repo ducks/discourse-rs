@@ -156,7 +156,11 @@ fn passkeys(p: &Prefs) -> Result<String, AppError> {
                     dropdown(
                         cx,
                         "passkey-options-dropdown",
-                        &format!(" data-passkey-id=\"{}\"", key["id"]),
+                        &format!(
+                            " data-passkey-id=\"{}\" data-passkey-name=\"{}\"",
+                            key["id"],
+                            escape(key["name"].as_str().unwrap_or_default())
+                        ),
                         &[
                             ("edit", "pencil", "user.second_factor.edit"),
                             ("delete", "trash-can", "user.second_factor.delete"),
@@ -582,6 +586,187 @@ pub fn render_second_factor(p: &Prefs, page: &SecondFactorPage) -> String {
     } else {
         String::new()
     };
+    let enforce =
+        p.s.get("enforce_second_factor")
+            .map(|v| v.to_s())
+            .unwrap_or_default();
+    let data = json!({
+        "totps": page.totps.iter().map(|f| json!({
+            "id": f["id"], "name": f["name"], "method": f["method"],
+        })).collect::<Vec<_>>(),
+        "security_keys": page.security_keys.iter().map(|f| json!({
+            "id": f["id"], "name": f["name"],
+        })).collect::<Vec<_>>(),
+        "backup_enabled": u["second_factor_backup_enabled"] == true,
+        "remaining_codes": u["second_factor_remaining_backup_codes"].as_i64().unwrap_or(0),
+        // User#username_lower, computed from the username.
+        "username_lower": u["username"].as_str().unwrap_or_default().to_lowercase(),
+        "site_title": p.s.get("title").map(|v| v.to_s()).unwrap_or_default(),
+        // User#enforcedSecondFactor
+        "enforced": u["second_factor_enabled"] != true
+            && (enforce == "all" || (enforce == "staff" && p.viewer_staff)),
+        "strings": second_factor_strings(cx),
+    });
+    format!(
+        "{}<script type=\"application/json\" id=\"second-factor-data\">{}</script>",
+        second_factor_section(p, &totps, &keys, &backup, &disable_all),
+        data.to_string().replace('<', "\\u003c")
+    )
+}
+
+/// The modals' and dialogs' strings on the second factor page.
+fn second_factor_strings(cx: &ListContext) -> Value {
+    let keys = [
+        ("totp_add", "user.second_factor.totp.add"),
+        (
+            "enable_description",
+            "user.second_factor.enable_description",
+        ),
+        (
+            "show_key_description",
+            "user.second_factor.show_key_description",
+        ),
+        ("name", "user.second_factor.name"),
+        ("totp_default_name", "user.second_factor.totp.default_name"),
+        ("label", "user.second_factor.label"),
+        ("enable", "enable"),
+        (
+            "name_and_code_required_error",
+            "user.second_factor.totp.name_and_code_required_error",
+        ),
+        ("security_key_add", "user.second_factor.security_key.add"),
+        (
+            "enable_security_key_description",
+            "user.second_factor.enable_security_key_description",
+        ),
+        (
+            "security_key_register",
+            "user.second_factor.security_key.register",
+        ),
+        (
+            "security_key_name_required_error",
+            "user.second_factor.security_key.name_required_error",
+        ),
+        (
+            "security_key_already_added_error",
+            "user.second_factor.security_key.already_added_error",
+        ),
+        (
+            "security_key_not_allowed_error",
+            "user.second_factor.security_key.not_allowed_error",
+        ),
+        (
+            "security_key_default_name",
+            "user.second_factor.security_key.default_name",
+        ),
+        (
+            "security_key_iphone_default_name",
+            "user.second_factor.security_key.iphone_default_name",
+        ),
+        (
+            "security_key_android_default_name",
+            "user.second_factor.security_key.android_default_name",
+        ),
+        (
+            "security_key_support_missing_error",
+            "login.security_key_support_missing_error",
+        ),
+        ("edit_title", "user.second_factor.edit_title"),
+        ("edit_description", "user.second_factor.edit_description"),
+        ("save", "user.second_factor.save"),
+        ("security_key_edit", "user.second_factor.security_key.edit"),
+        (
+            "security_key_edit_description",
+            "user.second_factor.security_key.edit_description",
+        ),
+        ("security_key_save", "user.second_factor.security_key.save"),
+        ("backup_title", "user.second_factor_backup.title"),
+        ("codes_title", "user.second_factor_backup.codes.title"),
+        (
+            "codes_description",
+            "user.second_factor_backup.codes.description",
+        ),
+        (
+            "remaining_one",
+            "user.second_factor_backup.remaining_codes.one",
+        ),
+        (
+            "remaining_other",
+            "user.second_factor_backup.remaining_codes.other",
+        ),
+        ("not_enabled", "user.second_factor_backup.not_enabled"),
+        ("regenerate", "user.second_factor_backup.regenerate"),
+        ("backup_enable", "user.second_factor_backup.enable"),
+        (
+            "copied_to_clipboard",
+            "user.second_factor_backup.copied_to_clipboard",
+        ),
+        (
+            "copy_to_clipboard_error",
+            "user.second_factor_backup.copy_to_clipboard_error",
+        ),
+        (
+            "copy_to_clipboard",
+            "user.second_factor_backup.copy_to_clipboard",
+        ),
+        (
+            "download_backup_codes",
+            "user.second_factor_backup.download_backup_codes",
+        ),
+        ("disable_confirm", "user.second_factor.disable_confirm"),
+        (
+            "delete_confirm_header",
+            "user.second_factor.delete_confirm_header",
+        ),
+        ("disable", "user.second_factor.disable"),
+        ("delete", "user.second_factor.delete"),
+        (
+            "delete_single_confirm_title",
+            "user.second_factor.delete_single_confirm_title",
+        ),
+        (
+            "delete_backup_codes_confirm_title",
+            "user.second_factor.delete_backup_codes_confirm_title",
+        ),
+        (
+            "delete_backup_codes_confirm_message",
+            "user.second_factor.delete_backup_codes_confirm_message",
+        ),
+        ("cancel", "cancel"),
+        ("otp_label", "d_otp.screen_reader.other"),
+    ];
+    let mut out = serde_json::Map::new();
+    for (name, key) in keys {
+        out.insert(name.into(), json!(t(cx, key)));
+    }
+    // With their arguments filled in by the script.
+    out.insert(
+        "delete_confirm_instruction".into(),
+        json!(
+            cx.i18n
+                .t("js.user.second_factor.delete_confirm_instruction")
+                .unwrap_or_default()
+        ),
+    );
+    out.insert(
+        "delete_single_confirm_message".into(),
+        json!(
+            cx.i18n
+                .t("js.user.second_factor.delete_single_confirm_message")
+                .unwrap_or_default()
+        ),
+    );
+    Value::Object(out)
+}
+
+fn second_factor_section(
+    p: &Prefs,
+    totps: &str,
+    keys: &str,
+    backup: &str,
+    disable_all: &str,
+) -> String {
+    let cx = p.cx;
     format!(
         "<section class=\"user-content user-preferences solo-preference second-factor\"><div class=\"loading-container\"><div class=\"form-vertical\"><div class=\"control-group totp\"><div class=\"controls\"><h2>{}</h2>{totps}{}</div></div><div class=\"control-group security-key\"><div class=\"controls\"><h2>{}</h2>{keys}{}</div></div><div class=\"control-group pref-second-factor-backup\"><div class=\"controls pref-second-factor-backup\"><h2>{}</h2><div class=\"second-factor-item row\">{backup}</div></div></div>{disable_all}</div></div></section>",
         escape(&t(cx, "user.second_factor.totp.title")),
@@ -624,6 +809,16 @@ pub fn strings(
         "viewer_path": viewer_path,
         "viewer_has_passkeys": viewer_has_passkeys,
         "passkey_confirm": t(cx, "user.passkeys.confirm_button"),
+        "incorrect_passkey": t(cx, "user.confirm_access.incorrect_passkey"),
+        "security_key_support_missing_error": t(cx, "login.security_key_support_missing_error"),
+        "rename_passkey": t(cx, "user.passkeys.rename_passkey"),
+        "rename_passkey_instructions": t(cx, "user.passkeys.rename_passkey_instructions"),
+        "passkey_save": t(cx, "user.passkeys.save"),
+        "passkey_default_name": t(cx, "user.passkeys.name.default"),
+        "passkey_successfully_created": t(cx, "user.passkeys.passkey_successfully_created"),
+        "passkey_already_added_error": t(cx, "user.passkeys.already_added_error"),
+        "passkey_not_allowed_error": t(cx, "user.passkeys.not_allowed_error"),
+        "confirm_delete_passkey": t(cx, "user.passkeys.confirm_delete_passkey"),
         "set_password": t(cx, "user.change_password.set_password"),
         "viewer_profile": t_with(cx, "user.profile_possessive", &[("username", viewer_username)]),
         "in_progress": t(cx, "user.change_password.in_progress"),
