@@ -2417,6 +2417,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/htmx.min.js", get(asset))
         .route("/assets/htmx-ext-sse.js", get(asset))
         .route("/assets/page.js", get(asset))
+        .route("/assets/dates.js", get(asset))
         .route("/assets/auth-complete.js", get(asset))
         .route("/assets/category-edit.js", get(asset))
         .route("/assets/hashtags.js", get(asset))

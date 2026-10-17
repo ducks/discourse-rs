@@ -403,14 +403,15 @@
     var height = 300;
     var current = 1;
 
-    // The lookup's date label for an index: the exact entry or the nearest
-    // one before it.
+    // The date label for an index (closestDaysAgoFor): the days ago of the
+    // exact lookup entry or the nearest one before it, as timelineDate
+    // draws today less them in the viewer's zone (static/js/dates.js).
     function agoFor(index) {
-      var label = null;
+      var days = null;
       for (var i = 0; i < lookup.length && lookup[i][0] <= index; i++) {
-        label = lookup[i][1];
+        days = lookup[i][1];
       }
-      return label;
+      return days === null ? null : Discourse.dates.fill("%{" + days + ":@timeline-days-ago}");
     }
 
     function render(percent) {

@@ -7,11 +7,11 @@
 //! Not drawn yet: the staff counters, the profile background, user fields,
 //! the featured topic, status messages and the mute/ignore dropdown.
 
-use chrono::{DateTime, Datelike, Utc};
+use chrono::{DateTime, Utc};
 use serde_json::Value;
 
 use crate::topic_list_view::{
-    ListContext, category_badge, escape, icon, long_date, relative_age_tiny, t, t_count, t_with,
+    ListContext, category_badge, escape, icon, relative_age_tiny, t, t_count, t_with,
 };
 
 /// Who is looking.
@@ -243,44 +243,16 @@ pub(crate) fn duration(cx: &ListContext, seconds: i64, format: &str) -> String {
 /// `dAgeWithTooltip(date, format="medium")`: relativeAgeMedium unwrapped.
 /// `relativeAge(format: "medium")`; `leave_ago` is "medium-with-ago".
 pub(crate) fn age_medium(cx: &ListContext, at: DateTime<Utc>, leave_ago: bool) -> String {
-    let distance = ((cx.now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
-    let text = if distance < 60 {
-        t(cx, "now")
-    } else if distance > 432_000 {
-        let format = if at.year() == cx.now.year() {
-            t(cx, "dates.tiny.date_month")
-        } else {
-            t(cx, "dates.tiny.date_year")
-        };
-        crate::pretty_text::render::local_dates::format_utc(at, &format).unwrap_or_default()
+    let format = if leave_ago {
+        "medium-with-ago"
     } else {
-        let minutes = (distance as f64 / 60.0).round() as i64;
-        let (unit, count) = match minutes {
-            1..=55 => ("x_minutes", minutes),
-            56..=89 => ("x_hours", 1),
-            90..=1409 => ("x_hours", (minutes as f64 / 60.0).round() as i64),
-            1410..=2519 => ("x_days", 1),
-            2520..=129_599 => ("x_days", (minutes as f64 / 1440.0).round() as i64),
-            129_600..=525_599 => ("x_months", (minutes as f64 / 43200.0).round() as i64),
-            _ => ("x_years", (minutes as f64 / 525_600.0).round() as i64),
-        };
-        let scope = if leave_ago {
-            "medium_with_ago"
-        } else {
-            "medium"
-        };
-        t_count(cx, &format!("dates.{scope}.{unit}"), count, &[])
+        "medium"
     };
     format!(
-        "<span class=\"relative-date date\" title=\"{}\" data-time=\"{}\" data-format=\"{}\">{}</span>",
-        escape(&long_date(cx, at)),
+        "<span class=\"relative-date date\"{} data-time=\"{}\" data-format=\"{format}\">{}</span>",
+        crate::viewer_dates::long_title(cx, at),
         at.timestamp_millis(),
-        if leave_ago {
-            "medium-with-ago"
-        } else {
-            "medium"
-        },
-        escape(&text)
+        escape(&crate::viewer_dates::relative_age(cx, at, format))
     )
 }
 

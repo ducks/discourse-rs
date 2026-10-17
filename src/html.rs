@@ -268,6 +268,9 @@ pub struct Chrome {
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
+    /// What static/js/dates.js reads, as data attributes for its script
+    /// tag: the dates.* strings and relative_date_duration.
+    pub dates_attrs: String,
     /// User.resolveCurrent's `_saveTimezone`: a member without a timezone
     /// saves the browser's guess as the app boots.
     pub save_timezone: bool,
@@ -554,6 +557,42 @@ fn cooked_config(settings: &SiteSettings, i18n: &I18n) -> Result<String, Setting
     Ok(config.to_string().replace('<', "\\u003c"))
 }
 
+/// The data attributes of static/js/dates.js's script tag: the client
+/// strings discourse/lib/formatter and the bookmark reminders read (the
+/// formats directly under js.dates, its tiny, medium and medium_with_ago
+/// ages, js.now and js.bookmarks.reminders.*, overrides included) as JSON,
+/// and the relative_date_duration site setting.
+pub fn dates_attrs(settings: &SiteSettings, i18n: &I18n) -> Result<String, SettingError> {
+    let mut keys: Vec<&str> = i18n
+        .keys_with_prefix("js.dates.")
+        .filter(|key| {
+            let rest = &key["js.dates.".len()..];
+            !rest.contains('.')
+                || ["tiny.", "medium.", "medium_with_ago."]
+                    .iter()
+                    .any(|p| rest.starts_with(p))
+        })
+        .chain(i18n.keys_with_prefix("js.bookmarks.reminders."))
+        .collect();
+    keys.push("js.now");
+    keys.sort_unstable();
+    let strings: serde_json::Map<String, Value> = keys
+        .into_iter()
+        .filter_map(|key| {
+            let text = i18n.t(key)?;
+            Some((
+                key["js.".len()..].to_string(),
+                Value::String(text.to_string()),
+            ))
+        })
+        .collect();
+    Ok(format!(
+        " data-strings=\"{}\" data-relative-date-duration=\"{}\"",
+        crate::topic_list_view::escape(&Value::Object(strings).to_string()),
+        settings.get("relative_date_duration")?.to_i()
+    ))
+}
+
 impl Chrome {
     /// The route's searchContext (a topic's, a category's, a user's, a
     /// tag's, an inbox's): the mobile search button opens the full-page
@@ -802,6 +841,7 @@ impl Site {
             crate::svg_sprite::path(&urls.current_hostname()?, theme_id, &sprite.version)
         );
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
+        self.chrome.dates_attrs = dates_attrs(settings, &state.i18n)?;
         self.chrome.text_size = settings.get("default_text_size")?.to_s();
         // The member's options the chrome reads: text size, local dates and
         // the composer's.

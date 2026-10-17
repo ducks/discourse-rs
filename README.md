@@ -347,6 +347,14 @@ JSON endpoints return: `/` and `/latest` (the topic list, paged), `/c/...`
 `/tags` (the tag index), `/categories` (the index with featured topics), and `/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
 API document instead. The structure follows Discourse's crawler views.
 
+Dates are drawn in the viewer's timezone, as Ember draws them: the pages
+carry UTC epoch milliseconds (Ember's `data-time` on relative dates,
+`data-tz-*` templates elsewhere, src/viewer_dates.rs) and
+`static/js/dates.js`, loaded in the head, writes each one as the parser
+or an htmx swap inserts it, before the page paints, so a cached page
+serves every viewer. `scripts/check-viewer-dates` checks it in a browser
+in other zones.
+
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point
 it at a Discourse `public/` directory or a restored backup's.
 
