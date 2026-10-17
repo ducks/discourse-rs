@@ -50,6 +50,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/search-menu.css"),
     include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
+    include_str!("../static/css/theme-card.css"),
     include_str!("../static/css/not-found.css"),
     include_str!("../static/css/about.css"),
     include_str!("../static/css/d-page-header.css"),
@@ -297,6 +298,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "admin-config.js",
         JS,
         include_str!("../static/js/admin-config.js"),
+    ),
+    (
+        "popular-themes.js",
+        JS,
+        include_str!("../static/js/popular-themes.js"),
     ),
     (
         "admin-customize.js",

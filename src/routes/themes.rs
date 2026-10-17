@@ -134,18 +134,20 @@ pub async fn config_themes(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin themes page").into());
-    }
+    let page = !json_request(&headers, &uri);
     let mut conn = state.pool.acquire().await?;
     let conn = &mut *conn;
-    with_ctx!(state, conn, |cx| {
+    let doc = with_ctx!(state, conn, |cx| {
         let mut list = Vec::new();
         for t in Theme::where_ordered(conn, "NOT component").await? {
             list.push(themes::index_json(conn, &cx, &t).await?);
         }
-        Ok(Json(json!({ "themes": list })).into_response())
-    })
+        json!({ "themes": list })
+    });
+    if page {
+        return super::admin_customize::themes_page(&state, &guardian, &headers, &uri, &doc).await;
+    }
+    Ok(Json(doc).into_response())
 }
 
 /// GET /admin/config/customize/components(.json): twenty a page, by name,
@@ -160,9 +162,7 @@ pub async fn config_components(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin components page").into());
-    }
+    let page_request = !json_request(&headers, &uri);
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let page = crate::params::string(&query, "page").map(|p| crate::ruby::to_i(&p));
     let mut condition = "component".to_string();
@@ -202,7 +202,7 @@ pub async fn config_components(
     let offset = page.filter(|p| *p > 0).map_or(0, |p| p * PAGE_SIZE);
     let mut conn = state.pool.acquire().await?;
     let conn = &mut *conn;
-    with_ctx!(state, conn, |cx| {
+    let doc = with_ctx!(state, conn, |cx| {
         let mut list = Theme::select(
             conn,
             &format!(
@@ -217,8 +217,13 @@ pub async fn config_components(
         for t in &list {
             out.push(themes::component_json(conn, &cx, t).await?);
         }
-        Ok(Json(json!({ "has_more": has_more, "components": out })).into_response())
-    })
+        json!({ "has_more": has_more, "components": out })
+    });
+    if page_request {
+        return super::admin_customize::components_page(&state, &guardian, &headers, &uri, &doc)
+            .await;
+    }
+    Ok(Json(doc).into_response())
 }
 
 /// A string as a SQL literal.
@@ -236,12 +241,10 @@ pub async fn config_theme_site_settings(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin theme site settings page").into());
-    }
+    let page = !json_request(&headers, &uri);
     let mut conn = state.pool.acquire().await?;
     let conn = &mut *conn;
-    with_ctx!(state, conn, |cx| {
+    let doc = with_ctx!(state, conn, |cx| {
         let mut by_setting = Map::new();
         for name in themes::THEMEABLE_SITE_SETTINGS {
             let mut e = themes::site_setting_metadata(&cx, name)?;
@@ -257,12 +260,18 @@ pub async fn config_theme_site_settings(
                 list.push(json!({"theme_id": theme_id, "theme_name": theme_name, "value": value}));
             }
         }
-        Ok(Json(json!({
+        json!({
             "themeable_site_settings": themes::THEMEABLE_SITE_SETTINGS,
             "themes_with_site_setting_overrides": by_setting,
-        }))
-        .into_response())
-    })
+        })
+    });
+    if page {
+        return super::admin_customize::theme_site_settings_page(
+            &state, &guardian, &headers, &uri, &doc,
+        )
+        .await;
+    }
+    Ok(Json(doc).into_response())
 }
 
 /// `ThemeSiteSetting.themes_with_overridden_settings`: the rows whose value

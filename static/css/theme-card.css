@@ -1,0 +1,263 @@
+/* Core's theme-card.scss and theme-card-preview.scss
+   (common/components), as Rails compiles them: the themes' grid and
+   cards, their screenshot, placeholder and text. */
+
+.themes-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1em;
+  align-items: stretch;
+  margin-top: var(--space-4);
+}
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 0 3px transparent;
+  transition: box-shadow 0.3s ease-in-out;
+  height: 100%;
+}
+.theme-card.--updating {
+  animation:
+    updating 3s ease-in-out 1,
+    updatingInfinite 3s ease-in-out 3s infinite;
+}
+@keyframes updating {
+  0% {
+    box-shadow: 0 0 0 3px transparent;
+    border: 1px solid var(--success);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--success-low);
+    border: 1px solid var(--success);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--success-low);
+    border: 1px solid var(--success);
+  }
+}
+@keyframes updatingInfinite {
+  0% {
+    box-shadow: 0 0 0 3px var(--success-low);
+    border: 1px solid var(--success);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--success-low);
+    border: 1px solid var(--success);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--success-low);
+    border: 1px solid var(--success);
+  }
+}
+.theme-card.--updating .d-icon-arrows-rotate {
+  animation: rotate 3s linear infinite;
+  margin-right: 0.45em;
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.theme-card .admin-config-area-card__content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.theme-card.--default {
+  border-color: var(--tertiary-medium);
+  box-shadow: 0 0 0 3px var(--tertiary-low);
+}
+.theme-card__icons {
+  display: flex;
+}
+.theme-card .ember-checkbox {
+  margin: 0 5px 0 0;
+}
+.theme-card__checkbox-label {
+  margin: 0;
+  font-weight: 400;
+}
+.theme-card__title {
+  font-size: var(--font-up-0);
+  font-weight: 700;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  overflow-wrap: anywhere;
+  color: var(--primary);
+}
+.theme-card__title:visited {
+  color: currentcolor;
+}
+.theme-card__title:hover,
+.theme-card__title:focus {
+  color: var(--tertiary);
+}
+.theme-card__content {
+  padding-inline: 1rem;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.theme-card__description {
+  margin: 0 0 10px 0;
+}
+.theme-card__components {
+  display: -webkit-box;
+  font-size: var(--font-down-1);
+  color: var(--primary-high);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+}
+.theme-card__install-button {
+  margin-top: auto;
+}
+.theme-card__install-more-icon {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--content-border-color);
+  background: var(--primary-very-low);
+  color: var(--primary-medium);
+}
+.theme-card__install-more-icon .d-icon {
+  width: 3rem;
+  height: 3rem;
+}
+.theme-card__button.--set-default {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+.theme-card__footer {
+  flex-direction: column;
+  padding-inline: 1rem;
+  padding-bottom: 1rem;
+}
+.theme-card__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.theme-card__footer-actions {
+  margin-left: auto;
+}
+.theme-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+  min-height: 2rem;
+}
+.theme-card__badge {
+  font-size: var(--font-down-2);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  color: var(--primary-very-high);
+  background: var(--tertiary-low);
+  letter-spacing: 0.25px;
+  align-items: center;
+  display: inline-flex;
+  gap: 0.25rem;
+}
+.theme-card__badge svg {
+  height: 0.75em;
+  color: var(--primary-high);
+}
+.theme-card .admin-config-area-card__header-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--secondary);
+  right: 20px;
+  top: 22px;
+}
+.admin-config-area-card.theme-card .admin-config-area-card__content .external-resources {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  font-size: var(--font-down-1);
+  margin-bottom: 10px;
+}
+.admin-config-area-card.theme-card .admin-config-area-card__content .external-resources .external-link {
+  margin-bottom: 0.25em;
+  color: var(--primary);
+  text-decoration: underline;
+}
+.admin-config-area-card.theme-card {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.admin-config-area-card.theme-card .admin-config-area-card__content {
+  margin: 0;
+  padding-right: 0;
+}
+.admin-config-area-card.theme-card .admin-config-area-card__header-wrapper {
+  flex: none;
+}
+.admin-config-area-card.theme-card.--install-more {
+  border-style: dashed;
+}
+.admin-config-area-card.theme-install-card .theme-install-card__external-links svg {
+  font-size: var(--font-down-3);
+  margin-bottom: 0.1em;
+}
+
+.theme-card-preview__image-wrapper {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+  border-bottom: 1px solid var(--content-border-color);
+}
+.theme-card-preview__image-wrapper svg {
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+.theme-card-preview__image-wrapper:hover .theme-card-preview__screenshot-toggle {
+  opacity: 1;
+}
+.theme-card-preview__image {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  object-position: top left;
+}
+.theme-card-preview__screenshot-toggle {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.theme-card-preview__content {
+  padding-inline: 1rem;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.theme-card-preview__name {
+  font-size: var(--font-up-0);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  color: var(--primary);
+}
+.theme-card-preview__description {
+  margin: 0 0 10px 0;
+}
