@@ -289,6 +289,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/admin-category-management.js"),
     ),
     (
+        "admin-upcoming-changes.js",
+        JS,
+        include_str!("../static/js/admin-upcoming-changes.js"),
+    ),
+    (
         "admin-web-hooks.js",
         JS,
         include_str!("../static/js/admin-web-hooks.js"),

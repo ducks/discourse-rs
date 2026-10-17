@@ -62,6 +62,15 @@ record[:_deprecated] = SiteSettings::DeprecatedSettings::SETTINGS.map { |s| s.fi
 # (Upload#width measures the file when the row has none), for sites
 # without Discourse's public/images beside the port.
 record[:_stock_upload_dimensions] = Upload.where("id < 0").to_h { |u| [u.url, [u.width, u.height]] }
+# The upcoming changes' images (UpcomingChanges.image_data) by setting:
+# the path under the site and the image's size, for UpcomingChanges::List
+# without Discourse's public directory beside the port.
+record[:_upcoming_change_images] =
+  SiteSetting.upcoming_change_site_settings.filter_map do |name|
+    next if !UpcomingChanges.image_exists?(name)
+    data = UpcomingChanges.image_data(name)
+    [name, [UpcomingChanges.image_path(name), data[:width], data[:height]]]
+  end.to_h
 record[:default_locale] = {
   valid_values: LocaleSiteSetting.values,
   translate_names: LocaleSiteSetting.translate_names?,

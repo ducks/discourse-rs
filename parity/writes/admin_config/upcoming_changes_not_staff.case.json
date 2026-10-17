@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/upcoming-changes.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "enable_unified_new",
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/groups.json",
+      "params": {
+        "setting": "enable_unified_new",
+        "group_names": ["staff"]
+      }
+    }
+  ]
+}

@@ -832,7 +832,30 @@ then by what running a forum needs (milestone 6). Briefs:
     InvalidAccess (write cases admin_config/category_management_*).
     Left: the settings tab's category chooser still shows the name, not
     the badge (as on the site settings page).
-    Left: watched words, MCP, upcoming changes, what's new; the
+    Then feat/admin-shell-config-upcoming-changes: the upcoming changes
+    page (DFilterControls' text filter and drawer of status, type,
+    impact role and enabled dropdowns, with their query params; each
+    UpcomingChangeItem's plugin, description with the image preview and
+    feedback link, the depends-on and permanent notices, badges with
+    their tooltips, the "Enabled for..." select with its group
+    selection, the related settings links) with
+    Admin::Config::UpcomingChangesController ported: UpcomingChanges::
+    List (the declared metadata, ConditionalDisplay's rules, the images
+    recorded with the setting enums, the enabled-for target and groups,
+    dependents, the last visit), UpcomingChanges::Toggle (the setting
+    saved as add_override! saves it, its log and event, the groups
+    cleared where not allowed, the plugin enabled setting's
+    BackfillNotifiedEvents, and the :upcoming_change_enabled and
+    :upcoming_change_disabled handlers: RemoveAndReplaceUncategorized
+    Toggled with its snapshot, HorizonHighContextTopicCardsToggled) and
+    SiteSetting::UpsertGroups (write cases admin_config/
+    upcoming_changes_*). The write harness's `settings` now update a
+    stored row in place, as DbProvider#save does. Refused: toggling
+    voice_enabled (the voice plugin's on_enabled_change) and enabling
+    enable_discourse_workflows (its PluginEnableHandler). Left: the
+    descriptions' setting links point at the all settings page until
+    90g9 rewrites them.
+    Left: watched words, MCP, what's new; the
     settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L
@@ -1697,7 +1720,8 @@ generate_theme_screenshot_thumbnails (171).
 172. `feat/admin-email-templates-rest` S: updating, showing and reverting
     customized email templates (routes/admin_email_templates.rs:407,444,
     478), unblocked by 90a's override layer
-173. `feat/upcoming-changes` S: UpcomingChanges::List: what's new and
+173. `feat/upcoming-changes` S: UpcomingChanges::List is ported
+    (crate::upcoming_changes, 90g6); left: what's new and
     toggle-feature (routes/admin_dashboard_sections.rs:439; the
     `not_yet` case admin_dashboard/dashboard_whats_new), undeclared
     changes and display conditions reading themes or categories

@@ -31,7 +31,7 @@ const LOCALIZED: [(&str, &str); 3] = [
     ("extended_description", "extended_site_description"),
 ];
 
-fn params_of(
+pub(super) fn params_of(
     state: &AppState,
     headers: &HeaderMap,
     uri: &Uri,

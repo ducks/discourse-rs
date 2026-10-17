@@ -66,6 +66,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::FontsController | 4 | 0 | 0 | 0 |
 | Admin::Config::AboutController | 11 | 1 | 0 | 0 |
 | Admin::Config::CategoryManagementController#categories | 5 | 1 | 0 | 0 |
+| Admin::Config::UpcomingChangesController | 19 | 0 | 1 | 0 |
 | Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
@@ -109,7 +110,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (73 sections)** | **467** | **328** | **227** | **516** |
+| **All (79 sections)** | **521** | **333** | **228** | **518** |
 
 ## Cases added from this inventory
 
@@ -998,6 +999,34 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 125 | orders by name and paginates | covered | admin_config/category_management_list (new) |
 | 156 | filters by visibility | covered | admin_config/category_management_list (new) |
 | - | (no spec it) an unknown type, a moderator | covered | admin_config/category_management_list, category_management_denied (new) |
+
+## Admin::Config::UpcomingChangesController
+
+`spec/requests/admin/config/upcoming_changes_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 24 | index > non-admin gets 404 | covered | admin_config/upcoming_changes_not_staff (new) |
+| 33 | index > lists upcoming changes | covered | admin_config/upcoming_changes_list (new) |
+| 40 | index > includes the mocked upcoming change | needs-harness | mock_upcoming_change_metadata stubs the declared changes |
+| 62 | index > group names when site setting groups are configured | covered | admin_config/upcoming_changes_toggle, upcoming_changes_groups_partial (new) |
+| 84 | update_groups > non-admin gets 404 | covered | admin_config/upcoming_changes_not_staff (new) |
+| 97 | update_groups > 200 on success | covered | admin_config/upcoming_changes_toggle (new) |
+| 108 | update_groups > creates a site setting group record | covered | admin_config/upcoming_changes_toggle (new) |
+| 121 | update_groups > updates an existing record | covered | admin_config/upcoming_changes_toggle (new) |
+| 135 | update_groups > deletes an existing record | covered | admin_config/upcoming_changes_toggle (new) |
+| 150 | update_groups > logs the change | covered | admin_config/upcoming_changes_toggle (new) |
+| 165 | update_groups > 400 when setting is missing | covered | admin_config/upcoming_changes_toggle (new) |
+| 175 | update_groups > only existing groups | covered | admin_config/upcoming_changes_groups_partial (new) |
+| 204 | toggle_change > non-admin gets 404 | covered | admin_config/upcoming_changes_not_staff (new) |
+| 213 | toggle_change > 200 on success | covered | admin_config/upcoming_changes_toggle (new) |
+| 220 | toggle_change > false to true | covered | admin_config/upcoming_changes_toggle (new) |
+| 228 | toggle_change > true to false | covered | admin_config/upcoming_changes_toggle (new) |
+| 240 | toggle_change > logs the change | covered | admin_config/upcoming_changes_toggle (new) |
+| 252 | toggle_change > 400 when setting_name is missing | covered | admin_config/upcoming_changes_toggle (new) |
+| 259 | toggle_change > 404 when setting_name is invalid | covered | admin_config/upcoming_changes_toggle (new) |
+| 269 | toggle_change > rejects settings that are not upcoming changes | covered | admin_config/upcoming_changes_toggle (new) |
+| - | (no spec it) a moderator; groups a change doesn't allow; remove_and_replace_uncategorized's handler (its snapshot, the restore) | covered | admin_config/upcoming_changes_denied, upcoming_changes_toggle, upcoming_changes_uncategorized, upcoming_changes_uncategorized_restore, upcoming_changes_uncategorized_snapshot (new) |
 
 ## Admin::Config::WelcomeBannerController#themes_with_setting
 

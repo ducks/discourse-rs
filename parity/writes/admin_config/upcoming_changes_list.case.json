@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/upcoming-changes.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/upcoming-changes.json",
+      "params": {
+        "filter_statuses": "beta,stable"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "settings": {
+    "allow_uncategorized_topics": true,
+    "uncategorized_category_id": 1
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/upcoming-changes.json",
+      "params": {
+        "filter_statuses": "stable"
+      }
+    }
+  ]
+}

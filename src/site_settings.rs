@@ -303,7 +303,20 @@ pub enum ChangeStatus {
 }
 
 impl ChangeStatus {
-    fn parse(s: &str) -> Option<ChangeStatus> {
+    /// The status's name, as the metadata's `status` symbol.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ChangeStatus::Conceptual => "conceptual",
+            ChangeStatus::Experimental => "experimental",
+            ChangeStatus::Alpha => "alpha",
+            ChangeStatus::Beta => "beta",
+            ChangeStatus::Stable => "stable",
+            ChangeStatus::Permanent => "permanent",
+            ChangeStatus::Never => "never",
+        }
+    }
+
+    pub(crate) fn parse(s: &str) -> Option<ChangeStatus> {
         Some(match s {
             "conceptual" => ChangeStatus::Conceptual,
             "experimental" => ChangeStatus::Experimental,

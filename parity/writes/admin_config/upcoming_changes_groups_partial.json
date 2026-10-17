@@ -1,0 +1,334 @@
+{
+  "name": "upcoming_changes_groups_partial",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/groups.json",
+      "params": {
+        "setting": "enable_unified_new",
+        "group_names": [
+          "trust_level_2",
+          "no_such_group",
+          "staff"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/upcoming-changes.json",
+      "params": {
+        "filter_statuses": "stable"
+      }
+    }
+  ],
+  "started_at": "2026-10-17T07:17:45.298303",
+  "transaction_started_at": "2026-10-17T07:17:41.923125",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "upcoming_changes": [
+          {
+            "setting": "chat_pinned_messages",
+            "humanized_name": "Chat pinned messages",
+            "description": "Enable pinned messages in chat channels.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/397571",
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [
+              "chat_pinning_messages_allowed_groups"
+            ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "dashboard_improvements",
+            "humanized_name": "Dashboard improvements",
+            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/404528",
+              "impact_type": "feature",
+              "impact_role": "admins",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "enable_invite_modal_with_roles",
+            "humanized_name": "Enable invite modal with roles",
+            "description": "Enables a redesigned invite flow that lets admins invite someone directly as an admin. The invitee becomes a moderator on signup and an admin once the inviter confirms via email.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/407727",
+              "impact_type": "feature",
+              "impact_role": "admins",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3048/images/upcoming_changes/enable_invite_modal_with_roles.png",
+                "width": 700,
+                "height": 410
+              },
+              "enabled_for": "everyone"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "enable_solved_shared_issues",
+            "humanized_name": "Enable solved shared issues",
+            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/402498",
+              "permanent_warning": false,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
+                "width": 1200,
+                "height": 330
+              },
+              "enabled_for": "everyone"
+            },
+            "plugin": "Solved",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "enable_unified_new",
+            "humanized_name": "Enable unified new",
+            "description": "Replace the separate New and Unread lists with a single unified New list that makes it easier for members to distinguish between new topics and topics with new replies. When enabled, the /new route shows a combined view with subtabs for Topics (new topics) and Replies (tracked topics with new replies), and the unread option is removed from the top menu.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/404728",
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3048/images/upcoming_changes/enable_unified_new.png",
+                "width": 1112,
+                "height": 436
+              },
+              "enabled_for": "groups"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": "staff,trust_level_2"
+          },
+          {
+            "setting": "remove_and_replace_uncategorized",
+            "humanized_name": "Remove and replace uncategorized",
+            "description": "Replaces the special Uncategorized category with a standard category of the same name, and migrates all topics over to it.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/406373",
+              "impact_type": "other",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": [
+                "allow_uncategorized_topics",
+                "suppress_uncategorized_badge"
+              ],
+              "enabled_for": "everyone"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "rename_faq_to_guidelines",
+            "humanized_name": "Rename FAQ to guidelines",
+            "description": "This change renames the FAQ page to Guidelines. The FAQ page will still be available at /faq. The <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=faq_url\" data-setting-name=\"faq_url\" data-setting-area=\"legal\" data-setting-category=\"legal\">FAQ URL</a> setting works as before.",
+            "value": true,
+            "upcoming_change": {
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/395099",
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "site_setting_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "enable_unified_new",
+          "group_ids": "3|12",
+          "created_at": "2026-10-17T07:17:41.923125",
+          "updated_at": "2026-10-17T07:17:41.923125"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 409,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "created_at": "2026-10-17T07:17:43.459081",
+            "rotated_at": "2026-10-17T07:17:43.453722",
+            "updated_at": "2026-10-17T07:17:43.459081",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 409,
+            "seen_at": "2026-10-17T07:17:45.306092",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "created_at": "2026-10-17T07:17:43.459081",
+            "rotated_at": "2026-10-17T07:17:43.453722",
+            "updated_at": "2026-10-17T07:17:43.459081",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_custom_fields": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "last_visited_upcoming_changes_at",
+          "value": "2026-10-17T07:17:45Z",
+          "user_id": 1,
+          "created_at": "2026-10-17T07:17:45.391041",
+          "updated_at": "2026-10-17T07:17:45.391041"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 123,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "enable_unified_new",
+          "topic_id": null,
+          "new_value": "3|12",
+          "admin_only": true,
+          "created_at": "2026-10-17T07:17:45.337767",
+          "ip_address": null,
+          "updated_at": "2026-10-17T07:17:45.337767",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_setting_groups": 1,
+    "user_custom_fields": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "148c641ea5b74249941cf6d9cf880bebe68da07528270e858631334912ed84bc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

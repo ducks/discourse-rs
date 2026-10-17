@@ -1,0 +1,221 @@
+{
+  "name": "upcoming_changes_uncategorized",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    }
+  ],
+  "started_at": "2026-10-17T07:07:58.224889",
+  "transaction_started_at": "2026-10-17T07:07:57.102292",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "remove_and_replace_uncategorized",
+          "value": "f",
+          "data_type": 5,
+          "created_at": "2026-10-17T07:07:58.2456",
+          "updated_at": "2026-10-17T07:07:58.336053"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "upcoming_change_events": {
+      "inserted": [
+        {
+          "id": 138,
+          "created_at": "2026-10-17T07:07:58.266969",
+          "event_data": null,
+          "event_type": 4,
+          "updated_at": "2026-10-17T07:07:58.266969",
+          "acting_user_id": 1,
+          "upcoming_change_name": "remove_and_replace_uncategorized"
+        },
+        {
+          "id": 139,
+          "created_at": "2026-10-17T07:07:58.313508",
+          "event_data": null,
+          "event_type": 3,
+          "updated_at": "2026-10-17T07:07:58.313508",
+          "acting_user_id": 1,
+          "upcoming_change_name": "remove_and_replace_uncategorized"
+        },
+        {
+          "id": 140,
+          "created_at": "2026-10-17T07:07:58.354342",
+          "event_data": null,
+          "event_type": 4,
+          "updated_at": "2026-10-17T07:07:58.354342",
+          "acting_user_id": 1,
+          "upcoming_change_name": "remove_and_replace_uncategorized"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 409,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "i2WunDPOIMqE+0L57qwDSa2BmdU=",
+            "created_at": "2026-10-17T07:07:57.484665",
+            "rotated_at": "2026-10-17T07:07:57.483622",
+            "updated_at": "2026-10-17T07:07:57.484665",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "i2WunDPOIMqE+0L57qwDSa2BmdU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 409,
+            "seen_at": "2026-10-17T07:07:58.232788",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "i2WunDPOIMqE+0L57qwDSa2BmdU=",
+            "created_at": "2026-10-17T07:07:57.484665",
+            "rotated_at": "2026-10-17T07:07:57.483622",
+            "updated_at": "2026-10-17T07:07:57.484665",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "i2WunDPOIMqE+0L57qwDSa2BmdU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 122,
+          "context": "Manually toggled by user",
+          "details": null,
+          "post_id": null,
+          "subject": "remove_and_replace_uncategorized",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-10-17T07:07:58.261664",
+          "ip_address": null,
+          "updated_at": "2026-10-17T07:07:58.261664",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "true",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 122,
+          "context": "Manually toggled by user",
+          "details": null,
+          "post_id": null,
+          "subject": "remove_and_replace_uncategorized",
+          "topic_id": null,
+          "new_value": "true",
+          "admin_only": true,
+          "created_at": "2026-10-17T07:07:58.309262",
+          "ip_address": null,
+          "updated_at": "2026-10-17T07:07:58.309262",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "false",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 122,
+          "context": "Manually toggled by user",
+          "details": null,
+          "post_id": null,
+          "subject": "remove_and_replace_uncategorized",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-10-17T07:07:58.348353",
+          "ip_address": null,
+          "updated_at": "2026-10-17T07:07:58.348353",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "true",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "upcoming_change_events": 138,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "e1ba494977372681c2990732153ed19629c32a0e3d2e9b4915256627b8e791fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

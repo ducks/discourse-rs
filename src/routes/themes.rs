@@ -1319,6 +1319,44 @@ async fn update_one_setting(
     theme_writes::update_setting(conn, &vcx, theme_id, name, value, &state.i18n).await
 }
 
+/// Themes::Action::HorizonHighContextTopicCardsToggled: Horizon's
+/// `topic_card_high_context` follows the upcoming change, when the theme
+/// has the setting and it differs; then the theme saved.
+pub(super) async fn horizon_high_context_toggled(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    enabled: bool,
+) -> Result<(), AppError> {
+    const HORIZON: i32 = -2;
+    const NAME: &str = "topic_card_high_context";
+    let Some(theme) = Theme::find(&mut *conn, HORIZON).await? else {
+        return Ok(());
+    };
+    let current = cached_setting(&mut *conn, state, theme.id, NAME).await?;
+    match current {
+        None => return Ok(()),
+        Some(Value::Bool(b)) if b == enabled => return Ok(()),
+        Some(_) => {}
+    }
+    match update_one_setting(&mut *conn, state, theme.id, NAME, Some(&json!(enabled))).await? {
+        Ok(false) => {}
+        Ok(true) => {
+            return Err(Unsupported(
+                "theme settings that request a refresh (Discourse.request_refresh!)",
+            )
+            .into());
+        }
+        Err(theme_writes::SettingError::NotFound) => return Ok(()),
+        Err(theme_writes::SettingError::Invalid(message)) => {
+            return Err(std::io::Error::other(message).into());
+        }
+    }
+    fresh_ctx!(state, conn, settings, urls, cx);
+    let env = theme_writes::Env::load(&mut *conn, &cx).await?;
+    theme_writes::after_save(&mut *conn, &env, theme.id, &[], false).await?;
+    Ok(())
+}
+
 /// PUT /admin/themes/:id/setting(.json): update_single_setting.
 pub async fn update_setting(
     State(state): State<AppState>,

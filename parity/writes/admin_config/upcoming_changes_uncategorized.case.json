@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/upcoming-changes/toggle.json",
+      "params": {
+        "setting_name": "remove_and_replace_uncategorized",
+        "enabled": "false"
+      }
+    }
+  ]
+}
