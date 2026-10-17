@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {
+    "allow_index_in_robots_txt": false
+  },
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/robots.json"},
+    {"method": "PUT", "path": "/admin/customize/robots.json", "params": {"robots_txt": "User-agent: *\nAllow: /\n"}},
+    {"method": "DELETE", "path": "/admin/customize/robots.json"}
+  ]
+}

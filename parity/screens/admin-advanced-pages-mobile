@@ -22,3 +22,15 @@
 /admin/badges/award/1 as=admin
 /admin/plugins as=admin
 /admin/plugins/poll as=admin
+/admin/customize/watched_words/action/block as=admin
+/admin/customize/watched_words/action/replace as=admin
+/admin/customize/watched_words/action/tag as=admin
+/admin/customize/robots as=admin mask=.robots-txt-input
+/admin/customize/embedding as=admin
+/admin/customize/embedding/settings as=admin
+/admin/customize/embedding/posts_and_topics as=admin
+/admin/customize/embedding/crawlers as=admin
+/admin/customize/embedding/new as=admin
+/admin/customize/site_texts as=admin
+/admin/customize/site_texts?q=topic&overridden=true as=admin
+/admin/customize/site_texts/education.new-reply?locale=en as=admin

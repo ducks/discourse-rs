@@ -1,6 +1,7 @@
 //! Admin::SiteTextsController: the site texts (translation overrides and
 //! theme translations) under /admin/customize/site_texts, and the reseed
-//! options. JSON only: the admin pages are Ember's.
+//! options. A page request for the index or a site text is the Ember
+//! page (crate::routes::admin_customize).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -155,8 +156,13 @@ pub async fn index(
         return Ok(r);
     }
     if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin site texts page").into());
+        return super::admin_customize::site_texts_page(&state, &guardian, &headers, &uri).await;
     }
+    index_json(state, uri).await
+}
+
+/// The index's document (what the page asks for too).
+pub(super) async fn index_json(state: AppState, uri: Uri) -> Result<Response, AppError> {
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let flag = |k: &str| crate::params::string(&query, k).as_deref() == Some("true");
     let overridden = flag("overridden");
@@ -469,8 +475,14 @@ pub async fn show(
         return Ok(super::topics::not_found_response(&state));
     };
     if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin site texts page").into());
+        return super::admin_customize::site_text_page(&state, &guardian, &headers, &uri, &id)
+            .await;
     }
+    show_json(state, id, uri).await
+}
+
+/// A site text's document (what the edit page asks for too).
+pub(super) async fn show_json(state: AppState, id: String, uri: Uri) -> Result<Response, AppError> {
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let locale = match fetch_locale(&state, crate::params::string(&query, "locale").as_deref())? {
         Ok(l) => l,

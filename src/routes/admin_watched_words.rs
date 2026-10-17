@@ -30,10 +30,20 @@ fn strip_json(id: &str) -> &str {
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
+    if !super::admin_pages::wants_json(&uri, &headers) {
+        return super::admin_customize::watched_words_page(&state, &guardian, &headers, &uri, None)
+            .await;
+    }
+    index_json(&state).await
+}
+
+async fn index_json(state: &AppState) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let tagging = s.get("tagging_enabled")?.truthy();
@@ -42,11 +52,26 @@ pub async fn index(
 }
 
 pub async fn index_action(
-    state: State<AppState>,
-    guardian: AuthGuardian,
-    Path(_): Path<String>,
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
-    index(state, guardian).await
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    if !super::admin_pages::wants_json(&uri, &headers) {
+        return super::admin_customize::watched_words_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            Some(&id),
+        )
+        .await;
+    }
+    index_json(&state).await
 }
 
 /// POST /admin/customize/watched_words(.json)

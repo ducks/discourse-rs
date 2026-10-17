@@ -397,7 +397,28 @@ pub async fn set_and_log_details(
     } else {
         (previous.to_s(), new_value.to_s())
     };
-    // StaffActionLogger#log_site_setting_change
+    log_change(conn, actor_id, name, &previous, &new_value, details).await
+}
+
+/// StaffActionLogger#log_site_setting_change.
+pub async fn log_site_setting_change(
+    conn: &mut PgConnection,
+    actor_id: i32,
+    name: &str,
+    previous: &str,
+    new_value: &str,
+) -> Result<(), AppError> {
+    log_change(conn, actor_id, name, previous, new_value, None).await
+}
+
+async fn log_change(
+    conn: &mut PgConnection,
+    actor_id: i32,
+    name: &str,
+    previous: &str,
+    new_value: &str,
+    details: Option<&str>,
+) -> Result<(), AppError> {
     sqlx::query(
         "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, details, \
                                      admin_only, created_at, updated_at) \

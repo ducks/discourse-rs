@@ -1,0 +1,163 @@
+{
+  "name": "no_index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/robots.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/robots.json",
+      "params": {
+        "robots_txt": "User-agent: *\nAllow: /\n"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/robots.json"
+    }
+  ],
+  "started_at": "2026-10-17T02:51:51.245932",
+  "transaction_started_at": "2026-10-17T02:51:47.686378",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "User-agent: googlebot\nAllow: /\nDisallow: /uploads/*\n\nUser-agent: *\nDisallow: /\n\n",
+        "overridden": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "User-agent: *\nAllow: /\n",
+        "overridden": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "robots_txt": "User-agent: googlebot\nAllow: /\nDisallow: /uploads/*\n\nUser-agent: *\nDisallow: /\n\n",
+        "overridden": false
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 39,
+          "name": "overridden_robots_txt",
+          "value": "",
+          "data_type": 1,
+          "created_at": "2026-10-17T02:51:51.29993",
+          "updated_at": "2026-10-17T02:51:51.339673"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 242,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NZ18eSGh5XVTiSuyklrIFj/kYuQ=",
+            "created_at": "2026-10-17T02:51:49.333039",
+            "rotated_at": "2026-10-17T02:51:49.325828",
+            "updated_at": "2026-10-17T02:51:49.333039",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NZ18eSGh5XVTiSuyklrIFj/kYuQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 242,
+            "seen_at": "2026-10-17T02:51:51.255677",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NZ18eSGh5XVTiSuyklrIFj/kYuQ=",
+            "created_at": "2026-10-17T02:51:49.333039",
+            "rotated_at": "2026-10-17T02:51:49.325828",
+            "updated_at": "2026-10-17T02:51:49.333039",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NZ18eSGh5XVTiSuyklrIFj/kYuQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "overridden_robots_txt",
+          "topic_id": null,
+          "new_value": "User-agent: *\nAllow: /\n",
+          "admin_only": true,
+          "created_at": "2026-10-17T02:51:51.318116",
+          "ip_address": null,
+          "updated_at": "2026-10-17T02:51:51.318116",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "overridden_robots_txt",
+          "topic_id": null,
+          "new_value": "",
+          "admin_only": true,
+          "created_at": "2026-10-17T02:51:51.344009",
+          "ip_address": null,
+          "updated_at": "2026-10-17T02:51:51.344009",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "User-agent: *\nAllow: /\n",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 39,
+    "user_histories": 75
+  },
+  "settings": {
+    "allow_index_in_robots_txt": false
+  },
+  "recorded_from": {
+    "case": "d9008069014e50b6b2e119f159f3b14e9741234b35d44b028b9f2d2473e2c22c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
