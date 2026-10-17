@@ -804,9 +804,24 @@ then by what running a forum needs (milestone 6). Briefs:
     shared with them, the errors' format_with_full_message, the restore of
     both keys on an error, the logs) and index, show and revert reading
     the overrides (write cases admin_email/email_templates_update*).
-    Refused, saying so: DEditor's link modal and emoji picker there. Left:
-    the themes and components with their editor, theme site settings,
-    color palettes, email style, form templates), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    Refused, saying so: DEditor's link modal and emoji picker there. Then
+    feat/admin-shell-color-palettes: /admin/config/colors, the list over
+    its document (the subheader with New and its base palette modal,
+    DFilterControls' text and type filters as the route's query params
+    with reset and no results, ColorPaletteListItem with
+    ColorPalettePreview's colors and their primary-low and tertiary-low
+    as color-transformations.js makes them, the theme link, the default
+    and user selectable badges, Edit or the built-in palette's tooltip,
+    the menu's user selectable, set as light or dark default and delete);
+    /admin/config/colors/:id, the palette's editor (the name's inline
+    edit, Duplicate, Delete, the theme owner's note, the default light,
+    default dark and user selectable toggles, ColorPaletteEditor's color
+    and hex inputs with their checks and revert, the unsaved changes
+    note, Copy to Clipboard, Save changes), a palette that isn't there
+    going back to the list; /admin/customize/colors(/:id) on to them.
+    Left: the themes and components with their editor, theme site
+    settings, email style, form templates; the base palette modal's
+    ColorPalettePicker is a native select), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
     rollback, the read-only and archive mode toggles with their

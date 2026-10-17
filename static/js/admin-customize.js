@@ -2048,6 +2048,535 @@
     }
   }
 
+  // --- color palettes --------------------------------------------------------
+
+  function palettesPage() {
+    return document.querySelector(".admin-contents.color-palettes .color-palette__list, .admin-contents.color-palettes .d-filter-controls")
+      ? document.querySelector(".admin-contents.color-palettes")
+      : null;
+  }
+
+  function paletteEditor() {
+    return document.querySelector(".admin-contents.color-palettes form[data-palette-id]");
+  }
+
+  function palettesData() {
+    var el = document.getElementById("color-palettes-data");
+    return el ? JSON.parse(el.textContent) : { palettes: [], extras: {} };
+  }
+
+  function saveScheme(id, data) {
+    return ui().ajax(id ? "PUT" : "POST", "/admin/color_schemes" + (id ? "/" + id : "") + ".json", {
+      json: { color_scheme: data },
+    });
+  }
+
+  // DFilterControls over the list: the text against the name and theme
+  // name, the type dropdown, both in the URL (replace).
+  function filterPalettes() {
+    var root = palettesPage();
+    if (!root) {
+      return;
+    }
+    var input = root.querySelector(".d-filter-controls__input");
+    var select = root.querySelector(".d-filter-controls__dropdown");
+    var text = input ? input.value.toLowerCase() : "";
+    var kind = select ? select.value : "all";
+    var params = new URLSearchParams(location.search);
+    if (text) {
+      params.set("filter", input.value);
+    } else {
+      params.delete("filter");
+    }
+    if (kind !== "all") {
+      params.set("type", kind);
+    } else {
+      params.delete("type");
+    }
+    history.replaceState(history.state, "", location.pathname + (params.toString() ? "?" + params : ""));
+    // The page drawn again for the params: the list or the no results.
+    fetchPage(location.pathname.replace(ui().base(), "") + (params.toString() ? "?" + params : "")).then(function (doc) {
+      var mine = palettesPage();
+      var fresh = doc.querySelector(".admin-contents.color-palettes");
+      if (!mine || !fresh) {
+        return;
+      }
+      mine.querySelectorAll(".color-palette__list, .d-filter-controls__no-results").forEach(function (el) {
+        el.remove();
+      });
+      var controls = mine.querySelector(".d-filter-controls");
+      fresh.querySelectorAll(".color-palette__list, .d-filter-controls__no-results").forEach(function (el) {
+        controls.insertAdjacentElement("afterend", document.importNode(el, true));
+      });
+      var reset = controls.querySelector(".d-filter-controls__reset");
+      if (reset) {
+        reset.disabled = !text && kind === "all";
+      }
+      if (select) {
+        select.classList.toggle("--active", kind !== "all");
+      }
+    });
+  }
+
+  var paletteTimer = null;
+
+  document.addEventListener("input", function (event) {
+    if (palettesPage() && event.target.classList.contains("d-filter-controls__input")) {
+      clearTimeout(paletteTimer);
+      paletteTimer = setTimeout(filterPalettes, 250);
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    if (palettesPage() && event.target.classList.contains("d-filter-controls__dropdown")) {
+      filterPalettes();
+    }
+  });
+
+  // setDefaultColorScheme: the palette made the default theme's light or
+  // dark one (a base palette: the current one's flag taken off).
+  function setDefaultPalette(item, mode) {
+    var data = palettesData();
+    var theme = data.extras.default_theme;
+    var id = Number(item.dataset.paletteId);
+    var scheme = data.palettes.find(function (p) {
+      return p.id === id;
+    });
+    var field = mode === "light" ? "default_light_on_theme" : "default_dark_on_theme";
+    var themeField = mode === "light" ? "color_scheme_id" : "dark_color_scheme_id";
+    var request;
+    if (!scheme.is_base) {
+      var change = {};
+      change[field] = true;
+      request = saveScheme(id, change);
+    } else {
+      var current = theme && theme[themeField];
+      var off = {};
+      off[field] = false;
+      request = current > 0 ? saveScheme(current, off) : Promise.resolve();
+    }
+    request
+      .then(function () {
+        if (!scheme.is_builtin_default) {
+          ui().toast(
+            t("admin.customize.colors.set_default_success", {
+              schemeName: scheme.name,
+              themeName: theme ? theme.name : "",
+            })
+          );
+        }
+        go(location.pathname.replace(ui().base(), "") + location.search);
+      })
+      .catch(function () {
+        Discourse.dialog.alert({ message: t("admin.customize.colors.default_error") });
+      });
+  }
+
+  document.addEventListener("click", function (event) {
+    var root = palettesPage();
+    if (!root || !event.target.closest) {
+      return;
+    }
+    if (root.contains(event.target)) {
+      var trigger = event.target.closest(".color-palette__controls .fk-d-menu__trigger");
+      if (trigger && Discourse.float) {
+        var template = trigger.nextElementSibling;
+        var content = template.content.firstElementChild.cloneNode(true);
+        content.dataset.paletteId = trigger.closest("[data-palette-id]").dataset.paletteId;
+        trigger.setAttribute("aria-expanded", "true");
+        Discourse.float.menu(trigger, {
+          identifier: "color-palette-menu",
+          mainClass: "color-palette-menu-content",
+          content: content,
+          onClose: function () {
+            trigger.setAttribute("aria-expanded", "false");
+          },
+        });
+        return;
+      }
+      if (event.target.closest(".create-new-palette:not([data-page-action])")) {
+        newPaletteModal();
+        return;
+      }
+      if (event.target.closest(".d-filter-controls__reset, .d-filter-controls__reset-button")) {
+        var input = root.querySelector(".d-filter-controls__input");
+        var select = root.querySelector(".d-filter-controls__dropdown");
+        if (input) {
+          input.value = "";
+        }
+        if (select) {
+          select.value = "all";
+        }
+        filterPalettes();
+        return;
+      }
+    }
+    var menu = event.target.closest("[data-palette-id] .dropdown-menu, .color-palette-menu-content");
+    var holder = menu && menu.closest("[data-palette-id]");
+    var button = event.target.closest(".dropdown-menu button");
+    if (!holder || !button) {
+      return;
+    }
+    Discourse.float.close("color-palette-menu");
+    var id = holder.dataset.paletteId;
+    if (button.classList.contains("palette-user-selectable")) {
+      var item = root.querySelector('li[data-palette-id="' + id + '"]');
+      var on = item.dataset.userSelectable !== "true";
+      saveScheme(id, { user_selectable: on })
+        .then(function () {
+          go(location.pathname.replace(ui().base(), "") + location.search);
+        })
+        .catch(ui().failed);
+    } else if (button.classList.contains("btn-palette-default")) {
+      setDefaultPalette(holder, button.dataset.mode);
+    } else if (button.classList.contains("palette-delete")) {
+      Discourse.dialog.deleteConfirm({
+        title: t("admin.customize.colors.delete_confirm"),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/color_schemes/" + id)
+            .then(function () {
+              go(location.pathname.replace(ui().base(), "") + location.search);
+            })
+            .catch(ui().failed);
+        },
+      });
+    }
+  });
+
+  // ColorSchemeSelectBaseModal: a base palette copied as a new one.
+  function newPaletteModal() {
+    var data = palettesData();
+    var palettes = data.palettes.filter(function (base) {
+      return !(
+        base.id < 0 &&
+        data.palettes.some(function (p) {
+          return p.name === base.name && p.base_scheme_id === base.base_scheme_id && p.id > 0;
+        })
+      );
+    });
+    Discourse.modal.show({
+      className: "create-color-palette",
+      title: t("admin.customize.colors.select_base.title"),
+      body: function (body) {
+        body.innerHTML =
+          escapeHtml(t("admin.customize.colors.select_base.description")) +
+          ' <select class="select-base-palette d-native-select">' +
+          palettes
+            .map(function (p) {
+              return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.name) + "</option>";
+            })
+            .join("") +
+          "</select>";
+      },
+      footer: function (footer, close) {
+        footer.innerHTML =
+          '<button class="btn btn-icon-text btn-primary" type="button">' +
+          ui().icon("plus") +
+          '<span class="d-button-label">' +
+          escapeHtml(t("admin.customize.new")) +
+          "</span></button>";
+        footer.querySelector("button").addEventListener("click", function () {
+          var select = footer.closest(".d-modal").querySelector(".select-base-palette");
+          var base = palettes.find(function (p) {
+            return String(p.id) === select.value;
+          });
+          saveScheme(null, {
+            name: t("admin.customize.colors.new_name"),
+            base_scheme_id: base.id,
+            colors: base.colors.map(function (c) {
+              return { name: c.name, hex: c.hex };
+            }),
+          })
+            .then(function (json) {
+              close();
+              go("/admin/config/colors/" + json.id);
+            })
+            .catch(ui().failed);
+        });
+      },
+    });
+  }
+
+  // The editor: what changed since the palette loaded or was saved.
+  var paletteChanged = {};
+
+  function paletteData() {
+    var el = document.getElementById("color-palette-data");
+    return el ? JSON.parse(el.textContent) : null;
+  }
+
+  function markUnsaved(form) {
+    var unsaved = Object.keys(paletteChanged).some(function (k) {
+      return paletteChanged[k];
+    });
+    var card = form.querySelector(".admin-config-color-palettes__save-card");
+    var note = card.querySelector(".admin-config-color-palettes__unsaved-changes");
+    if (unsaved && !note) {
+      card.insertAdjacentHTML(
+        "afterbegin",
+        '<span class="admin-config-color-palettes__unsaved-changes">' +
+          escapeHtml(t("admin.config_areas.color_palettes.unsaved_changes")) +
+          "</span>"
+      );
+    } else if (!unsaved && note) {
+      note.remove();
+    }
+  }
+
+  function setColor(item, hex) {
+    hex = hex.replace(/^#/, "");
+    var full = hex.length === 3 ? hex.split("").map(function (c) { return c + c; }).join("") : hex;
+    item.querySelector(".color-palette-editor__input").value = "#" + full;
+    item.querySelector(".color-palette-editor__text-input").value = full;
+    item.dataset.hex = hex;
+    var revert = item.querySelector(".color-palette-editor__revert");
+    if (revert) {
+      revert.classList.toggle("--hidden", !item.dataset.defaultHex || item.dataset.defaultHex === hex);
+    }
+  }
+
+  function toggleSwitch(button, on) {
+    button.setAttribute("aria-checked", String(on));
+    button.nextElementSibling.innerHTML = on ? ui().icon("check") : "";
+  }
+
+  function nameEditing(form, editing) {
+    var control = form.querySelector(".admin-config-color-palettes__name-control");
+    var data = paletteData();
+    if (editing) {
+      control.outerHTML =
+        '<div class="form-kit__container form-kit__field form-kit__field-input --full" data-control-type="input" data-name="name" id="control-name"><div class="form-kit__container-content"><div class="admin-config-color-palettes__name-control"><div class="form-kit__control-input-wrapper"><input class="form-kit__control-input" id="control-name-input" name="name" type="text" value="' +
+        escapeHtml(data.name) +
+        '"></div><button class="btn no-text btn-icon btn-primary admin-config-color-palettes__save-name" type="button">' +
+        ui().icon("check") +
+        '<span aria-hidden="true">&#8203;</span></button><button class="btn no-text btn-icon btn-flat admin-config-color-palettes__cancel-edit-name" type="button">' +
+        ui().icon("xmark") +
+        '<span aria-hidden="true">&#8203;</span></button></div></div></div>';
+      form.querySelector("#control-name-input").focus();
+    } else {
+      var field = form.querySelector('.form-kit__field[data-name="name"]');
+      field.outerHTML =
+        '<div class="admin-config-color-palettes__name-control"><h2 class="admin-config-color-palettes__name">' +
+        escapeHtml(data.name) +
+        '</h2><button class="btn no-text btn-icon btn-flat admin-config-color-palettes__edit-name" type="button">' +
+        ui().icon("pencil") +
+        '<span aria-hidden="true">&#8203;</span></button></div>';
+      paletteChanged.name = false;
+      markUnsaved(form);
+    }
+  }
+
+  function savePalette(form, nameOnly) {
+    var data = paletteData();
+    var nameInput = form.querySelector("#control-name-input");
+    if (nameInput && !nameInput.value.trim()) {
+      return;
+    }
+    var payload = { name: nameInput ? nameInput.value : data.name };
+    if (!nameOnly) {
+      payload.user_selectable =
+        form.querySelector('[data-name="user_selectable"] .d-toggle-switch__checkbox').getAttribute("aria-checked") === "true";
+      ["default_light_on_theme", "default_dark_on_theme"].forEach(function (field) {
+        if (paletteChanged[field]) {
+          payload[field] =
+            form.querySelector('[data-name="' + field + '"] .d-toggle-switch__checkbox').getAttribute("aria-checked") === "true";
+        }
+      });
+      payload.base_scheme_id = data.base_scheme_id;
+      payload.colors = [];
+      form.querySelectorAll(".color-palette-editor__colors-item").forEach(function (item) {
+        var original = data.colors.find(function (c) {
+          return c.name === item.dataset.colorName;
+        });
+        var hex = item.querySelector(".color-palette-editor__text-input").value;
+        if (!original || original.hex !== hex) {
+          payload.colors.push({ name: item.dataset.colorName, hex: hex });
+        }
+      });
+    }
+    var submit = form.querySelector("button[type=submit]");
+    submit.disabled = true;
+    return saveScheme(data.id, payload)
+      .then(function () {
+        data.name = payload.name;
+        if (!nameOnly) {
+          data.user_selectable = payload.user_selectable;
+          (payload.colors || []).forEach(function (change) {
+            var c = data.colors.find(function (x) {
+              return x.name === change.name;
+            });
+            if (c) {
+              c.hex = change.hex;
+            }
+          });
+          paletteChanged = {};
+        }
+        document.getElementById("color-palette-data").textContent = JSON.stringify(data);
+        if (nameInput) {
+          nameEditing(form, false);
+        }
+        paletteChanged.name = false;
+        markUnsaved(form);
+        ui().toast(t("saved"));
+      })
+      .catch(ui().failed)
+      .then(function () {
+        submit.disabled = false;
+      });
+  }
+
+  onSubmit(function (event) {
+    var form = paletteEditor();
+    if (!form || event.target !== form) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    savePalette(form, false);
+  });
+
+  document.addEventListener("click", function (event) {
+    var form = paletteEditor();
+    if (!form || !form.parentNode.contains(event.target)) {
+      return;
+    }
+    var data = paletteData();
+    var toggle = event.target.closest(".form-kit__field-toggle .d-toggle-switch__checkbox");
+    if (toggle) {
+      var on = toggle.getAttribute("aria-checked") !== "true";
+      toggleSwitch(toggle, on);
+      paletteChanged[toggle.closest("[data-name]").dataset.name] = true;
+      markUnsaved(form);
+      return;
+    }
+    if (event.target.closest(".admin-config-color-palettes__edit-name")) {
+      nameEditing(form, true);
+      return;
+    }
+    if (event.target.closest(".admin-config-color-palettes__cancel-edit-name")) {
+      nameEditing(form, false);
+      return;
+    }
+    if (event.target.closest(".admin-config-color-palettes__save-name")) {
+      savePalette(form, true);
+      return;
+    }
+    var revert = event.target.closest(".color-palette-editor__revert");
+    if (revert) {
+      var item = revert.closest(".color-palette-editor__colors-item");
+      setColor(item, item.dataset.defaultHex);
+      paletteChanged.colors = true;
+      markUnsaved(form);
+      return;
+    }
+    if (event.target.closest(".copy-to-clipboard")) {
+      var light = {};
+      form.querySelectorAll(".color-palette-editor__colors-item").forEach(function (it) {
+        light[it.dataset.colorName] = it.querySelector(".color-palette-editor__text-input").value;
+      });
+      navigator.clipboard
+        .writeText(JSON.stringify({ name: data.name, light: light }, null, 2))
+        .then(function () {
+          ui().toast(t("admin.config_areas.color_palettes.copied_to_clipboard"));
+        })
+        .catch(function () {
+          Discourse.dialog.alert(t("admin.config_areas.color_palettes.copy_to_clipboard_error"));
+        });
+      return;
+    }
+    if (event.target.closest(".duplicate-palette")) {
+      saveScheme(null, {
+        name: t("admin.config_areas.color_palettes.copy_of", { name: data.name }),
+        colors: data.colors.map(function (c) {
+          return { name: c.name, hex: c.hex };
+        }),
+      })
+        .then(function (json) {
+          go("/admin/config/colors/" + json.id);
+          ui().toast(t("admin.config_areas.color_palettes.copy_created", { name: data.name }));
+        })
+        .catch(ui().failed);
+      return;
+    }
+    if (event.target.closest(".delete-palette")) {
+      Discourse.dialog.deleteConfirm({
+        title: t("admin.config_areas.color_palettes.delete_confirm"),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/color_schemes/" + data.id)
+            .then(function () {
+              go("/admin/config/colors");
+            })
+            .catch(ui().failed);
+        },
+      });
+    }
+  });
+
+  document.addEventListener("input", function (event) {
+    var form = paletteEditor();
+    if (!form || !form.contains(event.target)) {
+      return;
+    }
+    var item = event.target.closest(".color-palette-editor__colors-item");
+    if (item && event.target.classList.contains("color-palette-editor__input")) {
+      setColor(item, event.target.value);
+      paletteChanged.colors = true;
+      markUnsaved(form);
+    } else if (event.target.id === "control-name-input") {
+      paletteChanged.name = true;
+      markUnsaved(form);
+    }
+  });
+
+  // The hex field: hexadecimal only, Enter moves on to the next color, a
+  // change takes a valid #rgb or #rrggbb.
+  document.addEventListener("keypress", function (event) {
+    var form = paletteEditor();
+    var input = event.target;
+    if (!form || !input.classList || !input.classList.contains("color-palette-editor__text-input")) {
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (input.value.length !== 6 && input.value.length !== 3) {
+        input.parentNode.parentNode.classList.add("--invalid");
+        Discourse.dialog.alert(t("admin.config_areas.color_palettes.invalid_color_length"));
+        return;
+      }
+      var next = form.querySelector(
+        '.color-palette-editor__text-input[data-position="' + (Number(input.dataset.position) + 1) + '"]'
+      );
+      if (next) {
+        next.focus();
+      }
+      return;
+    }
+    if (!/^[0-9A-Fa-f]$/.test(event.key)) {
+      event.preventDefault();
+      Discourse.dialog.alert(t("admin.config_areas.color_palettes.illegal_character_in_color"));
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    var form = paletteEditor();
+    var input = event.target;
+    if (!form || !input.classList || !input.classList.contains("color-palette-editor__text-input")) {
+      return;
+    }
+    var picker = input.closest(".color-palette-editor__picker");
+    if (!/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(input.value)) {
+      picker.classList.add("--invalid");
+      Discourse.dialog.alert(t("admin.config_areas.color_palettes.invalid_color_length"));
+      return;
+    }
+    picker.classList.remove("--invalid");
+    setColor(input.closest(".color-palette-editor__colors-item"), input.value);
+    paletteChanged.colors = true;
+    markUnsaved(form);
+  });
+
   // --- robots.txt ----------------------------------------------------------
 
   // AdminCustomizeRobotsTxtController: the buffered text against the
@@ -2146,6 +2675,7 @@
     siteTextCursor = null;
     siteTextPage = 0;
     document.querySelectorAll(".admin-contents textarea.--expandable").forEach(expand);
+    paletteChanged = {};
     var email = emailTemplate();
     emailActive = null;
     emailCursor = null;

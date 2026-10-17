@@ -335,3 +335,54 @@ async fn the_email_template_editor() {
     assert!(html.contains("value=\"Hello\""), "{html}");
     assert!(html.contains("revert-email-template"));
 }
+
+#[tokio::test]
+async fn the_color_palettes_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/colors").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<div class=\"admin-contents admin-config color-palettes\">"));
+    assert!(html.contains("<h2 class=\"d-page-subheader__title\">Color palettes</h2>"));
+    assert!(html.contains("create-new-palette"));
+    // The built-in default first, with its preview and disabled edit.
+    assert!(
+        html.contains("<li class=\"admin-config-area-card color-palette\" data-palette-id=\"-1\"")
+    );
+    assert!(html.contains("--primary-low--preview: #e9e9e9; --tertiary-low--preview: #d1f0ff;"));
+    assert!(html.contains("<svg fill=\"none\" viewBox=\"0 0 558 171\""));
+    let id: i32 = sqlx::query_scalar(
+        "SELECT id FROM color_schemes WHERE theme_id IS NULL ORDER BY id LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(html.contains(&format!("<a href=\"/admin/config/colors/{id}\">")));
+    // The filter's query params.
+    let (_, html) = admin
+        .page("/admin/config/colors?filter=nothing-matches")
+        .await;
+    assert!(html.contains("No color palettes found"));
+    let (status, html) = admin.page(&format!("/admin/config/colors/{id}")).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(&format!(
+        "<form class=\"form-kit\" data-palette-id=\"{id}\" novalidate=\"\">"
+    )));
+    assert!(html.contains("admin-config-color-palettes__edit-name"));
+    assert!(html.contains("data-color-name=\"primary\""));
+    assert!(html.contains("Main text and icons"));
+    assert!(html.contains("data-name=\"user_selectable\""));
+    // A palette that isn't there goes back to the list; the old paths go on.
+    let (status, location) = admin.page("/admin/config/colors/99999").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/config/colors");
+    let (_, location) = admin.page("/admin/customize/colors/5").await;
+    assert_eq!(location, "/admin/config/colors/5");
+    // The JSON is unchanged.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/colors.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"palettes\":"));
+}

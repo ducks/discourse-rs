@@ -1642,6 +1642,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(color_schemes::update).delete(color_schemes::destroy),
         )
         .route("/admin/config/colors/{id}", get(color_schemes::show))
+        .route(
+            "/admin/customize/colors",
+            get(admin_customize::customize_colors),
+        )
+        .route(
+            "/admin/customize/colors/{id}",
+            get(admin_customize::customize_colors),
+        )
         .route("/admin/customize/site_texts", get(site_texts::index))
         .route("/admin/customize/site_texts.json", get(site_texts::index))
         .route(
