@@ -57,6 +57,18 @@ pub fn find(settings: &SiteSettings, name: &str) -> Result<Option<Value>, AppErr
     found.map(|p| serialize(settings, p)).transpose()
 }
 
+/// The admin page's location of an enabled plugin with one, by name
+/// (AdminSearchDataSource#buildPluginsMap's plugins).
+pub fn admin_route_location(settings: &SiteSettings, name: &str) -> Option<String> {
+    let plugin = recorded().iter().find(|p| p["name"] == name)?;
+    let location = plugin["admin_route"]["location"].as_str()?;
+    let enabled = match plugin["enabled_setting"].as_str() {
+        Some(setting) => settings.get(setting).is_ok_and(|v| v.truthy()),
+        None => true,
+    };
+    enabled.then(|| location.to_string())
+}
+
 /// `Plugin::Instance#humanized_name` of a bundled plugin, by name.
 pub fn humanized_name(name: &str) -> Option<String> {
     recorded()

@@ -513,7 +513,11 @@ impl Dashboard<'_> {
                     },
                     Some(&format!("db-site-advice__icon --{}", escape(priority)))
                 ),
-                p["message"].as_str().unwrap_or_default()
+                crate::admin_setting_links::linkify(
+                    self.admin.settings,
+                    self.admin.base_path,
+                    p["message"].as_str().unwrap_or_default()
+                )
             ));
             if self.admin.viewer.admin {
                 out.push_str(&format!(

@@ -236,6 +236,7 @@ pub fn row(cx: &AdminCx, entry: &Value) -> String {
     };
     let description = match entry["description"].as_str() {
         Some(d) if !d.is_empty() => {
+            let d = crate::admin_setting_links::linkify(cx.settings, cx.base_path, d);
             let image = match change["image"]["url"].as_str() {
                 Some(url) => format!(
                     "<a class=\"lightbox upcoming-change__image-preview\" data-large-src=\"{u}\" data-target-height=\"{}\" data-target-width=\"{}\" href=\"{u}\" rel=\"nofollow ugc noopener\">{} {}</a>",
