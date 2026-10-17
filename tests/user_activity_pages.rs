@@ -401,6 +401,51 @@ async fn the_bookmarks_tab_lists_and_searches() {
     );
 }
 
+/// Bookmark#formattedReminder in the member's timezone option, or the
+/// browser's without one: a template for static/js/dates.js, the text
+/// drawn here in that zone (UTC without one).
+#[tokio::test]
+async fn bookmark_reminders_are_drawn_in_the_members_zone() {
+    let db = TestDb::new().await;
+    let user1 = "(SELECT id FROM users WHERE username = 'user1')";
+    sqlx::query(&format!(
+        "UPDATE bookmarks SET reminder_at = '2099-03-04 05:06:00' WHERE user_id = {user1}"
+    ))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(&format!(
+        "UPDATE user_options SET timezone = 'Asia/Kolkata' WHERE user_id = {user1}"
+    ))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut member = client(&db, "user1").await;
+    let html = member.page("/u/user1/activity/bookmarks").await.html;
+    assert!(
+        html.contains(
+            "bookmark-reminder\" data-tz-text=\"%{4076283960000:@reminder}\" data-tz-zone=\"Asia/Kolkata\">"
+        ),
+        "{html}"
+    );
+    assert!(
+        html.contains("</svg>At Mar 4, 2099 10:36 am</span>"),
+        "{html}"
+    );
+    sqlx::query(&format!(
+        "UPDATE user_options SET timezone = NULL WHERE user_id = {user1}"
+    ))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = member.page("/u/user1/activity/bookmarks").await.html;
+    assert!(html.contains("bookmark-reminder\" data-tz-text=\"%{4076283960000:@reminder}\">"));
+    assert!(
+        html.contains("</svg>At Mar 4, 2099 5:06 am</span>"),
+        "{html}"
+    );
+}
+
 #[tokio::test]
 async fn no_bookmarks_is_the_empty_state() {
     let db = TestDb::new().await;

@@ -1371,18 +1371,36 @@ fn chat_date(v: &View, m: &Value, tiny: bool) -> String {
         at.and_then(|at| crate::pretty_text::render::local_dates::format_utc(at, &(v.t)(key)).ok())
             .unwrap_or_default()
     };
+    let text_key = if tiny {
+        "dates.time_short"
+    } else {
+        "dates.time"
+    };
+    // The same in the viewer's zone before the page paints
+    // (crate::viewer_dates); chat.js draws the messages it adds.
+    let tz = at
+        .map(|at| {
+            format!(
+                "{}{}",
+                crate::viewer_dates::tz_attr(
+                    "title",
+                    &crate::viewer_dates::marker(at, &(v.t)("dates.long_with_year"))
+                ),
+                crate::viewer_dates::tz_attr(
+                    "text",
+                    &crate::viewer_dates::marker(at, &(v.t)(text_key))
+                )
+            )
+        })
+        .unwrap_or_default();
     format!(
-        "<a title=\"{}\" tabindex=\"-1\" class=\"chat-time\" href=\"{}/chat/c/-/{}/{}\" data-mode=\"{}\">{}</a>",
+        "<a title=\"{}\" tabindex=\"-1\" class=\"chat-time\" href=\"{}/chat/c/-/{}/{}\" data-mode=\"{}\"{tz}>{}</a>",
         escape(&format("dates.long_with_year")),
         v.base_path,
         v.channel["id"],
         m["id"],
         if tiny { "tiny" } else { "time" },
-        escape(&format(if tiny {
-            "dates.time_short"
-        } else {
-            "dates.time"
-        }))
+        escape(&format(text_key))
     )
 }
 

@@ -688,7 +688,8 @@ pub async fn page(
                 .flatten(),
                 None => None,
             };
-            let zone: chrono_tz::Tz = zone.and_then(|z| z.parse().ok()).unwrap_or(chrono_tz::UTC);
+            // The member's timezone option; without one, the browser's (moment.tz.guess).
+            let zone: Option<chrono_tz::Tz> = zone.and_then(|z| z.parse().ok());
             let shown = if denied {
                 Bookmarks::Denied
             } else if loaded.is_empty() && crate::ruby::is_blank(&search) {

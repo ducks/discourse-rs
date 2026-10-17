@@ -7,7 +7,6 @@
 use chrono::{DateTime, Duration, Months, Utc};
 use serde_json::{Value, json};
 
-use crate::pretty_text::render::local_dates::format_utc;
 use crate::topic_list_view::{ListContext, escape, icon, t, t_count, t_with};
 
 /// `site.periods` (TopTopic.periods), in the period chooser's order.
@@ -113,7 +112,8 @@ fn period_name(cx: &ListContext, period: &str) -> String {
 /// period's name and its dates up to now.
 fn period_title(cx: &ListContext, period: &str) -> String {
     let finish = cx.now;
-    let fmt = |at: DateTime<Utc>, key: &str| format_utc(at, &t(cx, key)).unwrap_or_default();
+    // In the viewer's zone (crate::viewer_dates).
+    let fmt = |at: DateTime<Utc>, key: &str| crate::viewer_dates::marker_key(cx, at, key);
     let range =
         |start: DateTime<Utc>, key: &str| format!("{} – {}", fmt(start, key), fmt(finish, key));
     let months = |n: u32| finish.checked_sub_months(Months::new(n)).unwrap_or(finish);
@@ -126,9 +126,9 @@ fn period_title(cx: &ListContext, period: &str) -> String {
         _ => String::new(),
     };
     format!(
-        "<span class=\"date-section\">{}</span><span class=\"top-date-string\">{}</span>",
+        "<span class=\"date-section\">{}</span>{}",
         escape(&period_name(cx, period)),
-        escape(&dates)
+        crate::viewer_dates::element(cx, "span", " class=\"top-date-string\"", &dates)
     )
 }
 
@@ -378,10 +378,15 @@ pub fn render(cx: &ListContext, d: &Directory) -> String {
     );
     out.push_str(&period_chooser(cx, d.period));
     if let Some(at) = d.last_updated_at {
-        out.push_str(&format!(
-            "<div class=\"directory-last-updated\">{} {}</div>",
-            escape(&t(cx, "directory.last_updated")),
-            escape(&crate::topic_list_view::long_date(cx, at))
+        out.push_str(&crate::viewer_dates::element(
+            cx,
+            "div",
+            " class=\"directory-last-updated\"",
+            &format!(
+                "{} {}",
+                t(cx, "directory.last_updated"),
+                crate::viewer_dates::long_marker(cx, at)
+            ),
         ));
     }
     out.push_str("</div><div class=\"inline-form\"><label class=\"total-rows\">");

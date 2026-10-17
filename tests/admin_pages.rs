@@ -337,6 +337,18 @@ async fn the_users_list_page() {
     assert!(html.contains("<a href=\"/admin/users/1/admin\">admin</a>"));
     assert!(html.contains("<span class=\"svg-icon-title\" title=\"Discourse Admin\">"));
     assert!(html.contains("/assets/admin-users.js?v="));
+    // rawDate titles in the viewer's zone (crate::viewer_dates); a member
+    // never seen gets new Date(null)'s, the epoch, as in Ember.
+    assert!(html.contains("<div class=\"directory-table__cell created\" title=\""));
+    assert!(
+        html.contains(
+            ":MMM D, YYYY h:mm a}\"><span class=\"directory-table__label\"><span>Created</span>"
+        ),
+        "{html}"
+    );
+    assert!(html.contains(
+        "<div class=\"directory-table__cell last-seen\" title=\"Jan 1, 1970 12:00 am\" data-tz-title=\"%{0:MMM D, YYYY h:mm a}\">"
+    ));
     // The filter and order come from the URL.
     let (_, html) = admin
         .page("/admin/users/list/active?filter=user1&order=username&asc=true")

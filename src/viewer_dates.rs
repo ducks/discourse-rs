@@ -55,6 +55,18 @@ impl DateContext for crate::admin_view::AdminCx<'_> {
     }
 }
 
+impl DateContext for crate::user_menu_view::MenuContext<'_> {
+    fn i18n(&self) -> &I18n {
+        self.i18n
+    }
+    fn now(&self) -> DateTime<Utc> {
+        self.now
+    }
+    fn relative_date_duration(&self) -> i64 {
+        self.relative_date_duration
+    }
+}
+
 fn t<C: DateContext + ?Sized>(cx: &C, key: &str) -> String {
     cx.i18n().t(&format!("js.{key}")).unwrap_or(key).to_string()
 }
@@ -155,6 +167,28 @@ pub(crate) fn text<C: DateContext + ?Sized>(cx: &C, template: &str) -> (String, 
         return (String::new(), escape(template));
     }
     (tz_attr("text", template), escape(&fill_utc(cx, template)))
+}
+
+/// `text` in the member's zone where Ember reads their timezone option:
+/// with one, ` data-tz-zone` names it and the text is drawn in it here;
+/// without one, the browser's zone (moment.tz.guess), UTC here.
+pub(crate) fn text_in<C: DateContext + ?Sized>(
+    cx: &C,
+    template: &str,
+    zone: Option<chrono_tz::Tz>,
+) -> (String, String) {
+    let attrs = match zone {
+        Some(z) => format!(
+            "{} data-tz-zone=\"{}\"",
+            tz_attr("text", template),
+            escape(z.name())
+        ),
+        None => tz_attr("text", template),
+    };
+    (
+        attrs,
+        escape(&fill_in(cx, template, zone.unwrap_or(chrono_tz::UTC))),
+    )
 }
 
 /// `formattedReminderTime(reminder_at, timezone)` capitalized
@@ -435,6 +469,20 @@ mod tests {
         let la: chrono_tz::Tz = "America/Los_Angeles".parse().unwrap();
         assert_eq!(fill_utc(&cx, &template), "Tomorrow at 2:00 am");
         assert_eq!(fill_in(&cx, &template, la), "Today at 7:00 pm");
+        assert_eq!(
+            text_in(&cx, &template, Some(la)),
+            (
+                " data-tz-text=\"%{1792288800000:@reminder}\" \
+                 data-tz-zone=\"America/Los_Angeles\""
+                    .to_string(),
+                "Today at 7:00 pm".to_string()
+            )
+        );
+        // Without the option, the browser's zone: no data-tz-zone.
+        assert_eq!(
+            text_in(&cx, &template, None).0,
+            " data-tz-text=\"%{1792288800000:@reminder}\""
+        );
     }
 
     #[test]

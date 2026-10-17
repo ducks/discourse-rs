@@ -16,7 +16,6 @@ use sqlx::PgConnection;
 
 use crate::emojis::Emojis;
 use crate::i18n::I18n;
-use crate::pretty_text::render::local_dates::format_utc;
 use crate::site_settings::{SettingError, SiteSettings};
 
 /// What the list needs of a category (Category's badge fields).
@@ -490,11 +489,6 @@ fn date(v: &Value) -> Option<DateTime<Utc>> {
     v.as_str()
         .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
         .map(|d| d.with_timezone(&Utc))
-}
-
-/// `longDate`
-pub(crate) fn long_date(cx: &ListContext, at: DateTime<Utc>) -> String {
-    format_utc(at, &t(cx, "dates.long_with_year")).unwrap_or_default()
 }
 
 /// `relativeAgeTiny`

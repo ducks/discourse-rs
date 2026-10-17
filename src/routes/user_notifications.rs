@@ -199,6 +199,7 @@ pub async fn page(
         can_chat,
         emojis: settings.emojis(),
         now: crate::clock::now(),
+        relative_date_duration: settings.get("relative_date_duration")?.to_i(),
     };
     let user_path = format!("{base_path}/u/{}", escape(&user.username.to_lowercase()));
     let dismiss =

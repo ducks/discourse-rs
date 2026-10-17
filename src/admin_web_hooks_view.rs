@@ -606,10 +606,18 @@ pub fn event(cx: &AdminCx, e: &Value) -> String {
         .render()
     };
     format!(
-        "<li data-event=\"{}\"><div class=\"col first status\"><span class=\"{class}\">{status}</span></div><div class=\"col event-id\">{}</div><div class=\"col timestamp\" data-time=\"{}\">{}</div><div class=\"col completion\">{}</div><div class=\"col actions\">{}{}{}</div></li>",
+        "<li data-event=\"{}\"><div class=\"col first status\"><span class=\"{class}\">{status}</span></div><div class=\"col event-id\">{}</div><div class=\"col timestamp\" data-time=\"{}\"{}>{}</div><div class=\"col completion\">{}</div><div class=\"col actions\">{}{}{}</div></li>",
         escape(&e.to_string()),
         e["id"].as_i64().unwrap_or(0),
         created.map(|c| c.timestamp_millis()).unwrap_or(0),
+        // moment(created_at).format(...) in the viewer's zone, drawn
+        // before the page paints (static/js/dates.js).
+        created
+            .map(|c| crate::viewer_dates::tz_attr(
+                "text",
+                &crate::viewer_dates::marker(c, "YYYY-MM-DD HH:mm:ss")
+            ))
+            .unwrap_or_default(),
         created
             .map(|c| c.format("%Y-%m-%d %H:%M:%S").to_string())
             .unwrap_or_default(),

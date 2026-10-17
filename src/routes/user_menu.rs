@@ -75,6 +75,7 @@ pub async fn show(
         can_chat,
         emojis: settings.emojis(),
         now: crate::clock::now(),
+        relative_date_duration: settings.get("relative_date_duration")?.to_i(),
     };
     let (top, bottom) = user_menu_view::tabs(&cx);
     let requested = params.tab.as_deref().unwrap_or("all-notifications");
