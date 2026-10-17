@@ -63,6 +63,19 @@ async fn home_and_latest_render_the_topic_list() {
             r#"<a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a>"#
         ));
         assert!(html.contains(r#"<table class="topic-list">"#));
+        // Dates in the viewer's zone: dates.js in the head with the
+        // formats it draws with, and the activity cells' titles as
+        // templates beside their UTC text (crate::viewer_dates).
+        let head = &html[..html.find("</head>").unwrap()];
+        assert!(
+            head.contains(r#"<script src="/assets/dates.js?v="#),
+            "{path}"
+        );
+        assert!(head.contains("data-relative-date-duration=\"30\""));
+        assert!(head.contains("&quot;dates.long_with_year&quot;:&quot;MMM D, YYYY h:mm a&quot;"));
+        assert!(html.contains(
+            r#" title="Created: Jul 25, 2026 5:58 am" data-tz-title="Created: %{1784959108320:MMM D, YYYY h:mm a}"><a class="post-activity" href="/t/welcome-to-discourse/5/1"><span class='relative-date' data-time='1784959108405' data-format='tiny'>"#
+        ), "{path}");
         assert!(!html.contains("Parity fixture: unlisted topic"));
         assert!(!html.contains("Parity fixture: deleted topic"));
     }
@@ -308,6 +321,22 @@ async fn topic_page_has_its_map_timeline_footer_and_suggestions() {
     assert!(html.contains(
         r#"<a class="now-date" href="/t/parity-fixture-replies-and-posters/35/5"><span><span class="relative-date" title="Jump to the last post""#
     ));
+    // Its dates as templates static/js/dates.js draws in the viewer's
+    // zone: timelineDate, the last post's age with ago, the scroller's
+    // label from the days ago, which the lookup carries for topic.js.
+    let start = html.find(r#"title="Jump to the first post"><span data-tz-text="%{"#);
+    assert!(start.is_some(), "{html}");
+    assert!(html[start.unwrap()..].contains(r#":@timeline}">"#));
+    assert!(html.contains(r#"data-format="tiny" data-tz-text="%{"#));
+    assert!(html.contains(r#":@timeline-ago}">"#));
+    assert!(html.contains(r#"<div class="timeline-ago" data-tz-text="%{"#));
+    assert!(html.contains(r#":@timeline-days-ago}">"#));
+    assert!(html.contains(r#"data-lookup="[[1,"#));
+    // The posts' dates: their longDate titles and screen reader texts.
+    assert!(html.contains(r#"data-tz-title="%{"#));
+    assert!(html.contains(r#":MMM D, YYYY h:mm a}" data-time=""#));
+    assert!(html.contains(r#":@medium-with-ago}" class="post-date""#));
+    assert!(html.contains(r#":@medium-with-ago-and-on}">post by "#));
     // The footer's reply asks an anonymous reader to log in.
     assert!(html.contains(
         r#"<div id="topic-footer-buttons" role="region"><div class="topic-footer-main-buttons"><button class="btn btn-icon-text btn-primary" data-login-url="/login" type="button">"#

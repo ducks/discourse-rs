@@ -7,7 +7,7 @@
 
 use serde_json::Value;
 
-use crate::topic_list_view::{ListContext, escape, icon, long_date, relative_age_tiny, t, t_with};
+use crate::topic_list_view::{ListContext, escape, icon, relative_age_tiny, t, t_with};
 use crate::user_menu_view::MenuContext;
 
 /// The userNotifications routes.
@@ -243,8 +243,8 @@ pub fn index(
                     .map(|d| d.with_timezone(&chrono::Utc));
                 let end = match date {
                     Some(at) => format!(
-                        "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
-                        escape(&long_date(cx, at)),
+                        "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>",
+                        crate::viewer_dates::long_title(cx, at),
                         at.timestamp_millis(),
                         escape(&relative_age_tiny(cx, at))
                     ),

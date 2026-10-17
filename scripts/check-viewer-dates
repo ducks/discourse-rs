@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Check, in a browser in a timezone other than UTC, that the port's pages
+# draw their dates in the viewer's zone before the first paint
+# (static/js/dates.js, crate::viewer_dates):
+#
+#   - at every animation frame while the page loads, which is just before
+#     the browser paints, no element still waits for its date (a
+#     data-tz-* attribute left undrawn), so no UTC text is ever shown;
+#   - once loaded, each relative date's longDate title is the time in the
+#     zone, as Intl draws it (an oracle independent of dates.js);
+#   - no page error.
+#
+# Usage: scripts/check-viewer-dates <our-url> <path>...
+#   e.g. scripts/check-viewer-dates http://127.0.0.1:8095 /latest /t/welcome-to-discourse/5
+# TIMEZONES (default "America/Los_Angeles Asia/Kolkata") picks the zones.
+# Exits 1 when a check fails.
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "usage: $0 <our-url> <path>..." >&2
+  exit 64
+fi
+
+export TIMEZONES="${TIMEZONES:-America/Los_Angeles Asia/Kolkata}"
+exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ])" playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 - $(printf '%q ' "$@")
+" <<'PYTHON'
+import os
+import sys
+
+from playwright.sync_api import sync_playwright
+
+base, *paths = sys.argv[1:]
+zones = os.environ["TIMEZONES"].split()
+
+# Before any page script: each frame records what is still undrawn.
+WATCH = """(() => {
+  window.__undrawn = [];
+  const pending = '[data-tz-text], [data-tz-title], [data-tz-aria-label], ' +
+    '[data-tz-value], [data-tz-datetime]';
+  function frame() {
+    const left = document.querySelectorAll(pending);
+    if (left.length) {
+      window.__undrawn.push(left[0].outerHTML.slice(0, 200));
+    }
+    if (document.readyState !== 'complete' || performance.now() < 3000) {
+      requestAnimationFrame(frame);
+    }
+  }
+  requestAnimationFrame(frame);
+})();"""
+
+# longDate (dates.long_with_year, "MMM D, YYYY h:mm a") by Intl.
+CHECK = """() => {
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const parts = (ms) => {
+    const out = {};
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: zone, year: 'numeric', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    }).formatToParts(new Date(ms)).forEach((p) => { out[p.type] = p.value; });
+    return `${out.month} ${out.day}, ${out.year} ${out.hour}:${out.minute} ` +
+      out.dayPeriod.toLowerCase();
+  };
+  const wrong = [];
+  let checked = 0;
+  document.querySelectorAll('.relative-date[data-time]').forEach((el) => {
+    const title = el.getAttribute('title') || el.querySelector('.date')?.getAttribute('title');
+    if (!title || !/^\\w{3} \\d+, \\d{4} \\d+:\\d\\d [ap]m$/.test(title)) return;
+    checked++;
+    const want = parts(parseInt(el.dataset.time, 10));
+    if (title !== want) wrong.push(`${title} != ${want}`);
+  });
+  return { checked, wrong, undrawn: window.__undrawn };
+}"""
+
+failed = False
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    for zone in zones:
+        for path in paths:
+            ctx = browser.new_context(timezone_id=zone, locale="en-US")
+            ctx.add_init_script(WATCH)
+            page = ctx.new_page()
+            errors = []
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto(base + path, wait_until="load", timeout=60000)
+            page.wait_for_timeout(3500)
+            result = page.evaluate(CHECK)
+            ctx.close()
+            ok = not result["wrong"] and not result["undrawn"] and not errors
+            failed |= not ok
+            print(f"{'ok  ' if ok else 'FAIL'} {zone} {path}: {result['checked']} titles checked")
+            for line in result["wrong"][:5]:
+                print(f"     title {line}")
+            for html in result["undrawn"][:3]:
+                print(f"     undrawn at a frame: {html}")
+            for e in errors[:3]:
+                print(f"     page error: {e}")
+    browser.close()
+sys.exit(1 if failed else 0)
+PYTHON

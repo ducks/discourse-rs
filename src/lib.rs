@@ -226,6 +226,7 @@ pub mod user_search;
 pub mod user_updater;
 pub mod username_changer;
 pub mod users;
+pub mod viewer_dates;
 pub mod watched_words;
 pub mod web_hooks;
 pub mod webauthn;

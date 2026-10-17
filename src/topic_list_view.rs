@@ -499,41 +499,35 @@ pub(crate) fn long_date(cx: &ListContext, at: DateTime<Utc>) -> String {
 
 /// `relativeAgeTiny`
 pub(crate) fn relative_age_tiny(cx: &ListContext, at: DateTime<Utc>) -> String {
-    let distance = ((cx.now - at).num_milliseconds() as f64 / 1000.0)
-        .round()
-        .abs();
-    let minutes = (distance / 60.0).round().max(1.0) as i64;
-    let duration = cx.settings.relative_date_duration;
-    match minutes {
-        0..=44 => t_count(cx, "dates.tiny.x_minutes", minutes, &[]),
-        45..=89 => t_count(cx, "dates.tiny.about_x_hours", 1, &[]),
-        90..=1409 => t_count(
-            cx,
-            "dates.tiny.about_x_hours",
-            (minutes as f64 / 60.0).round() as i64,
-            &[],
-        ),
-        _ if duration == 0 && minutes <= 525_599 => {
-            format_utc(at, &t(cx, "dates.tiny.date_month")).unwrap_or_default()
-        }
-        1410..=2519 => t_count(cx, "dates.tiny.x_days", 1, &[]),
-        m if m >= 2520 && m <= (if duration == 0 { 14 } else { duration }) * 1440 => t_count(
-            cx,
-            "dates.tiny.x_days",
-            (minutes as f64 / 1440.0).round() as i64,
-            &[],
-        ),
-        // smartShortDate
-        _ => {
-            use chrono::Datelike;
-            let key = if at.year() == cx.now.year() {
-                "dates.tiny.date_month"
-            } else {
-                "dates.tiny.date_year"
-            };
-            format_utc(at, &t(cx, key)).unwrap_or_default()
-        }
-    }
+    crate::viewer_dates::relative_age_tiny(cx, at)
+}
+
+/// `Topic#bumpedAtTitle` as the activity cell's title attribute, its
+/// dates in the viewer's zone (crate::viewer_dates).
+pub(crate) fn bumped_at_title(
+    cx: &ListContext,
+    created: DateTime<Utc>,
+    bumped: DateTime<Utc>,
+) -> String {
+    let seconds = |d: DateTime<Utc>| d.format("%Y-%m-%dT%H:%M:%S").to_string();
+    let created_at = t_with(
+        cx,
+        "topic.created_at",
+        &[("date", &crate::viewer_dates::long_marker(cx, created))],
+    );
+    let template = if seconds(bumped) != seconds(created) {
+        format!(
+            "{created_at}\n{}",
+            t_with(
+                cx,
+                "topic.bumped_at",
+                &[("date", &crate::viewer_dates::long_marker(cx, bumped))]
+            )
+        )
+    } else {
+        created_at
+    };
+    crate::viewer_dates::attr(cx, "title", &template)
 }
 
 /// `autoUpdatingRelativeAge` in the tiny format, without a title.
@@ -1043,18 +1037,9 @@ pub(crate) fn activity_cell(
             } else {
                 ""
             };
-            let seconds = |d: DateTime<Utc>| d.format("%Y-%m-%dT%H:%M:%S").to_string();
-            let title = if seconds(bumped) != seconds(created) {
-                format!(
-                    "{}\n{}",
-                    t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))]),
-                    t_with(cx, "topic.bumped_at", &[("date", &long_date(cx, bumped))])
-                )
-            } else {
-                t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))])
-            };
+            let title = bumped_at_title(cx, created, bumped);
             format!(
-                "<td class=\"activity num topic-list-data age{cold}{extra_class}\" title=\"{title}\"><a class=\"post-activity\" href=\"{last_post_url}\">{}</a></td>",
+                "<td class=\"activity num topic-list-data age{cold}{extra_class}\"{title}><a class=\"post-activity\" href=\"{last_post_url}\">{}</a></td>",
                 relative_date(cx, bumped)
             )
         }
@@ -1160,19 +1145,9 @@ fn mobile_row(cx: &ListContext, topic: &Value, users: &[Value], row: MobileRow) 
     let bumped = date(&topic["bumped_at"]).or(created);
     let activity = match (created, bumped) {
         (Some(created), Some(bumped)) => {
-            let seconds = |d: DateTime<Utc>| d.format("%Y-%m-%dT%H:%M:%S").to_string();
-            // Topic#bumpedAtTitle
-            let title = if seconds(bumped) != seconds(created) {
-                format!(
-                    "{}\n{}",
-                    t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))]),
-                    t_with(cx, "topic.bumped_at", &[("date", &long_date(cx, bumped))])
-                )
-            } else {
-                t_with(cx, "topic.created_at", &[("date", &long_date(cx, created))])
-            };
+            let title = bumped_at_title(cx, created, bumped);
             format!(
-                "<span class=\"age activity\" title=\"{title}\"><a href=\"{}\">{}</a></span>",
+                "<span class=\"age activity\"{title}><a href=\"{}\">{}</a></span>",
                 row.last_post_url,
                 relative_date(cx, bumped)
             )

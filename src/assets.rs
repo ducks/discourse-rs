@@ -106,6 +106,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/vendor/floating-ui.dom.umd.min.js"),
     ),
     ("page.js", JS, include_str!("../static/js/page.js")),
+    ("dates.js", JS, include_str!("../static/js/dates.js")),
     ("float.js", JS, include_str!("../static/js/float.js")),
     (
         "auth-complete.js",

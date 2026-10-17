@@ -236,8 +236,8 @@ fn age(list: &ListContext, at: &Value) -> String {
         return String::new();
     };
     format!(
-        "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
-        escape(&crate::topic_list_view::long_date(list, at)),
+        "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>",
+        crate::viewer_dates::long_title(list, at),
         at.timestamp_millis(),
         escape(&crate::topic_list_view::relative_age_tiny(list, at))
     )

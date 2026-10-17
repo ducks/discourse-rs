@@ -12,8 +12,8 @@ use serde_json::Value;
 
 use crate::Unsupported;
 use crate::topic_list_view::{
-    ListContext, category_badge, category_badge_html, escape, long_date, relative_age_tiny, t,
-    t_count, t_with, tags_html, topic_statuses,
+    ListContext, category_badge, category_badge_html, escape, relative_age_tiny, t, t_count,
+    t_with, tags_html, topic_statuses,
 };
 
 fn s(v: &Value) -> &str {
@@ -521,8 +521,8 @@ fn mobile_category_topic(cx: &ListContext, topic: &Value) -> String {
                 ""
             };
             format!(
-                "<span class=\"age{cold}\"><span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span></span>",
-                escape(&long_date(cx, at)),
+                "<span class=\"age{cold}\"><span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span></span>",
+                crate::viewer_dates::long_title(cx, at),
                 at.timestamp_millis(),
                 escape(&relative_age_tiny(cx, at))
             )
@@ -666,19 +666,10 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
     // lastPostUrl and bumpedAtTitle
     let created = date(&topic["created_at"]);
     let bumped = date(&topic["bumped_at"]).or(created);
-    let mut bumped_title = String::new();
-    if let Some(c) = created {
-        bumped_title = t_with(cx, "topic.created_at", &[("date", &long_date(cx, c))]);
-        let second = |d: DateTime<Utc>| d.format("%Y-%m-%dT%H:%M:%S").to_string();
-        if let Some(b) = bumped.filter(|b| second(*b) != second(c)) {
-            bumped_title.push('\n');
-            bumped_title.push_str(&t_with(
-                cx,
-                "topic.bumped_at",
-                &[("date", &long_date(cx, b))],
-            ));
-        }
-    }
+    let bumped_title = match (created, bumped) {
+        (Some(c), Some(b)) => crate::topic_list_view::bumped_at_title(cx, c, b),
+        _ => " title=\"\"".to_string(),
+    };
     let age = bumped
         .map(|b| {
             format!(
@@ -694,12 +685,11 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
          <div class=\"main-link\"><div class=\"top-row\"><span class=\"topic-statuses\">{}</span> <a href=\"{url}\" class=\"title\" data-topic-id=\"{id}\">{title_html}</a><span class=\"topic-post-badges\"></span></div>\
          <div class=\"bottom-row\">{category_link}{tags}</div></div>\
          <div class=\"topic-stats\"><div class=\"num posts-map posts topic-list-data\"><a aria-label=\"{}\" class=\"badge-posts\" href=\"{url}/1\"><span class=\"number\">{}</span></a></div>\
-         <div class=\"topic-last-activity\"><a href=\"{url}/{highest}\" title=\"{}\">{age}</a></div></div></div>",
+         <div class=\"topic-last-activity\"><a href=\"{url}/{highest}\"{bumped_title}>{age}</a></div></div></div>",
         classes.join(" "),
         topic_statuses(cx, topic),
         escape(&t_count(cx, "topic.reply_count_link", replies, &[])),
         number(replies),
-        escape(&bumped_title),
     )
 }
 

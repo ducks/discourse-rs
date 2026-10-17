@@ -10,7 +10,7 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 
 use crate::topic_list_view::{
-    ListCategory, ListContext, category_badge_html, emoji_unescape, escape, icon, long_date,
+    ListCategory, ListContext, category_badge_html, emoji_unescape, escape, icon,
     relative_age_tiny, t, t_with, topic_statuses_with,
 };
 
@@ -883,8 +883,8 @@ impl Menu<'_> {
             .map(|d| d.with_timezone(&Utc))
         {
             out.push_str(&format!(
-                "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>\n",
-                long_date(self.cx, at),
+                "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>\n",
+                crate::viewer_dates::long_title(self.cx, at),
                 at.timestamp_millis(),
                 relative_age_tiny(self.cx, at)
             ));

@@ -282,49 +282,18 @@ pub fn contents(classes: &str, attrs: &str, inner: &str) -> String {
 
 /// `dFormatDate` (format medium, with its title; `leaveAgo` the
 /// medium-with-ago format): autoUpdatingRelativeAge's span, its text
-/// relativeAgeMedium's. Dates are UTC here, the browser's zone in Ember.
+/// relativeAgeMedium's, drawn in the viewer's zone (crate::viewer_dates).
 pub fn format_date(cx: &AdminCx, at: chrono::DateTime<chrono::Utc>, leave_ago: bool) -> String {
-    use chrono::Datelike;
-    let now = crate::clock::now();
-    let fmt = |at: chrono::DateTime<chrono::Utc>, key: &str| {
-        crate::pretty_text::render::local_dates::format_utc(at, &t(cx.i18n, key))
-            .unwrap_or_default()
-    };
-    let distance = ((now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
-    let text = if distance < 60 {
-        t(cx.i18n, "now")
-    } else if distance > 432_000 {
-        if at.year() == now.year() {
-            fmt(at, "dates.tiny.date_month")
-        } else {
-            fmt(at, "dates.medium.date_year")
-        }
+    let format = if leave_ago {
+        "medium-with-ago"
     } else {
-        let minutes = (distance as f64 / 60.0).round() as i64;
-        let (unit, count) = match minutes {
-            1..=55 => ("x_minutes", minutes),
-            56..=89 => ("x_hours", 1),
-            90..=1409 => ("x_hours", (minutes as f64 / 60.0).round() as i64),
-            1410..=2519 => ("x_days", 1),
-            _ => ("x_days", (minutes as f64 / 1440.0).round() as i64),
-        };
-        let key = if leave_ago {
-            "dates.medium_with_ago"
-        } else {
-            "dates.medium"
-        };
-        crate::admin_view::t_count(cx.i18n, &format!("{key}.{unit}"), count, &[])
+        "medium"
     };
     format!(
-        "<span class='relative-date date' title='{}' data-time='{}' data-format='{}'>{}</span>",
-        escape(&fmt(at, "dates.long_with_year")),
+        "<span class='relative-date date'{} data-time='{}' data-format='{format}'>{}</span>",
+        crate::viewer_dates::long_title(cx, at),
         at.timestamp_millis(),
-        if leave_ago {
-            "medium-with-ago"
-        } else {
-            "medium"
-        },
-        escape(&text)
+        escape(&crate::viewer_dates::relative_age(cx, at, format))
     )
 }
 

@@ -14,9 +14,7 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 
 use crate::site_settings::{SettingError, SiteSettings};
-use crate::topic_list_view::{
-    ListContext, escape, icon, long_date, relative_age_tiny, t, t_count, t_with,
-};
+use crate::topic_list_view::{ListContext, escape, icon, t, t_count, t_with};
 
 /// `post_type`s (Post.types)
 const MODERATOR_ACTION: i64 = 2;
@@ -240,52 +238,23 @@ pub(crate) fn d_icon(name: &str, extra: Option<&str>) -> String {
     )
 }
 
-/// `relativeAgeMedium`, unwrapped: "just now", "3 hours ago", or a short
-/// date past five days ("on Sep 30" with `wrap_on`).
-fn relative_age_medium(cx: &PostContext, at: DateTime<Utc>, wrap_on: bool) -> String {
-    use chrono::Datelike;
-    let l = cx.list;
-    let distance = ((l.now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
-    if distance < 60 {
-        return t(l, "now");
-    }
-    if distance > 432_000 {
-        let format = if at.year() == l.now.year() {
-            t(l, "dates.tiny.date_month")
+/// `relativeAgeMedium` with ago in a template for static/js/dates.js:
+/// "just now", "3 hours ago", or a short date past five days ("on Sep 30"
+/// with `wrap_on`).
+fn medium_marker(at: DateTime<Utc>, wrap_on: bool) -> String {
+    crate::viewer_dates::relative_marker(
+        at,
+        if wrap_on {
+            "medium-with-ago-and-on"
         } else {
-            t(l, "dates.medium.date_year")
-        };
-        let short =
-            crate::pretty_text::render::local_dates::format_utc(at, &format).unwrap_or_default();
-        return if wrap_on {
-            t_with(l, "dates.wrap_on", &[("date", &short)])
-        } else {
-            short
-        };
-    }
-    // relativeAgeMediumSpan, with ago
-    let minutes = (distance as f64 / 60.0).round() as i64;
-    let key = "dates.medium_with_ago";
-    let (unit, count) = match minutes {
-        1..=55 => ("x_minutes", minutes),
-        56..=89 => ("x_hours", 1),
-        90..=1409 => ("x_hours", (minutes as f64 / 60.0).round() as i64),
-        1410..=2519 => ("x_days", 1),
-        2520..=129_599 => ("x_days", (minutes as f64 / 1440.0).round() as i64),
-        129_600..=525_599 => ("x_months", (minutes as f64 / 43200.0).round() as i64),
-        _ => ("x_years", (minutes as f64 / 525_600.0).round() as i64),
-    };
-    t_count(l, &format!("{key}.{unit}"), count, &[])
+            "medium-with-ago"
+        },
+    )
 }
 
 /// The tiny auto-updating date span.
 pub(crate) fn tiny_date(cx: &PostContext, at: DateTime<Utc>) -> String {
-    format!(
-        "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
-        escape(&long_date(cx.list, at)),
-        at.timestamp_millis(),
-        escape(&relative_age_tiny(cx.list, at))
-    )
+    crate::viewer_dates::tiny_span(cx.list, at)
 }
 
 /// The name a post shows first: the full name only with
@@ -499,11 +468,12 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
             (
                 "date",
                 &created
-                    .map(|at| relative_age_medium(cx, at, true))
+                    .map(|at| medium_marker(at, true))
                     .unwrap_or_default(),
             ),
         ],
     );
+    let (heading_tz, heading) = crate::viewer_dates::text(cx.list, &heading);
     let mut article_classes = String::from("boxed onscreen-post");
     if flag("via_email") {
         article_classes.push_str(" post--via-email via-email");
@@ -518,9 +488,8 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         ""
     };
     format!(
-        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\">{}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
+        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
         classes.join(" "),
-        escape(&heading),
         p["id"],
         user_id.map(|id| id.to_string()).unwrap_or_default(),
         notice(cx, p),
@@ -600,16 +569,22 @@ fn notice(cx: &PostContext, p: &Value) -> String {
         ),
         "returning_user" => {
             let when = date(&p["notice"]["last_posted_at"])
-                .map(|at| relative_age_medium(cx, at, false))
+                // PostNoticeReturningUser: relativeAgeMediumSpan, no date
+                .map(|at| crate::viewer_dates::relative_marker(at, "medium-span-ago"))
                 .unwrap_or_default();
             format!(
-                "{}<p>{}</p>",
+                "{}{}",
                 emoji("wave"),
-                escape(&t_with(
+                crate::viewer_dates::element(
                     cx.list,
-                    "post.notice.returning_user",
-                    &[("user", user), ("time", &when)]
-                ))
+                    "p",
+                    "",
+                    &t_with(
+                        cx.list,
+                        "post.notice.returning_user",
+                        &[("user", user), ("time", &when)]
+                    )
+                )
             )
         }
         "custom" => format!(
@@ -701,8 +676,8 @@ fn meta_data(cx: &PostContext, p: &Value, reply_tab: &str) -> String {
     };
     if let Some(at) = shown_at {
         infos.push_str(&format!(
-            "<div class=\"post-info post-date\"><a aria-label=\"{}\" class=\"post-date{}\" href=\"{}\" title=\"{}\"><span aria-hidden=\"true\">{}</span></a></div>",
-            escape(&relative_age_medium(cx, at, false)),
+            "<div class=\"post-info post-date\"><a{} class=\"post-date{}\" href=\"{}\" title=\"{}\"><span aria-hidden=\"true\">{}</span></a></div>",
+            crate::viewer_dates::attr(l, "aria-label", &medium_marker(at, false)),
             if wiki && !p["last_wiki_edit"].is_null() {
                 " last-wiki-edit"
             } else {
@@ -728,7 +703,9 @@ fn meta_data(cx: &PostContext, p: &Value, reply_tab: &str) -> String {
 fn edits_indicator(cx: &PostContext, p: &Value, version: i64, wiki: bool) -> String {
     let l = cx.list;
     let updated = date(&p["updated_at"]);
-    let when = updated.map(|at| long_date(l, at)).unwrap_or_default();
+    let when = updated
+        .map(|at| crate::viewer_dates::long_marker(l, at))
+        .unwrap_or_default();
     let title = if !wiki {
         t_with(l, "post.last_edited_on", &[("dateTime", &when)])
     } else if version > 1 {
@@ -768,9 +745,9 @@ fn edits_indicator(cx: &PostContext, p: &Value, version: i64, wiki: bool) -> Str
         "<span aria-hidden=\"true\">&#8203;</span>".to_string()
     };
     format!(
-        "<div class=\"post-info edits\"><button class=\"{class}\" aria-label=\"{}\" title=\"{}\" type=\"button\">{}{label}</button></div>",
+        "<div class=\"post-info edits\"><button class=\"{class}\" aria-label=\"{}\"{} type=\"button\">{}{label}</button></div>",
         escape(&t(l, "post.edit_history")),
-        escape(&title),
+        crate::viewer_dates::attr(l, "title", &title),
         icon(if wiki { "far-pen-to-square" } else { "pencil" }, None)
     )
 }
@@ -1389,7 +1366,7 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
     let created = date(&p["created_at"]);
     let key = format!("action_codes.{code}");
     let plain_when = created
-        .map(|at| relative_age_medium(cx, at, true))
+        .map(|at| crate::viewer_dates::relative_age(cx.list, at, "medium-with-ago-and-on"))
         .unwrap_or_default();
     let at_who = if who.is_empty() {
         String::new()
@@ -1399,13 +1376,23 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
     let heading = t_with(
         cx.list,
         &key,
-        &[("who", &at_who), ("when", &plain_when), ("path", "")],
+        &[
+            ("who", &at_who),
+            (
+                "when",
+                &created
+                    .map(|at| medium_marker(at, true))
+                    .unwrap_or_default(),
+            ),
+            ("path", ""),
+        ],
     );
+    let (heading_tz, heading) = crate::viewer_dates::text(cx.list, &heading);
     let when_html = match created {
         Some(at) => format!(
-            "<span class=\"relative-date\" data-time=\"{}\" data-format=\"medium-with-ago-and-on\"><span class=\"date\" title=\"{}\">{}</span></span>",
+            "<span class=\"relative-date\" data-time=\"{}\" data-format=\"medium-with-ago-and-on\"><span class=\"date\"{}>{}</span></span>",
             at.timestamp_millis(),
-            escape(&long_date(cx.list, at)),
+            crate::viewer_dates::long_title(cx.list, at),
             escape(&plain_when)
         ),
         None => String::new(),
@@ -1448,8 +1435,7 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
         )
     };
     format!(
-        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\">{}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\"></div>{custom}</div></article></div>",
-        escape(&heading),
+        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\"></div>{custom}</div></article></div>",
         if p["deleted_at"].is_null() {
             ""
         } else {
@@ -1647,17 +1633,6 @@ pub fn shows_bottom_map(view: &Value, settings: &PostSettings) -> bool {
     settings.show_bottom_topic_map && regular > 3 && loaded >= stream
 }
 
-/// `timelineDate`: "Sep 30" this year, else "Sep 2025".
-fn timeline_date(cx: &PostContext, at: DateTime<Utc>) -> String {
-    use chrono::Datelike;
-    let key = if at.year() == cx.list.now.year() {
-        "dates.long_no_year_no_time"
-    } else {
-        "dates.timeline_date"
-    };
-    crate::pretty_text::render::local_dates::format_utc(at, &t(cx.list, key)).unwrap_or_default()
-}
-
 /// The docked timeline (components/topic-timeline) as it first renders,
 /// at the first post; static/js/topic.js moves it as the page scrolls.
 /// The stream's post ids and the timeline lookup ride along for that.
@@ -1741,26 +1716,30 @@ fn timeline_container(
     let url = url.to_string();
     let stream = stream.to_vec();
     let total = stream.len().max(1);
+    // timelineDate, in the viewer's zone (crate::viewer_dates).
     let start = date(&view["created_at"])
-        .map(|at| timeline_date(cx, at))
-        .unwrap_or_default();
+        .map(|at| {
+            crate::viewer_dates::element(
+                cx.list,
+                "span",
+                "",
+                &crate::viewer_dates::relative_marker(at, "timeline"),
+            )
+        })
+        .unwrap_or_else(|| "<span></span>".to_string());
     let last = date(&view["last_posted_at"]).or_else(|| date(&view["created_at"]));
+    // dAgeWithTooltip with addAgo and timelineDate past the relative ages;
+    // the minute's redraw (updateRelativeAge) drops them, as in Ember.
     let now_date = last
         .map(|at| {
-            let tiny = relative_age_tiny(cx.list, at);
-            // addAgo: only a relative age gets "ago".
-            let age = if tiny.chars().next().is_some_and(|c| c.is_ascii_digit())
-                && tiny.ends_with(['m', 'h', 'd'])
-            {
-                t_with(cx.list, "dates.wrap_ago", &[("date", &tiny)])
-            } else {
-                tiny
-            };
+            let (tz, age) = crate::viewer_dates::text(
+                cx.list,
+                &crate::viewer_dates::relative_marker(at, "timeline-ago"),
+            );
             format!(
-                "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
+                "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\"{tz}>{age}</span>",
                 escape(&t(cx.list, "topic_entrance.jump_bottom_button_title")),
                 at.timestamp_millis(),
-                escape(&age)
             )
         })
         .unwrap_or_default();
@@ -1771,9 +1750,11 @@ fn timeline_container(
         .and_then(|e| e[1].as_i64());
     let ago = days_ago
         .map(|d| {
-            format!(
-                "<div class=\"timeline-ago\">{}</div>",
-                escape(&timeline_date(cx, cx.list.now - chrono::Duration::days(d)))
+            crate::viewer_dates::element(
+                cx.list,
+                "div",
+                " class=\"timeline-ago\"",
+                &format!("%{{{d}:@timeline-days-ago}}"),
             )
         })
         .unwrap_or_default();
@@ -1805,19 +1786,12 @@ fn timeline_container(
         String::new()
     };
     let stream_json = serde_json::to_string(&stream).unwrap_or_default();
-    // The lookup with each entry's date label, for the script.
-    let labels: Vec<Value> = view["timeline_lookup"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .map(|e| {
-            let label = e[1]
-                .as_i64()
-                .map(|d| timeline_date(cx, cx.list.now - chrono::Duration::days(d)));
-            serde_json::json!([e[0], label])
-        })
-        .collect();
-    let lookup_json = serde_json::to_string(&labels).unwrap_or_default();
+    // The lookup, [index, days ago] entries, for the script to label in
+    // the viewer's zone.
+    let lookup_json = match view["timeline_lookup"].as_array() {
+        Some(lookup) => serde_json::to_string(lookup).unwrap_or_default(),
+        None => "[]".to_string(),
+    };
     let replies = escape(&t_with(
         cx.list,
         "topic.timeline.replies_short",
@@ -1835,7 +1809,7 @@ fn timeline_container(
         )
     };
     format!(
-        "<div class=\"timeline-container{}\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div>{scroller}<div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div>",
+        "<div class=\"timeline-container{}\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\">{}</a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div>{scroller}<div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div>",
         if fullscreen {
             " timeline-fullscreen"
         } else {
@@ -1848,7 +1822,7 @@ fn timeline_container(
         escape(&t(cx.list, "topic.timeline.replies_short")),
         escape(&url),
         escape(&t(cx.list, "topic_entrance.jump_top_button_title")),
-        escape(&start),
+        start,
         escape(&url),
         view["highest_post_number"].as_i64().unwrap_or(1),
     )
@@ -2509,12 +2483,21 @@ mod tests {
             &[post_json(1, "2026-09-30T09:28:00Z", None)],
             "2026-10-06T12:00:00Z",
             |html| {
+                // In UTC here; the templates let the browser draw them in
+                // the viewer's zone (crate::viewer_dates).
                 assert!(
-                    html[0].contains(">post by alice on Sep 30</h2>"),
+                    html[0].contains(
+                        r#" data-tz-text="post by alice %{1790760480000:@medium-with-ago-and-on}">post by alice on Sep 30</h2>"#
+                    ),
                     "{}",
                     html[0]
                 );
-                assert!(html[0].contains(r#"aria-label="Sep 30" class="post-date" href="/t/t/9""#));
+                assert!(html[0].contains(
+                    r#"aria-label="Sep 30" data-tz-aria-label="%{1790760480000:@medium-with-ago}" class="post-date" href="/t/t/9""#
+                ));
+                assert!(html[0].contains(
+                    r#"<span class="relative-date" title="Sep 30, 2026 9:28 am" data-tz-title="%{1790760480000:MMM D, YYYY h:mm a}" data-time="1790760480000" data-format="tiny">6d</span>"#
+                ));
             },
         );
     }

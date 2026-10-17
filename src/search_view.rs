@@ -10,8 +10,8 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 
 use crate::topic_list_view::{
-    ListContext, category_badge_html, escape, icon, long_date, relative_age_tiny, t, t_count,
-    t_with, tags_html, topic_statuses_with,
+    ListContext, category_badge_html, escape, icon, relative_age_tiny, t, t_count, t_with,
+    tags_html, topic_statuses_with,
 };
 
 /// `SEARCH_TYPE_DEFAULT`, `SEARCH_TYPE_CATS_TAGS`, `SEARCH_TYPE_USERS`.
@@ -461,8 +461,8 @@ pub fn entry(cx: &ListContext, v: &SearchView, post: &Value, topic: &Value) -> S
     out.push_str("<div class=\"blurb container\"><span class=\"date\">");
     if let Some(at) = date(&post["created_at"]) {
         out.push_str(&format!(
-            "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
-            long_date(cx, at),
+            "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>",
+            crate::viewer_dates::long_title(cx, at),
             at.timestamp_millis(),
             relative_age_tiny(cx, at)
         ));
