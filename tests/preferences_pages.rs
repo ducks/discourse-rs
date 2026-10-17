@@ -344,6 +344,21 @@ async fn a_confirmed_session_opens_the_second_factor_page() {
     assert!(page.html.contains("solo-preference second-factor"));
     assert!(page.html.contains("new-totp"));
     assert!(page.html.contains("new-security-key"));
+    // What the modals draw from.
+    let needle = "id=\"second-factor-data\">";
+    let start = page.html.find(needle).unwrap() + needle.len();
+    let end = start + page.html[start..].find("</script>").unwrap();
+    let data: serde_json::Value = serde_json::from_str(&page.html[start..end]).unwrap();
+    assert_eq!(data["username_lower"], "user1");
+    assert_eq!(data["totps"], serde_json::json!([]));
+    assert_eq!(data["enforced"], false);
+    assert_eq!(data["strings"]["totp_add"], "Add Authenticator");
+    assert!(
+        data["strings"]["delete_confirm_instruction"]
+            .as_str()
+            .unwrap()
+            .contains("%{confirm}")
+    );
     // The authenticator's secret, staged with its QR code.
     let created = user1
         .send(Method::POST, "/u/create_second_factor_totp.json", "")
