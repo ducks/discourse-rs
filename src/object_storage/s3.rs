@@ -19,7 +19,7 @@ use chrono::NaiveDateTime;
 use rusty_s3::{Bucket, Credentials, S3Action, UrlStyle};
 use url::Url;
 
-use super::{LifecycleRule, ObjectMeta, Part, PutOptions, StorageError};
+use super::{CorsRule, LifecycleRule, ObjectMeta, Part, PutOptions, StorageError};
 
 /// S3Helper::FIFTEEN_MEGABYTES: from this size a file goes up in parts.
 pub const MULTIPART_THRESHOLD: u64 = 15 * 1024 * 1024;
@@ -238,6 +238,11 @@ impl S3 {
             .await;
         match head {
             Ok(_) => {}
+            // aws-sdk's bucket_exists waiter takes a 301 or a 403 for "it
+            // is there": the request that follows says what is wrong.
+            Err(StorageError::Service {
+                status: 301 | 403, ..
+            }) => return Ok(()),
             Err(StorageError::Service { status: 404, .. }) | Err(StorageError::NotFound) => {
                 // aws-sdk names the region outside us-east-1.
                 let body = (self.region != "us-east-1").then(|| {
@@ -564,7 +569,6 @@ impl S3 {
         if let Some(disposition) = response_content_disposition {
             query.push(("response-content-disposition", disposition));
         }
-        query.push(("x-id", "GetObject"));
         Ok(self
             .presign(rusty_s3::Method::Get, url, &query, &[], expires_in)
             .to_string())
@@ -578,13 +582,7 @@ impl S3 {
     ) -> Result<(String, BTreeMap<String, String>), StorageError> {
         let url = self.object_url(key)?;
         let headers = put_headers(opts);
-        let signed = self.presign(
-            rusty_s3::Method::Put,
-            url,
-            &[("x-id", "PutObject")],
-            &headers,
-            expires_in,
-        );
+        let signed = self.presign(rusty_s3::Method::Put, url, &[], &headers, expires_in);
         Ok((signed.to_string(), headers.into_iter().collect()))
     }
 
@@ -625,11 +623,7 @@ impl S3 {
             .presign(
                 rusty_s3::Method::Put,
                 url,
-                &[
-                    ("partNumber", &n),
-                    ("uploadId", upload_id),
-                    ("x-id", "UploadPart"),
-                ],
+                &[("partNumber", &n), ("uploadId", upload_id)],
                 &[],
                 expires_in,
             )
@@ -722,6 +716,64 @@ impl S3 {
         )
         .await?;
         Ok(())
+    }
+
+    /// S3Helper#ensure_cors!: the rule added to the bucket's CORS rules
+    /// unless one like it is there; false when it was there, or the
+    /// service refused the write (AccessDenied).
+    pub async fn ensure_cors(&self, rule: &CorsRule) -> Result<bool, StorageError> {
+        let url = self.bucket.base_url().clone();
+        let existing = match self
+            .send(
+                rusty_s3::Method::Get,
+                url.clone(),
+                &[("cors", "")],
+                &[],
+                None,
+            )
+            .await
+        {
+            Ok(response) => response
+                .text()
+                .await
+                .map_err(|e| StorageError::Transport(e.to_string()))?,
+            Err(e) if e.code() == "NoSuchCORSConfiguration" => String::new(),
+            Err(e) => return Err(e),
+        };
+        let rules: Vec<&str> = xml_elements(&existing, "CORSRule");
+        let wanted = cors_rule_xml(rule);
+        if rules
+            .iter()
+            .any(|r| normalized_rule(r) == normalized_rule(&wanted))
+        {
+            return Ok(false);
+        }
+        let mut body =
+            String::from("<CORSConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">");
+        for r in &rules {
+            body.push_str(&format!("<CORSRule>{r}</CORSRule>"));
+        }
+        body.push_str(&format!(
+            "<CORSRule>{wanted}</CORSRule></CORSConfiguration>"
+        ));
+        let md5 = {
+            use base64::Engine;
+            base64::engine::general_purpose::STANDARD.encode(md5::compute(body.as_bytes()).0)
+        };
+        match self
+            .send(
+                rusty_s3::Method::Put,
+                url,
+                &[("cors", "")],
+                &[("content-md5".to_string(), md5)],
+                Some(body.into_bytes()),
+            )
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) if e.code() == "AccessDenied" => Ok(false),
+            Err(e) => Err(e),
+        }
     }
 
     /// The bucket's lifecycle configuration as S3 returns it, empty when
@@ -852,6 +904,46 @@ fn endpoint(config: &S3Config) -> Result<(Url, UrlStyle), StorageError> {
             ))
         }
     }
+}
+
+/// A CORS rule's elements, as S3 takes them.
+fn cors_rule_xml(rule: &CorsRule) -> String {
+    let mut xml = String::new();
+    for h in &rule.allowed_headers {
+        xml.push_str(&format!("<AllowedHeader>{}</AllowedHeader>", xml_escape(h)));
+    }
+    for m in &rule.allowed_methods {
+        xml.push_str(&format!("<AllowedMethod>{}</AllowedMethod>", xml_escape(m)));
+    }
+    for o in &rule.allowed_origins {
+        xml.push_str(&format!("<AllowedOrigin>{}</AllowedOrigin>", xml_escape(o)));
+    }
+    for h in &rule.expose_headers {
+        xml.push_str(&format!("<ExposeHeader>{}</ExposeHeader>", xml_escape(h)));
+    }
+    if let Some(age) = rule.max_age_seconds {
+        xml.push_str(&format!("<MaxAgeSeconds>{age}</MaxAgeSeconds>"));
+    }
+    xml
+}
+
+/// A rule's elements in a fixed order (services return them in their
+/// own), to compare two rules.
+fn normalized_rule(xml: &str) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    for tag in [
+        "AllowedHeader",
+        "AllowedMethod",
+        "AllowedOrigin",
+        "ExposeHeader",
+        "MaxAgeSeconds",
+    ] {
+        for value in xml_elements(xml, tag) {
+            out.push((tag.to_string(), xml_unescape(value)));
+        }
+    }
+    out.sort();
+    out
 }
 
 /// The headers an object is written with, names lowercase.
@@ -1064,7 +1156,6 @@ mod tests {
             names,
             [
                 "response-content-disposition",
-                "x-id",
                 "X-Amz-Algorithm",
                 "X-Amz-Credential",
                 "X-Amz-Date",
@@ -1074,7 +1165,7 @@ mod tests {
             ]
         );
         assert!(query.starts_with(
-            "response-content-disposition=attachment%3B%20filename%3D%22a%20b.png%22&x-id=GetObject&"
+            "response-content-disposition=attachment%3B%20filename%3D%22a%20b.png%22&X-Amz-Algorithm="
         ));
         assert!(query.contains("&X-Amz-Expires=300&X-Amz-SignedHeaders=host&"));
     }

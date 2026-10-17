@@ -2,7 +2,7 @@
 //! routing 404): the backups list and status, emailing a download link
 //! and downloading with its token, deleting, uploading in chunks, and the
 //! read-only toggle. The admin pages themselves (index and logs as HTML)
-//! are Ember's; S3 (the store, upload URLs, multipart uploads) is refused.
+//! are Ember's; direct multipart uploads to S3 are refused.
 
 use axum::Json;
 use axum::body::{Body, Bytes};

@@ -1,0 +1,204 @@
+{
+  "name": "index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/storage_stats.json"
+    }
+  ],
+  "started_at": "2026-10-16T22:25:19.590823",
+  "transaction_started_at": "2026-10-16T22:25:17.837158",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "filename": "discourse-2026-10-01-033000-v20260925054715.tar.gz",
+          "size": 51,
+          "last_modified": "2026-10-16T22:25:18.908Z"
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "storage_stats",
+          "title": null,
+          "xaxis": null,
+          "yaxis": null,
+          "description": null,
+          "description_link": null,
+          "data": {
+            "backups": {
+              "used_bytes": 51,
+              "free_bytes": null,
+              "count": 1,
+              "last_backup_taken_at": "2026-10-16T22:25:18.908Z"
+            },
+            "uploads": {
+              "used_bytes": 1368569,
+              "free_bytes": 99958272000
+            }
+          },
+          "start_date": "2026-10-15T00:00:00Z",
+          "end_date": "2026-11-14T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-14T00:00:00Z",
+          "prev_end_date": "2026-10-15T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:storage_stats:20261015:20261114:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JGJa+SVDqKAYsigekp8eCPfR5AY=",
+            "created_at": "2026-10-16T22:25:18.584601",
+            "rotated_at": "2026-10-16T22:25:18.577998",
+            "updated_at": "2026-10-16T22:25:18.584601",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "JGJa+SVDqKAYsigekp8eCPfR5AY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:25:19.600275",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JGJa+SVDqKAYsigekp8eCPfR5AY=",
+            "created_at": "2026-10-16T22:25:18.584601",
+            "rotated_at": "2026-10-16T22:25:18.577998",
+            "updated_at": "2026-10-16T22:25:18.584601",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "JGJa+SVDqKAYsigekp8eCPfR5AY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_backup_bucket": "s3-backups-index/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "s3": {
+    "buckets": [
+      "s3-backups-index"
+    ],
+    "objects": {
+      "s3-backups-index/forum/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz",
+      "s3-backups-index/forum/default/notes.txt": "notes.txt",
+      "s3-backups-index/forum/default/nested/inner.tar.gz": "backup.tar.gz",
+      "s3-backups-index/forum/other/other-site.tar.gz": "backup.tar.gz",
+      "s3-backups-index/elsewhere.tar.gz": "backup.tar.gz"
+    }
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-backups-index",
+      "key": "elsewhere.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-backups-index",
+      "key": "forum/default/discourse-2026-10-01-033000-v20260925054715.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-backups-index",
+      "key": "forum/default/nested/inner.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-backups-index",
+      "key": "forum/default/notes.txt",
+      "size": 48,
+      "etag": "17f7e0047572106ee23287c1c6e8859c",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    },
+    {
+      "bucket": "s3-backups-index",
+      "key": "forum/other/other-site.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "f6b1278a6ed317051934da1b56b5ca05b45e072fc6aafc486652dbca9c829a42",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

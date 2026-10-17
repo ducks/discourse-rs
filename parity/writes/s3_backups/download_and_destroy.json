@@ -1,0 +1,209 @@
+{
+  "name": "download_and_destroy",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=0123456789abcdef0123456789abcdef"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-02-033000-v20260925054715.sql.gz.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/missing-2026-10-02-033000-v20260925054715.sql.gz.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-02-033000-v20260925054715.sql.gz.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-02-033000-v20260925054715.sql.gz.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ],
+  "started_at": "2026-10-16T22:25:17.00556",
+  "transaction_started_at": "2026-10-16T22:25:12.497076",
+  "responses": [
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/default/discourse-2026-10-01-033000-v20260925054715.tar.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261016T222517Z&X-Amz-Expires=300&X-Amz-SignedHeaders=host&X-Amz-Signature=b1523a8d28a43a1dc812a2f77fb758014888026efa1dd9d34ec6ba11b8afb03a"
+      }
+    },
+    {
+      "status": 200,
+      "body": ""
+    },
+    {
+      "status": 404,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": ""
+    },
+    {
+      "status": 404,
+      "body": ""
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "filename": "discourse-2026-10-01-033000-v20260925054715.tar.gz",
+          "size": 51,
+          "last_modified": "2026-10-16T22:25:16.141Z"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "x7aIMb8jeRAGru+Vqjtr0vEaBGs=",
+            "created_at": "2026-10-16T22:25:14.517038",
+            "rotated_at": "2026-10-16T22:25:14.510284",
+            "updated_at": "2026-10-16T22:25:14.517038",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "x7aIMb8jeRAGru+Vqjtr0vEaBGs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:25:17.020949",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "x7aIMb8jeRAGru+Vqjtr0vEaBGs=",
+            "created_at": "2026-10-16T22:25:14.517038",
+            "rotated_at": "2026-10-16T22:25:14.510284",
+            "updated_at": "2026-10-16T22:25:14.517038",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "x7aIMb8jeRAGru+Vqjtr0vEaBGs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 45,
+          "context": null,
+          "details": "discourse-2026-10-01-033000-v20260925054715.tar.gz",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T22:25:17.158095",
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-16T22:25:17.158095",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 46,
+          "context": null,
+          "details": "discourse-2026-10-02-033000-v20260925054715.sql.gz",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-16T22:25:17.363073",
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-16T22:25:17.363073",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "download_backup_email",
+      {
+        "user_id": 1,
+        "backup_file_path": "http://localhost/admin/backups/discourse-2026-10-02-033000-v20260925054715.sql.gz"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "s3_backup_bucket": "s3-backups-download",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "redis": {
+    "email-backup-token:1": "0123456789abcdef0123456789abcdef"
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "s3": {
+    "buckets": [
+      "s3-backups-download"
+    ],
+    "objects": {
+      "s3-backups-download/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz",
+      "s3-backups-download/default/discourse-2026-10-02-033000-v20260925054715.sql.gz": "backup_chunk.gz"
+    }
+  },
+  "s3_objects": [
+    {
+      "bucket": "s3-backups-download",
+      "key": "default/discourse-2026-10-01-033000-v20260925054715.tar.gz",
+      "size": 51,
+      "etag": "0ebb13fa5b67199459785182141dad78",
+      "content_type": "application/octet-stream",
+      "cache_control": null,
+      "content_disposition": null,
+      "metadata": {}
+    }
+  ],
+  "recorded_from": {
+    "case": "cc0745d2922494c217266894560038e5b862ba112a33406642d81374aebd78a6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

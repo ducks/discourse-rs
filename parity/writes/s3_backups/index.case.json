@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "s3": {
+    "buckets": ["s3-backups-index"],
+    "objects": {
+      "s3-backups-index/forum/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz",
+      "s3-backups-index/forum/default/notes.txt": "notes.txt",
+      "s3-backups-index/forum/default/nested/inner.tar.gz": "backup.tar.gz",
+      "s3-backups-index/forum/other/other-site.tar.gz": "backup.tar.gz",
+      "s3-backups-index/elsewhere.tar.gz": "backup.tar.gz"
+    }
+  },
+  "settings": {
+    "s3_backup_bucket": "s3-backups-index/forum",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "discourse-rs-test-secret",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "ignore": ["/responses/0/body/*/last_modified", "/responses/1/body/report/data/backups/last_backup_taken_at", "/responses/1/body/report/data/uploads/free_bytes"],
+  "requests": [
+    {"method": "GET", "path": "/admin/backups.json"},
+    {"method": "GET", "path": "/admin/reports/storage_stats.json"}
+  ]
+}

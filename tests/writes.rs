@@ -541,6 +541,16 @@ fn unrandom(s: &str) -> String {
         regex::Regex::new(r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000\]").unwrap()
     });
     let s = LOG_TIME.replace_all(&s, "[<log time>]");
+    // A presigned S3 URL's signing time and signature (and the date in
+    // its credential scope).
+    static AMZ_SIGNED: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"X-Amz-(Date|Signature)=[0-9A-Za-z]+").unwrap()
+    });
+    let s = AMZ_SIGNED.replace_all(&s, "X-Amz-$1=<signed>");
+    static AMZ_SCOPE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(X-Amz-Credential=[^%&]+%2F)\d{8}%2F").unwrap()
+    });
+    let s = AMZ_SCOPE.replace_all(&s, "${1}<date>%2F");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");

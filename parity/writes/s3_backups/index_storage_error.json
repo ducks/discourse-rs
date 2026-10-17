@@ -1,0 +1,83 @@
+{
+  "name": "index_storage_error",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ],
+  "started_at": "2026-10-16T22:25:21.881271",
+  "transaction_started_at": "2026-10-16T22:25:20.168199",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "The request signature we calculated does not match the signature you provided. Check your key and signing method."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IhH04QnSJNedJdoQj4kGCDKpQQc=",
+            "created_at": "2026-10-16T22:25:20.963183",
+            "rotated_at": "2026-10-16T22:25:20.961803",
+            "updated_at": "2026-10-16T22:25:20.963183",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "IhH04QnSJNedJdoQj4kGCDKpQQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-16T22:25:21.890763",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "IhH04QnSJNedJdoQj4kGCDKpQQc=",
+            "created_at": "2026-10-16T22:25:20.963183",
+            "rotated_at": "2026-10-16T22:25:20.961803",
+            "updated_at": "2026-10-16T22:25:20.963183",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "IhH04QnSJNedJdoQj4kGCDKpQQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "s3_backup_bucket": "s3-backups-wrong-key",
+    "s3_access_key_id": "discourse-rs-test",
+    "s3_secret_access_key": "not-the-secret-key",
+    "s3_region": "us-east-1",
+    "s3_endpoint": "http://minio.localhost:9122",
+    "backup_location": "s3"
+  },
+  "s3": {
+    "buckets": []
+  },
+  "s3_objects": [],
+  "recorded_from": {
+    "case": "ba4842dadf41b3062cfcab890eaaf0038739337554d8212c502a72c219bca633",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
