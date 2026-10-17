@@ -68,18 +68,6 @@ pub struct Search {
     pub skip_category_name: bool,
 }
 
-/// `ActiveRecord::Base.sanitize_sql_like`
-fn sanitize_sql_like(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for c in s.chars() {
-        if matches!(c, '%' | '_' | '\\') {
-            out.push('\\');
-        }
-        out.push(c);
-    }
-    out
-}
-
 /// `ChannelsMembershipsController::INDEX_LIMIT`
 pub const MEMBERSHIPS_LIMIT: i64 = 50;
 
@@ -201,7 +189,7 @@ impl Context<'_> {
             search.offset.max(0)
         ));
         let term = filter.unwrap_or_default();
-        let like = sanitize_sql_like(&term);
+        let like = crate::ruby::sanitize_sql_like(&term);
         Ok(sqlx::query_as(&sql)
             .bind(&term)
             .bind(format!("{like}%"))

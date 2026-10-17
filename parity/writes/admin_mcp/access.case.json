@@ -1,0 +1,39 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": { "scopes": ["mcp:content:read", "mcp:drafts:read"] }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": { "scopes": ["mcp:content:write"] }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": { "scopes": ["mcp:nonsense"] }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/9999.json",
+      "params": { "scopes": ["mcp:content:read"] }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/12.json",
+      "params": { "other": "x" }
+    },
+    { "method": "DELETE", "path": "/admin/mcp/access/11.json" },
+    { "method": "DELETE", "path": "/admin/mcp/access/1.json" },
+    { "method": "DELETE", "path": "/admin/mcp/access/9999.json" },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/1.json",
+      "params": { "scopes": ["mcp:content:read"] }
+    },
+    { "method": "GET", "path": "/admin/mcp/access.json" }
+  ]
+}

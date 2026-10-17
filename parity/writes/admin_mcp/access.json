@@ -1,0 +1,4424 @@
+{
+  "name": "access",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": {
+        "scopes": [
+          "mcp:content:read",
+          "mcp:drafts:read"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": {
+        "scopes": [
+          "mcp:content:write"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/11.json",
+      "params": {
+        "scopes": [
+          "mcp:nonsense"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/9999.json",
+      "params": {
+        "scopes": [
+          "mcp:content:read"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/12.json",
+      "params": {
+        "other": "x"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/mcp/access/11.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/mcp/access/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/mcp/access/9999.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/mcp/access/1.json",
+      "params": {
+        "scopes": [
+          "mcp:content:read"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/access.json"
+    }
+  ],
+  "started_at": "2026-10-17T08:35:31.973425",
+  "transaction_started_at": "2026-10-17T08:35:29.106483",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "initial_scope": "mcp:profile:read",
+        "available_scopes": [
+          "chat:read",
+          "chat:write",
+          "discourse-calendar:read",
+          "discourse-reactions:write",
+          "discourse-solved:write",
+          "discourse-topic-voting:write",
+          "mcp:content:read",
+          "mcp:content:write",
+          "mcp:data-explorer:read",
+          "mcp:drafts:read",
+          "mcp:drafts:write",
+          "mcp:moderation:read",
+          "mcp:moderation:write",
+          "mcp:private-messages:read",
+          "mcp:private-messages:write",
+          "mcp:profile:read",
+          "mcp:profile:write",
+          "mcp:site-settings:read",
+          "mcp:site-settings:write",
+          "mcp:themes:read",
+          "mcp:themes:write"
+        ],
+        "primitives": [
+          {
+            "id": "tool:chat_channel_list",
+            "field_name": "primitive_tool_f38b32ef94084a2f",
+            "identifier": "chat_channel_list",
+            "kind": "tool",
+            "title": "List chat channels",
+            "description": "Lists chat channels followed by the authenticated user, including direct-message channels.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:chat_message_create",
+            "field_name": "primitive_tool_28e59d5c4f43a6ce",
+            "identifier": "chat_message_create",
+            "kind": "tool",
+            "title": "Create chat message",
+            "description": "Creates a message in a chat channel as the authenticated user.",
+            "provider": "chat",
+            "risk": "write",
+            "required_scopes": [
+              "chat:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_bookmark_list",
+            "field_name": "primitive_tool_041404c0af2a5d9a",
+            "identifier": "discourse_bookmark_list",
+            "kind": "tool",
+            "title": "List bookmarks",
+            "description": "Lists the authenticated user's bookmarks.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_calendar_event_list",
+            "field_name": "primitive_tool_efccc3fe7b4346ee",
+            "identifier": "discourse_calendar_event_list",
+            "kind": "tool",
+            "title": "List events",
+            "description": "Lists upcoming events whose posts are visible to the authenticated user.",
+            "provider": "discourse-events",
+            "risk": "read",
+            "required_scopes": [
+              "discourse-calendar:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_category_list",
+            "field_name": "primitive_tool_1af3b3899861a007",
+            "identifier": "discourse_category_list",
+            "kind": "tool",
+            "title": "List categories",
+            "description": "Lists the visible category hierarchy.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_post",
+            "field_name": "primitive_tool_db18db3d12f6441b",
+            "identifier": "discourse_create_post",
+            "kind": "tool",
+            "title": "Create post",
+            "description": "Creates a reply in a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_private_message",
+            "field_name": "primitive_tool_c260a828a5fe380f",
+            "identifier": "discourse_create_private_message",
+            "kind": "tool",
+            "title": "Create private message",
+            "description": "Creates a private message as the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_theme",
+            "field_name": "primitive_tool_5739d269051a790c",
+            "identifier": "discourse_create_theme",
+            "kind": "tool",
+            "title": "Create theme",
+            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_topic",
+            "field_name": "primitive_tool_cce9f748e06296a2",
+            "identifier": "discourse_create_topic",
+            "kind": "tool",
+            "title": "Create topic",
+            "description": "Creates a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_current_user_get",
+            "field_name": "primitive_tool_2460f13c1aa9ca7d",
+            "identifier": "discourse_current_user_get",
+            "kind": "tool",
+            "title": "Get current user",
+            "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_draft",
+            "field_name": "primitive_tool_335ab523f047c8f4",
+            "identifier": "discourse_delete_draft",
+            "kind": "tool",
+            "title": "Delete draft",
+            "description": "Deletes one of the authenticated user's drafts at its current sequence.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_filter_topics",
+            "field_name": "primitive_tool_0e686b5bde2f028b",
+            "identifier": "discourse_filter_topics",
+            "kind": "tool",
+            "title": "Filter topics",
+            "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_chat_messages",
+            "field_name": "primitive_tool_795d43f2bd933ced",
+            "identifier": "discourse_get_chat_messages",
+            "kind": "tool",
+            "title": "Get chat messages",
+            "description": "Reads a bounded page of messages from a visible chat channel.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_draft",
+            "field_name": "primitive_tool_dc603efa0c8fa065",
+            "identifier": "discourse_get_draft",
+            "kind": "tool",
+            "title": "Get draft",
+            "description": "Retrieves one of the authenticated user's drafts by key.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_replies",
+            "field_name": "primitive_tool_9f22d1f493a1d0d9",
+            "identifier": "discourse_get_post_replies",
+            "kind": "tool",
+            "title": "Get post replies",
+            "description": "Read reply relationships for a post as recursive descendant IDs, bounded rich direct replies, or the upstream-bounded ancestor history. Preserves upstream ordering and references.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_revision",
+            "field_name": "primitive_tool_1fd74486c2f2929c",
+            "identifier": "discourse_get_post_revision",
+            "kind": "tool",
+            "title": "Get post revision",
+            "description": "Returns a post revision visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_query",
+            "field_name": "primitive_tool_29d74577aa3c6979",
+            "identifier": "discourse_get_query",
+            "kind": "tool",
+            "title": "Get Data Explorer query",
+            "description": "Returns the definition of a saved Data Explorer query. Requires an admin account.",
+            "provider": "discourse-data-explorer",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_get_review_queue_count",
+            "field_name": "primitive_tool_105a65acb9eb981b",
+            "identifier": "discourse_get_review_queue_count",
+            "kind": "tool",
+            "title": "Get review queue count",
+            "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_reviewable",
+            "field_name": "primitive_tool_f62c4973a73cd6f7",
+            "identifier": "discourse_get_reviewable",
+            "kind": "tool",
+            "title": "Get reviewable",
+            "description": "Returns one visible reviewable with its current version, evidence, and available actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_theme",
+            "field_name": "primitive_tool_8e4cc21f5accb7d0",
+            "identifier": "discourse_get_theme",
+            "kind": "tool",
+            "title": "Get theme",
+            "description": "Reads a theme or theme component and its fields. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_topic_view_stats",
+            "field_name": "primitive_tool_a27dbce52e4ffae1",
+            "identifier": "discourse_get_topic_view_stats",
+            "kind": "tool",
+            "title": "Get topic view stats",
+            "description": "Get up to 300 ascending daily topic view counts. Views combine anonymous and logged-in views; they are not unique viewers or an engagement judgment.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user",
+            "field_name": "primitive_tool_bed0e71b4819ba0e",
+            "identifier": "discourse_get_user",
+            "kind": "tool",
+            "title": "Get user",
+            "description": "Reads a user profile visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_moderation_summary",
+            "field_name": "primitive_tool_cc82343528a26fb5",
+            "identifier": "discourse_get_user_moderation_summary",
+            "kind": "tool",
+            "title": "Get user moderation summary",
+            "description": "Returns staff-visible moderation counters for a user.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_summary",
+            "field_name": "primitive_tool_b9e49ba6e96ec0ce",
+            "identifier": "discourse_get_user_summary",
+            "kind": "tool",
+            "title": "Get user summary",
+            "description": "Returns profile-visible aggregate activity for a user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_to_private_message",
+            "field_name": "primitive_tool_f54fa0cbc0d051ca",
+            "identifier": "discourse_invite_to_private_message",
+            "kind": "tool",
+            "title": "Invite to private message",
+            "description": "Adds one user or group, or submits one email invitation, to a private message.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_directory_items",
+            "field_name": "primitive_tool_e7e345867af2694d",
+            "identifier": "discourse_list_directory_items",
+            "kind": "tool",
+            "title": "List directory items",
+            "description": "List user-directory metrics with authoritative totals and continuation. Supports Discourse periods, ordering, visible groups, page 0-10, and up to 50 rows.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_latest_posts",
+            "field_name": "primitive_tool_a61ae05157131e18",
+            "identifier": "discourse_list_latest_posts",
+            "kind": "tool",
+            "title": "List latest posts",
+            "description": "List the site's latest visible posts using Discourse's fixed 50-post page and post-ID cursor. Results are a feed, not an exhaustive history.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_private_messages",
+            "field_name": "primitive_tool_ea80826e5edc25ec",
+            "identifier": "discourse_list_private_messages",
+            "kind": "tool",
+            "title": "List private messages",
+            "description": "Lists a personal or group private-message mailbox visible to the user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewable_topics",
+            "field_name": "primitive_tool_1fd7fa17e4899088",
+            "identifier": "discourse_list_reviewable_topics",
+            "kind": "tool",
+            "title": "List reviewable topics",
+            "description": "Lists topic-level signals from pending reviewables visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewables",
+            "field_name": "primitive_tool_0be4efe56e21208a",
+            "identifier": "discourse_list_reviewables",
+            "kind": "tool",
+            "title": "List reviewables",
+            "description": "Lists reviewable records visible to the authenticated reviewer, including their current actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_site_settings",
+            "field_name": "primitive_tool_bad6f0ea4200db9f",
+            "identifier": "discourse_list_site_settings",
+            "kind": "tool",
+            "title": "List site settings",
+            "description": "Lists admin-visible site settings while masking secret and credential-like values.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_actions",
+            "field_name": "primitive_tool_13f3d5b18a439b5a",
+            "identifier": "discourse_list_user_actions",
+            "kind": "tool",
+            "title": "List user actions",
+            "description": "Lists a user's visible activity using named action types.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_posts",
+            "field_name": "primitive_tool_67abaa323b483c1a",
+            "identifier": "discourse_list_user_posts",
+            "kind": "tool",
+            "title": "List user posts",
+            "description": "Lists a user's visible topics and replies with zero-based pagination.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_notification_list",
+            "field_name": "primitive_tool_c0170aa19e4beead",
+            "identifier": "discourse_notification_list",
+            "kind": "tool",
+            "title": "List notifications",
+            "description": "Lists the authenticated user's notifications.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_perform_reviewable_action",
+            "field_name": "primitive_tool_bc76ffc2ae8c253b",
+            "identifier": "discourse_perform_reviewable_action",
+            "kind": "tool",
+            "title": "Perform reviewable action",
+            "description": "Performs one currently available action on a visible reviewable after a fresh permission check.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_post_set_deleted",
+            "field_name": "primitive_tool_2c45fb72f4491f0d",
+            "identifier": "discourse_post_set_deleted",
+            "kind": "tool",
+            "title": "Delete or recover own post",
+            "description": "Deletes or recovers a post owned by the authenticated user.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reactions_post_reaction_set",
+            "field_name": "primitive_tool_faee2e041c5088b8",
+            "identifier": "discourse_reactions_post_reaction_set",
+            "kind": "tool",
+            "title": "Set post reaction",
+            "description": "Adds, changes, or removes the authenticated user's reaction to a visible post.",
+            "provider": "discourse-reactions",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_post",
+            "field_name": "primitive_tool_a39832a8dfc2d264",
+            "identifier": "discourse_read_post",
+            "kind": "tool",
+            "title": "Read post",
+            "description": "Reads one visible post.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_private_message",
+            "field_name": "primitive_tool_7e7565b380bb50c9",
+            "identifier": "discourse_read_private_message",
+            "kind": "tool",
+            "title": "Read private message",
+            "description": "Reads a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic",
+            "field_name": "primitive_tool_21c0b87c308eb6a8",
+            "identifier": "discourse_read_topic",
+            "kind": "tool",
+            "title": "Read topic",
+            "description": "Reads a topic and a bounded set of posts visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic_posts",
+            "field_name": "primitive_tool_14a9de20485df21b",
+            "identifier": "discourse_read_topic_posts",
+            "kind": "tool",
+            "title": "Read selected topic posts",
+            "description": "Read exact, earliest, latest, around-post, or username-filtered topic evidence. Selection is bounded to 50 posts and reports the visible stream size without claiming the entire topic was loaded.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reply_private_message",
+            "field_name": "primitive_tool_f523bf1f054c1dac",
+            "identifier": "discourse_reply_private_message",
+            "kind": "tool",
+            "title": "Reply to private message",
+            "description": "Replies to a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_run_query",
+            "field_name": "primitive_tool_66fca5706aa391d8",
+            "identifier": "discourse_run_query",
+            "kind": "tool",
+            "title": "Run Data Explorer query",
+            "description": "Runs a saved Data Explorer query that the authenticated user can access.",
+            "provider": "discourse-data-explorer",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_save_draft",
+            "field_name": "primitive_tool_2c4d724f5c4500dc",
+            "identifier": "discourse_save_draft",
+            "kind": "tool",
+            "title": "Save draft",
+            "description": "Creates or updates a draft for the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search",
+            "field_name": "primitive_tool_0baf0776305abb40",
+            "identifier": "discourse_search",
+            "kind": "tool",
+            "title": "Search Discourse",
+            "description": "Searches topics and posts visible to the authenticated user using Discourse search syntax.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search_posts",
+            "field_name": "primitive_tool_f6fb31c54878ad99",
+            "identifier": "discourse_search_posts",
+            "kind": "tool",
+            "title": "Search posts",
+            "description": "Search post-level evidence with Discourse query syntax. Preserves matched posts, highlighted excerpts, authors, topics, categories, and bounded continuation. This is keyword search, not semantic search.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_solved_solution_set",
+            "field_name": "primitive_tool_a24a0c1aff488a10",
+            "identifier": "discourse_solved_solution_set",
+            "kind": "tool",
+            "title": "Set accepted solution",
+            "description": "Accepts or unaccepts a post as the topic solution when permitted.",
+            "provider": "discourse-solved",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_tag_list",
+            "field_name": "primitive_tool_9630261e27f6833a",
+            "identifier": "discourse_tag_list",
+            "kind": "tool",
+            "title": "List tags",
+            "description": "Lists visible tags ordered by usage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_list",
+            "field_name": "primitive_tool_7f768210966257d8",
+            "identifier": "discourse_topic_list",
+            "kind": "tool",
+            "title": "List topics",
+            "description": "Lists recent topics visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_voting_vote_set",
+            "field_name": "primitive_tool_1858e70de1d194d9",
+            "identifier": "discourse_topic_voting_vote_set",
+            "kind": "tool",
+            "title": "Set topic vote",
+            "description": "Casts or removes the authenticated user's vote on a visible votable topic.",
+            "provider": "discourse-topic-voting",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_post",
+            "field_name": "primitive_tool_6394003e5b2a6e25",
+            "identifier": "discourse_update_post",
+            "kind": "tool",
+            "title": "Update post",
+            "description": "Edits a post when the authenticated user has permission.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_site_setting",
+            "field_name": "primitive_tool_b5645cfb44adc665",
+            "identifier": "discourse_update_site_setting",
+            "kind": "tool",
+            "title": "Update site setting",
+            "description": "Sets or resets one ordinary site setting after a current-value check and explicit confirmation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme",
+            "field_name": "primitive_tool_fdc61efa928e1c7a",
+            "identifier": "discourse_update_theme",
+            "kind": "tool",
+            "title": "Update theme",
+            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_topic",
+            "field_name": "primitive_tool_9962bcc8825fa906",
+            "identifier": "discourse_update_topic",
+            "kind": "tool",
+            "title": "Update topic",
+            "description": "Updates fields on a topic when the user may edit it.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_user",
+            "field_name": "primitive_tool_6bfbf609c0128cbf",
+            "identifier": "discourse_update_user",
+            "kind": "tool",
+            "title": "Update user",
+            "description": "Updates the authenticated user's own profile.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_file",
+            "field_name": "primitive_tool_7feee31bc220cecf",
+            "identifier": "discourse_upload_file",
+            "kind": "tool",
+            "title": "Upload file",
+            "description": "Uploads base64 data or a remote HTTP(S) file for the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_user_status_set",
+            "field_name": "primitive_tool_d9952d1a92696436",
+            "identifier": "discourse_user_status_set",
+            "kind": "tool",
+            "title": "Set user status",
+            "description": "Sets or clears the authenticated user's status.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "resource_template:discourse.post",
+            "field_name": "primitive_resource_template_00b923ec0da42e69",
+            "identifier": "discourse.post",
+            "kind": "resource_template",
+            "title": "Discourse post",
+            "description": "A post visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "resource_template:discourse.topic",
+            "field_name": "primitive_resource_template_41f455bbb5aa1593",
+            "identifier": "discourse.topic",
+            "kind": "resource_template",
+            "title": "Discourse topic",
+            "description": "A topic visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.draft_reply",
+            "field_name": "primitive_prompt_14c3292ed1d119bc",
+            "identifier": "discourse.draft_reply",
+            "kind": "prompt",
+            "title": "Draft a reply",
+            "description": "Builds a prompt for drafting a grounded reply to a visible topic.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.research_topic",
+            "field_name": "primitive_prompt_4e4589a07f9c5e8a",
+            "identifier": "discourse.research_topic",
+            "kind": "prompt",
+            "title": "Research discussions",
+            "description": "Builds a prompt for researching visible Discourse discussions.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          }
+        ],
+        "access_rules": [
+          {
+            "group_id": 1,
+            "group_name": "admins",
+            "scopes": [
+              "chat:read",
+              "chat:write",
+              "discourse-calendar:read",
+              "discourse-reactions:write",
+              "discourse-solved:write",
+              "discourse-topic-voting:write",
+              "mcp:content:read",
+              "mcp:content:write",
+              "mcp:data-explorer:read",
+              "mcp:drafts:read",
+              "mcp:drafts:write",
+              "mcp:moderation:read",
+              "mcp:moderation:write",
+              "mcp:private-messages:read",
+              "mcp:private-messages:write",
+              "mcp:profile:read",
+              "mcp:profile:write",
+              "mcp:site-settings:read",
+              "mcp:site-settings:write",
+              "mcp:themes:read",
+              "mcp:themes:write"
+            ],
+            "pre_registered": true,
+            "deletable": false
+          },
+          {
+            "group_id": 11,
+            "group_name": "trust_level_1",
+            "scopes": [
+              "mcp:content:read",
+              "mcp:drafts:read",
+              "mcp:profile:read"
+            ],
+            "pre_registered": false,
+            "deletable": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "initial_scope": "mcp:profile:read",
+        "available_scopes": [
+          "chat:read",
+          "chat:write",
+          "discourse-calendar:read",
+          "discourse-reactions:write",
+          "discourse-solved:write",
+          "discourse-topic-voting:write",
+          "mcp:content:read",
+          "mcp:content:write",
+          "mcp:data-explorer:read",
+          "mcp:drafts:read",
+          "mcp:drafts:write",
+          "mcp:moderation:read",
+          "mcp:moderation:write",
+          "mcp:private-messages:read",
+          "mcp:private-messages:write",
+          "mcp:profile:read",
+          "mcp:profile:write",
+          "mcp:site-settings:read",
+          "mcp:site-settings:write",
+          "mcp:themes:read",
+          "mcp:themes:write"
+        ],
+        "primitives": [
+          {
+            "id": "tool:chat_channel_list",
+            "field_name": "primitive_tool_f38b32ef94084a2f",
+            "identifier": "chat_channel_list",
+            "kind": "tool",
+            "title": "List chat channels",
+            "description": "Lists chat channels followed by the authenticated user, including direct-message channels.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:chat_message_create",
+            "field_name": "primitive_tool_28e59d5c4f43a6ce",
+            "identifier": "chat_message_create",
+            "kind": "tool",
+            "title": "Create chat message",
+            "description": "Creates a message in a chat channel as the authenticated user.",
+            "provider": "chat",
+            "risk": "write",
+            "required_scopes": [
+              "chat:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_bookmark_list",
+            "field_name": "primitive_tool_041404c0af2a5d9a",
+            "identifier": "discourse_bookmark_list",
+            "kind": "tool",
+            "title": "List bookmarks",
+            "description": "Lists the authenticated user's bookmarks.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_calendar_event_list",
+            "field_name": "primitive_tool_efccc3fe7b4346ee",
+            "identifier": "discourse_calendar_event_list",
+            "kind": "tool",
+            "title": "List events",
+            "description": "Lists upcoming events whose posts are visible to the authenticated user.",
+            "provider": "discourse-events",
+            "risk": "read",
+            "required_scopes": [
+              "discourse-calendar:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_category_list",
+            "field_name": "primitive_tool_1af3b3899861a007",
+            "identifier": "discourse_category_list",
+            "kind": "tool",
+            "title": "List categories",
+            "description": "Lists the visible category hierarchy.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_post",
+            "field_name": "primitive_tool_db18db3d12f6441b",
+            "identifier": "discourse_create_post",
+            "kind": "tool",
+            "title": "Create post",
+            "description": "Creates a reply in a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_private_message",
+            "field_name": "primitive_tool_c260a828a5fe380f",
+            "identifier": "discourse_create_private_message",
+            "kind": "tool",
+            "title": "Create private message",
+            "description": "Creates a private message as the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_theme",
+            "field_name": "primitive_tool_5739d269051a790c",
+            "identifier": "discourse_create_theme",
+            "kind": "tool",
+            "title": "Create theme",
+            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_topic",
+            "field_name": "primitive_tool_cce9f748e06296a2",
+            "identifier": "discourse_create_topic",
+            "kind": "tool",
+            "title": "Create topic",
+            "description": "Creates a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_current_user_get",
+            "field_name": "primitive_tool_2460f13c1aa9ca7d",
+            "identifier": "discourse_current_user_get",
+            "kind": "tool",
+            "title": "Get current user",
+            "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_draft",
+            "field_name": "primitive_tool_335ab523f047c8f4",
+            "identifier": "discourse_delete_draft",
+            "kind": "tool",
+            "title": "Delete draft",
+            "description": "Deletes one of the authenticated user's drafts at its current sequence.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_filter_topics",
+            "field_name": "primitive_tool_0e686b5bde2f028b",
+            "identifier": "discourse_filter_topics",
+            "kind": "tool",
+            "title": "Filter topics",
+            "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_chat_messages",
+            "field_name": "primitive_tool_795d43f2bd933ced",
+            "identifier": "discourse_get_chat_messages",
+            "kind": "tool",
+            "title": "Get chat messages",
+            "description": "Reads a bounded page of messages from a visible chat channel.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_draft",
+            "field_name": "primitive_tool_dc603efa0c8fa065",
+            "identifier": "discourse_get_draft",
+            "kind": "tool",
+            "title": "Get draft",
+            "description": "Retrieves one of the authenticated user's drafts by key.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_replies",
+            "field_name": "primitive_tool_9f22d1f493a1d0d9",
+            "identifier": "discourse_get_post_replies",
+            "kind": "tool",
+            "title": "Get post replies",
+            "description": "Read reply relationships for a post as recursive descendant IDs, bounded rich direct replies, or the upstream-bounded ancestor history. Preserves upstream ordering and references.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_revision",
+            "field_name": "primitive_tool_1fd74486c2f2929c",
+            "identifier": "discourse_get_post_revision",
+            "kind": "tool",
+            "title": "Get post revision",
+            "description": "Returns a post revision visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_query",
+            "field_name": "primitive_tool_29d74577aa3c6979",
+            "identifier": "discourse_get_query",
+            "kind": "tool",
+            "title": "Get Data Explorer query",
+            "description": "Returns the definition of a saved Data Explorer query. Requires an admin account.",
+            "provider": "discourse-data-explorer",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_get_review_queue_count",
+            "field_name": "primitive_tool_105a65acb9eb981b",
+            "identifier": "discourse_get_review_queue_count",
+            "kind": "tool",
+            "title": "Get review queue count",
+            "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_reviewable",
+            "field_name": "primitive_tool_f62c4973a73cd6f7",
+            "identifier": "discourse_get_reviewable",
+            "kind": "tool",
+            "title": "Get reviewable",
+            "description": "Returns one visible reviewable with its current version, evidence, and available actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_theme",
+            "field_name": "primitive_tool_8e4cc21f5accb7d0",
+            "identifier": "discourse_get_theme",
+            "kind": "tool",
+            "title": "Get theme",
+            "description": "Reads a theme or theme component and its fields. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_topic_view_stats",
+            "field_name": "primitive_tool_a27dbce52e4ffae1",
+            "identifier": "discourse_get_topic_view_stats",
+            "kind": "tool",
+            "title": "Get topic view stats",
+            "description": "Get up to 300 ascending daily topic view counts. Views combine anonymous and logged-in views; they are not unique viewers or an engagement judgment.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user",
+            "field_name": "primitive_tool_bed0e71b4819ba0e",
+            "identifier": "discourse_get_user",
+            "kind": "tool",
+            "title": "Get user",
+            "description": "Reads a user profile visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_moderation_summary",
+            "field_name": "primitive_tool_cc82343528a26fb5",
+            "identifier": "discourse_get_user_moderation_summary",
+            "kind": "tool",
+            "title": "Get user moderation summary",
+            "description": "Returns staff-visible moderation counters for a user.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_summary",
+            "field_name": "primitive_tool_b9e49ba6e96ec0ce",
+            "identifier": "discourse_get_user_summary",
+            "kind": "tool",
+            "title": "Get user summary",
+            "description": "Returns profile-visible aggregate activity for a user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_to_private_message",
+            "field_name": "primitive_tool_f54fa0cbc0d051ca",
+            "identifier": "discourse_invite_to_private_message",
+            "kind": "tool",
+            "title": "Invite to private message",
+            "description": "Adds one user or group, or submits one email invitation, to a private message.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_directory_items",
+            "field_name": "primitive_tool_e7e345867af2694d",
+            "identifier": "discourse_list_directory_items",
+            "kind": "tool",
+            "title": "List directory items",
+            "description": "List user-directory metrics with authoritative totals and continuation. Supports Discourse periods, ordering, visible groups, page 0-10, and up to 50 rows.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_latest_posts",
+            "field_name": "primitive_tool_a61ae05157131e18",
+            "identifier": "discourse_list_latest_posts",
+            "kind": "tool",
+            "title": "List latest posts",
+            "description": "List the site's latest visible posts using Discourse's fixed 50-post page and post-ID cursor. Results are a feed, not an exhaustive history.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_private_messages",
+            "field_name": "primitive_tool_ea80826e5edc25ec",
+            "identifier": "discourse_list_private_messages",
+            "kind": "tool",
+            "title": "List private messages",
+            "description": "Lists a personal or group private-message mailbox visible to the user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewable_topics",
+            "field_name": "primitive_tool_1fd7fa17e4899088",
+            "identifier": "discourse_list_reviewable_topics",
+            "kind": "tool",
+            "title": "List reviewable topics",
+            "description": "Lists topic-level signals from pending reviewables visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewables",
+            "field_name": "primitive_tool_0be4efe56e21208a",
+            "identifier": "discourse_list_reviewables",
+            "kind": "tool",
+            "title": "List reviewables",
+            "description": "Lists reviewable records visible to the authenticated reviewer, including their current actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_site_settings",
+            "field_name": "primitive_tool_bad6f0ea4200db9f",
+            "identifier": "discourse_list_site_settings",
+            "kind": "tool",
+            "title": "List site settings",
+            "description": "Lists admin-visible site settings while masking secret and credential-like values.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_actions",
+            "field_name": "primitive_tool_13f3d5b18a439b5a",
+            "identifier": "discourse_list_user_actions",
+            "kind": "tool",
+            "title": "List user actions",
+            "description": "Lists a user's visible activity using named action types.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_posts",
+            "field_name": "primitive_tool_67abaa323b483c1a",
+            "identifier": "discourse_list_user_posts",
+            "kind": "tool",
+            "title": "List user posts",
+            "description": "Lists a user's visible topics and replies with zero-based pagination.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_notification_list",
+            "field_name": "primitive_tool_c0170aa19e4beead",
+            "identifier": "discourse_notification_list",
+            "kind": "tool",
+            "title": "List notifications",
+            "description": "Lists the authenticated user's notifications.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_perform_reviewable_action",
+            "field_name": "primitive_tool_bc76ffc2ae8c253b",
+            "identifier": "discourse_perform_reviewable_action",
+            "kind": "tool",
+            "title": "Perform reviewable action",
+            "description": "Performs one currently available action on a visible reviewable after a fresh permission check.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_post_set_deleted",
+            "field_name": "primitive_tool_2c45fb72f4491f0d",
+            "identifier": "discourse_post_set_deleted",
+            "kind": "tool",
+            "title": "Delete or recover own post",
+            "description": "Deletes or recovers a post owned by the authenticated user.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reactions_post_reaction_set",
+            "field_name": "primitive_tool_faee2e041c5088b8",
+            "identifier": "discourse_reactions_post_reaction_set",
+            "kind": "tool",
+            "title": "Set post reaction",
+            "description": "Adds, changes, or removes the authenticated user's reaction to a visible post.",
+            "provider": "discourse-reactions",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_post",
+            "field_name": "primitive_tool_a39832a8dfc2d264",
+            "identifier": "discourse_read_post",
+            "kind": "tool",
+            "title": "Read post",
+            "description": "Reads one visible post.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_private_message",
+            "field_name": "primitive_tool_7e7565b380bb50c9",
+            "identifier": "discourse_read_private_message",
+            "kind": "tool",
+            "title": "Read private message",
+            "description": "Reads a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic",
+            "field_name": "primitive_tool_21c0b87c308eb6a8",
+            "identifier": "discourse_read_topic",
+            "kind": "tool",
+            "title": "Read topic",
+            "description": "Reads a topic and a bounded set of posts visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic_posts",
+            "field_name": "primitive_tool_14a9de20485df21b",
+            "identifier": "discourse_read_topic_posts",
+            "kind": "tool",
+            "title": "Read selected topic posts",
+            "description": "Read exact, earliest, latest, around-post, or username-filtered topic evidence. Selection is bounded to 50 posts and reports the visible stream size without claiming the entire topic was loaded.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reply_private_message",
+            "field_name": "primitive_tool_f523bf1f054c1dac",
+            "identifier": "discourse_reply_private_message",
+            "kind": "tool",
+            "title": "Reply to private message",
+            "description": "Replies to a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_run_query",
+            "field_name": "primitive_tool_66fca5706aa391d8",
+            "identifier": "discourse_run_query",
+            "kind": "tool",
+            "title": "Run Data Explorer query",
+            "description": "Runs a saved Data Explorer query that the authenticated user can access.",
+            "provider": "discourse-data-explorer",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_save_draft",
+            "field_name": "primitive_tool_2c4d724f5c4500dc",
+            "identifier": "discourse_save_draft",
+            "kind": "tool",
+            "title": "Save draft",
+            "description": "Creates or updates a draft for the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search",
+            "field_name": "primitive_tool_0baf0776305abb40",
+            "identifier": "discourse_search",
+            "kind": "tool",
+            "title": "Search Discourse",
+            "description": "Searches topics and posts visible to the authenticated user using Discourse search syntax.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search_posts",
+            "field_name": "primitive_tool_f6fb31c54878ad99",
+            "identifier": "discourse_search_posts",
+            "kind": "tool",
+            "title": "Search posts",
+            "description": "Search post-level evidence with Discourse query syntax. Preserves matched posts, highlighted excerpts, authors, topics, categories, and bounded continuation. This is keyword search, not semantic search.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_solved_solution_set",
+            "field_name": "primitive_tool_a24a0c1aff488a10",
+            "identifier": "discourse_solved_solution_set",
+            "kind": "tool",
+            "title": "Set accepted solution",
+            "description": "Accepts or unaccepts a post as the topic solution when permitted.",
+            "provider": "discourse-solved",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_tag_list",
+            "field_name": "primitive_tool_9630261e27f6833a",
+            "identifier": "discourse_tag_list",
+            "kind": "tool",
+            "title": "List tags",
+            "description": "Lists visible tags ordered by usage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_list",
+            "field_name": "primitive_tool_7f768210966257d8",
+            "identifier": "discourse_topic_list",
+            "kind": "tool",
+            "title": "List topics",
+            "description": "Lists recent topics visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_voting_vote_set",
+            "field_name": "primitive_tool_1858e70de1d194d9",
+            "identifier": "discourse_topic_voting_vote_set",
+            "kind": "tool",
+            "title": "Set topic vote",
+            "description": "Casts or removes the authenticated user's vote on a visible votable topic.",
+            "provider": "discourse-topic-voting",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_post",
+            "field_name": "primitive_tool_6394003e5b2a6e25",
+            "identifier": "discourse_update_post",
+            "kind": "tool",
+            "title": "Update post",
+            "description": "Edits a post when the authenticated user has permission.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_site_setting",
+            "field_name": "primitive_tool_b5645cfb44adc665",
+            "identifier": "discourse_update_site_setting",
+            "kind": "tool",
+            "title": "Update site setting",
+            "description": "Sets or resets one ordinary site setting after a current-value check and explicit confirmation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme",
+            "field_name": "primitive_tool_fdc61efa928e1c7a",
+            "identifier": "discourse_update_theme",
+            "kind": "tool",
+            "title": "Update theme",
+            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_topic",
+            "field_name": "primitive_tool_9962bcc8825fa906",
+            "identifier": "discourse_update_topic",
+            "kind": "tool",
+            "title": "Update topic",
+            "description": "Updates fields on a topic when the user may edit it.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_user",
+            "field_name": "primitive_tool_6bfbf609c0128cbf",
+            "identifier": "discourse_update_user",
+            "kind": "tool",
+            "title": "Update user",
+            "description": "Updates the authenticated user's own profile.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_file",
+            "field_name": "primitive_tool_7feee31bc220cecf",
+            "identifier": "discourse_upload_file",
+            "kind": "tool",
+            "title": "Upload file",
+            "description": "Uploads base64 data or a remote HTTP(S) file for the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_user_status_set",
+            "field_name": "primitive_tool_d9952d1a92696436",
+            "identifier": "discourse_user_status_set",
+            "kind": "tool",
+            "title": "Set user status",
+            "description": "Sets or clears the authenticated user's status.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "resource_template:discourse.post",
+            "field_name": "primitive_resource_template_00b923ec0da42e69",
+            "identifier": "discourse.post",
+            "kind": "resource_template",
+            "title": "Discourse post",
+            "description": "A post visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "resource_template:discourse.topic",
+            "field_name": "primitive_resource_template_41f455bbb5aa1593",
+            "identifier": "discourse.topic",
+            "kind": "resource_template",
+            "title": "Discourse topic",
+            "description": "A topic visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.draft_reply",
+            "field_name": "primitive_prompt_14c3292ed1d119bc",
+            "identifier": "discourse.draft_reply",
+            "kind": "prompt",
+            "title": "Draft a reply",
+            "description": "Builds a prompt for drafting a grounded reply to a visible topic.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.research_topic",
+            "field_name": "primitive_prompt_4e4589a07f9c5e8a",
+            "identifier": "discourse.research_topic",
+            "kind": "prompt",
+            "title": "Research discussions",
+            "description": "Builds a prompt for researching visible Discourse discussions.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          }
+        ],
+        "access_rules": [
+          {
+            "group_id": 1,
+            "group_name": "admins",
+            "scopes": [
+              "chat:read",
+              "chat:write",
+              "discourse-calendar:read",
+              "discourse-reactions:write",
+              "discourse-solved:write",
+              "discourse-topic-voting:write",
+              "mcp:content:read",
+              "mcp:content:write",
+              "mcp:data-explorer:read",
+              "mcp:drafts:read",
+              "mcp:drafts:write",
+              "mcp:moderation:read",
+              "mcp:moderation:write",
+              "mcp:private-messages:read",
+              "mcp:private-messages:write",
+              "mcp:profile:read",
+              "mcp:profile:write",
+              "mcp:site-settings:read",
+              "mcp:site-settings:write",
+              "mcp:themes:read",
+              "mcp:themes:write"
+            ],
+            "pre_registered": true,
+            "deletable": false
+          },
+          {
+            "group_id": 11,
+            "group_name": "trust_level_1",
+            "scopes": [
+              "mcp:content:write",
+              "mcp:profile:read"
+            ],
+            "pre_registered": false,
+            "deletable": true
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: scopes"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: group_id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: scopes"
+        ]
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: group_id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: group_id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "initial_scope": "mcp:profile:read",
+        "available_scopes": [
+          "chat:read",
+          "chat:write",
+          "discourse-calendar:read",
+          "discourse-reactions:write",
+          "discourse-solved:write",
+          "discourse-topic-voting:write",
+          "mcp:content:read",
+          "mcp:content:write",
+          "mcp:data-explorer:read",
+          "mcp:drafts:read",
+          "mcp:drafts:write",
+          "mcp:moderation:read",
+          "mcp:moderation:write",
+          "mcp:private-messages:read",
+          "mcp:private-messages:write",
+          "mcp:profile:read",
+          "mcp:profile:write",
+          "mcp:site-settings:read",
+          "mcp:site-settings:write",
+          "mcp:themes:read",
+          "mcp:themes:write"
+        ],
+        "primitives": [
+          {
+            "id": "tool:chat_channel_list",
+            "field_name": "primitive_tool_f38b32ef94084a2f",
+            "identifier": "chat_channel_list",
+            "kind": "tool",
+            "title": "List chat channels",
+            "description": "Lists chat channels followed by the authenticated user, including direct-message channels.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:chat_message_create",
+            "field_name": "primitive_tool_28e59d5c4f43a6ce",
+            "identifier": "chat_message_create",
+            "kind": "tool",
+            "title": "Create chat message",
+            "description": "Creates a message in a chat channel as the authenticated user.",
+            "provider": "chat",
+            "risk": "write",
+            "required_scopes": [
+              "chat:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_bookmark_list",
+            "field_name": "primitive_tool_041404c0af2a5d9a",
+            "identifier": "discourse_bookmark_list",
+            "kind": "tool",
+            "title": "List bookmarks",
+            "description": "Lists the authenticated user's bookmarks.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_calendar_event_list",
+            "field_name": "primitive_tool_efccc3fe7b4346ee",
+            "identifier": "discourse_calendar_event_list",
+            "kind": "tool",
+            "title": "List events",
+            "description": "Lists upcoming events whose posts are visible to the authenticated user.",
+            "provider": "discourse-events",
+            "risk": "read",
+            "required_scopes": [
+              "discourse-calendar:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_category_list",
+            "field_name": "primitive_tool_1af3b3899861a007",
+            "identifier": "discourse_category_list",
+            "kind": "tool",
+            "title": "List categories",
+            "description": "Lists the visible category hierarchy.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_post",
+            "field_name": "primitive_tool_db18db3d12f6441b",
+            "identifier": "discourse_create_post",
+            "kind": "tool",
+            "title": "Create post",
+            "description": "Creates a reply in a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_private_message",
+            "field_name": "primitive_tool_c260a828a5fe380f",
+            "identifier": "discourse_create_private_message",
+            "kind": "tool",
+            "title": "Create private message",
+            "description": "Creates a private message as the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_theme",
+            "field_name": "primitive_tool_5739d269051a790c",
+            "identifier": "discourse_create_theme",
+            "kind": "tool",
+            "title": "Create theme",
+            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_topic",
+            "field_name": "primitive_tool_cce9f748e06296a2",
+            "identifier": "discourse_create_topic",
+            "kind": "tool",
+            "title": "Create topic",
+            "description": "Creates a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_current_user_get",
+            "field_name": "primitive_tool_2460f13c1aa9ca7d",
+            "identifier": "discourse_current_user_get",
+            "kind": "tool",
+            "title": "Get current user",
+            "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_draft",
+            "field_name": "primitive_tool_335ab523f047c8f4",
+            "identifier": "discourse_delete_draft",
+            "kind": "tool",
+            "title": "Delete draft",
+            "description": "Deletes one of the authenticated user's drafts at its current sequence.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_filter_topics",
+            "field_name": "primitive_tool_0e686b5bde2f028b",
+            "identifier": "discourse_filter_topics",
+            "kind": "tool",
+            "title": "Filter topics",
+            "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_chat_messages",
+            "field_name": "primitive_tool_795d43f2bd933ced",
+            "identifier": "discourse_get_chat_messages",
+            "kind": "tool",
+            "title": "Get chat messages",
+            "description": "Reads a bounded page of messages from a visible chat channel.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_draft",
+            "field_name": "primitive_tool_dc603efa0c8fa065",
+            "identifier": "discourse_get_draft",
+            "kind": "tool",
+            "title": "Get draft",
+            "description": "Retrieves one of the authenticated user's drafts by key.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_replies",
+            "field_name": "primitive_tool_9f22d1f493a1d0d9",
+            "identifier": "discourse_get_post_replies",
+            "kind": "tool",
+            "title": "Get post replies",
+            "description": "Read reply relationships for a post as recursive descendant IDs, bounded rich direct replies, or the upstream-bounded ancestor history. Preserves upstream ordering and references.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_revision",
+            "field_name": "primitive_tool_1fd74486c2f2929c",
+            "identifier": "discourse_get_post_revision",
+            "kind": "tool",
+            "title": "Get post revision",
+            "description": "Returns a post revision visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_query",
+            "field_name": "primitive_tool_29d74577aa3c6979",
+            "identifier": "discourse_get_query",
+            "kind": "tool",
+            "title": "Get Data Explorer query",
+            "description": "Returns the definition of a saved Data Explorer query. Requires an admin account.",
+            "provider": "discourse-data-explorer",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_get_review_queue_count",
+            "field_name": "primitive_tool_105a65acb9eb981b",
+            "identifier": "discourse_get_review_queue_count",
+            "kind": "tool",
+            "title": "Get review queue count",
+            "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_reviewable",
+            "field_name": "primitive_tool_f62c4973a73cd6f7",
+            "identifier": "discourse_get_reviewable",
+            "kind": "tool",
+            "title": "Get reviewable",
+            "description": "Returns one visible reviewable with its current version, evidence, and available actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_theme",
+            "field_name": "primitive_tool_8e4cc21f5accb7d0",
+            "identifier": "discourse_get_theme",
+            "kind": "tool",
+            "title": "Get theme",
+            "description": "Reads a theme or theme component and its fields. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_topic_view_stats",
+            "field_name": "primitive_tool_a27dbce52e4ffae1",
+            "identifier": "discourse_get_topic_view_stats",
+            "kind": "tool",
+            "title": "Get topic view stats",
+            "description": "Get up to 300 ascending daily topic view counts. Views combine anonymous and logged-in views; they are not unique viewers or an engagement judgment.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user",
+            "field_name": "primitive_tool_bed0e71b4819ba0e",
+            "identifier": "discourse_get_user",
+            "kind": "tool",
+            "title": "Get user",
+            "description": "Reads a user profile visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_moderation_summary",
+            "field_name": "primitive_tool_cc82343528a26fb5",
+            "identifier": "discourse_get_user_moderation_summary",
+            "kind": "tool",
+            "title": "Get user moderation summary",
+            "description": "Returns staff-visible moderation counters for a user.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_summary",
+            "field_name": "primitive_tool_b9e49ba6e96ec0ce",
+            "identifier": "discourse_get_user_summary",
+            "kind": "tool",
+            "title": "Get user summary",
+            "description": "Returns profile-visible aggregate activity for a user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_to_private_message",
+            "field_name": "primitive_tool_f54fa0cbc0d051ca",
+            "identifier": "discourse_invite_to_private_message",
+            "kind": "tool",
+            "title": "Invite to private message",
+            "description": "Adds one user or group, or submits one email invitation, to a private message.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_directory_items",
+            "field_name": "primitive_tool_e7e345867af2694d",
+            "identifier": "discourse_list_directory_items",
+            "kind": "tool",
+            "title": "List directory items",
+            "description": "List user-directory metrics with authoritative totals and continuation. Supports Discourse periods, ordering, visible groups, page 0-10, and up to 50 rows.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_latest_posts",
+            "field_name": "primitive_tool_a61ae05157131e18",
+            "identifier": "discourse_list_latest_posts",
+            "kind": "tool",
+            "title": "List latest posts",
+            "description": "List the site's latest visible posts using Discourse's fixed 50-post page and post-ID cursor. Results are a feed, not an exhaustive history.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_private_messages",
+            "field_name": "primitive_tool_ea80826e5edc25ec",
+            "identifier": "discourse_list_private_messages",
+            "kind": "tool",
+            "title": "List private messages",
+            "description": "Lists a personal or group private-message mailbox visible to the user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewable_topics",
+            "field_name": "primitive_tool_1fd7fa17e4899088",
+            "identifier": "discourse_list_reviewable_topics",
+            "kind": "tool",
+            "title": "List reviewable topics",
+            "description": "Lists topic-level signals from pending reviewables visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewables",
+            "field_name": "primitive_tool_0be4efe56e21208a",
+            "identifier": "discourse_list_reviewables",
+            "kind": "tool",
+            "title": "List reviewables",
+            "description": "Lists reviewable records visible to the authenticated reviewer, including their current actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_site_settings",
+            "field_name": "primitive_tool_bad6f0ea4200db9f",
+            "identifier": "discourse_list_site_settings",
+            "kind": "tool",
+            "title": "List site settings",
+            "description": "Lists admin-visible site settings while masking secret and credential-like values.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_actions",
+            "field_name": "primitive_tool_13f3d5b18a439b5a",
+            "identifier": "discourse_list_user_actions",
+            "kind": "tool",
+            "title": "List user actions",
+            "description": "Lists a user's visible activity using named action types.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_posts",
+            "field_name": "primitive_tool_67abaa323b483c1a",
+            "identifier": "discourse_list_user_posts",
+            "kind": "tool",
+            "title": "List user posts",
+            "description": "Lists a user's visible topics and replies with zero-based pagination.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_notification_list",
+            "field_name": "primitive_tool_c0170aa19e4beead",
+            "identifier": "discourse_notification_list",
+            "kind": "tool",
+            "title": "List notifications",
+            "description": "Lists the authenticated user's notifications.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_perform_reviewable_action",
+            "field_name": "primitive_tool_bc76ffc2ae8c253b",
+            "identifier": "discourse_perform_reviewable_action",
+            "kind": "tool",
+            "title": "Perform reviewable action",
+            "description": "Performs one currently available action on a visible reviewable after a fresh permission check.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_post_set_deleted",
+            "field_name": "primitive_tool_2c45fb72f4491f0d",
+            "identifier": "discourse_post_set_deleted",
+            "kind": "tool",
+            "title": "Delete or recover own post",
+            "description": "Deletes or recovers a post owned by the authenticated user.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reactions_post_reaction_set",
+            "field_name": "primitive_tool_faee2e041c5088b8",
+            "identifier": "discourse_reactions_post_reaction_set",
+            "kind": "tool",
+            "title": "Set post reaction",
+            "description": "Adds, changes, or removes the authenticated user's reaction to a visible post.",
+            "provider": "discourse-reactions",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_post",
+            "field_name": "primitive_tool_a39832a8dfc2d264",
+            "identifier": "discourse_read_post",
+            "kind": "tool",
+            "title": "Read post",
+            "description": "Reads one visible post.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_private_message",
+            "field_name": "primitive_tool_7e7565b380bb50c9",
+            "identifier": "discourse_read_private_message",
+            "kind": "tool",
+            "title": "Read private message",
+            "description": "Reads a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic",
+            "field_name": "primitive_tool_21c0b87c308eb6a8",
+            "identifier": "discourse_read_topic",
+            "kind": "tool",
+            "title": "Read topic",
+            "description": "Reads a topic and a bounded set of posts visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic_posts",
+            "field_name": "primitive_tool_14a9de20485df21b",
+            "identifier": "discourse_read_topic_posts",
+            "kind": "tool",
+            "title": "Read selected topic posts",
+            "description": "Read exact, earliest, latest, around-post, or username-filtered topic evidence. Selection is bounded to 50 posts and reports the visible stream size without claiming the entire topic was loaded.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reply_private_message",
+            "field_name": "primitive_tool_f523bf1f054c1dac",
+            "identifier": "discourse_reply_private_message",
+            "kind": "tool",
+            "title": "Reply to private message",
+            "description": "Replies to a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_run_query",
+            "field_name": "primitive_tool_66fca5706aa391d8",
+            "identifier": "discourse_run_query",
+            "kind": "tool",
+            "title": "Run Data Explorer query",
+            "description": "Runs a saved Data Explorer query that the authenticated user can access.",
+            "provider": "discourse-data-explorer",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_save_draft",
+            "field_name": "primitive_tool_2c4d724f5c4500dc",
+            "identifier": "discourse_save_draft",
+            "kind": "tool",
+            "title": "Save draft",
+            "description": "Creates or updates a draft for the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search",
+            "field_name": "primitive_tool_0baf0776305abb40",
+            "identifier": "discourse_search",
+            "kind": "tool",
+            "title": "Search Discourse",
+            "description": "Searches topics and posts visible to the authenticated user using Discourse search syntax.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search_posts",
+            "field_name": "primitive_tool_f6fb31c54878ad99",
+            "identifier": "discourse_search_posts",
+            "kind": "tool",
+            "title": "Search posts",
+            "description": "Search post-level evidence with Discourse query syntax. Preserves matched posts, highlighted excerpts, authors, topics, categories, and bounded continuation. This is keyword search, not semantic search.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_solved_solution_set",
+            "field_name": "primitive_tool_a24a0c1aff488a10",
+            "identifier": "discourse_solved_solution_set",
+            "kind": "tool",
+            "title": "Set accepted solution",
+            "description": "Accepts or unaccepts a post as the topic solution when permitted.",
+            "provider": "discourse-solved",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_tag_list",
+            "field_name": "primitive_tool_9630261e27f6833a",
+            "identifier": "discourse_tag_list",
+            "kind": "tool",
+            "title": "List tags",
+            "description": "Lists visible tags ordered by usage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_list",
+            "field_name": "primitive_tool_7f768210966257d8",
+            "identifier": "discourse_topic_list",
+            "kind": "tool",
+            "title": "List topics",
+            "description": "Lists recent topics visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_voting_vote_set",
+            "field_name": "primitive_tool_1858e70de1d194d9",
+            "identifier": "discourse_topic_voting_vote_set",
+            "kind": "tool",
+            "title": "Set topic vote",
+            "description": "Casts or removes the authenticated user's vote on a visible votable topic.",
+            "provider": "discourse-topic-voting",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_post",
+            "field_name": "primitive_tool_6394003e5b2a6e25",
+            "identifier": "discourse_update_post",
+            "kind": "tool",
+            "title": "Update post",
+            "description": "Edits a post when the authenticated user has permission.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_site_setting",
+            "field_name": "primitive_tool_b5645cfb44adc665",
+            "identifier": "discourse_update_site_setting",
+            "kind": "tool",
+            "title": "Update site setting",
+            "description": "Sets or resets one ordinary site setting after a current-value check and explicit confirmation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme",
+            "field_name": "primitive_tool_fdc61efa928e1c7a",
+            "identifier": "discourse_update_theme",
+            "kind": "tool",
+            "title": "Update theme",
+            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_topic",
+            "field_name": "primitive_tool_9962bcc8825fa906",
+            "identifier": "discourse_update_topic",
+            "kind": "tool",
+            "title": "Update topic",
+            "description": "Updates fields on a topic when the user may edit it.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_user",
+            "field_name": "primitive_tool_6bfbf609c0128cbf",
+            "identifier": "discourse_update_user",
+            "kind": "tool",
+            "title": "Update user",
+            "description": "Updates the authenticated user's own profile.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_file",
+            "field_name": "primitive_tool_7feee31bc220cecf",
+            "identifier": "discourse_upload_file",
+            "kind": "tool",
+            "title": "Upload file",
+            "description": "Uploads base64 data or a remote HTTP(S) file for the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_user_status_set",
+            "field_name": "primitive_tool_d9952d1a92696436",
+            "identifier": "discourse_user_status_set",
+            "kind": "tool",
+            "title": "Set user status",
+            "description": "Sets or clears the authenticated user's status.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "resource_template:discourse.post",
+            "field_name": "primitive_resource_template_00b923ec0da42e69",
+            "identifier": "discourse.post",
+            "kind": "resource_template",
+            "title": "Discourse post",
+            "description": "A post visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "resource_template:discourse.topic",
+            "field_name": "primitive_resource_template_41f455bbb5aa1593",
+            "identifier": "discourse.topic",
+            "kind": "resource_template",
+            "title": "Discourse topic",
+            "description": "A topic visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.draft_reply",
+            "field_name": "primitive_prompt_14c3292ed1d119bc",
+            "identifier": "discourse.draft_reply",
+            "kind": "prompt",
+            "title": "Draft a reply",
+            "description": "Builds a prompt for drafting a grounded reply to a visible topic.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.research_topic",
+            "field_name": "primitive_prompt_4e4589a07f9c5e8a",
+            "identifier": "discourse.research_topic",
+            "kind": "prompt",
+            "title": "Research discussions",
+            "description": "Builds a prompt for researching visible Discourse discussions.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          }
+        ],
+        "access_rules": [
+          {
+            "group_id": 1,
+            "group_name": "admins",
+            "scopes": [
+              "mcp:content:read",
+              "mcp:profile:read"
+            ],
+            "pre_registered": true,
+            "deletable": false
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "initial_scope": "mcp:profile:read",
+        "available_scopes": [
+          "chat:read",
+          "chat:write",
+          "discourse-calendar:read",
+          "discourse-reactions:write",
+          "discourse-solved:write",
+          "discourse-topic-voting:write",
+          "mcp:content:read",
+          "mcp:content:write",
+          "mcp:data-explorer:read",
+          "mcp:drafts:read",
+          "mcp:drafts:write",
+          "mcp:moderation:read",
+          "mcp:moderation:write",
+          "mcp:private-messages:read",
+          "mcp:private-messages:write",
+          "mcp:profile:read",
+          "mcp:profile:write",
+          "mcp:site-settings:read",
+          "mcp:site-settings:write",
+          "mcp:themes:read",
+          "mcp:themes:write"
+        ],
+        "primitives": [
+          {
+            "id": "tool:chat_channel_list",
+            "field_name": "primitive_tool_f38b32ef94084a2f",
+            "identifier": "chat_channel_list",
+            "kind": "tool",
+            "title": "List chat channels",
+            "description": "Lists chat channels followed by the authenticated user, including direct-message channels.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:chat_message_create",
+            "field_name": "primitive_tool_28e59d5c4f43a6ce",
+            "identifier": "chat_message_create",
+            "kind": "tool",
+            "title": "Create chat message",
+            "description": "Creates a message in a chat channel as the authenticated user.",
+            "provider": "chat",
+            "risk": "write",
+            "required_scopes": [
+              "chat:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_bookmark_list",
+            "field_name": "primitive_tool_041404c0af2a5d9a",
+            "identifier": "discourse_bookmark_list",
+            "kind": "tool",
+            "title": "List bookmarks",
+            "description": "Lists the authenticated user's bookmarks.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_calendar_event_list",
+            "field_name": "primitive_tool_efccc3fe7b4346ee",
+            "identifier": "discourse_calendar_event_list",
+            "kind": "tool",
+            "title": "List events",
+            "description": "Lists upcoming events whose posts are visible to the authenticated user.",
+            "provider": "discourse-events",
+            "risk": "read",
+            "required_scopes": [
+              "discourse-calendar:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_category_list",
+            "field_name": "primitive_tool_1af3b3899861a007",
+            "identifier": "discourse_category_list",
+            "kind": "tool",
+            "title": "List categories",
+            "description": "Lists the visible category hierarchy.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_post",
+            "field_name": "primitive_tool_db18db3d12f6441b",
+            "identifier": "discourse_create_post",
+            "kind": "tool",
+            "title": "Create post",
+            "description": "Creates a reply in a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_private_message",
+            "field_name": "primitive_tool_c260a828a5fe380f",
+            "identifier": "discourse_create_private_message",
+            "kind": "tool",
+            "title": "Create private message",
+            "description": "Creates a private message as the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_theme",
+            "field_name": "primitive_tool_5739d269051a790c",
+            "identifier": "discourse_create_theme",
+            "kind": "tool",
+            "title": "Create theme",
+            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_topic",
+            "field_name": "primitive_tool_cce9f748e06296a2",
+            "identifier": "discourse_create_topic",
+            "kind": "tool",
+            "title": "Create topic",
+            "description": "Creates a topic as the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_current_user_get",
+            "field_name": "primitive_tool_2460f13c1aa9ca7d",
+            "identifier": "discourse_current_user_get",
+            "kind": "tool",
+            "title": "Get current user",
+            "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_draft",
+            "field_name": "primitive_tool_335ab523f047c8f4",
+            "identifier": "discourse_delete_draft",
+            "kind": "tool",
+            "title": "Delete draft",
+            "description": "Deletes one of the authenticated user's drafts at its current sequence.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_filter_topics",
+            "field_name": "primitive_tool_0e686b5bde2f028b",
+            "identifier": "discourse_filter_topics",
+            "kind": "tool",
+            "title": "Filter topics",
+            "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_chat_messages",
+            "field_name": "primitive_tool_795d43f2bd933ced",
+            "identifier": "discourse_get_chat_messages",
+            "kind": "tool",
+            "title": "Get chat messages",
+            "description": "Reads a bounded page of messages from a visible chat channel.",
+            "provider": "chat",
+            "risk": "read",
+            "required_scopes": [
+              "chat:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_draft",
+            "field_name": "primitive_tool_dc603efa0c8fa065",
+            "identifier": "discourse_get_draft",
+            "kind": "tool",
+            "title": "Get draft",
+            "description": "Retrieves one of the authenticated user's drafts by key.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_replies",
+            "field_name": "primitive_tool_9f22d1f493a1d0d9",
+            "identifier": "discourse_get_post_replies",
+            "kind": "tool",
+            "title": "Get post replies",
+            "description": "Read reply relationships for a post as recursive descendant IDs, bounded rich direct replies, or the upstream-bounded ancestor history. Preserves upstream ordering and references.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_post_revision",
+            "field_name": "primitive_tool_1fd74486c2f2929c",
+            "identifier": "discourse_get_post_revision",
+            "kind": "tool",
+            "title": "Get post revision",
+            "description": "Returns a post revision visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_query",
+            "field_name": "primitive_tool_29d74577aa3c6979",
+            "identifier": "discourse_get_query",
+            "kind": "tool",
+            "title": "Get Data Explorer query",
+            "description": "Returns the definition of a saved Data Explorer query. Requires an admin account.",
+            "provider": "discourse-data-explorer",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_get_review_queue_count",
+            "field_name": "primitive_tool_105a65acb9eb981b",
+            "identifier": "discourse_get_review_queue_count",
+            "kind": "tool",
+            "title": "Get review queue count",
+            "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_reviewable",
+            "field_name": "primitive_tool_f62c4973a73cd6f7",
+            "identifier": "discourse_get_reviewable",
+            "kind": "tool",
+            "title": "Get reviewable",
+            "description": "Returns one visible reviewable with its current version, evidence, and available actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_theme",
+            "field_name": "primitive_tool_8e4cc21f5accb7d0",
+            "identifier": "discourse_get_theme",
+            "kind": "tool",
+            "title": "Get theme",
+            "description": "Reads a theme or theme component and its fields. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_topic_view_stats",
+            "field_name": "primitive_tool_a27dbce52e4ffae1",
+            "identifier": "discourse_get_topic_view_stats",
+            "kind": "tool",
+            "title": "Get topic view stats",
+            "description": "Get up to 300 ascending daily topic view counts. Views combine anonymous and logged-in views; they are not unique viewers or an engagement judgment.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user",
+            "field_name": "primitive_tool_bed0e71b4819ba0e",
+            "identifier": "discourse_get_user",
+            "kind": "tool",
+            "title": "Get user",
+            "description": "Reads a user profile visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_moderation_summary",
+            "field_name": "primitive_tool_cc82343528a26fb5",
+            "identifier": "discourse_get_user_moderation_summary",
+            "kind": "tool",
+            "title": "Get user moderation summary",
+            "description": "Returns staff-visible moderation counters for a user.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_user_summary",
+            "field_name": "primitive_tool_b9e49ba6e96ec0ce",
+            "identifier": "discourse_get_user_summary",
+            "kind": "tool",
+            "title": "Get user summary",
+            "description": "Returns profile-visible aggregate activity for a user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_to_private_message",
+            "field_name": "primitive_tool_f54fa0cbc0d051ca",
+            "identifier": "discourse_invite_to_private_message",
+            "kind": "tool",
+            "title": "Invite to private message",
+            "description": "Adds one user or group, or submits one email invitation, to a private message.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_directory_items",
+            "field_name": "primitive_tool_e7e345867af2694d",
+            "identifier": "discourse_list_directory_items",
+            "kind": "tool",
+            "title": "List directory items",
+            "description": "List user-directory metrics with authoritative totals and continuation. Supports Discourse periods, ordering, visible groups, page 0-10, and up to 50 rows.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_latest_posts",
+            "field_name": "primitive_tool_a61ae05157131e18",
+            "identifier": "discourse_list_latest_posts",
+            "kind": "tool",
+            "title": "List latest posts",
+            "description": "List the site's latest visible posts using Discourse's fixed 50-post page and post-ID cursor. Results are a feed, not an exhaustive history.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_private_messages",
+            "field_name": "primitive_tool_ea80826e5edc25ec",
+            "identifier": "discourse_list_private_messages",
+            "kind": "tool",
+            "title": "List private messages",
+            "description": "Lists a personal or group private-message mailbox visible to the user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewable_topics",
+            "field_name": "primitive_tool_1fd7fa17e4899088",
+            "identifier": "discourse_list_reviewable_topics",
+            "kind": "tool",
+            "title": "List reviewable topics",
+            "description": "Lists topic-level signals from pending reviewables visible to the authenticated reviewer.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reviewables",
+            "field_name": "primitive_tool_0be4efe56e21208a",
+            "identifier": "discourse_list_reviewables",
+            "kind": "tool",
+            "title": "List reviewables",
+            "description": "Lists reviewable records visible to the authenticated reviewer, including their current actions.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_site_settings",
+            "field_name": "primitive_tool_bad6f0ea4200db9f",
+            "identifier": "discourse_list_site_settings",
+            "kind": "tool",
+            "title": "List site settings",
+            "description": "Lists admin-visible site settings while masking secret and credential-like values.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_actions",
+            "field_name": "primitive_tool_13f3d5b18a439b5a",
+            "identifier": "discourse_list_user_actions",
+            "kind": "tool",
+            "title": "List user actions",
+            "description": "Lists a user's visible activity using named action types.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_user_posts",
+            "field_name": "primitive_tool_67abaa323b483c1a",
+            "identifier": "discourse_list_user_posts",
+            "kind": "tool",
+            "title": "List user posts",
+            "description": "Lists a user's visible topics and replies with zero-based pagination.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_notification_list",
+            "field_name": "primitive_tool_c0170aa19e4beead",
+            "identifier": "discourse_notification_list",
+            "kind": "tool",
+            "title": "List notifications",
+            "description": "Lists the authenticated user's notifications.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_perform_reviewable_action",
+            "field_name": "primitive_tool_bc76ffc2ae8c253b",
+            "identifier": "discourse_perform_reviewable_action",
+            "kind": "tool",
+            "title": "Perform reviewable action",
+            "description": "Performs one currently available action on a visible reviewable after a fresh permission check.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_post_set_deleted",
+            "field_name": "primitive_tool_2c45fb72f4491f0d",
+            "identifier": "discourse_post_set_deleted",
+            "kind": "tool",
+            "title": "Delete or recover own post",
+            "description": "Deletes or recovers a post owned by the authenticated user.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reactions_post_reaction_set",
+            "field_name": "primitive_tool_faee2e041c5088b8",
+            "identifier": "discourse_reactions_post_reaction_set",
+            "kind": "tool",
+            "title": "Set post reaction",
+            "description": "Adds, changes, or removes the authenticated user's reaction to a visible post.",
+            "provider": "discourse-reactions",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_post",
+            "field_name": "primitive_tool_a39832a8dfc2d264",
+            "identifier": "discourse_read_post",
+            "kind": "tool",
+            "title": "Read post",
+            "description": "Reads one visible post.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_private_message",
+            "field_name": "primitive_tool_7e7565b380bb50c9",
+            "identifier": "discourse_read_private_message",
+            "kind": "tool",
+            "title": "Read private message",
+            "description": "Reads a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic",
+            "field_name": "primitive_tool_21c0b87c308eb6a8",
+            "identifier": "discourse_read_topic",
+            "kind": "tool",
+            "title": "Read topic",
+            "description": "Reads a topic and a bounded set of posts visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_topic_posts",
+            "field_name": "primitive_tool_14a9de20485df21b",
+            "identifier": "discourse_read_topic_posts",
+            "kind": "tool",
+            "title": "Read selected topic posts",
+            "description": "Read exact, earliest, latest, around-post, or username-filtered topic evidence. Selection is bounded to 50 posts and reports the visible stream size without claiming the entire topic was loaded.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_reply_private_message",
+            "field_name": "primitive_tool_f523bf1f054c1dac",
+            "identifier": "discourse_reply_private_message",
+            "kind": "tool",
+            "title": "Reply to private message",
+            "description": "Replies to a private message visible to the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_run_query",
+            "field_name": "primitive_tool_66fca5706aa391d8",
+            "identifier": "discourse_run_query",
+            "kind": "tool",
+            "title": "Run Data Explorer query",
+            "description": "Runs a saved Data Explorer query that the authenticated user can access.",
+            "provider": "discourse-data-explorer",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:data-explorer:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "tool:discourse_save_draft",
+            "field_name": "primitive_tool_2c4d724f5c4500dc",
+            "identifier": "discourse_save_draft",
+            "kind": "tool",
+            "title": "Save draft",
+            "description": "Creates or updates a draft for the authenticated user.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:drafts:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search",
+            "field_name": "primitive_tool_0baf0776305abb40",
+            "identifier": "discourse_search",
+            "kind": "tool",
+            "title": "Search Discourse",
+            "description": "Searches topics and posts visible to the authenticated user using Discourse search syntax.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_search_posts",
+            "field_name": "primitive_tool_f6fb31c54878ad99",
+            "identifier": "discourse_search_posts",
+            "kind": "tool",
+            "title": "Search posts",
+            "description": "Search post-level evidence with Discourse query syntax. Preserves matched posts, highlighted excerpts, authors, topics, categories, and bounded continuation. This is keyword search, not semantic search.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_solved_solution_set",
+            "field_name": "primitive_tool_a24a0c1aff488a10",
+            "identifier": "discourse_solved_solution_set",
+            "kind": "tool",
+            "title": "Set accepted solution",
+            "description": "Accepts or unaccepts a post as the topic solution when permitted.",
+            "provider": "discourse-solved",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_tag_list",
+            "field_name": "primitive_tool_9630261e27f6833a",
+            "identifier": "discourse_tag_list",
+            "kind": "tool",
+            "title": "List tags",
+            "description": "Lists visible tags ordered by usage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_list",
+            "field_name": "primitive_tool_7f768210966257d8",
+            "identifier": "discourse_topic_list",
+            "kind": "tool",
+            "title": "List topics",
+            "description": "Lists recent topics visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_topic_voting_vote_set",
+            "field_name": "primitive_tool_1858e70de1d194d9",
+            "identifier": "discourse_topic_voting_vote_set",
+            "kind": "tool",
+            "title": "Set topic vote",
+            "description": "Casts or removes the authenticated user's vote on a visible votable topic.",
+            "provider": "discourse-topic-voting",
+            "risk": "write",
+            "required_scopes": [
+              "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_post",
+            "field_name": "primitive_tool_6394003e5b2a6e25",
+            "identifier": "discourse_update_post",
+            "kind": "tool",
+            "title": "Update post",
+            "description": "Edits a post when the authenticated user has permission.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_site_setting",
+            "field_name": "primitive_tool_b5645cfb44adc665",
+            "identifier": "discourse_update_site_setting",
+            "kind": "tool",
+            "title": "Update site setting",
+            "description": "Sets or resets one ordinary site setting after a current-value check and explicit confirmation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:site-settings:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme",
+            "field_name": "primitive_tool_fdc61efa928e1c7a",
+            "identifier": "discourse_update_theme",
+            "kind": "tool",
+            "title": "Update theme",
+            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_topic",
+            "field_name": "primitive_tool_9962bcc8825fa906",
+            "identifier": "discourse_update_topic",
+            "kind": "tool",
+            "title": "Update topic",
+            "description": "Updates fields on a topic when the user may edit it.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_user",
+            "field_name": "primitive_tool_6bfbf609c0128cbf",
+            "identifier": "discourse_update_user",
+            "kind": "tool",
+            "title": "Update user",
+            "description": "Updates the authenticated user's own profile.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_file",
+            "field_name": "primitive_tool_7feee31bc220cecf",
+            "identifier": "discourse_upload_file",
+            "kind": "tool",
+            "title": "Upload file",
+            "description": "Uploads base64 data or a remote HTTP(S) file for the authenticated user.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_user_status_set",
+            "field_name": "primitive_tool_d9952d1a92696436",
+            "identifier": "discourse_user_status_set",
+            "kind": "tool",
+            "title": "Set user status",
+            "description": "Sets or clears the authenticated user's status.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": false
+          },
+          {
+            "id": "resource_template:discourse.post",
+            "field_name": "primitive_resource_template_00b923ec0da42e69",
+            "identifier": "discourse.post",
+            "kind": "resource_template",
+            "title": "Discourse post",
+            "description": "A post visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "resource_template:discourse.topic",
+            "field_name": "primitive_resource_template_41f455bbb5aa1593",
+            "identifier": "discourse.topic",
+            "kind": "resource_template",
+            "title": "Discourse topic",
+            "description": "A topic visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.draft_reply",
+            "field_name": "primitive_prompt_14c3292ed1d119bc",
+            "identifier": "discourse.draft_reply",
+            "kind": "prompt",
+            "title": "Draft a reply",
+            "description": "Builds a prompt for drafting a grounded reply to a visible topic.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "prompt:discourse.research_topic",
+            "field_name": "primitive_prompt_4e4589a07f9c5e8a",
+            "identifier": "discourse.research_topic",
+            "kind": "prompt",
+            "title": "Research discussions",
+            "description": "Builds a prompt for researching visible Discourse discussions.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          }
+        ],
+        "access_rules": [
+          {
+            "group_id": 1,
+            "group_name": "admins",
+            "scopes": [
+              "mcp:content:read",
+              "mcp:profile:read"
+            ],
+            "pre_registered": true,
+            "deletable": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "mcp_group_scopes": {
+      "inserted": [
+        {
+          "id": 27,
+          "scope": "mcp:content:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:35:32.168752",
+          "updated_at": "2026-10-17T08:35:32.168752"
+        },
+        {
+          "id": 28,
+          "scope": "mcp:profile:read",
+          "group_id": 1,
+          "created_at": "2026-10-17T08:35:32.171551",
+          "updated_at": "2026-10-17T08:35:32.171551"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 412,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "created_at": "2026-10-17T08:35:30.314352",
+            "rotated_at": "2026-10-17T08:35:30.310329",
+            "updated_at": "2026-10-17T08:35:30.314352",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 412,
+            "seen_at": "2026-10-17T08:35:31.979542",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "created_at": "2026-10-17T08:35:30.314352",
+            "rotated_at": "2026-10-17T08:35:30.310329",
+            "updated_at": "2026-10-17T08:35:30.314352",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "group_id: 11\nscopes: [\"mcp:content:read\", \"mcp:drafts:read\", \"mcp:profile:read\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T08:35:32.009795",
+          "ip_address": null,
+          "updated_at": "2026-10-17T08:35:32.009795",
+          "category_id": null,
+          "custom_type": "mcp_access_rule_updated",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "group_id: 11\nscopes: [\"mcp:content:write\", \"mcp:profile:read\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T08:35:32.040177",
+          "ip_address": null,
+          "updated_at": "2026-10-17T08:35:32.040177",
+          "category_id": null,
+          "custom_type": "mcp_access_rule_updated",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "group_id: 11\nscopes: [\"mcp:content:write\", \"mcp:profile:read\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T08:35:32.116952",
+          "ip_address": null,
+          "updated_at": "2026-10-17T08:35:32.116952",
+          "category_id": null,
+          "custom_type": "mcp_access_rule_deleted",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "group_id: 1\nscopes: [\"mcp:content:read\", \"mcp:profile:read\"]",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-17T08:35:32.173113",
+          "ip_address": null,
+          "updated_at": "2026-10-17T08:35:32.173113",
+          "category_id": null,
+          "custom_type": "mcp_access_rule_updated",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "mcp_group_scopes": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "16b6206591365425c2d30afe6d519bae7e416ebac721bc0e47a2a11b61b14111",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

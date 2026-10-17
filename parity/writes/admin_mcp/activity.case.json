@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, redirect_uris, created_at, updated_at) VALUES (501, 'https://client.example.com/oauth', 'Example client', 'pre_registered', 'approved', '{https://client.example.com/callback}', now(), now())",
+    "INSERT INTO mcp_audit_logs (id, occurred_at, occurrences, user_id, mcp_oauth_client_id, request_id, method, tool, outcome, http_status, duration_ms, target, created_at, updated_at) VALUES (901, now() - interval '1 hour', 1, 1, 501, 'req-1', 'tools/call', 'discourse_search', 'success', 200, 40, '{\"topic_id\": 5}', now(), now()), (902, now() - interval '2 hours', 2, 1, 501, 'req-2', 'tools/call', 'discourse_read_topic', 'error', 500, 90, '{}', now(), now()), (903, now() - interval '3 hours', 3, 3, NULL, 'req-3', 'tools/list', NULL, 'rate_limited', 429, NULL, '{}', now(), now()), (904, now() - interval '30 days', 1, 1, 501, 'req-4', 'tools/call', 'discourse_search', 'success', 200, 10, '{}', now(), now())"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/admin/mcp/activity.json" },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "limit": "1" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "limit": "1", "cursor": "902" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "outcome": "error" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "filter": "req-3" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "filter": "read_topic" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "start_date": "2020-01-01", "end_date": "2099-01-01" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "outcome": "maybe" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "start_date": "yesterday" } },
+    { "method": "GET", "path": "/admin/mcp/activity.json", "params": { "start_date": "2099-01-02", "end_date": "2099-01-01" } }
+  ]
+}

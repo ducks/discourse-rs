@@ -1,0 +1,471 @@
+{
+  "name": "activity",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "limit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "limit": "1",
+        "cursor": "902"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "outcome": "error"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "filter": "req-3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "filter": "read_topic"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "start_date": "2020-01-01",
+        "end_date": "2099-01-01"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "outcome": "maybe"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "start_date": "yesterday"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/mcp/activity.json",
+      "params": {
+        "start_date": "2099-01-02",
+        "end_date": "2099-01-01"
+      }
+    }
+  ],
+  "started_at": "2026-10-17T08:16:25.924785",
+  "transaction_started_at": "2026-10-17T08:16:24.115991",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 903,
+            "occurred_at": "2026-10-17T05:16:24.115Z",
+            "created_at": "2026-10-17T05:16:24.115Z",
+            "username": "user1",
+            "client_id": null,
+            "client_name": null,
+            "method": "tools/list",
+            "tool": null,
+            "outcome": "rate_limited",
+            "http_status": 429,
+            "duration_ms": null,
+            "request_id": "req-3",
+            "target": {},
+            "occurrences": 3
+          },
+          {
+            "id": 902,
+            "occurred_at": "2026-10-17T06:16:24.115Z",
+            "created_at": "2026-10-17T06:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_read_topic",
+            "outcome": "error",
+            "http_status": 500,
+            "duration_ms": 90,
+            "request_id": "req-2",
+            "target": {},
+            "occurrences": 2
+          },
+          {
+            "id": 901,
+            "occurred_at": "2026-10-17T07:16:24.115Z",
+            "created_at": "2026-10-17T07:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_search",
+            "outcome": "success",
+            "http_status": 200,
+            "duration_ms": 40,
+            "request_id": "req-1",
+            "target": {
+              "topic_id": 5
+            },
+            "occurrences": 1
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        },
+        "metrics": {
+          "tool_calls": 3,
+          "failed_tool_calls": 2,
+          "rate_limits": 3,
+          "p95_latency_ms": 90
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 903,
+            "occurred_at": "2026-10-17T05:16:24.115Z",
+            "created_at": "2026-10-17T05:16:24.115Z",
+            "username": "user1",
+            "client_id": null,
+            "client_name": null,
+            "method": "tools/list",
+            "tool": null,
+            "outcome": "rate_limited",
+            "http_status": 429,
+            "duration_ms": null,
+            "request_id": "req-3",
+            "target": {},
+            "occurrences": 3
+          }
+        ],
+        "next_cursor": 903,
+        "meta": {
+          "next_cursor": 903
+        },
+        "metrics": {
+          "tool_calls": 3,
+          "failed_tool_calls": 2,
+          "rate_limits": 3,
+          "p95_latency_ms": 90
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 901,
+            "occurred_at": "2026-10-17T07:16:24.115Z",
+            "created_at": "2026-10-17T07:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_search",
+            "outcome": "success",
+            "http_status": 200,
+            "duration_ms": 40,
+            "request_id": "req-1",
+            "target": {
+              "topic_id": 5
+            },
+            "occurrences": 1
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 902,
+            "occurred_at": "2026-10-17T06:16:24.115Z",
+            "created_at": "2026-10-17T06:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_read_topic",
+            "outcome": "error",
+            "http_status": 500,
+            "duration_ms": 90,
+            "request_id": "req-2",
+            "target": {},
+            "occurrences": 2
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        },
+        "metrics": {
+          "tool_calls": 2,
+          "failed_tool_calls": 2,
+          "rate_limits": 0,
+          "p95_latency_ms": 90
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 903,
+            "occurred_at": "2026-10-17T05:16:24.115Z",
+            "created_at": "2026-10-17T05:16:24.115Z",
+            "username": "user1",
+            "client_id": null,
+            "client_name": null,
+            "method": "tools/list",
+            "tool": null,
+            "outcome": "rate_limited",
+            "http_status": 429,
+            "duration_ms": null,
+            "request_id": "req-3",
+            "target": {},
+            "occurrences": 3
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        },
+        "metrics": {
+          "tool_calls": 0,
+          "failed_tool_calls": 0,
+          "rate_limits": 3,
+          "p95_latency_ms": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 902,
+            "occurred_at": "2026-10-17T06:16:24.115Z",
+            "created_at": "2026-10-17T06:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_read_topic",
+            "outcome": "error",
+            "http_status": 500,
+            "duration_ms": 90,
+            "request_id": "req-2",
+            "target": {},
+            "occurrences": 2
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        },
+        "metrics": {
+          "tool_calls": 2,
+          "failed_tool_calls": 2,
+          "rate_limits": 0,
+          "p95_latency_ms": 90
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "activity": [
+          {
+            "id": 904,
+            "occurred_at": "2026-09-17T08:16:24.115Z",
+            "created_at": "2026-09-17T08:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_search",
+            "outcome": "success",
+            "http_status": 200,
+            "duration_ms": 10,
+            "request_id": "req-4",
+            "target": {},
+            "occurrences": 1
+          },
+          {
+            "id": 903,
+            "occurred_at": "2026-10-17T05:16:24.115Z",
+            "created_at": "2026-10-17T05:16:24.115Z",
+            "username": "user1",
+            "client_id": null,
+            "client_name": null,
+            "method": "tools/list",
+            "tool": null,
+            "outcome": "rate_limited",
+            "http_status": 429,
+            "duration_ms": null,
+            "request_id": "req-3",
+            "target": {},
+            "occurrences": 3
+          },
+          {
+            "id": 902,
+            "occurred_at": "2026-10-17T06:16:24.115Z",
+            "created_at": "2026-10-17T06:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_read_topic",
+            "outcome": "error",
+            "http_status": 500,
+            "duration_ms": 90,
+            "request_id": "req-2",
+            "target": {},
+            "occurrences": 2
+          },
+          {
+            "id": 901,
+            "occurred_at": "2026-10-17T07:16:24.115Z",
+            "created_at": "2026-10-17T07:16:24.115Z",
+            "username": "admin",
+            "client_id": "https://client.example.com/oauth",
+            "client_name": "Example client",
+            "method": "tools/call",
+            "tool": "discourse_search",
+            "outcome": "success",
+            "http_status": 200,
+            "duration_ms": 40,
+            "request_id": "req-1",
+            "target": {
+              "topic_id": 5
+            },
+            "occurrences": 1
+          }
+        ],
+        "next_cursor": null,
+        "meta": {
+          "next_cursor": null
+        },
+        "metrics": {
+          "tool_calls": 4,
+          "failed_tool_calls": 2,
+          "rate_limits": 3,
+          "p95_latency_ms": 90
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: outcome"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: start_date"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: start_date"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 412,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l37dfUBL905LhH118TYIcO4QCC4=",
+            "created_at": "2026-10-17T08:16:24.860056",
+            "rotated_at": "2026-10-17T08:16:24.858829",
+            "updated_at": "2026-10-17T08:16:24.860056",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "l37dfUBL905LhH118TYIcO4QCC4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 412,
+            "seen_at": "2026-10-17T08:16:25.943435",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l37dfUBL905LhH118TYIcO4QCC4=",
+            "created_at": "2026-10-17T08:16:24.860056",
+            "rotated_at": "2026-10-17T08:16:24.858829",
+            "updated_at": "2026-10-17T08:16:24.860056",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "l37dfUBL905LhH118TYIcO4QCC4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, redirect_uris, created_at, updated_at) VALUES (501, 'https://client.example.com/oauth', 'Example client', 'pre_registered', 'approved', '{https://client.example.com/callback}', now(), now())",
+    "INSERT INTO mcp_audit_logs (id, occurred_at, occurrences, user_id, mcp_oauth_client_id, request_id, method, tool, outcome, http_status, duration_ms, target, created_at, updated_at) VALUES (901, now() - interval '1 hour', 1, 1, 501, 'req-1', 'tools/call', 'discourse_search', 'success', 200, 40, '{\"topic_id\": 5}', now(), now()), (902, now() - interval '2 hours', 2, 1, 501, 'req-2', 'tools/call', 'discourse_read_topic', 'error', 500, 90, '{}', now(), now()), (903, now() - interval '3 hours', 3, 3, NULL, 'req-3', 'tools/list', NULL, 'rate_limited', 429, NULL, '{}', now(), now()), (904, now() - interval '30 days', 1, 1, 501, 'req-4', 'tools/call', 'discourse_search', 'success', 200, 10, '{}', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "64e54e2bdcb42f8c13aa413d5167258f6ff9cdc8a89725e5a9ba6d0d7c97809f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

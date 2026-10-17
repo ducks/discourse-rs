@@ -241,6 +241,19 @@ pub fn inspect_value(value: &serde_json::Value) -> String {
     }
 }
 
+/// `ActiveRecord::Base.sanitize_sql_like`: `%`, `_` and `\` escaped with
+/// a backslash.
+pub fn sanitize_sql_like(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        if matches!(c, '%' | '_' | '\\') {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

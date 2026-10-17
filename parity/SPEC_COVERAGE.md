@@ -67,6 +67,9 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::Config::AboutController | 11 | 1 | 0 | 0 |
 | Admin::Config::CategoryManagementController#categories | 5 | 1 | 0 | 0 |
 | Admin::Config::UpcomingChangesController | 19 | 0 | 1 | 0 |
+| Admin::McpController | 14 | 0 | 0 | 0 |
+| Admin::McpAuthorizationsController | 4 | 0 | 0 | 0 |
+| Admin::McpActivityController | 7 | 0 | 0 | 0 |
 | Admin::Config::WelcomeBannerController#themes_with_setting | 6 | 2 | 0 | 0 |
 | Admin::UsersController#suspend | 6 | 3 | 1 | 8 |
 | Admin::UsersController#unsuspend | 1 | 2 | 1 | 0 |
@@ -115,7 +118,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (79 sections)** | **521** | **333** | **228** | **518** |
+| **All (87 sections)** | **569** | **340** | **228** | **518** |
 
 ## Cases added from this inventory
 
@@ -1032,6 +1035,53 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 259 | toggle_change > 404 when setting_name is invalid | covered | admin_config/upcoming_changes_toggle (new) |
 | 269 | toggle_change > rejects settings that are not upcoming changes | covered | admin_config/upcoming_changes_toggle (new) |
 | - | (no spec it) a moderator; groups a change doesn't allow; remove_and_replace_uncategorized's handler (its snapshot, the restore) | covered | admin_config/upcoming_changes_denied, upcoming_changes_toggle, upcoming_changes_uncategorized, upcoming_changes_uncategorized_restore, upcoming_changes_uncategorized_snapshot (new) |
+
+## Admin::McpController
+
+`spec/requests/admin/mcp_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 10 | overview > reports approved OAuth client registrations | covered | admin_mcp/capabilities (new) |
+| 25 | primitives > the registered OAuth scopes as options | covered | admin_mcp/overview (new) |
+| 42 | access > one rule per group, Admins pre-registered | covered | admin_mcp/overview, access (new) |
+| 76 | update_access > replaces the scopes for one group | covered | admin_mcp/access (new) |
+| 93 | update_access > rejects unknown scopes | covered | admin_mcp/access (new) |
+| 102 | update_access > the Admins scopes can be changed | covered | admin_mcp/access (new) |
+| 116 | update_access > not for moderators | covered | admin_mcp/denied (new) |
+| 128 | destroy_access > removes the scopes for one group | covered | admin_mcp/access (new) |
+| 138 | destroy_access > not the Admins rule | covered | admin_mcp/access (new) |
+| 149 | emergency_block > blocks and unblocks | covered | admin_mcp/capabilities (new) |
+| 164 | emergency_block > fresh consent only when unblocking expands privileged access | covered | admin_mcp/capabilities (new) |
+| 202 | update_primitives > fresh consent and revoked tokens for a privileged primitive | covered | admin_mcp/capabilities (new) |
+| 255 | update_primitives > no fresh consent for a read-only primitive | covered | admin_mcp/capabilities (new) |
+| - | (no spec it) missing params, unknown groups and primitives | covered | admin_mcp/access, capabilities (new) |
+
+## Admin::McpAuthorizationsController
+
+`spec/requests/admin/mcp_authorizations_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 15 | index > the effective authorization status | covered | admin_mcp/authorizations (new; active, access removed, client blocked, revoked, user unavailable) |
+| 32 | index > paginates | covered | admin_mcp/authorizations (new) |
+| 50 | index > filters before the page limit | covered | admin_mcp/authorizations (new) |
+| 61 | index > an authorization whose user was deleted | covered | admin_mcp/authorizations (new) |
+| - | (no spec it) destroy, unknown ids, invalid limit and cursor | covered | admin_mcp/authorizations (new) |
+
+## Admin::McpActivityController
+
+`spec/requests/admin/mcp_activity_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 9 | index > activity with the default seven-day metrics | covered | admin_mcp/activity (new) |
+| 63 | index > the selected date range | covered | admin_mcp/activity (new) |
+| 102 | index > no latency without a timed tool call | covered | admin_mcp/activity (new; the request id filter) |
+| 115 | index > filters users, clients, tools, outcomes and request ids | covered | admin_mcp/activity (new) |
+| 165 | index > filters before pagination, no metrics with a cursor | covered | admin_mcp/activity (new) |
+| 200 | index > rejects invalid filter and date values | covered | admin_mcp/activity (new) |
+| 224 | index > not for moderators | covered | admin_mcp/denied (new) |
 
 ## Admin::Config::WelcomeBannerController#themes_with_setting
 
