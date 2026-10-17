@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, metadata_uri, redirect_uris, created_at, updated_at) VALUES (502, 'https://cimd.invalid/client.json', 'Metadata client', 'cimd', 'approved', 'https://cimd.invalid/client.json', '{https://cimd.invalid/callback}', now(), now())"
+  ],
+  "requests": [
+    { "method": "POST", "path": "/admin/mcp/clients/502/refresh.json" }
+  ]
+}

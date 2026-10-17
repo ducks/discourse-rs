@@ -1,0 +1,105 @@
+{
+  "name": "clients_refresh_refused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients/502/refresh.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients/504/refresh.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients/505/refresh.json"
+    }
+  ],
+  "started_at": "2026-10-17T08:45:21.075616",
+  "transaction_started_at": "2026-10-17T08:45:20.068708",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 412,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qIJfz4CXWM1H8zlnJZJDFmn54y0=",
+            "created_at": "2026-10-17T08:45:20.423088",
+            "rotated_at": "2026-10-17T08:45:20.422276",
+            "updated_at": "2026-10-17T08:45:20.423088",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qIJfz4CXWM1H8zlnJZJDFmn54y0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 412,
+            "seen_at": "2026-10-17T08:45:21.080057",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qIJfz4CXWM1H8zlnJZJDFmn54y0=",
+            "created_at": "2026-10-17T08:45:20.423088",
+            "rotated_at": "2026-10-17T08:45:20.422276",
+            "updated_at": "2026-10-17T08:45:20.423088",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qIJfz4CXWM1H8zlnJZJDFmn54y0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "mcp_oauth_client_id_metadata_policy": "approved_domains",
+    "mcp_oauth_client_id_metadata_domains": "allowed.example.org"
+  },
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, metadata_uri, redirect_uris, created_at, updated_at) VALUES (502, 'https://cimd.example.org/client.json', 'Metadata client', 'cimd', 'approved', 'https://cimd.example.org/client.json', '{https://cimd.example.org/callback}', now(), now()), (504, 'https://blocked.example.org/client.json', 'Blocked metadata client', 'cimd', 'blocked', 'https://blocked.example.org/client.json', '{https://blocked.example.org/callback}', now(), now()), (505, 'https://allowed.example.org/', 'Root client', 'cimd', 'approved', 'https://allowed.example.org/', '{https://allowed.example.org/callback}', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "d6ba2e775bf60c8659d44f84cf05004a86453082c683c3e8ed9f5db9045e5c91",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

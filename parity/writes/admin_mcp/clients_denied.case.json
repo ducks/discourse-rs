@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/admin/mcp/clients.json" },
+    { "method": "POST", "path": "/admin/mcp/clients.json", "params": { "client": { "client_id": "x", "name": "X", "redirect_uris": ["https://x.example.com/cb"] } } },
+    { "method": "GET", "path": "/admin/mcp/clients/1.json" },
+    { "method": "PUT", "path": "/admin/mcp/clients/1/block.json" }
+  ]
+}

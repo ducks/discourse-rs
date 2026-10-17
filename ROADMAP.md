@@ -864,7 +864,16 @@ then by what running a forum needs (milestone 6). Briefs:
     over the primitives core and the bundled plugins register, recorded
     from the reference with what their availability reads
     (scripts/record-mcp-primitives, write cases admin_mcp/*).
-    Left: watched words, MCP's OAuth clients and pages, what's new; the
+    Then feat/admin-mcp-clients: Admin::McpClientsController (the
+    page, a pre-registered client with McpOauthClient's validations,
+    blocking with its authorizations revoked) and a metadata client's
+    refresh, ClientResolver.resolve! with the document fetched through
+    crate::final_destination (write cases admin_mcp/clients*). Left:
+    a refresh that fetches a document isn't parity-recorded (it needs
+    an https fixture host); a client ID on localhost refuses with
+    InvalidAccess where Rails answers 500 (its ECONNREFUSED escapes the
+    resolver's rescue).
+    Left: watched words, MCP's pages, what's new; the
     settings' links to
     their area's page (linkifySettingLinks, from the admin search's data
     source, 90g9)), 90g7. `feat/admin-shell-customize` L, in part (done,

@@ -1,0 +1,50 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO mcp_oauth_clients (id, client_id, name, registration_type, trust_state, metadata_uri, redirect_uris, last_seen_at, created_at, updated_at) VALUES (501, 'https://client.example.com/oauth', 'Example client', 'pre_registered', 'approved', NULL, '{https://client.example.com/callback,https://client.example.com/other,http://localhost:3000/cb}', NULL, now() - interval '2 days', now() - interval '2 days'), (502, 'https://cimd.example.org/client.json', 'Metadata client', 'cimd', 'approved', 'https://cimd.example.org/client.json', '{https://cimd.example.org/callback}', now() - interval '1 day', now() - interval '2 days', now() - interval '2 days'), (503, 'local-tool', 'Local tool', 'pre_registered', 'pending', NULL, '{http://127.0.0.1:8000/cb}', NULL, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO mcp_oauth_authorizations (id, user_id, mcp_oauth_client_id, resource, status, consented_at, created_at, updated_at) VALUES (601, 1, 501, 'http://localhost/mcp', 'active', now(), now(), now()), (602, 3, 501, 'http://localhost/mcp', 'revoked', now(), now(), now())",
+    "INSERT INTO mcp_oauth_access_tokens (id, token_hash, mcp_oauth_authorization_id, mcp_oauth_client_id, user_id, resource, scopes, grant_version, expires_at, created_at, updated_at) VALUES (801, 'hash-a', 601, 501, 1, 'http://localhost/mcp', '{mcp:profile:read}', 1, now() + interval '1 hour', now(), now())"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/admin/mcp/clients.json" },
+    { "method": "GET", "path": "/admin/mcp/clients.json", "params": { "limit": "2" } },
+    { "method": "GET", "path": "/admin/mcp/clients.json", "params": { "limit": "2", "cursor": "502" } },
+    { "method": "GET", "path": "/admin/mcp/clients.json", "params": { "filter": "cimd" } },
+    { "method": "GET", "path": "/admin/mcp/clients/501.json" },
+    { "method": "GET", "path": "/admin/mcp/clients/999.json" },
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients.json",
+      "params": {
+        "client": {
+          "client_id": "https-native-app",
+          "name": "Native app",
+          "redirect_uris": ["http://localhost:8123/callback", "https://app.example.net/cb"]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients.json",
+      "params": {
+        "client": {
+          "client_id": "https://client.example.com/oauth",
+          "name": "",
+          "redirect_uris": ["http://example.net/cb"]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/mcp/clients.json",
+      "params": { "client": { "client_id": "x", "name": "X" } }
+    },
+    { "method": "POST", "path": "/admin/mcp/clients.json", "params": { "other": "1" } },
+    { "method": "PUT", "path": "/admin/mcp/clients/501/block.json" },
+    { "method": "PUT", "path": "/admin/mcp/clients/501/block.json", "params": { "blocked": "false" } },
+    { "method": "PUT", "path": "/admin/mcp/clients/999/block.json" },
+    { "method": "POST", "path": "/admin/mcp/clients/501/refresh.json" },
+    { "method": "POST", "path": "/admin/mcp/clients/999/refresh.json" },
+    { "method": "GET", "path": "/admin/mcp/clients.json" }
+  ]
+}
