@@ -5,7 +5,11 @@
       "method": "GET",
       "path": "/admin/search/all.json",
       "params": {
-        "filter_names": ["title", "logo", "chat_enabled"]
+        "filter_names": [
+          "title",
+          "logo",
+          "chat_enabled"
+        ]
       }
     },
     {
@@ -33,7 +37,10 @@
       "method": "GET",
       "path": "/admin/search/all.json",
       "params": {
-        "categories": ["spam", "rate_limits"]
+        "categories": [
+          "spam",
+          "rate_limits"
+        ]
       }
     },
     {
@@ -50,5 +57,8 @@
         "filter_area": "no_such_area"
       }
     }
+  ],
+  "ignore": [
+    "/changes/user_custom_fields/inserted/0/id"
   ]
 }

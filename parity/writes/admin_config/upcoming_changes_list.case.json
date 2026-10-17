@@ -12,5 +12,8 @@
         "filter_statuses": "beta,stable"
       }
     }
+  ],
+  "ignore": [
+    "/changes/user_custom_fields/inserted/0/id"
   ]
 }
