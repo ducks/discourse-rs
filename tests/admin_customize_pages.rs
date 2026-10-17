@@ -298,3 +298,40 @@ async fn the_site_texts_pages() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_email_template_editor() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin
+        .page("/admin/email/templates/user_notifications.signup")
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Email settings - Admin - "));
+    assert!(html.contains("<div class=\"admin-contents admin-email admin-email-templates edit\">"));
+    assert!(html.contains("<li class=\"active\"><a class=\"active\" href=\"/admin/email/templates\">Templates</a></li>"), "{html}");
+    assert!(html.contains("<input class=\"ember-text-field email-template__subject\" type=\"text\" value=\"[%{email_prefix}] Confirm your new account\">"));
+    assert!(html.contains("<div class=\"d-editor email-template__body\">"));
+    assert!(html.contains("toolbar-menu__heading-trigger"));
+    assert!(html.contains("<button class=\"interpolation-keys__pill is-used\" title=\"Already used\" type=\"button\">email_token</button>"));
+    assert!(!html.contains("revert-email-template"));
+    // A pluralized subject links to the site texts.
+    let (_, html) = admin
+        .page("/admin/email/templates/system_messages.pending_users_reminder")
+        .await;
+    assert!(html.contains("class=\"email-template__has-multiple-subjects\" href=\"/admin/customize/site_texts?q=system_messages.pending_users_reminder\""));
+    // A saved template can be reverted.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/email/templates/test_mailer",
+            "email_template%5Bsubject%5D=Hello&email_template%5Bbody%5D=World",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let (_, html) = admin.page("/admin/email/templates/test_mailer").await;
+    assert!(html.contains("value=\"Hello\""), "{html}");
+    assert!(html.contains("revert-email-template"));
+}

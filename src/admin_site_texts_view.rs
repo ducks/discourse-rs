@@ -334,6 +334,110 @@ pub fn interpolation_keys(cx: &AdminCx, content: &str, keys: Option<&Vec<Value>>
     out
 }
 
+/// DEditor in markdown mode: the toolbar (bold, italic, the heading
+/// menu, link, blockquote, code, the list menu, emoji), the textarea and
+/// the preview admin-customize.js renders with the markdown crate.
+pub fn d_editor(cx: &AdminCx, class: &str, value: &str) -> String {
+    let button = |class: &str, icon_name: &str, title: &str, first: bool| {
+        format!(
+            "<button class=\"btn no-text btn-icon toolbar__button {class}\" tabindex=\"{}\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">\u{200b}</span></button>",
+            if first { "0" } else { "-1" },
+            escape(&t(cx.i18n, title)),
+            icon(icon_name, None)
+        )
+    };
+    let menu = |name: &str, icon_name: &str, title: &str| {
+        format!(
+            "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger toolbar-menu__{name}-trigger toolbar__button {name} toolbar-popup-menu-options\" data-identifier=\"toolbar-menu__{name}\" data-trigger=\"\" tabindex=\"-1\" title=\"{}\" type=\"button\">{}</button>",
+            escape(&t(cx.i18n, title)),
+            icon(icon_name, None)
+        )
+    };
+    let toolbar = [
+        button("bold", "bold", "composer.bold_title", true),
+        button("italic", "italic", "composer.italic_title", false),
+        menu("heading", "discourse-text", "composer.text_size_title"),
+        button("link", "link", "composer.link_title", false),
+        button(
+            "blockquote",
+            "quote-right",
+            "composer.blockquote_title",
+            false,
+        ),
+        button("code", "code", "composer.code_title", false),
+        menu("list", "list-ul", "composer.list_title"),
+        button(
+            "emoji insert-composer-emoji",
+            "far-face-smile",
+            "composer.emoji",
+            false,
+        ),
+    ]
+    .concat();
+    format!(
+        "<div class=\"d-editor {class}\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" data-d-scroll-axis=\"horizontal\" role=\"toolbar\">{toolbar}</div></div><div class=\"loading-container\"></div><textarea autocomplete=\"off\" class=\"ember-text-area d-editor-input --markdown-monospace\">\n{}</textarea><a class=\"popup-tip good hide\" tabindex=\"0\">{}</a></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div><span class=\"d-editor-plugin\"></span></div></div></div>",
+        escape(value),
+        icon("circle-xmark", None)
+    )
+}
+
+/// templates/admin-email-templates/edit.gjs for the template's document
+/// (AdminEmailTemplateSerializer): a pluralized subject or body links to
+/// the site texts instead.
+pub fn email_template(cx: &AdminCx, template: &Value) -> String {
+    let tr = |k: &str| escape(&t(cx.i18n, k));
+    let id = template["id"].as_str().unwrap_or_default();
+    let multiple = |key: &str| {
+        format!(
+            "<h3><a class=\"email-template__has-multiple-{}\" href=\"{}/admin/customize/site_texts?q={}\">{}</a></h3>",
+            if key.ends_with("subjects") {
+                "subjects"
+            } else {
+                "bodies"
+            },
+            cx.base_path,
+            escape(id),
+            tr(key)
+        )
+    };
+    let subject = match template["subject"].as_str() {
+        Some(s) if !s.is_empty() => format!(
+            "<input class=\"ember-text-field email-template__subject\" type=\"text\" value=\"{}\">",
+            escape(s)
+        ),
+        _ => multiple("admin.customize.email_templates.multiple_subjects"),
+    };
+    let body = match &template["body"] {
+        Value::Object(_) => multiple("admin.customize.email_templates.multiple_bodies"),
+        b => d_editor(cx, "email-template__body", b.as_str().unwrap_or_default()),
+    };
+    let content = format!(
+        "{} {}",
+        template["subject"].as_str().unwrap_or_default(),
+        template["body"].as_str().unwrap_or_default()
+    );
+    let revert = if template["can_revert"].as_bool() == Some(true) {
+        crate::admin_ui::Button {
+            class: "revert-email-template",
+            label: crate::admin_ui::tr(cx, "admin.customize.email_templates.revert"),
+            ..Default::default()
+        }
+        .render()
+    } else {
+        String::new()
+    };
+    format!(
+        "<div class=\"email-template\"><div class=\"back-to-email-templates\"><a class=\"active\" href=\"{}/admin/email/templates\">{} {}</a></div><label>{}</label>{subject}<br><label>{}</label>{body}{}{}</div>",
+        cx.base_path,
+        icon("angle-left", None),
+        tr("admin.customize.email_templates.back"),
+        tr("admin.customize.email_templates.subject"),
+        tr("admin.customize.email_templates.body"),
+        interpolation_keys(cx, &content, template["interpolation_keys"].as_array()),
+        crate::admin_customize_kit::save_controls(cx, &revert)
+    )
+}
+
 /// templates/admin-site-text/edit.gjs from the site text's document.
 pub fn edit(
     cx: &AdminCx,

@@ -793,10 +793,20 @@ then by what running a forum needs (milestone 6). Briefs:
     the results with their next pages, the Reseed modal (whose replace
     the server still refuses), and a text's edit page (the default text,
     the outdated and invalid notices with dismiss, DExpandingTextArea,
-    the interpolation keys' pills, save and revert). Left: the themes and
-    components with their editor, theme site settings, color palettes,
-    the email template editor (with site texts' translation overrides),
-    email style, form templates), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    the interpolation keys' pills, save and revert). Then
+    feat/admin-shell-email-templates: /admin/email/templates/:id, the
+    template's editor under the email pages' header (the subject, or the
+    link to the site texts for a pluralized one; DEditor with its bold,
+    italic, heading and list menus, blockquote and code, the preview from
+    the markdown crate's WebAssembly; the interpolation keys; save and
+    revert), with Admin::EmailTemplatesController#update now ported over
+    the site texts' translation overrides (TranslationOverride.upsert!
+    shared with them, the errors' format_with_full_message, the restore of
+    both keys on an error, the logs) and index, show and revert reading
+    the overrides (write cases admin_email/email_templates_update*).
+    Refused, saying so: DEditor's link modal and emoji picker there. Left:
+    the themes and components with their editor, theme site settings,
+    color palettes, email style, form templates), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
     rollback, the read-only and archive mode toggles with their
@@ -840,9 +850,8 @@ then by what running a forum needs (milestone 6). Briefs:
     `enabled` read from each plugin's setting), the installed plugins list
     (DFilterControls with the status dropdown, the enabled switch, the
     settings links), and a plugin's settings page in
-    AdminPluginConfigPage. Left: the email template editor (moved to
-    90g7, with site texts' translation overrides), the configuration
-    nav plugins' own admin pages
+    AdminPluginConfigPage. Left (the email template editor done in 90g7):
+    the configuration nav plugins' own admin pages
     (refused as a page: chat, AI, automation, data explorer and the
     rest the recording marks), enabling a bundled plugin the port
     doesn't implement (refused by the settings update)),

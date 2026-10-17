@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/email/templates.json"},
+    {"method": "PUT", "path": "/admin/email/templates/system_messages.pending_users_reminder", "params": {"email_template": {"subject": "Users wait", "body": "A body"}}},
+    {"method": "DELETE", "path": "/admin/email/templates/system_messages.pending_users_reminder"}
+  ]
+}

@@ -34,3 +34,5 @@
 /admin/customize/site_texts as=admin
 /admin/customize/site_texts?q=topic&overridden=true as=admin
 /admin/customize/site_texts/education.new-reply?locale=en as=admin
+/admin/email/templates/user_notifications.signup as=admin
+/admin/email/templates/system_messages.pending_users_reminder as=admin

@@ -1,8 +1,8 @@
 //! Port of Admin::EmailTemplatesController: the email texts an admin may
-//! customize (index, show, revert). Customizing them writes translation
-//! overrides, which every mail the port renders would then have to read
-//! through I18n; that layer is not ported, so `update` is refused, and so
-//! is anything that would show or revert an existing override.
+//! customize (index, show, update, revert). A template's subject and body
+//! are translation overrides, as the site texts' are (I18n reads them
+//! over the files, the mails with them); its editor is the Ember page
+//! crate::routes::admin_customize::email_template_page.
 
 use axum::body::Bytes;
 use axum::extract::{Path, State};
@@ -12,10 +12,11 @@ use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use super::session::{bad_csrf, csrf_ok};
-use crate::i18n::I18n;
+use crate::i18n::{I18n, OVERRIDE_LOCALE};
 use crate::params;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
+use crate::site_texts::Overrides;
 use crate::{AppError, AppState, Unsupported};
 
 /// `Admin::EmailTemplatesController.email_keys` (no restricted key is in
@@ -244,8 +245,10 @@ enum Text {
     Plural(Vec<(String, String)>),
 }
 
-fn lookup(i18n: &I18n, key: &str) -> Result<Text, Unsupported> {
-    if let Some(s) = i18n.t(key) {
+/// The text with the locale's overrides over the files, as I18n.t reads
+/// it (the overrides read in the request's transaction).
+fn lookup(i18n: &I18n, overrides: &Overrides, key: &str) -> Result<Text, Unsupported> {
+    if let Some(s) = overrides.get(key).or_else(|| i18n.t_default(key)) {
         return Ok(Text::Str(s.to_string()));
     }
     let Some(Value::Object(map)) = i18n.subtree(key) else {
@@ -256,7 +259,12 @@ fn lookup(i18n: &I18n, key: &str) -> Result<Text, Unsupported> {
     let mut forms = Vec::new();
     for form in ["zero", "one", "two", "few", "many", "other"] {
         match map.get(form) {
-            Some(Value::String(s)) => forms.push((form.to_string(), s.clone())),
+            Some(Value::String(s)) => forms.push((
+                form.to_string(),
+                overrides
+                    .get(&format!("{key}.{form}"))
+                    .map_or_else(|| s.clone(), str::to_string),
+            )),
             Some(_) => return Err(Unsupported("a nested email template text")),
             None => {}
         }
@@ -307,23 +315,23 @@ impl Text {
     }
 }
 
-/// AdminEmailTemplateSerializer, with no override in place.
-fn serialize(i18n: &I18n, key: &str) -> Result<Value, AppError> {
+/// AdminEmailTemplateSerializer over the locale's overrides.
+fn serialize(i18n: &I18n, overrides: &Overrides, key: &str) -> Result<Value, AppError> {
     let title = match i18n.t(&format!("{key}.title")) {
         Some(t) => t.to_string(),
         None => crate::plugins::poll::vote::titleize(key.rsplit('.').next().unwrap_or(key))?,
     };
     let subject_key = format!("{key}.subject_template");
     let body_key = format!("{key}.text_body_template");
-    let subject = if i18n.t(&format!("{subject_key}.other")).is_some() {
+    let subject = if i18n.t_default(&format!("{subject_key}.other")).is_some() {
         Value::Null
     } else {
-        match lookup(i18n, &subject_key)? {
+        match lookup(i18n, overrides, &subject_key)? {
             Text::Str(s) => json!(s),
             Text::Plural(_) => return Err(Unsupported("a pluralized subject without other").into()),
         }
     };
-    let body = match lookup(i18n, &body_key)? {
+    let body = match lookup(i18n, overrides, &body_key)? {
         Text::Str(s) => json!(s),
         // The hash, as JSON.
         Text::Plural(forms) => Value::Object(
@@ -333,9 +341,10 @@ fn serialize(i18n: &I18n, key: &str) -> Result<Value, AppError> {
                 .collect(),
         ),
     };
+    // Overrides disabled: the files' texts.
     let mut keys: Vec<String> = Vec::new();
     for k in [&subject_key, &body_key] {
-        if let Some(text) = i18n.t(k) {
+        if let Some(text) = i18n.t_default(k) {
             interpolation_keys(text, &mut keys);
         }
     }
@@ -345,24 +354,15 @@ fn serialize(i18n: &I18n, key: &str) -> Result<Value, AppError> {
         }
     }
     keys.sort();
+    let can_revert = overrides.get(&subject_key).is_some() || overrides.get(&body_key).is_some();
     Ok(json!({
         "id": key,
         "title": title,
         "subject": subject,
         "body": body,
-        "can_revert": false,
+        "can_revert": can_revert,
         "interpolation_keys": keys,
     }))
-}
-
-/// The overrides of these templates' texts, for the request's locale.
-async fn overridden(conn: &mut PgConnection, keys: &[String]) -> Result<bool, AppError> {
-    Ok(sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = 'en' AND translation_key = ANY($1))",
-    )
-    .bind(keys)
-    .fetch_one(conn)
-    .await?)
 }
 
 fn template_keys(key: &str) -> Vec<String> {
@@ -370,13 +370,6 @@ fn template_keys(key: &str) -> Vec<String> {
         format!("{key}.subject_template"),
         format!("{key}.text_body_template"),
     ]
-}
-
-fn refuse_html(uri: &Uri, headers: &HeaderMap) -> Result<(), AppError> {
-    if super::wants_json(uri.query(), headers) || uri.path().ends_with(".json") {
-        return Ok(());
-    }
-    Err(Unsupported("the admin email templates pages (Ember)").into())
 }
 
 /// The route's `id` constraint (`[0-9a-z_.]+`): anything else has no
@@ -428,13 +421,10 @@ pub(super) async fn document(
     user_id: i32,
 ) -> Result<Value, AppError> {
     english(&mut *conn, s, user_id).await?;
-    let all: Vec<String> = EMAIL_KEYS.iter().flat_map(|k| template_keys(k)).collect();
-    if overridden(&mut *conn, &all).await? {
-        return Err(Unsupported("customized email templates (translation overrides)").into());
-    }
+    let overrides = Overrides::load(&mut *conn, OVERRIDE_LOCALE).await?;
     let templates = EMAIL_KEYS
         .iter()
-        .map(|k| serialize(&state.i18n, k))
+        .map(|k| serialize(&state.i18n, &overrides, k))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(json!({
         "email_templates": templates,
@@ -442,7 +432,8 @@ pub(super) async fn document(
     }))
 }
 
-/// GET /admin/email/templates/:id: an empty action.
+/// GET /admin/email/templates/:id: an empty action; a page request is
+/// the template's editor (adminEmailTemplates.edit).
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -453,20 +444,164 @@ pub async fn show(
     if !guardian.is_admin() || !valid_id(&id) {
         return Ok(super::topics::not_found_response(&state));
     }
-    refuse_html(&uri, &headers)?;
+    if super::admin_email::html_request(&uri, &headers) {
+        return super::admin_customize::email_template_page(&state, &guardian, &headers, &uri, &id)
+            .await;
+    }
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
-/// PUT /admin/email/templates/:id
+/// What `update_key` leaves to log or restore: the key, its text before
+/// and whether an override held it.
+struct Updated {
+    key: String,
+    old: Text,
+    had_override: bool,
+    errors: Vec<String>,
+}
+
+/// PUT /admin/email/templates/:id: the subject's and body's overrides
+/// written (TranslationOverride.upsert!, a pluralized text left alone),
+/// both changes logged; or, when either is invalid, both restored and
+/// their errors.
 pub async fn update(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
 ) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
     if !guardian.is_admin() || !valid_id(&id) {
         return Ok(super::topics::not_found_response(&state));
     }
-    Err(Unsupported("customizing email templates (translation overrides read by I18n)").into())
+    let pairs: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !csrf_ok(&state, &headers, &pairs, uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    // `et = params[:email_template]`, read before the key is checked.
+    let Some(Value::Object(et)) = p.get("email_template") else {
+        return Err(Unsupported("an email template update without email_template").into());
+    };
+    if !EMAIL_KEYS.contains(&id.as_str()) {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let acting = guardian.user_id().unwrap_or_default();
+    let mut tx = state.pool.begin().await?;
+    let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    english(&mut tx, &s, acting).await?;
+    let mut results = Vec::new();
+    for (key, field) in [
+        (format!("{id}.subject_template"), "subject"),
+        (format!("{id}.text_body_template"), "body"),
+    ] {
+        let overrides = Overrides::load(&mut tx, OVERRIDE_LOCALE).await?;
+        let old = lookup(&state.i18n, &overrides, &key)?;
+        let had_override = overrides.get(&key).is_some();
+        let value = et.get(field).and_then(params::scalar);
+        let errors = match old {
+            Text::Plural(_) => Vec::new(),
+            Text::Str(_) => super::site_texts::upsert_override(
+                &mut tx,
+                &state.i18n,
+                OVERRIDE_LOCALE,
+                &key,
+                value.as_deref(),
+            )
+            .await?
+            .err()
+            .unwrap_or_default(),
+        };
+        results.push((
+            field,
+            Updated {
+                key,
+                old,
+                had_override,
+                errors,
+            },
+        ));
+    }
+    let messages: Vec<String> = results
+        .iter()
+        .filter(|(_, r)| !r.errors.is_empty())
+        .map(|(field, r)| {
+            let attribute = crate::admin_view::t(
+                &state.i18n,
+                &format!("admin.customize.email_templates.{field}"),
+            );
+            state
+                .i18n
+                .t_with(
+                    "errors.format_with_full_message",
+                    &[
+                        ("attribute", &attribute),
+                        ("message", &r.errors.join("<br>")),
+                    ],
+                )
+                .unwrap_or_default()
+                .to_string()
+        })
+        .collect();
+    if messages.is_empty() {
+        state
+            .bus
+            .publish(&mut tx, "/i18n-flush", &json!({"refresh": true}), None)
+            .await?;
+        let overrides = Overrides::load(&mut tx, OVERRIDE_LOCALE).await?;
+        for (_, r) in &results {
+            let new = lookup(&state.i18n, &overrides, &r.key)?.to_column()?;
+            super::site_texts::log_change(
+                &mut tx,
+                acting,
+                &r.key,
+                Some(&new),
+                Some(&r.old.to_column()?),
+            )
+            .await?;
+        }
+        let out = serialize(&state.i18n, &overrides, &id)?;
+        tx.commit().await?;
+        return Ok(axum::Json(json!({
+            "email_template": out,
+            "__rest_serializer": "1",
+        }))
+        .into_response());
+    }
+    // restore_key
+    for (_, r) in &results {
+        let Text::Str(old) = &r.old else {
+            continue;
+        };
+        if r.had_override {
+            let _ = super::site_texts::upsert_override(
+                &mut tx,
+                &state.i18n,
+                OVERRIDE_LOCALE,
+                &r.key,
+                Some(old),
+            )
+            .await?;
+        } else {
+            sqlx::query(
+                "DELETE FROM translation_overrides WHERE locale = $1 AND translation_key = $2",
+            )
+            .bind(OVERRIDE_LOCALE)
+            .bind(&r.key)
+            .execute(&mut *tx)
+            .await?;
+        }
+    }
+    tx.commit().await?;
+    Ok((
+        StatusCode::UNPROCESSABLE_ENTITY,
+        axum::Json(json!({ "errors": messages })),
+    )
+        .into_response())
 }
 
 /// DELETE /admin/email/templates/:id: the template's overrides removed,
@@ -499,33 +634,30 @@ pub async fn revert(
     let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     english(&mut tx, &s, acting).await?;
     let keys = template_keys(&id);
-    if overridden(&mut tx, &keys).await? {
-        return Err(Unsupported("reverting a customized email template").into());
+    // revert_and_log: the texts before, TranslationOverride.revert!, the
+    // texts after.
+    let overrides = Overrides::load(&mut tx, OVERRIDE_LOCALE).await?;
+    let mut old = Vec::new();
+    for key in &keys {
+        old.push(lookup(&state.i18n, &overrides, key)?.to_column()?);
     }
-    // TranslationOverride.revert!: nothing to delete; I18n reloaded all
-    // the same.
+    sqlx::query(
+        "DELETE FROM translation_overrides WHERE locale = $1 AND translation_key = ANY($2)",
+    )
+    .bind(OVERRIDE_LOCALE)
+    .bind(&keys)
+    .execute(&mut *tx)
+    .await?;
     state
         .bus
         .publish(&mut tx, "/i18n-flush", &json!({"refresh": true}), None)
         .await?;
-    let action = crate::staff_action_logs::action_id("change_site_text")
-        .ok_or(Unsupported("a staff action missing from enums.json"))?;
-    for key in &keys {
-        let text = lookup(&state.i18n, key)?.to_column()?;
-        // log_site_text_change(key, new, old): the same text.
-        sqlx::query(
-            "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, \
-                                         admin_only, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $4, TRUE, now(), now())",
-        )
-        .bind(action)
-        .bind(acting)
-        .bind(key)
-        .bind(&text)
-        .execute(&mut *tx)
-        .await?;
+    let overrides = Overrides::load(&mut tx, OVERRIDE_LOCALE).await?;
+    for (key, old) in keys.iter().zip(old) {
+        let new = lookup(&state.i18n, &overrides, key)?.to_column()?;
+        super::site_texts::log_change(&mut tx, acting, key, Some(&new), Some(&old)).await?;
     }
-    let out = serialize(&state.i18n, &id)?;
+    let out = serialize(&state.i18n, &overrides, &id)?;
     tx.commit().await?;
     Ok(axum::Json(json!({
         "email_template": out,

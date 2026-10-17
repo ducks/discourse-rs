@@ -1708,6 +1708,346 @@
     }
   });
 
+  // --- email templates -----------------------------------------------------
+
+  // AdminEmailTemplatesEditController: the subject and body against the
+  // template's, the interpolation keys over both, save and revert; DEditor's
+  // toolbar and its preview.
+  function emailTemplate() {
+    return document.querySelector(".admin-email-templates.edit .email-template");
+  }
+
+  function emailTemplateData() {
+    var el = document.getElementById("email-template-data");
+    return el ? JSON.parse(el.textContent) : null;
+  }
+
+  var emailSaved = null;
+  var emailActive = null;
+  var emailCursor = null;
+
+  function emailFields(root) {
+    return {
+      subject: root.querySelector(".email-template__subject"),
+      body: root.querySelector(".email-template__body textarea"),
+    };
+  }
+
+  function emailState(root) {
+    var f = emailFields(root);
+    var subject = f.subject ? f.subject.value : null;
+    var body = f.body ? f.body.value : null;
+    root.querySelector(".save-changes").disabled =
+      emailSaved && subject === emailSaved.subject && body === emailSaved.body;
+    var data = emailTemplateData();
+    drawKeys(root, (subject || "") + " " + (body || ""), data && data.template && data.template.interpolation_keys);
+  }
+
+  var markdownRenderer = null;
+
+  // The markdown crate as WebAssembly, as the composer loads it.
+  function renderer() {
+    var data = emailTemplateData();
+    if (!markdownRenderer) {
+      markdownRenderer = Promise.all([
+        WebAssembly.instantiateStreaming(fetch(data.preview_wasm), {}),
+        fetch(data.preview_settings, { credentials: "same-origin" }).then(function (r) {
+          return r.text();
+        }),
+      ]).then(function (loaded) {
+        var wasm = loaded[0].instance.exports;
+        var call = function (fn, text) {
+          var bytes = new TextEncoder().encode(text);
+          var ptr = wasm.alloc(bytes.length);
+          new Uint8Array(wasm.memory.buffer, ptr, bytes.length).set(bytes);
+          var status = fn(ptr, bytes.length);
+          wasm.dealloc(ptr, bytes.length);
+          var out = new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, wasm.output_ptr(), wasm.output_len()));
+          if (status !== 0) {
+            throw new Error(out);
+          }
+          return out;
+        };
+        call(wasm.configure, loaded[1]);
+        return function (raw) {
+          return call(wasm.preview, raw);
+        };
+      });
+    }
+    return markdownRenderer;
+  }
+
+  function emailPreview(root) {
+    var f = emailFields(root);
+    var preview = root.querySelector(".d-editor-preview");
+    if (!f.body || !preview || !window.WebAssembly) {
+      return;
+    }
+    renderer()
+      .then(function (render) {
+        try {
+          preview.innerHTML = render(f.body.value);
+        } catch (e) {
+          preview.textContent = e.message;
+        }
+      })
+      .catch(function () {});
+  }
+
+  // The toolbar's text changes, as d-editor's applySurround and
+  // applyList make them on the selection (or their placeholder).
+  function surround(area, head, tail, placeholder) {
+    var start = area.selectionStart;
+    var end = area.selectionEnd;
+    var selected = area.value.slice(start, end) || placeholder;
+    area.focus();
+    area.setSelectionRange(start, end);
+    document.execCommand("insertText", false, head + selected + tail);
+    area.setSelectionRange(start + head.length, start + head.length + selected.length);
+  }
+
+  function prefixLines(area, prefix, placeholder) {
+    var start = area.selectionStart;
+    var end = area.selectionEnd;
+    var selected = area.value.slice(start, end) || placeholder;
+    var lines = selected.split("\n").map(function (line, i) {
+      return (typeof prefix === "function" ? prefix(i) : prefix) + line;
+    });
+    area.focus();
+    area.setSelectionRange(start, end);
+    document.execCommand("insertText", false, lines.join("\n"));
+  }
+
+  function toolbarMenu(trigger, items, onPick) {
+    if (!Discourse.float) {
+      return;
+    }
+    var content = document.createElement("div");
+    content.className = "fk-d-menu__inner-content";
+    content.innerHTML =
+      '<ul class="dropdown-menu">' +
+      items
+        .map(function (item, i) {
+          return (
+            '<li class="dropdown-menu__item"><button class="btn btn-icon-text btn-transparent" data-index="' +
+            i +
+            '" type="button">' +
+            ui().icon(item.icon) +
+            '<span class="d-button-label">' +
+            escapeHtml(item.label) +
+            "</span></button></li>"
+          );
+        })
+        .join("") +
+      "</ul>";
+    trigger.setAttribute("aria-expanded", "true");
+    Discourse.float.menu(trigger, {
+      identifier: trigger.dataset.identifier,
+      mainClass: trigger.dataset.identifier + "-content",
+      content: content,
+      onClose: function () {
+        trigger.setAttribute("aria-expanded", "false");
+      },
+    });
+    content.addEventListener("click", function (event) {
+      var button = event.target.closest("button[data-index]");
+      if (button) {
+        Discourse.float.close(trigger.dataset.identifier);
+        onPick(items[Number(button.dataset.index)]);
+      }
+    });
+  }
+
+  document.addEventListener("input", function (event) {
+    var root = emailTemplate();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    emailState(root);
+    if (event.target.classList.contains("d-editor-input")) {
+      emailPreview(root);
+    }
+  });
+
+  document.addEventListener(
+    "focusin",
+    function (event) {
+      var root = emailTemplate();
+      if (root && root.contains(event.target) && /^(TEXTAREA|INPUT)$/.test(event.target.tagName)) {
+        emailActive = event.target;
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    "focusout",
+    function (event) {
+      var root = emailTemplate();
+      if (root && root.contains(event.target) && /^(TEXTAREA|INPUT)$/.test(event.target.tagName)) {
+        emailCursor = { start: event.target.selectionStart, end: event.target.selectionEnd };
+      }
+    },
+    true
+  );
+
+  document.addEventListener("click", function (event) {
+    var root = emailTemplate();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = emailTemplateData();
+    var f = emailFields(root);
+    var area = f.body;
+    var tool = event.target.closest(".toolbar__button");
+    if (tool && area) {
+      if (tool.classList.contains("bold")) {
+        surround(area, "**", "**", t("composer.bold_text"));
+      } else if (tool.classList.contains("italic")) {
+        surround(area, "*", "*", t("composer.italic_text"));
+      } else if (tool.classList.contains("blockquote")) {
+        prefixLines(area, "> ", t("composer.blockquote_text"));
+      } else if (tool.classList.contains("code")) {
+        var sel = area.value.slice(area.selectionStart, area.selectionEnd);
+        if (sel.indexOf("\n") !== -1) {
+          surround(area, "```\n", "\n```", "");
+        } else if (sel) {
+          surround(area, "`", "`", "");
+        } else {
+          prefixLines(area, "    ", t("composer.code_text"));
+        }
+      } else if (tool.classList.contains("heading")) {
+        toolbarMenu(
+          tool,
+          [1, 2, 3, 4]
+            .map(function (n) {
+              return { icon: "discourse-h" + n, label: t("composer.heading_level_n", { levelNumber: n }), prefix: "#".repeat(n) + " " };
+            })
+            .concat([{ icon: "discourse-paragraph", label: t("composer.heading_level_paragraph"), prefix: "" }]),
+          function (item) {
+            prefixLines(area, item.prefix, "");
+            emailState(root);
+            emailPreview(root);
+          }
+        );
+        return;
+      } else if (tool.classList.contains("list")) {
+        toolbarMenu(
+          tool,
+          [
+            { icon: "list-ul", label: t("composer.ulist_title"), ordered: false },
+            { icon: "list-ol", label: t("composer.olist_title"), ordered: true },
+          ],
+          function (item) {
+            prefixLines(
+              area,
+              function (i) {
+                return item.ordered ? i + 1 + ". " : "- ";
+              },
+              t("composer.list_item")
+            );
+            emailState(root);
+            emailPreview(root);
+          }
+        );
+        return;
+      } else if (tool.classList.contains("link")) {
+        ui().unsupported("the insert hyperlink modal");
+        return;
+      } else if (tool.classList.contains("emoji")) {
+        ui().unsupported("the emoji picker in the email template editor");
+        return;
+      }
+      emailState(root);
+      emailPreview(root);
+      return;
+    }
+    var pill = event.target.closest("button.interpolation-keys__pill");
+    if (pill) {
+      var target = emailActive;
+      if (!target) {
+        return;
+      }
+      var token = "%{" + pill.textContent.trim() + "}";
+      var start = emailCursor ? emailCursor.start : target.value.length;
+      var end = emailCursor ? emailCursor.end : target.value.length;
+      target.focus();
+      target.setSelectionRange(start, end);
+      document.execCommand("insertText", false, token);
+      emailCursor = { start: target.selectionStart, end: target.selectionStart };
+      emailState(root);
+      emailPreview(root);
+      return;
+    }
+    var id = data.template.id;
+    if (event.target.closest(".save-changes")) {
+      var payload = {};
+      if (f.subject) {
+        payload.subject = f.subject.value;
+      }
+      if (f.body) {
+        payload.body = f.body.value;
+      }
+      setSaved(root, false);
+      ui()
+        .ajax("PUT", "/admin/email/templates/" + id, { email_template: payload })
+        .then(function (json) {
+          emailSaved = { subject: f.subject ? f.subject.value : null, body: f.body ? f.body.value : null };
+          if (json && json.email_template) {
+            data.template = json.email_template;
+            document.getElementById("email-template-data").textContent = JSON.stringify(data);
+            setEmailRevert(root, json.email_template.can_revert);
+          }
+          setSaved(root, true);
+          emailState(root);
+        })
+        .catch(ui().failed);
+      return;
+    }
+    if (event.target.closest(".revert-email-template")) {
+      setSaved(root, false);
+      Discourse.dialog.yesNoConfirm({
+        title: t("admin.customize.email_templates.revert_confirm"),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/email/templates/" + id)
+            .then(function (json) {
+              var tpl = json.email_template;
+              if (f.subject && typeof tpl.subject === "string") {
+                f.subject.value = tpl.subject;
+              }
+              if (f.body && typeof tpl.body === "string") {
+                f.body.value = tpl.body;
+              }
+              emailSaved = { subject: f.subject ? f.subject.value : null, body: f.body ? f.body.value : null };
+              data.template = tpl;
+              document.getElementById("email-template-data").textContent = JSON.stringify(data);
+              setEmailRevert(root, tpl.can_revert);
+              emailState(root);
+              emailPreview(root);
+            })
+            .catch(ui().failed);
+        },
+      });
+    }
+  });
+
+  function setEmailRevert(root, canRevert) {
+    var revert = root.querySelector(".revert-email-template");
+    if (canRevert && !revert) {
+      root
+        .querySelector(".save-button")
+        .insertAdjacentHTML(
+          "beforeend",
+          '<button class="btn revert-email-template" type="button"><span class="d-button-label">' +
+            escapeHtml(t("admin.customize.email_templates.revert")) +
+            "</span></button>"
+        );
+    } else if (!canRevert && revert) {
+      revert.remove();
+    }
+  }
+
   // --- robots.txt ----------------------------------------------------------
 
   // AdminCustomizeRobotsTxtController: the buffered text against the
@@ -1806,6 +2146,14 @@
     siteTextCursor = null;
     siteTextPage = 0;
     document.querySelectorAll(".admin-contents textarea.--expandable").forEach(expand);
+    var email = emailTemplate();
+    emailActive = null;
+    emailCursor = null;
+    if (email) {
+      var f = emailFields(email);
+      emailSaved = { subject: f.subject ? f.subject.value : null, body: f.body ? f.body.value : null };
+      emailPreview(email);
+    }
     if (siteTextsIndex()) {
       watchSiteTextMore();
     }

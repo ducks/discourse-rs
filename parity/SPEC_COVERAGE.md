@@ -67,6 +67,8 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Admin::UsersController#silence | 4 | 5 | 0 | 6 |
 | Admin::UsersController#unsilence | 1 | 5 | 0 | 0 |
 | Admin::EmailController#handle_mail | 3 | 3 | 0 | 0 |
+| Admin::EmailTemplatesController#update | 9 | 2 | 0 | 0 |
+| Admin::EmailTemplatesController#revert | 4 | 2 | 0 | 0 |
 | Admin::RobotsTxtController#show | 3 | 1 | 0 | 0 |
 | Admin::RobotsTxtController#update | 4 | 1 | 0 | 0 |
 | Admin::RobotsTxtController#reset | 3 | 1 | 0 | 0 |
@@ -1026,6 +1028,37 @@ each part's PUT) is in tests/direct_uploads.rs.
 | 338 | admin > normalizes invalid UTF-8 bytes | covered | incoming_invalid_utf8 (new) |
 | 349 | moderator > 404 | recordable | incoming_moderator |
 | 349 | non-staff > 404 | recordable | incoming_not_staff |
+
+## Admin::EmailTemplatesController#update
+
+`spec/requests/admin/email_templates_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 153 | admin > unknown template 404 | covered | admin_email/email_templates_update_invalid (new, matches) |
+| 170 | admin > invalid: the error messages | covered | admin_email/email_templates_update_invalid (new, matches) |
+| 188 | admin > invalid: no overrides created | covered | admin_email/email_templates_update_invalid (new, matches) |
+| 202 | admin > invalid: no staff log | covered | admin_email/email_templates_update_invalid (new, matches) |
+| 220 | admin > invalid subject, body or both, malformed keys | covered | admin_email/email_templates_update, email_templates_update_invalid (new, match) |
+| 307 | admin > valid: the updated template | covered | admin_email/email_templates_update (new, matches) |
+| 332 | admin > valid: overrides created | covered | admin_email/email_templates_update (new, matches) |
+| 346 | admin > valid: staff log entries | covered | admin_email/email_templates_update (new, matches) |
+| 373 | admin > plural keys: the subject left alone | covered | admin_email/email_templates_update_plural (new, matches) |
+| 396 | admin > plural keys: validation errors, no overrides | recordable | email_templates_update_plural_invalid |
+| 447 | moderator, non-staff > 404 | recordable | email_templates_update_not_admin |
+
+## Admin::EmailTemplatesController#revert
+
+`spec/requests/admin/email_templates_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 483 | admin > unknown template 404 | covered | admin_email/email_templates_revert_unknown |
+| 506 | admin > with overrides: the originals restored | covered | admin_email/email_templates_update (new, matches) |
+| 516 | admin > with overrides: the restored template | covered | admin_email/email_templates_update (new, matches) |
+| 533 | admin > with overrides: staff log entries | covered | admin_email/email_templates_update (new, matches) |
+| 555 | moderator > 404 | recordable | email_templates_revert_moderator |
+| 555 | non-staff > 404 | recordable | email_templates_revert_not_staff |
 
 ## Admin::RobotsTxtController#show
 

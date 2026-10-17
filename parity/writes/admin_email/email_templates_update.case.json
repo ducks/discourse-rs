@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/email/templates/user_notifications.signup", "params": {"email_template": {"subject": "Confirm your %{email_prefix} account", "body": "Hello!\n\nConfirm here: %{base_url}/u/activate-account/%{email_token}"}}},
+    {"method": "GET", "path": "/admin/email/templates.json"},
+    {"method": "PUT", "path": "/admin/email/templates/user_notifications.signup", "params": {"email_template": {"subject": "Again %{email_prefix}", "body": "Again: %{base_url}/u/activate-account/%{email_token}"}}},
+    {"method": "DELETE", "path": "/admin/email/templates/user_notifications.signup"}
+  ]
+}

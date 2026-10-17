@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/email/templates/test_mailer", "params": {"email_template": {"subject": "Test from %{nope}", "body": "Body is fine"}}},
+    {"method": "PUT", "path": "/admin/email/templates/test_mailer", "params": {"email_template": {"subject": "Fine subject", "body": ""}}},
+    {"method": "PUT", "path": "/admin/email/templates/test_mailer", "params": {"email_template": {"subject": "First", "body": "First body"}}},
+    {"method": "PUT", "path": "/admin/email/templates/test_mailer", "params": {"email_template": {"subject": "Second %{bogus}", "body": "Second body"}}},
+    {"method": "GET", "path": "/admin/email/templates.json"},
+    {"method": "PUT", "path": "/admin/email/templates/nope.nothing", "params": {"email_template": {"subject": "x", "body": "y"}}}
+  ]
+}
