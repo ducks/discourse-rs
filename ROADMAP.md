@@ -861,9 +861,28 @@ then by what running a forum needs (milestone 6). Briefs:
     Template, and the new and edit forms (the name, the quick insert
     fields, the validations modal, the YAML editor, save, cancel,
     delete). Refused, saying so: the form template preview (the
-    server's preview, Psych's YAML.dump, is not ported). Left: the
-    themes and components with their editor, theme site settings; the
-    base palette modal's ColorPalettePicker is a native select), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
+    server's preview, Psych's YAML.dump, is not ported). Then
+    feat/admin-shell-themes-list: /admin/config/customize/themes (the
+    themes' grid: ThemeCardPreview's screenshots and their toggle or
+    ThemesGridPlaceholder's drawings, the badges, Edit and the card menu's
+    set default, user selectable, update, preview and delete; the install
+    more card), /components (DFilterControls' name and status as the
+    route's params drawn by the server, ComponentRow with its parent
+    themes, enabled toggle and menu's preview, check for and install
+    updates, export and delete; the next pages; the empty list) and
+    /theme-site-settings (the current theme's help, the filter, the
+    settings with their overriding themes' tooltips); InstallThemeModal
+    (the popular themes, a file's upload, a git repository and create);
+    /admin/customize, /themes and /components on to them, the theme
+    card styles (theme-card.scss) now in the port's stylesheet. Refused,
+    saying so: the design wizard's launch; a git install still meets the
+    server's refusal of network fetches. Left, split three ways: a
+    theme's page /admin/customize/themes/:id (settings, colors,
+    components, uploads, translations, theme site settings), its code
+    editor for the html fields, then theme SCSS compiled through grass
+    and theme JS compiled (ThemeJavascriptCompiler) as their own items,
+    since the server refuses both today; the base palette modal's ColorPalettePicker is a native
+    select), 90g8. `feat/admin-shell-advanced` M, in part (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
     rollback, the read-only and archive mode toggles with their

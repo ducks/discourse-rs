@@ -3001,6 +3001,556 @@
     }
   });
 
+  // --- themes and components -------------------------------------------------
+
+  function themesArea() {
+    return document.querySelector(".admin-contents.admin-config.customize");
+  }
+
+  function themesData() {
+    var el = document.getElementById("themes-data");
+    return el ? JSON.parse(el.textContent) : { themes: [] };
+  }
+
+  function saveTheme(id, attrs) {
+    return ui().ajax("PUT", "/admin/themes/" + id + ".json", { theme: attrs });
+  }
+
+  function reloadPage() {
+    go(location.pathname.replace(ui().base(), "") + location.search);
+  }
+
+  // InstallThemeModal: popular, upload, git repository, create.
+  function installModal(components) {
+    var selection = "popular";
+    var installed = themesData().themes;
+    var sameUrl = function (theme, url) {
+      var themeUrl = theme.remote_theme && theme.remote_theme.remote_url;
+      return themeUrl && url && url.replace(/\.git$/, "") === themeUrl.replace(/\.git$/, "");
+    };
+    var close = null;
+    var state = { file: null, url: "", branch: "", name: "", type: components ? "components" : "themes", advanced: false };
+    function item(value, label, plus) {
+      return (
+        '<div class="install-theme-item install-theme-item__' +
+        value +
+        '"><input class="radio" id="' +
+        value +
+        '" name="install-items" type="radio" value="' +
+        value +
+        '"' +
+        (selection === value ? " checked" : "") +
+        '><label class="radio" for="' +
+        value +
+        '">' +
+        (plus ? ui().icon("plus") + " " : "") +
+        escapeHtml(t(label)) +
+        "</label>" +
+        ui().icon("angle-right") +
+        "</div>"
+      );
+    }
+    function content() {
+      if (selection === "popular") {
+        var list = (window.DiscoursePopularThemes || []).filter(function (p) {
+          return components ? p.component : !p.component;
+        });
+        return (
+          '<div class="popular-theme-items">' +
+          list
+            .map(function (p) {
+              var done = installed.some(function (th) {
+                return sameUrl(th, p.value);
+              });
+              return (
+                '<div class="popular-theme-item" data-name="' +
+                escapeHtml(p.name) +
+                '">' +
+                (p.screenshot_url
+                  ? '<div class="popular-theme-screenshot"><img alt="' +
+                    escapeHtml(p.name) +
+                    '" loading="lazy" src="' +
+                    escapeHtml(p.screenshot_url) +
+                    '"></div>'
+                  : "") +
+                '<div class="popular-theme-name"><a href="' +
+                escapeHtml(p.meta_url) +
+                '" rel="noopener noreferrer" target="_blank">' +
+                (p.component ? ui().icon("puzzle-piece") + " " : "") +
+                escapeHtml(p.name) +
+                '</a><div class="popular-theme-description">' +
+                escapeHtml(p.description || "") +
+                '</div></div><div class="popular-theme-buttons">' +
+                (done
+                  ? "<span>" + escapeHtml(t("admin.customize.theme.installed")) + "</span>"
+                  : '<button class="btn btn-icon-text btn-primary" data-url="' +
+                    escapeHtml(p.value) +
+                    '" type="button">' +
+                    ui().icon("upload") +
+                    '<span class="d-button-label">' +
+                    escapeHtml(t("admin.customize.theme.install")) +
+                    "</span></button>" +
+                    (p.preview
+                      ? '<a href="' +
+                        escapeHtml(p.preview) +
+                        '" rel="noopener noreferrer" target="_blank">' +
+                        ui().icon("desktop") +
+                        " " +
+                        escapeHtml(t("admin.customize.theme.preview")) +
+                        "</a>"
+                      : "")) +
+                "</div></div>"
+              );
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+      if (selection === "local") {
+        return (
+          '<div class="inputs"><input accept=".tar.gz,application/x-gzip,.zip,application/zip" id="file-input" type="file"><br><span class="description">' +
+          escapeHtml(t("admin.customize.theme.import_file_tip")) +
+          "</span></div>"
+        );
+      }
+      if (selection === "remote") {
+        return (
+          '<div class="inputs"><div class="repo"><div class="label">' +
+          escapeHtml(t("admin.customize.theme.import_web_tip")) +
+          '</div><input class="install-url" type="text" value="' +
+          escapeHtml(state.url) +
+          '"></div><button class="btn btn-text btn-default btn-small advanced-repo" type="button"><span class="d-button-label">' +
+          escapeHtml(t("admin.customize.theme.import_web_advanced")) +
+          "</span></button>" +
+          (state.advanced
+            ? '<div class="branch"><div class="label">' +
+              escapeHtml(t("admin.customize.theme.remote_branch")) +
+              '</div><input class="install-branch" placeholder="' +
+              escapeHtml(t("admin.customize.theme.remote_branch_placeholder")) +
+              '" type="text" value="' +
+              escapeHtml(state.branch) +
+              '"></div>'
+            : "") +
+          "</div>"
+        );
+      }
+      return (
+        '<div class="inputs"><div class="label">' +
+        escapeHtml(t("admin.customize.theme.create_name")) +
+        '</div><input class="install-theme-content__theme-name" placeholder="" type="text" value="' +
+        escapeHtml(state.name) +
+        '"><div class="label">' +
+        escapeHtml(t("admin.customize.theme.create_type")) +
+        '</div><select class="install-theme-type d-native-select"><option value="themes"' +
+        (state.type === "themes" ? " selected" : "") +
+        ">" +
+        escapeHtml(t("admin.customize.theme.theme")) +
+        '</option><option value="components"' +
+        (state.type === "components" ? " selected" : "") +
+        ">" +
+        escapeHtml(t("admin.customize.theme.component")) +
+        "</option></select></div>"
+      );
+    }
+    function disabled() {
+      return (
+        (selection === "remote" && !state.url) ||
+        (selection === "local" && !state.file) ||
+        (selection === "create" && state.name.length < 4)
+      );
+    }
+    function installed_(theme) {
+      if (close) {
+        close();
+      }
+      ui().toast(t("admin.customize.theme.install_success", { theme: theme.name }));
+      go("/admin/customize/" + (theme.component ? "components" : "themes") + "/" + theme.id);
+    }
+    function install(url) {
+      var request;
+      if (selection === "create") {
+        request = ui().ajax("POST", "/admin/themes.json", {
+          theme: { name: state.name, component: state.type === "components" },
+        });
+      } else if (selection === "local") {
+        var data = new FormData();
+        data.append("theme", state.file);
+        request = ui().ajax("POST", "/admin/themes/import.json", data);
+      } else {
+        request = ui().ajax("POST", "/admin/themes/import.json", {
+          remote: url || state.url,
+          branch: state.branch,
+        });
+      }
+      return request
+        .then(function (json) {
+          installed_(json.theme);
+        })
+        .catch(ui().failed);
+    }
+    function draw(modal) {
+      var body = modal.querySelector(".d-modal__body");
+      body.querySelector(".install-theme-content").innerHTML = content();
+      var footer = modal.querySelector(".d-modal__footer");
+      footer.hidden = selection === "popular";
+      var submit = footer.querySelector(".install-submit");
+      submit.disabled = disabled();
+      submit.querySelector(".d-button-label").textContent = t(
+        selection === "create" ? "admin.customize.theme.create" : "admin.customize.theme.install"
+      );
+    }
+    close = Discourse.modal.show({
+      className: "admin-install-theme-modal --large",
+      title: t("admin.customize.theme.install"),
+      body: function (body) {
+        body.classList.add("install-theme");
+        body.innerHTML =
+          '<div class="install-theme-items">' +
+          item("popular", "admin.customize.theme.install_popular") +
+          item("local", "admin.customize.theme.install_upload") +
+          item("remote", "admin.customize.theme.install_git_repo") +
+          item("create", "admin.customize.theme.install_create", true) +
+          '</div><div class="install-theme-content"></div>';
+        body.addEventListener("change", function (event) {
+          var modal = body.closest(".d-modal");
+          if (event.target.name === "install-items") {
+            selection = event.target.value;
+            draw(modal);
+          } else if (event.target.id === "file-input") {
+            state.file = event.target.files[0];
+            draw(modal);
+          } else if (event.target.classList.contains("install-theme-type")) {
+            state.type = event.target.value;
+          }
+        });
+        body.addEventListener("input", function (event) {
+          var modal = body.closest(".d-modal");
+          if (event.target.classList.contains("install-url")) {
+            state.url = event.target.value;
+          } else if (event.target.classList.contains("install-branch")) {
+            state.branch = event.target.value;
+          } else if (event.target.classList.contains("install-theme-content__theme-name")) {
+            state.name = event.target.value;
+          }
+          modal.querySelector(".install-submit").disabled = disabled();
+        });
+        body.addEventListener("click", function (event) {
+          var popular = event.target.closest(".popular-theme-buttons button[data-url]");
+          if (popular) {
+            install(popular.dataset.url);
+            return;
+          }
+          if (event.target.closest(".advanced-repo")) {
+            state.advanced = !state.advanced;
+            draw(body.closest(".d-modal"));
+          }
+        });
+      },
+      footer: function (footer, closeModal) {
+        footer.innerHTML =
+          '<button class="btn btn-text btn-primary install-submit" type="button"><span class="d-button-label"></span></button><button class="btn btn-text btn-flat d-modal-cancel" type="button"><span class="d-button-label">' +
+          escapeHtml(t("cancel")) +
+          "</span></button>";
+        footer.querySelector(".d-modal-cancel").addEventListener("click", closeModal);
+        footer.querySelector(".install-submit").addEventListener("click", function () {
+          install();
+        });
+        setTimeout(function () {
+          draw(footer.closest(".d-modal"));
+        }, 0);
+      },
+    });
+  }
+
+  // The theme cards' screenshot toggle.
+  document.addEventListener("click", function (event) {
+    var root = themesArea();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var toggle = event.target.closest(".theme-card-preview__screenshot-toggle");
+    if (toggle) {
+      var img = toggle.parentNode.querySelector("img");
+      var dark = img.getAttribute("src") === img.dataset.dark;
+      img.setAttribute("src", dark ? img.dataset.light : img.dataset.dark);
+      var label = t(
+        dark
+          ? "admin_onboarding_banner.select_theme.show_dark_screenshot"
+          : "admin_onboarding_banner.select_theme.show_light_screenshot"
+      );
+      toggle.title = label;
+      toggle.setAttribute("aria-label", label);
+      toggle.innerHTML = ui().icon(dark ? "moon" : "sun") + '<span aria-hidden="true">&#8203;</span>';
+      return;
+    }
+    if (
+      event.target.closest(".install-theme:not([data-page-action]), .theme-card__install-button")
+    ) {
+      installModal(false);
+      return;
+    }
+    if (event.target.closest(".install-component:not([data-page-action])")) {
+      installModal(true);
+      return;
+    }
+    if (event.target.closest(".admin-config-area-themes__design-wizard-button")) {
+      ui().unsupported("the design wizard");
+      return;
+    }
+    // A component's enabled toggle.
+    var switcher = event.target.closest(".d-toggle-switch__checkbox.admin-config-components__toggle");
+    if (switcher) {
+      var row = switcher.closest("[data-component-id]");
+      var on = switcher.getAttribute("aria-checked") !== "true";
+      switcher.disabled = true;
+      saveTheme(row.dataset.componentId, { enabled: on })
+        .then(function (json) {
+          var enabled = json.theme.enabled;
+          switcher.setAttribute("aria-checked", String(enabled));
+          switcher.nextElementSibling.innerHTML = enabled ? ui().icon("check") : "";
+        })
+        .catch(ui().failed)
+        .then(function () {
+          switcher.disabled = false;
+        });
+    }
+  });
+
+  // The cards' and rows' menus (their content in the float).
+  ui().menus(function (trigger, content) {
+    var holder = trigger.closest("[data-theme-id], [data-component-id]");
+    if (holder && trigger.closest(".admin-config.customize")) {
+      content.dataset.themeId = holder.dataset.themeId || holder.dataset.componentId;
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var root = themesArea();
+    var menu = event.target.closest && event.target.closest("[data-theme-id] .dropdown-menu");
+    if (!root || !menu || root.contains(menu)) {
+      return;
+    }
+    var id = menu.closest("[data-theme-id]").dataset.themeId;
+    var button = event.target.closest("button");
+    if (!button) {
+      return;
+    }
+    if (Discourse.float) {
+      Discourse.float.close("theme-card__footer-menu");
+      Discourse.float.close("component-menu");
+    }
+    var card = root.querySelector('[data-theme-id="' + id + '"]');
+    var name = card ? (card.querySelector(".theme-card__title, .d-table__overview-name") || {}).textContent : "";
+    if (button.classList.contains("set-default")) {
+      saveTheme(id, { default: true })
+        .then(function () {
+          ui().toast(t("admin.customize.theme.set_default_success", { theme: name }));
+          location.reload();
+        })
+        .catch(ui().failed);
+    } else if (button.classList.contains("set-selectable")) {
+      saveTheme(id, { user_selectable: card.dataset.userSelectable !== "true" })
+        .then(function () {
+          ui().toast(t("admin.customize.theme.setting_was_saved"));
+          reloadPage();
+        })
+        .catch(ui().failed);
+    } else if (button.classList.contains("update") || button.classList.contains("admin-config-components__update")) {
+      saveTheme(id, { remote_update: true })
+        .then(function () {
+          ui().toast(t("admin.customize.theme.update_success", { theme: name }));
+          reloadPage();
+        })
+        .catch(ui().failed);
+    } else if (button.classList.contains("admin-config-components__check-updates")) {
+      saveTheme(id, { remote_check: true })
+        .then(function (json) {
+          var behind = json.theme.remote_theme && json.theme.remote_theme.commits_behind > 0;
+          ui().toast(
+            t(
+              behind
+                ? "admin.config_areas.themes_and_components.components.new_update_for_component"
+                : "admin.config_areas.themes_and_components.components.component_up_to_date",
+              { name: name }
+            )
+          );
+          if (behind) {
+            reloadPage();
+          }
+        })
+        .catch(ui().failed);
+    } else if (button.classList.contains("delete") || button.classList.contains("admin-config-components__delete")) {
+      var component = button.classList.contains("admin-config-components__delete");
+      Discourse.dialog.deleteConfirm({
+        title: component
+          ? t("admin.config_areas.themes_and_components.components.delete_confirm", { name: name })
+          : t("admin.customize.delete_confirm", { theme_name: name }),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/themes/" + id)
+            .then(function () {
+              ui().toast(
+                component
+                  ? t("admin.config_areas.themes_and_components.components.deleted_successfully", { name: name })
+                  : t("admin.customize.theme.delete_success", { theme: name })
+              );
+              reloadPage();
+            })
+            .catch(ui().failed);
+        },
+      });
+    }
+  });
+
+  // The components' filters (the route's filter and status params, the
+  // list drawn again by the server) and their next pages.
+  var componentsTimer = null;
+
+  function componentsRoot() {
+    return document.querySelector(".admin-contents.admin-config.customize.components");
+  }
+
+  function filterComponents() {
+    var root = componentsRoot();
+    var input = root.querySelector(".d-filter-controls__input");
+    var select = root.querySelector(".d-filter-controls__dropdown");
+    var params = new URLSearchParams();
+    if (input && input.value) {
+      params.set("name", input.value);
+    }
+    if (select && select.value !== "all") {
+      params.set("status", select.value);
+    }
+    history.replaceState(history.state, "", location.pathname + (params.toString() ? "?" + params : ""));
+    fetchPage(location.pathname.replace(ui().base(), "") + (params.toString() ? "?" + params : "")).then(function (doc) {
+      var fresh = doc.querySelector(".admin-config.customize.components .container");
+      var mine = componentsRoot() && componentsRoot().querySelector(".container");
+      if (!fresh || !mine) {
+        return;
+      }
+      mine.querySelectorAll("[data-components-list], .d-filter-controls__no-results").forEach(function (el) {
+        el.remove();
+      });
+      var controls = mine.querySelector(".d-filter-controls");
+      fresh.querySelectorAll("[data-components-list], .d-filter-controls__no-results").forEach(function (el) {
+        controls.insertAdjacentElement("afterend", document.importNode(el, true));
+      });
+      var reset = controls.querySelector(".d-filter-controls__reset");
+      reset.disabled = !params.toString();
+      watchComponentsMore();
+    });
+  }
+
+  document.addEventListener("input", function (event) {
+    if (componentsRoot() && event.target.classList.contains("d-filter-controls__input")) {
+      clearTimeout(componentsTimer);
+      componentsTimer = setTimeout(filterComponents, 500);
+    }
+    // The theme site settings' filter (DFilterControls over the rows).
+    var settings = document.querySelector(".theme-site-settings");
+    if (settings && settings.contains(event.target) && event.target.classList.contains("d-filter-controls__input")) {
+      filterThemeSiteSettings(settings);
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    if (componentsRoot() && event.target.classList.contains("d-filter-controls__dropdown")) {
+      filterComponents();
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var root = componentsRoot();
+    if (root && event.target.closest(".d-filter-controls__reset, .d-filter-controls__reset-button")) {
+      var input = root.querySelector(".d-filter-controls__input");
+      var select = root.querySelector(".d-filter-controls__dropdown");
+      if (input) {
+        input.value = "";
+      }
+      if (select) {
+        select.value = "all";
+      }
+      filterComponents();
+      return;
+    }
+    var settings = document.querySelector(".theme-site-settings");
+    if (settings && event.target.closest(".theme-site-settings .d-filter-controls__reset")) {
+      settings.querySelector(".d-filter-controls__input").value = "";
+      filterThemeSiteSettings(settings);
+    }
+  });
+
+  function filterThemeSiteSettings(root) {
+    var input = root.querySelector(".d-filter-controls__input");
+    var text = input.value.toLowerCase();
+    var shown = 0;
+    root.querySelectorAll("tr[data-search]").forEach(function (row) {
+      var match = !text || row.dataset.search.indexOf(text) !== -1;
+      row.hidden = !match;
+      if (match) {
+        shown += 1;
+      }
+    });
+    root.querySelector(".d-filter-controls__reset").disabled = !text;
+    var none = root.querySelector(".d-filter-controls__no-results");
+    if (!shown && !none) {
+      root
+        .querySelector("table")
+        .insertAdjacentHTML(
+          "afterend",
+          '<div class="d-filter-controls__no-results"><p>' +
+            escapeHtml(t("admin.theme_site_settings.filter_no_results")) +
+            "</p></div>"
+        );
+    } else if (shown && none) {
+      none.remove();
+    }
+    root.querySelector("table").hidden = !shown;
+  }
+
+  var componentsObserver = null;
+  var componentsPage = 0;
+
+  function watchComponentsMore() {
+    if (componentsObserver) {
+      componentsObserver.disconnect();
+      componentsObserver = null;
+    }
+    componentsPage = 0;
+    var root = componentsRoot();
+    var sentinel = root && root.querySelector(".load-more-sentinel");
+    if (!sentinel || !window.IntersectionObserver) {
+      return;
+    }
+    var busy = false;
+    componentsObserver = new IntersectionObserver(
+      function (entries) {
+        if (!entries[0].isIntersecting || busy || !sentinel.hasAttribute("data-has-more")) {
+          return;
+        }
+        busy = true;
+        var params = new URLSearchParams(location.search);
+        params.set("page", String(componentsPage + 1));
+        fetchPage(location.pathname.replace(ui().base(), "") + "?" + params)
+          .then(function (doc) {
+            componentsPage += 1;
+            var body = root.querySelector(".component-list tbody");
+            doc.querySelectorAll("tbody tr").forEach(function (tr) {
+              body.appendChild(document.importNode(tr, true));
+            });
+            var more = doc.querySelector(".load-more-sentinel");
+            sentinel.toggleAttribute("data-has-more", !!(more && more.hasAttribute("data-has-more")));
+          })
+          .catch(function () {})
+          .then(function () {
+            busy = false;
+          });
+      },
+      { rootMargin: "0px 0px 250px 0px" }
+    );
+    componentsObserver.observe(sentinel);
+  }
+
   // --- robots.txt ----------------------------------------------------------
 
   // AdminCustomizeRobotsTxtController: the buffered text against the
@@ -3102,6 +3652,9 @@
     paletteChanged = {};
     emailStyleChanged = false;
     setupAces();
+    if (componentsRoot()) {
+      watchComponentsMore();
+    }
     var email = emailTemplate();
     emailActive = null;
     emailCursor = null;

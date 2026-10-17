@@ -311,6 +311,263 @@ pub(super) async fn form_templates_page(
     shell.render(state, uri, "", main, "admin-customize.js", StatusCode::OK)
 }
 
+/// The strings the themes area's pages and its install modal read.
+const THEMES_STRINGS: &[&str] = &[
+    "admin.customize.theme.install",
+    "admin.customize.theme.install_popular",
+    "admin.customize.theme.install_upload",
+    "admin.customize.theme.install_git_repo",
+    "admin.customize.theme.install_create",
+    "admin.customize.theme.import_file_tip",
+    "admin.customize.theme.import_web_tip",
+    "admin.customize.theme.import_web_advanced",
+    "admin.customize.theme.remote_branch",
+    "admin.customize.theme.remote_branch_placeholder",
+    "admin.customize.theme.create_name",
+    "admin.customize.theme.create_type",
+    "admin.customize.theme.theme",
+    "admin.customize.theme.component",
+    "admin.customize.theme.installed",
+    "admin.customize.theme.preview",
+    "admin.customize.theme.install_success",
+    "admin.customize.theme.set_default_success",
+    "admin.customize.theme.setting_was_saved",
+    "admin.customize.theme.update_success",
+    "admin.customize.theme.delete_success",
+    "admin.customize.theme.default_theme",
+    "admin.customize.theme.set_default_theme",
+    "admin.customize.theme.user_selectable_button_label",
+    "admin.customize.theme.user_selectable_unavailable_button_label",
+    "admin.customize.theme.no_themes_found",
+    "admin.customize.delete_confirm",
+    "admin.customize.new_theme",
+    "admin_onboarding_banner.select_theme.show_light_screenshot",
+    "admin_onboarding_banner.select_theme.show_dark_screenshot",
+    "admin.config_areas.themes_and_components.components.delete_confirm",
+    "admin.config_areas.themes_and_components.components.deleted_successfully",
+    "admin.config_areas.themes_and_components.components.new_update_for_component",
+    "admin.config_areas.themes_and_components.components.component_up_to_date",
+    "admin.config_areas.themes_and_components.components.updated_successfully",
+    "admin.theme_site_settings.filter_no_results",
+    "cancel",
+    "generic_error",
+];
+
+/// The themes area's pages share their header; `outlet` is the tab's.
+async fn themes_area_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    tab: crate::admin_themes_view::Tab,
+    outlet: impl FnOnce(&crate::admin_view::AdminCx, &Shell) -> Result<String, AppError>,
+    data: String,
+) -> Result<Response, AppError> {
+    use crate::admin_themes_view::Tab;
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_themes_and_components",
+    )
+    .await?;
+    drop(conn);
+    let cx = shell.cx(state);
+    let inner = outlet(&cx, &shell)?;
+    let strings = crate::admin_ui::strings(&cx, "admin-customize-strings", THEMES_STRINGS);
+    // The install modal's popular themes.
+    let popular = format!(
+        "<script src=\"{}\"></script>",
+        crate::assets::url(cx.base_path, "popular-themes.js")
+    );
+    let content = format!(
+        "{}{data}{popular}{strings}",
+        crate::admin_themes_view::page(&cx, tab, &inner)
+    );
+    let (class, token) = match tab {
+        Tab::Themes => (
+            "admin-config customize themes",
+            Some("admin.config_areas.themes_and_components.themes.title"),
+        ),
+        Tab::Components => (
+            "admin-config customize components",
+            Some("admin.config_areas.themes_and_components.components.title"),
+        ),
+        Tab::ThemeSiteSettings => ("admin-config customize theme-site-settings", None),
+    };
+    let area = crate::admin_view::t(cx.i18n, "admin.config.themes_and_components.title");
+    let title = match token {
+        Some(k) => format!("{} - {area}", crate::admin_view::t(cx.i18n, k)),
+        None => area,
+    };
+    let main = crate::admin_view::contents(class, &content);
+    shell.render(
+        state,
+        uri,
+        &title,
+        main,
+        "admin-customize.js",
+        StatusCode::OK,
+    )
+}
+
+/// GET /admin/config/customize/themes as the page over its document.
+pub(super) async fn themes_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let data = format!(
+        "<script type=\"application/json\" id=\"themes-data\">{}</script>",
+        doc.to_string().replace('<', "\\u003c")
+    );
+    themes_area_page(
+        state,
+        guardian,
+        headers,
+        uri,
+        crate::admin_themes_view::Tab::Themes,
+        |cx, shell| {
+            Ok(crate::admin_themes_view::themes(
+                cx,
+                doc,
+                shell.admin.can_run_design_wizard,
+            ))
+        },
+        data,
+    )
+    .await
+}
+
+/// GET /admin/config/customize/components as the page over the first
+/// page of its document; `filter` and `status` are the route's query
+/// params, and `page` (not a route param) draws a later page's rows, which
+/// admin-customize.js asks for as the list scrolls.
+pub(super) async fn components_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let query = crate::params::parse_query(uri.query().unwrap_or(""));
+    let param = |k: &str| crate::params::string(&query, k).unwrap_or_default();
+    let name = param("name");
+    let status = param("status");
+    if !param("page").is_empty() && param("page") != "0" {
+        let mut conn = state.pool.acquire().await?;
+        let shell = Shell::load(
+            &mut conn,
+            state,
+            guardian,
+            headers,
+            "admin_themes_and_components",
+        )
+        .await?;
+        drop(conn);
+        let cx = shell.cx(state);
+        return Ok(axum::response::Html(format!(
+            "<table><tbody>{}</tbody></table><div class=\"load-more-sentinel\"{}></div>",
+            crate::admin_themes_view::component_rows(&cx, doc),
+            if doc["has_more"].as_bool() == Some(true) {
+                " data-has-more=\"\""
+            } else {
+                ""
+            }
+        ))
+        .into_response());
+    }
+    let filtered = !name.is_empty() || (!status.is_empty() && status != "all");
+    let any = filtered || doc["components"].as_array().is_some_and(|c| !c.is_empty());
+    themes_area_page(
+        state,
+        guardian,
+        headers,
+        uri,
+        crate::admin_themes_view::Tab::Components,
+        |cx, _| {
+            Ok(crate::admin_themes_view::components(
+                cx, doc, &name, &status, any,
+            ))
+        },
+        String::new(),
+    )
+    .await
+}
+
+/// GET /admin/config/customize/theme-site-settings as the page over its
+/// document, the current theme the site's default.
+pub(super) async fn theme_site_settings_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    doc: &serde_json::Value,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = crate::site_settings::SiteSettings::load(
+        &mut conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
+    let default_id = settings.get("default_theme_id")?.to_i();
+    let current: Option<(i32, String)> =
+        sqlx::query_as("SELECT id, name FROM themes WHERE id = $1")
+            .bind(default_id as i32)
+            .fetch_optional(&mut *conn)
+            .await?;
+    drop(conn);
+    themes_area_page(
+        state,
+        guardian,
+        headers,
+        uri,
+        crate::admin_themes_view::Tab::ThemeSiteSettings,
+        |cx, _| {
+            Ok(crate::admin_themes_view::theme_site_settings(
+                cx,
+                doc,
+                current
+                    .as_ref()
+                    .map(|(id, name)| (i64::from(*id), name.as_str())),
+            ))
+        },
+        String::new(),
+    )
+    .await
+}
+
+/// GET /admin/customize, /admin/customize/themes, /components and
+/// /theme-components: themes#index's JSON (color_schemes#index's for the
+/// bare path); a page request goes on to the themes, as the
+/// adminCustomize and adminCustomizeThemes index routes do.
+pub async fn customize_themes(
+    state: axum::extract::State<AppState>,
+    guardian: crate::session::current::AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.0.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if super::admin_pages::wants_json(&uri, &headers) {
+        if uri.path().trim_end_matches(".json") == "/admin/customize" {
+            return super::color_schemes::index(state, guardian, headers, uri).await;
+        }
+        return super::themes::index(state, guardian, headers, uri).await;
+    }
+    Ok(axum::response::Redirect::to(&format!(
+        "{}/admin/config/customize/themes",
+        state.config.globals.relative_url_root()
+    ))
+    .into_response())
+}
+
 /// GET /admin/customize/robots as the page (adminCustomizeRobotsTxt) from
 /// the controller's document. The route has no title token.
 pub(super) async fn robots_page(

@@ -441,3 +441,60 @@ async fn the_email_style_and_form_templates_pages() {
     let (status, _) = admin.page("/admin/customize/form-templates/9999").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn the_themes_and_components_pages() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, html) = admin.page("/admin/config/customize/themes").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<title>Themes - Themes &#38; components - Admin - "));
+    assert!(html.contains("<div class=\"admin-contents admin-config customize themes\">"));
+    assert!(html.contains("<section class=\"admin-config-area-card theme-card --default foundation\" data-theme-id=\"-1\""));
+    assert!(html.contains("theme-card --install-more"));
+    assert!(html.contains(
+        "<a class=\"theme-card__title\" href=\"/admin/customize/themes/-2\">Horizon</a>"
+    ));
+    // Components: the empty list, then a component's row.
+    let (_, html) = admin.page("/admin/config/customize/components").await;
+    assert!(html.contains("No components installed."));
+    sqlx::query(
+        "INSERT INTO themes (name, user_id, component, enabled, created_at, updated_at) VALUES ('Widget', -1, true, true, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, html) = admin.page("/admin/config/customize/components").await;
+    assert!(html.contains("<div class=\"d-table__overview-name\">Widget</div>"));
+    assert!(
+        html.contains("<div class=\"status-label-text\">Unused</div>")
+            || html.contains("status-label --inactive")
+    );
+    assert!(html.contains("admin-config-components__toggle"));
+    let (_, html) = admin
+        .page("/admin/config/customize/components?name=nothing")
+        .await;
+    assert!(html.contains("d-filter-controls__no-results"));
+    let (_, html) = admin
+        .page("/admin/config/customize/theme-site-settings")
+        .await;
+    assert!(html.contains("data-setting-name=\"search_experience\""));
+    assert!(html.contains("<a class=\"theme-link\" data-theme-id=\"-2\" href=\"/admin/customize/themes/-2\">Horizon</a>"));
+    // The old paths go on to the themes.
+    for path in [
+        "/admin/customize",
+        "/admin/customize/themes",
+        "/admin/customize/components",
+    ] {
+        let (status, location) = admin.page(path).await;
+        assert_eq!(status, StatusCode::SEE_OTHER, "{path}");
+        assert_eq!(location, "/admin/config/customize/themes");
+    }
+    // The JSON is unchanged.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/config/customize/themes.json", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"themes\":"));
+}

@@ -1555,6 +1555,31 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(themes::update_site_setting),
         )
         .route("/admin/config/customize/themes", get(themes::config_themes))
+        .route("/admin/customize", get(admin_customize::customize_themes))
+        .route(
+            "/admin/customize.json",
+            get(admin_customize::customize_themes),
+        )
+        .route(
+            "/admin/customize/themes",
+            get(admin_customize::customize_themes),
+        )
+        .route(
+            "/admin/customize/themes.json",
+            get(admin_customize::customize_themes),
+        )
+        .route(
+            "/admin/customize/components",
+            get(admin_customize::customize_themes),
+        )
+        .route(
+            "/admin/customize/theme-components",
+            get(admin_customize::customize_themes),
+        )
+        .route(
+            "/admin/config/customize",
+            get(admin_customize::customize_themes),
+        )
         .route(
             "/admin/config/customize/themes.json",
             get(themes::config_themes),
@@ -2497,6 +2522,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-emoji.js", get(asset))
         .route("/assets/admin-branding.js", get(asset))
         .route("/assets/admin-customize.js", get(asset))
+        .route("/assets/popular-themes.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))
