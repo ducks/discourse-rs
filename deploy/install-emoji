@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Install the image sets matching the vendored discourse-emojis metadata.
+# EMOJI_GEM permits an offline install from a cached, checksum-verified gem.
+set -euo pipefail
+
+if [ "$#" -ne 1 ] || [ -z "$1" ]; then
+  echo "usage: $0 <public-directory>" >&2
+  exit 64
+fi
+
+version=1.0.46
+checksum=e986526ec835eb8de1640da6a853767272a3fc15b756666f072ab95103f3c93c
+public="$1"
+umask 022
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+if [ -n "${EMOJI_GEM:-}" ]; then
+  cp "$EMOJI_GEM" "$work/emoji.gem"
+else
+  curl --disable --fail --show-error --silent --location --proto '=https' --proto-redir '=https' \
+    --connect-timeout 10 --max-time 180 --retry 3 \
+    "https://rubygems.org/downloads/discourse-emojis-$version.gem" -o "$work/emoji.gem"
+fi
+if ! printf '%s  %s\n' "$checksum" "$work/emoji.gem" | sha256sum --check --status; then
+  echo "discourse-emojis $version checksum mismatch; no assets installed" >&2
+  exit 1
+fi
+tar -xOf "$work/emoji.gem" data.tar.gz > "$work/data.tar.gz"
+tar -xzf "$work/data.tar.gz" --no-same-owner --no-same-permissions -C "$work" dist/emoji
+test -f "$work/dist/emoji/twitter/heart.png"
+mkdir -p "$public/images"
+cp -R "$work/dist/emoji" "$public/images/"
+echo "Installed discourse-emojis $version to $public/images/emoji"

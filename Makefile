@@ -1,7 +1,7 @@
 .PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv reset-reference \
 	record-pretty-text \
-	bench bench-startup release-build install
+	bench bench-startup release-build install emoji-assets
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -24,6 +24,7 @@ DEV_DB ?= discourse_rs_development
 TEST_DB ?= discourse_rs_test
 DISCOURSE ?= $(HOME)/discourse/discourse
 RS_URL ?= http://127.0.0.1:8080
+PUBLIC_DIR ?= public
 
 help:
 	@echo "discourse-rs Makefile"
@@ -46,6 +47,7 @@ help:
 	@echo "  make vendor-discourse [DISCOURSE=path] [REF=sha] - Vendor schema + settings from Discourse"
 	@echo "  make db-load [FORCE=1]             - Load schema + seeds into $(DEV_DB)"
 	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
+	@echo "  make emoji-assets [PUBLIC_DIR=path] - Install pinned emoji images (no Rails needed)"
 	@echo "  make snapshot-dv AGENT=name        - Regenerate seed/fresh_install.sql from a dv agent"
 	@echo "  make reset-reference AGENT=name    - Put a dv agent's database back to the seed (before recording)"
 	@echo "  make record-pretty-text AGENT=name - Record Rails' cooking of the corpus into parity/pretty_text"
@@ -146,6 +148,9 @@ install-hooks:
 # exists). Does not build: run `make build` first, as yourself.
 install:
 	deploy/install target/release/discourse-rs
+
+emoji-assets:
+	deploy/install-emoji "$(PUBLIC_DIR)"
 
 vendor-discourse:
 	scripts/vendor-discourse $(DISCOURSE) $(REF)

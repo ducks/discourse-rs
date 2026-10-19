@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Exercise the real package installer; set EMOJI_GEM to use a cached gem offline.
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+version="$(sed -n 's/^version=//p' "$root/deploy/install-emoji")"
+grep -qx "discourse_emojis=$version" "$root/vendor/discourse/DISCOURSE_REF"
+
+# A rejected package must leave the public directory untouched.
+printf 'invalid package\n' > "$work/invalid.gem"
+if EMOJI_GEM="$work/invalid.gem" "$root/deploy/install-emoji" "$work/rejected" > "$work/error" 2>&1; then
+  echo "installer accepted a corrupt gem" >&2
+  exit 1
+fi
+grep -q 'checksum mismatch' "$work/error"
+test ! -e "$work/rejected"
+
+mkdir -p "$work/public/uploads"
+printf 'existing upload\n' > "$work/public/uploads/keep"
+"$root/deploy/install-emoji" "$work/public"
+for path in twitter/heart.png twitter/speaking_head.png twitter/wave/2.png google/heart.png; do
+  file="$work/public/images/emoji/$path"
+  test -s "$file"
+  signature="$(od -An -tx1 -N8 "$file" | tr -d ' \n')"
+  test "$signature" = 89504e470d0a1a0a
+done
+test "$(cat "$work/public/uploads/keep")" = 'existing upload'
+echo "Emoji package version, checksum rejection, PNGs, skin tones, and upload preservation passed"

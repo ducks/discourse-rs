@@ -41,6 +41,7 @@ nix-shell          # toolchain, Postgres on port 5442, DATABASE_URL/TEST_DATABAS
 db_start
 make db-load       # schema + seeds -> discourse_rs_development (FORCE=1 to replace)
 make db-test       # schema + seeds -> discourse_rs_test (template for tests)
+make emoji-assets  # pinned emoji image sets -> public/images/emoji
 cargo run          # http://127.0.0.1:8080  (BIND_ADDR to change)
 make test          # cargo nextest run: test binaries side by side
 ```
@@ -358,6 +359,12 @@ in other zones.
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point
 it at a Discourse `public/` directory or a restored backup's.
 
+Backups do not include standard emoji images. Run `make emoji-assets
+PUBLIC_DIR=/path/to/public` to install all image sets from the checksum-pinned
+`discourse-emojis` gem. This needs curl, tar, gzip, and sha256sum, not Ruby or a
+Rails checkout. For an offline install, set `EMOJI_GEM=/path/to/discourse-emojis-1.0.46.gem`;
+the same checksum is required. Emoji uploads remain under `/uploads`.
+
 Letter avatars (`/letter_avatar_proxy/...`, the default
 `external_system_avatars_url`) are fetched once from the avatar CDN
 (`LETTER_AVATAR_CDN`, default `https://avatars.discourse-cdn.com`) and cached
@@ -414,6 +421,7 @@ release has a static x86_64 Linux binary attached, and its tarball carries
 tar xzf discourse-rs-v<version>-x86_64-linux.tar.gz
 cd discourse-rs-v<version>-x86_64-linux
 sudo deploy/install        # from a checkout: make build && sudo make install
+sudo deploy/install-emoji /var/lib/discourse-rs/public
 ```
 
 That installs `/usr/local/bin/discourse-rs`, `discourse-rs.service`, the
