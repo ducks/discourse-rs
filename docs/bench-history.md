@@ -1,0 +1,1229 @@
+# Benchmark history
+
+See [BENCH.md](../BENCH.md) for the summary and reproduction commands.
+The original experiment notes and tables follow in their original order.
+References to “main,” missing features, and next steps describe each run at its date.
+
+# Bench
+
+`make bench TARGETS="rs=URL rails=URL"` compares request rates and
+latencies per endpoint (scripts/bench, oha); `make bench-startup` measures
+the release binary's size, cold start and RSS (scripts/bench-startup).
+Runs are dated below, newest first. Read the caveats before the numbers.
+
+Caveats that apply to every run:
+
+- The reference must be a production-mode Discourse serving the same
+  backup. A `dv` development agent runs with code reloading, mini-profiler
+  and unprecompiled assets, and is several times slower than production on
+  the same machine; rows labelled `rails-dev` are that, and only show the
+  order of magnitude.
+- Rails caches anonymous GETs in redis for 60 s (AnonymousCache). Each
+  Rails endpoint is measured twice: with the cache (`cached`) and with the
+  `_bypass_cache` cookie (`uncached`). In development the two agree, which
+  suggests the cache is not active there.
+- Rails rate-limits anonymous search at 2/s per IP: the `/search.json`
+  rows for Rails count 429s in non-2xx and measure the limiter.
+- HTML rows compare different products: discourse-rs renders the page,
+  Rails serves the Ember shell (the topics arrive by XHR afterwards).
+- Same box, same Postgres, client and servers all local; keep-alive off so
+  each request carries a connection.
+
+## 2026-10-16, the topic page's queries, and where its time goes
+
+perf/topic-page-queries and perf/topic-page-chrome (ROADMAP 201,
+extended to the whole topic page). Release builds of main (61c1428) and
+of each branch, each on its own fresh db-load of the seed, RAILS_ENV
+production, rate limits off, user1, c=16, 5 s, in one scripts/bench run
+(it alternates per endpoint). The machine was shared with another
+agent's builds throughout (load 9 to 18 on 16 cores), so absolute
+numbers are below the 2026-10-15 ones; compare within a table only.
+
+What the profile showed for the logged-in topic page (perf on the
+server and on the Postgres backends, c7b2fa8, which serves it at the
+same rate as main): of the CPU each request costs, Postgres took about
+56 ms and the server 21 ms (brotli at level 5 about 8 ms of it, the
+page being 200 KB of which the inline SVG sprite is 116 KB). 64% of
+Postgres's time was planning. The page runs 114 distinct statements
+and sqlx keeps 100 prepared statements per connection, so walking the
+page in order evicts every statement before its next use: each query is
+parsed and planned again on every request. The JSON (64 distinct
+statements) and /latest (74) fit, which is why the logged-in HTML topic
+page alone sat near 100 req/s; the anonymous page (89 queries) serves
+about 390.
+
+The branches cut the page's queries (the per-post rows in one query
+each, Site's per-category reads, the solved list keys, repeated reads
+of site_setting_groups, user_options, the TopicQuery user scope and the
+list categories); the documents are unchanged:
+
+| queries per request (user1) | main | queries | chrome |
+|---|---:|---:|---:|
+| /t/welcome-to-discourse/5 | 169 | 153 | 143 |
+| /t/welcome-to-discourse/5.json | 92 | 85 | 79 |
+| /t/parity-fixture-replies-and-posters/35 (5 posts) | 187 | 155 | 145 |
+| /latest | 111 | 100 | 96 |
+| /site.json | 47 | 38 | 38 |
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | main (user) | 5350 | 2.9 | 5 | 0 |
+| /srv/status | queries (user) | 5316 | 2.9 | 5 | 0 |
+| /srv/status | chrome (user) | 5271 | 2.9 | 5.2 | 0 |
+| /latest.json | main (user) | 1465 | 10.6 | 17 | 0 |
+| /latest.json | queries (user) | 1552 | 10 | 15.5 | 0 |
+| /latest.json | chrome (user) | 1493 | 10.4 | 17.4 | 0 |
+| /latest | main (user) | 359 | 43.5 | 81.6 | 0 |
+| /latest | queries (user) | 331 | 47.5 | 90.9 | 0 |
+| /latest | chrome (user) | 382 | 40.8 | 72.8 | 0 |
+| /t/welcome-to-discourse/5.json | main (user) | 567 | 28 | 46 | 0 |
+| /t/welcome-to-discourse/5.json | queries (user) | 571 | 27.9 | 46.8 | 0 |
+| /t/welcome-to-discourse/5.json | chrome (user) | 583 | 26.9 | 49.7 | 0 |
+| /t/welcome-to-discourse/5 | main (user) | 99 | 163.4 | 207.3 | 0 |
+| /t/welcome-to-discourse/5 | queries (user) | 100 | 162.2 | 201.8 | 0 |
+| /t/welcome-to-discourse/5 | chrome (user) | 103 | 161.3 | 196.7 | 0 |
+
+Four more alternating 5 s runs of the topic rows (medians): the page
+100.5, 101.9 and 102.7 req/s (p50 163.9, 160.4, 159.9 ms), the JSON
+571, 586 and 599 req/s. While the statement cache thrashes, fewer
+queries help little: the page still runs 114 distinct statements and
+stays bound by re-planning.
+
+The same three binaries with `statement-cache-capacity=1000` in
+DATABASE_URL (sqlx's per-connection cache; Rails keeps 1000 per
+connection), three alternating runs each, medians:
+
+| endpoint | main | queries | chrome |
+|---|---:|---:|---:|
+| /t/welcome-to-discourse/5 | 253 | 260 | 264 |
+| /t/welcome-to-discourse/5.json | 568 | 582 | 576 |
+| /latest | 360 | 370 | 378 |
+| /latest.json | 1441 | 1476 | 1475 |
+| /srv/status | 5255 | 5275 | 5271 |
+
+The cache alone takes the topic page from 100 to 253 req/s; with it,
+the branches add 3 to 5% on the HTML pages. What is left on the
+topic page then: Postgres 11 to 13 ms a request (custom plans are still
+built for the parameterized statements: planning is 27% of it;
+plan_cache_mode=force_generic_plan per session took about a tenth off),
+the server 15 ms, half of it brotli (the same page without
+Accept-Encoding: 345 against 265 req/s).
+
+perf/statement-cache then sets the capacity on every site's pool
+(multisite::connect_pool, 1000 per connection as ActiveRecord keeps).
+Against main 69d014e, fresh seed, user1, c=16, one scripts/bench run
+(load 12 to 16 from other builds, so lower absolute numbers again):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | main (user) | 4258 | 3.7 | 6.3 | 0 |
+| /srv/status | cache (user) | 4643 | 3.4 | 7.3 | 0 |
+| /latest.json | main (user) | 1199 | 13 | 21.2 | 0 |
+| /latest.json | cache (user) | 1219 | 12.8 | 21.1 | 0 |
+| /latest | main (user) | 304 | 51.6 | 90.8 | 0 |
+| /latest | cache (user) | 296 | 52.6 | 96.8 | 0 |
+| /t/welcome-to-discourse/5.json | main (user) | 463 | 34 | 66.2 | 0 |
+| /t/welcome-to-discourse/5.json | cache (user) | 474 | 33.3 | 66.3 | 0 |
+| /t/welcome-to-discourse/5 | main (user) | 81 | 203.7 | 244 | 0 |
+| /t/welcome-to-discourse/5 | cache (user) | 215 | 73.7 | 111 | 0 |
+
+Three more alternating runs (medians): the topic page 81 against 216
+req/s (p50 202 against 75 ms), its JSON 455 against 482, /latest 292
+against 309; /latest.json and /srv/status were swamped by a load spike
+to 25 during those runs and are left out.
+
+perf/svg-sprite then serves the chrome's icon sprite (116 KB, 222
+symbols) as Discourse does, a year-cached /svg-sprite/... script, in
+place of inlining it in every page. Against perf/statement-cache, fresh
+seed, user1, c=16, three alternating 5 s runs, medians (load 8 to 15):
+
+| endpoint | page (raw / brotli) | req/s | p50 ms |
+|---|---|---:|---:|
+| /t/welcome-to-discourse/5, inline | 204 KB / 50 KB | 351 | 43.7 |
+| /t/welcome-to-discourse/5, script | 88 KB / 16 KB | 409 | 38.6 |
+| /latest, inline | 184 KB / 47 KB | 496 | 31.8 |
+| /latest, script | 68 KB / 13 KB | 606 | 25.8 |
+
+(The scripts/bench run alongside had a disturbance in its JSON rows,
+the topic JSON at 101 and 94 req/s on both sides, so it is left out.)
+First contentful paint in Chromium is the same with a warm cache and
+about 20 ms later on a first visit, which fetches the script; the
+symbols exist at DOMContentLoaded and every page of
+parity/screens/pages renders pixel-identical.
+
+The three steps were measured in different sessions under different
+loads, so each compares only with its own baseline: queries and chrome
+about +3%, the statement cache 2.7 times, the sprite +17% on the
+logged-in topic page.
+
+Not changed here, because they are the middleware chain's or for
+later: the compression level; four SiteSettings::load and three or four
+readonly-mode reads per request across the middleware; the ping sqlx's
+test_before_acquire sends on each of a request's pool acquisitions (2
+or 3 empty statements per request); the job worker sharing the request
+pool, whose badge backfill runs dozens of distinct statements through
+the same per-connection caches.
+
+## 2026-10-15, two days of features, and Config behind an Arc
+
+Since the last run main gained the mobile redraw, the header search menu,
+narrow desktop, admin pages, theme imports, topic and tag edits, the user
+pages, advanced search and avatars. The comparison is back to back on
+the same machine and data, not against the numbers above: 83c3f46 (the
+commit of the entry below) and main, both release builds, RAILS_ENV
+production, rate limits off, each on its own fresh db-load of the seed,
+user1, c=16, 5 s. Two of the owner's own processes used about two cores
+throughout. Postgres now runs with fsync, full_page_writes and
+synchronous_commit off (the test speedup); that touches writes, and every
+row here is a read.
+
+The first pass found main 10 to 25% slower on every row and /srv/status
+47% slower. The profile put AppState's clone and drop near the top:
+axum clones the state for each from_fn_with_state layer, three more
+route layers had been added (read-only mode, HTML error pages, the
+permalink constraint), and AppState held Config, a BTreeMap of every
+global setting, by value. perf/arc-config makes it an Arc (and
+pretty_text's Host, which copied it for every cook). The table is after
+that fix:
+
+| endpoint | 83c3f46 (user) | main (user) | change |
+|---|---:|---:|---:|
+| /srv/status | 16131 | 9564 | -41% |
+| /site.json | 2448 | 2223 | -9% |
+| /latest.json | 2645 | 2419 | -9% |
+| /latest | 680 | 530 | -22% |
+| /c/general/4.json | 2410 | 2124 | -12% |
+| /categories.json | 2276 | 2046 | -10% |
+| /t/welcome-to-discourse/5.json | 978 | 903 | -8% |
+| /t/welcome-to-discourse/5 | 153 | 106 | -31% |
+| /u/system.json | 2896 | 2877 | -1% |
+| /search.json?q=Welcome | 2637 | 2261 | -14% |
+| /tag/guide.json | 1615 | 1707 | +6% |
+| /unread.json | 2372 | 2210 | -7% |
+| /new.json | 2227 | 1974 | -11% |
+
+What is left of the per-request cost is spread across the longer
+middleware chain (moving the larger futures between layers, the
+permalink and mobile layers each a few percent), with no single hot spot.
+The HTML rows lost the most: the pages now carry the search menu's data,
+narrow desktop's markup and more scripts. Against the production Rails
+numbers below (2026-10-13, not rerun), main is still about 13 times
+faster on the list and user JSON, 7 to 9 times on the rest of the JSON,
+4 times on /latest and 3 times on /srv/status, but only about 1.4 times
+on the topic page's HTML (106 against 78), which is the slowest page the
+port serves.
+
+## 2026-10-13, the request limits kept in the process
+
+perf/rate-limiter-storage: Middleware::RequestTracker's limiters (the 10
+and 60 second request limits, the asset budget, the crawler slow-down)
+keep their lists in the process instead of discourse_rs.rate_limits,
+with the same rules (a VecDeque per key, newest first, trimmed to max).
+A graceful shutdown writes the live lists to the table and startup reads
+them back; a crash loses at most a minute of counts. Every other limiter
+(posting, likes, logins, search, the daily ones) stays in the table, off
+the request path.
+
+The run below repeats the tracked comparison from the entry after this
+one (same build flags, user1, c=16, 5 s, the request limits applied to
+private addresses with the per-address limits raised so nothing is
+refused):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-off (user) | 15707 | 0.9 | 2.4 | 0 |
+| /srv/status | rs-tracked (user) | 12815 | 1.1 | 2.8 | 0 |
+| /site.json | rs-limits-off (user) | 2536 | 5.9 | 10.4 | 0 |
+| /site.json | rs-tracked (user) | 2500 | 6.1 | 9.5 | 0 |
+| /latest.json | rs-limits-off (user) | 2905 | 5.2 | 8.7 | 0 |
+| /latest.json | rs-tracked (user) | 2753 | 5.5 | 9.1 | 0 |
+| /latest | rs-limits-off (user) | 703 | 22.2 | 39.5 | 0 |
+| /latest | rs-tracked (user) | 692 | 22.6 | 43.2 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2645 | 5.8 | 9.4 | 0 |
+| /c/general/4.json | rs-tracked (user) | 2539 | 6.1 | 9.6 | 0 |
+| /categories.json | rs-limits-off (user) | 2487 | 6.3 | 9.3 | 0 |
+| /categories.json | rs-tracked (user) | 2385 | 6.5 | 10 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1044 | 15.5 | 24.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs-tracked (user) | 1022 | 15.8 | 23.9 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 176 | 93.9 | 113.1 | 0 |
+| /t/welcome-to-discourse/5 | rs-tracked (user) | 175 | 94 | 114.8 | 0 |
+| /u/system.json | rs-limits-off (user) | 4023 | 3.8 | 5.9 | 0 |
+| /u/system.json | rs-tracked (user) | 3745 | 4.1 | 6.6 | 0 |
+| /search.json?q=Welcome | rs-limits-off (user) | 3029 | 5.2 | 7 | 0 |
+| /search.json?q=Welcome | rs-tracked (user) | 7805 | 1.9 | 3.8 | 38995 |
+| /tag/guide.json | rs-limits-off (user) | 2377 | 6 | 10.9 | 0 |
+| /tag/guide.json | rs-tracked (user) | 2266 | 6.5 | 11.3 | 0 |
+| /unread.json | rs-limits-off (user) | 3035 | 5.1 | 7.9 | 0 |
+| /unread.json | rs-tracked (user) | 2886 | 5.3 | 8.3 | 0 |
+| /new.json | rs-limits-off (user) | 2909 | 5.3 | 8.3 | 0 |
+| /new.json | rs-tracked (user) | 2765 | 5.5 | 8.8 | 0 |
+
+Within 1 to 7% of limits off on every row (18% on /srv/status, where the
+two limiter checks are most of a near-empty request), against 3 to 8
+times slower with the lists in the table. The search row's non-2xx are
+the per-user search limiter's 429s, which stays in the table.
+
+## 2026-10-13, after messages and chat DMs, rate limits on
+
+discourse-rs at eafbcea (release build, RAILS_ENV=production, on a fresh
+db-load of the seed), the rs-prod agent unchanged, c=16, 5 s per row.
+Since the last run the port gained rate limiting (RateLimiter, the
+per-user and per-address request limits of Middleware::RequestTracker),
+all of messages (group messages, archiving, invites, small actions,
+deletes) and chat direct messages.
+
+The first pass found a bug: with rate limits on, anonymous
+/search.json at c=16 answered three requests and then hung until the
+pool's acquire timeout. Handlers hold a connection of the main pool
+while they call the limiter, which took a second connection from the
+same pool; with every connection held by a request waiting on its
+limiter, the pool starved. fix/rate-limiter-pool gives the limiter's
+queries a small pool of their own (one query per connection, nothing
+else waited on). The tables are from after that fix.
+
+Anonymous (rs has its anonymous cache; `cached` and `uncached` are
+Rails'):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 34488 | 0.4 | 1.2 | 0 |
+| /srv/status | rails-prod (cached) | 3576 | 4.3 | 6.5 | 0 |
+| /srv/status | rails-prod (uncached) | 3501 | 4.4 | 6.8 | 0 |
+| /site.json | rs | 2945 | 5.4 | 7.9 | 0 |
+| /site.json | rails-prod (cached) | 1993 | 7.8 | 12.4 | 0 |
+| /site.json | rails-prod (uncached) | 2107 | 7.4 | 12.2 | 0 |
+| /latest.json | rs | 36343 | 0.4 | 1 | 0 |
+| /latest.json | rails-prod (cached) | 4126 | 3.7 | 5.7 | 0 |
+| /latest.json | rails-prod (uncached) | 252 | 63.4 | 75 | 0 |
+| /latest | rs | 34525 | 0.4 | 1.1 | 0 |
+| /latest | rails-prod (cached) | 3746 | 4.1 | 6.4 | 0 |
+| /latest | rails-prod (uncached) | 172 | 93.3 | 107.9 | 0 |
+| /c/general/4.json | rs | 35387 | 0.4 | 1 | 0 |
+| /c/general/4.json | rails-prod (cached) | 4091 | 3.8 | 6.2 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 235 | 67.9 | 81.2 | 0 |
+| /categories.json | rs | 34972 | 0.4 | 1.1 | 0 |
+| /categories.json | rails-prod (cached) | 4122 | 3.8 | 5.6 | 0 |
+| /categories.json | rails-prod (uncached) | 398 | 40 | 50 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 35629 | 0.4 | 1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 4034 | 3.8 | 5.7 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 157 | 102.6 | 117.1 | 0 |
+| /t/welcome-to-discourse/5 | rs | 34088 | 0.4 | 1.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3651 | 4.2 | 6.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 106 | 151.6 | 192.8 | 0 |
+| /u/system.json | rs | 7637 | 2 | 4 | 0 |
+| /u/system.json | rails-prod (cached) | 462 | 34.4 | 42 | 0 |
+| /u/system.json | rails-prod (uncached) | 472 | 33.5 | 42.5 | 0 |
+| /search.json?q=Welcome | rs | 34644 | 0.4 | 1.1 | 108 |
+| /search.json?q=Welcome | rails-prod (cached) | 4108 | 3.8 | 5.8 | 42 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1947 | 8 | 13.7 | 9713 |
+| /tag/guide.json | rs | 35465 | 0.4 | 1 | 0 |
+| /tag/guide.json | rails-prod (cached) | 4124 | 3.7 | 5.7 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 252 | 63.2 | 78.7 | 0 |
+
+Unchanged from 2026-10-09 within noise, the limits included: an
+anonymous request from loopback is exempt from the address limits, as
+in Rails, and the cache answers before the limiter would. The search
+row's non-2xx are the search limiter's 429s on cache misses (Rails
+limits anonymous search to 2/s per address too).
+
+Logged in as user1 (no anonymous cache on either side), rs with rate
+limits on (the default) and off (`DISCOURSE_RS_RATE_LIMITS=off`):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-on (user) | 15278 | 0.9 | 2.3 | 0 |
+| /srv/status | rs-limits-off (user) | 17890 | 0.8 | 2 | 0 |
+| /srv/status | rails-prod (user) | 2917 | 5.3 | 9.4 | 0 |
+| /site.json | rs-limits-on (user) | 2481 | 6.1 | 9.7 | 0 |
+| /site.json | rs-limits-off (user) | 2609 | 5.7 | 9.7 | 0 |
+| /site.json | rails-prod (user) | 309 | 50.8 | 74.9 | 0 |
+| /latest.json | rs-limits-on (user) | 2769 | 5.5 | 8.9 | 0 |
+| /latest.json | rs-limits-off (user) | 2848 | 5.4 | 8.7 | 0 |
+| /latest.json | rails-prod (user) | 188 | 84.8 | 99.6 | 0 |
+| /latest | rs-limits-on (user) | 695 | 22.5 | 38.5 | 0 |
+| /latest | rs-limits-off (user) | 701 | 22.3 | 38.7 | 0 |
+| /latest | rails-prod (user) | 138 | 116.3 | 132.2 | 0 |
+| /c/general/4.json | rs-limits-on (user) | 2501 | 6.1 | 9.7 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2608 | 5.9 | 9.5 | 0 |
+| /c/general/4.json | rails-prod (user) | 166 | 96.6 | 113.6 | 0 |
+| /categories.json | rs-limits-on (user) | 2357 | 6.4 | 10.3 | 0 |
+| /categories.json | rs-limits-off (user) | 2447 | 6.4 | 9.5 | 0 |
+| /categories.json | rails-prod (user) | 266 | 59.7 | 74 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-on (user) | 1021 | 15.6 | 24.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1042 | 15.7 | 22.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 100 | 162 | 190.5 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-on (user) | 173 | 93 | 154.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 175 | 93.3 | 113.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 78 | 209.8 | 232.6 | 0 |
+| /u/system.json | rs-limits-on (user) | 3680 | 4 | 9.1 | 0 |
+| /u/system.json | rs-limits-off (user) | 3998 | 3.8 | 6 | 0 |
+| /u/system.json | rails-prod (user) | 227 | 70.4 | 82.6 | 0 |
+| /search.json?q=Welcome | rs-limits-on (user) | 7982 | 1.9 | 3.8 | 39882 |
+| /search.json?q=Welcome | rs-limits-off (user) | 2996 | 5.2 | 7.3 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 888 | 17.6 | 27.9 | 4396 |
+| /tag/guide.json | rs-limits-on (user) | 2303 | 6.3 | 11 | 0 |
+| /tag/guide.json | rs-limits-off (user) | 2330 | 6.3 | 11.2 | 0 |
+| /tag/guide.json | rails-prod (user) | 183 | 87.6 | 99.5 | 0 |
+| /unread.json | rs-limits-on (user) | 2881 | 5.3 | 8.6 | 0 |
+| /unread.json | rs-limits-off (user) | 2983 | 5.1 | 8.2 | 0 |
+| /unread.json | rails-prod (user) | 256 | 62.4 | 72.1 | 0 |
+| /new.json | rs-limits-on (user) | 2757 | 5.5 | 8.8 | 0 |
+| /new.json | rs-limits-off (user) | 2830 | 5.5 | 8.5 | 0 |
+| /new.json | rails-prod (user) | 215 | 74.3 | 87.5 | 0 |
+
+On and off agree within run-to-run noise except search: a loopback
+address is exempt from Middleware::RequestTracker, as in Rails, so these
+requests perform no request limiter at all; only search's own per-user
+limiter runs, and rs-limits-on and rails-prod answer most of those with
+429s.
+
+To see what the request limits cost, a third server applied them to
+private addresses (`DISCOURSE_MAX_REQS_RATE_LIMIT_ON_PRIVATE=true`) with
+the per-address limits raised to 100,000,000 so nothing is refused
+(`rs-tracked`), next to a rerun of the other two:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-on (user) | 15960 | 0.9 | 2.3 | 0 |
+| /srv/status | rs-limits-off (user) | 18338 | 0.8 | 2 | 0 |
+| /srv/status | rs-tracked (user) | 2773 | 5.4 | 12 | 0 |
+| /site.json | rs-limits-on (user) | 2512 | 6 | 9.6 | 0 |
+| /site.json | rs-limits-off (user) | 2674 | 5.6 | 9.2 | 0 |
+| /site.json | rs-tracked (user) | 979 | 16.1 | 22 | 0 |
+| /latest.json | rs-limits-on (user) | 2724 | 5.6 | 8.9 | 0 |
+| /latest.json | rs-limits-off (user) | 2951 | 5.1 | 8.5 | 0 |
+| /latest.json | rs-tracked (user) | 868 | 18.2 | 24.2 | 0 |
+| /latest | rs-limits-on (user) | 703 | 22.3 | 39 | 0 |
+| /latest | rs-limits-off (user) | 713 | 22 | 37.2 | 0 |
+| /latest | rs-tracked (user) | 569 | 27.6 | 45 | 0 |
+| /c/general/4.json | rs-limits-on (user) | 2610 | 5.9 | 9.3 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2656 | 5.7 | 9.2 | 0 |
+| /c/general/4.json | rs-tracked (user) | 647 | 24.5 | 31.7 | 0 |
+| /categories.json | rs-limits-on (user) | 2469 | 6.2 | 9.6 | 0 |
+| /categories.json | rs-limits-off (user) | 2325 | 6.6 | 10.9 | 0 |
+| /categories.json | rs-tracked (user) | 590 | 26.8 | 35.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-on (user) | 1046 | 15.5 | 22.2 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1061 | 15.3 | 21.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs-tracked (user) | 523 | 30.4 | 38.5 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-on (user) | 180 | 93.4 | 110.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 180 | 92.7 | 112.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-tracked (user) | 171 | 92.7 | 117.8 | 0 |
+| /u/system.json | rs-limits-on (user) | 3850 | 3.9 | 6.5 | 0 |
+| /u/system.json | rs-limits-off (user) | 3976 | 3.9 | 6.2 | 0 |
+| /u/system.json | rs-tracked (user) | 494 | 32.3 | 40.6 | 0 |
+| /search.json?q=Welcome | rs-limits-on (user) | 7758 | 1.9 | 3.9 | 38761 |
+| /search.json?q=Welcome | rs-limits-off (user) | 2955 | 5.3 | 7.5 | 0 |
+| /search.json?q=Welcome | rs-tracked (user) | 461 | 34.6 | 48.7 | 2294 |
+| /tag/guide.json | rs-limits-on (user) | 2284 | 6.5 | 11.3 | 0 |
+| /tag/guide.json | rs-limits-off (user) | 2359 | 6.1 | 10.8 | 0 |
+| /tag/guide.json | rs-tracked (user) | 438 | 36.1 | 50.1 | 0 |
+| /unread.json | rs-limits-on (user) | 2898 | 5.3 | 8.4 | 0 |
+| /unread.json | rs-limits-off (user) | 2981 | 5.1 | 8.1 | 0 |
+| /unread.json | rs-tracked (user) | 423 | 37.7 | 46.2 | 0 |
+| /new.json | rs-limits-on (user) | 2745 | 5.6 | 9.1 | 0 |
+| /new.json | rs-limits-off (user) | 2875 | 5.3 | 8.6 | 0 |
+| /new.json | rs-tracked (user) | 408 | 38.9 | 47.4 | 0 |
+
+Each request now performs the user's 10-second and 60-second limiters.
+Throughput falls 3 to 8 times and keeps falling through the run (the
+last rows are the slowest). This overstates the cost: every request is
+one user, so all of them serialize on one rate_limits row, and with the
+limits raised its stamp list grows to every request of the window
+(tens of thousands of entries, rewritten on each request). Real limits
+(50 per 10 s, 200 a minute) keep the lists short, but would refuse this
+load. What holds in any case: on a public deployment every request makes
+two limiter statements through the limiter's own pool of four
+connections, which caps the request rate where Rails' Redis does not.
+Moving the limiter's storage into the process (a single process serves
+the site) or sizing that pool is the open question.
+
+## 2026-10-09, with the anonymous cache
+
+The production comparison above, rerun for anonymous visitors once
+discourse-rs had Middleware::AnonymousCache (feat/anonymous-cache): rs in
+RAILS_ENV=production, where the cache is on, the rs-prod agent unchanged,
+c=16, 5 s (`cached` and `uncached` are Rails'). This table is from the
+first version of the cache, which sat inside the compression layer and
+compressed every hit again; oha sends `Accept-Encoding: gzip, compress,
+deflate, br` unless told otherwise, so every row here was compressed on
+both sides:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 50060 | 0.3 | 0.8 | 0 |
+| /srv/status | rails-prod (cached) | 3131 | 5 | 7 | 0 |
+| /srv/status | rails-prod (uncached) | 3105 | 5 | 7.2 | 0 |
+| /site.json | rs | 2703 | 5.9 | 8.3 | 0 |
+| /site.json | rails-prod (cached) | 1827 | 8.6 | 13.4 | 0 |
+| /site.json | rails-prod (uncached) | 1941 | 8.1 | 12.9 | 0 |
+| /latest.json | rs | 26653 | 0.5 | 1.6 | 0 |
+| /latest.json | rails-prod (cached) | 3692 | 4.2 | 6.1 | 0 |
+| /latest.json | rails-prod (uncached) | 230 | 69.4 | 81.8 | 0 |
+| /latest | rs | 2165 | 7.1 | 13.8 | 0 |
+| /latest | rails-prod (cached) | 3427 | 4.5 | 6.7 | 0 |
+| /latest | rails-prod (uncached) | 150 | 107.5 | 127.3 | 0 |
+| /c/general/4.json | rs | 25317 | 0.6 | 1.7 | 0 |
+| /c/general/4.json | rails-prod (cached) | 3799 | 4.1 | 6.2 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 217 | 73.5 | 91.6 | 0 |
+| /categories.json | rs | 25399 | 0.6 | 1.6 | 0 |
+| /categories.json | rails-prod (cached) | 3816 | 4.1 | 6 | 0 |
+| /categories.json | rails-prod (uncached) | 363 | 43.8 | 56.2 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 22468 | 0.6 | 1.9 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 3742 | 4.1 | 5.9 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 144 | 111.9 | 127.6 | 0 |
+| /t/welcome-to-discourse/5 | rs | 2192 | 6.9 | 13.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3451 | 4.4 | 7 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 100 | 161.4 | 271.8 | 0 |
+| /u/system.json | rs | 7654 | 2 | 4.4 | 0 |
+| /u/system.json | rails-prod (cached) | 437 | 36.1 | 47.8 | 0 |
+| /u/system.json | rails-prod (uncached) | 436 | 36.2 | 52.4 | 0 |
+| /search.json?q=Welcome | rs | 31012 | 0.5 | 1.3 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 3876 | 4 | 5.8 | 26 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1851 | 8.4 | 13.5 | 9233 |
+| /tag/guide.json | rs | 30567 | 0.5 | 1.3 | 0 |
+| /tag/guide.json | rails-prod (cached) | 3899 | 4 | 5.6 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 236 | 68 | 79.8 | 0 |
+
+The HTML rows (about 2200 req/s) were the cost of compressing a 75 KB
+page on every hit, not its size. The cache now stores the response as
+sent, compressed for the encoding in its key, and a hit sends it as is:
+
+| cached anonymous request, c=16 | rs | rails-prod |
+|---|---:|---:|
+| /latest, br | 60158 | 3548 |
+| /t/welcome-to-discourse/5, br | 62206 | 3469 |
+| /latest.json, br | 63911 | 3740 |
+| /latest, identity (75 KB on rs, a 17 KB Ember shell on Rails) | 50841 | 3623 |
+| /latest.json, identity | 64239 | 4174 |
+
+Checked: both serve 200s with byte-identical /latest.json bodies, and
+Rails' are real hits (X-Discourse-Cached: true, X-Runtime 1.0 ms against
+30.9 ms uncached). Rails' hit still crosses nginx, a Pitchfork worker and
+the Rack middleware ahead of AnonymousCache, with two Redis reads; the
+port's is a lookup in its own memory. At these rates the load generator
+on the same box takes a share of the CPU too.
+
+## 2026-10-09, against a production Discourse
+
+The first comparison with Rails in production. The `rs-prod` dv agent runs
+Discourse bf55a44 (the vendored commit) on the seed: RAILS_ENV=production
+with Discourse's official prebuilt assets for that commit
+(`assets:precompile` fetches them), Pitchfork with 8 workers, and nginx
+1.22 in front with Discourse's config/nginx.sample.conf (gzip and brotli,
+static assets, immutable caching), as a standard install serves it.
+discourse-rs is a release build of 5c8b870 serving the same seed directly
+(it compresses and caches its own assets). Same laptop (16 cores,
+powersave governor), keep-alive off, 5 s per row. Rails' anonymous cache
+(AnonymousCache, Redis, 60 s) is on in production: `cached` rows are
+anonymous hits on it, `uncached` rows bypass it with `_bypass_cache`, and
+logged-in requests never use it. discourse-rs has no such cache.
+
+Process (bench-startup's warm-up: 20 requests each to five pages):
+
+| measure | discourse-rs | Discourse (8 workers) |
+|---|---:|---:|
+| start to first 200 | 75 ms | 11.2 s |
+| start to all workers ready | (one process) | 18.7 s |
+| memory idle | 32 MB RSS | 5.1 GB summed RSS, 830 MB PSS (11 processes) |
+| memory after warm-up | 43 MB RSS | 5.1 GB summed RSS, 900 MB PSS |
+
+Pitchfork forks its workers from a preloaded mold, so they share most
+pages: PSS, which splits shared pages between the processes, is the
+fairer figure for Rails.
+
+Requests, anonymous, c=2:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 17352 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-prod (cached) | 1425 | 1.3 | 2.8 | 0 |
+| /srv/status | rails-prod (uncached) | 1405 | 1.3 | 2.8 | 0 |
+| /site.json | rs | 749 | 2.6 | 4.1 | 0 |
+| /site.json | rails-prod (cached) | 676 | 2.8 | 7.2 | 0 |
+| /site.json | rails-prod (uncached) | 722 | 2.6 | 6.5 | 0 |
+| /latest.json | rs | 1012 | 1.9 | 3.2 | 0 |
+| /latest.json | rails-prod (cached) | 1573 | 1.2 | 2.6 | 0 |
+| /latest.json | rails-prod (uncached) | 81 | 23.8 | 33.1 | 0 |
+| /latest | rs | 248 | 8.1 | 11.6 | 0 |
+| /latest | rails-prod (cached) | 1358 | 1.4 | 2.8 | 0 |
+| /latest | rails-prod (uncached) | 55 | 35.7 | 47.9 | 0 |
+| /c/general/4.json | rs | 739 | 2.6 | 4.3 | 0 |
+| /c/general/4.json | rails-prod (cached) | 1555 | 1.2 | 2.5 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 76 | 25.5 | 34.4 | 0 |
+| /categories.json | rs | 888 | 2.2 | 3.6 | 0 |
+| /categories.json | rails-prod (cached) | 1464 | 1.3 | 2.6 | 0 |
+| /categories.json | rails-prod (uncached) | 122 | 15.8 | 23.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 424 | 4.6 | 7.2 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 1490 | 1.2 | 2.5 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 48 | 41.5 | 53.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 208 | 9.7 | 13.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 1344 | 1.4 | 3 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 37 | 53.2 | 63.3 | 0 |
+| /u/system.json | rs | 2566 | 0.7 | 1.5 | 0 |
+| /u/system.json | rails-prod (cached) | 156 | 12.6 | 19 | 0 |
+| /u/system.json | rails-prod (uncached) | 157 | 12.3 | 17.7 | 0 |
+| /search.json?q=Welcome | rs | 985 | 2 | 3.2 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 1585 | 1.2 | 2.5 | 0 |
+| /search.json?q=Welcome | rails-prod (uncached) | 742 | 2.5 | 7.7 | 3702 |
+| /tag/guide.json | rs | 950 | 2.1 | 3.5 | 0 |
+| /tag/guide.json | rails-prod (cached) | 1625 | 1.1 | 2.5 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 76 | 25.8 | 36.2 | 0 |
+
+Requests, logged in as user1, c=2:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 6464 | 0.3 | 0.5 | 0 |
+| /srv/status | rails-prod (user) | 1174 | 1.5 | 4.2 | 0 |
+| /site.json | rs (user) | 689 | 2.9 | 4.5 | 0 |
+| /site.json | rails-prod (user) | 102 | 19 | 26.5 | 0 |
+| /latest.json | rs (user) | 860 | 2.2 | 3.8 | 0 |
+| /latest.json | rails-prod (user) | 61 | 32 | 40.6 | 0 |
+| /latest | rs (user) | 237 | 8.1 | 13.6 | 0 |
+| /latest | rails-prod (user) | 44 | 44 | 52.7 | 0 |
+| /c/general/4.json | rs (user) | 780 | 2.5 | 4.1 | 0 |
+| /c/general/4.json | rails-prod (user) | 54 | 36.2 | 44.5 | 0 |
+| /categories.json | rs (user) | 701 | 2.8 | 4.3 | 0 |
+| /categories.json | rails-prod (user) | 88 | 22 | 30.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 309 | 6.3 | 13.3 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 33 | 58.7 | 66.9 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 153 | 12.6 | 21.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 25 | 77.1 | 91 | 0 |
+| /u/system.json | rs (user) | 1385 | 1.4 | 3.1 | 0 |
+| /u/system.json | rails-prod (user) | 76 | 25.9 | 35.4 | 0 |
+| /search.json?q=Welcome | rs (user) | 799 | 2.4 | 3.8 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 310 | 6 | 19.2 | 1523 |
+| /tag/guide.json | rs (user) | 735 | 2.6 | 4.4 | 0 |
+| /tag/guide.json | rails-prod (user) | 59 | 33 | 41.3 | 0 |
+| /unread.json | rs (user) | 1009 | 1.9 | 3.2 | 0 |
+| /unread.json | rails-prod (user) | 79 | 24.2 | 40.8 | 0 |
+| /new.json | rs (user) | 915 | 2.1 | 3.5 | 0 |
+| /new.json | rails-prod (user) | 67 | 28.9 | 37.1 | 0 |
+
+Requests, anonymous, c=16:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 52429 | 0.3 | 0.7 | 0 |
+| /srv/status | rails-prod (cached) | 3164 | 4.9 | 7.2 | 0 |
+| /srv/status | rails-prod (uncached) | 3223 | 4.9 | 6.6 | 0 |
+| /site.json | rs | 2779 | 5.7 | 8 | 0 |
+| /site.json | rails-prod (cached) | 1881 | 8.3 | 13.7 | 0 |
+| /site.json | rails-prod (uncached) | 1964 | 8 | 12.6 | 0 |
+| /latest.json | rs | 3309 | 4.8 | 6.7 | 0 |
+| /latest.json | rails-prod (cached) | 3734 | 4.1 | 6.8 | 0 |
+| /latest.json | rails-prod (uncached) | 226 | 70.7 | 94.9 | 0 |
+| /latest | rs | 990 | 15.9 | 22.2 | 0 |
+| /latest | rails-prod (cached) | 3450 | 4.5 | 6.6 | 0 |
+| /latest | rails-prod (uncached) | 156 | 103.5 | 120.4 | 0 |
+| /c/general/4.json | rs | 2837 | 5.5 | 9.6 | 0 |
+| /c/general/4.json | rails-prod (cached) | 3795 | 4.1 | 6 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 222 | 72.4 | 83.9 | 0 |
+| /categories.json | rs | 3078 | 5.1 | 7.4 | 0 |
+| /categories.json | rails-prod (cached) | 3849 | 4.1 | 5.8 | 0 |
+| /categories.json | rails-prod (uncached) | 367 | 43.3 | 53 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 1585 | 10 | 14.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 3682 | 4.2 | 6.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 142 | 113.6 | 130.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 778 | 20.4 | 28.9 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3281 | 4.6 | 7.9 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 92 | 174.4 | 219.4 | 0 |
+| /u/system.json | rs | 7457 | 2 | 4.3 | 0 |
+| /u/system.json | rails-prod (cached) | 429 | 36.8 | 48.5 | 0 |
+| /u/system.json | rails-prod (uncached) | 438 | 35.9 | 47.2 | 0 |
+| /search.json?q=Welcome | rs | 3137 | 5 | 7.3 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 3764 | 4.1 | 6.6 | 36 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1881 | 8.3 | 14 | 9384 |
+| /tag/guide.json | rs | 2708 | 5.7 | 9 | 0 |
+| /tag/guide.json | rails-prod (cached) | 3881 | 4 | 5.8 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 232 | 68.1 | 85.6 | 0 |
+
+Requests, logged in as user1, c=16:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 18477 | 0.8 | 2 | 0 |
+| /srv/status | rails-prod (user) | 2597 | 5.9 | 10.4 | 0 |
+| /site.json | rs (user) | 2171 | 6.8 | 13.7 | 0 |
+| /site.json | rails-prod (user) | 295 | 54.4 | 68.7 | 0 |
+| /latest.json | rs (user) | 2426 | 5.9 | 13.8 | 0 |
+| /latest.json | rails-prod (user) | 162 | 98.3 | 122 | 0 |
+| /latest | rs (user) | 730 | 21.4 | 37.6 | 0 |
+| /latest | rails-prod (user) | 124 | 128.4 | 160.6 | 0 |
+| /c/general/4.json | rs (user) | 2239 | 6.7 | 12.3 | 0 |
+| /c/general/4.json | rails-prod (user) | 146 | 109.9 | 139.3 | 0 |
+| /categories.json | rs (user) | 2233 | 6.7 | 11.4 | 0 |
+| /categories.json | rails-prod (user) | 240 | 66.4 | 80.1 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 1040 | 15.2 | 25.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 93 | 174.6 | 194.2 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 493 | 31.2 | 76.2 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 71 | 231.5 | 294.8 | 0 |
+| /u/system.json | rs (user) | 4277 | 3.5 | 8.2 | 0 |
+| /u/system.json | rails-prod (user) | 209 | 75.7 | 98.2 | 0 |
+| /search.json?q=Welcome | rs (user) | 2865 | 5.4 | 7.7 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 858 | 18.1 | 29 | 4250 |
+| /tag/guide.json | rs (user) | 2248 | 6.4 | 11.5 | 0 |
+| /tag/guide.json | rails-prod (user) | 161 | 97.7 | 156.3 | 0 |
+| /unread.json | rs (user) | 2609 | 5.8 | 10.6 | 0 |
+| /unread.json | rails-prod (user) | 229 | 69.6 | 85.9 | 0 |
+| /new.json | rs (user) | 2706 | 5.4 | 9.4 | 0 |
+| /new.json | rails-prod (user) | 199 | 80.6 | 93.1 | 0 |
+
+Rails rate-limits search (the non-2xx column counts its 429s). The HTML
+rows still compare different work: discourse-rs renders the page, Rails
+serves the Ember shell and the topics follow by XHR.
+
+Page loads in Chromium, cold cache, median of five; for the logged-in
+rows the login page loaded first in the same context, so the assets were
+cached already. "transferred" is bytes over the wire, "decoded" after
+decompression:
+
+| page | target | requests | document | transferred | decoded | DOMContentLoaded ms | content ms |
+|---|---|---:|---:|---:|---:|---:|---:|
+| /latest | rs | 18 | 18 KB | 486 KB | 0.7 MB | 54 | 75 |
+| /c/general/4 | rs | 18 | 18 KB | 486 KB | 0.7 MB | 50 | 72 |
+| /t/parity-fixture-replies-and-posters/35 | rs | 18 | 19 KB | 429 KB | 0.7 MB | 76 | 86 |
+| /categories | rs | 17 | 18 KB | 486 KB | 0.7 MB | 39 | 65 |
+| /u/user1/summary | rs | 13 | 17 KB | 421 KB | 0.7 MB | 42 | 65 |
+| /latest as=user1 | rs | 21 | 20 KB | 101 KB | 0.8 MB | 72 | 86 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rs | 22 | 23 KB | 50 KB | 0.8 MB | 92 | 108 |
+| /latest | rails-prod | 83 | 20 KB | 1836 KB | 9.0 MB | 346 | 560 |
+| /c/general/4 | rails-prod | 83 | 20 KB | 1836 KB | 9.0 MB | 349 | 555 |
+| /t/parity-fixture-replies-and-posters/35 | rails-prod | 83 | 21 KB | 1780 KB | 9.0 MB | 348 | 626 |
+| /categories | rails-prod | 83 | 20 KB | 1840 KB | 9.0 MB | 349 | 560 |
+| /u/user1/summary | rails-prod | 80 | 18 KB | 1772 KB | 8.9 MB | 369 | 595 |
+| /latest as=user1 | rails-prod | 86 | 21 KB | 91 KB | 9.0 MB | 424 | 659 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rails-prod | 83 | 21 KB | 32 KB | 9.0 MB | 341 | 613 |
+
+## 2026-10-09, fixing what the run above found
+
+Same box, seed and c=2, discourse-rs only, release builds at each step.
+
+Logged-in /srv/status regression: on the same seed database the
+2026-10-01 build (5e1cd1a) serves 4970 req/s logged in and the build
+before the fix 3850, with the same four queries per request. perf under
+load showed half the CPU in malloc and free from SiteSettings::load
+cloning the whole resolved settings map on every cache hit. The map now
+sits behind an Arc (perf/logged-in-floor):
+
+| endpoint, logged in (median of 3) | 2026-10-01 build | before | after |
+|---|---:|---:|---:|
+| /srv/status | 4990 | 3899 | 6550 |
+| /latest.json | 963 | 680 | 963 |
+
+Skipping the connection the session layer took after each logged-in
+response to look for notifications to clear measured within noise.
+
+Caching and compression (perf/asset-caching, perf/compression), Chromium,
+median of five, the page and everything it loads:
+
+| visit | before | after |
+|---|---:|---:|
+| /latest, cold cache: document | 75 KB | 18 KB |
+| /latest, cold cache: total | 772 KB | 497 KB |
+| a topic after /latest, same session: total | about 280 KB | 27 KB |
+
+What is left of a cold visit is mostly the Inter font (344 KB woff2,
+cached for good once fetched). The anonymous /srv/status floor sits
+around 18000 req/s against about 20000 for the 2026-10-01 build; not
+chased further.
+
+## 2026-10-09, after topic voting
+
+Release binary at ac53196, rustc 1.99, the seed fixtures
+(seed/fresh_install.sql) loaded fresh into discourse_rs_screens; Rails is
+the `rs-parity` dv agent (development mode, Discourse bf55a44) on the same
+seed. Same laptop (16 cores, powersave governor), c=2, 5 s, keep-alive off.
+The data set is the parity fixtures, not the Faker backup of the earlier
+runs, so absolute numbers aren't comparable with those.
+
+Process:
+
+| measure | value | 2026-09-30 |
+|---|---:|---:|
+| binary size | 53 MB | 14 MB |
+| exec to first 200 (median of 3) | 75 ms | 40 ms |
+| RSS idle | 32 MB | 17 MB |
+| RSS after 100 requests | 44 MB | 26 MB |
+
+The binary is 27 MB of code and 12 MB of read-only data (the vendored
+schema, locales, settings, emoji and icon sprites it embeds), plus about
+9 MB of symbols; the startup and RSS growth follow from what it loads.
+
+Build and tests (warm unless said):
+
+| measure | value |
+|---|---:|
+| `cargo build --release`, clean | 1m 58s |
+| `cargo build --release`, one-file change | 70s |
+| `cargo build` (dev), one-file change | 5s |
+| `make clippy` | 4s |
+| `make test` (330 tests) | 100s |
+| `make test` after `cargo clean` | 3m 17s |
+| `make parity-test` (486 goldens and write cases) | 3m 45s |
+
+Requests, anonymous:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 19179 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-dev (cached) | 1240 | 1.4 | 3.7 | 0 |
+| /srv/status | rails-dev (uncached) | 1314 | 1.4 | 2.7 | 0 |
+| /site.json | rs | 769 | 2.5 | 3.9 | 0 |
+| /site.json | rails-dev (cached) | 271 | 4.9 | 17 | 0 |
+| /site.json | rails-dev (uncached) | 260 | 5.2 | 15.7 | 0 |
+| /latest.json | rs | 849 | 2.3 | 4 | 0 |
+| /latest.json | rails-dev (cached) | 33 | 57.2 | 168 | 0 |
+| /latest.json | rails-dev (uncached) | 33 | 58.2 | 129.4 | 0 |
+| /latest | rs | 422 | 4.7 | 7.3 | 0 |
+| /latest | rails-dev (cached) | 17 | 109 | 390.9 | 0 |
+| /latest | rails-dev (uncached) | 18 | 110 | 247.6 | 0 |
+| /c/general/4.json | rs | 568 | 3.5 | 5.5 | 0 |
+| /c/general/4.json | rails-dev (cached) | 28 | 69.1 | 89 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 31 | 63.7 | 89.6 | 0 |
+| /categories.json | rs | 754 | 2.6 | 4.1 | 0 |
+| /categories.json | rails-dev (cached) | 44 | 43.8 | 99 | 0 |
+| /categories.json | rails-dev (uncached) | 45 | 43.1 | 103.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 399 | 4.9 | 7.5 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 17 | 111.6 | 161.8 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 17 | 110 | 156.7 | 0 |
+| /t/welcome-to-discourse/5 | rs | 306 | 6.4 | 10.7 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 10 | 178.8 | 351.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 11 | 178.8 | 211.3 | 0 |
+| /u/system.json | rs | 1514 | 1.3 | 2.7 | 0 |
+| /u/system.json | rails-dev (cached) | 44 | 43.8 | 109.2 | 0 |
+| /u/system.json | rails-dev (uncached) | 48 | 41.2 | 91.1 | 0 |
+| /search.json?q=Welcome | rs | 638 | 3.1 | 4.6 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 259 | 6.9 | 28.5 | 1284 |
+| /search.json?q=Welcome | rails-dev (uncached) | 288 | 6.4 | 18.4 | 1436 |
+| /tag/guide.json | rs | 709 | 2.8 | 4.3 | 0 |
+| /tag/guide.json | rails-dev (cached) | 37 | 52.1 | 118.1 | 0 |
+| /tag/guide.json | rails-dev (uncached) | 33 | 57.3 | 139.3 | 0 |
+
+Requests, logged in as user1:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 3408 | 0.6 | 1 | 0 |
+| /srv/status | rails-dev (user) | 1049 | 1.7 | 4.5 | 0 |
+| /site.json | rs (user) | 558 | 3.5 | 6 | 0 |
+| /site.json | rails-dev (user) | 39 | 49.2 | 117.7 | 0 |
+| /latest.json | rs (user) | 722 | 2.6 | 5.7 | 0 |
+| /latest.json | rails-dev (user) | 25 | 79.2 | 99.4 | 0 |
+| /latest | rs (user) | 305 | 6.3 | 11.4 | 0 |
+| /latest | rails-dev (user) | 14 | 139.8 | 263.8 | 0 |
+| /c/general/4.json | rs (user) | 546 | 3.5 | 7.5 | 0 |
+| /c/general/4.json | rails-dev (user) | 22 | 88.6 | 145 | 0 |
+| /categories.json | rs (user) | 653 | 3 | 4.7 | 0 |
+| /categories.json | rails-dev (user) | 34 | 59.5 | 70.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 293 | 6.5 | 12.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 12 | 165.9 | 187.4 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 184 | 10.4 | 19 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 251.5 | 407.2 | 0 |
+| /u/system.json | rs (user) | 1004 | 1.9 | 3.9 | 0 |
+| /u/system.json | rails-dev (user) | 28 | 71.6 | 85.5 | 0 |
+| /search.json?q=Welcome | rs (user) | 554 | 3.5 | 5.5 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 137 | 12.7 | 52 | 654 |
+| /tag/guide.json | rs (user) | 546 | 3.5 | 8.2 | 0 |
+| /tag/guide.json | rails-dev (user) | 25 | 79.3 | 98.3 | 0 |
+| /unread.json | rs (user) | 716 | 2.7 | 4.6 | 0 |
+| /unread.json | rails-dev (user) | 31 | 64.3 | 74.3 | 0 |
+| /new.json | rs (user) | 686 | 2.8 | 5.2 | 0 |
+| /new.json | rails-dev (user) | 29 | 66.8 | 103.8 | 0 |
+
+The HTML pages no longer sit at ~1 req/s (the anomaly noted in earlier
+sessions): /latest serves 422 req/s anonymous, topics 306. Logged-in
+/srv/status is 3408 req/s against 4817 on 2026-10-01 while the anonymous
+floor held (19179 against 19447); worth a look.
+
+Payloads (bytes, neither side compresses: Rails dev has no nginx in
+front, discourse-rs has no compression layer):
+
+| path | rs | rails-dev |
+|---|---:|---:|
+| /site.json | 15660 | 18521 |
+| /latest.json | 6294 | 6294 |
+| /categories.json | 6461 | 7712 |
+| /t/parity-fixture-replies-and-posters/35.json | 11261 | 12185 |
+| /u/user1.json | 2952 | 3014 |
+| /search.json?q=fixture | 4067 | 4068 |
+
+JSON sizes differ where the reference's unported plugins add keys
+(chat, reactions, ...). rs's HTML pages are 75 to 86 KB, 42 KB of it the
+inline icon sprite; gzip -9 takes them to about 19 KB.
+
+Page loads in Chromium, median of five after a warm-up, a fresh context
+each (cold cache); "content" is when the list or first post is in the
+DOM, in ms from navigation start:
+
+| page | target | requests | document | all resources | DOMContentLoaded | content |
+|---|---|---:|---:|---:|---:|---:|
+| /latest | rs | 18 | 73 KB | 749 KB | 46 | 62 |
+| /c/general/4 | rs | 18 | 73 KB | 749 KB | 42 | 59 |
+| /t/parity-fixture-replies-and-posters/35 | rs | 18 | 84 KB | 711 KB | 62 | 72 |
+| /categories | rs | 17 | 74 KB | 751 KB | 47 | 65 |
+| /u/user1/summary | rs | 13 | 69 KB | 681 KB | 46 | 67 |
+| /latest as=user1 | rs | 21 | 88 KB | 808 KB | 64 | 79 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rs | 22 | 122 KB | 800 KB | 97 | 106 |
+| /latest | rails-dev | 104 | 109 KB | 15449 KB | 608 | 1097 |
+| /c/general/4 | rails-dev | 104 | 109 KB | 15463 KB | 549 | 843 |
+| /t/parity-fixture-replies-and-posters/35 | rails-dev | 104 | 115 KB | 15525 KB | 614 | 988 |
+| /categories | rails-dev | 104 | 110 KB | 15536 KB | 575 | 876 |
+| /u/user1/summary | rails-dev | 103 | 92 KB | 15384 KB | 488 | 1105 |
+| /latest as=user1 | rails-dev | 107 | 103 KB | 15700 KB | 594 | 916 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rails-dev | 102 | 115 KB | 15521 KB | 565 | 933 |
+
+Rails dev serves its JavaScript unbundled and unminified (about 15 MB a
+page), so its column shows the order of magnitude only. rs's 750 KB is
+mostly the Inter font (344 KB, cached immutable) and discourse.css
+(193 KB).
+
+Found while measuring: /assets/*.css and *.js carry no Cache-Control,
+ETag or Last-Modified, so every page load fetches them again (about
+270 KB); and responses aren't compressed. Both are cheap to fix and
+matter more than any request-rate row above for a real visitor.
+
+## 2026-09-30, first run
+
+Framework 16 laptop, local Postgres 16, the Faker backup (482 posts, 58
+topics). discourse-rs `target/release` at 0015a8d; Rails is the `rs-backup`
+dv agent (development mode, Discourse bf55a44) on the same data.
+
+Duration 5s, concurrency 8, keepalive off, 2026-09-30T19:55Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+
+| measure | value |
+|---|---:|
+| binary size | 14 MB (15071288 bytes) |
+| exec to first 200 | 40 ms |
+| RSS idle | 17 MB |
+| RSS after 100 requests | 26 MB |
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 7125 | 1 | 3.6 | 0 |
+| /srv/status | rails-dev (cached) | 384 | 20.3 | 32.1 | 0 |
+| /srv/status | rails-dev (uncached) | 388 | 20.3 | 29 | 0 |
+| /site.json | rs | 176 | 42.7 | 75.5 | 0 |
+| /site.json | rails-dev (cached) | 86 | 85.6 | 178.9 | 0 |
+| /site.json | rails-dev (uncached) | 100 | 72.6 | 142.3 | 0 |
+| /latest.json | rs | 92 | 86.5 | 121.3 | 0 |
+| /latest.json | rails-dev (cached) | 9 | 1017.3 | 1325 | 0 |
+| /latest.json | rails-dev (uncached) | 8 | 1049.4 | 1824.9 | 0 |
+| /latest | rs | 70 | 107 | 249.8 | 0 |
+| /latest | rails-dev (cached) | 5 | 1635 | 2292 | 0 |
+| /latest | rails-dev (uncached) | 3 | 2537.4 | 3913.8 | 0 |
+| /c/general/4.json | rs | 154 | 48.1 | 101 | 0 |
+| /c/general/4.json | rails-dev (cached) | 13 | 672.8 | 884 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 11 | 707 | 1217.1 | 0 |
+| /categories.json | rs | 365 | 20.5 | 40.3 | 0 |
+| /categories.json | rails-dev (cached) | 11 | 799.6 | 1072.3 | 0 |
+| /categories.json | rails-dev (uncached) | 10 | 814.7 | 1449.6 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 167 | 43.5 | 111.8 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 8 | 1186.5 | 1420.8 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 6 | 1411 | 2536.1 | 0 |
+| /t/welcome-to-discourse/5 | rs | 154 | 46.9 | 95.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 5 | 1640.4 | 2370.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 3 | 2365.9 | 3777.2 | 0 |
+| /u/system.json | rs | 576 | 13.4 | 38.7 | 0 |
+| /u/system.json | rails-dev (cached) | 19 | 416.6 | 602.5 | 0 |
+| /u/system.json | rails-dev (uncached) | 17 | 440.3 | 903.7 | 0 |
+| /search.json?q=Welcome | rs | 253 | 28.6 | 72.5 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 98 | 70.3 | 273.1 | 473 |
+| /search.json?q=Welcome | rails-dev (uncached) | 118 | 66.2 | 124.7 | 580 |
+| /tag/design.json | rs | 199 | 36.7 | 88.4 | 0 |
+| /tag/design.json | rails-dev (cached) | 12 | 669.4 | 958.1 | 0 |
+| /tag/design.json | rails-dev (uncached) | 11 | 683.6 | 1405.3 | 0 |
+
+
+The non-2xx column of that run counted the requests oha aborts at the
+deadline (8 per row); corrected above. The 429s on Rails' search rows are
+the rate limiter.
+
+What the numbers say about discourse-rs itself: /srv/status shows the
+server's floor (10k req/s), while /latest.json at ~90 req/s and 85 ms p50
+under 8 connections is the serializer's per-topic queries and the
+per-request site settings load, not the framework. Those are the first
+things to profile.
+
+## 2026-09-30, investigating the /latest.json curve
+
+The first run's 92 req/s at 85 ms p50 was measured with 8 connections;
+measuring the scaling curve gave 137 req/s at 7 ms with one connection,
+231 at two, and then a fall: 94 at eight and nothing completing at
+sixteen.
+
+Two causes, one ours and one the machine's:
+
+- The `login_required` gate acquired a pool connection to read the
+  setting and held it while the handler ran, so every request occupied
+  two of the pool's ten connections; at sixteen clients they starved each
+  other until sqlx's 30 s acquire timeout. Fixed: the gate returns its
+  connection before calling the handler. Also removed one of the two
+  site-settings loads per request.
+- The laptop clamps its clocks under multi-core load: 4.8 GHz with one
+  busy core, ~920 MHz on every core with eight (amd-pstate `powersave`,
+  platform profile `balanced`), with a third of the time in the kernel at
+  that clock. Postgres alone shows the same curve (`pgbench` on
+  `SELECT 1`: 53k tps at one client, 102k at two, 46k at eight). CPU per
+  request grew tenfold on both sides between c=1 and c=8 for the same
+  work. Numbers above two connections on this machine measure the power
+  manager, not the port; run the harness with the `performance` governor
+  or on a machine that holds its clocks.
+
+What is ours to fix, measured at one connection where the clocks hold:
+a /latest.json request is 99 queries (30 topics times tags, thumbnail
+and first-post like count, plus the page query, users, groups, tags and
+settings) in about 5 ms, 4.7 ms of it in the serializer's per-topic
+round-trips. Batching those three per-topic lookups into one query each
+would take most of that out; it is the roadmap's performance item.
+
+## 2026-10-01, after batching the list serializer's per-topic queries
+
+TopicListSerializer now prefetches the visible tags, the share thumbnail
+or image upload, and the first post's like count for the whole page in
+one query each (`prefetch`); the per-topic methods read from that and
+only query on their own for topics outside the page (topic view's
+suggested topics, search, profiles). /latest.json went from 99 queries
+to 11, and at one connection from 137 req/s (7 ms p50) to 332 req/s
+(2.8 ms).
+
+Harness run at two connections, the range where this laptop keeps its
+clocks (see the investigation above). Same setup as the first run:
+release binary at the merge of perf/batch-topic-queries, the rs-backup dev
+agent on the same data.
+
+Duration 5s, concurrency 2, keepalive off, 2026-10-01T06:25Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 19778 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-dev (cached) | 1025 | 1.8 | 3.8 | 0 |
+| /srv/status | rails-dev (uncached) | 1040 | 1.8 | 3.7 | 0 |
+| /site.json | rs | 442 | 4.4 | 6.8 | 0 |
+| /site.json | rails-dev (cached) | 186 | 7.7 | 23.6 | 0 |
+| /site.json | rails-dev (uncached) | 204 | 7.2 | 21.1 | 0 |
+| /latest.json | rs | 595 | 3.3 | 5.5 | 0 |
+| /latest.json | rails-dev (cached) | 17 | 112.7 | 247.3 | 0 |
+| /latest.json | rails-dev (uncached) | 16 | 115 | 286.1 | 0 |
+| /latest | rs | 575 | 3.3 | 6 | 0 |
+| /latest | rails-dev (cached) | 9 | 188.2 | 367.7 | 0 |
+| /latest | rails-dev (uncached) | 9 | 196.5 | 456.2 | 0 |
+| /c/general/4.json | rs | 659 | 3 | 4.8 | 0 |
+| /c/general/4.json | rails-dev (cached) | 23 | 85.6 | 117.2 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 27 | 73.7 | 92.2 | 0 |
+| /categories.json | rs | 768 | 2.5 | 4.1 | 0 |
+| /categories.json | rails-dev (cached) | 22 | 85.2 | 165.3 | 0 |
+| /categories.json | rails-dev (uncached) | 24 | 80.7 | 108.1 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 489 | 4 | 6.2 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 14 | 136.7 | 167 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 13 | 147.9 | 269.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 392 | 5 | 7.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 8 | 224.5 | 423.2 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 9 | 225.1 | 314.5 | 0 |
+| /u/system.json | rs | 1654 | 1.2 | 2 | 0 |
+| /u/system.json | rails-dev (cached) | 40 | 48.9 | 75.4 | 0 |
+| /u/system.json | rails-dev (uncached) | 43 | 46.6 | 61.7 | 0 |
+| /search.json?q=Welcome | rs | 568 | 3.4 | 6.1 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 273 | 6.7 | 12.9 | 1358 |
+| /search.json?q=Welcome | rails-dev (uncached) | 283 | 6.8 | 11.2 | 1414 |
+| /tag/design.json | rs | 542 | 3.6 | 6.3 | 0 |
+| /tag/design.json | rails-dev (cached) | 26 | 75.4 | 94 | 0 |
+| /tag/design.json | rails-dev (uncached) | 27 | 71.8 | 101 | 0 |
+
+
+The Rails column also moved up from the first run (its /latest.json 8
+to 17 req/s): that is the clock clamp lifting at two connections, not a
+change on the Rails side. The topic page (/t/...) is the next per-post
+candidate, at 489 req/s against the lists' 600-770.
+
+## 2026-10-01, logged in
+
+The first logged-in run, with sessions slice 2 on `feat/logged-in-reads`
+(topic_users joins, muting, the guardian's secure categories and can_*
+predicates, the viewer block in the HTML shell). `scripts/bench -u
+user1:password` logs in once per target and sends the `_t` cookie, so
+Rails' anonymous cache is out of the picture and both sides resolve the
+session on every request; `/unread.json` and `/new.json` join the set.
+Same box and data as above, release binary at c6845d3, c=2.
+
+Session resolution is the new fixed cost: `/srv/status` fell from
+19778 req/s anonymous to 2709 logged in, which is the token lookup, the
+user row, the group memberships and the silenced check (three or four
+queries) per request. Rails pays the same shape (1040 -> 1121, it was
+already paying it). Caching the token-to-user step for a few seconds is
+the obvious next win; nothing else in the table moved by more than the
+per-user work itself (the `tu` join and the per-topic read-state keys
+cost `/latest.json` 595 -> 428 req/s).
+
+Duration 5s, concurrency 2, keepalive off, logged in as user1, 2026-10-01T15:04Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 2709 | 0.7 | 1.5 | 0 |
+| /srv/status | rails-dev (user) | 1121 | 1.6 | 4 | 0 |
+| /site.json | rs (user) | 366 | 5.3 | 8 | 0 |
+| /site.json | rails-dev (user) | 37 | 51.8 | 132.1 | 0 |
+| /latest.json | rs (user) | 428 | 4.5 | 8 | 0 |
+| /latest.json | rails-dev (user) | 13 | 143 | 204 | 0 |
+| /latest | rs (user) | 399 | 4.9 | 7.7 | 0 |
+| /latest | rails-dev (user) | 8 | 221.4 | 430 | 0 |
+| /c/general/4.json | rs (user) | 480 | 4 | 9.2 | 0 |
+| /c/general/4.json | rails-dev (user) | 18 | 107.5 | 189.7 | 0 |
+| /categories.json | rs (user) | 510 | 3.8 | 6.4 | 0 |
+| /categories.json | rails-dev (user) | 17 | 115.3 | 142.4 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 314 | 6.1 | 9.7 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 10 | 194.9 | 389.9 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 318 | 6.1 | 9.5 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 269.9 | 347.9 | 0 |
+| /u/system.json | rs (user) | 800 | 2.4 | 4.5 | 0 |
+| /u/system.json | rails-dev (user) | 21 | 92.6 | 123.7 | 0 |
+| /search.json?q=Welcome | rs (user) | 403 | 4.8 | 7.9 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 113 | 14.5 | 77.5 | 535 |
+| /tag/design.json | rs (user) | 474 | 4 | 9.7 | 0 |
+| /tag/design.json | rails-dev (user) | 19 | 102.2 | 133.4 | 0 |
+| /unread.json | rs (user) | 519 | 3.7 | 6.2 | 0 |
+| /unread.json | rails-dev (user) | 20 | 96.4 | 121.1 | 0 |
+| /new.json | rs (user) | 246 | 7.9 | 11.2 | 0 |
+| /new.json | rails-dev (user) | 14 | 135.1 | 211.7 | 0 |
+
+## 2026-10-01, build and test times
+
+Measured on the same laptop (powersave governor, see the first
+investigation), rustc 1.86, sqlx 0.8, 170 tests at the time.
+
+| measure | value |
+|---|---:|
+| `cargo build --release`, clean | 4m 53s |
+| `cargo build --release`, one-file change | 1m 15s |
+| `cargo build` (dev), one-file change | 4s |
+| `cargo test`, warm cache | 90s |
+
+The test time is dominated by the integration tests cloning the template
+database once per test (`CREATE DATABASE ... TEMPLATE`), about 1s each,
+and the parity replay (146 cases in-process, ~12s). `make lint` runs
+fmt-check, clippy with `-D warnings` and the tests.
+
+## 2026-10-01, after sessions slice 3
+
+Release binary at ebb0d37 (the merge of feat/notifications-messages plus
+docs), the rs-backup dev agent on the same data, c=2, after a reboot with
+nothing else running. Slice 3 brought two changes that touch every
+request: the guardian is built in the session layer with the connection
+it already holds (one checkout and two fewer queries per logged-in
+request), and resolved site settings are cached behind a table
+fingerprint (one small query instead of the table and the resolve, two
+or three times per request).
+
+Logged in, against the slice 2 run above: every row but /site.json moved
+up, by 2% to 41%. /srv/status 2709 -> 3277 req/s, /u/system.json 800 ->
+1129, /unread.json 519 -> 667, /tag/design.json 474 -> 597,
+/search.json 403 -> 500, /t/...json 314 -> 367, /latest.json 428 -> 438.
+The Rails column stayed where it was (/srv/status 1121 -> 1072), so the
+box is comparable between the two runs.
+
+Duration 5s, concurrency 2, keepalive off, logged in as user1, 2026-10-01T21:47Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 3277 | 0.6 | 1.6 | 0 |
+| /srv/status | rails-dev (user) | 1072 | 1.6 | 4.3 | 0 |
+| /site.json | rs (user) | 364 | 5.4 | 8 | 0 |
+| /site.json | rails-dev (user) | 37 | 49.9 | 115.2 | 0 |
+| /latest.json | rs (user) | 438 | 4.4 | 9.3 | 0 |
+| /latest.json | rails-dev (user) | 12 | 150.8 | 332.2 | 0 |
+| /latest | rs (user) | 437 | 4.5 | 6.9 | 0 |
+| /latest | rails-dev (user) | 8 | 217.2 | 460.7 | 0 |
+| /c/general/4.json | rs (user) | 542 | 3.5 | 7.1 | 0 |
+| /c/general/4.json | rails-dev (user) | 16 | 115.7 | 303.9 | 0 |
+| /categories.json | rs (user) | 569 | 3.4 | 5.6 | 0 |
+| /categories.json | rails-dev (user) | 18 | 103 | 163.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 367 | 5.3 | 8.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 10 | 181 | 327.8 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 348 | 5.6 | 8.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 254 | 404.3 | 0 |
+| /u/system.json | rs (user) | 1129 | 1.7 | 3.3 | 0 |
+| /u/system.json | rails-dev (user) | 24 | 82.3 | 166.2 | 0 |
+| /search.json?q=Welcome | rs (user) | 500 | 3.9 | 6.2 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 123 | 13.3 | 70.2 | 588 |
+| /tag/design.json | rs (user) | 597 | 3.2 | 7 | 0 |
+| /tag/design.json | rails-dev (user) | 21 | 92.1 | 115.4 | 0 |
+| /unread.json | rs (user) | 667 | 2.9 | 4.6 | 0 |
+| /unread.json | rails-dev (user) | 22 | 87.7 | 106.2 | 0 |
+| /new.json | rs (user) | 282 | 7 | 9.8 | 0 |
+| /new.json | rails-dev (user) | 16 | 119.8 | 202.8 | 0 |
+
+Anonymous, the first such run since the session layer exists (the last
+one was the batching run above, before sessions slice 1). The content
+endpoints are within the noise of 5 s runs either way, but the floor
+moved: /srv/status fell from 19778 to 5255 req/s. That is the session
+layer on a request with no cookie: `session::current::layer` checks out
+a connection and loads the settings before the handler and again after
+it, so two checkouts, two fingerprint queries and two clones of the
+resolved settings for a request that has no session to resolve or
+rotate. Before the fingerprint cache those were two full table loads.
+A request without a `_t` cookie needs neither; skipping both is the next
+cheap win, and the logged-in floor (3277) would gain the second one too
+if the response side reused the settings the request side loaded.
+
+Duration 5s, concurrency 2, keepalive off, 2026-10-01T21:44Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 5255 | 0.4 | 0.7 | 0 |
+| /srv/status | rails-dev (cached) | 1261 | 1.4 | 2.9 | 0 |
+| /srv/status | rails-dev (uncached) | 1298 | 1.4 | 2.9 | 0 |
+| /site.json | rs | 429 | 4.6 | 6.8 | 0 |
+| /site.json | rails-dev (cached) | 223 | 6.1 | 21.3 | 0 |
+| /site.json | rails-dev (uncached) | 253 | 5.4 | 17.5 | 0 |
+| /latest.json | rs | 660 | 2.9 | 4.9 | 0 |
+| /latest.json | rails-dev (cached) | 18 | 104.6 | 248.6 | 0 |
+| /latest.json | rails-dev (uncached) | 18 | 108.6 | 259.8 | 0 |
+| /latest | rs | 570 | 3.4 | 5.6 | 0 |
+| /latest | rails-dev (cached) | 10 | 183.6 | 470.9 | 0 |
+| /latest | rails-dev (uncached) | 10 | 184.6 | 402.8 | 0 |
+| /c/general/4.json | rs | 616 | 3.2 | 5.2 | 0 |
+| /c/general/4.json | rails-dev (cached) | 29 | 67.2 | 124.6 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 26 | 74.6 | 111 | 0 |
+| /categories.json | rs | 729 | 2.7 | 4.3 | 0 |
+| /categories.json | rails-dev (cached) | 23 | 81.6 | 228.1 | 0 |
+| /categories.json | rails-dev (uncached) | 24 | 80.8 | 136.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 430 | 4.5 | 7.4 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 13 | 143.1 | 215.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 13 | 145.4 | 197.4 | 0 |
+| /t/welcome-to-discourse/5 | rs | 430 | 4.6 | 6.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 9 | 212.8 | 307.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 10 | 194.8 | 377.7 | 0 |
+| /u/system.json | rs | 1490 | 1.3 | 2.5 | 0 |
+| /u/system.json | rails-dev (cached) | 48 | 41.2 | 60.1 | 0 |
+| /u/system.json | rails-dev (uncached) | 49 | 40.8 | 54.1 | 0 |
+| /search.json?q=Welcome | rs | 640 | 3 | 4.7 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 280 | 6.4 | 21.5 | 1390 |
+| /search.json?q=Welcome | rails-dev (uncached) | 303 | 6.3 | 10.8 | 1512 |
+| /tag/design.json | rs | 756 | 2.5 | 4.4 | 0 |
+| /tag/design.json | rails-dev (cached) | 28 | 70.7 | 88.1 | 0 |
+| /tag/design.json | rails-dev (uncached) | 28 | 71.2 | 85.9 | 0 |
+
+## 2026-10-01, the session layer skips requests without a cookie
+
+The fix for the floor found above (perf/cookieless-session): the layer
+only checks out a connection and loads the settings when the request
+carries `_t`, and the response side reuses those settings instead of
+loading them again, taking a second connection only for a live session
+(rotation, last-seen). discourse-rs alone, same box and data, c=2, 5 s.
+
+| endpoint | before | after |
+|---|---:|---:|
+| /srv/status, anonymous | 5255 | 19447 |
+| /u/system.json, anonymous | 1490 | 1960 |
+| /categories.json, anonymous | 729 | 838 |
+| /c/general/4.json, anonymous | 616 | 752 |
+| /latest.json, anonymous | 660 | 715 |
+| /srv/status, logged in | 3277 | 4817 |
+
+The anonymous floor is back where it was before sessions (19778). The
+other logged-in rows and the topic page did not move beyond the noise:
+their cost is the handler's own queries. The login gate still loads the
+settings once per non-exempt request, which is what is left of the
+per-request overhead for anonymous content.
