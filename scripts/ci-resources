@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Emit snapshots during compilation so a runner shutdown leaves evidence in the job log.
+snapshot() {
+  date -u '+Resource snapshot: %Y-%m-%dT%H:%M:%SZ'
+  printf 'Available CPUs: %s; Cargo build jobs: %s\n' "$(nproc)" "${CARGO_BUILD_JOBS:-default}"
+  free -m
+  df -h . /tmp
+  ps -eo pid,ppid,comm,%cpu,%mem,rss --sort=-rss | sed -n '1,16p'
+  for metric in memory.current memory.max memory.peak memory.events; do
+    if [[ -r /sys/fs/cgroup/$metric ]]; then
+      printf '%s: ' "$metric"
+      cat "/sys/fs/cgroup/$metric"
+    fi
+  done
+}
+
+snapshot
+while [[ ${1:-} != --once ]]; do
+  sleep 30
+  snapshot
+done
