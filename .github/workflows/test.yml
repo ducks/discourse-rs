@@ -60,6 +60,9 @@ jobs:
           --health-retries 5
 
     env:
+      # Limit concurrent compiler/linker processes, independently of nextest concurrency.
+      CARGO_BUILD_JOBS: "2"
+      LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
       PGHOST: localhost
       PGUSER: postgres
       PGPASSWORD: postgres
@@ -84,8 +87,18 @@ jobs:
         with:
           tool: cargo-nextest@0.9.95
 
+      - name: Install avatar font
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y fonts-urw-base35
+          test -r "$LETTER_AVATAR_FONT"
+
       - name: Load vendored Discourse schema
         run: scripts/db-load --force discourse_rs_test
 
       - name: Test
-        run: cargo nextest run --workspace --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}
+        run: |
+          bash scripts/ci-resources &
+          monitor_pid=$!
+          trap 'kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true' EXIT
+          cargo nextest run --workspace --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}
