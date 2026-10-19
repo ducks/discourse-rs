@@ -1,0 +1,8 @@
+[
+ {"name":"latest-json","path":"/latest.json"},
+ {"name":"categories-json","path":"/categories.json"},
+ {"name":"short-topic-json","path":"/t/new-to-discourse-start-here/67.json"},
+ {"name":"long-topic-json","path":"/t/discourse-is-not-going-closed-source/77.json"},
+ {"name":"long-topic-html","path":"/t/discourse-is-not-going-closed-source/77"},
+ {"name":"search-json","path":"/search.json?q=Discourse"}
+]

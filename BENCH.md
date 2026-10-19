@@ -1,13 +1,14 @@
 # Benchmarks
 
-The latest recorded measurements are from October 16, 2026. They show substantial
-endpoint throughput gains over Rails on the small parity seed and identify useful
-optimizations within discourse-rs. They do not establish production capacity or
-performance on a large forum.
+The latest measurements use the October 19 public Meta corpus: 85 topics, 572
+posts, and 180 users including the original seed. Rust and production Rails
+served separate copies of the same snapshot on **one PostgreSQL 18.6 instance**.
+This is still a small forum, not
+a production-capacity test.
 
-The public Meta corpus collected on October 19 has not been benchmarked yet.
-All original tables, profiles, and experiment notes are in the
-[benchmark history](docs/bench-history.md).
+See the [public corpus baseline](docs/bench-public-meta-20261019.md) for setup,
+correctness checks, first-pass latency, and import timing. Older tables, profiles,
+and experiment notes are in the [benchmark history](docs/bench-history.md).
 
 ## Reading the results
 
@@ -28,7 +29,34 @@ All original tables, profiles, and experiment notes are in the
 - These were local tests: client, servers, and PostgreSQL shared one machine,
   with HTTP keep-alive disabled. Several optimization runs competed with builds.
 
-## Latest production Rails comparison
+## Public corpus baseline, October 19
+
+Release Rust `ef9eec98` and production Rails `bf55a44`, anonymous requests,
+concurrency 16, three five-second rounds. The table gives median throughput with
+response caching bypassed on **both** servers. All 72 measured rows, including
+cache-eligible requests, had zero HTTP or connection errors.
+
+| Endpoint | Rust req/s | Rails req/s | Rust p50, ms | Rails p50, ms |
+|---|---:|---:|---:|---:|
+| Latest JSON | 2,238 | 124 | 7.1 | 130.9 |
+| Categories JSON | 1,277 | 239 | 12.6 | 63.5 |
+| One-post topic JSON | 1,392 | 136 | 11.5 | 117.3 |
+| Twenty-post topic JSON | 1,109 | 105 | 14.6 | 153.9 |
+| Search JSON | 276 | 112 | 57.9 | 145.4 |
+
+That is about 2.5x to 18x the Rails throughput on these JSON endpoints. The selected
+core response fields matched. Both database connections were verified against the
+same PostgreSQL 18.6 instance, settings, locale, and TCP endpoint. This remains a
+local deployment comparison: the applications have different runtime/worker
+architectures. No compression or keep-alive; no logged-in or mixed-traffic workload.
+
+Both implementations served verified anonymous cache hits much faster:
+roughly 15,000–16,000 JSON req/s for Rust and 3,000–4,000 for Rails. Those numbers
+mostly describe response-cache delivery. See the
+[full results](docs/bench-public-meta-20261019.md) for per-round data, p99,
+HTML results, setup limitations, and first-pass latency.
+
+## Historical production Rails comparison
 
 October 13: discourse-rs `eafbcea`, release build, production mode, fresh parity
 seed. The Rails reference was unchanged from the October 9 setup: Discourse
@@ -123,11 +151,19 @@ history describe much smaller versions of the project.
 
 ## Next useful measurement
 
-Run both current implementations against the public Meta baseline with matching
-settings and no competing builds. Record revisions, hardware, PostgreSQL settings,
-worker/pool sizes, cache state, authentication, compression, and rate-limit behavior.
-Repeat runs and retain error counts alongside throughput and latency.
+Expand the corpus to about 1,000 topics / 20,000 posts, including genuinely long
+threads, then repeat the baseline on the same PostgreSQL 18 server. Add logged-in
+traffic and mixed endpoint loads; measure browser navigation separately.
 
-Include long and short topics, search, and both anonymous and logged-in requests.
-Measure browser navigation separately from HTTP endpoints. That is the evidence
-needed before presenting a current, realistic performance comparison.
+The measured 1,000-post generation batch on PostgreSQL 18.6 took 102.0 seconds
+through Rails cooking and indexing. At that rate, 20,000 posts would take about
+34 minutes and 200,000 about 5.7 hours. Those are extrapolations, with background
+jobs skipped.
+
+Search profiling found 164 SQL queries for 48 results, including 48 tag queries,
+48 solved-state queries, and 48 category-field queries. Calling the topic
+serializer's existing batch-prefetch method reduced this to 26 queries. A separate
+three-round before/after run measured median uncached search throughput of
+283 → 408 req/s (+45%), with p50 latency of 56.7 → 38.7 ms. Responses matched
+apart from search-log IDs, with zero errors. The baseline tables above remain
+unchanged; see the [follow-up measurements](docs/bench-public-meta-20261019.md#search-prefetch-follow-up).

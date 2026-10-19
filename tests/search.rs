@@ -212,6 +212,53 @@ async fn secures_and_ranks_results() {
 }
 
 #[tokio::test]
+async fn results_keep_each_topics_tags_and_solved_state() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "discourse_solved_enabled", BOOL, "t").await;
+    set_setting(&db.pool, "tagging_enabled", BOOL, "t").await;
+    sqlx::raw_sql(
+        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at)
+         VALUES (4, 'enable_accepted_answers', 'true', now(), now()),
+                (4, 'empty_box_on_unsolved', 'true', now(), now());
+         INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at)
+         VALUES (35, 37, 2, now(), now());
+         INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at)
+         SELECT id, 37, 2, now(), now() FROM discourse_solved_solved_topics WHERE topic_id = 35;
+         INSERT INTO tags (name, slug, description, created_at, updated_at)
+         VALUES ('search-first', 'search-first', 'First result', now(), now()),
+                ('search-second', 'search-second', 'Second result', now(), now());
+         DELETE FROM topic_tags WHERE topic_id IN (35, 38);
+         INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at)
+         SELECT 35, id, now(), now() FROM tags WHERE name = 'search-first';
+         INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at)
+         SELECT 38, id, now(), now() FROM tags WHERE name = 'search-second';",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    let (status, _, body) = get(&db.pool, "/search.json?q=fixture").await;
+    assert_eq!(status, StatusCode::OK);
+    let json: Value = serde_json::from_str(&body).unwrap();
+    let topics = json["topics"].as_array().unwrap();
+    let first = topics.iter().find(|t| t["id"] == 35).unwrap();
+    let second = topics.iter().find(|t| t["id"] == 38).unwrap();
+    assert_eq!(first["tags"].as_array().unwrap().len(), 1);
+    assert_eq!(second["tags"].as_array().unwrap().len(), 1);
+    assert_eq!(first["tags"][0]["name"], "search-first");
+    assert_eq!(second["tags"][0]["name"], "search-second");
+    assert_eq!(first["tags_descriptions"]["search-first"], "First result");
+    assert_eq!(
+        second["tags_descriptions"]["search-second"],
+        "Second result"
+    );
+    assert_eq!(first["has_accepted_answer"], true);
+    assert_eq!(second["has_accepted_answer"], false);
+    assert_eq!(first["can_have_answer"], true);
+    assert!(second.get("can_have_answer").is_none());
+}
+
+#[tokio::test]
 async fn renders_a_results_page() {
     let db = TestDb::new().await;
     let (status, headers, html) = get(&db.pool, "/search?q=fixture").await;

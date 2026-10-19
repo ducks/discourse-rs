@@ -1048,6 +1048,7 @@ impl Search<'_> {
             .bind(&topic_ids)
             .fetch_all(&mut *list.conn)
             .await?;
+            list.prefetch(&rows).await?;
             let mut topics = Vec::new();
             for id in &topic_ids {
                 let Some(t) = rows.iter().find(|t| t.id == *id) else {
