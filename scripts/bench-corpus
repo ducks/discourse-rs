@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Anonymous endpoint comparison. Restart servers before invoking for a first-pass
+# sample; that is not an OS/database cold-cache test. JSON payloads are retained
+# for correctness checks. No compression or HTTP keep-alive on either target.
+# Usage: bench-corpus endpoints.json output-dir rs=http://... rails=http://...
+set -euo pipefail
+[[ $# -ge 4 ]] || { echo "usage: $0 endpoints.json output-dir name=url name=url [...]" >&2; exit 64; }
+endpoints="$1"
+out="$2"
+shift 2
+targets=("$@")
+duration="${DURATION:-5s}"
+concurrency="${CONCURRENCY:-16}"
+rounds="${ROUNDS:-3}"
+for tool in curl jq oha; do
+  command -v "$tool" >/dev/null || { echo "missing tool: $tool (use nix-shell)" >&2; exit 1; }
+done
+jq -e 'type == "array" and length > 0 and all(.[];
+  (.name | test("^[a-zA-Z0-9_-]+$")) and (.path | startswith("/")))' "$endpoints" >/dev/null
+[[ "$concurrency" =~ ^[1-9][0-9]*$ && "$rounds" =~ ^[1-9][0-9]*$ ]] || exit 64
+[[ ! -e "$out" ]] || { echo "output exists: $out" >&2; exit 1; }
+mkdir -p "$out"
+cp "$endpoints" "$out/endpoints.json"
+printf 'duration=%s\nconcurrency=%s\nrounds=%s\nstarted=%s\n' \
+  "$duration" "$concurrency" "$rounds" "$(date -u +%FT%TZ)" > "$out/run.txt"
+printf '%s\n' "${targets[@]}" >> "$out/run.txt"
+ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+headers=(-H "User-Agent: $ua" -H 'Accept-Encoding: identity')
+printf 'target\tendpoint\tstatus\tseconds\tbytes\n' > "$out/first-pass.tsv"
+printf 'round\ttarget\tmode\tendpoint\treq_s\tp50_ms\tp99_ms\terrors\n' > "$out/results.tsv"
+
+for target in "${targets[@]}"; do
+  name="${target%%=*}"
+  url="${target#*=}"
+  [[ "$name" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 64
+  while IFS=$'\t' read -r key path; do
+    curl --fail-with-body -sS --max-time 30 "${headers[@]}" \
+      -D "$out/$name-$key-first.headers" -o "$out/$name-$key-first.body" \
+      -w "$name\t$key\t%{http_code}\t%{time_total}\t%{size_download}\n" \
+      "$url$path" >> "$out/first-pass.tsv"
+  done < <(jq -r '.[] | [.name, .path] | @tsv' "$endpoints")
+done
+
+for ((round=1; round<=rounds; round++)); do
+  while IFS=$'\t' read -r key path; do
+    for mode in eligible bypass; do
+      request_headers=("${headers[@]}")
+      [[ "$mode" != bypass ]] || request_headers+=(-H 'Cookie: _bypass_cache=1')
+      # Reverse target order on alternating rounds to reduce ordering bias.
+      for ((index=0; index<${#targets[@]}; index++)); do
+        actual=$index
+        ((round % 2 == 1)) || actual=$((${#targets[@]} - 1 - index))
+        target="${targets[$actual]}"
+        name="${target%%=*}"
+        url="${target#*=}"
+        prefix="$out/$round-$name-$mode-$key"
+        for ((warm=0; warm<24; warm++)); do
+          curl --fail-with-body -sS --max-time 30 "${request_headers[@]}" \
+            -D "$prefix.headers" -o "$prefix.body" "$url$path"
+        done
+        oha -z "$duration" -c "$concurrency" --disable-keepalive --no-tui -j \
+          "${request_headers[@]}" "$url$path" > "$prefix.json"
+        jq -r --arg round "$round" --arg name "$name" --arg mode "$mode" --arg key "$key" '
+          ([.statusCodeDistribution | to_entries[] | select((.key|tonumber) < 200 or (.key|tonumber) >= 300) | .value] | add // 0) as $bad
+          | ([.errorDistribution | to_entries[] | select(.key != "aborted due to deadline") | .value] | add // 0) as $errors
+          | [$round, $name, $mode, $key, .summary.requestsPerSec,
+             (.latencyPercentiles.p50 * 1000), (.latencyPercentiles.p99 * 1000), ($bad + $errors)] | @tsv
+        ' "$prefix.json" | tee -a "$out/results.tsv"
+      done
+    done
+  done < <(jq -r '.[] | [.name, .path] | @tsv' "$endpoints")
+done

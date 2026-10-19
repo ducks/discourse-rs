@@ -1,0 +1,55 @@
+{
+  "users": 40,
+  "users_seconds": 7.831447262084112,
+  "topics": 50,
+  "posts": 1000,
+  "posts_seconds": 102.0476577100344,
+  "posts_per_second": 9.79934299757739,
+  "total_seconds": 111.85694726905786,
+  "indexed_posts": 1000,
+  "empty_cooked": 0,
+  "batches": [
+    {
+      "posts": 100,
+      "elapsed_seconds": 10.61589672404807
+    },
+    {
+      "posts": 200,
+      "elapsed_seconds": 20.627899418002926
+    },
+    {
+      "posts": 300,
+      "elapsed_seconds": 30.74941636400763
+    },
+    {
+      "posts": 400,
+      "elapsed_seconds": 40.66975885606371
+    },
+    {
+      "posts": 500,
+      "elapsed_seconds": 50.833721488015726
+    },
+    {
+      "posts": 600,
+      "elapsed_seconds": 61.447363376035355
+    },
+    {
+      "posts": 700,
+      "elapsed_seconds": 71.70533537608571
+    },
+    {
+      "posts": 800,
+      "elapsed_seconds": 81.86837932199705
+    },
+    {
+      "posts": 900,
+      "elapsed_seconds": 92.35465317603666
+    },
+    {
+      "posts": 1000,
+      "elapsed_seconds": 102.04760040307883
+    }
+  ],
+  "background_jobs": "fake",
+  "transaction": "per PostCreator call"
+}
