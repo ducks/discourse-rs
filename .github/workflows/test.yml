@@ -62,6 +62,8 @@ jobs:
     env:
       # Limit concurrent compiler/linker processes, independently of nextest concurrency.
       CARGO_BUILD_JOBS: "2"
+      # Reduce compiler/linker memory and artifact size; debug assertions remain enabled.
+      CARGO_PROFILE_TEST_DEBUG: "0"
       LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
       PGHOST: localhost
       PGUSER: postgres
