@@ -203,6 +203,9 @@ async fn the_backups_logs_since_the_operation_started() {
             .await
             .unwrap();
     }
+    // Other tests can hold back the bus's delivery horizon after publish commits.
+    drop(conn);
+    common::bus_messages(&st, position, &["/admin/backups/logs"]).await;
     let mut admin = Client::logged_in(st, "admin").await;
     let (_, html) = admin.page("/admin/backups/logs").await;
     assert!(html.contains(
