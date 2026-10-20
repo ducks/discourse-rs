@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "tl2_post_edit_time_limit": 0,
+    "post_links_allowed_groups": "1"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited to add a link to www.linkhere.com for everyone."
+        }
+      }
+    }
+  ]
+}

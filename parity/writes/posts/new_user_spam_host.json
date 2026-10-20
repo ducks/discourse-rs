@@ -1,0 +1,538 @@
+{
+  "name": "new_user_spam_host",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Have a look at [this deal](https://deals.example.com/today) before it is gone.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ],
+  "started_at": "2026-10-20T16:57:49.527853",
+  "transaction_started_at": "2026-10-20T16:57:48.322149",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry you cannot post a link to that host."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": true,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "This is an automated message. The new user /u/user0 user0 tried to create multiple posts with links to http://deals.example.com deals.example.com , but those posts were blocked to avoid spam. The user is still able to create new posts that do not link to http://deals.example.com deals.example.com . Please /u/user0 review the user . This can be modified via the newuser_spam_host_threshold and allowed_spam_host_domains site settings. Consider adding http://deals.example.com deals.example.com to the allowlist if they should be exempt.",
+          "search_data": "'/u/user0':18,55 'abl':42 'ad':77 'allow':70 'allowlist':82 'autom':13 'avoid':36 'block':5A,34 'com':28,29,52,53,78,79 'consid':76 'creat':22,44 'deal':28,29,52,53,78,79 'deals.example.com':28,29,52,53,78,79 'domain':73 'due':6A 'exampl':28,29,52,53,78,79 'example.com':28,29,52,53,78,79 'exempt':87 'host':67,72 'link':9A,26,50 'messag':14 'modifi':62 'multipl':23 'new':1A,16,45 'newus':65 'pleas':54 'post':4A,24,32,46 'repeat':8A 'review':56 'set':75 'site':74 'spam':37,66,71 'still':41 'threshold':68 'tri':20 'user':2A,17,39,58 'user0':3A,19 'via':63",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-20T16:57:49.796173",
+          "updated_at": "2026-10-20T16:57:49.796173",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "This is an automated message.\n\nThe new user [user0](/u/user0) tried to create multiple posts with links to deals.example.com, but those posts were blocked to avoid spam. The user is still able to create new posts that do not link to deals.example.com.\n\nPlease [review the user](/u/user0).\n\nThis can be modified via the `newuser_spam_host_threshold` and `allowed_spam_host_domains` site settings. Consider adding deals.example.com to the allowlist if they should be exempt.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>This is an automated message.</p>\n<p>The new user <a href=\"/u/user0\">user0</a> tried to create multiple posts with links to <a href=\"http://deals.example.com\">deals.example.com</a>, but those posts were blocked to avoid spam. The user is still able to create new posts that do not link to <a href=\"http://deals.example.com\">deals.example.com</a>.</p>\n<p>Please <a href=\"/u/user0\">review the user</a>.</p>\n<p>This can be modified via the <code>newuser_spam_host_threshold</code> and <code>allowed_spam_host_domains</code> site settings. Consider adding <a href=\"http://deals.example.com\">deals.example.com</a> to the allowlist if they should be exempt.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-20T16:57:49.749676",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-20T16:57:49.749746",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-20T16:57:49.749746",
+          "word_count": 77,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-20T16:57:49.787732",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-20T16:57:49.687644",
+          "updated_at": "2026-10-20T16:57:49.687644"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://deals.example.com",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "deals.example.com",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": false,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-20T16:57:49.811053",
+          "reflection": false,
+          "updated_at": "2026-10-20T16:57:49.811053",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "New user user0 posts blocked due to repeated links This is an automated message. The new user /u/user0 user0 tried to create multiple posts with links to http://deals.example.com deals.example.com , but those posts were blocked to avoid spam. The user",
+          "topic_id": 45,
+          "search_data": "'/u/user0':18B 'autom':13B 'avoid':36B 'block':5A,34B 'com':28B,29B 'creat':22B 'deal':28B,29B 'deals.example.com':28B,29B 'due':6A 'exampl':28B,29B 'example.com':28B,29B 'link':9A,26B 'messag':14B 'multipl':23B 'new':1A,16B 'post':4A,24B,32B 'repeat':8A 'spam':37B 'tri':20B 'user':2A,17B,39B 'user0':3A,19B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-20T16:57:49.714517",
+          "first_visited_at": "2026-10-20T16:57:49.714517",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-20T16:57:49.713087"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-20T16:57:49.822033",
+          "last_visited_at": "2026-10-20T16:57:49.6986",
+          "first_visited_at": "2026-10-20T16:57:49.6986",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-20T16:57:49.697581"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "new-user-user0-posts-blocked-due-to-repeated-links",
+          "score": null,
+          "title": "New user user0 posts blocked due to repeated links",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "This is an automated message. \nThe new user user0 tried to create multiple posts with links to deals.example.com, but those posts were blocked to avoid spam. The user is still able to create new posts that do not link to&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-20T16:57:49.749746",
+          "pinned_at": null,
+          "created_at": "2026-10-20T16:57:49.683909",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-20T16:57:49.835623",
+          "word_count": 77,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "New user user0 posts blocked due to repeated links",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-20T16:57:49.749746",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-20T16:57:49.683909",
+          "updated_at": "2026-10-20T16:57:49.723975",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ebaC0m0tlCGG6Pndt0DFliAuRok=",
+            "created_at": "2026-10-20T16:57:48.794841",
+            "rotated_at": "2026-10-20T16:57:48.793558",
+            "updated_at": "2026-10-20T16:57:48.794841",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ebaC0m0tlCGG6Pndt0DFliAuRok=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-20T16:57:49.533935",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ebaC0m0tlCGG6Pndt0DFliAuRok=",
+            "created_at": "2026-10-20T16:57:48.794841",
+            "rotated_at": "2026-10-20T16:57:48.793558",
+            "updated_at": "2026-10-20T16:57:48.794841",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ebaC0m0tlCGG6Pndt0DFliAuRok=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_groups": 1,
+    "topic_allowed_users": 9,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "settings": {
+    "newuser_spam_host_threshold": 1
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "recorded_from": {
+    "case": "814a950c70df1e3d2407bbf2b7d186b001262bec5d9f15d280f7e30f6aa6c780",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

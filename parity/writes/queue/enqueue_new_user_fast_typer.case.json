@@ -1,0 +1,19 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11",
+    "UPDATE user_stats SET post_count = 0, topic_count = 0 WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A first reply from a new member, pasted in far too fast to be typed.",
+        "typing_duration_msecs": 100
+      }
+    }
+  ]
+}

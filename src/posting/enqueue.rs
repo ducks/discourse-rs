@@ -156,22 +156,31 @@ pub(super) async fn enqueue(
         conn = pool.acquire().await?;
         let base_path = ctx.config.globals.relative_url_root().to_string();
         let analysis = validate::analyze(&cooked, &base_path)?;
-        validate::validate_post(
-            &mut conn,
-            ctx,
-            guardian,
-            &PostInput {
-                raw: &raw,
-                topic_id: Some(topic.id),
-                first_post: false,
-                private_message: false,
-                new_record: true,
-                post_id: None,
-                user_id: user.id,
-            },
-            &analysis,
-        )
-        .await?
+        // has_host_spam? (handle_spam only follows a create).
+        let max_oneboxes = s.get("max_oneboxes_per_post")?.to_i();
+        if validate::host_spam(&mut conn, ctx, guardian, false, &analysis, max_oneboxes)
+            .await?
+            .is_some()
+        {
+            vec![ctx.t("spamming_host")]
+        } else {
+            validate::validate_post(
+                &mut conn,
+                ctx,
+                guardian,
+                &PostInput {
+                    raw: &raw,
+                    topic_id: Some(topic.id),
+                    first_post: false,
+                    private_message: false,
+                    new_record: true,
+                    post_id: None,
+                    user_id: user.id,
+                },
+                &analysis,
+            )
+            .await?
+        }
     } else {
         let title = clean_title(
             args.title.as_deref().unwrap_or(""),
@@ -384,29 +393,18 @@ async fn auto_silence(
         until,
         reason,
         Some(reviewable_id),
+        true,
     )
     .await?;
     if !silenced || !ctx.settings.get("notify_mods_when_user_silenced")?.truthy() {
         return Ok(());
     }
-    if !user.username.is_ascii() {
-        return Err(Unsupported("user_url for a username to encode").into());
-    }
-    // user_path(encoded_username(lower: true))
-    let user_url = format!(
-        "{}/u/{}",
-        ctx.config.globals.relative_url_root(),
-        user.username.to_lowercase()
-    );
     crate::group_message::GroupMessage {
         group_name: "moderators",
         message_type: "user_automatically_silenced_with_reason",
         limit_once_per: None,
-        message_params: vec![
-            ("reason".to_string(), reason.to_string()),
-            ("username".to_string(), user.username.clone()),
-            ("user_url".to_string(), user_url),
-        ],
+        message_params: vec![("reason".to_string(), reason.to_string())],
+        user: Some(&user.username),
     }
     .create(pool, ctx)
     .await?;

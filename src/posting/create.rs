@@ -597,6 +597,48 @@ pub async fn create(
         return Err(Unsupported("posts with quotes (QuotedPost)").into());
     }
     let mut conn = pool.acquire().await?;
+    // has_host_spam?, ahead of PostValidator: refused, and the moderators
+    // told (handle_spam) unless the post was approved from the queue.
+    if !args.skip_validations {
+        let reply_in_message = reply_topic
+            .as_ref()
+            .is_some_and(|t| t.archetype == "private_message");
+        let max_oneboxes = s.get("max_oneboxes_per_post")?.to_i();
+        if let Some(hosts) = validate::host_spam(
+            &mut conn,
+            ctx,
+            guardian,
+            reply_in_message,
+            &analysis,
+            max_oneboxes,
+        )
+        .await?
+        {
+            // NewPostManager#perform_create_post then flags the user's
+            // linked posts as spam (flag_linked_posts_as_spam): system
+            // flags with a message, not ported.
+            let flagged: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM topic_links WHERE user_id = $1 AND post_id NOT IN \
+                   (SELECT post_id FROM post_actions WHERE post_action_type_id = 8 \
+                    AND disagreed_at IS NOT NULL))",
+            )
+            .bind(user.id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if flagged {
+                return Err(Unsupported(
+                    "flagging a new user's linked posts as spam (flag_linked_posts_as_spam)",
+                )
+                .into());
+            }
+            drop(conn);
+            if !args.reviewed_queued_post {
+                // Boxed: the message is posted through create.
+                Box::pin(spam_post_blocked(pool, ctx, &user.username, &hosts)).await?;
+            }
+            return Ok(Outcome::Invalid(vec![ctx.t("spamming_host")]));
+        }
+    }
     let mut errors = validate::validate_post(
         &mut conn,
         ctx,
@@ -623,6 +665,15 @@ pub async fn create(
     }
     if !errors.is_empty() && !args.skip_validations {
         return Ok(Outcome::Invalid(errors));
+    }
+    // handle_spam's SpamRule::FlagSockpuppets, after a reply is created.
+    if let Some(topic) = &reply_topic
+        && !args.skip_validations
+        && !args.reviewed_queued_post
+        && s.get("flag_sockpuppets")?.truthy()
+        && reply_is_from_sockpuppet(&mut conn, user.id, topic.id).await?
+    {
+        return Err(Unsupported("flag_sockpuppets (flagging a sockpuppet's reply)").into());
     }
     let new_polls = polls
         .iter()
@@ -1484,6 +1535,62 @@ pub(crate) async fn message_posted(
 
 /// `create_post_notice`: a first post gets the new-user notice, one after
 /// a long absence the returning-user notice.
+/// `handle_spam` for a post has_host_spam? refused: a message to the
+/// moderators naming its hosts (GroupMessage, once a day per user).
+async fn spam_post_blocked(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    username: &str,
+    hosts: &[String],
+) -> Result<(), AppError> {
+    let mut conn = pool.acquire().await?;
+    // Group[:moderators].name
+    let moderators: String = sqlx::query_scalar("SELECT name FROM groups WHERE id = $1")
+        .bind(crate::guardian::auto_groups::MODERATORS as i32)
+        .fetch_one(&mut *conn)
+        .await?;
+    drop(conn);
+    crate::group_message::GroupMessage {
+        group_name: &moderators,
+        message_type: "spam_post_blocked",
+        limit_once_per: Some(86_400),
+        message_params: vec![("domains".to_string(), hosts.join(", "))],
+        user: Some(username),
+    }
+    .create(pool, ctx)
+    .await?;
+    Ok(())
+}
+
+/// `SpamRule::FlagSockpuppets#reply_is_from_sockpuppet?` short of
+/// `ScreenedIpAddress.is_allowed?`, which only narrows it: the topic's
+/// first post is by another user, neither of them staff or staged, with
+/// the replying new user's IP address.
+async fn reply_is_from_sockpuppet(
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+) -> Result<bool, AppError> {
+    let day_ago = crate::clock::now_naive() - chrono::Duration::hours(24);
+    let found: Option<bool> = sqlx::query_scalar(
+        "SELECT NOT (f.admin OR f.moderator) AND NOT (u.admin OR u.moderator) \
+                AND NOT f.staged AND NOT u.staged AND u.id <> f.id \
+                AND u.ip_address IS NOT DISTINCT FROM f.ip_address \
+                AND (u.created_at >= $3 OR u.trust_level = 0) AND u.trust_level < 2 \
+         FROM users u, \
+              (SELECT user_id FROM posts WHERE topic_id = $2 AND deleted_at IS NULL \
+               ORDER BY post_number LIMIT 1) p \
+         JOIN users f ON f.id = p.user_id \
+         WHERE u.id = $1",
+    )
+    .bind(user_id)
+    .bind(topic_id)
+    .bind(day_ago)
+    .fetch_optional(&mut *conn)
+    .await?;
+    Ok(found == Some(true))
+}
+
 pub(crate) async fn post_notice(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,

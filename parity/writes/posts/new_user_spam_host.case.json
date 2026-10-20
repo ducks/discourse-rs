@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "settings": {
+    "newuser_spam_host_threshold": 1
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Have a look at [this deal](https://deals.example.com/today) before it is gone.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

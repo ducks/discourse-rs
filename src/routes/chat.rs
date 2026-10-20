@@ -592,6 +592,7 @@ async fn message_rate_limiter(
                 until,
                 &reason,
                 None,
+                false,
             )
             .await?;
         }

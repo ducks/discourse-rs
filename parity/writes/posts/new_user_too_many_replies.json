@@ -1,0 +1,84 @@
+{
+  "name": "new_user_too_many_replies",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 5,
+        "raw": "Another reply in somebody else's topic from a brand new member.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ],
+  "started_at": "2026-10-20T16:54:47.436124",
+  "transaction_started_at": "2026-10-20T16:54:46.461218",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "We're sorry, but new users are temporarily limited to 0 replies in the same topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "y9+/ODScwbv6nuwPKUAWOtM8Oek=",
+            "created_at": "2026-10-20T16:54:46.78853",
+            "rotated_at": "2026-10-20T16:54:46.787656",
+            "updated_at": "2026-10-20T16:54:46.78853",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "y9+/ODScwbv6nuwPKUAWOtM8Oek=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-20T16:54:47.441251",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "y9+/ODScwbv6nuwPKUAWOtM8Oek=",
+            "created_at": "2026-10-20T16:54:46.78853",
+            "rotated_at": "2026-10-20T16:54:46.787656",
+            "updated_at": "2026-10-20T16:54:46.78853",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "y9+/ODScwbv6nuwPKUAWOtM8Oek=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "newuser_max_replies_per_topic": 0
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "recorded_from": {
+    "case": "34ee5a8e2ca61da901b16c114b302bcf37fe80f6817a073a21ffbd446bedf349",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

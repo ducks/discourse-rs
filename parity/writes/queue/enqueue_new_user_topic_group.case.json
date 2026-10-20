@@ -1,0 +1,22 @@
+{
+  "user": "user0",
+  "settings": {
+    "approve_new_topics_unless_allowed_groups": "1|2|11"
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new member topic waiting for approval",
+        "raw": "A new topic from a new member that a moderator approves first.",
+        "category": 4,
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

@@ -22,19 +22,36 @@ pub struct GroupMessage<'a> {
     pub limit_once_per: Option<i64>,
     /// `message_params:`, over `base_url`.
     pub message_params: Vec<(String, String)>,
+    /// `user:`, the username of the user the message is about: its
+    /// `username` and `user_url` params, and part of the sent-recently key.
+    pub user: Option<&'a str>,
 }
 
 impl GroupMessage<'_> {
-    /// `message_params`: base_url, then the given params.
+    /// `message_params`: base_url, then the given params, then the user's.
     fn params(&self, ctx: &Ctx<'_>) -> Result<Vec<(String, String)>, AppError> {
         let urls = Urls {
             config: ctx.config,
             settings: ctx.settings,
         };
         let mut params = vec![("base_url".to_string(), urls.base_url()?)];
-        for (key, value) in &self.message_params {
-            params.retain(|(k, _)| k != key);
-            params.push((key.clone(), value.clone()));
+        let mut given = self.message_params.clone();
+        if let Some(username) = self.user {
+            if !username.is_ascii() {
+                return Err(Unsupported("user_url for a username to encode").into());
+            }
+            // user_path(encoded_username(lower: true))
+            let user_url = format!(
+                "{}/u/{}",
+                ctx.config.globals.relative_url_root(),
+                username.to_lowercase()
+            );
+            given.push(("username".to_string(), username.to_string()));
+            given.push(("user_url".to_string(), user_url));
+        }
+        for (key, value) in given {
+            params.retain(|(k, _)| *k != key);
+            params.push((key, value));
         }
         Ok(params)
     }
@@ -67,7 +84,12 @@ impl GroupMessage<'_> {
     }
 
     fn sent_recently_key(&self) -> String {
-        format!("grpmsg:{}:{}:", self.group_name, self.message_type)
+        format!(
+            "grpmsg:{}:{}:{}",
+            self.group_name,
+            self.message_type,
+            self.user.unwrap_or("")
+        )
     }
 
     /// `sent_recently?`

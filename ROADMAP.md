@@ -20,8 +20,8 @@ On main at 16353d29. Open: 124 items, 42 S, 2 S/M, 62 M, 18 L (phase 8:
 in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c. Phases
 9 to 12 together hold everything the markers name.
 
-Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1709 sites (1431
-distinct reasons); 165 more put the literal on the line after
+Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1708 sites (1430
+distinct reasons); 166 more put the literal on the line after
 `Unsupported(`, which that grep misses, so 1874 in all. Five `not_yet`
 write cases are left (124, 150, 152, 198, 252). By area, the grep's
 count first and all of them second where they differ, with the items
@@ -32,7 +32,7 @@ that own them:
 - Moderation (flags, review, deletion, penalties): 101 (106): 147-152, 194
 - Accounts, signup, login and invites: 92 (104): 153, 154, 250, 251,
   253, 255
-- Posting, editing and topic edits: 91 (95): 132, 134-138, 188
+- Posting, editing and topic edits: 90 (95): 132, 134-138, 188
 - Topic view and lists: 86 (90): 120, 124-129, 158, 159, 195, 197
 - Ruby engines (regexps, URLs, charsets, YAML, sanitizers, email CSS):
   85 (95): 174-179
@@ -56,8 +56,6 @@ migrations (Not planned).
 
 What a visitor or a new member meets first, by how soon:
 
-- A new account can't post: every trust level 0 author is refused
-  (posting/validate.rs:161, 134).
 - Staff can't open a topic with a deleted reply or a deleted topic, and
   a member who ignores anyone can't open topics at all
   (topic_view.rs:291,677,689, 124); ignoring is a preference since 193d.
@@ -67,7 +65,7 @@ What a visitor or a new member meets first, by how soon:
   isn't routed and the login page has no Forgot password link.
 - Polls draw as their cooked list with a "0 voters" stub, so nobody can
   vote (228); building one from the composer is 229.
-- A topic title with a unicode emoji is refused (posting/validate.rs:770,
+- A topic title with a unicode emoji is refused (posting/validate.rs:1090,
   132); so is a post with an uploaded video or audio file
   (posting/create.rs:591, 138, with 141).
 - Checklists can't be checked (242), the staff review queue has no page
@@ -1370,9 +1368,9 @@ have handlers now.
     jobs/bookmark_reminders.rs:148; reports/counts.rs:1204;
     reports/lists.rs:440; plugins/reactions/users.rs:703;
     invites.rs:1165; routes/invite_redeem.rs:908,1248;
-    routes/topic_update.rs:646; posting/validate.rs:883;
+    routes/topic_update.rs:646; posting/validate.rs:1203;
     routes/chat_pages.rs:406), slug_generation_method other than ascii
-    (posting/topic_save.rs:33; posting/create.rs:1644;
+    (posting/topic_save.rs:33; posting/create.rs:1751;
     posting/revise_topic.rs:1090; post_mover.rs:376;
     plugins/solved/by_user.rs:50), topics without a stored fancy_title
     on profiles (users.rs:1663). Titles with emoji codes are done
@@ -1494,12 +1492,12 @@ have handlers now.
     is not); a gravatar the reference already holds becomes a new upload
     here, the port's encoders giving the processed file another sha1
 132. `feat/title-emoji` S: unicode emoji in titles (posting/text.rs:283,
-    performEmojiEscape; posting/validate.rs:770), emoji in a quoted
+    performEmojiEscape; posting/validate.rs:1090), emoji in a quoted
     topic's title (crates/markdown), the emoji shortcut regex's
     backtracking (posting/text.rs:296)
 133. `feat/anonymous-posting` M: anonymous posting mode (the shadow
     accounts) wherever a shadow acts (69 sites, 2026-10-20): posting
-    (posting/validate.rs:80,153; posting/create.rs:239;
+    (posting/validate.rs:80,152; posting/create.rs:239;
     posting/revise.rs:179; posting/revise_topic.rs:413;
     posting/enqueue.rs:88), likes, flags and bookmarks
     (post_actions.rs:235; likes.rs:187,519; flags.rs:107;
@@ -1520,16 +1518,22 @@ have handlers now.
     routes/admin_dashboard_sections.rs:217; routes/tag_admin.rs:213,475,
     1343; routes/tag_groups.rs:249,298,360;
     routes/admin_config_about.rs:211; user_penalties.rs:430,689,838,
-    1015; routes/admin_users.rs:504,1837; site_setting_update.rs:224).
+    1018; routes/admin_users.rs:504,1837; site_setting_update.rs:224).
     The anonymous_action cookie's replay after a login is 211
-134. `feat/posting-trust-levels` M: posting as a new (TL0) or staged
-    user (posting/validate.rs:158,161: every trust level 0 author is
-    refused, so a new account can't post), links from users outside
-    post_links_allowed_groups (:610), max_consecutive_replies (:641),
-    staged users on restricted categories (topic_guardian.rs:267),
-    approving a staged user's queued post (posting/create.rs:331),
-    silencing a TL0 user (user_penalties.rs:926, hide_posts), TL0 bio
-    links (users.rs:708, strip_links)
+134. `feat/posting-trust-levels` M (rewritten 2026-10-20: trust level 0
+    authors post, held to PostValidator's new-user limits
+    (newuser_max_links, _embedded_media, _attachments,
+    _mentions_per_post, _replies_per_topic), links_require_trust with
+    allowed_link_domains, has_host_spam? and its spam_post_blocked
+    message, and silenced as fast typers (keep_posts); left:) posting
+    as a staged user (posting/validate.rs:157), staged users on
+    restricted categories (topic_guardian.rs:267), approving a staged
+    user's queued post (posting/create.rs:331), max_consecutive_replies
+    (posting/validate.rs:961), flagging a new user's linked posts as
+    spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
+    posting/create.rs:629), flag_sockpuppets (:676), silencing a TL0
+    user without keep_posts (user_penalties.rs:929, hide_posts; chat's
+    rate limit silence), TL0 bio links (users.rs:708, strip_links)
 135. `feat/quoted-posts` M: QuotedPost on create and revise
     (posting/create.rs:594,597; posting/revise.rs:331: a reply quoting a
     post is refused), quote alerts and quotes in group messages
@@ -1557,17 +1561,17 @@ have handlers now.
     version's post and raw (routes/posts.rs:546,601), an owner change's
     review_every_post and a hidden post's new owner unhiding it
     (post_owner_changer.rs:918,526)
-138. `feat/posting-rest` M: replies to whispers (posting/create.rs:887),
+138. `feat/posting-rest` M: replies to whispers (posting/create.rs:938),
     staff replying to closed topics (:551), uploaded video or audio
     (:591; posting/revise.rs:371), duplicate titles and titles the
-    cleaner changes (posting/validate.rs:813; posting/topic_save.rs:30;
+    cleaner changes (posting/validate.rs:1133; posting/topic_save.rs:30;
     post_owner_changer.rs:508), auto_close_topics_post_count
-    (posting/create.rs:1343), returning-user post notices (:1512),
-    featured topics with a category sort order (:1904),
-    suppress_secured_categories_from_admin (:1907;
+    (posting/create.rs:1394), returning-user post notices (:1619),
+    featured topics with a category sort order (:2011),
+    suppress_secured_categories_from_admin (:2014;
     jobs/post_alert.rs:728), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
-    regeneration (posting/create.rs:913; jobs/handlers.rs:928;
+    regeneration (posting/create.rs:964; jobs/handlers.rs:928;
     post_owner_changer.rs:372; post_mover.rs:901;
     posting/revise_topic.rs:1187; the admin's preview,
     routes/admin_config_branding.rs:173), posts#create's other params
@@ -1769,7 +1773,7 @@ have handlers now.
     review_posts.rs:1236)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
     and moderators in the review queue (topic_guardian.rs:191;
-    posting/validate.rs:211; review.rs:170; review_posts.rs:413,1138;
+    posting/validate.rs:449; review.rs:170; review_posts.rs:413,1138;
     review_list.rs:178; routes/review.rs:147; user_destroyer.rs:620;
     current_user.rs:552,972; reviewables.rs:91), moderators' view of
     flagged messages and warnings (guardian.rs:282;
@@ -1801,7 +1805,7 @@ have handlers now.
     username_changer.rs:92,568; user_name_suggester.rs:124,131;
     routes/invite_redeem.rs:403; pretty_text/mod.rs:491 for mentions;
     email/notification.rs:1048,1091; routes/required_fields.rs:206,321;
-    posting/enqueue.rs:393), flag name keys from non-ASCII names
+    group_message.rs:41), flag name keys from non-ASCII names
     (admin_flags.rs:207), titleizing a non-ASCII user field
     (plugins/poll/vote.rs:742), the change_display_name job
 154. `feat/signup-rest` M: overlong usernames, staged users, approval
@@ -2019,7 +2023,7 @@ have handlers now.
     watched words outside the engines' shared grammar, with full case
     folding or past the backtracking limit (word_watcher.rs:102,125,212,
     222,314,385,425,463,512; 80b), auto_silence_first_post_regex
-    (posting/validate.rs:178,182), permalink_normalizations
+    (posting/validate.rs:416,420), permalink_normalizations
     (permalinks.rs:37), embedding allowed paths (embedding.rs:154),
     ignore_by_title_regex and the receiver's address regexes
     (email/receiver.rs:325,465,494,886), group email domains

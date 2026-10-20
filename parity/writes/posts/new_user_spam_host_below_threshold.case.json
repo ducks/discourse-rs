@@ -1,0 +1,19 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11",
+    "INSERT INTO topic_links (topic_id, post_id, user_id, url, domain, internal, created_at, updated_at) VALUES (35, 35, 2, 'https://deals.example.com/a', 'deals.example.com', false, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Have a look at [this deal](https://deals.example.com/today) before it is gone.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "settings": {
+    "newuser_max_replies_per_topic": 0
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 5,
+        "raw": "Another reply in somebody else's topic from a brand new member.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}
