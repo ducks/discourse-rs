@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user2, post:3, topic:35\"]\nReply two from user2\n[/quote]\n\nThat reply is right, and this one quotes it as Ember inserts a quote.",
+        "reply_to_post_number": 3
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "process_post"
+  ]
+}

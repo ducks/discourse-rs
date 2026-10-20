@@ -1,0 +1,960 @@
+{
+  "name": "quote_other_topic",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user1, post:1, topic:38\"]\nA topic in a subcategory carrying a tag\n[/quote]\n\nA quote of the first post of another topic, with its link back."
+      }
+    }
+  ],
+  "started_at": "2026-10-20T20:58:43.61478",
+  "transaction_started_at": "2026-10-20T20:58:42.641705",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 53,
+        "name": "User2",
+        "username": "user2",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+        "created_at": "2026-10-20T20:58:43.709Z",
+        "cooked": "<aside class=\"quote no-group\" data-username=\"user1\" data-post=\"1\" data-topic=\"38\">\n<div class=\"title\">\n<div class=\"quote-controls\"></div>\n<img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3050/letter_avatar_proxy/v4/letter/u/5daacb/48.png\" class=\"avatar\"><a href=\"http://localhost:3050/t/parity-fixture-tagged-in-a-subcategory/38/1\">Parity fixture: tagged in a subcategory</a></div>\n<blockquote>\n<p>A topic in a subcategory carrying a tag</p>\n</blockquote>\n</aside>\n<p>A quote of the first post of another topic, with its link back.</p>",
+        "post_number": 6,
+        "post_type": 1,
+        "posts_count": 6,
+        "updated_at": "2026-10-20T20:58:43.709Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 0,
+        "readers_count": 0,
+        "score": 0,
+        "yours": true,
+        "topic_id": 35,
+        "topic_slug": "parity-fixture-replies-and-posters",
+        "display_username": "User2",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": true,
+        "can_delete": true,
+        "can_recover": false,
+        "can_see_hidden_post": true,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": false,
+        "raw": "[quote=\"user1, post:1, topic:38\"]\nA topic in a subcategory carrying a tag\n[/quote]\n\nA quote of the first post of another topic, with its link back.",
+        "actions_summary": [
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 4,
+        "draft_sequence": 1,
+        "hidden": false,
+        "trust_level": 2,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/parity-fixture-replies-and-posters/35/6",
+        "reactions": [],
+        "current_user_reaction": null,
+        "reaction_users_count": 0,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null
+      }
+    }
+  ],
+  "changes": {
+    "categories": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-01T07:04:33.522762",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 3,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 2,
+            "latest_post_id": 52,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 41,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          },
+          "after": {
+            "id": 4,
+            "icon": null,
+            "name": "General",
+            "slug": "general",
+            "color": "25AAE2",
+            "emoji": "blue_book",
+            "locale": null,
+            "user_id": -1,
+            "email_in": null,
+            "position": 3,
+            "topic_id": 3,
+            "posts_day": 5,
+            "created_at": "2026-07-25T05:58:16.309528",
+            "name_lower": "general",
+            "post_count": 6,
+            "posts_week": 5,
+            "posts_year": 6,
+            "sort_order": null,
+            "style_type": 2,
+            "text_color": "FFFFFF",
+            "topics_day": 2,
+            "updated_at": "2026-10-01T07:04:33.522762",
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "posts_month": 5,
+            "topic_count": 3,
+            "topics_week": 2,
+            "topics_year": 3,
+            "allow_badges": true,
+            "default_view": null,
+            "topics_month": 2,
+            "latest_post_id": 53,
+            "sort_ascending": null,
+            "topic_template": null,
+            "all_topics_wiki": false,
+            "latest_topic_id": 41,
+            "read_restricted": false,
+            "search_priority": 0,
+            "auto_close_hours": null,
+            "read_only_banner": null,
+            "uploaded_logo_id": null,
+            "allow_global_tags": false,
+            "contains_messages": null,
+            "default_top_period": "all",
+            "mailinglist_mirror": false,
+            "parent_category_id": null,
+            "default_list_filter": "all",
+            "num_featured_topics": 3,
+            "minimum_required_tags": 0,
+            "show_subcategory_list": false,
+            "uploaded_logo_dark_id": null,
+            "reviewable_by_group_id": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "uploaded_background_id": null,
+            "topic_title_placeholder": null,
+            "email_in_allow_strangers": false,
+            "default_slow_mode_seconds": null,
+            "topic_featured_link_allowed": true,
+            "uploaded_background_dark_id": null,
+            "auto_close_based_on_last_post": false,
+            "navigate_to_first_post_after_read": false,
+            "allow_unlimited_owner_edits_on_first_post": false
+          }
+        }
+      ]
+    },
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 4,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user2\",\"revision_number\":null,\"display_username\":\"user2\",\"display_name\":\"User2\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-20T20:58:43.932179",
+          "updated_at": "2026-10-20T20:58:43.932179",
+          "post_number": 6,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 2
+        },
+        {
+          "id": 54,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user2\",\"revision_number\":null,\"display_username\":\"user2\",\"display_name\":\"User2\"}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-20T20:58:43.995894",
+          "updated_at": "2026-10-20T20:58:43.995894",
+          "post_number": 6,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 3
+        }
+      ],
+      "deleted": [
+        {
+          "id": 39,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":38,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"3 replies\",\"display_name\":\"User1\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-09-30T07:28:29.832304",
+          "updated_at": "2026-09-30T07:28:29.832304",
+          "post_number": 2,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 2
+        }
+      ],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Parity fixture: tagged in a subcategory A topic in a subcategory carrying a tag A quote of the first post of another topic, with its link back.",
+          "search_data": "'anoth':29 'back':34 'carri':19 'first':26 'fixtur':2A,9 'general':6B 'guid':7C 'link':33 'pariti':1A,8 'post':27 'poster':5A 'quot':23 'repli':3A 'subcategori':13,18 'tag':10,21 'topic':15,30",
+          "private_message": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-20T20:58:43.735101",
+          "updated_at": "2026-10-20T20:58:43.735101",
+          "drafts_saved": 0,
+          "writing_device": "unknown",
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 4,
+          "topic_id": 35,
+          "post_number": 6
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "[quote=\"user1, post:1, topic:38\"]\nA topic in a subcategory carrying a tag\n[/quote]\n\nA quote of the first post of another topic, with its link back.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<aside class=\"quote no-group\" data-username=\"user1\" data-post=\"1\" data-topic=\"38\">\n<div class=\"title\">\n<div class=\"quote-controls\"></div>\n<img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3050/letter_avatar_proxy/v4/letter/u/5daacb/48.png\" class=\"avatar\"><a href=\"//localhost:3050/t/parity-fixture-tagged-in-a-subcategory/38/1\">Parity fixture: tagged in a subcategory</a></div>\n<blockquote>\n<p>A topic in a subcategory carrying a tag</p>\n</blockquote>\n</aside>\n<p>A quote of the first post of another topic, with its link back.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 4,
+          "version": 1,
+          "baked_at": "2026-10-20T20:58:43.709399",
+          "topic_id": 35,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-20T20:58:43.70946",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 6,
+          "spam_count": 0,
+          "updated_at": "2026-10-20T20:58:43.70946",
+          "word_count": 28,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 6,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 4,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-20T20:58:43.732431",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "quoted_posts": {
+      "inserted": [
+        {
+          "id": 1,
+          "post_id": 53,
+          "created_at": "2026-10-20T20:58:42.641705",
+          "updated_at": "2026-10-20T20:58:42.641705",
+          "quoted_post_id": 42
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3050/t/parity-fixture-tagged-in-a-subcategory/38",
+          "quote": true,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": 4,
+          "internal": true,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-20T20:58:43.754244",
+          "reflection": false,
+          "updated_at": "2026-10-20T20:58:43.754244",
+          "link_post_id": 42,
+          "link_topic_id": 38
+        },
+        {
+          "id": 21,
+          "url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/6",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 42,
+          "user_id": 4,
+          "internal": true,
+          "topic_id": 38,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-20T20:58:43.755245",
+          "reflection": true,
+          "updated_at": "2026-10-20T20:58:43.755245",
+          "link_post_id": 53,
+          "link_topic_id": 35
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-09-30T07:28:29.207662",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 3,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.215851"
+          },
+          "after": {
+            "id": 36,
+            "liked": false,
+            "posted": true,
+            "user_id": 4,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-20T20:58:43.760521",
+            "last_visited_at": "2026-09-30T07:28:29.208209",
+            "first_visited_at": "2026-09-30T07:28:29.208209",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 6,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.215851"
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-20T20:58:43.70946",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-20T20:58:43.767283",
+            "word_count": 96,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 6,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-20T20:58:43.70946",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 4,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 6,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 6
+          }
+        }
+      ]
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 4,
+          "created_at": "2026-10-20T20:58:43.70946",
+          "updated_at": "2026-10-20T20:58:43.738733",
+          "action_type": 5,
+          "acting_user_id": 4,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 35
+        },
+        {
+          "id": 66,
+          "user_id": 2,
+          "created_at": "2026-10-20T20:58:43.919511",
+          "updated_at": "2026-10-20T20:58:43.919511",
+          "action_type": 6,
+          "acting_user_id": 4,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 35
+        },
+        {
+          "id": 67,
+          "user_id": 3,
+          "created_at": "2026-10-20T20:58:43.983994",
+          "updated_at": "2026-10-20T20:58:43.983994",
+          "action_type": 9,
+          "acting_user_id": 4,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 35
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 369,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l+vlfXJIBYV+CxJAf3LDS7yR8dw=",
+            "created_at": "2026-10-20T20:58:42.99666",
+            "rotated_at": "2026-10-20T20:58:42.995897",
+            "updated_at": "2026-10-20T20:58:42.99666",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "l+vlfXJIBYV+CxJAf3LDS7yR8dw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 369,
+            "seen_at": "2026-10-20T20:58:43.621946",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l+vlfXJIBYV+CxJAf3LDS7yR8dw=",
+            "created_at": "2026-10-20T20:58:42.99666",
+            "rotated_at": "2026-10-20T20:58:42.995897",
+            "updated_at": "2026-10-20T20:58:42.99666",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "l+vlfXJIBYV+CxJAf3LDS7yR8dw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 2,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-20T20:58:43.774611",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-20T20:58:43.70946",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 4,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 35
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "notify_mailing_list_subscribers in 600s",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "notifications": 53,
+    "post_stats": 52,
+    "posts": 53,
+    "quoted_posts": 1,
+    "topic_links": 20,
+    "user_actions": 65
+  },
+  "jobs_from_jobs": [
+    [
+      "user_email in 600s",
+      {
+        "type": "user_replied",
+        "user_id": 2,
+        "notification_id": 53,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "user2",
+          "revision_number": null,
+          "display_username": "user2",
+          "display_name": "User2"
+        },
+        "notification_type": "replied",
+        "post_id": 53
+      }
+    ],
+    [
+      "user_email in 600s",
+      {
+        "type": "user_quoted",
+        "user_id": 3,
+        "notification_id": 54,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "user2",
+          "revision_number": null,
+          "display_username": "user2",
+          "display_name": "User2"
+        },
+        "notification_type": "quoted",
+        "post_id": 53
+      }
+    ],
+    [
+      "pull_hotlinked_images",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "13dd2729c02e25bec686506667ae4fa989bbeed66f2394e38daa44f905fa712e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

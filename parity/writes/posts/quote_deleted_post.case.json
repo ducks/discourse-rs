@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user2, post:1, topic:40\"]\nThis topic is deleted\n[/quote]\n\nA quote of a post in a topic that was deleted since."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "process_post"
+  ]
+}

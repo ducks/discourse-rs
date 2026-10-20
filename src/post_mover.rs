@@ -1021,10 +1021,7 @@ impl Mover<'_, '_> {
         )
         .await?;
         let base_path = ctx.config.globals.relative_url_root().to_string();
-        let analysis = validate::analyze(&cooked, &base_path)?;
-        if analysis.has_quotes {
-            return Err(Unsupported("copying a first post with quotes (QuotedPost)").into());
-        }
+        validate::analyze(&cooked, &base_path)?;
         // build_post_stats
         let draft_key = format!("topic_{topic_id}");
         let sequence =
@@ -1055,12 +1052,14 @@ impl Mover<'_, '_> {
         .bind(topic_id)
         .fetch_one(&mut *conn)
         .await?;
+        // setup_post's extract_quoted_post_numbers: the quote_count.
+        let quoted = crate::posting::quotes::quoted_post_numbers(&post.raw, topic_id, post_number);
         let (new_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
             "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, created_at, updated_at, \
                                 last_editor_id, word_count, sort_order, last_version_at, baked_at, \
                                 baked_version, wiki, quote_count, via_email, raw_email, cook_method) \
              VALUES ($1, $2, $3, $4, $5, $6, clock_timestamp(), $1, $7, $3, clock_timestamp(), \
-                     clock_timestamp(), $8, FALSE, 0, $9, $10, $11) \
+                     clock_timestamp(), $8, FALSE, $12, $9, $10, $11) \
              RETURNING id, created_at",
         )
         .bind(author)
@@ -1074,6 +1073,7 @@ impl Mover<'_, '_> {
         .bind(post.via_email)
         .bind(&post.raw_email)
         .bind(post.cook_method)
+        .bind(quoted.len() as i32)
         .fetch_one(&mut *conn)
         .await?;
         sqlx::query(
@@ -1155,6 +1155,16 @@ impl Mover<'_, '_> {
         )
         .await?;
         self.defer_new_crawl_jobs(conn, &crawl_before).await?;
+        crate::posting::rebake::extract_quoted_posts(
+            &mut *conn,
+            new_id,
+            topic_id,
+            post_number,
+            None,
+            false,
+            &cooked,
+        )
+        .await?;
         // track_topic
         change_topic_user(
             self.ctx.bus,
@@ -1314,6 +1324,18 @@ impl Mover<'_, '_> {
             )
             .await?;
         }
+        crate::posting::quotes::save_reply_relationships(
+            &mut *conn,
+            crate::posting::quotes::ReplyingPost {
+                id: new_id,
+                topic_id,
+                post_type: crate::posting::post_types::REGULAR,
+                reply_to_post_number: None,
+                deleted: false,
+            },
+            &quoted,
+        )
+        .await?;
         // After PostCreator's transaction: publish (replies only), the
         // category's latest, post_created's web hooks; its jobs later.
         if post_number != 1 {

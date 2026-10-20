@@ -623,6 +623,65 @@
     "result": {}
   },
   {
+    "method": "avatar_template",
+    "args": [
+      "user2"
+    ],
+    "result": "//localhost:3042/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "user2"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "user2"
+    ],
+    "result": "user2"
+  },
+  {
+    "method": "get_topic_info",
+    "args": [
+      40
+    ],
+    "result": null
+  },
+  {
+    "method": "get_topic_info",
+    "args": [
+      42
+    ],
+    "result": {
+      "title": "On another topic",
+      "href": "/t/42"
+    }
+  },
+  {
+    "method": "avatar_template",
+    "args": [
+      "ghost"
+    ],
+    "result": ""
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "ghost"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "ghost"
+    ],
+    "result": "ghost"
+  },
+  {
     "method": "lookup_upload_urls",
     "args": [
       [

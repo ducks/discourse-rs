@@ -2233,3 +2233,32 @@ meta.discourse.org/new-features.json and served by the fixtures server)
 | 159 | returns presence for the requested channels | covered | online, get_duplicates (new, match) |
 | 183 | respects existence and security of the channel | covered | unknown, get_anonymous, reply_restricted (new, match) |
 | 210 | count_only channels | needs-harness | registers a test channel prefix; no ported prefix is count only |
+
+## Quotes (QuotedPost, PostAlerter, CookedPostProcessor)
+
+No request spec quotes a post; the behaviour is specced on the models
+and services a reply with a quote goes through, inventoried here.
+
+| Spec | Line | Scenario | Class | Case / note |
+|---|---|---|---|---|
+| models/quoted_post_spec.rb | 4 | correctly extracts quotes | covered | posts/quote_reply_same_topic, posts/quote_other_topic |
+| models/quoted_post_spec.rb | 46 | doesn't count quotes from the same post | recordable | quote_self (a reply quoting its own post number) |
+| models/quoted_post_spec.rb | 68 | correctly handles deltas | covered | posts/edit_add_quote, posts/edit_remove_quote |
+| services/post_alerter_spec.rb | 319 | notifies a group member if someone quotes their post | covered | posts/pm_group_alert_quote |
+| services/post_alerter_spec.rb | 338 | no notification for a quote inside a whisper | unported | whisper in UNPORTED_CREATE_PARAMS |
+| services/post_alerter_spec.rb | 549 | does not notify muted users | recordable | quote_muted_user (setup: muted_users row) |
+| services/post_alerter_spec.rb | 556 | does not notify ignored users | recordable | quote_ignored_user (setup: ignored_users row) |
+| services/post_alerter_spec.rb | 563 | not again for a user with a reply notification | covered | posts/quote_reply_same_topic |
+| services/post_alerter_spec.rb | 580 | does not collapse quote notifications | recordable | quote_twice (two replies quoting user2) |
+| services/post_alerter_spec.rb | 588 | does not notify again on revision | recordable | quote_edit_again (a quote, its post_alert, an edit and post_alert again) |
+| services/post_alerter_spec.rb | 595 | doesn't notify the poster | recordable | quote_own_post (user2 quoting post 3) |
+| services/post_alerter_spec.rb | 607 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
+| services/post_alerter_spec.rb | 622-659 | display names leading: username: param, nested and several quotes (x4) | recordable | quote_display_names (settings display_name_on_posts, prioritize_username_in_ux false) |
+| services/post_alerter_spec.rb | 545 | the quoted user's notification | covered | posts/quote_post_alert, posts/quote_other_topic, posts/quote_unlisted_topic; posts/quote_invisible_post and quote_deleted_post (no notification) |
+| lib/cooked_post_processor_spec.rb | 2068-2104 | quote unmodified / modified / missing (x3) | covered | the pretty_text corpus' cooked column (tests/pretty_text.rs) |
+| lib/cooked_post_processor_spec.rb | 2153 | full quote of the previous post removed | covered | posts/quote_full_direct_reply |
+| lib/cooked_post_processor_spec.rb | 2189-2250 | several quotes / not the first paragraph / setting off / nested (x4) | recordable | quote_full_* variants of quote_full_direct_reply |
+| lib/cooked_post_processor_spec.rb | 2265-2422 | the same with full names leading (x6) | recordable | as above with display_name_on_posts |
+| jobs/rebake_quoted_posts_for_user | - | posts quoting the user rebaked | covered | avatars/select_avatar_rebake_quoted |
+| lib/post_destroyer_spec.rb | - | recovering a reply with quotes | covered | posts/post_recover_with_quote |
+| models/post_mover_spec.rb | - | a moved first post that quotes | covered | topics/move_posts_first_post_with_quotes |

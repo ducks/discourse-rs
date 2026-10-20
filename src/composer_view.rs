@@ -232,7 +232,10 @@ pub fn popup_options(
         named: true,
     };
     let mut out = vec![
-        option("quote", "far-comment", "composer.quote_post_title"),
+        PopupOption {
+            ported: true,
+            ..option("quote", "far-comment", "composer.quote_post_title")
+        },
         PopupOption {
             when: Some("touch"),
             ..option("format-code", "code", "composer.code_title")
