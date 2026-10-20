@@ -392,7 +392,6 @@ async fn member_likes_a_post() {
 }
 
 #[tokio::test]
-#[ignore = "ROADMAP 124: viewing a topic with deleted posts as staff is refused"]
 async fn staff_open_a_topic_with_a_deleted_reply() {
     let (db, state) = app().await;
     sqlx::query(
@@ -404,11 +403,98 @@ async fn staff_open_a_topic_with_a_deleted_reply() {
     .execute(&db.pool)
     .await
     .unwrap();
+    let deleted: i32 =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NOT NULL")
+            .bind(TOPIC)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
     let mut admin = member(&state, "admin").await;
     let json = admin.get(&format!("/t/{TOPIC}.json")).await;
     assert_eq!(json.status, StatusCode::OK, "{}", json.body);
+    // The deleted reply is a gap, which show_deleted fills.
+    let doc = json.json();
+    assert_eq!(doc["has_deleted"], true);
+    let gaps = &doc["post_stream"]["gaps"]["before"];
+    assert!(
+        gaps.as_object()
+            .is_some_and(|g| g.values().any(|ids| ids[0] == deleted)),
+        "{gaps}"
+    );
+    let shown = admin
+        .get(&format!("/t/{TOPIC}.json?show_deleted=true"))
+        .await
+        .json();
+    assert!(
+        shown["post_stream"]["stream"]
+            .as_array()
+            .is_some_and(|s| s.contains(&deleted.into())),
+        "{shown}"
+    );
+    // The page: no slug redirects to the canonical URL, which draws the gap.
     let page = admin.get(&format!("/t/{TOPIC}")).await;
+    assert_eq!(page.status, StatusCode::MOVED_PERMANENTLY, "{}", page.body);
+    let page = admin
+        .get(&format!("/t/parity-fixture-replies-and-posters/{TOPIC}"))
+        .await;
     assert_eq!(page.status, StatusCode::OK, "{}", page.body);
+    assert!(
+        page.body.contains(&format!(
+            r#"<div class="gap" hx-get="/live/gap/{TOPIC}?ids={deleted}""#
+        )),
+        "{}",
+        page.body
+    );
+    // Filling it draws the deleted reply, deleted, with its recover button.
+    let filled = admin.get(&format!("/live/gap/{TOPIC}?ids={deleted}")).await;
+    assert_eq!(filled.status, StatusCode::OK, "{}", filled.body);
+    assert!(
+        filled.body.contains("post--deleted deleted"),
+        "{}",
+        filled.body
+    );
+    assert!(
+        filled
+            .body
+            .contains(&format!(r#"hx-put="/posts/{deleted}/recover""#)),
+        "{}",
+        filled.body
+    );
+}
+
+#[tokio::test]
+async fn members_who_ignore_someone_open_topics() {
+    let (db, state) = app().await;
+    // user1 ignores user0, who wrote the first post and a later reply.
+    sqlx::query(
+        "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) \
+         SELECT me.id, them.id, now(), now(), now() + interval '1 week' \
+         FROM users me, users them WHERE me.username = 'user1' AND them.username = 'user0'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut client = member(&state, "user1").await;
+    let json = client.get(&format!("/t/{TOPIC}.json")).await;
+    assert_eq!(json.status, StatusCode::OK, "{}", json.body);
+    let doc = json.json();
+    let posts = doc["post_stream"]["posts"].as_array().unwrap();
+    // The first post stays; user0's replies leave the stream as a gap.
+    assert_eq!(posts[0]["username"], "user0");
+    assert!(posts[1..].iter().all(|p| p["username"] != "user0"), "{doc}");
+    assert!(doc["post_stream"]["gaps"].is_object(), "{doc}");
+    let page = client
+        .get(&format!("/t/parity-fixture-replies-and-posters/{TOPIC}"))
+        .await;
+    assert_eq!(page.status, StatusCode::OK, "{}", page.body);
+    assert!(
+        page.body.contains(
+            r#"<div class="cooked">Ignored content<div class="cooked-selection-barrier""#
+        ),
+        "{}",
+        page.body
+    );
+    assert!(page.body.contains(r#"data-ignored-users="user0""#));
 }
 
 #[tokio::test]

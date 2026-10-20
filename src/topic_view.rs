@@ -37,6 +37,12 @@ pub enum TopicViewError {
     Unsupported(Unsupported),
     /// `Discourse::NotFound`: missing, deleted, or not visible to the viewer.
     NotFound,
+    /// `Discourse::InvalidAccess`: a topic the viewer may not see, which
+    /// topics#show answers in detail with detailed_404 on.
+    InvalidAccess,
+    /// `Discourse::NotLoggedIn`: a message for a visitor, with
+    /// detailed_404 on.
+    NotLoggedIn,
     /// A shared serializer's failure (the post header's badges).
     App(crate::AppError),
 }
@@ -55,6 +61,8 @@ impl std::fmt::Display for TopicViewError {
             TopicViewError::Url(e) => e.fmt(f),
             TopicViewError::Unsupported(e) => e.fmt(f),
             TopicViewError::NotFound => write!(f, "topic not found"),
+            TopicViewError::InvalidAccess => write!(f, "topic not visible to the viewer"),
+            TopicViewError::NotLoggedIn => write!(f, "topic needs a login"),
             TopicViewError::App(e) => e.fmt(f),
         }
     }
@@ -143,6 +151,7 @@ impl From<GuardianError> for TopicViewError {
 struct TopicExtra {
     word_count: Option<i32>,
     deleted_at: Option<NaiveDateTime>,
+    deleted_by_id: Option<i32>,
     pinned_until: Option<NaiveDateTime>,
     slow_mode_seconds: i32,
     external_id: Option<String>,
@@ -177,6 +186,7 @@ struct PostRow {
     hidden_at: Option<NaiveDateTime>,
     locked_by_id: Option<i32>,
     deleted_at: Option<NaiveDateTime>,
+    deleted_by_id: Option<i32>,
     version: i32,
     notify_user_count: i32,
     off_topic_count: i32,
@@ -219,6 +229,10 @@ pub struct Viewer {
     pub draft_sequence: Option<i64>,
     pub queue_enabled: bool,
     pub has_deleted: Option<bool>,
+    /// `ignored_user_like_counts`: per post, the likes by users the viewer
+    /// ignores, which come off its like count.
+    pub ignored_like_counts: HashMap<i32, i64>,
+    filter: PostFilter,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -242,10 +256,104 @@ pub struct BookmarkRow {
     pub post_number: Option<i32>,
 }
 
+#[derive(Default)]
 pub struct Options {
     /// `params[:page]`, 0 when absent.
     pub page: i64,
     pub post_number: Option<i64>,
+    /// `params[:show_deleted]`: any value, "false" too (Ruby truthiness),
+    /// keeps the deleted replies a staff member may see in the stream.
+    pub show_deleted: bool,
+    /// `post_ids`: these posts instead of a page (filter_posts_by_ids),
+    /// what a gap loads when it is filled.
+    pub post_ids: Option<Vec<i32>>,
+}
+
+/// `setup_filtered_posts`: which of the topic's posts the view streams.
+/// Every query over them binds the topic id as $1, the visible post types
+/// as $2 and the ignored user ids as $3.
+#[derive(Debug, Default, Clone)]
+struct PostFilter {
+    /// `can_see_deleted_posts?(topic.category)`: unfiltered_posts is
+    /// `with_deleted`.
+    see_deleted: bool,
+    /// `IgnoredUser.ignored_ids_for(user)`: their replies leave the stream.
+    ignored: Vec<i32>,
+    /// Deleted replies leave the stream too (a staff member without
+    /// show_deleted, when there are some).
+    hide_deleted: bool,
+}
+
+impl PostFilter {
+    /// `unfiltered_posts`: the post types, and the deleted posts only for
+    /// those who may see them.
+    fn unfiltered(&self) -> &'static str {
+        if self.see_deleted {
+            "posts.topic_id = $1 AND posts.post_type = ANY($2)"
+        } else {
+            "posts.topic_id = $1 AND posts.post_type = ANY($2) AND posts.deleted_at IS NULL"
+        }
+    }
+
+    /// `@predelete_filtered_posts`: less the ignored users' replies, as
+    /// Rails' `where.not("user_id IN (?) AND posts.post_number != 1")`
+    /// (which drops a post without a user too).
+    fn predelete(&self) -> String {
+        format!(
+            "{} AND (cardinality($3::int[]) = 0 OR NOT (posts.user_id = ANY($3) AND posts.post_number <> 1))",
+            self.unfiltered()
+        )
+    }
+
+    /// `@filtered_posts`
+    fn filtered(&self) -> String {
+        let mut sql = self.predelete();
+        if self.hide_deleted {
+            sql.push_str(" AND (posts.deleted_at IS NULL OR posts.post_number = 1)");
+        }
+        sql
+    }
+
+    /// `@contains_gaps`
+    fn contains_gaps(&self) -> bool {
+        !self.ignored.is_empty() || self.hide_deleted
+    }
+}
+
+/// Runs of post ids a stream leaves out, each keyed by a shown post id.
+pub type GapRuns = Vec<(i32, Vec<i32>)>;
+
+/// lib/gaps.rb: the runs of `original` missing from `subset`, each keyed
+/// by the subset's post after it (`before`), and what follows its last
+/// post (`after`).
+pub fn gaps(subset: &[i32], original: &[i32]) -> (GapRuns, GapRuns) {
+    let mut before = Vec::new();
+    let mut after = Vec::new();
+    if subset.is_empty() {
+        return (before, after);
+    }
+    let (mut i, mut j) = (0, 0);
+    let mut current: Vec<i32> = Vec::new();
+    while i < subset.len() {
+        let e1 = subset[i];
+        let e2 = original.get(j).copied();
+        if Some(e1) == e2 {
+            if !current.is_empty() {
+                before.push((e1, std::mem::take(&mut current)));
+            }
+            i += 1;
+        } else if let Some(e2) = e2 {
+            current.push(e2);
+        }
+        j += 1;
+        if i == subset.len() || j >= original.len() {
+            break;
+        }
+    }
+    if j < original.len() {
+        after.push((subset[i - 1], original[j..].to_vec()));
+    }
+    (before, after)
 }
 
 pub struct TopicView<'a> {
@@ -272,40 +380,76 @@ impl TopicView<'_> {
     /// NotFound. `Redirect` when `page` is past the end.
     pub async fn render(&mut self, topic_id: i32) -> Result<Rendered, TopicViewError> {
         let (topic, extra) = self.find_topic(topic_id).await?;
-        // check_and_raise_exceptions: PMs need a login (not ported), and
-        // what can_see_topic? refuses is a 404 (detailed_404 off).
-        // check_and_raise_exceptions: a PM for a visitor is NotLoggedIn,
-        // which topics#show turns into a 404 while detailed_404 is off.
+        // check_and_raise_exceptions: a PM for a visitor is NotLoggedIn and
+        // what can_see? refuses InvalidAccess, both of which topics#show
+        // turns into a plain 404 while detailed_404 is off.
+        let detailed_404 = self.settings.get("detailed_404")?.truthy();
         let pm = topic.archetype == "private_message";
         if pm && self.guardian.is_anonymous() {
-            return Err(TopicViewError::NotFound);
+            return Err(if detailed_404 {
+                TopicViewError::NotLoggedIn
+            } else {
+                TopicViewError::NotFound
+            });
         }
         let mut viewer = self.load_viewer(topic.id).await?;
         if !viewer.can_see {
-            if self.settings.get("detailed_404")?.truthy() {
-                return Err(Unsupported("detailed_404").into());
-            }
-            return Err(TopicViewError::NotFound);
-        }
-        if extra.deleted_at.is_some() {
-            return Err(Unsupported("viewing deleted topics as staff").into());
+            return Err(if detailed_404 {
+                TopicViewError::InvalidAccess
+            } else {
+                TopicViewError::NotFound
+            });
         }
         let Some(slug) = topic.slug.clone() else {
             return Err(Unsupported("topics without a stored slug (Slug.for)").into());
         };
 
-        let stream = self.filtered_post_stream(topic.id).await?;
-        let highest_post_number = self.highest_post_number(topic.id).await?;
+        let filter = viewer.filter.clone();
+        let stream = self.filtered_post_stream(topic.id, &filter).await?;
+        let highest_post_number = self.highest_post_number(topic.id, &filter).await?;
         let post_number = self.options.post_number.unwrap_or(1).max(1);
         let page = if self.options.page > 1 {
             self.options.page
         } else {
-            self.calculate_page(topic.id, post_number).await?
+            self.calculate_page(topic.id, post_number, &filter).await?
         };
-        let posts = match self.options.post_number {
-            Some(_) => self.filter_posts_near(topic.id, post_number).await?,
-            None => self.filter_posts_paged(topic.id, page).await?,
+        let posts = match (&self.options.post_ids, self.options.post_number) {
+            (Some(ids), _) => {
+                let ids = ids.clone();
+                self.filter_posts_by_ids(topic.id, &ids, &filter).await?
+            }
+            (None, Some(_)) => {
+                self.filter_posts_near(topic.id, post_number, &filter)
+                    .await?
+            }
+            (None, None) => self.filter_posts_paged(topic.id, page, &filter).await?,
         };
+        // TopicView#gaps: the filtered stream against the unfiltered one.
+        let gaps = if filter.contains_gaps() {
+            let sql = format!(
+                "SELECT id FROM posts WHERE {} ORDER BY sort_order",
+                filter.unfiltered()
+            );
+            let unfiltered: Vec<i32> = sqlx::query_scalar(&sql)
+                .bind(topic.id)
+                .bind(&self.post_types)
+                .fetch_all(&mut *self.conn)
+                .await?;
+            let ids: Vec<i32> = stream.iter().map(|(id, _)| *id).collect();
+            let (before, after) = gaps(&ids, &unfiltered);
+            let object = |runs: GapRuns| {
+                Value::Object(
+                    runs.into_iter()
+                        .map(|(id, run)| (id.to_string(), json!(run)))
+                        .collect(),
+                )
+            };
+            (!before.is_empty() || !after.is_empty())
+                .then(|| json!({"before": object(before), "after": object(after)}))
+        } else {
+            None
+        };
+        viewer.ignored_like_counts = self.ignored_like_counts(&posts).await?;
         // all_post_actions: the viewer's rows on the page's posts.
         viewer.taken = post_actions::taken_actions(
             &mut *self.conn,
@@ -325,10 +469,11 @@ impl TopicView<'_> {
         let serialized_posts = self
             .serialize_posts(&topic, &slug, &posts, &viewer, solved.as_ref(), can_vote)
             .await?;
-        out.insert(
-            "post_stream".into(),
-            json!({"posts": serialized_posts, "stream": stream.iter().map(|(id, _)| *id).collect::<Vec<_>>()}),
-        );
+        let mut post_stream = json!({"posts": serialized_posts, "stream": stream.iter().map(|(id, _)| *id).collect::<Vec<_>>()});
+        if let Some(gaps) = gaps {
+            post_stream["gaps"] = gaps;
+        }
+        out.insert("post_stream".into(), post_stream);
         out.insert(
             "timeline_lookup".into(),
             json!(timeline_lookup(&stream, 300)),
@@ -399,7 +544,7 @@ impl TopicView<'_> {
         out.insert("slug".into(), json!(slug));
         out.insert("category_id".into(), json!(topic.category_id));
         out.insert("word_count".into(), json!(extra.word_count));
-        out.insert("deleted_at".into(), Value::Null);
+        out.insert("deleted_at".into(), json!(extra.deleted_at.map(time_json)));
         out.insert("user_id".into(), json!(topic.user_id));
         if self.settings.get("topic_featured_link_enabled")?.truthy() {
             out.insert("featured_link".into(), json!(topic.featured_link));
@@ -464,23 +609,33 @@ impl TopicView<'_> {
                 "last_read_post_number".into(),
                 json!(tu.last_read_post_number),
             );
+            // filtered_post_id(last_read_post_number)
             let last_read_post_id: Option<i32> = match tu.last_read_post_number {
                 Some(n) => {
-                    sqlx::query_scalar(
-                        "SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-                         AND post_number = $3 LIMIT 1",
-                    )
-                    .bind(topic.id)
-                    .bind(&self.post_types)
-                    .bind(n)
-                    .fetch_optional(&mut *self.conn)
-                    .await?
+                    let sql = format!(
+                        "SELECT id FROM posts WHERE {} AND posts.post_number = $4 ORDER BY sort_order LIMIT 1",
+                        filter.filtered()
+                    );
+                    sqlx::query_scalar(&sql)
+                        .bind(topic.id)
+                        .bind(&self.post_types)
+                        .bind(&filter.ignored)
+                        .bind(n)
+                        .fetch_optional(&mut *self.conn)
+                        .await?
                 }
                 None => None,
             };
             out.insert("last_read_post_id".into(), json!(last_read_post_id));
         }
-        out.insert("deleted_by".into(), Value::Null);
+        let deleted_by = match extra.deleted_by_id {
+            Some(id) => {
+                let logo_small_url = self.logo_small_url().await?;
+                self.basic_user(id, logo_small_url.as_deref()).await?
+            }
+            None => Value::Null,
+        };
+        out.insert("deleted_by".into(), deleted_by);
         if let Some(has_deleted) = viewer.has_deleted {
             out.insert("has_deleted".into(), json!(has_deleted));
         }
@@ -657,6 +812,8 @@ impl TopicView<'_> {
             draft_sequence: None,
             queue_enabled: false,
             has_deleted: None,
+            ignored_like_counts: HashMap::new(),
+            filter: PostFilter::default(),
             ctx,
         };
         let Some(uid) = self.guardian.user_id() else {
@@ -665,30 +822,31 @@ impl TopicView<'_> {
         if !can_see {
             return Ok(viewer);
         }
-        // Ignored users remove their replies from the stream (with gaps).
-        let ignoring: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM ignored_users ig JOIN users u ON u.id = ig.ignored_user_id \
-             WHERE ig.user_id = $1 AND ig.ignored_user_id <> $1 AND NOT u.admin AND NOT u.moderator)",
+        // setup_filtered_posts: ignored users' replies leave the stream,
+        // then (last, so has_deleted? counts only what showing them adds)
+        // the deleted replies a staff member didn't ask to see.
+        viewer.filter.ignored = sqlx::query_scalar(
+            "SELECT ignored_user_id FROM ignored_users ig JOIN users u ON u.id = ig.ignored_user_id \
+             WHERE ig.user_id = $1 AND ig.ignored_user_id <> $1 AND NOT u.admin AND NOT u.moderator",
         )
         .bind(uid)
-        .fetch_one(&mut *self.conn)
+        .fetch_all(&mut *self.conn)
         .await?;
-        if ignoring {
-            return Err(Unsupported("ignored users in topic views").into());
-        }
         if self.guardian.can_see_deleted(self.settings)? {
-            // Deleted replies would be served with gaps (or inline with
-            // show_deleted); neither is ported.
-            let has_deleted: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM posts WHERE topic_id = $1 AND deleted_at IS NOT NULL AND post_number > 1)",
-            )
-            .bind(topic_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if has_deleted {
-                return Err(Unsupported("deleted replies for staff (post_stream.gaps)").into());
-            }
-            viewer.has_deleted = Some(false);
+            viewer.filter.see_deleted = true;
+            let sql = format!(
+                "SELECT EXISTS (SELECT 1 FROM posts WHERE {} AND posts.deleted_at IS NOT NULL \
+                 AND posts.post_number > 1)",
+                viewer.filter.predelete()
+            );
+            let has_deleted: bool = sqlx::query_scalar(&sql)
+                .bind(topic_id)
+                .bind(&self.post_types)
+                .bind(&viewer.filter.ignored)
+                .fetch_one(&mut *self.conn)
+                .await?;
+            viewer.filter.hide_deleted = has_deleted && !self.options.show_deleted;
+            viewer.has_deleted = Some(has_deleted);
         }
         viewer.topic_user = sqlx::query_as(
             "SELECT posted, last_read_post_number, notification_level, notifications_reason_id, \
@@ -764,6 +922,9 @@ impl TopicView<'_> {
             .ok_or(TopicViewError::NotFound)?;
         let (topic, topic_extra) = self.find_topic(post.topic_id).await?;
         let mut viewer = self.load_viewer(topic.id).await?;
+        viewer.ignored_like_counts = self
+            .ignored_like_counts(std::slice::from_ref(&post))
+            .await?;
         if with_viewer_actions {
             viewer.taken =
                 post_actions::taken_actions(&mut *self.conn, &[post.id], self.guardian.user_id())
@@ -886,7 +1047,7 @@ impl TopicView<'_> {
             return Err(TopicViewError::NotFound);
         };
         let extra: TopicExtra = sqlx::query_as(
-            "SELECT word_count, deleted_at, pinned_until, slow_mode_seconds, external_id \
+            "SELECT word_count, deleted_at, deleted_by_id, pinned_until, slow_mode_seconds, external_id \
              FROM topics WHERE id = $1",
         )
         .bind(id)
@@ -895,75 +1056,119 @@ impl TopicView<'_> {
         Ok((topic, extra))
     }
 
-    /// `filtered_post_stream`: every visible post id with its age in days.
+    /// `filtered_post_stream`: every streamed post id with its age in days.
     async fn filtered_post_stream(
         &mut self,
         topic_id: i32,
+        filter: &PostFilter,
     ) -> Result<Vec<(i32, i32)>, TopicViewError> {
-        Ok(sqlx::query_as(
+        let sql = format!(
             "SELECT id, (EXTRACT(EPOCH FROM now() - posts.created_at) / 86400)::INT AS days_ago \
-             FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-             ORDER BY sort_order",
-        )
-        .bind(topic_id)
-        .bind(&self.post_types)
-        .fetch_all(&mut *self.conn)
-        .await?)
+             FROM posts WHERE {} ORDER BY sort_order",
+            filter.filtered()
+        );
+        Ok(sqlx::query_as(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(&filter.ignored)
+            .fetch_all(&mut *self.conn)
+            .await?)
     }
 
-    async fn highest_post_number(&mut self, topic_id: i32) -> Result<Option<i32>, TopicViewError> {
-        Ok(sqlx::query_scalar(
-            "SELECT MAX(post_number) FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2)",
-        )
-        .bind(topic_id)
-        .bind(&self.post_types)
-        .fetch_one(&mut *self.conn)
-        .await?)
+    /// `highest_post_number`: the filtered posts' largest post number.
+    async fn highest_post_number(
+        &mut self,
+        topic_id: i32,
+        filter: &PostFilter,
+    ) -> Result<Option<i32>, TopicViewError> {
+        let sql = format!(
+            "SELECT MAX(post_number) FROM posts WHERE {}",
+            filter.filtered()
+        );
+        Ok(sqlx::query_scalar(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(&filter.ignored)
+            .fetch_one(&mut *self.conn)
+            .await?)
     }
 
-    /// `calculate_page`: the page holding post_number.
+    /// `calculate_page`: the page holding post_number, counted over the
+    /// unfiltered posts.
     async fn calculate_page(
         &mut self,
         topic_id: i32,
         post_number: i64,
+        filter: &PostFilter,
     ) -> Result<i64, TopicViewError> {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-             AND post_number <= $3",
-        )
-        .bind(topic_id)
-        .bind(&self.post_types)
-        .bind(post_number)
-        .fetch_one(&mut *self.conn)
-        .await?;
+        let sql = format!(
+            "SELECT count(*) FROM posts WHERE {} AND posts.post_number <= $3",
+            filter.unfiltered()
+        );
+        let count: i64 = sqlx::query_scalar(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(post_number)
+            .fetch_one(&mut *self.conn)
+            .await?;
         Ok(((count - 1).max(0) / CHUNK_SIZE) + 1)
     }
 
     const POST_SQL: &'static str = "SELECT id, user_id, topic_id, post_number, cooked, created_at, updated_at, \
         reply_to_post_number, reply_count, quote_count, incoming_link_count, reads, score, post_type, \
         hidden, hidden_reason_id, user_deleted, reply_to_user_id, edit_reason, wiki, reply_quoted, \
-        public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, version, \
+        public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, deleted_by_id, version, \
         notify_user_count, off_topic_count, inappropriate_count, spam_count, illegal_count, \
         notify_moderators_count, via_email FROM posts";
 
-    /// `filter_posts_paged`: chunk `page` of the visible posts.
+    /// `filter_posts_paged`: chunk `page` of the filtered posts.
     async fn filter_posts_paged(
         &mut self,
         topic_id: i32,
         page: i64,
+        filter: &PostFilter,
     ) -> Result<Vec<PostRow>, TopicViewError> {
         let sql = format!(
-            "{} WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-             ORDER BY sort_order OFFSET $3 LIMIT $4",
-            Self::POST_SQL
+            "SELECT id FROM posts WHERE {} ORDER BY sort_order OFFSET $4 LIMIT $5",
+            filter.filtered()
         );
-        Ok(sqlx::query_as(&sql)
+        let ids: Vec<i32> = sqlx::query_scalar(&sql)
             .bind(topic_id)
             .bind(&self.post_types)
+            .bind(&filter.ignored)
             .bind(CHUNK_SIZE * (page - 1).max(0))
             .bind(CHUNK_SIZE)
             .fetch_all(&mut *self.conn)
-            .await?)
+            .await?;
+        self.filter_posts_by_ids(topic_id, &ids, filter).await
+    }
+
+    /// `get_sort_order`: the post's, deleted or not, else the nearest
+    /// post's.
+    async fn get_sort_order(
+        &mut self,
+        topic_id: i32,
+        post_number: i64,
+    ) -> Result<Option<i32>, TopicViewError> {
+        let exact: Option<i32> = sqlx::query_scalar(
+            "SELECT sort_order FROM posts WHERE post_number = $2 AND topic_id = $1 LIMIT 1",
+        )
+        .bind(topic_id)
+        .bind(post_number as i32)
+        .fetch_optional(&mut *self.conn)
+        .await?
+        .flatten();
+        if exact.is_some() {
+            return Ok(exact);
+        }
+        Ok(sqlx::query_scalar(
+            "SELECT sort_order FROM posts WHERE topic_id = $1 ORDER BY abs(post_number - $2) LIMIT 1",
+        )
+        .bind(topic_id)
+        .bind(post_number as i32)
+        .fetch_optional(&mut *self.conn)
+        .await?
+        .flatten())
     }
 
     /// `filter_posts_near`: up to 5 posts before the target's sort order,
@@ -972,30 +1177,24 @@ impl TopicView<'_> {
         &mut self,
         topic_id: i32,
         post_number: i64,
+        filter: &PostFilter,
     ) -> Result<Vec<PostRow>, TopicViewError> {
         let before = (CHUNK_SIZE / 4).max(1);
-        let sort_order: Option<i32> = sqlx::query_scalar(
-            "SELECT sort_order FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-             ORDER BY abs(post_number - $3) LIMIT 1",
-        )
-        .bind(topic_id)
-        .bind(&self.post_types)
-        .bind(post_number as i32)
-        .fetch_optional(&mut *self.conn)
-        .await?;
-        let Some(sort_order) = sort_order else {
+        let Some(sort_order) = self.get_sort_order(topic_id, post_number).await? else {
             return Ok(Vec::new());
         };
 
         let ids_where = |cmp: &str, order: &str| {
             format!(
-                "SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
-                 AND sort_order {cmp} $3 ORDER BY sort_order {order} OFFSET $4 LIMIT $5"
+                "SELECT id FROM posts WHERE {} AND posts.sort_order {cmp} $4 \
+                 ORDER BY sort_order {order} OFFSET $5 LIMIT $6",
+                filter.filtered()
             )
         };
         let mut ids: Vec<i32> = sqlx::query_scalar(&ids_where("<", "DESC"))
             .bind(topic_id)
             .bind(&self.post_types)
+            .bind(&filter.ignored)
             .bind(sort_order)
             .bind(0i64)
             .bind(before)
@@ -1005,6 +1204,7 @@ impl TopicView<'_> {
         let after: Vec<i32> = sqlx::query_scalar(&ids_where(">=", "ASC"))
             .bind(topic_id)
             .bind(&self.post_types)
+            .bind(&filter.ignored)
             .bind(sort_order)
             .bind(0i64)
             .bind(CHUNK_SIZE - before_len)
@@ -1015,6 +1215,7 @@ impl TopicView<'_> {
             let more: Vec<i32> = sqlx::query_scalar(&ids_where("<", "DESC"))
                 .bind(topic_id)
                 .bind(&self.post_types)
+                .bind(&filter.ignored)
                 .bind(sort_order)
                 .bind(before_len)
                 .bind(CHUNK_SIZE - ids.len() as i64)
@@ -1022,17 +1223,52 @@ impl TopicView<'_> {
                 .await?;
             ids.extend(more);
         }
+        self.filter_posts_by_ids(topic_id, &ids, filter).await
+    }
 
-        // filter_posts_by_ids: reloaded in sort order.
+    /// `filter_posts_by_ids`: the topic's posts among `ids` of the visible
+    /// types in sort order, deleted ones for those who may see them.
+    async fn filter_posts_by_ids(
+        &mut self,
+        topic_id: i32,
+        ids: &[i32],
+        filter: &PostFilter,
+    ) -> Result<Vec<PostRow>, TopicViewError> {
         let sql = format!(
-            "{} WHERE topic_id = $1 AND id = ANY($2) ORDER BY sort_order",
-            Self::POST_SQL
+            "{} WHERE {} AND posts.id = ANY($3) ORDER BY sort_order",
+            Self::POST_SQL,
+            filter.unfiltered()
         );
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
-            .bind(&ids)
+            .bind(&self.post_types)
+            .bind(ids)
             .fetch_all(&mut *self.conn)
             .await?)
+    }
+
+    /// `ignored_user_like_counts`: for the viewer, each post's likes by
+    /// users they ignore (`user.ignored_user_ids`, staff among them).
+    async fn ignored_like_counts(
+        &mut self,
+        posts: &[PostRow],
+    ) -> Result<HashMap<i32, i64>, TopicViewError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(HashMap::new());
+        };
+        let ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        let rows: Vec<(i32, i64)> = sqlx::query_as(
+            "SELECT pa.post_id, count(*) FROM post_actions pa \
+             WHERE pa.post_id = ANY($1) AND pa.post_action_type_id = 2 AND pa.deleted_at IS NULL \
+               AND pa.user_id IN (SELECT u.id FROM ignored_users ig JOIN users u ON u.id = ig.ignored_user_id \
+                                  WHERE ig.user_id = $2) \
+             GROUP BY pa.post_id",
+        )
+        .bind(&ids)
+        .bind(uid)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(rows.into_iter().collect())
     }
 
     /// TopicView#actions_summary: every topic flag type with a zero count
@@ -1269,6 +1505,11 @@ impl TopicView<'_> {
             let can_flag_topic = topic_actions
                 .as_array()
                 .is_some_and(|a| a.iter().any(|x| x["can_act"] == json!(true)));
+            let can_recover = g
+                .can_recover_topic(&mut *self.conn, s, ctx, &viewer.secure_category_ids)
+                .await?;
+            let can_permanently_delete =
+                s.get("can_permanently_delete")?.truthy() && g.is_admin() && ctx.trashed();
             let flags: [(&str, bool); 20] = [
                 (
                     "can_move_posts",
@@ -1277,8 +1518,8 @@ impl TopicView<'_> {
                         && (g.is_staff() || !ctx.private_message()),
                 ),
                 ("can_delete", g.can_delete_topic(s, ctx)?),
-                ("can_permanently_delete", false),
-                ("can_recover", g.can_recover_topic(ctx)),
+                ("can_permanently_delete", can_permanently_delete),
+                ("can_recover", can_recover),
                 (
                     "can_remove_allowed_users",
                     g.can_remove_allowed_users(ctx, None, 0),
@@ -1473,6 +1714,7 @@ impl TopicView<'_> {
         let enable_names = self.settings.get("enable_names")?.truthy();
         let suppress_reply_when_quoting =
             self.settings.get("suppress_reply_when_quoting")?.truthy();
+        let can_permanently_delete = self.settings.get("can_permanently_delete")?.truthy();
 
         let user_ids: Vec<i32> = posts
             .iter()
@@ -1743,6 +1985,9 @@ impl TopicView<'_> {
                         && g.can_delete_post(s, &viewer.ctx, &ctx, can_see_post)?
                 ),
             );
+            if can_permanently_delete && g.is_admin() && post.deleted_at.is_some() {
+                p.insert("can_permanently_delete".into(), json!(true));
+            }
             p.insert(
                 "can_recover".into(),
                 json!(g.can_recover_post(s, &ctx, viewer.can_see)?),
@@ -1810,7 +2055,14 @@ impl TopicView<'_> {
                 .iter()
                 .map(|(key, id)| {
                     let count = match key.as_str() {
-                        "like" => post.like_count,
+                        "like" => {
+                            let ignored = viewer
+                                .ignored_like_counts
+                                .get(&post.id)
+                                .copied()
+                                .unwrap_or(0);
+                            (i64::from(post.like_count) - ignored).max(0) as i32
+                        }
                         "notify_user" => post.notify_user_count,
                         "off_topic" => post.off_topic_count,
                         "inappropriate" => post.inappropriate_count,
@@ -1848,7 +2100,16 @@ impl TopicView<'_> {
                 p.insert("hidden_reason_id".into(), json!(reason));
             }
             p.insert("trust_level".into(), json!(u.map(|u| u.trust_level)));
-            p.insert("deleted_at".into(), Value::Null);
+            p.insert("deleted_at".into(), json!(post.deleted_at.map(time_json)));
+            // include_deleted_by?: staff, and a deleter on record.
+            if g.is_staff()
+                && let Some(by) = post.deleted_by_id
+            {
+                let by = self.basic_user(by, logo_small_url.as_deref()).await?;
+                if !by.is_null() {
+                    p.insert("deleted_by".into(), by);
+                }
+            }
             p.insert("user_deleted".into(), json!(post.user_deleted));
             p.insert("edit_reason".into(), json!(post.edit_reason));
             p.insert(
@@ -2830,6 +3091,27 @@ fn messages_where(my_groups: &[i32]) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// lib/gaps.rb: a run is keyed by the shown post after it, what
+    /// follows the last shown post is `after`.
+    #[test]
+    fn gaps_key_runs_by_the_post_after_them() {
+        let none: GapRuns = Vec::new();
+        assert_eq!(gaps(&[1, 2, 3], &[1, 2, 3]), (none.clone(), none.clone()));
+        assert_eq!(
+            gaps(&[1, 3], &[1, 2, 3]),
+            (vec![(3, vec![2])], none.clone())
+        );
+        assert_eq!(
+            gaps(&[1, 2], &[1, 2, 3, 4]),
+            (none.clone(), vec![(2, vec![3, 4])])
+        );
+        assert_eq!(
+            gaps(&[2, 4], &[1, 2, 3, 4, 5]),
+            (vec![(2, vec![1]), (4, vec![3])], vec![(4, vec![5])])
+        );
+        assert_eq!(gaps(&[], &[1, 2]), (none.clone(), none));
+    }
 
     #[test]
     fn timeline_lookup_samples_days() {

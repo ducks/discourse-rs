@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40.json" },
+    { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40" }
+  ],
+  "ignore": ["/responses/0/body/suggested_topics", "/responses/1/body"]
+}

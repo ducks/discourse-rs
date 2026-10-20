@@ -19,6 +19,10 @@ use crate::{AppError, AppState};
 #[derive(Deserialize, Default)]
 pub struct ShowParams {
     page: Option<String>,
+    /// `params[:show_deleted]`: present at all, deleted replies stay in.
+    show_deleted: Option<String>,
+    /// `?post_number=`: params[:post_number] when the path has none.
+    post_number: Option<String>,
     /// `?slug=`: params[:slug] when the path has none (path params win).
     slug: Option<String>,
 }
@@ -198,6 +202,97 @@ async fn topic_missing(
     topic_not_found(state, incoming.guardian, page_slug).await
 }
 
+/// topics#show's InvalidAccess rescue with detailed_404 on: a deleted
+/// topic the viewer could otherwise see is a 410 "deleted_topic" (after
+/// the permalink check on its own URL), anything else the 403 itself.
+async fn detailed_invalid_access(
+    state: &AppState,
+    incoming: &Incoming<'_>,
+    topic_id: i32,
+    topic_id_param: Option<&str>,
+    page_slug: &str,
+) -> Result<Response, AppError> {
+    let guardian = incoming.guardian;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(topic) =
+        crate::topic_guardian::TopicCtx::load(&mut conn, &settings, guardian, topic_id).await?
+    else {
+        drop(conn);
+        return topic_not_found(state, guardian, page_slug).await;
+    };
+    // Notification.remove_for(current_user.id, params[:topic_id])
+    if let Some(user_id) = guardian.user_id() {
+        sqlx::query(
+            "DELETE FROM notifications WHERE user_id = $1 AND topic_id IS NOT DISTINCT FROM $2",
+        )
+        .bind(user_id)
+        .bind(topic_id_param.map(|t| crate::ruby::to_i(t) as i32))
+        .execute(&mut *conn)
+        .await?;
+    }
+    let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+    let can_see = guardian.can_see_topic(&settings, &topic, true, &secure)?;
+    let via_group = access_topic_via_group(&mut conn, &topic).await?;
+    let deleted = guardian.can_see_topic(&settings, &topic, false, &secure)?
+        || (!can_see && via_group && topic.deleted_at.is_some());
+    let (status, error_type, message, custom_message) = if deleted {
+        let stored: Option<String> = sqlx::query_scalar("SELECT slug FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+        let base_path = state.config.globals.relative_url_root();
+        let path = match stored.filter(|s| !s.is_empty()) {
+            Some(s) => format!("{base_path}/t/{s}/{topic_id}"),
+            None => format!("{base_path}/t/{topic_id}"),
+        };
+        drop(conn);
+        if let Some(redirect) =
+            crate::permalinks::check(state, guardian, incoming.headers, &path).await?
+        {
+            return Ok(redirect);
+        }
+        (
+            StatusCode::GONE,
+            "not_found",
+            state
+                .i18n
+                .t("deleted_topic")
+                .unwrap_or("Oops! This topic has been deleted and is no longer available."),
+            Some("deleted_topic"),
+        )
+    } else if !can_see && via_group {
+        return Err(crate::Unsupported("detailed_404 for a topic a group gives access to").into());
+    } else {
+        drop(conn);
+        (
+            StatusCode::FORBIDDEN,
+            "invalid_access",
+            state
+                .i18n
+                .t("invalid_access")
+                .unwrap_or("You are not permitted to view the requested resource."),
+            None,
+        )
+    };
+    let forbidden = status == StatusCode::FORBIDDEN;
+    let extras = not_found_extras(state, guardian, page_slug, forbidden, custom_message).await?;
+    let mut response = (
+        status,
+        Json(json!({"errors": [message], "error_type": error_type, "extras": extras})),
+    )
+        .into_response();
+    response
+        .extensions_mut()
+        .insert(super::not_found::ErrorPage {
+            status,
+            forbidden,
+            custom_message,
+        });
+    Ok(response)
+}
+
 /// The path topics#show checks for a permalink, None when it checks none.
 async fn permalink_path(
     state: &AppState,
@@ -367,7 +462,12 @@ async fn show(
             n.parse()
                 .map_err(|_| crate::Unsupported("non-numeric post_number"))?,
         ),
-        None => None,
+        // A query post_number, as TopicView reads it (`to_i`).
+        None => params
+            .post_number
+            .as_deref()
+            .filter(|n| !n.is_empty())
+            .map(crate::ruby::to_i),
     };
 
     let urls = Urls {
@@ -380,7 +480,12 @@ async fn show(
         i18n: &state.i18n,
         guardian,
         urls: &urls,
-        options: Options { page, post_number },
+        options: Options {
+            page,
+            post_number,
+            show_deleted: params.show_deleted.is_some(),
+            post_ids: None,
+        },
         post_types: Vec::new(),
         logo_small_url: None,
     };
@@ -390,6 +495,27 @@ async fn show(
             drop(view);
             drop(conn);
             return topic_missing(state, &incoming, slug, id, topic_id_param, &page_slug).await;
+        }
+        Err(TopicViewError::InvalidAccess) => {
+            drop(view);
+            drop(conn);
+            return detailed_invalid_access(state, &incoming, topic_id, topic_id_param, &page_slug)
+                .await;
+        }
+        Err(TopicViewError::NotLoggedIn) => {
+            // detailed_404 re-raises NotLoggedIn: a 403 with the
+            // not-found page as extras (a page request gets the 404).
+            drop(view);
+            drop(conn);
+            let extras = not_found_extras(state, guardian, &page_slug, true, None).await?;
+            let mut response = super::login_required::not_logged_in(state);
+            let body = json!({
+                "errors": [state.i18n.t("not_logged_in").unwrap_or("You need to be logged in to do that.")],
+                "error_type": "not_logged_in",
+                "extras": extras,
+            });
+            *response.body_mut() = axum::body::Body::from(body.to_string());
+            return Ok(response);
         }
         Err(e) => return Err(e.into()),
     };

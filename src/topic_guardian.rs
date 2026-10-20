@@ -475,11 +475,41 @@ impl Guardian {
         Ok(self.is_me_opt(topic.user_id) && topic.posts_count <= 1 && topic.created_at > day_ago)
     }
 
-    /// `can_recover_topic?` for a live topic: only a deleted one can be
-    /// recovered, which this slice never serves.
-    pub fn can_recover_topic(&self, topic: &TopicCtx) -> bool {
-        debug_assert!(!topic.trashed());
-        false
+    /// `can_recover_topic?`: a deleted topic for those who may delete any,
+    /// else whether its first post (deleted or not) can be recovered.
+    pub async fn can_recover_topic(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        topic: &TopicCtx,
+        secure_category_ids: &[i32],
+    ) -> Result<bool, GuardianError> {
+        if !self.is_staff() && !self.can_see_topic(settings, topic, false, secure_category_ids)? {
+            return Ok(false);
+        }
+        self.refuse_unported(settings)?;
+        if self.can_delete_all_posts_and_topics(settings)? {
+            return Ok(topic.trashed());
+        }
+        // topic.first_post_with_deleted
+        let first: Option<i32> = sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1 ORDER BY id LIMIT 1",
+        )
+        .bind(topic.id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let first = match first {
+            Some(id) => PostCtx::load(&mut *conn, id).await?,
+            None => None,
+        };
+        let Some(first) = first else {
+            return Ok(false);
+        };
+        if first.trashed() && !self.can_see_deleted_post(&first) {
+            return Ok(false);
+        }
+        let can_see = self.can_see_topic(settings, topic, true, secure_category_ids)?;
+        self.can_recover_post(settings, &first, can_see)
     }
 
     /// `can_remove_allowed_users?(topic, target = nil)`

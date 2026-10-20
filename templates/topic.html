@@ -10,7 +10,7 @@
   <div class="row">
     <section class="topic-area" data-topic-id="{{ topic_id }}" id="topic">
       <div class="posts-wrapper">
-        <div class="post-stream" id="posts">{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
+        <div class="post-stream" id="posts"{% if !ignored_users.is_empty() %} data-ignored-users="{{ ignored_users }}"{% endif %}>{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
       </div>
       <div id="topic-bottom"></div>
       <div class="loading-container"><div class="topic-timer-info"></div></div>

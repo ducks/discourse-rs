@@ -69,7 +69,7 @@ impl HeldTopic {
             .await?
             .ok_or(TopicViewError::NotFound)?;
         let extra = sqlx::query_as(
-            "SELECT word_count, deleted_at, pinned_until, slow_mode_seconds, external_id \
+            "SELECT word_count, deleted_at, deleted_by_id, pinned_until, slow_mode_seconds, external_id \
              FROM topics WHERE id = $1",
         )
         .bind(topic_id)
@@ -113,6 +113,8 @@ impl TopicView<'_> {
             draft_sequence: None,
             queue_enabled: false,
             has_deleted: None,
+            ignored_like_counts: Default::default(),
+            filter: Default::default(),
         })
     }
 

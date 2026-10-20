@@ -1851,6 +1851,9 @@ pub struct TopicPage {
     /// discourse-solved is on: its script runs the Solved button and the
     /// accepted answers.
     pub solved: bool,
+    /// `currentUser.ignored_users`, comma separated, whose quotes
+    /// quote-controls.js hides.
+    pub ignored_users: String,
 }
 
 /// `categories` rows the pages link to.
@@ -2062,6 +2065,22 @@ pub async fn topic_title_html(
     Ok(title_html)
 }
 
+/// CurrentUserSerializer#ignored_users: the usernames a member ignores.
+pub async fn ignored_usernames(
+    conn: &mut PgConnection,
+    username: &str,
+) -> Result<Vec<String>, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT u.username FROM ignored_users ig \
+         JOIN users me ON me.id = ig.user_id \
+         JOIN users u ON u.id = ig.ignored_user_id \
+         WHERE me.username = $1 ORDER BY ig.id",
+    )
+    .bind(username)
+    .fetch_all(conn)
+    .await
+}
+
 /// The topic page from the /t/:id.json document.
 pub async fn topic_page(
     conn: &mut PgConnection,
@@ -2104,6 +2123,11 @@ pub async fn topic_page(
         .viewer
         .as_ref()
         .is_some_and(|v| v.can_send_private_messages);
+    // currentUser.ignored_users
+    let ignored_users = match viewer {
+        Some(username) => ignored_usernames(conn, username).await?,
+        None => Vec::new(),
+    };
     let mut topic = crate::post_view::TopicInfo::from_view(view);
     topic.defer_to = defer_to(conn, view, &base, viewer).await?;
     // The first post's topic map, rendered before the posts that carry it.
@@ -2115,6 +2139,7 @@ pub async fn topic_page(
             viewer,
             staff,
             can_send_pms,
+            ignored_users: &ignored_users,
         };
         topic.op_map = crate::post_view::topic_map(&cx, view, "--op");
     }
@@ -2125,10 +2150,11 @@ pub async fn topic_page(
         viewer,
         staff,
         can_send_pms,
+        ignored_users: &ignored_users,
     };
     let posts = view["post_stream"]["posts"]
         .as_array()
-        .map(|posts| crate::post_view::stream(&cx, posts))
+        .map(|posts| crate::post_view::stream(&cx, posts, &view["post_stream"]["gaps"]))
         .unwrap_or_default();
     let bottom_map = if crate::post_view::shows_bottom_map(view, &post_settings) {
         crate::post_view::topic_map(&cx, view, "--bottom")
@@ -2205,6 +2231,7 @@ pub async fn topic_page(
         live: page >= last_page,
         reactions: post_settings.reactions.is_some(),
         solved: post_settings.solved.is_some(),
+        ignored_users: ignored_users.join(","),
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })

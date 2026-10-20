@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40.json" },
+    { "method": "GET", "path": "/t/40.json" },
+    { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40" }
+  ]
+}

@@ -40,7 +40,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | TopicsController#status | 14 | 1 | 0 | 14 |
 | TopicsController#destroy | 5 | 1 | 0 | 6 |
 | TopicsController#timings | 5 | 1 | 1 | 0 |
-| TopicsController#show | 79 | 0 | 33 | 89 |
+| TopicsController#show | 107 | 36 | 33 | 25 |
 | ListController#private_messages* | 5 | 13 | 0 | 6 |
 | PostActionsController#destroy | 5 | 2 | 0 | 0 |
 | PostActionsController#create | 9 | 2 | 0 | 8 |
@@ -125,7 +125,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 
 ## Cases added from this inventory
 
-96 cases, recorded on the reference and replayed. 70 matched as added:
+100 cases, recorded on the reference and replayed. 74 matched as added:
 
 new_topic_restricted_category, new_topic_no_category,
 pm_no_recipients, pm_on_existing_topic, reply_duplicate,
@@ -154,10 +154,12 @@ signup_logged_in, activate_account_unknown_token, email_login_disabled,
 password_reset_associated_accounts, password_reset_code_reuse,
 session_login_inactive, session_login_not_approved,
 users_update_ignores_protected_fields, users_update_names_disabled,
-login_required_lists_anonymous, new_user_spam_host, edit_links_require_trust.
+login_required_lists_anonymous, new_user_spam_host, edit_links_require_trust,
+show_deleted_reply_staff, show_deleted_topic_staff, show_deleted_moderator,
+show_deleted_topic_detailed_404.
 
 The 26 that differed when they were added have since been fixed, each on
-its own branch (`git log --merges --grep fix/`), so all 96 match.
+its own branch (`git log --merges --grep fix/`), so all 100 match.
 
 ## PostsController#create
 
@@ -388,8 +390,8 @@ its own branch (`git log --merges --grep fix/`), so all 96 match.
 
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
-| 3277 | topic not allowed (detailed_404 on) -> 403 | unported | Unsupported("detailed_404") |
-| 3300 | allowed to a group > descriptive error with group name | unported | detailed_404 + custom group HTML |
+| 3277 | topic not allowed (detailed_404 on) -> 403 | covered | show_deleted_topic_detailed_404 (new, matches: the staff category's topic as user1) |
+| 3300 | allowed to a group > descriptive error with group name | unported | Unsupported("detailed_404 for a topic a group gives access to"): not_in_group with the serialized group |
 | 3310 | renders canonicals (HTML, Cache-Control) | needs-harness | header/HTML-structure assertions |
 | 3318 | 301 even if slug param does not match (/t/:id.json?slug=x, /t/:slug.json) | covered | show_slug_param_mismatch (GET; port ignores ?slug=) |
 | 3338 | shows a topic correctly | covered | golden: GET /t/parity-fixture-replies-and-posters/35.json |
@@ -432,9 +434,10 @@ its own branch (`git log --merges --grep fix/`), so all 96 match.
 | 3954 | detailed_404 off > anonymous login required json (x9, 403) | covered | show_login_required |
 | 3954 | detailed_404 off > normal user (x9) | covered | golden: GET /t/about-the-staff-category/2.json as=user1, /t/40 as=user1, /t/43 as=user0 |
 | 3954 | detailed_404 off > allowed user (x9) | covered | golden: GET /t/42.json as=user1, /t/2.json as=admin |
-| 3954 | detailed_404 off > moderator (x9) | unported | Unsupported("viewing deleted topics as staff") |
-| 3954 | detailed_404 off > admin (x9) | unported | Unsupported("viewing deleted topics as staff") |
-| 3954 | detailed_404 on > anonymous/normal/allowed/moderator/admin (x45) | unported | Unsupported("detailed_404") |
+| 3954 | detailed_404 off > moderator (x9) | covered | show_deleted_moderator (new, matches: setup makes user3 a moderator; deleted topic 200, staff category 200) |
+| 3954 | detailed_404 off > admin (x9) | covered | show_deleted_topic_staff (new, matches), show_deleted_reply_staff (new, matches) |
+| 3954 | detailed_404 on > normal user (x9) | covered | show_deleted_topic_detailed_404 (new, matches: deleted topic 410, staff category 403, the page too) |
+| 3954 | detailed_404 on > anonymous/allowed/moderator/admin (x36) | recordable | show_detailed_404_anonymous and the like (settings detailed_404; anonymous: deleted 410, secure 403, message 403 not_logged_in) |
 | 3954 | detailed_404 on > anonymous login required (x9, 302) | covered | show_login_required (login check precedes detailed_404) |
 | 4184 | does not record a topic view | needs-harness | Rails view tracking is deferred (Scheduler::Defer) |
 | 4188 | records incoming link for invalid post_number | needs-harness | deferred IncomingLink |

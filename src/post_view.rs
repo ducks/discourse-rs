@@ -135,6 +135,10 @@ pub struct TopicInfo {
     pub can_create_post: bool,
     /// The topic is deleted (`topic.deleted`).
     pub deleted: bool,
+    /// `topic.deleted_at` and `topic.deleted_by`, which its first post
+    /// shows as its own (Post#deletedAt, Post#deletedBy).
+    pub deleted_at: Value,
+    pub deleted_by: Value,
     /// `details.can_delete` and `details.can_recover`, for the first
     /// post's delete button.
     pub can_delete: bool,
@@ -165,6 +169,8 @@ impl TopicInfo {
             closed: view["closed"] == true,
             can_create_post: view["details"]["can_create_post"] == true,
             deleted: view["deleted_at"].is_string(),
+            deleted_at: view["deleted_at"].clone(),
+            deleted_by: view["deleted_by"].clone(),
             can_delete: view["details"]["can_delete"] == true,
             can_recover: view["details"]["can_recover"] == true,
             defer_to: "/".to_string(),
@@ -190,6 +196,8 @@ pub struct PostContext<'a> {
     pub staff: bool,
     /// The viewer can send private messages (canSendPms).
     pub can_send_pms: bool,
+    /// `currentUser.ignored_users`: the usernames the viewer ignores.
+    pub ignored_users: &'a [String],
 }
 
 fn s(v: &Value) -> &str {
@@ -345,12 +353,22 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
     )
 }
 
-/// The posts of a page in order, with the time gaps between them.
-pub fn stream(cx: &PostContext, posts: &[Value]) -> Vec<String> {
+/// The posts of a page in order, with the time gaps between them and the
+/// gaps (`post_stream.gaps`) of the posts the stream leaves out.
+pub fn stream(cx: &PostContext, posts: &[Value], gaps: &Value) -> Vec<String> {
     let mut out = Vec::with_capacity(posts.len());
     let mut prev: Option<Prev> = None;
     for p in posts {
-        out.push(post(cx, p, prev));
+        let id = p["id"].to_string();
+        let mut html = String::new();
+        if let Some(ids) = gaps["before"][&id].as_array() {
+            html.push_str(&gap(cx, ids));
+        }
+        html.push_str(&post(cx, p, prev));
+        if let Some(ids) = gaps["after"][&id].as_array() {
+            html.push_str(&gap(cx, ids));
+        }
+        out.push(html);
         if let Some(at) = date(&p["created_at"]) {
             prev = Some(Prev {
                 post_number: p["post_number"].as_i64().unwrap_or(0),
@@ -359,6 +377,19 @@ pub fn stream(cx: &PostContext, posts: &[Value]) -> Vec<String> {
         }
     }
     out
+}
+
+/// post/gap: posts the stream leaves out (deleted, or by ignored users),
+/// loaded in their place on a click (`/live/gap`, a chunk at a time).
+pub fn gap(cx: &PostContext, ids: &[Value]) -> String {
+    let ids: Vec<String> = ids.iter().map(Value::to_string).collect();
+    format!(
+        "<div class=\"gap\" hx-get=\"{}/live/gap/{}?ids={}\" hx-trigger=\"click\" hx-swap=\"outerHTML\">{}</div>",
+        cx.list.base_path,
+        cx.topic.id,
+        ids.join(","),
+        escape(&t_count(cx.list, "post.gap", ids.len() as i64, &[]))
+    )
 }
 
 /// One post, with the time gap before it.
@@ -429,7 +460,7 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     if flag("hidden") {
         classes.push("post--hidden post-hidden");
     }
-    if !p["deleted_at"].is_null() {
+    if !p["deleted_at"].is_null() || !deleted_at(cx, p).is_null() {
         classes.push("post--deleted deleted");
     }
     let group = p["primary_group_name"]
@@ -522,7 +553,13 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div>{}<section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
         avatar(cx, p),
         meta_data(cx, p, &reply_tab),
-        decorated_cooked(cx, s(&p["cooked"])),
+        // post/cooked-html#isIgnored: a first post by someone the viewer
+        // ignores shows only that.
+        if p["post_number"] == 1 && cx.ignored_users.iter().any(|u| u == s(&p["username"])) {
+            escape(&t(cx.list, "post.ignored"))
+        } else {
+            decorated_cooked(cx, s(&p["cooked"]))
+        },
         // The post-content-cooked-html outlet: discourse-solved's accepted
         // answers under the first post.
         match cx.settings.solved.as_ref() {
@@ -542,7 +579,7 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
 /// note.
 fn notice(cx: &PostContext, p: &Value) -> String {
     let kind = s(&p["notice"]["type"]);
-    if kind.is_empty() || !p["deleted_at"].is_null() {
+    if kind.is_empty() || !deleted_at(cx, p).is_null() {
         return String::new();
     }
     if kind != "custom" {
@@ -1067,17 +1104,22 @@ fn flag_button(cx: &PostContext) -> String {
 }
 
 /// post/menu/buttons/delete: PostMenuDeleteButton.modeFor. Deleting a
-/// reply posts to DELETE /posts/:id; the topic and recover modes, and the
-/// modal for one's own first post, are not wired.
+/// reply sends DELETE /posts/:id and recovering one PUT
+/// /posts/:id/recover; the topic modes, the recovering modes and the
+/// modal for one's own first post are not wired.
 fn delete_button(cx: &PostContext, p: &Value) -> Option<String> {
     cx.viewer?;
     let first = number(p) == 1;
-    let deleted = !p["deleted_at"].is_null();
+    let own_deleted = !p["deleted_at"].is_null();
+    // Post#deleted: its own, or for the first post its topic's.
+    let deleted = own_deleted || (first && cx.topic.deleted);
     let user_deleted = p["user_deleted"] == true;
     let can_recover_topic = first && (deleted || user_deleted) && cx.topic.can_recover;
     let can_delete_topic = first && !deleted && cx.topic.can_delete;
-    let can_delete = p["can_delete"] == true && !deleted && (cx.staff || !user_deleted);
-    let can_recover = !can_recover_topic && p["can_recover"] == true && deleted;
+    let can_delete = p["can_delete"] == true && !own_deleted && (cx.staff || !user_deleted);
+    // Post#recoverable
+    let recoverable = own_deleted || user_deleted;
+    let can_recover = !can_recover_topic && p["can_recover"] == true && recoverable;
     let show_flag_delete = !can_delete && p["yours"] == true && can_flag(cx, p) && !cx.staff;
     let base = cx.list.base_path;
     let id = &p["id"];
@@ -1086,7 +1128,13 @@ fn delete_button(cx: &PostContext, p: &Value) -> Option<String> {
     } else if can_delete_topic {
         (false, "post.controls.delete_topic", String::new())
     } else if can_recover {
-        (true, "post.controls.undelete", String::new())
+        (
+            true,
+            "post.controls.undelete",
+            format!(
+                " hx-put=\"{base}/posts/{id}/recover\" hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\""
+            ),
+        )
     } else if can_delete {
         (
             false,
@@ -1155,6 +1203,15 @@ fn reply_button(cx: &PostContext, p: &Value) -> String {
         escape(&t(cx.list, "post.controls.reply")),
         icon("reply", None),
     )
+}
+
+/// Post#deletedAt: the first post's is its topic's.
+fn deleted_at<'a>(cx: &'a PostContext, p: &'a Value) -> &'a Value {
+    if number(p) == 1 {
+        &cx.topic.deleted_at
+    } else {
+        &p["deleted_at"]
+    }
 }
 
 fn number(p: &Value) -> i64 {
@@ -1320,13 +1377,18 @@ fn actions_summary(cx: &PostContext, p: &Value) -> String {
             escape(&t(cx.list, key))
         ));
     }
-    if let (Some(at), Some(by)) = (date(&p["deleted_at"]), p["deleted_by"]["username"].as_str()) {
+    let deleted_by = if number(p) == 1 {
+        &cx.topic.deleted_by
+    } else {
+        &p["deleted_by"]
+    };
+    if let (Some(at), Some(by)) = (date(deleted_at(cx, p)), deleted_by["username"].as_str()) {
         out.push_str(&format!(
             "<div class=\"post-action deleted-post\">{}<a{}>{}</a>{}</div>",
             icon("trash-can", None),
-            user_link_attrs(cx, by, false),
+            user_link_attrs(cx, by, true),
             avatar_img(
-                s(&p["deleted_by"]["avatar_template"]),
+                s(&deleted_by["avatar_template"]),
                 cx.settings.avatar_size_24,
                 &format!(" title=\"{}\"", escape(by))
             ),
@@ -2402,6 +2464,8 @@ mod tests {
             closed: false,
             can_create_post: false,
             deleted: false,
+            deleted_at: Value::Null,
+            deleted_by: Value::Null,
             can_delete: false,
             can_recover: false,
             defer_to: "/".to_string(),
@@ -2414,8 +2478,9 @@ mod tests {
             viewer: None,
             staff: false,
             can_send_pms: false,
+            ignored_users: &[],
         };
-        check(&stream(&cx, posts));
+        check(&stream(&cx, posts, &Value::Null));
     }
 
     fn post_json(number: i64, created_at: &str, reply_to: Option<i64>) -> Value {
@@ -2588,6 +2653,8 @@ mod tests {
             closed: false,
             can_create_post: false,
             deleted: false,
+            deleted_at: Value::Null,
+            deleted_by: Value::Null,
             can_delete: false,
             can_recover: false,
             defer_to: "/".to_string(),
@@ -2600,6 +2667,7 @@ mod tests {
             viewer: None,
             staff: false,
             can_send_pms: false,
+            ignored_users: &[],
         };
         let participants: Vec<Value> = (0..7)
             .map(|i| {

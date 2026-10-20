@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (3, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00', '2027-10-01 10:00:00')",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (3, 4, '2026-10-01 10:00:00', '2026-10-01 10:00:00', '2027-10-01 10:00:00')",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00', '2027-10-01 10:00:00')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (38, 4, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (38, 1, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (38, 5, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE posts SET like_count = 3 WHERE id = 38"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json?post_number=4" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35" },
+    { "method": "GET", "path": "/posts/by_number/35/4.json" },
+    { "method": "GET", "path": "/u/admin/activity.json" }
+  ],
+  "ignore": ["/responses/2/body"]
+}

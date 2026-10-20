@@ -1603,18 +1603,6 @@ async fn posts_feed(
     if settings.get("content_localization_enabled")?.truthy() {
         return Err(Unsupported("translated excerpts in the posts feed").into());
     }
-    // ignored_user_like_counts takes likes by users the viewer ignores off
-    // the counts.
-    if let Some(viewer) = guardian.user_id() {
-        let ignores: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1)")
-                .bind(viewer)
-                .fetch_one(&mut *conn)
-                .await?;
-        if ignores {
-            return Err(Unsupported("posts feed for a viewer who ignores users").into());
-        }
-    }
     let ids: Vec<i32> = sqlx::query_scalar(
         "SELECT p.id FROM posts p JOIN topics t ON t.id = p.topic_id \
          WHERE p.user_id = $1 AND p.post_type = 1 AND p.deleted_at IS NULL AND NOT p.hidden \
@@ -1655,6 +1643,7 @@ async fn posts_feed(
             options: crate::topic_view::Options {
                 page: 0,
                 post_number: None,
+                ..Default::default()
             },
             post_types: Vec::new(),
             logo_small_url: None,

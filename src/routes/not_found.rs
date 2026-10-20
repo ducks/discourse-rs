@@ -50,6 +50,16 @@ struct EmberNotFoundPage {
     html: String,
 }
 
+/// A topics#show error with detailed_404 on (a 410 for a deleted topic, the
+/// 403 itself), which a page request gets as the not-found page with that
+/// status: the 403 in the application layout (include_ember).
+#[derive(Clone, Copy)]
+pub(super) struct ErrorPage {
+    pub status: StatusCode,
+    pub forbidden: bool,
+    pub custom_message: Option<&'static str>,
+}
+
 /// `show_json_errors?`: format json (the `.json` path, a route whose
 /// format defaults to json, or as the Accept header decides it) or XHR.
 fn shows_json_errors(path: &str, query: Option<&str>, headers: &HeaderMap) -> bool {
@@ -93,7 +103,8 @@ pub async fn html_errors(
         .extensions()
         .get::<super::login_required::NotLoggedIn>()
         .is_some();
-    if !json_not_found && !not_logged_in {
+    let error_page = response.extensions().get::<ErrorPage>().copied();
+    if !json_not_found && !not_logged_in && error_page.is_none() {
         return Ok(response);
     }
     let base_path = state.config.globals.relative_url_root().to_string();
@@ -111,8 +122,8 @@ pub async fn html_errors(
         settings: &settings,
     };
     let page = crate::not_found_page::NotFound {
-        forbidden: false,
-        custom_message: None,
+        forbidden: error_page.is_some_and(|e| e.forbidden),
+        custom_message: error_page.and_then(|e| e.custom_message),
         slug: &slug,
         guardian: &guardian,
     };
@@ -153,12 +164,14 @@ pub async fn html_errors(
             .map_err(crate::html::HtmlError::from)?
         };
     }
-    let body = if not_logged_in {
+    let ember = not_logged_in || error_page.is_some_and(|e| e.forbidden);
+    let body = if ember {
         page!(EmberNotFoundPage)
     } else {
         page!(NotFoundPage)
     };
-    let response = (StatusCode::NOT_FOUND, axum::response::Html(body)).into_response();
+    let status = error_page.map_or(StatusCode::NOT_FOUND, |e| e.status);
+    let response = (status, axum::response::Html(body)).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
