@@ -55,23 +55,6 @@ fn avatar_img(template: &str, settings: &RenderSettings) -> Option<String> {
     ))
 }
 
-/// Whether `performEmojiUnescape` would touch a title: a unicode emoji,
-/// or `textEmojiRegex` (`\B:[^\s:]+(?::t\d)?:?\B`) finding a `:code:`.
-fn title_has_emoji(title: &str) -> bool {
-    static CODE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-        regex::Regex::new(r"(?-u:\B):[^\s:]+(?::t[0-9])?:?(?-u:\B)").unwrap()
-    });
-    let chars: Vec<char> = title.chars().collect();
-    let unicode = (0..chars.len()).any(|i| {
-        !chars[i].is_ascii()
-            && (1..=crate::emoji::DATA.unicode_max_chars.min(chars.len() - i)).any(|len| {
-                let candidate: String = chars[i..i + len].iter().collect();
-                crate::emoji::DATA.unicode.contains_key(&candidate)
-            })
-    });
-    unicode || CODE.is_match(title)
-}
-
 /// The `before` and `after` of the quote rule around the parsed content.
 pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx: &Context) -> Node {
     let mut username: Option<String> = None;
@@ -171,13 +154,22 @@ pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx:
                 if let Some(n) = post_number.filter(|n| *n > 0) {
                     href.push_str(&format!("/{n}"));
                 }
-                // performEmojiUnescape on the title: only a title with
-                // something it would replace is refused.
-                if settings.emoji && title_has_emoji(&info.title) {
-                    ctx.refuse("emoji in the title of a quoted topic");
-                }
+                let title_html = if settings.emoji {
+                    crate::emoji_escape::perform_emoji_unescape(
+                        &info.title,
+                        &crate::emoji_escape::UnescapeOptions {
+                            emoji_set: &settings.emoji_set,
+                            emoji_base_path: &settings.emoji_base_path,
+                            shortcuts: settings.emoji_shortcuts,
+                            inline: settings.inline_emoji,
+                            lazy: true,
+                        },
+                    )
+                } else {
+                    info.title.clone()
+                };
                 let mut link = Element::inline("a", &[("href", &href)]);
-                link.children.push(Node::new(RawHtml(info.title.clone())));
+                link.children.push(Node::new(RawHtml(title_html)));
                 title.children.push(link);
             }
         } else {

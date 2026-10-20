@@ -1,0 +1,80 @@
+{
+  "name": "create_title_too_many_emoji",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "Party 🎉 cake 🎂 and balloons 🎈 for all",
+        "category": 4,
+        "raw": "A title with one unicode emoji more than the site allows."
+      }
+    }
+  ],
+  "started_at": "2026-10-20T23:05:44.206456",
+  "transaction_started_at": "2026-10-20T23:05:38.242402",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Title can't have more than 2 emoji"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JUVhpqg2/OmV2PzaGbSTw8aVUkg=",
+            "created_at": "2026-10-20T23:05:40.670062",
+            "rotated_at": "2026-10-20T23:05:40.661224",
+            "updated_at": "2026-10-20T23:05:40.670062",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "JUVhpqg2/OmV2PzaGbSTw8aVUkg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-20T23:05:44.235611",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JUVhpqg2/OmV2PzaGbSTw8aVUkg=",
+            "created_at": "2026-10-20T23:05:40.670062",
+            "rotated_at": "2026-10-20T23:05:40.661224",
+            "updated_at": "2026-10-20T23:05:40.670062",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "JUVhpqg2/OmV2PzaGbSTw8aVUkg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_emojis_in_title": 2
+  },
+  "recorded_from": {
+    "case": "843543187727e814803d8c53020c58d17a60905867c86c388ca5baf00569ce24",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

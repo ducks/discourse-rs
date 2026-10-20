@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "Weekend plans and a party 🎉 for everyone",
+        "category": 4,
+        "raw": "Who is coming along this weekend? Let me know."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

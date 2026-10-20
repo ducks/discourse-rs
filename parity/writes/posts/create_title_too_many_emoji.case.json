@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "settings": {
+    "max_emojis_in_title": 2
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "Party 🎉 cake 🎂 and balloons 🎈 for all",
+        "category": 4,
+        "raw": "A title with one unicode emoji more than the site allows."
+      }
+    }
+  ]
+}

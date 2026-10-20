@@ -60,8 +60,7 @@ What a visitor or a new member meets first, by how soon:
   isn't routed and the login page has no Forgot password link.
 - Polls draw as their cooked list with a "0 voters" stub, so nobody can
   vote (228); building one from the composer is 229.
-- A topic title with a unicode emoji is refused (posting/validate.rs:1090,
-  132); so is a post with an uploaded video or audio file
+- A post with an uploaded video or audio file is refused
   (posting/create.rs:591, 138, with 141).
 - Checklists can't be checked (242), the staff review queue has no page
   (194), user status can't be set (130), chat has no drawer (223).
@@ -1397,7 +1396,7 @@ have handlers now.
     jobs/bookmark_reminders.rs:148; reports/counts.rs:1204;
     reports/lists.rs:440; plugins/reactions/users.rs:703;
     invites.rs:1165; routes/invite_redeem.rs:908,1248;
-    routes/topic_update.rs:646; posting/validate.rs:1203;
+    routes/topic_update.rs:646; posting/validate.rs:1201;
     routes/chat_pages.rs:406), slug_generation_method other than ascii
     (posting/topic_save.rs:33; posting/create.rs:1755;
     posting/revise_topic.rs:1090; post_mover.rs:376;
@@ -1528,10 +1527,10 @@ have handlers now.
     download (gravatar is https only, which the replay's fixture server
     is not); a gravatar the reference already holds becomes a new upload
     here, the port's encoders giving the processed file another sha1
-132. `feat/title-emoji` S: unicode emoji in titles (posting/text.rs:283,
-    performEmojiEscape; posting/validate.rs:1090), emoji in a quoted
-    topic's title (crates/markdown), the emoji shortcut regex's
-    backtracking (posting/text.rs:296)
+132. ~~`feat/title-emoji`~~ (done) S: unicode emoji in titles
+    (performEmojiEscape, MaxEmojisValidator's Emoji.unicode_unescape),
+    emoji in a quoted topic's title (performEmojiUnescape), the emoji
+    shortcut regex without a backtracking limit
 133. `feat/anonymous-posting` M: anonymous posting mode (the shadow
     accounts) wherever a shadow acts (69 sites, 2026-10-20): posting
     (posting/validate.rs:80,152; posting/create.rs:239;
@@ -1614,7 +1613,7 @@ have handlers now.
 138. `feat/posting-rest` M: replies to whispers (posting/create.rs:943),
     staff replying to closed topics (:562), uploaded video or audio
     (:602; posting/revise.rs:372), duplicate titles and titles the
-    cleaner changes (posting/validate.rs:1133; posting/topic_save.rs:30;
+    cleaner changes (posting/validate.rs:1131; posting/topic_save.rs:30;
     post_owner_changer.rs:446), auto_close_topics_post_count
     (posting/create.rs:1398), returning-user post notices (:1623),
     featured topics with a category sort order (:2015),
@@ -2012,7 +2011,7 @@ have handlers now.
     keys (routes/site_texts.rs:946), the default_locale entry
     (admin_site_settings.rs:246) and the setup wizard's locale
     (wizard.rs:354), slugs by transliteration
-    (posting/text.rs:331), moment locales (49). Needs: the reference's
+    (posting/text.rs:237), moment locales (49). Needs: the reference's
     other locale trees recorded (scripts/record-i18n-tree) and the
     client's
 168. `feat/content-localization` M: content_localization_enabled
@@ -3314,8 +3313,7 @@ how often a backup trips them.
 
 - [x] Fancy titles for topics without a stored `fancy_title` (computed
       and written back on read)
-- [ ] Unicode emoji in titles (`performEmojiEscape` turns them into codes):
-      132
+- [x] Unicode emoji in titles (`performEmojiEscape` turns them into codes)
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
       hidden). Hidden posts serialize as Rails does (the review actions),
       and the topic view shows staff deleted posts and topics (124);

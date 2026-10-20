@@ -1083,23 +1083,20 @@ pub async fn validate_topic_with(
                 errors.push(ctx.full_message(title_attr, &ctx.t(key)));
             }
         }
-        // MaxEmojisValidator: the emoji images the escaped title unescapes
-        // to, against max_emojis_in_title. Emoji.unicode_unescape (unicode
-        // emoji to codes) is not ported.
-        if title.chars().any(|c| c as u32 > 0xffff) {
-            return Err(Unsupported("unicode emoji in topic titles").into());
-        }
-        if crate::emoji::has_emoji_code(title) {
+        // MaxEmojisValidator: the emoji images
+        // PrettyText.unescape_emoji(Emoji.unicode_unescape(CGI.escapeHTML(title)))
+        // holds, against max_emojis_in_title.
+        let escaped = crate::posting::text::escape_emoji(
+            &crate::discourse_diff::escape_html(title),
+            crate::posting::text::EmojiEscape::from_settings(s)?,
+        );
+        if crate::emoji::has_emoji_code(&escaped) {
             static EMOJI_IMG: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
                 regex::Regex::new(r"<img.+?class\s*=\s*'(emoji|emoji emoji-custom)'")
                     .expect("the emoji image pattern")
             });
             let base_path = ctx.config.globals.relative_url_root();
-            let unescaped = crate::topic_list_view::unescape_emoji(
-                &crate::topic_list_view::escape(title),
-                s.emojis(),
-                base_path,
-            );
+            let unescaped = crate::topic_list_view::unescape_emoji(&escaped, s.emojis(), base_path);
             let count = EMOJI_IMG.find_iter(&unescaped).count() as i64;
             let max = s.get("max_emojis_in_title")?.to_i();
             if count > max {

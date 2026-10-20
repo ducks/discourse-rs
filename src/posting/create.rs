@@ -1788,7 +1788,7 @@ async fn create_topic(
     let fancy_title = crate::posting::text::fancy_title(
         &plan.title,
         crate::posting::text::EmojiEscape::from_settings(s)?,
-    )?;
+    );
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \
                              archetype, subtype, bumped_at, created_at, updated_at, slow_mode_seconds) \
