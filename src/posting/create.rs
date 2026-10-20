@@ -345,6 +345,17 @@ pub async fn create(
             }
         }
         validate::refuse_unported_author(guardian)?;
+        // ReviewablePost.queue_for_review_if_possible after the create:
+        // a regular post in a regular topic by a non-staff author below
+        // trust level 4 goes to the review queue too.
+        if !private_message
+            && s.get("review_every_post")?.truthy()
+            && guardian.user().is_some_and(|u| u.id > 0)
+            && !guardian.is_staff()
+            && !guardian.has_trust_level(4)
+        {
+            return Err(Unsupported("review_every_post on a new post").into());
+        }
         // NewPostManager#perform: messages are never queued; anything else
         // post_needs_approval? finds a reason for goes to the queue.
         if !private_message {
