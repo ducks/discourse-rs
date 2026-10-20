@@ -3175,7 +3175,10 @@ S/M, 2 M.
     granular scopes on constrained routes (api_key_scopes.rs:266),
     impersonating through an API key (routes/impersonate.rs:83)
 254. `feat/small-leftovers` S: small refusals of done items no other item
-    owns: sorting admin users by email and admin user lists without
+    owns: reviewing every new post (review_every_post,
+    posting/create.rs:357, refused; until 2026-10-20 it went unchecked
+    and posts skipped the queue), sorting admin users by email and admin
+    user lists without
     stats (admin_users.rs:111; routes/admin_users.rs:259), activating a
     user without an email (routes/admin_users.rs:1276), uploading
     watched words from a file (routes/admin_watched_words.rs:334, 80's
