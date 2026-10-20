@@ -110,7 +110,7 @@ pub async fn clean_up_uploads(state: &AppState) -> Result<(), AppError> {
     let grace_ago = now - Duration::hours(grace_hours);
     let invalid: Vec<i32> = sqlx::query_scalar(
         "SELECT uploads.id FROM uploads WHERE (uploads.id > 0) \
-           AND (retain_hours IS NULL OR created_at < current_timestamp - interval '1 hour' * retain_hours) \
+           AND (retain_hours IS NULL OR created_at < now() - interval '1 hour' * retain_hours) \
            AND (created_at < $1) AND uploads.url = '' ORDER BY uploads.id ASC",
     )
     .bind(grace_ago)
@@ -134,7 +134,7 @@ pub async fn clean_up_uploads(state: &AppState) -> Result<(), AppError> {
          LEFT JOIN upload_references ON upload_references.upload_id = uploads.id \
          LEFT JOIN upload_references ur ON ur.upload_id = uploads.id AND ur.target_type != 'Post' \
          WHERE (uploads.id > 0) \
-           AND (uploads.retain_hours IS NULL OR uploads.created_at < current_timestamp - interval '1 hour' * uploads.retain_hours) \
+           AND (uploads.retain_hours IS NULL OR uploads.created_at < now() - interval '1 hour' * uploads.retain_hours) \
            AND (uploads.created_at < $1) \
            AND (((uploads.access_control_post_id IS NULL) OR (uploads.access_control_post_id IS NOT NULL AND NOT uploads.secure))) \
            AND (upload_references.upload_id IS NULL) AND (ur.upload_id IS NULL) \

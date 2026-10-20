@@ -50,7 +50,7 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
                FROM user_chat_channel_memberships \
                INNER JOIN users ON users.id = user_chat_channel_memberships.user_id \
                WHERE users.active \
-                 AND (users.suspended_till IS NULL OR users.suspended_till <= CURRENT_TIMESTAMP) \
+                 AND (users.suspended_till IS NULL OR users.suspended_till <= now()) \
                  AND NOT users.staged AND user_chat_channel_memberships.following and users.id > 0 \
                GROUP BY user_chat_channel_memberships.chat_channel_id) subquery \
          WHERE channels.id = subquery.chat_channel_id AND channels.deleted_at IS NULL \

@@ -883,12 +883,10 @@ pub async fn apply_associated_attributes(
                 }
             }
         }
-        sqlx::query(
-            "UPDATE associated_groups SET last_used = CURRENT_TIMESTAMP WHERE id = ANY($1)",
-        )
-        .bind(&ids)
-        .execute(&mut *conn)
-        .await?;
+        sqlx::query("UPDATE associated_groups SET last_used = now() WHERE id = ANY($1)")
+            .bind(&ids)
+            .execute(&mut *conn)
+            .await?;
         // The update's save: the after_save callbacks.
         let (username, name): (String, Option<String>) =
             sqlx::query_as("SELECT username_lower, name FROM users WHERE id = $1")

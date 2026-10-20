@@ -485,9 +485,9 @@ pub async fn enqueue_digest_emails(state: &AppState) -> Result<(), AppError> {
            AND COALESCE(user_options.digest_after_minutes, $2) > 0 \
            AND user_stats.bounce_score < $3 \
            AND user_emails.primary \
-           AND COALESCE(user_stats.digest_attempted_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
-           AND COALESCE(last_seen_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
-           AND COALESCE(last_seen_at, '2010-01-01') >= CURRENT_TIMESTAMP - ('1 DAY'::INTERVAL * $4){approval} \
+           AND COALESCE(user_stats.digest_attempted_at, '2010-01-01') <= now() - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
+           AND COALESCE(last_seen_at, '2010-01-01') <= now() - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
+           AND COALESCE(last_seen_at, '2010-01-01') >= now() - ('1 DAY'::INTERVAL * $4){approval} \
          ORDER BY user_stats.digest_attempted_at ASC NULLS FIRST \
          LIMIT $5"
     );

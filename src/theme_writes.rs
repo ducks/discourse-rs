@@ -666,15 +666,15 @@ async fn upsert_svg_sprite(
     if content.len() > MAX_THEME_SPRITE_SIZE {
         return Ok(());
     }
-    // upsert: CURRENT_TIMESTAMP for both timestamps on insert, the
+    // upsert: now() for both timestamps on insert, the
     // updated one on conflict.
     sqlx::query(
         "INSERT INTO theme_svg_sprites (theme_id, upload_id, sprite, created_at, updated_at) \
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+         VALUES ($1, $2, $3, now(), now()) \
          ON CONFLICT (theme_id) DO UPDATE SET upload_id = excluded.upload_id, \
          sprite = excluded.sprite, updated_at = (CASE WHEN theme_svg_sprites.upload_id \
          IS DISTINCT FROM excluded.upload_id OR theme_svg_sprites.sprite IS DISTINCT FROM \
-         excluded.sprite THEN CURRENT_TIMESTAMP ELSE theme_svg_sprites.updated_at END)",
+         excluded.sprite THEN now() ELSE theme_svg_sprites.updated_at END)",
     )
     .bind(theme_id)
     .bind(upload_id)

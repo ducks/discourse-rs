@@ -193,7 +193,7 @@ pub(crate) async fn extract_quoted_posts(
         let post_numbers: Vec<i32> = quotes.iter().map(|(_, n)| *n).collect();
         sqlx::query(
             "INSERT INTO quoted_posts (post_id, quoted_post_id, created_at, updated_at) \
-             SELECT $1, p.id, current_timestamp, current_timestamp FROM posts p \
+             SELECT $1, p.id, now(), now() FROM posts p \
              JOIN (SELECT unnest($2::int[]) topic_id, unnest($3::int[]) post_number) X \
                ON X.topic_id = p.topic_id AND X.post_number = p.post_number \
              LEFT JOIN quoted_posts q ON q.post_id = $1 AND q.quoted_post_id = p.id \

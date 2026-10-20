@@ -475,7 +475,7 @@ async fn apply_links_order(
     for ((id, _, current), position) in reordered.iter().zip(free) {
         if *current != position {
             sqlx::query(
-                "UPDATE sidebar_section_links SET position = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+                "UPDATE sidebar_section_links SET position = $2, updated_at = now() WHERE id = $1",
             )
             .bind(id)
             .bind(position)
