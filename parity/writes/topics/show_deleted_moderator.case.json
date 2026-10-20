@@ -1,0 +1,15 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)",
+    "UPDATE posts SET deleted_at = '2026-10-02 10:00:00', deleted_by_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json?show_deleted=1" },
+    { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40.json" },
+    { "method": "GET", "path": "/t/about-the-staff-category/2.json" }
+  ],
+  "ignore": ["/responses/2/body/suggested_topics", "/responses/3/body/suggested_topics"]
+}

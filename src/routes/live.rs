@@ -524,13 +524,18 @@ async fn render_title(live: &Live) -> Result<String, AppError> {
         options: crate::topic_view::Options {
             page: 1,
             post_number: None,
+            ..Default::default()
         },
         post_types: Vec::new(),
         logo_small_url: None,
     };
     let rendered = match view.render(topic_id).await {
         Ok(rendered) => rendered,
-        Err(crate::topic_view::TopicViewError::NotFound) => return Ok(String::new()),
+        Err(
+            crate::topic_view::TopicViewError::NotFound
+            | crate::topic_view::TopicViewError::InvalidAccess
+            | crate::topic_view::TopicViewError::NotLoggedIn,
+        ) => return Ok(String::new()),
         Err(e) => return Err(e.into()),
     };
     drop(view);
@@ -586,11 +591,11 @@ async fn render_post(
     };
     let mut conn = state.pool.acquire().await?;
     let access = find_post_with_deleted(&mut conn, &ctx, guardian, post_id).await?;
+    // can_see_post?: a deleted post stays, deleted, for staff.
     let visible = access.as_ref().is_some_and(|a| {
-        !a.post.trashed()
-            && guardian
-                .can_see_post(settings, &a.post, a.can_see_topic)
-                .unwrap_or(false)
+        guardian
+            .can_see_post(settings, &a.post, a.can_see_topic)
+            .unwrap_or(false)
     });
     if !visible {
         return Ok(None);
@@ -608,6 +613,7 @@ async fn render_post(
         options: crate::topic_view::Options {
             page: 0,
             post_number: None,
+            ..Default::default()
         },
         post_types: Vec::new(),
         logo_small_url: None,
@@ -680,8 +686,20 @@ async fn render_post(
         closed: topic_ctx.closed,
         can_create_post,
         deleted: topic_ctx.deleted_at.is_some(),
+        deleted_at: serde_json::json!(topic_ctx.deleted_at.map(crate::topic_list::time_json)),
+        // The topic's deleter, as its first post (deleted with it) has it.
+        deleted_by: if topic_ctx.deleted_at.is_some() {
+            post["deleted_by"].clone()
+        } else {
+            Value::Null
+        },
         can_delete: guardian.can_delete_topic(settings, &topic_ctx)?,
-        can_recover: guardian.can_recover_topic(&topic_ctx),
+        can_recover: {
+            let secure = guardian.secure_category_ids(&mut conn, settings).await?;
+            guardian
+                .can_recover_topic(&mut conn, settings, &topic_ctx, &secure)
+                .await?
+        },
         defer_to: String::new(),
         op_map: String::new(),
     };
@@ -709,6 +727,10 @@ async fn render_post(
         member_trust_level: guardian.user().map(|u| u.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
+    let ignored_users = match guardian.user() {
+        Some(u) => crate::html::ignored_usernames(&mut conn, &u.username).await?,
+        None => Vec::new(),
+    };
     let post_settings = crate::post_view::PostSettings::load(settings)?;
     let cx = crate::post_view::PostContext {
         list: &list,
@@ -718,6 +740,7 @@ async fn render_post(
         staff: guardian.is_staff(),
         can_send_pms: guardian.is_authenticated()
             && guardian.can_send_private_messages(settings)?,
+        ignored_users: &ignored_users,
     };
     let html = if append {
         crate::post_view::post(&cx, &post, prev)
@@ -910,6 +933,113 @@ pub async fn post(
             .into_response()),
         None => Ok(StatusCode::NOT_FOUND.into_response()),
     }
+}
+
+#[derive(Deserialize)]
+pub struct GapParams {
+    /// The gap's post ids, comma separated.
+    #[serde(default)]
+    ids: String,
+}
+
+/// GET /live/gap/:topic_id?ids=: a gap filled (post/gap's fillGap): its
+/// first chunk of posts, as TopicView loads them by id
+/// (filter_posts_by_ids, deleted ones for staff, ignored users' too),
+/// drawn in the gap's place, followed by what is left of the gap.
+pub async fn gap(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(topic_id): axum::extract::Path<String>,
+    Query(params): Query<GapParams>,
+) -> Result<Response, AppError> {
+    let Ok(topic_id) = topic_id.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let ids: Vec<i32> = params
+        .ids
+        .split(',')
+        .filter_map(|id| id.trim().parse().ok())
+        .collect();
+    if ids.is_empty() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let chunk = crate::topic_view::CHUNK_SIZE as usize;
+    let (head, tail) = ids.split_at(ids.len().min(chunk));
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut view = crate::topic_view::TopicView {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        options: crate::topic_view::Options {
+            post_ids: Some(head.to_vec()),
+            ..Default::default()
+        },
+        post_types: Vec::new(),
+        logo_small_url: None,
+    };
+    let rendered = match view.render(topic_id).await {
+        Ok(rendered) => rendered,
+        Err(
+            crate::topic_view::TopicViewError::NotFound
+            | crate::topic_view::TopicViewError::InvalidAccess
+            | crate::topic_view::TopicViewError::NotLoggedIn,
+        ) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Err(e) => return Err(e.into()),
+    };
+    drop(view);
+    let json = &rendered.json;
+    let base = state.config.globals.relative_url_root();
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: base,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let ignored_users = match guardian.user() {
+        Some(u) => crate::html::ignored_usernames(&mut conn, &u.username).await?,
+        None => Vec::new(),
+    };
+    let post_settings = crate::post_view::PostSettings::load(&settings)?;
+    let topic = crate::post_view::TopicInfo::from_view(json);
+    let cx = crate::post_view::PostContext {
+        list: &list,
+        settings: &post_settings,
+        topic: &topic,
+        viewer: guardian.user().map(|u| u.username.as_str()),
+        staff: guardian.is_staff(),
+        can_send_pms: guardian.is_authenticated()
+            && guardian.can_send_private_messages(&settings)?,
+        ignored_users: &ignored_users,
+    };
+    let posts = json["post_stream"]["posts"]
+        .as_array()
+        .map(|posts| crate::post_view::stream(&cx, posts, &Value::Null))
+        .unwrap_or_default();
+    let mut html = posts.concat();
+    if !tail.is_empty() {
+        let rest: Vec<Value> = tail.iter().map(|id| Value::from(*id)).collect();
+        html.push_str(&crate::post_view::gap(&cx, &rest));
+    }
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        html,
+    )
+        .into_response())
 }
 
 /// Chat's header icon and sidebar sections as the member's page draws them

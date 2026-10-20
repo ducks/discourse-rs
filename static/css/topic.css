@@ -1052,6 +1052,19 @@ nav.post-controls .btn.show-replies .d-button-label+.d-icon {
 .deleted .regular>.cooked {
   background-color: var(--danger-low-mid);
 }
+/* topic-post.scss:691 */
+.deleted .topic-meta-data:not(.embedded-reply) {
+  color: var(--danger);
+}
+/* topic-post.scss:694 */
+.deleted .topic-meta-data:not(.embedded-reply) .post-info a,
+.deleted .topic-meta-data:not(.embedded-reply) a {
+  color: currentcolor;
+}
+/* topic-post.scss:699 */
+.deleted .topic-meta-data:not(.embedded-reply) .d-icon {
+  color: currentcolor;
+}
 /* topic-post.scss:704 */
 .deleted nav.post-controls {
   color: var(--danger);
@@ -1541,6 +1554,22 @@ blockquote>*:last-child {
 blockquote table {
   table-layout: fixed;
   width: 100%;
+}
+/* topic-post.scss:1358 */
+.gap {
+  box-sizing: border-box;
+  color: var(--primary-med-or-secondary-high);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: var(--font-down-1);
+  padding: .25em 0 .5em calc(var(--topic-avatar-width) + var(--topic-body-width-padding));
+}
+/* topic-post.scss:1358 */
+@media(width < 40rem) {
+  .gap {
+    padding: .25em 0;
+  }
 }
 /* topic-post.scss:1373 */
 .who-liked,

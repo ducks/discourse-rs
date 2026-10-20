@@ -190,6 +190,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/search-menu", get(search_menu::show))
         .route("/user-card/{username}", get(user_card::show))
         .route("/live/post/{id}", get(live::post))
+        .route("/live/gap/{topic_id}", get(live::gap))
         .route(
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),

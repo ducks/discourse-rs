@@ -4,8 +4,9 @@
 // aside.quote of a post: the title gets the toggle and, for a quote of the
 // same topic, the link to the quoted post; expanding replaces the quote's
 // text with the whole quoted post from /posts/by_number/:topic/:post, the
-// quoted text highlighted in it. Hiding the quotes of ignored users isn't
-// ported.
+// quoted text highlighted in it. A quote of someone the viewer ignores
+// (#posts' data-ignored-users) is marked ignored-user, keeps no text and
+// cannot be expanded.
 (function () {
   "use strict";
 
@@ -35,6 +36,13 @@
       url += "/" + postNumber;
     }
     return url;
+  }
+
+  // currentUser.ignored_users, as the topic page lists them.
+  function ignoredUsers() {
+    var posts = document.getElementById("posts");
+    var list = posts && posts.dataset.ignoredUsers;
+    return list ? list.split(",") : [];
   }
 
   // The topic the page shows: its id and slug (from the title's link).
@@ -164,6 +172,11 @@
     var fullQuote = aside.dataset.full === "true";
     var notFound = aside.classList.contains("quote-post-not-found");
     var expanded = aside.dataset.expanded === "true";
+    // isQuotedPostIgnored
+    var ignored = ignoredUsers().indexOf(aside.dataset.username) !== -1;
+    if (ignored) {
+      aside.classList.add("ignored-user");
+    }
 
     var title = aside.querySelector(".title");
     if (!title) {
@@ -196,7 +209,7 @@
         ? postUrl(post.slug, quotedTopicId, quotedPostNumber)
         : null;
     var canNavigate = !notFound && quotedPostUrl ? quotedPostUrl : null;
-    var canToggle = !notFound && !fullQuote;
+    var canToggle = !notFound && !fullQuote && !ignored;
 
     aside.setAttribute("role", "none");
 
@@ -301,7 +314,11 @@
         showExpanded();
       } else {
         request++;
-        blockquote.replaceChildren(collapsed);
+        if (ignored) {
+          blockquote.replaceChildren();
+        } else {
+          blockquote.replaceChildren(collapsed);
+        }
       }
     }
 

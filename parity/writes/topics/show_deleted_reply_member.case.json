@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET deleted_at = '2026-10-02 10:00:00', deleted_by_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json?show_deleted=true" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35" }
+  ],
+  "ignore": ["/responses/2/body"]
+}

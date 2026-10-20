@@ -31,6 +31,5 @@
   ],
   "ignore": [
     "/responses/0/body/suggested_topics"
-  ],
-  "not_yet": "ignored users in topic views (core: TopicView hides their posts)"
+  ]
 }

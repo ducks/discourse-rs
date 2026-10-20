@@ -215,6 +215,7 @@ pub(super) async fn serialize_post(
         options: Options {
             page: 0,
             post_number: None,
+            ..Default::default()
         },
         post_types: Vec::new(),
         logo_small_url: None,
@@ -246,6 +247,7 @@ pub(super) async fn serialize_post_alone(
         options: Options {
             page: 0,
             post_number: None,
+            ..Default::default()
         },
         post_types: Vec::new(),
         logo_small_url: None,

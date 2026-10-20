@@ -20,10 +20,10 @@ On main at 16353d29. Open: 124 items, 42 S, 2 S/M, 62 M, 18 L (phase 8:
 in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c. Phases
 9 to 12 together hold everything the markers name.
 
-Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1708 sites (1430
+Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
 distinct reasons); 166 more put the literal on the line after
-`Unsupported(`, which that grep misses, so 1874 in all. Five `not_yet`
-write cases are left (124, 150, 152, 198, 252). By area, the grep's
+`Unsupported(`, which that grep misses, so 1870 in all. Four `not_yet`
+write cases are left (150, 152, 198, 252). By area, the grep's
 count first and all of them second where they differ, with the items
 that own them:
 
@@ -33,7 +33,7 @@ that own them:
 - Accounts, signup, login and invites: 92 (104): 153, 154, 250, 251,
   253, 255
 - Posting, editing and topic edits: 90 (95): 132, 134-138, 188
-- Topic view and lists: 86 (90): 120, 124-129, 158, 159, 195, 197
+- Topic view and lists: 82 (86): 120, 124-129, 158, 159, 195, 197
 - Ruby engines (regexps, URLs, charsets, YAML, sanitizers, email CSS):
   85 (95): 174-179
 - Email (alerts, notification email, reply by email, group SMTP, push):
@@ -56,9 +56,6 @@ migrations (Not planned).
 
 What a visitor or a new member meets first, by how soon:
 
-- Staff can't open a topic with a deleted reply or a deleted topic, and
-  a member who ignores anyone can't open topics at all
-  (topic_view.rs:291,677,689, 124); ignoring is a preference since 193d.
 - A reply that quotes a post is refused (posting/create.rs:594,597;
   posting/revise.rs:331, 135).
 - Password reset: the emailed link's page (GET /u/password-reset/:token)
@@ -1360,10 +1357,10 @@ notify_post_revision (188i2) and refresh_latest_new_feature (90g9)
 have handlers now.
 
 120. `feat/slug-for` M: topics without a stored slug (`Slug.for`),
-    refused wherever a topic is linked (topic_view.rs:294,773;
+    refused wherever a topic is linked (topic_view.rs:406,937;
     topic_list.rs:557; users.rs:1865; notifications.rs:562;
     bookmarks.rs:532; pretty_text/helpers.rs:275;
-    topic_view/web_hook.rs:154,320; not_found_page.rs:190;
+    topic_view/web_hook.rs:156,322; not_found_page.rs:190;
     review_list.rs:650; email/digest.rs:291,1058,1217;
     jobs/bookmark_reminders.rs:148; reports/counts.rs:1204;
     reports/lists.rs:440; plugins/reactions/users.rs:703;
@@ -1403,26 +1400,34 @@ have handlers now.
     (uploads.rs:388; posting/rebake.rs:49; pretty_text/helpers.rs:339;
     pretty_text/cooked_post_processor.rs:775; upload_references.rs:370;
     topic_list.rs:1026; email/styles.rs:132)
-124. `feat/topic-view-staff` M: deleted topics and posts for staff
-    (topic_view.rs:291,689 with `post_stream.gaps`;
-    posting/revisions.rs:100), ignored users (topic_view.rs:677;
-    routes/users.rs:1615; the `not_yet` case
-    reactions/topic_view_ignoring_a_reactor), detailed_404
-    (topic_view.rs:286; routes/categories.rs:139), queued_posts_count
-    for moderators (topic_view.rs:518), title_is_group (:1772), custom
-    post notices (:1904), limit_suggested_to_category (:2536), suggested
-    topics from other lists and for anonymous readers
-    (topic_query.rs:839,887)
+124. `feat/topic-view-staff` M (rewritten 2026-10-20: deleted topics and
+    replies for staff with `post_stream.gaps`, `has_deleted`,
+    `show_deleted`, `deleted_by`, `can_recover` and
+    `can_permanently_delete`; ignored users' replies filtered as
+    setup_filtered_posts does, ignored_user_like_counts in the topic
+    view and the posts feed; the page's gaps (filled from
+    /live/gap/:topic_id), deleted styling, recover button and the
+    "Ignored content" first post, quotes of ignored users in
+    quote-controls.js; detailed_404's 410 for a deleted topic, its 403
+    and its NotLoggedIn for a message; left:) detailed_404 for a topic
+    or category a group grants access to (not_in_group with the
+    serialized group: routes/topics.rs:266; routes/categories.rs:139),
+    deleted posts for staff outside the topic view
+    (posting/revisions.rs:100), queued_posts_count for moderators
+    (topic_view.rs:675, Reviewable.viewable_by), title_is_group
+    (:2020), custom post notices (:2168), limit_suggested_to_category
+    (:2800), suggested topics from other lists and for anonymous
+    readers (topic_query.rs:839,887)
 125. `feat/topic-thumbnails` M: topic thumbnails in the topic view and
-    web hook payloads (topic_view.rs:549; topic_view/web_hook.rs:550),
+    web hook payloads (topic_view.rs:708; topic_view/web_hook.rs:552),
     theme thumbnail sizes (optimized_images.rs:131 and
     jobs/consistency.rs's preflight), topic images in digests
     (email/digest.rs:657)
 126. `feat/featured-links` S: featured_link_root_domain
-    (topic_view.rs:409; topic_list.rs:650,758;
-    topic_view/web_hook.rs:434; email/digest.rs:660)
+    (topic_view.rs:558; topic_list.rs:650,758;
+    topic_view/web_hook.rs:436; email/digest.rs:660)
 127. `feat/topic-links` S: TopicLink.topic_map with clicks
-    (topic_view.rs:1414), links to topic and site paths the router
+    (topic_view.rs:1658), links to topic and site paths the router
     isn't ported for (posting/links.rs:65,454), links from video embeds
     (:219), the crawl_topic_link job
 128. `feat/category-lists-rest` M: the subcategories_with_featured_topics
@@ -1443,7 +1448,7 @@ have handlers now.
 130. `feat/user-status` M: user status (UserStatus, the /user-status
     routes, the status modal) wherever a user is serialized (users.rs:540;
     current_user.rs:304; about.rs:253; bus.rs:476; directory.rs:650;
-    topic_view.rs:1521; routes/groups.rs:867; routes/admin_api_keys.rs:74;
+    topic_view.rs:1766; routes/groups.rs:867; routes/admin_api_keys.rs:74;
     routes/deleted_posts.rs:55; plugins/chat/direct_messages.rs:237;
     plugins/chat/membership.rs:128; plugins/chat/messages.rs:636;
     plugins/chat/channels.rs:642), the preferences' status
@@ -1501,7 +1506,7 @@ have handlers now.
     posting/revise.rs:179; posting/revise_topic.rs:413;
     posting/enqueue.rs:88), likes, flags and bookmarks
     (post_actions.rs:235; likes.rs:187,519; flags.rs:107;
-    bookmark_manager.rs:137), topic_guardian.rs:924, current_user.rs:307,
+    bookmark_manager.rs:137), topic_guardian.rs:954, current_user.rs:307,
     read_tracking.rs:134, post_destroyer.rs:328,389,1255,
     pm_invite.rs:69,242, routes/pm_invite.rs:204, routes/invites.rs:193,
     topic_status.rs:137, post_owner_changer.rs:500, post_mover.rs:139,
@@ -1549,16 +1554,16 @@ have handlers now.
     the notify_post_revision job landed with 188i1 and 188i2; a username
     change's definition description with 190c): hidden and non-regular
     posts (posting/revise.rs:234,237), topic fields revised on a reply
-    (:213), deleted posts (routes/posts.rs:350), staff_edit_locks_post
+    (:213), deleted posts (routes/posts.rs:352), staff_edit_locks_post
     (posting/revise.rs:770; post_owner_changer.rs:834), posts#update's
-    image sizes and other fields (routes/posts.rs:302,314), revisions
+    image sizes and other fields (routes/posts.rs:304,316), revisions
     changing more than the body, title and edit reason
     (posting/revisions.rs:372), a category description synced
     from its definition post (posting/revise.rs:245;
     posting/rebake.rs:91; jobs/handlers.rs:989;
     post_owner_changer.rs:516; user_destroyer.rs:403), revisions without
     a user or by the system user (posting/revisions.rs:381,383), a past
-    version's post and raw (routes/posts.rs:546,601), an owner change's
+    version's post and raw (routes/posts.rs:548,603), an owner change's
     review_every_post and a hidden post's new owner unhiding it
     (post_owner_changer.rs:918,526)
 138. `feat/posting-rest` M: replies to whispers (posting/create.rs:938),
@@ -1879,10 +1884,10 @@ have handlers now.
     user_name_suggester.rs:343), the group activity, messages and
     manage pages (routes/groups.rs:1600), membership request
     notifications and requested_group_name in web hook payloads
-    (notification_create.rs:281; topic_view/web_hook.rs:529); group
+    (notification_create.rs:281; topic_view/web_hook.rs:531); group
     permissions with categories are done (190a)
 158. `feat/shared-drafts` M: shared_drafts_category (topic_query.rs:371;
-    topic_guardian.rs:373,770) and publishing them
+    topic_guardian.rs:373,800) and publishing them
     (jobs/topic_timers.rs:132, TopicPublisher)
 159. `feat/tags-reads-rest` S: tags_listed_by_group
     (routes/tags.rs:661), tag list filters other than latest, top, hot
@@ -1970,7 +1975,7 @@ have handlers now.
     routes/sidebar_sections.rs:319; bookmarks.rs:410; review_list.rs:181;
     routes/drafts.rs:330; plugins/reactions/users.rs:665;
     plugins/solved/by_user.rs:47; about.rs:299; posting/rebake.rs:52;
-    routes/users.rs:1604; routes/posts.rs:402; onebox/mod.rs:560;
+    routes/users.rs:1604; routes/posts.rs:404; onebox/mod.rs:560;
     routes/admin_config_about.rs:241), category and tag localizations
     (category_writes.rs:274; routes/tag_admin.rs:319), 90c's sidebar
     content localization
@@ -2389,7 +2394,7 @@ route table has been made, so this list may be short.
     members by email (routes/admin_groups.rs:601), messages to email
     addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
     sites (reviewable_user.rs:52), inviting to restricted categories
-    (topic_guardian.rs:519), invalidating invites on password reset
+    (topic_guardian.rs:549), invalidating invites on password reset
     (routes/accounts.rs:662), the profile's invites pages
     (/u/:username/invited: routes/users.rs:173). Split in the order a
     member meets them, stacked branches `feat/invites-<x>`:
@@ -3011,7 +3016,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (jobs/periodical.rs:251), AcceptAnswer's reload_topic message with a
     new auto close timer (routes/solved.rs:167), accepting a post whose
     user is gone (plugins/solved/answers.rs:266), by_user's negative
-    limit (routes/solved.rs:243), SeedAdminDashboardReports with
+    limit (routes/solved.rs:244), SeedAdminDashboardReports with
     discourse_solved_admin_dashboard_seeded; the stale "Not ported: web
     hooks" note dropped (plugins/solved/answers.rs:8)
 234. `feat/solved-ui-rest` M: show_who_marked_solved's tooltip
@@ -3065,7 +3070,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (server:topic-show-crawler-post-end); with 163's solved schema
     markup, it needs the crawler view's per-post markup
     (topics/show.html.erb), which the port's crawler topic page
-    (routes/topics.rs:477) doesn't draw
+    (routes/topics.rs:603) doesn't draw
 242. `feat/checklist-toggle` M: checking a box: PUT /checklist/toggle
     (ToggleCheckbox's contract, policies, rate limit, its
     200/400/403/404/409/422 answers), CheckboxLocator and SourceMap
@@ -3250,8 +3255,9 @@ how often a backup trips them.
 - [ ] Unicode emoji in titles (`performEmojiEscape` turns them into codes):
       132
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
-      hidden). Hidden posts serialize as Rails does (the review actions);
-      deleted posts and topics for staff: 124
+      hidden). Hidden posts serialize as Rails does (the review actions),
+      and the topic view shows staff deleted posts and topics (124);
+      deleted posts for staff outside the topic view: 124
 - [ ] Topic thumbnails and topic images behind a CDN, secure uploads: 125,
       121, 123
 - [x] Watched words (`WordWatcher` regexps and actions and regular
@@ -3314,9 +3320,9 @@ Logged-in readers, no writes yet.
       `show_deleted`), ignored users, category group moderators, shared
       drafts, group PMs' related messages, the login-required 2FA and
       required-fields redirects, pending reviewables. Group PMs' related
-      messages (33c), the required-fields redirect (87b) and the 2FA
-      redirect (155c) done; deleted topics and posts, ignored users: 124;
-      category group moderators: 149; shared drafts: 158; pending
+      messages (33c), the required-fields redirect (87b), the 2FA
+      redirect (155c), deleted topics and posts and ignored users (124)
+      done; category group moderators: 149; shared drafts: 158; pending
       reviewables: 194
 - [x] Bookmarks: `/u/:username/bookmarks.json` and
       `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks;

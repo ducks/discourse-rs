@@ -136,6 +136,7 @@ impl Payloads<'_> {
             options: crate::topic_view::Options {
                 page: 0,
                 post_number: None,
+                ..Default::default()
             },
             post_types: Vec::new(),
             logo_small_url: None,
