@@ -1,7 +1,6 @@
 //! HtmlPrettify on the strings of Discourse's own spec and Topic.fancy_title
 //! on a few titles (parity/fancy_title/expected.json, recorded by
 //! scripts/record-fancy-titles), under the reference's emoji settings.
-//! Titles with unicode emoji must refuse rather than differ.
 
 use discourse_rs::html_prettify::render;
 use discourse_rs::posting::text::{EmojiEscape, fancy_title};
@@ -18,7 +17,6 @@ fn prettifies_like_rails() {
         inline: s["enable_inline_emoji_translation"] == true,
     };
     let mut failures = Vec::new();
-    let mut refused = 0;
     for case in rec["prettify"].as_array().unwrap() {
         let html = case["html"].as_str().unwrap();
         let ours = render(html);
@@ -32,13 +30,12 @@ fn prettifies_like_rails() {
     let titles = rec["fancy_title"].as_array().unwrap();
     for case in titles {
         let title = case["title"].as_str().unwrap();
-        match fancy_title(title, opts) {
-            Ok(ours) if ours == case["fancy"].as_str().unwrap() => {}
-            Ok(ours) => failures.push(format!(
+        let ours = fancy_title(title, opts);
+        if ours != case["fancy"].as_str().unwrap() {
+            failures.push(format!(
                 "[fancy_title] {title:?}\n  ours  {ours:?}\n  rails {}",
                 case["fancy"]
-            )),
-            Err(_) => refused += 1,
+            ));
         }
     }
     assert!(
@@ -47,6 +44,5 @@ fn prettifies_like_rails() {
         failures.len(),
         failures.join("\n")
     );
-    assert_eq!(refused, 1, "only the unicode emoji title refuses");
     assert!(titles.len() >= 40);
 }

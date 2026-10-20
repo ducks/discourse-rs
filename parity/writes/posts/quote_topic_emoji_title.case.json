@@ -1,0 +1,20 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE topics SET title = 'A topic 🎉 with :wave: and :) in it', fancy_title = NULL WHERE id = 38"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user1, post:1, topic:38\"]\nA topic in a subcategory carrying a tag\n[/quote]\n\nA quote of a topic whose title has emoji in it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "process_post"
+  ]
+}

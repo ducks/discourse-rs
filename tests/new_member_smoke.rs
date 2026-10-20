@@ -316,7 +316,6 @@ async fn member_replies_with_a_quote() {
 }
 
 #[tokio::test]
-#[ignore = "ROADMAP 132: topic titles with a unicode emoji are refused"]
 async fn member_titles_a_topic_with_an_emoji() {
     let (_db, state) = app().await;
     let mut client = member(&state, "user1").await;

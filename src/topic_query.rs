@@ -1105,7 +1105,7 @@ pub async fn fancy_title(
     let fancy = crate::posting::text::fancy_title(
         title,
         crate::posting::text::EmojiEscape::from_settings(settings)?,
-    )?;
+    );
     // `if !new_record? && !Discourse.readonly_mode?`
     if crate::readonly::mode(&mut *conn).await?.site_readonly() {
         return Ok(fancy);

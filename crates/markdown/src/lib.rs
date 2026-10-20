@@ -5,6 +5,7 @@
 //! preview is the post.
 
 pub mod emoji;
+pub mod emoji_escape;
 pub mod regexp;
 pub mod render;
 pub mod sanitizer;

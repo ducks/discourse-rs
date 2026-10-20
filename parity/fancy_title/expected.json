@@ -286,6 +286,66 @@
     {
       "title": "\"'nested'\" and '\"x\"'",
       "fancy": "&ldquo;&lsquo;nested&rsquo;&rdquo; and &lsquo;&ldquo;x&rdquo;&rsquo;"
+    },
+    {
+      "title": "Weekend plans and a party 🎉 for everyone",
+      "fancy": "Weekend plans and a party :tada: for everyone"
+    },
+    {
+      "title": "party🎉 glued to a word",
+      "fancy": "party🎉 glued to a word"
+    },
+    {
+      "title": "🎉 at the start",
+      "fancy": ":tada: at the start"
+    },
+    {
+      "title": "two 🎉🎉 in a row",
+      "fancy": "two :tada::tada: in a row"
+    },
+    {
+      "title": "a thumbs up 👍🏽 with a tone",
+      "fancy": "a thumbs up :+1:t4: with a tone"
+    },
+    {
+      "title": "selector ☺️ and ♡️ and ☻",
+      "fancy": "selector :smiling_face: and :heart:️ and :slight_smile:"
+    },
+    {
+      "title": "keycaps 1️⃣ and #️⃣",
+      "fancy": "keycaps :one: and :hash:"
+    },
+    {
+      "title": "a family 👨‍👩‍👧‍👦 joined",
+      "fancy": "a family :family_man_woman_girl_boy: joined"
+    },
+    {
+      "title": "flags 🇫🇷🇩🇪 here",
+      "fancy": "flags :france::germany: here"
+    },
+    {
+      "title": "🎉:) after an emoji",
+      "fancy": ":tada::) after an emoji"
+    },
+    {
+      "title": "x🎉 :) then",
+      "fancy": "x🎉 :slight_smile: then"
+    },
+    {
+      "title": "symbols © ® ™ ↔️ ↔",
+      "fancy": "symbols © ® ™ ↔️ ↔"
+    },
+    {
+      "title": "hearts ♡ ♥ ☹ ok",
+      "fancy": "hearts :heart: :heart: :frowning: ok"
+    },
+    {
+      "title": "tada 🎉️ with a selector",
+      "fancy": "tada 🎉️ with a selector"
+    },
+    {
+      "title": "it's 🎉 & \"fun\" :wave:",
+      "fancy": "it&rsquo;s :tada: &amp; &ldquo;fun&rdquo; :wave:"
     }
   ]
 }

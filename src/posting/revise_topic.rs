@@ -1169,7 +1169,7 @@ async fn save_topic(
     }
     let category_changed = new.category_id != old.category_id;
     if title_changed {
-        new.fancy_title = Some(fancy_title(&new.title, EmojiEscape::from_settings(s)?)?);
+        new.fancy_title = Some(fancy_title(&new.title, EmojiEscape::from_settings(s)?));
     }
     if category_changed {
         // inherit_slow_mode_from_category

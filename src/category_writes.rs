@@ -2016,7 +2016,7 @@ pub async fn create_category_definition(
     let fancy_title = crate::posting::text::fancy_title(
         &title,
         crate::posting::text::EmojiEscape::from_settings(s)?,
-    )?;
+    );
     // pinned_at: Time.now before the save; bumped_at, then the row.
     let pinned_at: NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
         .fetch_one(&mut *conn)
@@ -2498,7 +2498,7 @@ async fn rename_category_definition(
     let fancy_title = crate::posting::text::fancy_title(
         &new_title,
         crate::posting::text::EmojiEscape::from_settings(s)?,
-    )?;
+    );
     sqlx::query(
         "UPDATE topics SET title = $2, slug = $3, fancy_title = $4, updated_at = now() WHERE id = $1",
     )

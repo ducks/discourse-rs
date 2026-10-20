@@ -387,7 +387,7 @@ impl Mover<'_, '_> {
             "regular"
         };
         let slug = slug_for(&title, &s.get("default_locale")?.to_s())?;
-        let fancy = fancy_title(&title, EmojiEscape::from_settings(s)?)?;
+        let fancy = fancy_title(&title, EmojiEscape::from_settings(s)?);
         let slow_mode: Option<i32> =
             sqlx::query_scalar("SELECT default_slow_mode_seconds FROM categories WHERE id = $1")
                 .bind(category_id)
