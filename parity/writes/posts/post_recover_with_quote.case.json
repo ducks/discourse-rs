@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user2, post:3, topic:35\"]\nReply two from user2\n[/quote]\n\nA reply from admin quoting user2, deleted and then recovered.",
+        "reply_to_post_number": 2
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/posts/{{responses.0.body.id}}.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/{{responses.0.body.id}}/recover.json",
+      "params": {}
+    }
+  ]
+}

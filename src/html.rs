@@ -1854,6 +1854,8 @@ pub struct TopicPage {
     /// `currentUser.ignored_users`, comma separated, whose quotes
     /// quote-controls.js hides.
     pub ignored_users: String,
+    /// quote-button.js's config (`quote_button_config`).
+    pub quote_config: String,
 }
 
 /// `categories` rows the pages link to.
@@ -2081,6 +2083,102 @@ pub async fn ignored_usernames(
     .await
 }
 
+/// What quote-button.js (PostTextSelection and its toolbar, and the topic
+/// controller's selectText) reads from the topic and the viewer, as JSON
+/// safe in a script element: whether the toolbar quotes
+/// (embedQuoteButton), copies quotes (`enable_quoting`), shares and
+/// offers the fast edit of a post the viewer can edit, the settings
+/// buildQuote and the share sources read, and the strings.
+async fn quote_button_config(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    settings: &SiteSettings,
+    view: &Value,
+    viewer: Option<&str>,
+) -> Result<String, HtmlError> {
+    let enable_quoting: bool = match viewer {
+        Some(username) => {
+            sqlx::query_scalar(
+                "SELECT COALESCE((SELECT uo.enable_quoting FROM user_options uo \
+                 JOIN users u ON u.id = uo.user_id WHERE u.username = $1), TRUE)",
+            )
+            .bind(username)
+            .fetch_one(&mut *conn)
+            .await?
+        }
+        None => true,
+    };
+    let read_restricted: bool = match view["category_id"].as_i64() {
+        Some(id) => {
+            sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1::integer")
+                .bind(id as i32)
+                .fetch_optional(&mut *conn)
+                .await?
+                .unwrap_or(false)
+        }
+        None => false,
+    };
+    let editable: Vec<i64> = view["post_stream"]["posts"]
+        .as_array()
+        .map(|posts| {
+            posts
+                .iter()
+                .filter(|p| p["can_edit"] == true)
+                .filter_map(|p| p["id"].as_i64())
+                .collect()
+        })
+        .unwrap_or_default();
+    let setting = |name: &str| settings.get(name).map(|v| v.to_s());
+    let flag = |name: &str| settings.get(name).map(|v| v.truthy());
+    let strings: serde_json::Map<String, Value> = [
+        "post.quote_reply",
+        "post.quote_reply_shortcut",
+        "post.quote_edit",
+        "post.quote_edit_shortcut",
+        "post.quote_copy",
+        "post.quote_copied_to_clipboard",
+        "share.twitter",
+        "share.facebook",
+        "share.email",
+        "composer.save_edit",
+        "modal.close",
+    ]
+    .iter()
+    .map(|key| {
+        let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+        ((*key).to_string(), Value::String(text.to_string()))
+    })
+    .collect();
+    let config = serde_json::json!({
+        "topic": {
+            "id": view["id"],
+            "slug": view["slug"],
+            "title": view["title"],
+            "canCreatePost": view["details"]["can_create_post"] == true,
+            "canReplyAsNewTopic": view["details"]["can_reply_as_new_topic"] == true,
+            "privateMessage": view["archetype"] == "private_message",
+            "invisible": view["visible"] == false,
+            "readRestricted": read_restricted,
+            "draftKey": format!("topic_{}", view["id"]),
+            "draftSequence": view["draft_sequence"],
+        },
+        "user": viewer.map(|_| serde_json::json!({ "enableQuoting": enable_quoting })),
+        "editablePosts": editable,
+        "settings": {
+            "enable_fast_edit": flag("enable_fast_edit")?,
+            "share_quote_buttons": setting("share_quote_buttons")?,
+            "share_quote_visibility": setting("share_quote_visibility")?,
+            "login_required": flag("login_required")?,
+            "display_name_on_posts": flag("display_name_on_posts")?,
+            "prioritize_username_in_ux": flag("prioritize_username_in_ux")?,
+            "title": setting("title")?,
+            "facebook_app_id": setting("facebook_app_id")?,
+        },
+        "strings": strings,
+    });
+    Ok(config.to_string().replace('<', "\\u003c"))
+}
+
 /// The topic page from the /t/:id.json document.
 pub async fn topic_page(
     conn: &mut PgConnection,
@@ -2175,6 +2273,7 @@ pub async fn topic_page(
         t
     });
     let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref())?;
+    let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
 
     let stream_len = view["post_stream"]["stream"]
         .as_array()
@@ -2232,6 +2331,7 @@ pub async fn topic_page(
         reactions: post_settings.reactions.is_some(),
         solved: post_settings.solved.is_some(),
         ignored_users: ignored_users.join(","),
+        quote_config,
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })

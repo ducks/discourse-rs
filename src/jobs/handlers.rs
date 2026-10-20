@@ -43,6 +43,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
+        "rebake_quoted_posts_for_user" => rebake_quoted_posts_for_user(state, &job.args).await,
         super::badges::BACKFILL_BADGE => super::badges::backfill_badge(state, &job.args).await,
         crate::admin_badges::MASS_AWARD_BADGE => {
             crate::admin_badges::mass_award_badge(state, &job.args).await
@@ -784,6 +785,172 @@ fn has_emoji_outside_quotes(html: &str) -> bool {
     })
 }
 
+/// `Jobs::RebakeQuotedPostsForUser` -> `Post.rebake_all_quoted_posts`: the
+/// posts quoting the user's posts are left for Post.rebake_old to bake
+/// again (their baked_version cleared).
+async fn rebake_quoted_posts_for_user(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(user_id) = int_arg(args, "user_id")? else {
+        return Ok(());
+    };
+    sqlx::query(
+        "WITH user_quoted_posts AS ( \
+           SELECT post_id FROM quoted_posts \
+           WHERE quoted_post_id IN (SELECT id FROM posts WHERE user_id = $1)) \
+         UPDATE posts SET baked_version = NULL \
+         WHERE baked_version IS NOT NULL AND id IN (SELECT post_id FROM user_quoted_posts)",
+    )
+    .bind(user_id)
+    .execute(&state.pool)
+    .await?;
+    Ok(())
+}
+
+/// For remove_full_quote_on_direct_reply: when the cooked has exactly one
+/// top-level quote (`@doc.xpath("aside[contains(@class, 'quote')]")`),
+/// the stripped text of `@doc.css("aside.quote:first-child blockquote")
+/// .first` (the first blockquote, in document order, inside a quote no
+/// element precedes; empty without one).
+fn single_quote_text(cooked: &str) -> Option<String> {
+    use crate::pretty_text::cleanup::{
+        all_elements, attr, element_name, fragment_root, has_class, parse, text,
+    };
+    use markup5ever_rcdom::Handle;
+    let dom = parse(cooked);
+    let top_quotes = fragment_root(&dom)
+        .children
+        .borrow()
+        .iter()
+        .filter(|n| {
+            element_name(n) == Some("aside")
+                && attr(n, "class").is_some_and(|c| c.contains("quote"))
+        })
+        .count();
+    if top_quotes != 1 {
+        return None;
+    }
+    fn parent(node: &Handle) -> Option<Handle> {
+        let weak = node.parent.take();
+        node.parent.set(weak.clone());
+        weak.and_then(|w| w.upgrade())
+    }
+    let first_child = |node: &Handle| {
+        parent(node).is_some_and(|p| {
+            p.children
+                .borrow()
+                .iter()
+                .find(|c| element_name(c).is_some())
+                .is_some_and(|c| std::rc::Rc::ptr_eq(c, node))
+        })
+    };
+    let in_first_quote = |node: &Handle| {
+        let mut current = parent(node);
+        while let Some(ancestor) = current {
+            if element_name(&ancestor) == Some("aside")
+                && has_class(&ancestor, "quote")
+                && first_child(&ancestor)
+            {
+                return true;
+            }
+            current = parent(&ancestor);
+        }
+        false
+    };
+    Some(
+        all_elements(&dom)
+            .into_iter()
+            .find(|n| element_name(n) == Some("blockquote") && in_first_quote(n))
+            .map(|n| crate::ruby::strip(&text(&n)).to_string())
+            .unwrap_or_default(),
+    )
+}
+
+/// `CookedPostProcessor#remove_full_quote_on_direct_reply`: a reply whose
+/// only top-level quote holds the whole of the post before it (the last
+/// regular one shown) loses that quote, revised by the system user; the
+/// new raw when it was.
+#[allow(clippy::too_many_arguments)]
+async fn remove_full_quote_on_direct_reply(
+    state: &AppState,
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    post_id: i32,
+    topic_id: i32,
+    post_number: i32,
+    raw: &str,
+    cooked: &str,
+) -> Result<Option<String>, AppError> {
+    use std::sync::LazyLock;
+    let Some(quoted_text) = single_quote_text(cooked) else {
+        return Ok(None);
+    };
+    let previous: Option<String> = sqlx::query_scalar(
+        "SELECT cooked FROM posts WHERE post_number < $1 AND topic_id = $2 AND post_type = 1 \
+         AND NOT hidden AND deleted_at IS NULL ORDER BY post_number DESC LIMIT 1",
+    )
+    .bind(post_number)
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(previous) = previous.filter(|p| !crate::ruby::is_blank(p)) else {
+        return Ok(None);
+    };
+    let previous_text = {
+        use crate::pretty_text::cleanup::{fragment_root, parse, text};
+        crate::ruby::strip(&text(&fragment_root(&parse(&previous)))).to_string()
+    };
+    // gsub(/(\s){2,}/, '\1'): a run of whitespace becomes its last one.
+    static RUNS: LazyLock<regex::Regex> =
+        LazyLock::new(|| regex::Regex::new(r"[ \t\n\x0B\x0C\r]{2,}").expect("valid regex"));
+    let squeeze = |s: &str| {
+        RUNS.replace_all(s, |caps: &regex::Captures| {
+            caps[0].chars().last().map(String::from).unwrap_or_default()
+        })
+        .into_owned()
+    };
+    if squeeze(&previous_text) != squeeze(&quoted_text) {
+        return Ok(None);
+    }
+    // %r{\A\s*\[quote.+\[/quote\]}im
+    static QUOTE: LazyLock<regex::Regex> = LazyLock::new(|| {
+        regex::Regex::new(r"(?is)\A[ \t\n\x0B\x0C\r]*\[quote.+\[/quote\]").expect("valid regex")
+    });
+    let quoteless = crate::ruby::strip(&QUOTE.replace(raw, "")).to_string();
+    if crate::ruby::strip(raw) == quoteless {
+        return Ok(None);
+    }
+    let system = crate::session::current::SessionUser::load(&mut *conn, -1)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &system).await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let reason = ctx.t("removed_direct_reply_full_quotes");
+    let outcome = crate::posting::revise::revise(
+        &state.pool,
+        &ctx,
+        &guardian,
+        post_id,
+        crate::posting::revise::Changes {
+            raw: Some(quoteless.clone()),
+            edit_reason: Some(reason),
+            skip_validations: true,
+            bypass_bump: true,
+            ..Default::default()
+        },
+    )
+    .await?;
+    match outcome {
+        crate::posting::revise::Outcome::Revised => Ok(Some(quoteless)),
+        _ => Err(Unsupported("a full quote removal the revisor refused").into()),
+    }
+}
+
 /// `Jobs::ProcessPost`: CookedPostProcessor over the post's cooked HTML,
 /// the cooked column updated when it changes, then pull_hotlinked_images.
 async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
@@ -834,15 +1001,28 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
     .fetch_optional(&mut *conn)
     .await?;
     // Nothing to do for a missing post or one whose topic is gone.
-    let Some(post) = post else {
+    let Some(mut post) = post else {
         return Ok(());
     };
+    // remove_full_quote_on_direct_reply: the revision changes the post's
+    // raw (which the word watcher reads below) and cooked, but the
+    // processor goes on with the html it started from, as Rails' @doc.
     if bool_arg(args, "new_post")
         && s.get("remove_full_quote")?.truthy()
         && post.post_number > 1
-        && post.raw.contains("[quote")
+        && let Some(raw) = remove_full_quote_on_direct_reply(
+            state,
+            &mut conn,
+            &s,
+            post_id,
+            post.topic_id,
+            post.post_number,
+            &post.raw,
+            &post.cooked,
+        )
+        .await?
     {
-        return Err(Unsupported("remove_full_quote_on_direct_reply").into());
+        post.raw = raw;
     }
     // DiscourseEvent :before_post_process_cooked, on the cooked html as
     // the processor starts with it.

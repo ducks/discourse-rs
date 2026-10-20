@@ -1539,19 +1539,23 @@ kbd * * * {
   display: none;
 }
 /* topic-post.scss:1340 */
-blockquote {
+blockquote,
+blockquote .post__contents-cooked-quote {
   overflow-wrap: break-word;
 }
 /* topic-post.scss:1344 */
-blockquote>*:first-child {
+blockquote>*:first-child,
+blockquote .post__contents-cooked-quote>*:first-child {
   margin-top: 0 !important;
 }
 /* topic-post.scss:1348 */
-blockquote>*:last-child {
+blockquote>*:last-child,
+blockquote .post__contents-cooked-quote>*:last-child {
   margin-bottom: 0 !important;
 }
 /* topic-post.scss:1352 */
-blockquote table {
+blockquote table,
+blockquote .post__contents-cooked-quote table {
   table-layout: fixed;
   width: 100%;
 }

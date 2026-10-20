@@ -9,6 +9,7 @@ pub mod enqueue;
 pub mod group_messages;
 pub mod limits;
 pub mod links;
+pub mod quotes;
 pub mod rebake;
 pub mod revise;
 pub mod revise_topic;

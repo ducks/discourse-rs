@@ -376,6 +376,13 @@
       s.draftSequence = found.sequence;
     }
     var editDraft = draft && draft.action === "edit";
+    // selectText: a quote opens the reply with it, after the key's draft
+    // when there is one (composerOpts.reply), else as the text it
+    // started from (composerOpts.quote).
+    if (s.mode === "reply" && s.quote) {
+      s.originalText = draft ? null : s.quote;
+      return Promise.resolve(draft ? (draft.reply || "") + "\n" + s.quote : s.quote);
+    }
     if (s.mode === "reply" && editDraft && draft.postId) {
       s.mode = "edit";
       s.postId = draft.postId;
@@ -1594,7 +1601,61 @@
     scheduleDraft();
   }
 
+  // The post a JSON request answers, or why not.
+  function fetchJson(path) {
+    return fetch(base + path, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    }).then(function (r) {
+      if (!r.ok) {
+        throw new Error(r.status + " " + r.statusText);
+      }
+      return r.json();
+    });
+  }
+
+  // Composer#importQuote: the whole post replied to (the topic's first
+  // post when replying to the topic; when editing, the post the edited
+  // one replies to, else that post) quoted at the cursor.
+  function importQuote() {
+    if (!state || !state.topicId || !Discourse.buildQuote) {
+      return;
+    }
+    var s = state;
+    var post;
+    if (s.mode === "edit") {
+      post = fetchJson("/posts/by_number/" + s.topicId + "/" + s.postNumber).then(function (edited) {
+        return edited.reply_to_post_number
+          ? fetchJson("/posts/by_number/" + s.topicId + "/" + edited.reply_to_post_number)
+          : edited;
+      });
+    } else if (s.mode === "reply") {
+      post = fetchJson("/posts/by_number/" + s.topicId + "/" + (s.replyTo || 1));
+    } else {
+      return;
+    }
+    control.classList.add("loading");
+    post
+      .then(function (p) {
+        if (state !== s) {
+          return;
+        }
+        insertText(Discourse.buildQuote(p, p.raw, { full: true }));
+        textarea.blur();
+        textarea.focus({ preventScroll: true });
+        updatePreview();
+        scheduleDraft();
+      })
+      .catch(function (e) {
+        showError(String(e.message || e));
+      })
+      .finally(function () {
+        control.classList.remove("loading");
+      });
+  }
+
   var popupActions = {
+    quote: importQuote,
     details: function () {
       applySurround(
         '\n[details="' + data.textDetailsTitle + '"]\n',
@@ -1818,6 +1879,83 @@
       event.preventDefault();
       save();
     }
+  });
+
+  // insertBlock (TextareaTextManipulation#_addBlock): the text on lines
+  // of its own in place of the selection, the cursor after it.
+  function insertBlock(text) {
+    text = (text || "").trim();
+    if (!text) {
+      return;
+    }
+    var value = textarea.value;
+    var start = textarea.selectionStart;
+    var end = textarea.selectionEnd;
+    while (end > start && /\s/.test(value.charAt(end - 1))) {
+      end--;
+    }
+    var pre = value.slice(0, start);
+    var post = value.slice(end);
+    start -= pre.match(/\n*$/)[0].length;
+    if (pre.length > 0) {
+      text = "\n\n" + text;
+    }
+    end += post.match(/^\n*/)[0].length;
+    text = post.length > 0 ? text + "\n\n" : text + "\n";
+    textarea.setRangeText(text, start, end, "end");
+    textarea.setSelectionRange(start + text.length, start + text.length);
+    textarea.blur();
+    textarea.focus({ preventScroll: true });
+    updatePreview();
+    scheduleDraft();
+  }
+
+  // TopicController#selectText from quote-button.js: into the open
+  // composer at its cursor, after a minimized one's text, else a reply
+  // (to the post unless it is the first) opened with the quote. Without
+  // the right to reply Ember starts a new topic with it instead.
+  document.addEventListener("composer:quote", function (event) {
+    var d = event.detail || {};
+    if (!control.isConnected || !d.quote) {
+      return;
+    }
+    if (state && control.classList.contains("open")) {
+      insertBlock(d.quote);
+      return;
+    }
+    if (state && control.classList.contains("draft")) {
+      textarea.value = textarea.value + "\n" + d.quote;
+      expand();
+      updatePreview();
+      scheduleDraft();
+      return;
+    }
+    if (!d.canCreatePost) {
+      var message = data.labelUnported + " replying as a new topic";
+      if (Discourse.dialog) {
+        Discourse.dialog.alert(message);
+      } else {
+        window.alert(message);
+      }
+      return;
+    }
+    var first = parseInt(d.postNumber, 10) === 1;
+    open({
+      mode: "reply",
+      topicId: d.topicId,
+      replyTo: first ? undefined : d.postNumber,
+      replyToUsername: first ? undefined : d.username,
+      quote: d.quote,
+    });
+  });
+
+  // The post's edit from quote-button.js (toggleFastEdit's editPost).
+  document.addEventListener("composer:edit", function (event) {
+    var d = event.detail || {};
+    if (!control.isConnected || !d.postId) {
+      return;
+    }
+    open({ mode: "edit", topicId: d.topicId, postId: d.postId, postNumber: d.postNumber });
   });
 
   // Openers anywhere on the page.

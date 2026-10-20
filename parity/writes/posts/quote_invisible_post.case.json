@@ -1,0 +1,17 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user1, post:1, topic:42\"]\nA private message from user1 to user0\n[/quote]\n\nA quote of a message the poster cannot see."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "process_post"
+  ]
+}

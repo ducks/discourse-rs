@@ -1083,7 +1083,7 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
                     // post_revisions.modifications: Rails reads any YAML,
                     // so the port's is compared as what it holds.
                     ("modifications", Value::String(yaml)) => {
-                        (k.clone(), modifications_value(yaml))
+                        (k.clone(), normalize(&modifications_value(yaml), started))
                     }
                     _ => (k.clone(), normalize(v, started)),
                 })
@@ -1987,14 +1987,24 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     if let Some(at) = job_clock {
         db.pin_clock(Some(at.and_utc())).await;
     }
-    let mut from_jobs: Vec<Value> = Vec::new();
+    // What the jobs enqueue, by queue id: one a later job cancels
+    // (Jobs.cancel_scheduled_job, its row deleted before it ran) leaves
+    // the list, as the recorder's cancel_scheduled_job takes it out.
+    let mut from_jobs: Vec<(i64, Value)> = Vec::new();
+    let mut performed: Vec<i64> = Vec::new();
     while let Some((id, name)) = pending.pop_front() {
         if !run_jobs.contains(&name) {
             continue;
         }
+        performed.push(id);
         discourse_rs::jobs::perform_now(&client.state, id)
             .await
             .unwrap();
+        let queued: Vec<i64> = sqlx::query_scalar("SELECT id FROM discourse_rs.jobs")
+            .fetch_all(&db.pool)
+            .await
+            .unwrap();
+        from_jobs.retain(|(job, _)| queued.contains(job) || performed.contains(job));
         let error: Option<Option<String>> =
             sqlx::query_scalar("SELECT last_error FROM discourse_rs.jobs WHERE id = $1")
                 .bind(id)
@@ -2006,10 +2016,11 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         }
         for (new_id, new_name, shown) in queued_jobs(&db.pool, seen_id).await {
             seen_id = new_id;
-            from_jobs.push(shown);
+            from_jobs.push((new_id, shown));
             pending.push_back((new_id, new_name));
         }
     }
+    let from_jobs: Vec<Value> = from_jobs.into_iter().map(|(_, shown)| shown).collect();
     if job_clock.is_some() {
         db.pin_clock(None).await;
     }

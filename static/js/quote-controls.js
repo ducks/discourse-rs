@@ -343,8 +343,17 @@
       slug: topic.slug,
       postNumber: wrapper ? parseInt(wrapper.dataset.postNumber, 10) : null,
     };
-    el.querySelectorAll("aside.quote").forEach(function (aside, index) {
-      decorateQuote(aside, index, post);
+    // Ember decorates a quote's collapsed content again on its own, so a
+    // quote inside another is numbered among the quotes of its parent's
+    // blockquote, and the others among the post's (each list counting the
+    // quotes nested deeper too).
+    var numbered = Array.prototype.map.call(el.querySelectorAll("aside.quote"), function (aside) {
+      var parent = aside.parentElement && aside.parentElement.closest("aside.quote");
+      var scope = parent && el.contains(parent) ? parent.querySelector("blockquote") || parent : el;
+      return [aside, Array.prototype.indexOf.call(scope.querySelectorAll("aside.quote"), aside)];
+    });
+    numbered.forEach(function (pair) {
+      decorateQuote(pair[0], pair[1], post);
     });
   });
 })();

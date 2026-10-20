@@ -76,6 +76,7 @@ struct PostRow {
     self_edits: i32,
     reply_to_post_number: Option<i32>,
     locale: Option<String>,
+    reply_quoted: bool,
 }
 
 /// `PostRevisor#update_revision`: the current version's revision takes
@@ -181,7 +182,8 @@ pub async fn revise(
     let mut conn = pool.acquire().await?;
     let post: PostRow = sqlx::query_as(
         "SELECT id, user_id, topic_id, post_number, raw, cooked, edit_reason, last_editor_id, version, \
-                public_version, last_version_at, hidden, wiki, post_type, self_edits, reply_to_post_number, locale \
+                public_version, last_version_at, hidden, wiki, post_type, self_edits, reply_to_post_number, locale, \
+                reply_quoted \
          FROM posts WHERE id = $1",
     )
     .bind(post_id)
@@ -327,9 +329,8 @@ pub async fn revise(
     };
     let self_edit = post.user_id == Some(editor_user.id);
     let words = word_count(&new_raw);
-    if new_raw.contains("[quote=") {
-        return Err(Unsupported("posts with quotes (QuotedPost)").into());
-    }
+    // extract_quoted_post_numbers: the quote_count saved with the post.
+    let quoted = super::quotes::quoted_post_numbers(&new_raw, post.topic_id, post.post_number);
     // before_save: cooked for a changed raw, cooked as the author's post
     // with the editor as last editor.
     let raw_changed = new_raw != post.raw;
@@ -480,7 +481,7 @@ pub async fn revise(
                 self_edits = self_edits + $7, version = $8, public_version = $9, last_version_at = $10, \
                 updated_at = clock_timestamp(), \
                 baked_at = CASE WHEN $11 THEN clock_timestamp() ELSE baked_at END, \
-                baked_version = CASE WHEN $11 THEN $12 ELSE baked_version END \
+                baked_version = CASE WHEN $11 THEN $12 ELSE baked_version END, quote_count = $13 \
          WHERE id = $1 RETURNING updated_at",
     )
     .bind(post.id)
@@ -495,6 +496,7 @@ pub async fn revise(
     .bind(if new_version { revised_at } else { last_version_at })
     .bind(raw_changed)
     .bind(BAKED_VERSION)
+    .bind(quoted.len() as i32)
     .fetch_one(&mut *tx)
     .await?;
     let _ = updated_at;
@@ -507,32 +509,20 @@ pub async fn revise(
     let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
     crate::upload_references::link_post_uploads(&mut tx, s, &hostname, &store, post.id, &cooked)
         .await?;
-    // save_reply_relationships: the reply_to_post_number link, kept.
-    if let Some(n) = post.reply_to_post_number {
-        let parent: Option<i32> =
-            sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2")
-                .bind(post.topic_id)
-                .bind(n)
-                .fetch_optional(&mut *tx)
-                .await?;
-        if let Some(parent) = parent {
-            let inserted = sqlx::query(
-                "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) \
-                 VALUES ($1, $2, clock_timestamp(), clock_timestamp()) ON CONFLICT DO NOTHING",
-            )
-            .bind(parent)
-            .bind(post.id)
-            .execute(&mut *tx)
-            .await?
-            .rows_affected();
-            if inserted > 0 {
-                sqlx::query("UPDATE posts SET reply_count = reply_count + 1 WHERE id = $1")
-                    .bind(parent)
-                    .execute(&mut *tx)
-                    .await?;
-            }
-        }
-    }
+    // save_reply_relationships: the posts quoted and the one replied to
+    // (deleted posts aren't edited here).
+    super::quotes::save_reply_relationships(
+        &mut tx,
+        super::quotes::ReplyingPost {
+            id: post.id,
+            topic_id: post.topic_id,
+            post_type: post.post_type,
+            reply_to_post_number: post.reply_to_post_number,
+            deleted: false,
+        },
+        &quoted,
+    )
+    .await?;
     if editor_user.id != -1 {
         sqlx::query(
             "UPDATE user_stats SET post_edits_count = COALESCE(post_edits_count, 0) + 1 WHERE user_id = $1",
@@ -793,6 +783,17 @@ pub async fn revise(
         settings: s,
     };
     let hostname = urls.current_hostname()?;
+    // QuotedPost.extract_from, then TopicLink.extract_from.
+    super::rebake::extract_quoted_posts(
+        &mut conn,
+        post.id,
+        post.topic_id,
+        post.post_number,
+        post.reply_to_post_number,
+        post.reply_quoted,
+        &cooked,
+    )
+    .await?;
     if let Some(user_id) = post.user_id {
         links::extract_from(
             &mut conn,

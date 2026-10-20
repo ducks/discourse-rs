@@ -418,68 +418,6 @@ async fn set_owner(
     Ok(None)
 }
 
-/// `Post#extract_quoted_post_numbers`: the post numbers of the raw's
-/// `[quote="..."]` tags in this topic (nil for a quote without one), each
-/// once.
-fn quoted_post_numbers(raw: &str, topic_id: i32, post_number: i32) -> Vec<Option<i32>> {
-    let mut out: Vec<Option<i32>> = Vec::new();
-    let mut rest = raw;
-    while let Some(start) = rest.find("[quote=\"") {
-        let after = &rest[start + 8..];
-        let Some(end) = after.find('"') else {
-            break;
-        };
-        let inner = &after[..end];
-        rest = &after[end..];
-        if !after[end..].starts_with("\"]") {
-            continue;
-        }
-        if inner.is_empty() {
-            continue;
-        }
-        // quote.first.scan(/([a-z]+)\:(\d+)/): the last of each name wins.
-        let mut post = None;
-        let mut topic = None;
-        let bytes = inner.as_bytes();
-        let mut i = 0;
-        while i < bytes.len() {
-            if bytes[i].is_ascii_lowercase() {
-                let name_start = i;
-                while i < bytes.len() && bytes[i].is_ascii_lowercase() {
-                    i += 1;
-                }
-                if i + 1 < bytes.len() && bytes[i] == b':' && bytes[i + 1].is_ascii_digit() {
-                    let name = &inner[name_start..i];
-                    let digits_start = i + 1;
-                    let mut j = digits_start;
-                    while j < bytes.len() && bytes[j].is_ascii_digit() {
-                        j += 1;
-                    }
-                    let value = crate::ruby::to_i(&inner[digits_start..j]) as i32;
-                    match name {
-                        "post" => post = Some(value),
-                        "topic" => topic = Some(value),
-                        _ => {}
-                    }
-                    i = j;
-                }
-            } else {
-                i += 1;
-            }
-        }
-        if !(topic.is_some() && topic != Some(topic_id)) && post != Some(post_number) {
-            out.push(post);
-        }
-    }
-    let mut unique: Vec<Option<i32>> = Vec::new();
-    for n in out {
-        if !unique.contains(&n) {
-            unique.push(n);
-        }
-    }
-    unique
-}
-
 /// `PostRevisor#revise!(editor, {raw:, user_id:, edit_reason:},
 /// bypass_bump: true, skip_revision:, skip_validations: true)` for an owner
 /// change.
@@ -561,7 +499,7 @@ async fn revise_owner(
             .await?;
         }
     }
-    let quoted = quoted_post_numbers(&raw, topic.id, post.post_number);
+    let quoted = crate::posting::quotes::quoted_post_numbers(&raw, topic.id, post.post_number);
     let version = post.version + i32::from(new_version);
     let public_version = post.public_version + i32::from(new_version);
     let edit_reason_saved: String = edit_reason.chars().take(1000).collect();
@@ -918,16 +856,4 @@ async fn revise_owner(
         return Err(Unsupported("review_every_post on an owner change").into());
     }
     Ok(None)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::quoted_post_numbers;
-
-    #[test]
-    fn quoted_numbers() {
-        let raw = "[quote=\"user1, post:2, topic:35\"]\nx\n[/quote]\n[quote=\"user2, post:3, topic:9\"]\ny\n[/quote]\n[quote=\"user3\"]z[/quote]\n[quote=\"user1, post:2, topic:35\"]again[/quote]";
-        assert_eq!(quoted_post_numbers(raw, 35, 4), vec![Some(2), None]);
-        assert_eq!(quoted_post_numbers(raw, 35, 2), vec![None]);
-    }
 }

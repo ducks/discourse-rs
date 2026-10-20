@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "settings": {
+    "selectable_avatars": "34|35",
+    "selectable_avatars_mode": "everyone"
+  },
+  "setup": [
+    "INSERT INTO quoted_posts (post_id, quoted_post_id, created_at, updated_at) VALUES (37, 36, now(), now()), (38, 42, now(), now()), (52, 37, now(), now())",
+    "UPDATE posts SET baked_version = NULL WHERE id = 38"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/avatar/select.json",
+      "params": { "url": "/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png" }
+    }
+  ],
+  "run_jobs": [
+    "rebake_quoted_posts_for_user"
+  ]
+}

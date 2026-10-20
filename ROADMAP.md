@@ -56,8 +56,6 @@ migrations (Not planned).
 
 What a visitor or a new member meets first, by how soon:
 
-- A reply that quotes a post is refused (posting/create.rs:594,597;
-  posting/revise.rs:331, 135).
 - Password reset: the emailed link's page (GET /u/password-reset/:token)
   isn't routed and the login page has no Forgot password link.
 - Polls draw as their cooked list with a "0 voters" stub, so nobody can
@@ -1298,7 +1296,7 @@ with the viewport, guessing from the user agent without it
     (Ctrl/Cmd+Shift+D), footnote's and spoiler's items; moment's locale for
     the request's locale (JsLocaleHelper's configureMoment: moment's locale
     file, the timezone names translated, the formats; all vendored).
-    Left: the menu's quote whole post, insert table, change reply-to,
+    Left: the menu's insert table, change reply-to,
     format code, build poll and wrap items, which say they are not ported;
     the menu refuses to open with discourse-math, -events, -policy,
     -graphviz or -templates (for a member who can use them) on; editing a
@@ -1349,7 +1347,7 @@ positions were 100, dropped: they stay placeholders.
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146),
 crawl_topic_link (127), index_category_for_search (144),
-rebake_quoted_posts_for_user (135), change_display_name (153),
+change_display_name (153),
 pull_hotlinked_images and pull_user_profile_hotlinked_images (140),
 user_suspension_expired (151),
 generate_theme_screenshot_thumbnails (171), remap_hashtag (226).
@@ -1367,7 +1365,7 @@ have handlers now.
     invites.rs:1165; routes/invite_redeem.rs:908,1248;
     routes/topic_update.rs:646; posting/validate.rs:1203;
     routes/chat_pages.rs:406), slug_generation_method other than ascii
-    (posting/topic_save.rs:33; posting/create.rs:1751;
+    (posting/topic_save.rs:33; posting/create.rs:1755;
     posting/revise_topic.rs:1090; post_mover.rs:376;
     plugins/solved/by_user.rs:50), topics without a stored fancy_title
     on profiles (users.rs:1663). Titles with emoji codes are done
@@ -1503,13 +1501,13 @@ have handlers now.
 133. `feat/anonymous-posting` M: anonymous posting mode (the shadow
     accounts) wherever a shadow acts (69 sites, 2026-10-20): posting
     (posting/validate.rs:80,152; posting/create.rs:239;
-    posting/revise.rs:179; posting/revise_topic.rs:413;
+    posting/revise.rs:180; posting/revise_topic.rs:413;
     posting/enqueue.rs:88), likes, flags and bookmarks
     (post_actions.rs:235; likes.rs:187,519; flags.rs:107;
     bookmark_manager.rs:137), topic_guardian.rs:954, current_user.rs:307,
     read_tracking.rs:134, post_destroyer.rs:328,389,1255,
     pm_invite.rs:69,242, routes/pm_invite.rs:204, routes/invites.rs:193,
-    topic_status.rs:137, post_owner_changer.rs:500, post_mover.rs:139,
+    topic_status.rs:137, post_owner_changer.rs:438, post_mover.rs:139,
     topic_converter.rs:153,456, topics_bulk.rs:99,
     routes/topics_bulk.rs:210,338,483, pm_lists.rs:59,
     topic_query.rs:290,839, search/mod.rs:667, review.rs:356,
@@ -1536,53 +1534,66 @@ have handlers now.
     user's queued post (posting/create.rs:331), max_consecutive_replies
     (posting/validate.rs:961), flagging a new user's linked posts as
     spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
-    posting/create.rs:629), flag_sockpuppets (:676), silencing a TL0
+    posting/create.rs:634), flag_sockpuppets (:681), silencing a TL0
     user without keep_posts (user_penalties.rs:929, hide_posts; chat's
     rate limit silence), TL0 bio links (users.rs:708, strip_links)
-135. `feat/quoted-posts` M: QuotedPost on create and revise
-    (posting/create.rs:594,597; posting/revise.rs:331: a reply quoting a
-    post is refused), quote alerts and quotes in group messages
-    (jobs/post_alert.rs:405,474), recovering posts with quotes
-    (post_destroyer.rs:1303), a copied first post with quotes
-    (post_mover.rs:1026), the rebake_quoted_posts_for_user job
+135. ~~`feat/quoted-posts`~~ (done, left: quoting into a new topic when
+    the viewer can't reply (composer.js:1934, with the composer's reply
+    as new topic); the selection's markdown for what the rich editor's
+    serializer writes beyond paragraphs, emphasis, code, links, mentions,
+    hashtags, emoji, images, lists, headings, block quotes, quotes and
+    rules (tables, details, polls and the like come out as their text,
+    quote-button.js:238,367); the q and e shortcuts (no keyboard
+    shortcuts are ported) and the caret placed at the selection when Edit
+    opens the composer; the quoted user's notification email, which
+    Email::Styles refuses with any quote (email/styles.rs:126, 146);
+    linked notifications from a quote of another topic's post when the
+    quoted user wasn't notified (jobs/post_alert.rs:443, 145)) M: QuotedPost
+    on create, revise, recover and a moved first post's copy
+    (quote_count, post_replies and reply counts for the posts quoted,
+    reply_quoted), quote alerts and quotes in group messages (is_replying?),
+    remove_full_quote_on_direct_reply, the rebake_quoted_posts_for_user
+    job, the selected text's quote toolbar (Quote, Edit with the fast edit
+    modal, Copy Quote, the share sources) and the composer's "Quote whole
+    post"
 136. `feat/slow-mode` S: slow mode when creating, enqueueing, editing and
-    changing owners (posting/create.rs:531; posting/enqueue.rs:137;
-    posting/revise.rs:261,447; post_owner_changer.rs:519), slow mode
+    changing owners (posting/create.rs:542; posting/enqueue.rs:137;
+    posting/revise.rs:263,448; post_owner_changer.rs:457), slow mode
     without seconds (routes/topic_timer.rs:252)
 137. `feat/post-edit-rest` L (rewritten 2026-10-20: edits within the
     grace period, posts#update's title, repeated edit notifications and
     the notify_post_revision job landed with 188i1 and 188i2; a username
     change's definition description with 190c): hidden and non-regular
-    posts (posting/revise.rs:234,237), topic fields revised on a reply
+    posts (posting/revise.rs:236,239), topic fields revised on a reply
     (:213), deleted posts (routes/posts.rs:352), staff_edit_locks_post
-    (posting/revise.rs:770; post_owner_changer.rs:834), posts#update's
+    (posting/revise.rs:760; post_owner_changer.rs:772), posts#update's
     image sizes and other fields (routes/posts.rs:304,316), revisions
     changing more than the body, title and edit reason
     (posting/revisions.rs:372), a category description synced
-    from its definition post (posting/revise.rs:245;
-    posting/rebake.rs:91; jobs/handlers.rs:989;
-    post_owner_changer.rs:516; user_destroyer.rs:403), revisions without
+    from its definition post (posting/revise.rs:247;
+    posting/rebake.rs:91; jobs/handlers.rs:1169;
+    post_owner_changer.rs:454; user_destroyer.rs:403), revisions without
     a user or by the system user (posting/revisions.rs:381,383), a past
     version's post and raw (routes/posts.rs:548,603), an owner change's
     review_every_post and a hidden post's new owner unhiding it
-    (post_owner_changer.rs:918,526)
-138. `feat/posting-rest` M: replies to whispers (posting/create.rs:938),
-    staff replying to closed topics (:551), uploaded video or audio
-    (:591; posting/revise.rs:371), duplicate titles and titles the
+    (post_owner_changer.rs:856,464)
+138. `feat/posting-rest` M: replies to whispers (posting/create.rs:943),
+    staff replying to closed topics (:562), uploaded video or audio
+    (:602; posting/revise.rs:372), duplicate titles and titles the
     cleaner changes (posting/validate.rs:1133; posting/topic_save.rs:30;
-    post_owner_changer.rs:508), auto_close_topics_post_count
-    (posting/create.rs:1394), returning-user post notices (:1619),
-    featured topics with a category sort order (:2011),
-    suppress_secured_categories_from_admin (:2014;
-    jobs/post_alert.rs:728), site_archived (posting/create.rs:242;
+    post_owner_changer.rs:446), auto_close_topics_post_count
+    (posting/create.rs:1398), returning-user post notices (:1623),
+    featured topics with a category sort order (:2015),
+    suppress_secured_categories_from_admin (:2018;
+    jobs/post_alert.rs:800), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
-    regeneration (posting/create.rs:964; jobs/handlers.rs:928;
+    regeneration (posting/create.rs:969; jobs/handlers.rs:1108;
     post_owner_changer.rs:372; post_mover.rs:901;
     posting/revise_topic.rs:1187; the admin's preview,
     routes/admin_config_branding.rs:173), posts#create's other params
-    and archetypes (routes/posts.rs:85,114), process_post's recook,
-    image sizes and remove_full_quote_on_direct_reply
-    (jobs/handlers.rs:797,800,845), enqueueing a suspended user's post
+    and archetypes (routes/posts.rs:85,114), process_post's recook
+    and image sizes
+    (jobs/handlers.rs:964,967), enqueueing a suspended user's post
     or one with polls (posting/enqueue.rs:94,97; approving one,
     review_posts.rs:624)
 139. `feat/uploads-rest` M: image types Rails optimizes, cropping
@@ -1734,8 +1745,8 @@ have handlers now.
     blurbs from old post_search_data rows (:1022,1029), human_only
     search logs (search_logs.rs:60), the index_category_for_search job
 145. `feat/post-alert-rest` M: group and @here mentions
-    (jobs/post_alert.rs:307,310), nested replies (:283), links to topics
-    (:415), linked notifications and their consolidation (:718;
+    (jobs/post_alert.rs:309,312), nested replies (:285), links to topics
+    notifying someone (:443), linked notifications and their consolidation (:790;
     notification_create.rs:230), mentions in flagged messages and
     warnings (:337), post_alert's options (:211), populate_acting_user
     (notifications.rs:363,419); staged users' alerts no longer refuse
@@ -1787,9 +1798,9 @@ have handlers now.
     (routes/admin_users.rs:1536), category moderators on the about page
     (about.rs:309)
 150. `feat/deletion-rest` M: permanent deletion
-    (routes/post_destroy.rs:80, force_destroy), recovering topics, likes,
-    replies and quotes (post_destroyer.rs:1277,1296,1299), authors
-    recovering their own posts (:1256), deleting flagged posts and
+    (routes/post_destroy.rs:80, force_destroy), recovering topics and likes
+    (post_destroyer.rs:1281,1298), authors
+    recovering their own posts (:1260), deleting flagged posts and
     embedded or published topics (post_destroyer.rs's
     refuse_unported_deletion), deleting replies as a non-staff user and
     deletes in a transaction (:310,391,400), likes on deleted posts and
@@ -1877,7 +1888,7 @@ have handlers now.
     routes/admin_groups.rs:1251; a flaired group in the search menu,
     routes/search_menu.rs:199), group custom fields and associated
     groups (routes/admin_groups.rs:224; user_destroyer.rs:470), rewriting
-    a renamed group's mentions (jobs/handlers.rs:315,
+    a renamed group's mentions (jobs/handlers.rs:316,
     GroupMentionsUpdater), an editor who can no longer see the group
     (routes/admin_groups.rs:1455), ordering members by custom fields
     (routes/groups.rs:1031), random username suggestions (:441;
@@ -1953,7 +1964,7 @@ have handlers now.
     (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
     EmailCook)
 166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
-    jobs/post_alert.rs:450; routes/admin_groups.rs:1239;
+    jobs/post_alert.rs:478; routes/admin_groups.rs:1239;
     routes/groups.rs:642), the group SMTP credentials check
     (problem_checks.rs:342). Needs: network
 167. `feat/locales` L: every locale but English: server strings
@@ -2100,7 +2111,7 @@ have handlers now.
     (request_tracker.rs:465), keep_old_ip_address_count
     (session/current.rs:867). Needs: a GeoLite2 database
 186. `feat/push-notifications` M: push notifications
-    (jobs/post_alert.rs:1045) by web push and through user API keys'
+    (jobs/post_alert.rs:1117) by web push and through user API keys'
     push clients (84). Needs: network
 187. `fix/rails-error-answers` L (was M), split by area when started: about 175
     refusals when written, about 720 on 2026-10-20 (634 of the
@@ -2199,7 +2210,7 @@ route table has been made, so this list may be short.
     188i4. `feat/topic-edits-move-rest` M (a merge of a topic with votes
     (topic voting's TopicMerger), a copied first post's polls, reactions
     and flags, the split's topic rate limits, trashing a merged topic's
-    embed, post_mover.rs:2083,817,996,2128,141,1814), 188i5.
+    embed, post_mover.rs:2105,817,996,2150,141,1836), 188i5.
     `feat/topic-edits-bulk-rest` M (a published page's topic converted,
     topic_converter.rs:236; a group's message inbox in pm-reset-new and
     bulk archiving, filter=unread over a message inbox, bulk deleting

@@ -1288,24 +1288,20 @@ pub async fn staff_recover_in(
             .fetch_one(&mut *conn)
             .await?;
     let pm = topic.archetype == "private_message";
-    let (deleted_likes, quotes): (bool, bool) = sqlx::query_as(
-        "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'), \
-                $2 LIKE '%[quote=%'",
+    let deleted_likes: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions')",
     )
     .bind(post.id)
-    .bind(&post.raw)
     .fetch_one(&mut *conn)
     .await?;
     if deleted_likes {
         return Err(Unsupported("recovering a post's likes (deleted_public_actions)").into());
     }
-    if quotes || post.reply_to_post_number.is_some() {
-        return Err(Unsupported("recovering replies and posts with quotes").into());
-    }
-    let cooked: String = sqlx::query_scalar("SELECT cooked FROM posts WHERE id = $1")
-        .bind(post.id)
-        .fetch_one(&mut *conn)
-        .await?;
+    let (cooked, reply_quoted): (String, bool) =
+        sqlx::query_as("SELECT cooked, reply_quoted FROM posts WHERE id = $1")
+            .bind(post.id)
+            .fetch_one(&mut *conn)
+            .await?;
 
     // staff_recovered: user_deleted cleared, the row recovered; Post#recover!
     // extracts its links again, then updates the category's latest post.
@@ -1338,6 +1334,32 @@ pub async fn staff_recover_in(
     } else {
         return Err(Unsupported("recovering posts without an author").into());
     }
+    // QuotedPost.extract_from, extract_quoted_post_numbers (its count not
+    // saved) and save_reply_relationships: the posts it quotes and the
+    // one it replies to count it as a reply again.
+    crate::posting::rebake::extract_quoted_posts(
+        &mut *conn,
+        post.id,
+        topic.id,
+        post.post_number,
+        post.reply_to_post_number,
+        reply_quoted,
+        &cooked,
+    )
+    .await?;
+    let quoted = crate::posting::quotes::quoted_post_numbers(&post.raw, topic.id, post.post_number);
+    crate::posting::quotes::save_reply_relationships(
+        &mut *conn,
+        crate::posting::quotes::ReplyingPost {
+            id: post.id,
+            topic_id: topic.id,
+            post_type: post.post_type,
+            reply_to_post_number: post.reply_to_post_number,
+            deleted: false,
+        },
+        &quoted,
+    )
+    .await?;
     if let Some(category_id) = topic.category_id {
         category_update_latest(&mut *conn, category_id, deferred).await?;
     }

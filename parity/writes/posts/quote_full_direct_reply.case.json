@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user0, post:5, topic:35, full:true\"]\nReply from user0 mentioning @user1 so a mention notification exists.\n[/quote]\n\nA reply quoting the whole post before it, which the system takes out again.",
+        "reply_to_post_number": 5
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post",
+    "post_alert"
+  ]
+}

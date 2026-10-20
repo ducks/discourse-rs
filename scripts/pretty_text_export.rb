@@ -79,6 +79,8 @@ admin = User.find_by!(username: "admin")
 replies = Topic.find_by!(title: "Parity fixture: replies and posters")
 pinned = Topic.find_by!(title: "Parity fixture: pinned and closed")
 staff_topic = Topic.where(category_id: Category.find_by!(slug: "staff").id).order(:id).first!
+deleted_topic = Topic.with_deleted.where.not(deleted_at: nil).order(:id).first!
+message = Topic.private_messages.where(user_id: u1.id).order(:id).first!
 upload = Upload.where("id > 0").order(:id).first
 
 # [raw, topic the post is cooked in, cooking user]
@@ -200,6 +202,15 @@ samples = [
   # The policy plugin is off on the reference: [policy] is text, which
   # interrupts nothing.
   ["text\n[policy group=staff]\nAccept this.\n[/policy]", replies.id, u1.id],
+  # Quotes of a deleted topic's post, of a message, nested, with a display
+  # name and its username, of a user who doesn't exist, and with markdown
+  # and a list inside.
+  ["[quote=\"user2, post:1, topic:#{deleted_topic.id}\"]\nThis topic is deleted\n[/quote]\n\nAfter it.", replies.id, u1.id],
+  ["[quote=\"user1, post:1, topic:#{message.id}\"]\nA private message\n[/quote]", replies.id, u1.id],
+  ["[quote=\"user1, post:2, topic:#{replies.id}\"]\nOuter\n\n[quote=\"user0, post:1, topic:#{replies.id}\"]\nInner\n[/quote]\n\nOuter again\n[/quote]", replies.id, u1.id],
+  ["[quote=\"User1, post:2, topic:#{replies.id}, username:user1\"]\nReply one\n[/quote]", replies.id, u1.id],
+  ["[quote=\"ghost, post:3, topic:#{replies.id}\"]\nReply two\n[/quote]", replies.id, u1.id],
+  ["[quote=\"user2, post:3, topic:#{replies.id}\"]\n**Reply** two with @user1 and :smile:\n\n- a\n- b\n[/quote]\nRight after.", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

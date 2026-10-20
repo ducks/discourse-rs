@@ -308,10 +308,10 @@ rules on the markdown-it crate, measured against Rails.
   renders again with the answers.
 - `make record-pretty-text AGENT=rs-parity` records, from Rails on the
   reference: those options, every helper call with its result, and
-  `PrettyText.markdown`'s HTML for a corpus of 51 feature samples and
+  `PrettyText.markdown`'s HTML for a corpus of 82 feature samples and
   the seeded posts, each also through `PrettyText.cook`.
   `tests/pretty_text.rs` requires the options, the
-  helpers and the cooked HTML to match; 79 of 80 entries do.
+  helpers and the cooked HTML to match; all 108 entries do.
 - `pretty_text::cleanup`: `PrettyText.cleanup`, on html5ever: link `rel`
   attributes, mention links for users and groups, hidden direction marks
   in code, video thumbnails, and Nokogiri's HTML5 re-serialization.

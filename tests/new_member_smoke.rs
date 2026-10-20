@@ -302,7 +302,6 @@ async fn member_replies() {
 }
 
 #[tokio::test]
-#[ignore = "ROADMAP 135: posts with quotes (QuotedPost) are refused"]
 async fn member_replies_with_a_quote() {
     let (_db, state) = app().await;
     let mut client = member(&state, "user1").await;

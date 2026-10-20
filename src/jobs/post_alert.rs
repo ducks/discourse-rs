@@ -1,7 +1,8 @@
 //! `Jobs::PostAlert` -> `PostAlerter#after_save_post`: who hears about a
-//! post (mentioned users, the user replied to, the topic's author and
-//! watchers, first-post watchers), each through `create_notification`
-//! with its gates, collapsing, user action and notification email job.
+//! post (mentioned users, the user replied to, quoted users, the topic's
+//! author and watchers, first-post watchers), each through
+//! `create_notification` with its gates, collapsing, user action and
+//! notification email job.
 //!
 //! Likes and discourse-reactions' reactions are notified through it too,
 //! with their consolidation plans.
@@ -9,8 +10,9 @@
 //! Messages notify their directly targeted users, and their groups'
 //! members by their level on it, with the groups' inbox summaries.
 //!
-//! Refused rather than approximated: group and @here mentions, quotes,
-//! links to topics, group SMTP, nested replies and push notifications.
+//! Refused rather than approximated: group and @here mentions, links to
+//! topics notifying someone, group SMTP, nested replies and push
+//! notifications.
 //! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
@@ -400,18 +402,44 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
 
-    // quotes and links (none in a message either)
-    if post.raw.contains("[quote=") && !private_message {
-        return Err(Unsupported("alerts for quotes").into());
+    // quotes (notify_non_pm_users: none in a message)
+    let quoted_users = extract_quoted_users(ctx, conn, &post).await?;
+    if !private_message {
+        let targets: Vec<i32> = quoted_users
+            .iter()
+            .copied()
+            .filter(|u| !alerter.notified.contains(u))
+            .collect();
+        let mut reached = Vec::new();
+        for user_id in targets {
+            if alerter
+                .create_notification(conn, user_id, types::QUOTED, &Opts::default())
+                .await?
+            {
+                reached.push(user_id);
+            }
+        }
+        alerter.notified.extend(reached);
     }
-    let topic_links: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_links WHERE post_id = $1 AND NOT reflection \
-           AND (link_post_id IS NOT NULL OR link_topic_id IS NOT NULL))",
+
+    // linked (none in a message either): extract_linked_users, the
+    // authors of the posts (or first posts of the topics) linked to; only
+    // those not notified yet would hear of it, which isn't ported.
+    let linked: Vec<i32> = sqlx::query_scalar(
+        "SELECT COALESCE(lp.user_id, fp.user_id) FROM topic_links tl \
+         LEFT JOIN posts lp ON lp.id = tl.link_post_id AND lp.deleted_at IS NULL \
+         LEFT JOIN topics t ON t.id = tl.link_topic_id AND t.deleted_at IS NULL \
+         LEFT JOIN posts fp ON lp.id IS NULL AND fp.topic_id = t.id AND fp.post_number = 1 \
+           AND fp.deleted_at IS NULL \
+         WHERE tl.post_id = $1 AND NOT tl.reflection \
+           AND COALESCE(lp.user_id, fp.user_id) IS DISTINCT FROM $2 \
+           AND EXISTS (SELECT 1 FROM users u WHERE u.id = COALESCE(lp.user_id, fp.user_id))",
     )
     .bind(post.id)
-    .fetch_one(&mut *conn)
+    .bind(post.user_id)
+    .fetch_all(&mut *conn)
     .await?;
-    if topic_links && !private_message {
+    if !private_message && linked.iter().any(|u| !alerter.notified.contains(u)) {
         return Err(Unsupported("alerts for links to topics").into());
     }
 
@@ -470,9 +498,6 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             .copied()
             .filter(|u| !alerter.notified.contains(u))
             .collect();
-        if !indirect.is_empty() && post.raw.contains("[quote=") {
-            return Err(Unsupported("quotes in group messages").into());
-        }
         let mut stats = None;
         let mut reached = Vec::new();
         for user_id in indirect {
@@ -484,7 +509,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             .fetch_optional(&mut *conn)
             .await?
             .flatten();
-            let replying = reply_target == Some(user_id);
+            // is_replying?: replied to, or quoted.
+            let replying = reply_target == Some(user_id) || quoted_users.contains(&user_id);
             let got = match level {
                 Some(3) => {
                     alerter
@@ -612,6 +638,52 @@ async fn group_notifying_via_smtp(
     .fetch_one(&mut *conn)
     .await?;
     Ok(smtp && (groups == 1 || incoming))
+}
+
+/// `extract_quoted_users(post)`: the users the raw's quotes name (by the
+/// quote's `username:` when display names lead, else its first part),
+/// the author left out.
+async fn extract_quoted_users(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<Vec<i32>, AppError> {
+    let s = ctx.settings;
+    let by_username =
+        s.get("display_name_on_posts")?.truthy() && !s.get("prioritize_username_in_ux")?.truthy();
+    let names = quoted_usernames(&post.raw, by_username);
+    if names.is_empty() {
+        return Ok(Vec::new());
+    }
+    Ok(sqlx::query_scalar(
+        "SELECT id FROM users WHERE username_lower = ANY($1) AND id IS DISTINCT FROM $2 ORDER BY id",
+    )
+    .bind(&names)
+    .bind(post.user_id)
+    .fetch_all(&mut *conn)
+    .await?)
+}
+
+/// The usernames `extract_quoted_users` scans the raw for: each
+/// `username:<alnum>*"]` (`by_username`), else each `[quote="<name>,...`
+/// with `"]` later on the line; stripped, downcased, each once.
+fn quoted_usernames(raw: &str, by_username: bool) -> Vec<String> {
+    use std::sync::LazyLock;
+    // Onigmo's [[:alnum:]] on a UTF-8 string: letters, marks and digits.
+    static USERNAME: LazyLock<regex::Regex> = LazyLock::new(|| {
+        regex::Regex::new(r#"username:([\p{L}\p{M}\p{Nd}]*)"\]"#).expect("valid regex")
+    });
+    static FIRST: LazyLock<regex::Regex> =
+        LazyLock::new(|| regex::Regex::new(r#"\[quote="([^,]+),.+"\]"#).expect("valid regex"));
+    let re = if by_username { &*USERNAME } else { &*FIRST };
+    let mut out: Vec<String> = Vec::new();
+    for caps in re.captures_iter(raw) {
+        let name = crate::ruby::strip(&caps[1]).to_lowercase();
+        if !out.contains(&name) {
+            out.push(name);
+        }
+    }
+    out
 }
 
 struct Alerter<'a> {

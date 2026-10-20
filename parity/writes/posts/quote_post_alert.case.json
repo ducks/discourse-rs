@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user2, post:3, topic:35\"]\nalso long enough to pass the minimum length check\n[/quote]\n\nA reply to the topic quoting user2, who hears of the quote."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

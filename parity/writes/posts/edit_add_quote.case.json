@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "[quote=\"user0, post:1, topic:35\"]\nFirst post of a topic with several repliers\n[/quote]\n\nReply one from user1, edited to quote the first post."
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "process_post"
+  ]
+}

@@ -601,12 +601,6 @@ pub async fn create(
     if analysis.has_upload_media {
         return Err(Unsupported("posts with uploaded video or audio").into());
     }
-    if analysis.has_quotes {
-        return Err(Unsupported("posts with quotes (QuotedPost)").into());
-    }
-    if raw.contains("[quote=") {
-        return Err(Unsupported("posts with quotes (QuotedPost)").into());
-    }
     let mut conn = pool.acquire().await?;
     // has_host_spam?, ahead of PostValidator: refused, and the moderators
     // told (handle_spam) unless the post was approved from the queue.
@@ -974,13 +968,15 @@ pub async fn create(
     if s.get("generate_topic_og_image")?.truthy() {
         return Err(Unsupported("generate_topic_og_image").into());
     }
+    // setup_post's extract_quoted_post_numbers: the quote_count.
+    let quoted = super::quotes::quoted_post_numbers(&raw, topic_id, post_number);
     let (post_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, created_at, updated_at, \
                             reply_to_post_number, reply_to_user_id, last_editor_id, word_count, \
                             sort_order, last_version_at, baked_at, baked_version, wiki, quote_count, \
                             via_email, raw_email) \
          VALUES ($1, $2, $3, $4, $5, COALESCE($11, clock_timestamp()), clock_timestamp(), $6, $7, $1, $8, $3, \
-                 clock_timestamp(), clock_timestamp(), $9, $10, 0, $12, $13) \
+                 clock_timestamp(), clock_timestamp(), $9, $10, $14, $12, $13) \
          RETURNING id, created_at",
     )
     .bind(user.id)
@@ -996,6 +992,7 @@ pub async fn create(
     .bind(args.email.as_ref().map(|e| e.created_at))
     .bind(args.email.is_some())
     .bind(args.email.as_ref().map(|e| e.raw_email.as_str()))
+    .bind(quoted.len() as i32)
     .fetch_one(&mut *tx)
     .await?;
     // Post's after_create: its limits.
@@ -1080,7 +1077,7 @@ pub async fn create(
             .await?;
         }
     }
-    // extract_links (QuotedPost refused above)
+    // extract_links: TopicLink, then QuotedPost.
     let hostname = urls.current_hostname()?;
     links::extract_from(
         &mut tx,
@@ -1096,6 +1093,16 @@ pub async fn create(
             topic_id,
             cooked: &cooked,
         },
+    )
+    .await?;
+    super::rebake::extract_quoted_posts(
+        &mut tx,
+        post_id,
+        topic_id,
+        post_number,
+        reply_to_post_number,
+        false,
+        &cooked,
     )
     .await?;
     // track_topic
@@ -1258,32 +1265,18 @@ pub async fn create(
     if args.advance_draft {
         next_draft_sequence(&mut tx, user.id, &draft_key).await?;
     }
-    // save_reply_relationships
-    if let Some(n) = reply_to_post_number {
-        let parent: Option<i32> =
-            sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2")
-                .bind(topic_id)
-                .bind(n)
-                .fetch_optional(&mut *tx)
-                .await?;
-        if let Some(parent) = parent {
-            let inserted = sqlx::query(
-                "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) \
-                 VALUES ($1, $2, clock_timestamp(), clock_timestamp()) ON CONFLICT DO NOTHING",
-            )
-            .bind(parent)
-            .bind(post_id)
-            .execute(&mut *tx)
-            .await?
-            .rows_affected();
-            if inserted > 0 {
-                sqlx::query("UPDATE posts SET reply_count = reply_count + 1 WHERE id = $1")
-                    .bind(parent)
-                    .execute(&mut *tx)
-                    .await?;
-            }
-        }
-    }
+    super::quotes::save_reply_relationships(
+        &mut tx,
+        super::quotes::ReplyingPost {
+            id: post_id,
+            topic_id,
+            post_type: post_types::REGULAR,
+            reply_to_post_number,
+            deleted: false,
+        },
+        &quoted,
+    )
+    .await?;
     // Email::Receiver links its incoming email to the post before the
     // jobs go out.
     if let Some(email) = &args.email {

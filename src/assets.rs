@@ -235,6 +235,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/quote-controls.js"),
     ),
+    (
+        "quote-button.js",
+        JS,
+        include_str!("../static/js/quote-button.js"),
+    ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("invite.js", JS, include_str!("../static/js/invite.js")),
     (
