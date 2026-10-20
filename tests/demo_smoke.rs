@@ -773,7 +773,6 @@ async fn a_reply_linking_a_topic_notifies() {
 }
 
 #[tokio::test]
-#[ignore = "posts with quotes (QuotedPost) are refused, ROADMAP 135"]
 async fn a_quote_notifies() {
     let (db, state) = app().await;
     let mut user1 = member(&state, "user1").await;
@@ -791,7 +790,7 @@ async fn a_quote_notifies() {
     reply_to(&mut user2, TOPIC as i64, &raw).await;
     settle(&db, &state).await;
     let quoted: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM notifications WHERE user_id = $1 AND notification_type = 2",
+        "SELECT count(*) FROM notifications WHERE user_id = $1 AND notification_type = 3",
     )
     .bind(user_id(&db, "user1").await)
     .fetch_one(&db.pool)
