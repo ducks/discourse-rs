@@ -13,6 +13,13 @@ backlog; the milestones below are the coarse one. Phase 9 groups the
 markers into branches and phase 10 holds the rest of the milestones'
 work, so the two together are the count of what is left.
 
+## Before the demo
+
+- [ ] Polish the login page and sign-in flow. Review desktop and mobile layout,
+  form spacing, labels, focus states, and loading feedback. Verify invalid
+  credentials, password reset, successful login, and return to the intended page
+  in a real browser. Capture screenshots before considering it demo-ready.
+
 ## Now: the parity queue (2026-10-13)
 
 The next branches, in order. Each has a brief with the Rails reading

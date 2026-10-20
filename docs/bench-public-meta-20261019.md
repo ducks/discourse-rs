@@ -196,6 +196,132 @@ the comparison script, and the query trace are in
 `bench/20261019-search-prefetch/`. The baseline tables above describe the original
 binary and have not been replaced with these follow-up results.
 
+## Larger corpus follow-up
+
+The same six URLs were measured against identical PostgreSQL 18.6 copies with
+1,089 topics, 20,576 posts, and 220 users. The added data contains 1,000 topics
+and 20,000 posts, reusing sampled public bodies with synthetic authors. It includes
+400 five-post, 300 ten-post, 200 twenty-five-post, and 100 hundred-post threads.
+This increases volume and repeated search matches, not vocabulary diversity.
+The original topic URLs remain unchanged, so the topic measurements still fetch
+the original short and twenty-post threads, not the new hundred-post threads.
+
+Rust uses the release binary with the search-prefetch change (`e1b67f15`);
+Rails remains at `bf55a44`. All other benchmark settings above were retained:
+three alternating rounds, five seconds per sample, concurrency 16, 24 warmups,
+no HTTP keep-alive or compression, and separate cached/bypass runs. Both database
+copies were analyzed. Generation and compilation were finished before measurement.
+Both configured connections verified PostgreSQL 18.6 on the same server instance.
+
+Uncached medians, with latency columns showing Rust / Rails in milliseconds:
+
+| Endpoint | Rust req/s | Rails req/s | p50 ms | p99 ms |
+|---|---:|---:|---:|---:|
+| Latest JSON | 2,064 | 126 | 7.8 / 127.9 | 10.5 / 191.6 |
+| Categories JSON | 819 | 202 | 19.7 / 79.4 | 24.5 / 95.7 |
+| One-post topic JSON | 1,274 | 140 | 12.6 / 113.1 | 16.1 / 132.7 |
+| Twenty-post topic JSON | 1,062 | 106 | 15.2 / 153.2 | 18.7 / 169.7 |
+| Twenty-post topic HTML | 517 | 70 | 31.4 / 225.6 | 37.9 / 400.6 |
+| Search JSON | 87 | 56 | 191.0 / 298.4 | 232.7 / 369.5 |
+
+All 72 measurements had zero HTTP/connection errors, excluding requests aborted
+at the duration deadline. Initial response projections matched for ordered latest
+topics/users, category counters, cooked topic posts, and search posts/topics.
+These checks cover selected core fields rather than full serializer parity.
+Warmup headers confirmed response-cache hits for all cache-eligible endpoints.
+
+Search is the clearest scaling bottleneck: Rust fell from 408 req/s in the small
+corpus prefetch follow-up to 87 here; Rails fell from 112 to 56. This comparison
+does not isolate dataset size perfectly because runs occurred at different times
+on a shared desktop. Repeated text also makes this a high-match workload. Query
+profiling is needed to attribute the slowdown; it is not a browser measurement.
+
+### Search profile and corpus artifact
+
+Follow-up profiling found that the importer appends an indexed attribution URL,
+`[Original post on Meta](https://meta.discourse.org/...)`, to every copied post.
+The expansion generator copied those footers too: 20,524 posts contain them.
+Only 8,265 of those bodies contain the literal substring `discourse` before the
+footer (this substring count is not an exact full-text match count).
+Consequently the benchmark query matches 20,528 of 20,572 indexed posts. Treat
+this search row as a near-universal-match stress case, not representative search
+throughput or evidence of poor scaling for all terms.
+
+A warmed traced Rust request took 84.6 ms; the main search SQL accounted for
+67.1 ms and all 26 SQL calls for 74.7 ms. Three standalone EXPLAIN ANALYZE runs
+gave median main-query execution times of 74.4 ms for `Discourse`, 1.09 ms for
+`postgres`, 0.33 ms for `janitor`, and 0.24 ms for a no-match term. These are serial
+query timings, not concurrent HTTP latency. The selective terms use the existing
+GIN index. For `Discourse`, PostgreSQL scans the search data, joins eligible posts,
+and computes ranking aggregates over about 20,500 matches / 1,048 topics before
+selecting 51 results. The recorded plan has no disk reads, sort spills, or JIT.
+
+Before claiming representative search throughput, keep attribution in the corpus
+manifest rather than searchable post text, regenerate the search index through
+the normal indexing path, and benchmark multiple terms of differing selectivity.
+No dataset or application behavior was changed during this investigation.
+Raw SQL, plans, and supplementary per-term HTTP probes are retained under
+`bench/20261019-search-profile-large/`.
+
+The [per-round TSV](benchmarks/20261019-large-public-meta.tsv) retains all results.
+Raw responses, server version proofs, metadata, and summary JSON are under
+`bench/20261019-large-benchmark/`. The source snapshot SHA-256 is
+`c675d98d28e79d1a9c78842d561d62f2e23e5ff6c6d5f6a27b212e7bbf7f2769`.
+
+## Cleaned corpus rerun
+
+The attribution artifact was removed in a fresh copy, preserving all 20,524
+source URLs in a separate manifest. Each affected post was rebaked with Rails
+and indexed with `SearchIndexer.index(post, force: true)`. Verification checked
+nonempty cooked content and removal of attribution from cooked/search text.
+The normal indexing call skips posts without dirty tracked attributes after
+rebake's direct column updates, so the forced path is required. The successful
+pass took 770 seconds; all 20,524 affected posts were indexed.
+
+Two fresh databases were restored from the cleaned SQL snapshot and analyzed on
+the same PostgreSQL 18.6 server. They retain 1,089 topics, 20,576 posts, and 220
+users. Of 20,572 indexed posts, 7,472 match `Discourse:*ABCD`, 39 match
+`postgres:*ABCD`, and none match `zzzznonexistentbenchmark:*ABCD`. These counts
+precede search visibility filtering and topic grouping. Neither copy contains
+the attribution label in search raw data.
+
+The original six URLs plus selective and no-match searches ran with the same
+three-round protocol and server builds as the larger corpus run. No generation,
+cleanup, or compilation ran during measurements. All 96 samples had zero
+HTTP/connection errors, excluding requests aborted at the duration deadline.
+Core response projections matched for latest, categories, both topic JSON
+responses, and all three searches. Both servers omit `topics` for no matches.
+All 16 first-round cache-eligible warmups reported response-cache hits.
+
+Uncached medians; latency columns show Rust / Rails in milliseconds:
+
+| Endpoint | Rust req/s | Rails req/s | p50 ms | p99 ms |
+|---|---:|---:|---:|---:|
+| Latest JSON | 2,012 | 121 | 7.9 / 133.9 | 11.2 / 194.2 |
+| Categories JSON | 824 | 197 | 19.4 / 79.6 | 26.2 / 108.7 |
+| One-post topic JSON | 1,206 | 141 | 13.1 / 113.6 | 17.9 / 142.9 |
+| Twenty-post topic JSON | 1,073 | 108 | 15.0 / 148.9 | 19.6 / 169.1 |
+| Twenty-post topic HTML | 541 | 73 | 30.1 / 220.5 | 36.4 / 352.7 |
+| Search: Discourse | 127 | 70 | 133.5 / 231.8 | 159.0 / 301.2 |
+| Search: postgres | 570 | 181 | 28.1 / 89.1 | 35.9 / 109.2 |
+| Search: no matches | 1,653 | 689 | 9.5 / 23.1 | 14.8 / 30.9 |
+
+The cleaned common-term median improves from 87 to 127 req/s for Rust and 56 to
+70 for Rails. This supersedes the contaminated search row for this corpus, but
+still represents a deliberately repetitive dataset. Individual no-match Rust
+runs ranged from 1,015 to 1,667 req/s on the shared desktop; do not treat these
+short-run medians as stable production capacity.
+
+The importer now keeps attribution in its existing manifest instead of appending
+it to post bodies. Expansion strips legacy footers and records generated-to-source
+post mappings in its result file. The cleanup script is
+`scripts/clean-corpus-attribution.rb`; source mappings are retained locally in
+`bench/20261019-clean-corpus/attribution.json`. Snapshot SHA-256:
+`bcc9ced228ed9d267e2f8340b6a6a940a351078e2fdb4985a0376eb8dda7abba`.
+Raw results and connection proofs are under `bench/20261019-clean-benchmark/`.
+See the [per-round TSV](benchmarks/20261019-clean-public-meta.tsv) and
+`scripts/fixtures/public-meta-clean-bench.json` for the endpoint list.
+
 ## Reproducing the endpoint run
 
 Restore the recorded snapshot into two fresh databases on the same PostgreSQL 18

@@ -1,10 +1,19 @@
 # Benchmarks
 
-The latest measurements use the October 19 public Meta corpus: 85 topics, 572
-posts, and 180 users including the original seed. Rust and production Rails
+The latest measurements expand the October 19 public Meta corpus to 1,089 topics,
+20,576 posts, and 220 users, reusing public text with synthetic authors. Rust and production Rails
 served separate copies of the same snapshot on **one PostgreSQL 18.6 instance**.
 This is still a small forum, not
-a production-capacity test.
+a production-capacity test. The [cleaned corpus rerun](docs/bench-public-meta-20261019.md#cleaned-corpus-rerun)
+records uncached common-term search at 127 req/s for Rust and 70 for Rails,
+selective search at 570 / 181, and no-match search at 1,653 / 689. Latest JSON
+reached 2,012 / 121. The original small-corpus baseline is retained below.
+
+The earlier search term `Discourse` matched almost every generated post because
+copied attribution URLs contained `meta.discourse.org`. Those footers have now
+been removed and the posts recooked/reindexed. Source URLs remain in a separate
+manifest. The earlier search row is superseded; see the
+[profile and corpus artifact](docs/bench-public-meta-20261019.md#search-profile-and-corpus-artifact).
 
 See the [public corpus baseline](docs/bench-public-meta-20261019.md) for setup,
 correctness checks, first-pass latency, and import timing. Older tables, profiles,
@@ -151,9 +160,10 @@ history describe much smaller versions of the project.
 
 ## Next useful measurement
 
-Expand the corpus to about 1,000 topics / 20,000 posts, including genuinely long
-threads, then repeat the baseline on the same PostgreSQL 18 server. Add logged-in
-traffic and mixed endpoint loads; measure browser navigation separately.
+Profile search on the expanded corpus: uncached throughput fell substantially
+on both implementations. Add logged-in traffic and mixed endpoint loads; measure
+browser navigation separately. The original endpoint set still selects a
+twenty-post topic, so benchmark the generated hundred-post threads separately.
 
 The measured 1,000-post generation batch on PostgreSQL 18.6 took 102.0 seconds
 through Rails cooking and indexing. At that rate, 20,000 posts would take about

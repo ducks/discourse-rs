@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Build through Rails in a fresh scratch DB, then export a standalone SQL snapshot.
+set -euo pipefail
+if [ "$#" -lt 1 ] || [ "$#" -gt 4 ]; then
+  echo "usage: $0 <running-dv-agent> [topics=200] [database=discourse_synthetic_forum] [public-corpus.json]" >&2
+  exit 64
+fi
+agent="$1"
+topics="${2:-200}"
+db="${3:-discourse_synthetic_forum}"
+[[ "$db" =~ ^discourse_synthetic_[a-z0-9_]+$ ]] || { echo "invalid scratch database name" >&2; exit 64; }
+if [[ ! "$topics" =~ ^[1-9][0-9]{1,4}$ ]]; then
+  echo "topics must be 12..10000" >&2
+  exit 64
+fi
+if (( topics < 12 || topics > 10000 )); then
+  echo "topics must be 12..10000" >&2
+  exit 64
+fi
+root="$(cd "$(dirname "$0")/.." && pwd)"
+dv="${DV:-dv}"
+run() { "$dv" run --name "$agent" -- "$@"; }
+ref="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+actual="$(run git -C /var/www/discourse rev-parse HEAD)"
+[[ "$ref" == "$actual" ]] || { echo "Rails checkout must match $ref (found $actual)" >&2; exit 1; }
+out="$root/backups/synthetic/$db"
+[[ ! -e "$out" ]] || { echo "output already exists: $out" >&2; exit 1; }
+remote="$(run mktemp -d /tmp/discourse-synthetic.XXXXXXXX)"
+"$dv" copy "$root/vendor/discourse/db/structure.sql" "$agent:$remote/structure.sql"
+"$dv" copy "$root/seed/fresh_install.sql" "$agent:$remote/seed.sql"
+runner_args=()
+if [ "$#" -eq 4 ]; then
+  "$dv" copy "$root/scripts/import-public-corpus.rb" "$agent:$remote/generate.rb"
+  "$dv" copy "$4" "$agent:$remote/corpus.json"
+  runner_args+=("$remote/corpus.json")
+else
+  "$dv" copy "$root/scripts/seed-synthetic-forum.rb" "$agent:$remote/generate.rb"
+fi
+# createdb refuses an existing database. Never drop or overwrite it here.
+run createdb --template=template0 --locale=en_US.UTF-8 "$db"
+run psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$remote/structure.sql" -f "$remote/seed.sql" -o /dev/null
+run env "DISCOURSE_DEV_DB=$db" "SYNTHETIC_TOPICS=$topics" "SYNTHETIC_MANIFEST=$remote/manifest.json" bin/rails runner "$remote/generate.rb" "${runner_args[@]}"
+mkdir -p "$out"
+run cat "$remote/manifest.json" > "$out/manifest.json"
+run pg_dump --no-owner --no-privileges "$db" > "$out/forum.sql.partial"
+mv "$out/forum.sql.partial" "$out/forum.sql"
+printf 'discourse_commit=%s\ndatabase=%s\n' "$ref" "$db" > "$out/source.txt"
+if [ "$#" -eq 4 ]; then
+  cp "$4" "$out/corpus.json"
+  printf 'mode=public-corpus\ncorpus_sha256=%s\n' "$(sha256sum "$4" | cut -d ' ' -f 1)" >> "$out/source.txt"
+else
+  printf 'mode=synthetic\ntopics=%s\n' "$topics" >> "$out/source.txt"
+fi
+echo "Snapshot: $out/forum.sql"
