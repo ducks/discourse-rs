@@ -15,9 +15,9 @@ work, so the two together are the count of what is left.
 
 ## State as of 2026-10-20
 
-On main at 16353d29. Open: 124 items, 42 S, 2 S/M, 62 M, 18 L (phase 8:
-1, item 90; phase 9: 63; phase 10: 14; phase 11: 39; phase 12: 7, new
-in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c. Phases
+On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
+1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -74,6 +74,40 @@ What a visitor or a new member meets first, by how soon:
   form spacing, labels, focus states, and loading feedback. Verify invalid
   credentials, password reset, successful login, and return to the intended page
   in a real browser. Capture screenshots before considering it demo-ready.
+
+### Demo readiness
+
+tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
+42 passing). Each step below fails today and is ignored with the item
+that fixes it; that item's branch removes the ignore. Run them all with
+`cargo nextest run --test demo_smoke --run-ignored all`.
+
+Core forum:
+
+- [ ] Opening a topic records no visit, so auto-tracking runs a minute
+  late (opening_a_topic_records_the_visit): 257
+- [ ] A reply quoting a post is refused, so quote notifications never
+  happen (a_quote_notifies): 135
+- [ ] A reply linking another topic makes post_alert refuse, so its
+  mentions notify nobody (a_reply_linking_a_topic_notifies): 145
+- [ ] pull_hotlinked_images and crawl_topic_link are refused after every
+  post with an image or a link (posting_runs_its_background_jobs): 140,
+  127
+- [ ] The interface preferences page is a 500 once a palette is user
+  selectable (offers_light_and_dark_palettes): 169
+- [ ] No dark mode: pages link only the light color definitions
+  (switches_to_dark_mode): 258
+
+Chat: every step passes (chat page, a channel, sending, another member
+receiving it, a DM and a reaction).
+
+Admin:
+
+- [ ] The review queue's page /review is refused; its JSON and actions
+  work (admin_review_queue_page): 194
+- [ ] Silencing a member: the system message's post_alert (its options)
+  and the account_silenced email are refused, so they are never told
+  (a_silenced_member_is_told): 145, 146
 
 ## Now: the parity queue (2026-10-13)
 
@@ -2776,6 +2810,23 @@ route table has been made, so this list may be short.
     (244), LTI (214), OAuth2 basic (245-247), OpenID Connect (245, 246,
     248, 249), Apple (247). The audit names the earlier items that cover
     the rest
+257. `fix/topic-track-visit` S: a member's topic page load (or the JSON
+    with track_visit) records no visit: TopicsController's
+    track_visit_to_topic defers TopicUser.track_visit!, which the port
+    leaves out (routes/topics.rs:402). The topic user is made by the
+    first timings batch instead, which counts no time, so auto-tracking
+    comes a minute late and last_visited_at stays empty until then.
+    Found by tests/demo_smoke.rs (opening_a_topic_records_the_visit)
+258. `feat/color-modes` M: pages link only the light color definitions
+    (templates/layout.html:122; templates/no_ember.html:41). The default
+    theme's dark palette, served at /assets/color_definitions_dark.css
+    (routes/stylesheets.rs), is never linked with
+    `media="(prefers-color-scheme: dark)"`; interface_color_mode (light,
+    dark, auto), a member's color_scheme_id and dark_scheme_id, and the
+    forced_color_mode cookie of the interface_color_selector toggle
+    (header or sidebar footer, not drawn) don't change the page.
+    Choosing a palette in the interface preferences is 169's refusal.
+    Found by tests/demo_smoke.rs (switches_to_dark_mode)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
