@@ -1,0 +1,18 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Attached: [notes.txt|attachment](/uploads/default/original/1X/0123456789abcdef0123456789abcdef01234567.txt) for reading.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

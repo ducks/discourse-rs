@@ -173,6 +173,7 @@ pub async fn pending_reviewables_reminder(state: &AppState) -> Result<(), AppErr
             ("mentions".to_string(), mentions),
             ("count".to_string(), after.to_s()),
         ],
+        user: None,
     };
     message.delete_previous(&state.pool, &ctx, false).await?;
     let created = message.create(&state.pool, &ctx).await?;

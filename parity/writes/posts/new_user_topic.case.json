@@ -1,0 +1,19 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new member opens their very first topic",
+        "raw": "A first topic from a member who is still at trust level zero.",
+        "category": 4,
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

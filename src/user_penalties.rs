@@ -902,8 +902,10 @@ pub async fn silence(
 /// `UserSilencer.silence(user, by_user, silenced_till:, reason:)`, the
 /// bare silencer (no service, no email): nothing for staff or a user with
 /// a silence on record; else the silence, the staff action logged for
-/// `by_user_id` and the silenced_by_staff system message. A trust level 0
-/// user's recent posts would be hidden too (hide_posts), refused here.
+/// `by_user_id` and the silenced_by_staff system message. Without
+/// `keep_posts`, a trust level 0 user's recent posts would be hidden too
+/// (hide_posts), refused here.
+#[allow(clippy::too_many_arguments)]
 pub async fn silencer_silence(
     pool: &sqlx::PgPool,
     ctx: &Ctx<'_>,
@@ -912,6 +914,7 @@ pub async fn silencer_silence(
     until: NaiveDateTime,
     reason: &str,
     reviewable_id: Option<i64>,
+    keep_posts: bool,
 ) -> Result<bool, AppError> {
     let (staff, trust_level, silenced_till): (bool, i32, Option<NaiveDateTime>) = sqlx::query_as(
         "SELECT admin OR moderator, trust_level, silenced_till FROM users WHERE id = $1",
@@ -922,7 +925,7 @@ pub async fn silencer_silence(
     if staff {
         return Ok(false);
     }
-    if trust_level == 0 {
+    if trust_level == 0 && !keep_posts {
         return Err(Unsupported("silencing a trust level 0 user (hide_posts)").into());
     }
     if silenced_till.is_some() {

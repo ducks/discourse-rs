@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "settings": {
+    "newuser_max_embedded_media": 1
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two pictures: ![one](https://example.com/one.png) and ![two](https://example.com/two.png) here.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

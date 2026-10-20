@@ -1,0 +1,80 @@
+{
+  "name": "edit_links_require_trust",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited to add a link to www.linkhere.com for everyone."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-20T17:09:04.003703",
+  "transaction_started_at": "2026-10-20T17:09:01.086223",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, you can't include links in your posts."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NQymUUj3xHdbUyMw6miZfSsybG4=",
+            "created_at": "2026-10-20T17:09:02.304518",
+            "rotated_at": "2026-10-20T17:09:02.300253",
+            "updated_at": "2026-10-20T17:09:02.304518",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NQymUUj3xHdbUyMw6miZfSsybG4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-20T17:09:04.018774",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NQymUUj3xHdbUyMw6miZfSsybG4=",
+            "created_at": "2026-10-20T17:09:02.304518",
+            "rotated_at": "2026-10-20T17:09:02.300253",
+            "updated_at": "2026-10-20T17:09:02.304518",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NQymUUj3xHdbUyMw6miZfSsybG4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tl2_post_edit_time_limit": 0,
+    "post_links_allowed_groups": "1"
+  },
+  "recorded_from": {
+    "case": "e200af5caa8d3f094c0f65fa508a5d6a57a03c4a241abdab5b58c974eb7b9a5c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

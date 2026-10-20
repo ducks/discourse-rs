@@ -31,8 +31,8 @@ Scenarios per action (an `it` marked (xN) counts N).
 
 | Action | covered | recordable | needs-harness | unported |
 |---|---|---|---|---|
-| PostsController#create | 11 | 9 | 9 | 58 |
-| PostsController#update | 3 | 9 | 3 | 21 |
+| PostsController#create | 12 | 9 | 9 | 57 |
+| PostsController#update | 4 | 9 | 3 | 20 |
 | PostsController#destroy | 3 | 2 | 0 | 5 |
 | PostsController#recover | 1 | 2 | 0 | 1 |
 | PostsController#revisions (and #latest_revision) | 2 | 10 | 6 | 11 |
@@ -121,11 +121,11 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (88 sections)** | **572** | **340** | **229** | **518** |
+| **All (88 sections)** | **574** | **340** | **229** | **516** |
 
 ## Cases added from this inventory
 
-94 cases, recorded on the reference and replayed. 68 matched as added:
+96 cases, recorded on the reference and replayed. 70 matched as added:
 
 new_topic_restricted_category, new_topic_no_category,
 pm_no_recipients, pm_on_existing_topic, reply_duplicate,
@@ -154,10 +154,10 @@ signup_logged_in, activate_account_unknown_token, email_login_disabled,
 password_reset_associated_accounts, password_reset_code_reuse,
 session_login_inactive, session_login_not_approved,
 users_update_ignores_protected_fields, users_update_names_disabled,
-login_required_lists_anonymous.
+login_required_lists_anonymous, new_user_spam_host, edit_links_require_trust.
 
 The 26 that differed when they were added have since been fixed, each on
-its own branch (`git log --merges --grep fix/`), so all 94 match.
+its own branch (`git log --merges --grep fix/`), so all 96 match.
 
 ## PostsController#create
 
@@ -200,7 +200,7 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 2743 | target_recipients empty -> no_user_selected | covered | pm_no_recipients (new, matches) |
 | 2762 | PM archetype with topic_id -> create_pm_on_existing_topic | covered | pm_on_existing_topic (new, matches) |
 | 2780 | with errors > does not succeed (raw "test") | covered | reply_too_short |
-| 2786 | spam host threshold for TL0 | unported | Unsupported("posting as a new user (trust level 0)") |
+| 2786 | spam host threshold for TL0 | covered | new_user_spam_host (new, matches; a user with earlier linked posts, whose posts Rails then flags as spam, is refused: flag_linked_posts_as_spam) |
 | 2803 | allow_uncategorized_topics false > no category | covered | new_topic_no_category (new, matches) |
 | 2815 | allow_uncategorized_topics false > as staff | recordable | new_topic_no_category_staff (admin) |
 | 2830, 2851 | slow mode with auto_track false (x2) | unported | auto_track in UNPORTED_CREATE_PARAMS; Unsupported("slow mode") |
@@ -244,7 +244,7 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 1151, 1160 | group moderator editing category description (x2) | unported | Unsupported("category group moderation"), Unsupported("editing category descriptions") |
 | 1183, 1207 | category group moderator who cannot / can see (x2) | unported | Unsupported("category group moderation") |
 | 1215, 1235 | change to disallowed / approval-required category (x2) | unported | category_id refused |
-| 1256 | links without permission | unported | Unsupported("links from users outside post_links_allowed_groups") |
+| 1256 | links without permission | covered | edit_links_require_trust (new, matches) |
 | 1284 | plugin_permitted_update_params | needs-harness | plugin registration |
 | 1317, 1332, 1347 | reply_to_post_number reparent / clear / invalid (x3) | unported | reply_to_post_number refused ("fields beyond raw and edit_reason") |
 

@@ -1,0 +1,18 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET trust_level = 0 WHERE id = 2",
+    "DELETE FROM group_users WHERE user_id = 2 AND group_id = 11"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Some reading: [one](https://example.com/one), [two](https://example.org/two) and [three](https://example.net/three).",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

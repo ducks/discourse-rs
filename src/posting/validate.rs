@@ -1,7 +1,7 @@
 //! What decides whether a post may be written: NewPostManager's review
-//! queue (refused, not ported), PostValidator, the Topic model's title
-//! and category validations, and PostAnalyzer's counts over the cooked
-//! HTML they read.
+//! queue, PostValidator (with its limits on new users), Post's
+//! has_host_spam?, the Topic model's title and category validations, and
+//! PostAnalyzer's counts over the cooked HTML they read.
 
 use std::sync::LazyLock;
 
@@ -69,7 +69,7 @@ pub struct Approval {
     pub auto_silence: bool,
 }
 
-/// Refuses what isn't ported: staged and trust level 0 authors.
+/// Refuses what isn't ported: staged authors.
 pub async fn post_needs_approval(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -147,8 +147,7 @@ pub async fn post_needs_approval(
     })
 }
 
-/// Authors whose posts aren't ported: staged users, and new users (the
-/// link/media/mention limits, host spam and sockpuppet checks).
+/// Authors whose posts aren't ported: staged users.
 pub fn refuse_unported_author(guardian: &Guardian) -> Result<(), AppError> {
     let user = guardian.user().ok_or(Unsupported("posting anonymously"))?;
     if guardian.is_staff() {
@@ -157,10 +156,249 @@ pub fn refuse_unported_author(guardian: &Guardian) -> Result<(), AppError> {
     if user.staged {
         return Err(Unsupported("posting as a staged user").into());
     }
-    if user.trust_level < 1 {
-        return Err(Unsupported("posting as a new user (trust level 0)").into());
-    }
     Ok(())
+}
+
+/// `User#posted_too_much_in_topic?(post.topic_id)` for the acting user: a
+/// trust level 0 user's posts in someone else's topic since the last
+/// reply, mention or quote of theirs there, against
+/// newuser_max_replies_per_topic.
+async fn posted_too_much_in_topic(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    acting: &Guardian,
+    post: &PostInput<'_>,
+) -> Result<bool, AppError> {
+    let Some(user) = acting.user() else {
+        return Ok(false);
+    };
+    if acting.is_staff() || user.trust_level != 0 {
+        return Ok(false);
+    }
+    // A new topic's first post, saved: the topic is the user's own.
+    if post.first_post && post.topic_id.is_none() {
+        return Ok(false);
+    }
+    if let Some(topic_id) = post.topic_id {
+        let topic: Option<(String, Option<i32>)> = sqlx::query_as(
+            "SELECT archetype, user_id FROM topics WHERE id = $1 AND deleted_at IS NULL",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if topic.is_some_and(|(archetype, owner)| {
+            archetype == "private_message" || owner == Some(user.id)
+        }) {
+            return Ok(false);
+        }
+    }
+    // UserAction.last_action_in_topic: RESPONSE, MENTION or QUOTE.
+    let last_action: Option<Option<i32>> = sqlx::query_scalar(
+        "SELECT target_post_id FROM user_actions \
+         WHERE user_id = $1 AND target_topic_id IS NOT DISTINCT FROM $2 AND action_type IN (6, 7, 9) \
+         ORDER BY created_at DESC LIMIT 1",
+    )
+    .bind(user.id)
+    .bind(post.topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let since_reply: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM posts \
+         WHERE user_id = $1 AND topic_id IS NOT DISTINCT FROM $2 AND deleted_at IS NULL \
+           AND ($3::int IS NULL OR id > $3)",
+    )
+    .bind(user.id)
+    .bind(post.topic_id)
+    .bind(last_action.flatten())
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(since_reply >= s.get("newuser_max_replies_per_topic")?.to_i())
+}
+
+/// `Post#has_host_spam?`: a new (trust level 0) author linking to hosts
+/// outside allowed_spam_host_domains and the site's own that their earlier
+/// posts link to, newuser_spam_host_threshold times with this one. The
+/// post's `linked_hosts` when it is spam, for the moderators' message.
+pub async fn host_spam(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    reply_in_message: bool,
+    analysis: &Analysis,
+    max_oneboxes: i64,
+) -> Result<Option<Vec<String>>, AppError> {
+    let s = ctx.settings;
+    let Some(user) = acting.user() else {
+        return Ok(None);
+    };
+    // staged?, mature_staged? (staged authors are refused) or
+    // has_trust_level?(1).
+    if acting.has_trust_level(1) || reply_in_message {
+        return Ok(None);
+    }
+    let hosts = linked_hosts(analysis, max_oneboxes);
+    // allowed_spam_hosts: the setting's entries with a dot,
+    // GlobalSetting.hostname and the multisite's current hostname.
+    let mut allowed: Vec<String> = s
+        .get("allowed_spam_host_domains")?
+        .to_s()
+        .split('|')
+        .map(|h| h.trim().to_string())
+        .filter(|h| h.contains('.'))
+        .collect();
+    allowed.push(
+        ctx.config
+            .globals
+            .hostname(ctx.config.rails_env)
+            .to_string(),
+    );
+    allowed.push(ctx.config.hostname().to_string());
+    let counted: Vec<String> = hosts
+        .iter()
+        .filter(|h| {
+            !allowed
+                .iter()
+                .any(|w| *h == w || h.ends_with(&format!(".{w}")))
+        })
+        .cloned()
+        .collect();
+    if counted.is_empty() {
+        return Ok(None);
+    }
+    // total_hosts_usage: one for this post, and one per earlier post of
+    // the user's linking to the host.
+    let usage: Vec<(String, i64)> = sqlx::query_as(
+        "SELECT domain, COUNT(DISTINCT post_id) FROM topic_links \
+         WHERE domain = ANY($1) AND user_id = $2 GROUP BY domain",
+    )
+    .bind(&counted)
+    .bind(user.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let threshold = s.get("newuser_spam_host_threshold")?.to_i();
+    let spam = counted.iter().any(|h| {
+        let earlier = usage.iter().find(|(d, _)| d == h).map_or(0, |(_, n)| *n);
+        1 + earlier >= threshold
+    });
+    Ok(spam.then_some(hosts))
+}
+
+/// `PostAnalyzer#link_count`: `raw_links` and the oneboxes collected.
+pub fn link_count(analysis: &Analysis, max_oneboxes: i64) -> usize {
+    analysis.links.len() + onebox_urls(analysis, max_oneboxes).len()
+}
+
+/// `@onebox_urls`: the first max_oneboxes_per_post of them.
+fn onebox_urls(analysis: &Analysis, max_oneboxes: i64) -> &[String] {
+    let n = usize::try_from(max_oneboxes.max(0)).unwrap_or(usize::MAX);
+    &analysis.onebox_urls[..analysis.onebox_urls.len().min(n)]
+}
+
+/// `PostAnalyzer#linked_hosts`: the hosts of `raw_links` and the oneboxes,
+/// in order, each once, as `URI::RFC2396_Parser` parses them (links it
+/// can't parse, and those without a host, left out).
+pub fn linked_hosts(analysis: &Analysis, max_oneboxes: i64) -> Vec<String> {
+    let mut hosts: Vec<String> = Vec::new();
+    for url in analysis
+        .links
+        .iter()
+        .chain(onebox_urls(analysis, max_oneboxes))
+    {
+        if let Some(host) = rfc2396_host(url)
+            && !hosts.contains(&host)
+        {
+            hosts.push(host);
+        }
+    }
+    hosts
+}
+
+/// `URI::RFC2396_Parser.new.parse(url).host`: None when the url doesn't
+/// parse (characters RFC 2396 leaves out, a bad escape, brackets outside
+/// an IPv6 host) or has no server-based authority (a relative or opaque
+/// url, a registry name such as a host with an underscore).
+pub fn rfc2396_host(url: &str) -> Option<String> {
+    static HOSTNAME: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(
+            r"\A(?:(?:[a-zA-Z0-9](?:[-a-zA-Z0-9]*[a-zA-Z0-9])?)\.)*[a-zA-Z](?:[-a-zA-Z0-9]*[a-zA-Z0-9])?\.?\z",
+        )
+        .unwrap()
+    });
+    static IPV4: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\A\d+\.\d+\.\d+\.\d+\z").unwrap());
+    static IPV6: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\A\[[0-9a-fA-F:.]+\]\z").unwrap());
+    // URI_REF: reserved, unreserved and escaped characters, one fragment;
+    // RFC 2732's brackets only around an IPv6 host (checked below).
+    let bytes = url.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'%' {
+            if !(bytes.get(i + 1).is_some_and(u8::is_ascii_hexdigit)
+                && bytes.get(i + 2).is_some_and(u8::is_ascii_hexdigit))
+            {
+                return None;
+            }
+            i += 3;
+            continue;
+        }
+        if !(c.is_ascii_alphanumeric() || b";/?:@&=+$,-_.!~*'()#[]".contains(&c)) {
+            return None;
+        }
+        i += 1;
+    }
+    let (rest, fragment) = url.split_once('#').unwrap_or((url, ""));
+    if fragment.contains('#') {
+        return None;
+    }
+    // An absolute url's scheme, else a relative one (no host either way
+    // without "//").
+    let rest = match rest.find(':') {
+        Some(i)
+            if rest[..i]
+                .bytes()
+                .next()
+                .is_some_and(|c| c.is_ascii_alphabetic())
+                && rest[..i]
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || b"+-.".contains(&c)) =>
+        {
+            &rest[i + 1..]
+        }
+        _ => rest,
+    };
+    let authority = rest.strip_prefix("//")?;
+    let authority = &authority[..authority.find(['/', '?']).unwrap_or(authority.len())];
+    let host_port = authority.rsplit_once('@').map_or(authority, |(_, h)| h);
+    let host = match host_port.rsplit_once(':') {
+        Some((host, port))
+            if port.bytes().all(|c| c.is_ascii_digit()) && !host_port.ends_with(']') =>
+        {
+            host
+        }
+        _ => host_port,
+    };
+    let brackets = url.bytes().filter(|c| *c == b'[' || *c == b']').count();
+    if brackets > 0 && !(brackets == 2 && IPV6.is_match(host)) {
+        return None;
+    }
+    (HOSTNAME.is_match(host) || IPV4.is_match(host) || IPV6.is_match(host))
+        .then(|| host.to_string())
+}
+
+/// `PostAnalyzer#attachment_count`: the `a.attachment` links under the
+/// store's absolute base url, or (the local store) its relative one.
+pub fn attachment_count(ctx: &Ctx<'_>, analysis: &Analysis) -> Result<usize, AppError> {
+    if analysis.attachment_hrefs.is_empty() {
+        return Ok(0);
+    }
+    let store = crate::file_store::FileStore::for_site(ctx.config, ctx.settings)?;
+    let absolute = store.absolute_base_url();
+    let relative = store.internal().then(|| store.relative_base_url());
+    Ok(analysis
+        .attachment_hrefs
+        .iter()
+        .filter(|h| h.starts_with(absolute) || relative.is_some_and(|r| h.starts_with(r)))
+        .count())
 }
 
 /// `matches_auto_silence_regex?` (on a first post): the setting as a
@@ -282,8 +520,15 @@ pub struct Analysis {
     /// `raw_mentions`: the mentioned names, lowercased, deduplicated.
     pub mention_names: Vec<String>,
     pub embedded_media: usize,
-    pub attachments: usize,
+    /// The hrefs of `a.attachment` links; `attachment_count` keeps those
+    /// under the store's base urls.
+    pub attachment_hrefs: Vec<String>,
+    /// `raw_links`: every link but mentions, anchors and hashtags.
     pub links: Vec<String>,
+    /// The hrefs of the `a.onebox` links (class exactly "onebox") that
+    /// PostAnalyzer#cook collects as `@onebox_urls`, before
+    /// max_oneboxes_per_post is applied.
+    pub onebox_urls: Vec<String>,
     pub has_oneboxes: bool,
     /// The links cooking left for oneboxing: each href, and whether the
     /// onebox is an inline one (`.inline-onebox-loading`).
@@ -327,6 +572,9 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
             if name == "a"
                 && let Some(href) = attr(node, "href").filter(|h| !h.is_empty())
             {
+                if attr(node, "class").as_deref() == Some("onebox") {
+                    a.onebox_urls.push(href.clone());
+                }
                 a.onebox_links.push((href, inline));
             }
         }
@@ -373,7 +621,7 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
             "a" => {
                 let href = attr(node, "href").unwrap_or_default();
                 if has_class(node, "attachment") {
-                    a.attachments += 1;
+                    a.attachment_hrefs.push(href.clone());
                 }
                 let class = attr(node, "class").unwrap_or_default();
                 let is_mention = class.contains("mention")
@@ -544,6 +792,12 @@ pub async fn body_errors(
         errors.push(BodyError::Base(message));
     }
 
+    // max_posts_validator
+    if post.new_record && posted_too_much_in_topic(&mut *conn, s, acting, post).await? {
+        let max = s.get("newuser_max_replies_per_topic")?.to_i();
+        errors.push(BodyError::Base(ctx.t_count("too_many_replies", max)));
+    }
+
     // unique_post_validator: Rails keeps the key in Redis for
     // unique_posts_mins; a recent identical post by the user stands in.
     let unique_mins = s.get("unique_posts_mins")?.to_i();
@@ -582,32 +836,98 @@ pub async fn base_errors(
     let acting_user = acting
         .user()
         .ok_or(Unsupported("validating without a user"))?;
+    // acting_user_is_trusted?: has_trust_level?(1), staff included.
+    let trusted = acting.has_trust_level(1);
+    // add_error_if_count_exceeded
+    let exceeded =
+        |errors: &mut Vec<String>, none_key: &str, limit_key: &str, count: usize, max: i64| {
+            if count as i64 > max {
+                errors.push(if max == 0 {
+                    ctx.t(none_key)
+                } else {
+                    ctx.t_count(limit_key, max)
+                });
+            }
+        };
 
-    // max_mention_validator (trusted or PM; new users are refused).
     if !acting.is_staff() {
-        let max_mentions = s.get("max_mentions_per_post")?.to_i();
-        if analysis.mentions as i64 > max_mentions {
-            errors.push(if max_mentions == 0 {
-                ctx.t("no_mentions_allowed")
-            } else {
-                ctx.t_count("too_many_mentions", max_mentions)
-            });
+        // max_mention_validator
+        if trusted || post.private_message {
+            let max = s.get("max_mentions_per_post")?.to_i();
+            exceeded(
+                &mut errors,
+                "no_mentions_allowed",
+                "too_many_mentions",
+                analysis.mentions,
+                max,
+            );
+        } else {
+            let max = s.get("newuser_max_mentions_per_post")?.to_i();
+            exceeded(
+                &mut errors,
+                "no_mentions_allowed_newuser",
+                "too_many_mentions_newuser",
+                analysis.mentions,
+                max,
+            );
         }
         // max_embedded_media_validator
-        if !acting.in_setting_groups(s, "embedded_media_post_allowed_groups")?
-            && analysis.embedded_media > 0
-        {
-            errors.push(ctx.t("no_embedded_media_allowed_group"));
+        if !acting.in_setting_groups(s, "embedded_media_post_allowed_groups")? {
+            exceeded(
+                &mut errors,
+                "no_embedded_media_allowed_group",
+                "no_embedded_media_allowed_group",
+                analysis.embedded_media,
+                0,
+            );
+        } else if acting_user.trust_level == 0 {
+            let max = s.get("newuser_max_embedded_media")?.to_i();
+            exceeded(
+                &mut errors,
+                "no_embedded_media_allowed",
+                "too_many_embedded_media",
+                analysis.embedded_media,
+                max,
+            );
         }
     }
-    // max_links_validator: links need post_links_allowed_groups (or an
-    // allowlisted host, not ported).
-    if !analysis.links.is_empty()
-        && !post.private_message
-        && !acting.is_staff()
-        && !acting.in_setting_groups(s, "post_links_allowed_groups")?
-    {
-        return Err(Unsupported("links from users outside post_links_allowed_groups").into());
+    // max_attachments_validator
+    if !trusted && !post.private_message {
+        let max = s.get("newuser_max_attachments")?.to_i();
+        let count = attachment_count(ctx, analysis)?;
+        exceeded(
+            &mut errors,
+            "no_attachments_allowed",
+            "too_many_attachments",
+            count,
+            max,
+        );
+    }
+    // max_links_validator: every linked host one the user may post
+    // (post_links_allowed_groups, or allowed_link_domains), then
+    // newuser_links_validator. has_oneboxes? only finds the oneboxes the
+    // link count holds.
+    let max_oneboxes = s.get("max_oneboxes_per_post")?.to_i();
+    let links = link_count(analysis, max_oneboxes);
+    let hosts_allowed = links == 0 || post.private_message || {
+        let unrestricted = acting.is_authenticated()
+            && acting.in_setting_groups(s, "post_links_allowed_groups")?;
+        let domains = s.get("allowed_link_domains")?.to_s();
+        linked_hosts(analysis, max_oneboxes)
+            .iter()
+            .all(|h| !h.is_empty() && (unrestricted || domains.split('|').any(|d| d == h)))
+    };
+    if !hosts_allowed {
+        errors.push(ctx.t("links_require_trust"));
+    } else if !trusted && !post.private_message {
+        let max = s.get("newuser_max_links")?.to_i();
+        exceeded(
+            &mut errors,
+            "no_links_allowed",
+            "too_many_links",
+            links,
+            max,
+        );
     }
     // max_quotes_validator
     let max_quotes = s.get("max_quotes_per_post")?.to_i();
@@ -887,4 +1207,64 @@ async fn duplicate_title_url(
     }
     .base_url()?;
     Ok(Some(format!("{base}/t/{slug}/{id}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rfc2396_hosts() {
+        let host = |u: &str| rfc2396_host(u);
+        assert_eq!(
+            host("https://example.com/one").as_deref(),
+            Some("example.com")
+        );
+        assert_eq!(
+            host("http://Example.COM:8080/x?y=1#z").as_deref(),
+            Some("Example.COM")
+        );
+        assert_eq!(
+            host("//cdn.example.com/a.png").as_deref(),
+            Some("cdn.example.com")
+        );
+        assert_eq!(
+            host("http://user:pw@example.com/").as_deref(),
+            Some("example.com")
+        );
+        assert_eq!(host("http://1.2.3.4/").as_deref(), Some("1.2.3.4"));
+        assert_eq!(host("http://[::1]:3000/").as_deref(), Some("[::1]"));
+        // Relative, opaque, registry-based or unparsable: no host.
+        assert_eq!(host("/t/a-topic/5"), None);
+        assert_eq!(host("#heading"), None);
+        assert_eq!(host("mailto:someone@example.com"), None);
+        assert_eq!(host("http://my_host.example.com/"), None);
+        assert_eq!(host("https://example.com/a b"), None);
+        assert_eq!(host("https://example.com/a|b"), None);
+        assert_eq!(host("https://example.com/%zz"), None);
+        assert_eq!(host("https://example.com/[x]"), None);
+    }
+
+    #[test]
+    fn link_counts_and_hosts() {
+        let analysis = Analysis {
+            links: vec![
+                "https://example.com/a".into(),
+                "https://example.com/b".into(),
+                "/t/local/1".into(),
+            ],
+            onebox_urls: vec![
+                "https://example.org/x".into(),
+                "https://example.net/y".into(),
+            ],
+            ..Default::default()
+        };
+        assert_eq!(link_count(&analysis, 50), 5);
+        assert_eq!(link_count(&analysis, 1), 4);
+        assert_eq!(
+            linked_hosts(&analysis, 50),
+            vec!["example.com", "example.org", "example.net"]
+        );
+        assert_eq!(linked_hosts(&analysis, 0), vec!["example.com"]);
+    }
 }

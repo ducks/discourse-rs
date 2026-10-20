@@ -19,6 +19,9 @@ use tower::ServiceExt;
 const TOPIC: i32 = 35;
 /// The seed's General category.
 const CATEGORY: i32 = 4;
+/// The composer's typing_duration_msecs for a post typed at a human pace:
+/// a first post under fast_typing_threshold (3s) goes to the review queue.
+const TYPING_MSECS: &str = "12000";
 
 struct Client {
     state: AppState,
@@ -214,7 +217,6 @@ async fn signs_up_activates_and_logs_in() {
 }
 
 #[tokio::test]
-#[ignore = "ROADMAP 134: posting as a new user (trust level 0) is refused"]
 async fn new_member_creates_a_topic() {
     let (db, state) = app().await;
     let mut client = new_member(&db, &state, "smoketopic").await;
@@ -226,6 +228,7 @@ async fn new_member_creates_a_topic() {
                 ("title", "A first topic from a brand new member"),
                 ("raw", "Hello everyone, this is my very first topic here."),
                 ("category", &category),
+                ("typing_duration_msecs", TYPING_MSECS),
             ],
         )
         .await;
@@ -233,7 +236,6 @@ async fn new_member_creates_a_topic() {
 }
 
 #[tokio::test]
-#[ignore = "ROADMAP 134: posting as a new user (trust level 0) is refused"]
 async fn new_member_replies() {
     let (db, state) = app().await;
     let mut client = new_member(&db, &state, "smokereply").await;
@@ -244,10 +246,42 @@ async fn new_member_replies() {
             &[
                 ("topic_id", &topic),
                 ("raw", "A plain reply from a brand new member account."),
+                ("typing_duration_msecs", TYPING_MSECS),
             ],
         )
         .await;
     created_post(&reply);
+}
+
+/// A first post the composer says was typed faster than
+/// fast_typing_threshold waits for review, and its author is silenced.
+#[tokio::test]
+async fn new_member_typing_too_fast_is_queued() {
+    let (db, state) = app().await;
+    let mut client = new_member(&db, &state, "smokefast").await;
+    let topic = TOPIC.to_string();
+    let reply = client
+        .post(
+            "/posts.json",
+            &[
+                ("topic_id", &topic),
+                (
+                    "raw",
+                    "A reply pasted in far faster than anyone could type it.",
+                ),
+                ("typing_duration_msecs", "200"),
+            ],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json()["action"], "enqueued", "{}", reply.body);
+    let silenced: bool = sqlx::query_scalar(
+        "SELECT silenced_till IS NOT NULL FROM users WHERE username = 'smokefast'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(silenced, "a fast typer's first post silences them");
 }
 
 #[tokio::test]
