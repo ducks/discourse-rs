@@ -181,7 +181,7 @@ pub async fn add_many(
     // bulk_add_transaction
     let added: Vec<i32> = sqlx::query_scalar(
         "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) \
-         SELECT $1, u.id, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM users u \
+         SELECT $1, u.id, $3, now(), now() FROM users u \
          WHERE u.id = ANY($2) AND NOT EXISTS (SELECT 1 FROM group_users gu \
            WHERE gu.user_id = u.id AND gu.group_id = $1) \
          ORDER BY u.id \

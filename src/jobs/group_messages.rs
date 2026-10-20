@@ -49,7 +49,7 @@ pub async fn ignored_users_summary(state: &AppState) -> Result<(), AppError> {
     // DB.query_single interpolates the integers into the quoted literals.
     let user_ids: Vec<i32> = sqlx::query_scalar(&format!(
         "SELECT ignored_user_id FROM ignored_users \
-         WHERE COALESCE(summarized_at, CURRENT_TIMESTAMP + '{} DAYS'::INTERVAL) - '{gap} DAYS'::INTERVAL > CURRENT_TIMESTAMP \
+         WHERE COALESCE(summarized_at, now() + '{} DAYS'::INTERVAL) - '{gap} DAYS'::INTERVAL > now() \
          GROUP BY ignored_user_id HAVING COUNT(ignored_user_id) >= $1",
         gap + 1
     ))

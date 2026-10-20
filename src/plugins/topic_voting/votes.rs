@@ -53,8 +53,8 @@ async fn visible_topic(
 pub async fn update_vote_count(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
     sqlx::query(
         "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) \
-         SELECT $1, count(*), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM topic_voting_votes WHERE topic_id = $1 \
-         ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count, updated_at = CURRENT_TIMESTAMP \
+         SELECT $1, count(*), now(), now() FROM topic_voting_votes WHERE topic_id = $1 \
+         ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count, updated_at = now() \
          WHERE topic_voting_topic_vote_count.topic_id = $1",
     )
     .bind(topic_id)

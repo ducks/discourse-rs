@@ -739,10 +739,10 @@ async fn merging_users(
         if !topics.is_empty() {
             sqlx::query(
                 "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) \
-                 SELECT topic_id, COUNT(*) AS votes_count, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP \
+                 SELECT topic_id, COUNT(*) AS votes_count, now(), now() \
                  FROM topic_voting_votes WHERE topic_id = ANY($1) GROUP BY topic_id \
                  ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count, \
-                   updated_at = CURRENT_TIMESTAMP",
+                   updated_at = now()",
             )
             .bind(&topics)
             .execute(&mut *conn)

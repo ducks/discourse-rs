@@ -309,7 +309,7 @@ pub async fn backfill(
     let sql = format!(
         "WITH w as ( \
            INSERT INTO user_badges(badge_id, user_id, granted_at, granted_by_id, created_at, post_id) \
-           SELECT :id, q.user_id, q.granted_at, {SYSTEM_USER_ID}, current_timestamp, {post_id_field} \
+           SELECT :id, q.user_id, q.granted_at, {SYSTEM_USER_ID}, now(), {post_id_field} \
              FROM ({query}) q \
              LEFT JOIN user_badges ub ON ub.badge_id = :id AND ub.user_id = q.user_id \
              {post_clause} \
