@@ -91,10 +91,15 @@ pub async fn index(
         filter: params.filter.clone(),
         types,
     };
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
     let (doc, bumped) = Notifications {
         conn: &mut conn,
         settings: &settings,
         guardian: &guardian,
+        urls: &urls,
     }
     .index(user_id, &username, &query)
     .await?;

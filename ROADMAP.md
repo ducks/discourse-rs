@@ -22,8 +22,8 @@ smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
 distinct reasons); 166 more put the literal on the line after
-`Unsupported(`, which that grep misses, so 1870 in all. Four `not_yet`
-write cases are left (150, 152, 198, 252). By area, the grep's
+`Unsupported(`, which that grep misses, so 1870 in all. Six `not_yet`
+write cases are left (145, 150, 152, 198, 252). By area, the grep's
 count first and all of them second where they differ, with the items
 that own them:
 
@@ -76,14 +76,14 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-44 passing). Each step below fails today and is ignored with the item
+46 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
 Core forum:
 
-- [ ] A reply linking another topic makes post_alert refuse, so its
-  mentions notify nobody (a_reply_linking_a_topic_notifies): 145
+- [x] A reply linking another topic made post_alert refuse, so its
+  mentions notified nobody (a_reply_linking_a_topic_notifies): 145
 - [ ] pull_hotlinked_images and crawl_topic_link are refused after every
   post with an image or a link (posting_runs_its_background_jobs): 140,
   127
@@ -99,9 +99,9 @@ Admin:
 
 - [x] The review queue's page /review (admin_review_queue_page); its
   claims, notes and client actions are refused: 194
-- [ ] Silencing a member: the system message's post_alert (its options)
-  and the account_silenced email are refused, so they are never told
-  (a_silenced_member_is_told): 145, 146
+- [ ] Silencing a member: the account_silenced email is refused, so the
+  step fails though the system message notifies them
+  (a_silenced_member_is_told): 146
 
 ## Now: the parity queue (2026-10-13)
 
@@ -1534,7 +1534,7 @@ have handlers now.
     posting/revise.rs:180; posting/revise_topic.rs:413;
     posting/enqueue.rs:88), likes, flags and bookmarks
     (post_actions.rs:235; likes.rs:187,519; flags.rs:107;
-    bookmark_manager.rs:137), topic_guardian.rs:954, current_user.rs:307,
+    bookmark_manager.rs:137), topic_guardian.rs:961, current_user.rs:307,
     read_tracking.rs:134, post_destroyer.rs:328,389,1255,
     pm_invite.rs:69,242, routes/pm_invite.rs:204, routes/invites.rs:193,
     topic_status.rs:137, post_owner_changer.rs:438, post_mover.rs:139,
@@ -1560,7 +1560,7 @@ have handlers now.
     allowed_link_domains, has_host_spam? and its spam_post_blocked
     message, and silenced as fast typers (keep_posts); left:) posting
     as a staged user (posting/validate.rs:157), staged users on
-    restricted categories (topic_guardian.rs:267), approving a staged
+    restricted categories (topic_guardian.rs:274), approving a staged
     user's queued post (posting/create.rs:331), max_consecutive_replies
     (posting/validate.rs:961), flagging a new user's linked posts as
     spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
@@ -1578,7 +1578,7 @@ have handlers now.
     opens the composer; the quoted user's notification email, which
     Email::Styles refuses with any quote (email/styles.rs:126, 146);
     linked notifications from a quote of another topic's post when the
-    quoted user wasn't notified (jobs/post_alert.rs:443, 145)) M: QuotedPost
+    quoted user wasn't notified, done in 145) M: QuotedPost
     on create, revise, recover and a moved first post's copy
     (quote_count, post_replies and reply counts for the posts quoted,
     reply_quoted), quote alerts and quotes in group messages (is_replying?),
@@ -1615,7 +1615,7 @@ have handlers now.
     (posting/create.rs:1398), returning-user post notices (:1623),
     featured topics with a category sort order (:2015),
     suppress_secured_categories_from_admin (:2018;
-    jobs/post_alert.rs:800), site_archived (posting/create.rs:242;
+    jobs/post_alert.rs:1042), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
     regeneration (posting/create.rs:969; jobs/handlers.rs:1108;
     post_owner_changer.rs:372; post_mover.rs:901;
@@ -1774,12 +1774,16 @@ have handlers now.
     (search/mod.rs:693,696,699; the default sort order went to 143e),
     blurbs from old post_search_data rows (:1022,1029), human_only
     search logs (search_logs.rs:60), the index_category_for_search job
-145. `feat/post-alert-rest` M: group and @here mentions
-    (jobs/post_alert.rs:309,312), nested replies (:285), links to topics
-    notifying someone (:443), linked notifications and their consolidation (:790;
-    notification_create.rs:230), mentions in flagged messages and
-    warnings (:337), post_alert's options (:211), populate_acting_user
-    (notifications.rs:369,425); staged users' alerts no longer refuse
+145. `feat/post-alert-rest` M (links to topics notifying someone and
+    their consolidation, the skip_send_email option, posts by email
+    skipping their to and cc addresses, populate_acting_user, mentions
+    in flagged messages and warnings, group and @here mentions, nested
+    replies done): post_alert options other than skip_send_email
+    (jobs/post_alert.rs:214, none sent today); nested reply stats
+    (HasNestedReplyStats: nested_view_post_stats on create, destroy and
+    PostRevisor's reparent), which the port skips without refusing; the
+    two `not_yet` cases posts/nested_reply_to_post and
+    nested_bucket_consolidate differ only there
 146. `feat/notification-email-rest` M: previous replies and in-reply-to
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
@@ -1818,15 +1822,15 @@ have handlers now.
     the reviewable events), truncate_user_flag_stats (review.rs:534;
     review_posts.rs:1236)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
-    and moderators in the review queue (topic_guardian.rs:191;
+    and moderators in the review queue (topic_guardian.rs:214;
     posting/validate.rs:449; review.rs:170; review_posts.rs:413,1138;
     review_list.rs:178; routes/review.rs:147,285,412; user_destroyer.rs:620;
     current_user.rs:552,972; reviewables.rs:91,137), moderators' view of
-    flagged messages and warnings (guardian.rs:282;
-    topic_guardian.rs:242; jobs/handlers.rs:1230), moderators and
-    owner-only groups on the admin view of a user
-    (routes/admin_users.rs:1536), category moderators on the about page
-    (about.rs:309)
+    flagged messages and warnings in topic lists and jobs
+    (guardian.rs:311; jobs/handlers.rs:1493; seeing one such message
+    was ported in 145), moderators and owner-only groups on the admin
+    view of a user (routes/admin_users.rs:1536), category moderators on
+    the about page (about.rs:309)
 150. `feat/deletion-rest` M: permanent deletion
     (routes/post_destroy.rs:80, force_destroy), recovering topics and likes
     (post_destroyer.rs:1281,1298), authors
@@ -1928,7 +1932,7 @@ have handlers now.
     (notification_create.rs:281; topic_view/web_hook.rs:531); group
     permissions with categories are done (190a)
 158. `feat/shared-drafts` M: shared_drafts_category (topic_query.rs:371;
-    topic_guardian.rs:373,800) and publishing them
+    topic_guardian.rs:394,818) and publishing them
     (jobs/topic_timers.rs:132, TopicPublisher)
 159. `feat/tags-reads-rest` S: tags_listed_by_group
     (routes/tags.rs:661), tag list filters other than latest, top, hot
@@ -1994,7 +1998,7 @@ have handlers now.
     (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
     EmailCook)
 166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
-    jobs/post_alert.rs:478; routes/admin_groups.rs:1239;
+    jobs/post_alert.rs:555; routes/admin_groups.rs:1239;
     routes/groups.rs:642), the group SMTP credentials check
     (problem_checks.rs:342). Needs: network
 167. `feat/locales` L: every locale but English: server strings
@@ -2143,7 +2147,7 @@ have handlers now.
     (request_tracker.rs:465), keep_old_ip_address_count
     (session/current.rs:867). Needs: a GeoLite2 database
 186. `feat/push-notifications` M: push notifications
-    (jobs/post_alert.rs:1117) by web push and through user API keys'
+    (jobs/post_alert.rs:1463) by web push and through user API keys'
     push clients (84). Needs: network
 187. `fix/rails-error-answers` L (was M), split by area when started: about 175
     refusals when written, about 720 on 2026-10-20 (634 of the

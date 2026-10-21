@@ -52,10 +52,10 @@ Scenarios per action (an `it` marked (xN) counts N).
 | BookmarksController#update | 1 | 0 | 0 | 0 |
 | BookmarksController#toggle_pin | 1 | 0 | 0 | 0 |
 | BookmarksController#destroy | 3 | 1 | 0 | 0 |
-| NotificationsController#index | 17 | 7 | 2 | 8 |
+| NotificationsController#index | 19 | 7 | 2 | 6 |
 | NotificationsController#mark_read | 7 | 0 | 0 | 0 |
 | UsersController#bookmarks | 10 | 1 | 1 | 6 |
-| UsersController#user_menu_bookmarks | 3 | 5 | 1 | 1 |
+| UsersController#user_menu_bookmarks | 4 | 5 | 1 | 0 |
 | UploadsController#create | 6 | 10 | 2 | 8 |
 | Direct uploads (ExternalUploadHelpers, uploads and backups) | 26 | 19 | 15 | 2 |
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
@@ -687,9 +687,9 @@ its own branch (`git log --merges --grep fix/`), so all 100 match.
 | 455 | #index > disabled badges > recent > enable_badges=false | recordable | notifications_badges_disabled (not proposed) |
 | 469 | #index > disabled badges > paged > filters disabled badge | covered | notifications_filtered_badge_and_topic (new, matches) |
 | 480 | #index > disabled badges > paged > enable_badges=false | recordable | notifications_badges_disabled (not proposed) |
-| 497 | #index > show_user_menu_avatars > acting_user_avatar_template | unported | Unsupported("populate_acting_user on notifications") |
+| 497 | #index > show_user_menu_avatars > acting_user_avatar_template | covered | notifications_acting_user_recent, notifications_acting_user_paged (prioritize_full_name_in_ux) (new, match) |
 | 513 | #index > names disabled > no mentioner display_name | recordable | notifications_names_disabled (enable_names=false, user1 has mention 51 with display_name; not proposed) |
-| 550 | #index > avatars on, names off > no liker name | unported | Unsupported("populate_acting_user on notifications") |
+| 550 | #index > avatars on, names off > no liker name | covered | notifications_acting_user_no_names (new, match) |
 | 591 | #index > localizations > localized fancy_title when enabled | recordable | notifications_localized_title (topic_localizations row + users.locale + settings; port has no localization branch and no Unsupported; not proposed) |
 | 603 | #index > localizations > plain fancy_title when disabled | covered | golden: GET /notifications.json as=user1 (default settings) |
 | 768 | not logged in > #index requires authentication | covered | golden: GET /notifications.json (anon) |
@@ -749,7 +749,7 @@ its own branch (`git log --merges --grep fix/`), so all 100 match.
 | 8747 | no unread reminders for bookmarks the user can no longer access | recordable | bookmarks_menu_inaccessible_reminder (setup bookmark + reminder notification on post 2, Staff category; not proposed) |
 | 8765 | no unread reminders when the bookmark was deleted | recordable | bookmarks_menu_deleted_bookmark (setup DELETE bookmark 5; not proposed) |
 | 8775 | same, when the notification only has bookmark_id | recordable | bookmarks_menu_deleted_bookmark (setup strips bookmarkable_type/id from notification 52) |
-| 8798 | show_user_menu_avatars > acting_user_avatar | unported | Unsupported("populate_acting_user on notifications") |
+| 8798 | show_user_menu_avatars > acting_user_avatar | covered | notifications/user_menu_bookmarks_acting_user (new, match) |
 
 ## UploadsController#create
 
@@ -2262,3 +2262,42 @@ and services a reply with a quote goes through, inventoried here.
 | jobs/rebake_quoted_posts_for_user | - | posts quoting the user rebaked | covered | avatars/select_avatar_rebake_quoted |
 | lib/post_destroyer_spec.rb | - | recovering a reply with quotes | covered | posts/post_recover_with_quote |
 | models/post_mover_spec.rb | - | a moved first post that quotes | covered | topics/move_posts_first_post_with_quotes |
+
+## PostAlerter (links, mentions, the job's options)
+
+The rest of what a post's alerts are specced on, beyond quotes:
+post_alerter_spec, the consolidation planner and the callers that pass
+post_alert options.
+
+| Spec | Line | Scenario | Class | Case / note |
+|---|---|---|---|---|
+| services/post_alerter_spec.rb | 680 | notifies the linked user | covered | posts/linked_post_alert (new, match: a topic, the system user's topic, a post linked; one notification for the user linked twice) |
+| services/post_alerter_spec.rb | 710 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
+| services/post_alerter_spec.rb | 718 | staged user, restricted category allowing strangers | recordable | linked_staged_restricted (setup: a staged user, a category with email_in_allow_strangers) |
+| services/post_alerter_spec.rb | 737 | no notification with linked post notifications off | covered | posts/linked_notify_off (new, match) |
+| services/post_alerter_spec.rb | 746 | still notifies by default | covered | posts/linked_post_alert |
+| services/post_alerter_spec.rb | 2746 | a deleted linked post: the topic's first post | recordable | linked_deleted_post (setup: link_post_id to a deleted post) |
+| services/post_alerter_spec.rb | 1760 | email only to users not on the incoming email's CC list | covered | incoming_mail/incoming_reply_cc_skips_email, incoming_mail/incoming_reply_alert (new, match) |
+| services/notifications/consolidation_planner_spec.rb | 37 | links below the threshold stay apart | covered | posts/linked_post_alert |
+| services/notifications/consolidation_planner_spec.rb | 60 | link notifications consolidate into one | covered | posts/linked_consolidate (new, match: another poster's and an old one left alone) |
+| services/notifications/consolidation_planner_spec.rb | 91 | the consolidated link notification updated | covered | posts/linked_consolidated_update (new, match) |
+| models/notification_spec.rb | 899 | .populate_acting_user: the acting user and original_name | covered | notifications/notifications_acting_user_* and user_menu_messages_acting_user (new, match: the system user's logo, a username with no user) |
+| services/user_silencer_spec.rb | 43 | the silence message's post_alert skips the email | covered | admin_users/silence_system_message_alert (new, match) |
+| lib/post_creator_spec.rb | 425 | post_alert_options skip the notification email | covered | admin_users/silence_system_message_alert |
+| services/post_alerter_spec.rb | 1024 | an admin mentioned outside the message isn't notified | covered | messages/pm_mention_moderator_plain (new, match) |
+| models/topic_spec.rb | 2886-2903 | all_allowed_users: moderators in a flagged message or an official warning, not otherwise (x4) | covered | messages/pm_mention_moderator_flagged, pm_mention_moderator_warning, pm_mention_moderator_plain (new, match) |
+| lib/guardian_spec.rb | 643 | moderators see a flagged private message | covered | messages/pm_mention_moderator_flagged (the mentioned moderator's notification passes can_see) |
+| services/post_alerter_spec.rb | 765, 774, 796 | @here: unrelated users left out, repliers and staff-colour posters notified, whisperers not for a non-staff author (x3) | covered | posts/here_mention_post_alert (new, match) |
+| services/post_alerter_spec.rb | 769 | @here does nothing once a user is named here | recordable | here_mention_user_named_here (setup: a user named here) |
+| services/post_alerter_spec.rb | 784 | whisperers notified for a staff author | covered | posts/here_mention_staff_whisper (new, match) |
+| services/post_alerter_spec.rb | 805 | only max_here_mentioned users | covered | posts/here_mention_max (new, match) |
+| lib/guardian_spec.rb | - | can_mention_here? outside here_mention_allowed_groups | covered | posts/here_mention_not_allowed (new, match) |
+| services/post_alerter_spec.rb | 820 | @group mentions: notified, GroupMention rows, not mentionable, members and owners levels | covered | posts/group_mention_post_alert, group_mention_not_mentionable, group_mention_members_level, group_mention_members_level_member (new, match) |
+| services/post_alerter_spec.rb | 850 | a user mention takes precedence | covered | posts/group_mention_user_precedence (new, match) |
+| services/post_alerter_spec.rb | 857 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
+| services/post_alerter_spec.rb | - | max_users_notified_per_group_mention | covered | posts/group_mention_too_many (new, match) |
+| services/post_alerter_spec.rb | 1006, 1039, 1046-1107 | group mentions in messages: only those allowed in it (x9) | covered | messages/pm_group_mention (new, match); the rest recordable as variants |
+| services/post_alerter_spec.rb | 1909, 2020, 2064 | nested topics: the OP told of a root reply as replied, bucket 1 in the data, watchers still told | covered | posts/nested_root_reply, posts/nested_by_default (new, match) |
+| services/post_alerter_spec.rb | 1951, 2072, 2081 | nested topics: a reply in its parent's bucket, replies in a bucket consolidated | covered | posts/nested_reply_to_post, posts/nested_bucket_consolidate (new, not_yet: only nested_view_post_stats differs, HasNestedReplyStats) |
+| services/post_alerter_spec.rb | 1917-1991, 2094-2203 | nested topics: other buckets, whispers, conversion mid-life, flat regression guards (x9) | recordable | variants of the nested_* cases |
+| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:555, ROADMAP 166 |

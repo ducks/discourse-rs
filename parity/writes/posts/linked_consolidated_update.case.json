@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) VALUES (39, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\",\"username\":\"user1\",\"count\":4}', TRUE, FALSE, now() - interval '15 minutes', now() - interval '15 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "See [the unlisted one](/t/parity-fixture-unlisted-topic/39) yet again, rolled into the consolidated one."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

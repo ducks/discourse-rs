@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "settings": {
+    "max_here_mentioned": 2
+  },
+  "setup": [
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order, post_type) VALUES (950, 35, 5, 6, 'A whisper from user3 about this topic.', '<p>A whisper from user3 about this topic.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 6, 4)",
+    "UPDATE topics SET highest_post_number = 6, highest_staff_post_number = 6 WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Hey @here, only two of you should hear about this one."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

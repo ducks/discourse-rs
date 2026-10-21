@@ -48,6 +48,14 @@ pub async fn min_score_for_priority(
     conn: &mut PgConnection,
     s: &SiteSettings,
 ) -> Result<f64, AppError> {
+    Ok(min_score(conn, s).await?)
+}
+
+/// `min_score_for_priority` with the guardian's error type.
+pub async fn min_score(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+) -> Result<f64, crate::guardian::GuardianError> {
     let id = match s.get("reviewable_default_visibility")?.to_s().as_str() {
         "low" => 0,
         "medium" => 5,

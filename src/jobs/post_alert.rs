@@ -10,9 +10,7 @@
 //! Messages notify their directly targeted users, and their groups'
 //! members by their level on it, with the groups' inbox summaries.
 //!
-//! Refused rather than approximated: group and @here mentions, links to
-//! topics notifying someone, group SMTP, nested replies and push
-//! notifications.
+//! Refused rather than approximated: group SMTP and push notifications.
 //! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
@@ -35,6 +33,7 @@ mod types {
     pub const POSTED: i32 = 9;
     pub const PRIVATE_MESSAGE: i32 = 6;
     pub const LINKED: i32 = 11;
+    pub const GROUP_MENTIONED: i32 = 15;
     pub const WATCHING_FIRST_POST: i32 = 17;
     pub const WATCHING_CATEGORY_OR_TAG: i32 = 36;
     /// discourse-reactions' type.
@@ -52,15 +51,16 @@ const COLLAPSED: [i32; 4] = [
 ];
 
 /// `PostAlerter::NOTIFIABLE_TYPES`: the types that alert the user live
-/// and by push. Group mentions are refused, and event reminders and
-/// invitations come from a plugin, so neither is here.
-const NOTIFIABLE: [i32; 8] = [
+/// and by push. Event reminders and invitations come from a plugin, so
+/// they are not here.
+const NOTIFIABLE: [i32; 9] = [
     types::MENTIONED,
     types::REPLIED,
     types::QUOTED,
     types::POSTED,
     types::LINKED,
     types::PRIVATE_MESSAGE,
+    types::GROUP_MENTIONED,
     types::WATCHING_FIRST_POST,
     types::WATCHING_CATEGORY_OR_TAG,
 ];
@@ -85,6 +85,7 @@ struct Post {
     topic_user_id: Option<i32>,
     category_id: Option<i32>,
     archetype: String,
+    via_email: bool,
 }
 
 /// Options `create_notification` takes from its callers.
@@ -104,6 +105,8 @@ struct Opts {
     acting_user_id: Option<i32>,
     /// `revision_number`, an edit's.
     revision_number: Option<i32>,
+    /// `group`: the group mentioned (id, name).
+    group: Option<(i32, String)>,
 }
 
 /// The post and what create_notification reads about it; None when it or
@@ -112,7 +115,7 @@ async fn load_post(conn: &mut PgConnection, post_id: i32) -> Result<Option<Post>
     Ok(sqlx::query_as(
         "SELECT p.id, p.user_id, p.last_editor_id, p.topic_id, p.post_number, p.post_type, p.raw, p.cooked, \
                 p.reply_to_post_number, p.action_code, u.username, u.name, e.username AS editor_username, \
-                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype \
+                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype, p.via_email \
          FROM posts p JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
          LEFT JOIN users u ON u.id = p.user_id \
          LEFT JOIN users e ON e.id = COALESCE(p.last_editor_id, p.user_id) \
@@ -139,11 +142,7 @@ pub async fn notify_liked(
     let Some(author) = post.user_id else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let opts = Opts {
         user_id: Some(liker_id),
         display_username: Some(liker_username.to_string()),
@@ -184,11 +183,7 @@ pub async fn notify_reaction(
     if never {
         return Ok(());
     }
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let opts = Opts {
         user_id: Some(reactor_id),
         display_username: Some(reactor_username.to_string()),
@@ -206,11 +201,21 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     let Some(post_id) = args.get("post_id").and_then(Value::as_i64) else {
         return Ok(());
     };
-    if args
-        .get("options")
-        .is_some_and(|o| !o.is_null() && o != &json!({}))
-    {
-        return Err(Unsupported("post_alert options").into());
+    // `args[:options] || {}`, PostAlerter's default opts, merged under
+    // every create_notification's own. Callers pass only skip_send_email
+    // (the silenced user's system message, discourse-narrative-bot).
+    let mut skip_send_email = false;
+    match args.get("options") {
+        None | Some(Value::Null) => {}
+        Some(Value::Object(options)) => {
+            for (key, value) in options {
+                if key != "skip_send_email" {
+                    return Err(Unsupported("post_alert options other than skip_send_email").into());
+                }
+                skip_send_email = !matches!(value, Value::Null | Value::Bool(false));
+            }
+        }
+        Some(_) => return Err(Unsupported("post_alert options that are not a hash").into()),
     }
     let new_record = args.get("new_record") == Some(&json!(true));
     let post = load_post(conn, post_id as i32).await?;
@@ -274,21 +279,35 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     } else {
         Vec::new()
     };
-    // all_allowed_users: moderators join them in a flagged message or an
-    // official warning.
-    let all_allowed: Vec<i32> = allowed_users
+    // all_allowed_users: moderators join them in a flagged message
+    // (has_flags?: a pending ReviewableFlaggedPost scored at least
+    // min_score_for_priority) or an official warning.
+    let mut all_allowed: Vec<i32> = allowed_users
         .iter()
         .map(|(u, _)| *u)
         .chain(allowed_group_users.iter().copied())
         .collect();
-    if s.get("nested_replies_enabled")?.truthy() {
-        return Err(Unsupported("alerts with nested replies").into());
+    if private_message {
+        let min_score = crate::reviewables::min_score_for_priority(&mut *conn, s).await?;
+        let with_moderators: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
+             OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
+                        AND type = 'ReviewableFlaggedPost' AND status = 0 AND score >= $2)",
+        )
+        .bind(post.topic_id)
+        .bind(min_score)
+        .fetch_one(&mut *conn)
+        .await?;
+        if with_moderators {
+            let moderators: Vec<i32> =
+                sqlx::query_scalar("SELECT id FROM users WHERE moderator ORDER BY id")
+                    .fetch_all(&mut *conn)
+                    .await?;
+            all_allowed.extend(moderators.into_iter().filter(|u| !not_allowed(*u)));
+        }
     }
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
+    alerter.skip_send_email = skip_send_email;
     alerter.notified.extend(post.user_id);
     if let Some(editor) = post.last_editor_id
         && !alerter.notified.contains(&editor)
@@ -299,18 +318,24 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     // mentions
     let analysis = analyze(&post.cooked, ctx.config.globals.relative_url_root())?;
     let mentions = analysis.mention_names;
-    if !mentions.is_empty() {
-        let groups: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM groups WHERE LOWER(name) = ANY($1)")
-                .bind(&mentions)
-                .fetch_one(&mut *conn)
-                .await?;
-        if groups > 0 {
-            return Err(Unsupported("group mentions").into());
-        }
-        if mentions.contains(&s.get("here_mention")?.to_s()) {
-            return Err(Unsupported("@here mentions").into());
-        }
+    // extract_mentions: the groups named, the rest as users.
+    let mentioned_groups: Vec<(i32, String)> = if mentions.is_empty() {
+        Vec::new()
+    } else {
+        sqlx::query_as("SELECT id, name FROM groups WHERE LOWER(name) = ANY($1) ORDER BY ctid")
+            .bind(&mentions)
+            .fetch_all(&mut *conn)
+            .await?
+    };
+    let group_names: Vec<String> = mentioned_groups
+        .iter()
+        .map(|(_, name)| name.to_lowercase())
+        .collect();
+    let mentions: Vec<String> = mentions
+        .into_iter()
+        .filter(|m| !group_names.contains(m))
+        .collect();
+    if !mentions.is_empty() || !mentioned_groups.is_empty() {
         let mut opts = Opts::default();
         if post.last_editor_id != post.user_id {
             opts.user_id = post.last_editor_id;
@@ -325,21 +350,6 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .fetch_all(&mut *conn)
         .await?;
         // only_allowed_users and, in a message, not its watchers.
-        if private_message {
-            let with_moderators: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
-                 OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
-                            AND type = 'ReviewableFlaggedPost' AND status = 0)",
-            )
-            .bind(post.topic_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if with_moderators {
-                return Err(
-                    Unsupported("mentions in flagged messages and official warnings").into(),
-                );
-            }
-        }
         let targets: Vec<i32> = users
             .into_iter()
             .filter(|u| !private_message || all_allowed.contains(u))
@@ -354,13 +364,65 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
                 alerter.notified.push(user_id);
             }
         }
+        // expand_group_mentions: the groups the author may mention (public
+        // ones not included), each under max_users_notified_per_group_mention
+        // members; its members allowed in a message and not notified yet
+        // hear of it as group_mentioned.
+        for (group_id, group_name, members) in
+            expand_group_mentions(ctx, conn, &post, &mentioned_groups).await?
+        {
+            let targets: Vec<i32> = members
+                .into_iter()
+                .filter(|u| !private_message || all_allowed.contains(u))
+                .filter(|u| !alerter.notified.contains(u))
+                .collect();
+            let group_opts = Opts {
+                group: Some((group_id, group_name)),
+                ..opts.clone()
+            };
+            let mut reached = Vec::new();
+            for user_id in targets {
+                if alerter
+                    .create_notification(conn, user_id, types::GROUP_MENTIONED, &group_opts)
+                    .await?
+                {
+                    reached.push(user_id);
+                }
+            }
+            alerter.notified.extend(reached);
+        }
+        // @here, when the author can_mention_here?: expand_here_mention's
+        // posters not notified yet, only those allowed in a message.
+        if mentions.contains(&s.get("here_mention")?.to_s())
+            && can_mention_here(ctx, conn, &post).await?
+        {
+            let users = expand_here_mention(ctx, conn, &post, &alerter.notified).await?;
+            let targets: Vec<i32> = users
+                .into_iter()
+                .filter(|u| !private_message || all_allowed.contains(u))
+                .filter(|u| !alerter.notified.contains(u))
+                .collect();
+            for user_id in targets {
+                if alerter
+                    .create_notification(conn, user_id, types::MENTIONED, &opts)
+                    .await?
+                {
+                    alerter.notified.push(user_id);
+                }
+            }
+        }
     }
 
     // replies (notify_non_pm_users: none in a message)
     let notify_about_reply = post.post_type == crate::posting::post_types::REGULAR
         || (post.post_type == crate::posting::post_types::WHISPER && post.action_code.is_none());
     // reply_notification_target
-    let reply_target: Option<i32> = match post.reply_to_post_number {
+    // (the topic's first post for a root reply in a nested topic)
+    let reply_to = match post.reply_to_post_number {
+        None if nested_view(ctx, conn, &post).await? => Some(1),
+        n => n,
+    };
+    let reply_target: Option<i32> = match reply_to {
         Some(n) => sqlx::query_scalar::<_, Option<i32>>(
             "SELECT user_id FROM posts WHERE topic_id = $1 AND post_number = $2 \
              AND user_id IS DISTINCT FROM $3 AND deleted_at IS NULL LIMIT 1",
@@ -423,8 +485,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     }
 
     // linked (none in a message either): extract_linked_users, the
-    // authors of the posts (or first posts of the topics) linked to; only
-    // those not notified yet would hear of it, which isn't ported.
+    // authors of the posts (or first posts of the topics) linked to, once
+    // per link; those not notified yet hear of it.
     let linked: Vec<i32> = sqlx::query_scalar(
         "SELECT COALESCE(lp.user_id, fp.user_id) FROM topic_links tl \
          LEFT JOIN posts lp ON lp.id = tl.link_post_id AND lp.deleted_at IS NULL \
@@ -433,14 +495,28 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
            AND fp.deleted_at IS NULL \
          WHERE tl.post_id = $1 AND NOT tl.reflection \
            AND COALESCE(lp.user_id, fp.user_id) IS DISTINCT FROM $2 \
-           AND EXISTS (SELECT 1 FROM users u WHERE u.id = COALESCE(lp.user_id, fp.user_id))",
+           AND EXISTS (SELECT 1 FROM users u WHERE u.id = COALESCE(lp.user_id, fp.user_id)) \
+         ORDER BY tl.id",
     )
     .bind(post.id)
     .bind(post.user_id)
     .fetch_all(&mut *conn)
     .await?;
-    if !private_message && linked.iter().any(|u| !alerter.notified.contains(u)) {
-        return Err(Unsupported("alerts for links to topics").into());
+    if !private_message {
+        let targets: Vec<i32> = linked
+            .into_iter()
+            .filter(|u| !alerter.notified.contains(u))
+            .collect();
+        let mut reached = Vec::new();
+        for user_id in targets {
+            if alerter
+                .create_notification(conn, user_id, types::LINKED, &Opts::default())
+                .await?
+            {
+                reached.push(user_id);
+            }
+        }
+        alerter.notified.extend(reached);
     }
 
     // category_or_tag_muters join the notified.
@@ -573,11 +649,22 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         alerter.notify_post_users(conn, false, true).await?;
     }
 
-    // sync_group_mentions: no group mentions, so the post has none.
+    // sync_group_mentions: the post's group mentions replaced by the
+    // groups it names.
     sqlx::query("DELETE FROM group_mentions WHERE post_id = $1")
         .bind(post.id)
         .execute(&mut *conn)
         .await?;
+    for (group_id, _) in &mentioned_groups {
+        sqlx::query(
+            "INSERT INTO group_mentions (post_id, group_id, created_at, updated_at) \
+             VALUES ($1, $2, now(), now()) ON CONFLICT DO NOTHING",
+        )
+        .bind(post.id)
+        .bind(group_id)
+        .execute(&mut *conn)
+        .await?;
+    }
 
     if new_record && post.post_number == 1 {
         let mut watchers: Vec<i32> = sqlx::query_scalar(
@@ -613,6 +700,138 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
     Ok(())
+}
+
+/// `Topic#nested_view?`: nested replies on, not a message, and the topic
+/// converted (a nested_topics row) or nested by default.
+async fn nested_view(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<bool, AppError> {
+    let s = ctx.settings;
+    if !s.get("nested_replies_enabled")?.truthy() || post.archetype == "private_message" {
+        return Ok(false);
+    }
+    let converted: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM nested_topics WHERE topic_id = $1)")
+            .bind(post.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    Ok(converted || s.get("nested_replies_default")?.truthy())
+}
+
+/// `expand_group_mentions(groups, post)`: of the groups named, those the
+/// author may mention (`Group.mentionable(user, include_public: false)`),
+/// each with fewer members than max_users_notified_per_group_mention, with
+/// its members (`group.users`); none without an author.
+async fn expand_group_mentions(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+    groups: &[(i32, String)],
+) -> Result<Vec<(i32, String, Vec<i32>)>, AppError> {
+    let Some(author) = post.user_id.filter(|_| !groups.is_empty()) else {
+        return Ok(Vec::new());
+    };
+    let Some(user) = SessionUser::load(&mut *conn, author).await? else {
+        return Ok(Vec::new());
+    };
+    let guardian = Guardian::for_user(&mut *conn, &user).await?;
+    let ids: Vec<i32> = groups.iter().map(|(id, _)| *id).collect();
+    let mentionable: Vec<(i32, String, i32)> = sqlx::query_as(&format!(
+        "SELECT id, name, user_count FROM groups WHERE ({}) AND id = ANY($1) ORDER BY ctid",
+        crate::user_search::mentionable_where_with(&guardian, author, false)
+    ))
+    .bind(&ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    let max = ctx
+        .settings
+        .get("max_users_notified_per_group_mention")?
+        .to_i();
+    let mut out = Vec::new();
+    for (id, name, user_count) in mentionable {
+        if i64::from(user_count) >= max {
+            continue;
+        }
+        let members: Vec<i32> = sqlx::query_scalar(
+            "SELECT users.id FROM users JOIN group_users ON users.id = group_users.user_id \
+             WHERE group_users.group_id = $1 ORDER BY group_users.ctid",
+        )
+        .bind(id)
+        .fetch_all(&mut *conn)
+        .await?;
+        out.push((id, name, members));
+    }
+    Ok(out)
+}
+
+/// `Guardian#can_mention_here?` for the post's author: a here_mention set,
+/// max_here_mentioned at least one, no user named it, and the author in
+/// here_mention_allowed_groups.
+async fn can_mention_here(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<bool, AppError> {
+    let s = ctx.settings;
+    let here = s.get("here_mention")?.to_s();
+    if here.trim().is_empty() || s.get("max_here_mentioned")?.to_i() < 1 {
+        return Ok(false);
+    }
+    let Some(author) = post.user_id else {
+        return Ok(false);
+    };
+    let Some(user) = SessionUser::load(&mut *conn, author).await? else {
+        return Ok(false);
+    };
+    let taken: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE username_lower = $1)")
+            .bind(&here)
+            .fetch_one(&mut *conn)
+            .await?;
+    if taken {
+        return Ok(false);
+    }
+    let guardian = Guardian::for_user(&mut *conn, &user).await?;
+    Ok(guardian.in_setting_groups(s, "here_mention_allowed_groups")?)
+}
+
+/// `expand_here_mention(post, exclude_ids:)`: real users with a regular or
+/// moderator action post in the topic (a whisper too when the author is
+/// staff), less those excluded, at most max_here_mentioned, in the
+/// table's order.
+async fn expand_here_mention(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+    exclude: &[i32],
+) -> Result<Vec<i32>, AppError> {
+    use crate::posting::post_types;
+    let staff: bool = sqlx::query_scalar(
+        "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), FALSE)",
+    )
+    .bind(post.user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let mut types = vec![post_types::REGULAR, post_types::MODERATOR_ACTION];
+    if staff {
+        types.push(post_types::WHISPER);
+    }
+    Ok(sqlx::query_scalar(
+        "SELECT id FROM users WHERE id > 0 \
+           AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
+           AND id IN (SELECT user_id FROM posts WHERE topic_id = $1 AND post_type = ANY($2) \
+                      AND deleted_at IS NULL AND NOT (user_id = ANY($3))) \
+         ORDER BY ctid LIMIT $4",
+    )
+    .bind(post.topic_id)
+    .bind(&types)
+    .bind(exclude)
+    .bind(ctx.settings.get("max_here_mentioned")?.to_i())
+    .fetch_all(&mut *conn)
+    .await?)
 }
 
 /// `group_notifying_via_smtp(post)`: with SMTP on, a regular post in a
@@ -690,6 +909,19 @@ struct Alerter<'a> {
     ctx: &'a Ctx<'a>,
     post: &'a Post,
     notified: Vec<i32>,
+    /// The job's options (`@default_opts`): only `skip_send_email`.
+    skip_send_email: bool,
+}
+
+impl<'a> Alerter<'a> {
+    fn new(ctx: &'a Ctx<'a>, post: &'a Post) -> Self {
+        Alerter {
+            ctx,
+            post,
+            notified: Vec::new(),
+            skip_send_email: false,
+        }
+    }
 }
 
 impl Alerter<'_> {
@@ -787,7 +1019,16 @@ impl Alerter<'_> {
             return Ok(false);
         }
         if notification_type == types::LINKED {
-            return Err(Unsupported("linked notifications").into());
+            let notify: bool = sqlx::query_scalar(
+                "SELECT notify_on_linked_posts FROM user_options WHERE user_id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .unwrap_or(true);
+            if !notify {
+                return Ok(false);
+            }
         }
         // can_receive_post_notifications?
         let guardian = Guardian::for_user(&mut *conn, &user).await?;
@@ -853,6 +1094,8 @@ impl Alerter<'_> {
         if muted {
             return Ok(false);
         }
+        // Muted on the mentioned group: Rails looks the GroupUser up by
+        // opts[:group_id], which no caller sets, so it never applies.
         let existing: Vec<i32> = sqlx::query_scalar(
             "SELECT notification_type FROM notifications WHERE user_id = $1 AND topic_id = $2 \
              AND post_number = $3 ORDER BY id DESC LIMIT 10",
@@ -918,15 +1161,71 @@ impl Alerter<'_> {
             .clone()
             .filter(|u| !u.is_empty())
             .or_else(|| post.username.clone());
-        if COLLAPSED.contains(&notification_type) {
+        // In a nested topic a reply collapses only with those in its bucket
+        // (the post it answers, or the root: Notification::TOPIC_ROOT_BUCKET).
+        let mut bucket: Option<i32> = None;
+        let mut consolidated_count: Option<i64> = None;
+        let nested = COLLAPSED.contains(&notification_type) && nested_view(ctx, conn, post).await?;
+        if notification_type == types::REPLIED && nested {
+            let b = post.reply_to_post_number.unwrap_or(1);
+            bucket = Some(b);
+            // destroy_notifications(user, [replied], topic, bucket_post_number:)
+            sqlx::query(
+                "DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2 AND notification_type = $3 \
+                 AND data::jsonb ->> 'reply_to_post_number' = $4",
+            )
+            .bind(user_id)
+            .bind(post.topic_id)
+            .bind(types::REPLIED)
+            .bind(b.to_string())
+            .execute(&mut *conn)
+            .await?;
+            // unread_posts_in_bucket: secured, past the last read, replies
+            // to the bucket's post (the root: no reply_to or post 1, not
+            // post 1 itself).
+            let visible = guardian.visible_post_types(ctx.settings)?;
+            let (first, count): (Option<i32>, i64) = sqlx::query_as(
+                "SELECT MIN(post_number), COUNT(*) FROM posts WHERE topic_id = $2 AND deleted_at IS NULL \
+                   AND post_type = ANY($3) \
+                   AND post_number > COALESCE((SELECT last_read_post_number FROM topic_users tu \
+                                               WHERE tu.user_id = $1 AND tu.topic_id = $2), 0) \
+                   AND CASE WHEN $4 = 1 THEN (reply_to_post_number IS NULL OR reply_to_post_number = 1) \
+                                              AND post_number > 1 \
+                            ELSE reply_to_post_number = $4 END",
+            )
+            .bind(user_id)
+            .bind(post.topic_id)
+            .bind(&visible)
+            .bind(b)
+            .fetch_one(&mut *conn)
+            .await?;
+            if let Some(first) = first {
+                target_post_number = first;
+            }
+            if count > 1 {
+                consolidated_count = Some(count);
+                let n = count.to_string();
+                display_username = Some(
+                    ctx.i18n
+                        .t_with("embed.replies.other", &[("count", &n)])
+                        .unwrap_or_else(|| format!("{count} replies")),
+                );
+            }
+        } else if COLLAPSED.contains(&notification_type) {
             // destroy_notifications(user, COLLAPSED, topic) when the user can
-            // see the topic (checked above), then the first unread post.
+            // see the topic (checked above), less replied in a nested topic,
+            // then the first unread post.
+            let collapsed: Vec<i32> = COLLAPSED
+                .iter()
+                .copied()
+                .filter(|t| !(nested && *t == types::REPLIED))
+                .collect();
             sqlx::query(
                 "DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2 AND notification_type = ANY($3)",
             )
             .bind(user_id)
             .bind(post.topic_id)
-            .bind(&COLLAPSED[..])
+            .bind(&collapsed)
             .execute(&mut *conn)
             .await?;
             let visible = guardian.visible_post_types(ctx.settings)?;
@@ -1014,11 +1313,21 @@ impl Alerter<'_> {
         data.insert("original_username".into(), json!(original_username));
         data.insert("revision_number".into(), json!(opts.revision_number));
         data.insert("display_username".into(), json!(displayed));
+        if let Some(b) = bucket {
+            data.insert("reply_to_post_number".into(), json!(b));
+            if let Some(count) = consolidated_count {
+                data.insert("consolidated_count".into(), json!(count));
+            }
+        }
         if let Some(name) = opts.display_name.as_ref().or(target_name.as_ref()) {
             data.insert("display_name".into(), json!(name));
         }
         for (key, value) in &opts.custom_data {
             data.insert(key.clone(), value.clone());
+        }
+        if let Some((group_id, group_name)) = &opts.group {
+            data.insert("group_id".into(), json!(group_id));
+            data.insert("group_name".into(), json!(group_name));
         }
         // consolidate_or_create!, with its after_commit work (the count,
         // and the email or the shelf).
@@ -1029,6 +1338,38 @@ impl Alerter<'_> {
         )
         .topic(post.topic_id, Some(target_post_number));
         notification.post_action_id = opts.post_action_id;
+        // skip_send_email: (skip_send_email_to comes only with group
+        // SMTP, refused) a post by email skips those it was sent or copied
+        // to, else the options say.
+        let incoming: Option<(Option<String>, Option<String>)> = if post.via_email {
+            sqlx::query_as(
+                "SELECT to_addresses, cc_addresses FROM incoming_emails WHERE post_id = $1 \
+                 ORDER BY id LIMIT 1",
+            )
+            .bind(post.id)
+            .fetch_optional(&mut *conn)
+            .await?
+        } else {
+            None
+        };
+        notification.skip_send_email = match incoming {
+            Some((to, cc)) => {
+                let email: Option<String> = sqlx::query_scalar(
+                    "SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"",
+                )
+                .bind(user_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+                // to_addresses_split / cc_addresses_split
+                let listed = |addresses: &Option<String>| {
+                    addresses
+                        .as_deref()
+                        .is_some_and(|a| a.split(';').any(|a| Some(a) == email.as_deref()))
+                };
+                listed(&to) || listed(&cc)
+            }
+            None => self.skip_send_email,
+        };
         crate::notification_create::consolidate_or_create(
             &mut *conn,
             ctx.bus,
@@ -1056,7 +1397,7 @@ impl Alerter<'_> {
                     ..Default::default()
                 },
             );
-            let payload = json!({
+            let mut payload = json!({
                 "notification_type": notification_type,
                 "post_number": post.post_number,
                 "topic_title": post.topic_title,
@@ -1072,6 +1413,10 @@ impl Alerter<'_> {
                     post.post_number
                 ),
             });
+            if let Some((_, group_name)) = opts.group.as_ref().filter(|(_, n)| !n.trim().is_empty())
+            {
+                payload["group_name"] = json!(group_name);
+            }
             crate::bus::publish_notification_alert(ctx.bus, &mut *conn, user_id, &payload).await?;
             push_notification(conn, ctx.settings, user_id).await?;
         }
@@ -1273,11 +1618,7 @@ pub async fn notify_tag_change(
     let Some(post) = load_visible_post(conn, args).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let watchers =
         crate::tagging::tag_watchers(&mut *conn, post.topic_id, WATCHING_FIRST_POST_LEVEL).await?;
     alerter.notify_first_post_watchers(conn, watchers).await?;
@@ -1352,11 +1693,7 @@ pub async fn notify_category_change(
     let Some(post) = load_visible_post(conn, args).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let notified = id_list(args, "notified_user_ids");
     alerter
         .notify_watchers(conn, &notified, None, true, true, false)
@@ -1407,11 +1744,7 @@ pub async fn notify_post_revision(
     let Some(post) = load_post(conn, post_id).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let users: Vec<(i32, bool)> =
         sqlx::query_as("SELECT id, admin OR moderator FROM users WHERE id = ANY($1) ORDER BY id")
             .bind(id_list(args, "user_ids"))

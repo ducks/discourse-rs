@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "settings": {
+    "nested_replies_enabled": true,
+    "nested_replies_default": true
+  },
+  "setup": [],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A root reply where every topic is nested by default."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO groups (id, name, mentionable_level, user_count, created_at, updated_at) VALUES (9001, 'designers', 99, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (9001, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9001, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9001, 4, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "Could @designers weigh in here, only those in the message hear of it?"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

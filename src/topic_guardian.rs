@@ -134,7 +134,8 @@ impl TopicCtx {
                     (EXISTS (SELECT 1 FROM topic_allowed_users tau WHERE tau.topic_id = t.id AND tau.user_id = $3) \
                      OR EXISTS (SELECT 1 FROM topic_allowed_groups tag JOIN group_users gu ON gu.group_id = tag.group_id \
                                 WHERE tag.topic_id = t.id AND gu.user_id = $3)) AS pm_member, \
-                    EXISTS (SELECT 1 FROM reviewables r WHERE r.topic_id = t.id AND r.type = 'ReviewableFlaggedPost' AND r.status = 0) AS pm_flagged, \
+                    EXISTS (SELECT 1 FROM reviewables r WHERE r.topic_id = t.id AND r.type = 'ReviewableFlaggedPost' \
+                            AND r.status = 0 AND r.score >= $9) AS pm_flagged, \
                     ((SELECT count(*) FROM topic_allowed_users tau WHERE tau.topic_id = t.id) \
                      + (SELECT count(*) FROM topic_allowed_groups tag WHERE tag.topic_id = t.id)) AS recipients \
              FROM topics t LEFT JOIN categories c ON c.id = t.category_id \
@@ -149,6 +150,13 @@ impl TopicCtx {
         let moderator_manages = guardian.is_moderator()
             && !guardian.is_admin()
             && settings.get("moderators_manage_groups")?.truthy();
+        // has_flags?: pending_and_default_visible, scored at least
+        // min_score_for_priority; only moderators read pm_flagged.
+        let min_score = if guardian.is_moderator() {
+            crate::reviewables::min_score(&mut *conn, settings).await?
+        } else {
+            0.0
+        };
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
             .bind(staged)
@@ -158,6 +166,7 @@ impl TopicCtx {
             .bind(&static_docs)
             .bind(can_create_topic)
             .bind(moderator_manages)
+            .bind(min_score)
             .fetch_optional(conn)
             .await?)
     }
@@ -224,8 +233,8 @@ impl Guardian {
         self.can_delete_all_posts_and_topics(settings)
     }
 
-    /// `can_see_topic?(topic, hide_deleted)` for regular topics (PMs are
-    /// refused), with the viewer's secure category ids.
+    /// `can_see_topic?(topic, hide_deleted)`, with the viewer's secure
+    /// category ids.
     pub fn can_see_topic(
         &self,
         settings: &SiteSettings,
@@ -252,10 +261,8 @@ impl Guardian {
             if topic.pm_member {
                 return Ok(true);
             }
-            if self.is_moderator() && topic.pm_flagged {
-                return Err(Unsupported("moderators' view of flagged private messages").into());
-            }
-            return Ok(self.is_moderator() && topic.subtype.as_deref() == Some("moderator_warning"));
+            return Ok(self.is_moderator()
+                && (topic.pm_flagged || topic.subtype.as_deref() == Some("moderator_warning")));
         }
         if topic.shared_draft && !self.can_see_shared_draft(settings)? {
             return Ok(false);

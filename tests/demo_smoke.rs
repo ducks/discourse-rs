@@ -748,7 +748,6 @@ async fn posting_runs_its_background_jobs() {
 /// A reply that links another topic still alerts the people it mentions
 /// (and the linked topic's author).
 #[tokio::test]
-#[ignore = "post_alert refuses a post linking a topic, so its mentions never notify, ROADMAP 145"]
 async fn a_reply_linking_a_topic_notifies() {
     let (db, state) = app().await;
     let mut user1 = member(&state, "user1").await;
@@ -1239,7 +1238,7 @@ async fn admin_silences() {
 /// Silencing sends the member a system message, which notifies them, and
 /// the account_silenced email.
 #[tokio::test]
-#[ignore = "post_alert refuses the system message's options and the account_silenced email is refused, ROADMAP 145 and 146"]
+#[ignore = "the account_silenced email is refused, ROADMAP 146"]
 async fn a_silenced_member_is_told() {
     let (db, state) = app().await;
     let id = user_id(&db, "user1").await;

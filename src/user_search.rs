@@ -549,12 +549,21 @@ fn alias_levels(guardian: &Guardian) -> &'static str {
 
 /// `Group.mentionable(user)` (include_public: true)
 pub fn mentionable_where(guardian: &Guardian, user_id: i32) -> String {
+    mentionable_where_with(guardian, user_id, true)
+}
+
+/// `Group.mentionable(user, include_public:)`
+pub fn mentionable_where_with(guardian: &Guardian, user_id: i32, include_public: bool) -> String {
     format!(
         "groups.mentionable_level IN ({levels}) \
          OR (groups.mentionable_level = 3 AND groups.id IN (SELECT group_id FROM group_users WHERE user_id = {user_id})) \
-         OR (groups.mentionable_level = 4 AND groups.id IN (SELECT group_id FROM group_users WHERE user_id = {user_id} AND owner IS TRUE)) \
-         OR groups.visibility_level = 0",
-        levels = alias_levels(guardian)
+         OR (groups.mentionable_level = 4 AND groups.id IN (SELECT group_id FROM group_users WHERE user_id = {user_id} AND owner IS TRUE)){public}",
+        levels = alias_levels(guardian),
+        public = if include_public {
+            " OR groups.visibility_level = 0"
+        } else {
+            ""
+        }
     )
 }
 

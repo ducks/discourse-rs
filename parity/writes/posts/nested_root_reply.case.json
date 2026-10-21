@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "settings": {
+    "nested_replies_enabled": true
+  },
+  "setup": [
+    "INSERT INTO nested_topics (topic_id, created_at, updated_at) VALUES (35, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A root reply in a nested topic, which tells the original poster."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

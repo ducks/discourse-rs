@@ -10,6 +10,7 @@ use crate::Unsupported;
 use crate::guardian::{Guardian, GuardianError};
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::topic_list::time_json;
+use crate::url::{UrlError, Urls};
 
 /// `Notification.types`
 pub const TYPES: &[(&str, i32)] = &[
@@ -76,6 +77,7 @@ pub enum NotificationsError {
     Unsupported(Unsupported),
     /// The pending reviewables' list (crate::reviewables::user_menu_list).
     Review(crate::AppError),
+    Url(UrlError),
 }
 
 impl std::fmt::Display for NotificationsError {
@@ -85,6 +87,7 @@ impl std::fmt::Display for NotificationsError {
             NotificationsError::Setting(e) => e.fmt(f),
             NotificationsError::Unsupported(e) => e.fmt(f),
             NotificationsError::Review(e) => e.fmt(f),
+            NotificationsError::Url(e) => e.fmt(f),
         }
     }
 }
@@ -106,6 +109,22 @@ impl From<SettingError> for NotificationsError {
 impl From<Unsupported> for NotificationsError {
     fn from(e: Unsupported) -> Self {
         NotificationsError::Unsupported(e)
+    }
+}
+
+impl From<UrlError> for NotificationsError {
+    fn from(e: UrlError) -> Self {
+        NotificationsError::Url(e)
+    }
+}
+
+impl From<crate::avatar::AvatarError> for NotificationsError {
+    fn from(e: crate::avatar::AvatarError) -> Self {
+        match e {
+            crate::avatar::AvatarError::Setting(e) => NotificationsError::Setting(e),
+            crate::avatar::AvatarError::Url(e) => NotificationsError::Url(e),
+            crate::avatar::AvatarError::Unsupported(e) => NotificationsError::Unsupported(e),
+        }
     }
 }
 
@@ -136,6 +155,17 @@ struct Row {
     subtype: Option<String>,
     /// The user's DiscourseConnect external id.
     external_id: Option<String>,
+    /// `populate_acting_user`: None when it did not run, else the acting
+    /// user found, if any.
+    #[sqlx(skip)]
+    acting: Option<Option<ActingUser>>,
+}
+
+/// A notification's acting user, as NotificationSerializer shows it.
+#[derive(Debug, Clone)]
+struct ActingUser {
+    avatar_template: String,
+    name: Option<String>,
 }
 
 const COLUMNS: &str = "notifications.id, notifications.user_id, notifications.notification_type, \
@@ -161,6 +191,7 @@ pub struct Notifications<'a> {
     pub conn: &'a mut PgConnection,
     pub settings: &'a SiteSettings,
     pub guardian: &'a Guardian,
+    pub urls: &'a Urls<'a>,
 }
 
 impl Notifications<'_> {
@@ -256,7 +287,8 @@ impl Notifications<'_> {
                 bumped = true;
             }
         }
-        let rows = self.post_filter(rows).await?;
+        let mut rows = self.post_filter(rows).await?;
+        self.populate_acting_user(&mut rows).await?;
         let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = $1")
             .bind(user_id)
             .fetch_one(&mut *self.conn)
@@ -313,7 +345,8 @@ impl Notifications<'_> {
         .bind(q.offset)
         .fetch_all(&mut *self.conn)
         .await?;
-        let rows = self.post_filter(rows).await?;
+        let mut rows = self.post_filter(rows).await?;
+        self.populate_acting_user(&mut rows).await?;
         let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = $1")
             .bind(user_id)
             .fetch_one(&mut *self.conn)
@@ -362,13 +395,7 @@ impl Notifications<'_> {
         read: bool,
         limit: i64,
     ) -> Result<Vec<Value>, NotificationsError> {
-        // populate_acting_user, as in post_filter.
-        if self.settings.get("show_user_menu_avatars")?.truthy()
-            || self.settings.get("prioritize_full_name_in_ux")?.truthy()
-        {
-            return Err(Unsupported("populate_acting_user on notifications").into());
-        }
-        let rows: Vec<Row> = sqlx::query_as(&format!(
+        let mut rows: Vec<Row> = sqlx::query_as(&format!(
             "SELECT {COLUMNS} FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
              WHERE notifications.user_id = $1 AND (topics.id IS NULL OR topics.deleted_at IS NULL) \
              AND notifications.read = $4 AND notifications.notification_type = ANY($2) \
@@ -381,6 +408,7 @@ impl Notifications<'_> {
         .bind(read)
         .fetch_all(&mut *self.conn)
         .await?;
+        self.populate_acting_user(&mut rows).await?;
         match self.serialize(&rows)? {
             Value::Array(items) => Ok(items),
             _ => Ok(Vec::new()),
@@ -416,14 +444,8 @@ impl Notifications<'_> {
     }
 
     /// `filter_inaccessible_topic_notifications` then
-    /// `filter_disabled_badge_notifications`; `populate_acting_user` only
-    /// acts under settings this slice refuses.
+    /// `filter_disabled_badge_notifications`.
     async fn post_filter(&mut self, rows: Vec<Row>) -> Result<Vec<Row>, NotificationsError> {
-        if self.settings.get("show_user_menu_avatars")?.truthy()
-            || self.settings.get("prioritize_full_name_in_ux")?.truthy()
-        {
-            return Err(Unsupported("populate_acting_user on notifications").into());
-        }
         let mut topic_ids: Vec<i32> = Vec::new();
         for r in &rows {
             if let Some(id) = r.topic_id
@@ -474,6 +496,101 @@ impl Notifications<'_> {
                     .is_some_and(|id| enabled.contains(&id))
         });
         Ok(rows)
+    }
+
+    /// `Notification.populate_acting_user`: with avatars in the user menu
+    /// or full names first, each notification's acting user is the user
+    /// named by its data's username, display_username,
+    /// mentioned_by_username, invited_by_username or original_username,
+    /// the first one set.
+    async fn populate_acting_user(&mut self, rows: &mut [Row]) -> Result<(), NotificationsError> {
+        if !(self.settings.get("show_user_menu_avatars")?.truthy()
+            || self.settings.get("prioritize_full_name_in_ux")?.truthy())
+        {
+            return Ok(());
+        }
+        let mut names: Vec<Option<String>> = Vec::with_capacity(rows.len());
+        for r in rows.iter() {
+            let data: Map<String, Value> = serde_json::from_str(&r.data).unwrap_or_default();
+            let named = [
+                "username",
+                "display_username",
+                "mentioned_by_username",
+                "invited_by_username",
+                "original_username",
+            ]
+            .iter()
+            .find_map(|key| {
+                data.get(*key)
+                    .filter(|v| !matches!(v, Value::Null | Value::Bool(false)))
+            });
+            names.push(match named {
+                None => None,
+                Some(Value::String(s)) => Some(s.to_lowercase()),
+                // `.downcase` raises on anything but a string.
+                Some(_) => {
+                    return Err(
+                        Unsupported("notification data naming a user by a non-string").into(),
+                    );
+                }
+            });
+        }
+        let mut wanted: Vec<String> = names.iter().flatten().cloned().collect();
+        wanted.sort_unstable();
+        wanted.dedup();
+        // id, username, username_lower, name, uploaded_avatar_id
+        type UserRow = (i32, String, String, Option<String>, Option<i32>);
+        let users: Vec<UserRow> = sqlx::query_as(
+            "SELECT id, username, username_lower, name, uploaded_avatar_id FROM users \
+             WHERE username_lower = ANY($1)",
+        )
+        .bind(&wanted)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let logo: Option<String> = if users
+            .iter()
+            .any(|(id, ..)| *id == crate::avatar::SYSTEM_USER_ID)
+        {
+            let id = self.settings.get("logo_small")?.to_i();
+            if id == 0 {
+                None
+            } else {
+                sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+                    .bind(i32::try_from(id).unwrap_or(0))
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+            }
+        } else {
+            None
+        };
+        for (r, name) in rows.iter_mut().zip(names) {
+            let found = users
+                .iter()
+                .find(|(_, _, lower, ..)| Some(lower) == name.as_ref());
+            r.acting = Some(match found {
+                Some((id, username, _, name, uploaded_avatar_id)) => {
+                    // avatar_template_url: absolute, without `http:`.
+                    let template = crate::avatar::avatar_template(
+                        self.urls,
+                        *id,
+                        username,
+                        *uploaded_avatar_id,
+                        logo.as_deref(),
+                    )?;
+                    let absolute = self.urls.absolute(&template)?;
+                    let avatar_template = match absolute.get(..5) {
+                        Some(p) if p.eq_ignore_ascii_case("http:") => absolute[5..].to_string(),
+                        _ => absolute,
+                    };
+                    Some(ActingUser {
+                        avatar_template,
+                        name: name.clone(),
+                    })
+                }
+                None => None,
+            });
+        }
+        Ok(())
     }
 
     fn serialize(&self, rows: &[Row]) -> Result<Value, NotificationsError> {
@@ -574,9 +691,28 @@ fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, Notificatio
         if !enable_names && let Some(obj) = data.as_object_mut() {
             obj.remove("display_name");
         }
+        // populate_acting_user sets data_hash[:original_name] with names on.
+        if enable_names
+            && let Some(acting) = &r.acting
+            && let Some(obj) = data.as_object_mut()
+        {
+            obj.insert(
+                "original_name".into(),
+                json!(acting.as_ref().and_then(|a| a.name.clone())),
+            );
+        }
         n.insert("data".into(), data);
         if r.subtype.as_deref() == Some("moderator_warning") {
             n.insert("is_warning".into(), json!(true));
+        }
+        if let Some(Some(acting)) = &r.acting {
+            n.insert(
+                "acting_user_avatar_template".into(),
+                json!(acting.avatar_template),
+            );
+            if enable_names {
+                n.insert("acting_user_name".into(), json!(acting.name));
+            }
         }
         out.push(Value::Object(n));
     }

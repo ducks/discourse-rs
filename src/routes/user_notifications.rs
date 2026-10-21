@@ -126,6 +126,7 @@ pub async fn page(
         conn: &mut conn,
         settings: &settings,
         guardian: &guardian,
+        urls: &urls,
     }
     .index(user.id, &user.username, &query)
     .await?;
