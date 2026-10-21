@@ -119,6 +119,7 @@ impl From<NotificationsError> for BookmarksError {
             NotificationsError::Db(e) => BookmarksError::Db(e),
             NotificationsError::Setting(e) => BookmarksError::Setting(e),
             NotificationsError::Unsupported(e) => BookmarksError::Unsupported(e),
+            NotificationsError::Url(e) => BookmarksError::Url(e),
         }
     }
 }
@@ -671,6 +672,7 @@ impl Bookmarks<'_> {
             conn: &mut *self.conn,
             settings: self.settings,
             guardian: self.guardian,
+            urls: self.urls,
         }
         .unread_for_user_menu(user_id, BOOKMARK_REMINDER, USER_MENU_LIST_LIMIT.min(100))
         .await?;

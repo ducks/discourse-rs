@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {
+    "prioritize_full_name_in_ux": true
+  },
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (1, 3, 35, 1, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":35,\"original_post_type\":1,\"original_username\":\"system\",\"revision_number\":null,\"display_username\":\"system\"}', FALSE, FALSE, now() - interval '1 minute', now() - interval '1 minute'), (1, 3, 35, 2, '{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"Gone_User\",\"revision_number\":null,\"display_username\":\"Gone_User\",\"original_name\":\"Gone\"}', FALSE, FALSE, now() - interval '2 minutes', now() - interval '2 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/notifications.json"
+    }
+  ]
+}

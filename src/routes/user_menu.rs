@@ -144,10 +144,15 @@ pub async fn show(
                 filter: None,
                 types,
             };
+            let urls = crate::url::Urls {
+                config: &state.config,
+                settings: &settings,
+            };
             let (doc, bumped) = Notifications {
                 conn: &mut conn,
                 settings: &settings,
                 guardian: &guardian,
+                urls: &urls,
             }
             .index(user.id, &user.username, &query)
             .await?;
@@ -224,10 +229,15 @@ async fn messages_doc(
 ) -> Result<Value, AppError> {
     const PRIVATE_MESSAGE: i32 = 6;
     const GROUP_MESSAGE_SUMMARY: i32 = 16;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
     let mut notes = Notifications {
         conn: &mut *conn,
         settings,
         guardian,
+        urls: &urls,
     };
     let unread = notes
         .for_user_menu(
@@ -316,6 +326,7 @@ async fn messages_doc(
             conn: &mut *conn,
             settings,
             guardian,
+            urls: &urls,
         };
         let r = notes
             .for_user_menu(user_id, &[GROUP_MESSAGE_SUMMARY], true, limit)

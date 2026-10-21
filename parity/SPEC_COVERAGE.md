@@ -52,10 +52,10 @@ Scenarios per action (an `it` marked (xN) counts N).
 | BookmarksController#update | 1 | 0 | 0 | 0 |
 | BookmarksController#toggle_pin | 1 | 0 | 0 | 0 |
 | BookmarksController#destroy | 3 | 1 | 0 | 0 |
-| NotificationsController#index | 17 | 7 | 2 | 8 |
+| NotificationsController#index | 19 | 7 | 2 | 6 |
 | NotificationsController#mark_read | 7 | 0 | 0 | 0 |
 | UsersController#bookmarks | 10 | 1 | 1 | 6 |
-| UsersController#user_menu_bookmarks | 3 | 5 | 1 | 1 |
+| UsersController#user_menu_bookmarks | 4 | 5 | 1 | 0 |
 | UploadsController#create | 6 | 10 | 2 | 8 |
 | Direct uploads (ExternalUploadHelpers, uploads and backups) | 26 | 19 | 15 | 2 |
 | ReviewablesController#index | 4 | 8 | 2 | 11 |
@@ -687,9 +687,9 @@ its own branch (`git log --merges --grep fix/`), so all 100 match.
 | 455 | #index > disabled badges > recent > enable_badges=false | recordable | notifications_badges_disabled (not proposed) |
 | 469 | #index > disabled badges > paged > filters disabled badge | covered | notifications_filtered_badge_and_topic (new, matches) |
 | 480 | #index > disabled badges > paged > enable_badges=false | recordable | notifications_badges_disabled (not proposed) |
-| 497 | #index > show_user_menu_avatars > acting_user_avatar_template | unported | Unsupported("populate_acting_user on notifications") |
+| 497 | #index > show_user_menu_avatars > acting_user_avatar_template | covered | notifications_acting_user_recent, notifications_acting_user_paged (prioritize_full_name_in_ux) (new, match) |
 | 513 | #index > names disabled > no mentioner display_name | recordable | notifications_names_disabled (enable_names=false, user1 has mention 51 with display_name; not proposed) |
-| 550 | #index > avatars on, names off > no liker name | unported | Unsupported("populate_acting_user on notifications") |
+| 550 | #index > avatars on, names off > no liker name | covered | notifications_acting_user_no_names (new, match) |
 | 591 | #index > localizations > localized fancy_title when enabled | recordable | notifications_localized_title (topic_localizations row + users.locale + settings; port has no localization branch and no Unsupported; not proposed) |
 | 603 | #index > localizations > plain fancy_title when disabled | covered | golden: GET /notifications.json as=user1 (default settings) |
 | 768 | not logged in > #index requires authentication | covered | golden: GET /notifications.json (anon) |
@@ -749,7 +749,7 @@ its own branch (`git log --merges --grep fix/`), so all 100 match.
 | 8747 | no unread reminders for bookmarks the user can no longer access | recordable | bookmarks_menu_inaccessible_reminder (setup bookmark + reminder notification on post 2, Staff category; not proposed) |
 | 8765 | no unread reminders when the bookmark was deleted | recordable | bookmarks_menu_deleted_bookmark (setup DELETE bookmark 5; not proposed) |
 | 8775 | same, when the notification only has bookmark_id | recordable | bookmarks_menu_deleted_bookmark (setup strips bookmarkable_type/id from notification 52) |
-| 8798 | show_user_menu_avatars > acting_user_avatar | unported | Unsupported("populate_acting_user on notifications") |
+| 8798 | show_user_menu_avatars > acting_user_avatar | covered | notifications/user_menu_bookmarks_acting_user (new, match) |
 
 ## UploadsController#create
 
@@ -2281,6 +2281,7 @@ post_alert options.
 | services/notifications/consolidation_planner_spec.rb | 37 | links below the threshold stay apart | covered | posts/linked_post_alert |
 | services/notifications/consolidation_planner_spec.rb | 60 | link notifications consolidate into one | covered | posts/linked_consolidate (new, match: another poster's and an old one left alone) |
 | services/notifications/consolidation_planner_spec.rb | 91 | the consolidated link notification updated | covered | posts/linked_consolidated_update (new, match) |
+| models/notification_spec.rb | 899 | .populate_acting_user: the acting user and original_name | covered | notifications/notifications_acting_user_* and user_menu_messages_acting_user (new, match: the system user's logo, a username with no user) |
 | services/user_silencer_spec.rb | 43 | the silence message's post_alert skips the email | covered | admin_users/silence_system_message_alert (new, match) |
 | lib/post_creator_spec.rb | 425 | post_alert_options skip the notification email | covered | admin_users/silence_system_message_alert |
 | services/post_alerter_spec.rb | 756-805 | @here: unrelated users, a user named here, repliers, whisperers, staff colour, max_here_mentioned (x6) | unported | jobs/post_alert.rs:311 |

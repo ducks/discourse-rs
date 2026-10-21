@@ -1776,12 +1776,11 @@ have handlers now.
     blurbs from old post_search_data rows (:1022,1029), human_only
     search logs (search_logs.rs:60), the index_category_for_search job
 145. `feat/post-alert-rest` M (links to topics notifying someone and
-    their consolidation, the skip_send_email option and posts by email
-    skipping their to and cc addresses done): group and @here mentions
-    (jobs/post_alert.rs:308,311), nested replies (:287), mentions in
-    flagged messages and warnings (:338), post_alert options other than
-    skip_send_email (:210, none sent today), populate_acting_user
-    (notifications.rs:363,419)
+    their consolidation, the skip_send_email option, posts by email
+    skipping their to and cc addresses and populate_acting_user done):
+    group and @here mentions (jobs/post_alert.rs:308,311), nested
+    replies (:287), mentions in flagged messages and warnings (:338),
+    post_alert options other than skip_send_email (:210, none sent today)
 146. `feat/notification-email-rest` M: previous replies and in-reply-to
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
