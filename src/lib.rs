@@ -117,6 +117,7 @@ pub mod html_prettify;
 pub mod i18n;
 pub mod images;
 pub mod impersonation;
+pub mod incoming_link;
 pub mod invite_mailer;
 pub mod invite_page_view;
 pub mod invites;

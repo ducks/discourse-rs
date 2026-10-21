@@ -373,6 +373,46 @@ async fn update_last_read(
     Ok(())
 }
 
+/// `TopicUser.track_visit!(topic_id, user_id)`: the topic user's
+/// last_visited_at, or, without a row, `TopicUser.change` with both visit
+/// times, which creates it at the category's, tag's or auto-track level.
+/// The events it triggers (topic_first_visited_by_user,
+/// user_first_visit_to_topic) have no handler in core or the bundled
+/// plugins.
+pub async fn track_visit(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let now = crate::clock::now_naive();
+    let rows = sqlx::query(
+        "UPDATE topic_users SET last_visited_at = $3 WHERE topic_id = $1 AND user_id = $2",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .bind(now)
+    .execute(&mut *conn)
+    .await?
+    .rows_affected();
+    if rows > 0 {
+        return Ok(());
+    }
+    let changed = crate::posting::change_topic_user(
+        bus,
+        conn,
+        user_id,
+        topic_id,
+        &[crate::posting::TopicUserAttr::VisitedAt(now)],
+    )
+    .await;
+    match changed {
+        // `rescue ActiveRecord::RecordNotUnique`: another request made it.
+        Err(e) if e.sql_state().as_deref() == Some("23505") => Ok(()),
+        other => other,
+    }
+}
+
 /// How marking notifications read ends when it isn't a server error.
 pub enum MarkRead {
     Done,

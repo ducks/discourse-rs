@@ -161,6 +161,9 @@ pub enum TopicUserAttr {
     Bookmarked(bool),
     LastEmailedPostNumber(i32),
     NotificationLevel(i32, i32),
+    /// `first_visited_at` and `last_visited_at` (TopicUser.track_visit!);
+    /// a created row takes create_missing_record's own time instead.
+    VisitedAt(chrono::NaiveDateTime),
 }
 
 /// `TopicUser.change(user_id, topic_id, attrs)`: update the row, or create
@@ -193,6 +196,12 @@ pub async fn change_topic_user(
                 sets.push(format!(
                     "notification_level = {l}, notifications_reason_id = {reason}, \
                      notifications_changed_at = clock_timestamp()"
+                ));
+            }
+            TopicUserAttr::VisitedAt(at) => {
+                let at = at.format("%Y-%m-%d %H:%M:%S%.6f");
+                sets.push(format!(
+                    "first_visited_at = '{at}'::timestamp, last_visited_at = '{at}'::timestamp"
                 ));
             }
         }
@@ -260,7 +269,7 @@ async fn create_missing_record(
                 columns.push("last_emailed_post_number".into());
                 values.push(n.to_string());
             }
-            TopicUserAttr::NotificationLevel(..) => {}
+            TopicUserAttr::NotificationLevel(..) | TopicUserAttr::VisitedAt(_) => {}
         }
     }
     let level = match level {

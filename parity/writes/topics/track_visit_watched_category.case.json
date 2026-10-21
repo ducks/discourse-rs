@@ -1,0 +1,15 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (2, 4, 3)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/37.json?track_visit=true"
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/suggested_topics"
+  ]
+}

@@ -471,7 +471,6 @@ async fn topic_page_member() {
 /// TopicsController#track_visit_to_topic: a member's page load (or the
 /// JSON with track_visit) records their visit, TopicUser.track_visit!.
 #[tokio::test]
-#[ignore = "the topic page doesn't record the visit (TopicUser.track_visit!), ROADMAP 257"]
 async fn opening_a_topic_records_the_visit() {
     let (db, state) = app().await;
     let mut user2 = member(&state, "user2").await;
