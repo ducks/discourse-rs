@@ -15,9 +15,9 @@ work, so the two together are the count of what is left.
 
 ## State as of 2026-10-20
 
-On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
+On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -31,7 +31,7 @@ that own them:
   translations: 634 (719): 187
 - Moderation (flags, review, deletion, penalties): 101 (106): 147-152, 194
 - Accounts, signup, login and invites: 92 (104): 153, 154, 250, 251,
-  253, 255
+  253, 255, 261a
 - Posting, editing and topic edits: 90 (95): 132, 134-138, 188
 - Topic view and lists: 82 (86): 120, 124-129, 158, 159, 195, 197
 - Ruby engines (regexps, URLs, charsets, YAML, sanitizers, email CSS):
@@ -56,8 +56,6 @@ migrations (Not planned).
 
 What a visitor or a new member meets first, by how soon:
 
-- Password reset: the emailed link's page (GET /u/password-reset/:token)
-  isn't routed and the login page has no Forgot password link.
 - Polls draw as their cooked list with a "0 voters" stub, so nobody can
   vote (228); building one from the composer is 229.
 - A post with an uploaded video or audio file is refused
@@ -68,10 +66,14 @@ What a visitor or a new member meets first, by how soon:
 
 ## Before the demo
 
-- [ ] Polish the login page and sign-in flow. Review desktop and mobile layout,
-  form spacing, labels, focus states, and loading feedback. Verify invalid
-  credentials, password reset, successful login, and return to the intended page
-  in a real browser. Capture screenshots before considering it demo-ready.
+- [x] The login page and sign-in flow: Ember's full-page login, signup,
+  password reset and account-created pages (261), desktop and mobile.
+  scripts/check-login and scripts/check-signup drive them in a real browser
+  (blank and refused logins, the password mask, a network failure, the forgot
+  password modal, signing in from a topic back to it; the signup validations,
+  a network failure, an account created through to account-created), with
+  screenshots; the password reset by its emailed code through to the new
+  password and the login was checked the same way (261's commit).
 
 ### Demo readiness
 
@@ -3018,6 +3020,53 @@ route table has been made, so this list may be short.
     `.custom-footer-content`) rather than crawler.html.erb's places;
     another theme's fields (the member's theme_ids, preview, safe mode)
     are 258a's
+261. ~~`feat/ember-login-page`~~ (done) M: the login flow's pages as the
+    Ember app draws them (login_page_view.rs, static/js/login.js), in the
+    desktop and mobile views: /login (templates/login.gjs with
+    WelcomeHeader, LocalLoginForm, LoginPageCta, LoginButtons and the
+    passkey button, NoLoginMethods; the flash, logging in and the hidden
+    login form, the password mask and caps lock warning, the second factor
+    and security key forms, the email login link, CodeLoginForm's email
+    step behind the one-time code link and `?mode=code`, NotActivated,
+    the ForgotPassword modal with its emailed code step; `?redirect=` and
+    `?email=` as static#show takes them), /signup (the create-account form
+    and its validations, users#check_username and the new
+    users#check_email, the code signup's email step, an external login's
+    new account, the login buttons posting signup=true), the
+    login-required front page (discovery/login-required with
+    static/login.html.erb), /login-preferences, /u/account-created
+    (users#account_created), /u/password-reset/:token
+    (users#password_reset_show with its second factors, and
+    users#confirm_email_token) and /password-reset over the login page
+    when login is required. The header leaves out search, log in, sign up
+    and the menu (and its icons for an anonymous reader while login is
+    required), the layout carries the hidden login form, and the login
+    gate lets through what UsersController skips it for. Measured
+    against rs-ref-b: the normalized DOM of each page and state (blank,
+    refused and second factor logins, the code form and back, the forgot
+    password modal and its code step, the classic and code signups with
+    their validations, an external login's new account, external
+    providers, account-created, the reset page with and without second
+    factors, the used link's error page, the login-required page) matches
+    but for FormKit's generated ids, Ember's user and group card shells
+    and the header outlets the port leaves out everywhere; computed
+    layout matches in both views. The login and signup rules
+    login-signup-page.scss compiles after its mobile ones moved from
+    mobile.css into invites.css's order, and `.btn-large` is ported. Left,
+    split into 261a.
+    261a. `feat/login-pages-rest` S: the login code steps after the email
+    step (static/js/login.js:1253) wait on 250's /session/login-code;
+    resending and changing the activation email (users#send_activation_email,
+    users#update_activation_email, ActivationEdit; login.js:1053,1059,
+    2489,2495); a password reset code's second factor step (:1321); the
+    login and signup routes in read-only mode, whose alert shows on the
+    homepage (routes/login_required.rs:627,864); the forgot-password
+    route over the homepage (:1554); the signup page's user fields
+    (UserField, :885); the static login page's dark logo
+    (application_logo_dark_url, :774, with 258a); account_created's
+    DiscourseConnect provider payload (:1177). A reset with a password
+    the server refuses (the same as the current one, a common one) is
+    154's (routes/accounts.rs:728)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
@@ -3352,12 +3401,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     /admin/config/login-and-authentication/oauth2 and /oidc tabs with
     their setting areas (routes/admin_config.rs:669-707), the admin
     sidebar's links and labels. Their list and objects settings need 164
-247. `feat/auth-login-buttons` S: the external login buttons on /signup
-    posting `signup=true` (templates/signup.html;
-    templates/login_required.html:40), so oauth2_authorize_signup_url
-    can be reached; the single-external-login /signup redirect; the
-    buttons' aria-label from `js.login.<name>.sr_title` (Apple's one gap
-    besides 164)
+247. ~~`feat/auth-login-buttons`~~ (done in 261) S: the external login
+    buttons on /signup posting `signup=true`, so
+    oauth2_authorize_signup_url can be reached; the single-external-login
+    /signup redirect; the buttons' aria-label from
+    `js.login.<name>.sr_title` (Apple's one gap besides 164)
 248. `feat/openid-connect-mtls` M: mutual TLS client authentication for
     the token and userinfo requests: the PEM certificate and key with
     passcode, the tls_client_auth scheme, the parse failure logged then

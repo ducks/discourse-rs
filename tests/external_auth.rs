@@ -404,14 +404,14 @@ async fn oidc_signup_creates_an_active_account_without_a_password() {
     let page = browser.get("/signup").await;
     assert_eq!(page.status, StatusCode::OK);
     assert!(
-        page.body.contains("class=\"create-account\""),
+        page.body.contains("id=\"new-account-email\""),
         "{}",
         page.body
     );
     assert!(!page.body.contains("[en."), "{}", page.body);
     let csrf = page
         .body
-        .split_once("data-csrf=\"")
+        .split_once("\"csrf\":\"")
         .and_then(|(_, rest)| rest.split_once('"'))
         .map(|(token, _)| token.to_string())
         .unwrap();

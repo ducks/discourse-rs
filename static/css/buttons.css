@@ -271,6 +271,11 @@ svg > use {
   min-height: 20px;
 }
 
+/* .btn-large */
+.btn-large {
+  font-size: var(--font-up-1);
+}
+
 /* .btn-flat */
 .btn-flat {
   border-radius: var(--d-button-border-radius);

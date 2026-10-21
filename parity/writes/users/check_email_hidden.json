@@ -1,0 +1,28 @@
+{
+  "name": "check_email_hidden",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/check_email.json?email=user1%40example.com"
+    }
+  ],
+  "started_at": "2026-10-21T20:21:40.576255",
+  "transaction_started_at": "2026-10-21T20:21:38.227056",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "a451bf828ae294fd0f9d861b5c70319715e98db3aa521bb3f44e02323554dac4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

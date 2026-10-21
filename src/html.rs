@@ -305,6 +305,9 @@ pub struct Chrome {
     /// hideApplicationHeaderButtons("login", "signup") (the invite page):
     /// no log in or sign up buttons.
     pub hide_auth_buttons: bool,
+    /// No header icons for an anonymous reader while login is required
+    /// (Header: login_required without a current user).
+    pub hide_header_icons: bool,
     /// The mobile view's full-page chat: the header's logo gives way to
     /// chat's (ChatHeader: back to the forum, the Chat heading).
     pub chat_header: String,
@@ -783,6 +786,7 @@ impl Site {
         let sidebar_enabled =
             can_display_sidebar && !mobile && settings.get("navigation_menu")?.to_s() == "sidebar";
         self.chrome.sidebar_toggle = sidebar_enabled;
+        self.chrome.hide_header_icons = !can_display_sidebar;
         let hamburger = can_display_sidebar && (mobile || (narrow && sidebar_enabled));
         self.chrome.tracking =
             crate::topic_tracking_report::load(&mut *conn, settings, guardian).await?;

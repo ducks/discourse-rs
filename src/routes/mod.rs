@@ -632,6 +632,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/u/recent-searches.json",
             get(recent_searches::show).delete(recent_searches::reset),
         )
+        .route("/u/check_email", get(user_preferences::check_email))
+        .route("/u/check_email.json", get(user_preferences::check_email))
+        .route("/users/check_email", get(user_preferences::check_email))
+        .route(
+            "/users/check_email.json",
+            get(user_preferences::check_email),
+        )
         .route("/u/check_username", get(user_preferences::check_username))
         .route(
             "/u/check_username.json",
@@ -646,7 +653,26 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(user_preferences::check_username),
         )
         .route("/my/{*path}", get(user_preferences::my_redirect))
-        .route("/login-preferences", get(login_required::show_login))
+        .route(
+            "/u/account-created",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/users/account-created",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/u/account-created.json",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/users/account-created.json",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/login-preferences",
+            get(login_required::show_login_preferences),
+        )
         .route(
             "/.well-known/change-password",
             get(user_preferences::change_password),
@@ -2007,12 +2033,21 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/u/password-reset/{token}",
-            put(accounts::password_reset_update),
+            get(login_required::password_reset_show).put(accounts::password_reset_update),
         )
         .route(
             "/users/password-reset/{token}",
-            put(accounts::password_reset_update),
+            get(login_required::password_reset_show).put(accounts::password_reset_update),
         )
+        .route(
+            "/u/confirm-email-token/{token}",
+            get(login_required::confirm_email_token),
+        )
+        .route(
+            "/users/confirm-email-token/{token}",
+            get(login_required::confirm_email_token),
+        )
+        .route("/password-reset", get(login_required::show_forgot_password))
         .route("/u/email-login.json", post(accounts::email_login))
         .route("/users/email-login", post(accounts::email_login))
         .route("/users/email-login.json", post(accounts::email_login))
@@ -2535,6 +2570,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/invite.js", get(asset))
+        .route("/assets/login.js", get(asset))
         .route("/assets/user-invited.js", get(asset))
         .route("/assets/admin.css", get(asset))
         .route("/assets/admin.js", get(asset))

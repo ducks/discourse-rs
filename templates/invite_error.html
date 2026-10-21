@@ -1,7 +1,10 @@
 {% extends "no_ember.html" %}
+{% block title %}{% if !title.is_empty() %}{{ title }} - {% endif %}{{ site_title }}{% endblock %}
+{% block head %}{% if referrer_never %}<meta name="referrer" content="never">{% endif %}{% endblock %}
 {% block content %}
-{#- invites/show.html.erb: the flash error of an invite that can't be
-    redeemed (or of a site closed to new accounts). -#}
+{#- invites/show.html.erb and users/password_reset.html.erb: the error of
+    an invite that can't be redeemed (or of a site closed to new
+    accounts), or of a reset link that no longer works. -#}
 <div id='simple-container'>
 {%- if !error.is_empty() %}
     <div class='invite-error'>

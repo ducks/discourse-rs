@@ -1377,15 +1377,20 @@ struct InviteErrorPage {
     bus_position: String,
     chrome: crate::html::Chrome,
     error: String,
+    title: String,
+    referrer_never: bool,
 }
 
-/// invites/show.html.erb in the no_ember layout.
-async fn error_page(
+/// invites/show.html.erb (or users/password_reset.html.erb, with its
+/// title and referrer policy) in the no_ember layout.
+pub(super) async fn error_page(
     state: &AppState,
     s: &SiteSettings,
     guardian: &Guardian,
     uri: &Uri,
     error: String,
+    title: &str,
+    referrer_never: bool,
 ) -> Result<Response, AppError> {
     use askama::Template;
     let base_path = state.config.globals.relative_url_root().to_string();
@@ -1408,6 +1413,8 @@ async fn error_page(
         bus_position: String::new(),
         chrome: site.chrome,
         error,
+        title: title.to_string(),
+        referrer_never,
     };
     let html = page.render().map_err(crate::html::HtmlError::from)?;
     Ok((
@@ -1434,7 +1441,7 @@ struct InvitePage {
 
 /// A legal page's url (Site's tos_url, privacy_policy_url): the setting,
 /// else the topic's path when it exists.
-async fn legal_url(
+pub(super) async fn legal_url(
     conn: &mut PgConnection,
     s: &SiteSettings,
     base_path: &str,
@@ -1641,7 +1648,7 @@ pub async fn show(
             return Err(Unsupported("the invite page's rate limit as JSON").into());
         }
         let error = refused.description(&state.i18n);
-        return error_page(&state, &s, &guardian, &uri, error).await;
+        return error_page(&state, &s, &guardian, &uri, error, "", false).await;
     }
     let mut session = crate::session::forum::load_forum_session(&state, &headers);
     let session_id = session.server_session_id();
@@ -1670,7 +1677,7 @@ pub async fn show(
             if json_format {
                 return Err(Unsupported("an unredeemable invite as JSON (a 500 in Rails)").into());
             }
-            error_page(&state, &s, &guardian, &uri, error).await?
+            error_page(&state, &s, &guardian, &uri, error, "", false).await?
         }
         Some(Shown::Info(info)) => {
             if json_format {

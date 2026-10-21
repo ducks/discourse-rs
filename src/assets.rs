@@ -248,6 +248,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("invite.js", JS, include_str!("../static/js/invite.js")),
+    ("login.js", JS, include_str!("../static/js/login.js")),
     (
         "user-invited.js",
         JS,

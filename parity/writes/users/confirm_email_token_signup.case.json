@@ -1,0 +1,32 @@
+{
+  "user": null,
+  "settings": {
+    "must_approve_users": false
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "New Person",
+        "email": "new.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "newperson",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-email-token/{{jobs.critical_user_email.email_token}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-email-token/{{jobs.critical_user_email.email_token}}.json"
+    }
+  ]
+}

@@ -225,21 +225,24 @@
                   <div id="notification-alert" class="notification-alert" role="status" aria-live="polite"></div>
                   {% else %}
                   <span class="header-buttons">
-                    {%- if !chrome.hide_auth_buttons %}
+                    {#- AuthButtons: hideApplicationHeaderButtons leaves it empty. -#}
                     <span class="auth-buttons">
+                      {%- if !chrome.hide_auth_buttons %}
                       {%- if chrome.can_signup %}
                       <a class="btn btn-primary btn-small sign-up-button" href="{{ base_path }}/signup"><span class="d-button-label">{{ chrome.t("sign_up") }}</span></a>
                       {%- endif %}
                       <a class="btn btn-icon-text btn-primary btn-small login-button" href="{{ base_path }}/login"><svg class="fa d-icon d-icon-user svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true"><use href="#user"></use></svg><span class="d-button-label">{{ chrome.t("log_in") }}</span></a>
+                      {%- endif %}
                     </span>
-                    {%- endif %}
                   </span>
+                  {%- if !chrome.hide_header_icons %}
                   <ul class="icons d-header-icons">
                     {#- Header::Icons' interface-color-selector, ahead of search. -#}
                     {{- chrome.color_head.header_item|safe }}
                     {%- call search_button() %}
                     {%- if mobile && !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
                   </ul>
+                  {%- endif %}
                   {% endif %}
                   {%- if !chrome.hamburger.is_empty() %}
                   {#- The open menu, put in the panel by sidebar.js. -#}
@@ -310,6 +313,18 @@
       {{ chrome.composer|safe }}
       <script src="{{ crate::assets::url(base_path, "composer.js") }}" defer></script>
       {%- endif %}
+    </section>
+    {#- The static login form the client submits once a login or signup
+        succeeds, so the browser offers to save the password
+        (application.html.erb). -#}
+    {%- if viewer.is_none() %}
+    <form id="hidden-login-form" method="post" action="{{ base_path }}/login" style="display: none;">
+      <input name="username" type="text" id="signin_username">
+      <input name="password" type="password" id="signin_password">
+      <input name="redirect" type="hidden">
+      <input type="submit" id="signin-button" value="{{ chrome.server_t("log_in") }}">
+    </form>
+    {%- endif %}
     </section>
     {#- Pages that follow more (a topic, a list) override this; a member
         always hears their notifications and counts. -#}
