@@ -478,6 +478,20 @@ async fn a_cancelled_backup_stops() {
     config.public_dir = scratch_public("cancel");
     config.tmp_dir = scratch_public("cancel-tmp");
     let st = state(db.pool.clone(), config).await;
+    // The run clears the flag as it starts and polls it every 0.1 second, so
+    // a flag set too early is wiped and one set too late misses a fast dump.
+    // A lock on a public table holds pg_dump until the run has ended: the
+    // flag is set once pg_dump waits on it, which is after the clear, and
+    // the dump cannot finish before the flag is seen.
+    sqlx::query("CREATE TABLE public.backup_cancel_gate (id int)")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut gate = db.pool.begin().await.unwrap();
+    sqlx::query("LOCK TABLE public.backup_cancel_gate IN ACCESS EXCLUSIVE MODE")
+        .execute(&mut *gate)
+        .await
+        .unwrap();
     let run = {
         let st = st.clone();
         tokio::spawn(async move {
@@ -486,21 +500,28 @@ async fn a_cancelled_backup_stops() {
                 .unwrap()
         })
     };
-    // As soon as it runs, cancel it (the dump takes longer than this).
-    let mut conn = db.pool.acquire().await.unwrap();
-    for _ in 0..200 {
-        if backup_restore::is_operation_running(&mut conn)
-            .await
-            .unwrap()
-        {
+    loop {
+        let waiting: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM pg_locks \
+             WHERE relation = 'public.backup_cancel_gate'::regclass AND NOT granted)",
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        if waiting {
             break;
         }
+        assert!(
+            !run.is_finished(),
+            "the backup ended before pg_dump reached the lock"
+        );
         tokio::time::sleep(std::time::Duration::from_millis(10)).await;
     }
-    backup_restore::set_shutdown_signal(&mut conn)
+    backup_restore::set_shutdown_signal(&mut db.pool.acquire().await.unwrap())
         .await
         .unwrap();
     let outcome = run.await.unwrap();
+    gate.rollback().await.unwrap();
     assert!(!outcome.success);
     assert!(
         outcome
