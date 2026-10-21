@@ -439,6 +439,39 @@ pub async fn inbox_count(
     Ok(count)
 }
 
+/// BrowseMore#privateMessageBrowseMoreMessage's counts: the viewer's
+/// unread and new messages in `group`'s inbox, else their own, once the
+/// message on the page is read through `seen` (its id and the last post
+/// shown), as the read its screen tracking reports comes back over the
+/// bus to the client's state.
+pub async fn browse_more_counts(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    group: Option<&str>,
+    seen: (i32, i32),
+) -> Result<crate::post_view::PmCounts, AppError> {
+    let mut states = report(&mut *conn, settings, guardian).await?;
+    let (topic_id, highest_seen) = seen;
+    for state in states.iter_mut().filter(|s| s.topic_id == topic_id) {
+        state.last_read_post_number =
+            Some(state.last_read_post_number.unwrap_or(0).max(highest_seen));
+    }
+    let groups: Vec<(i32, String)> = viewer_groups(conn, guardian)
+        .await?
+        .into_iter()
+        .map(|(id, name, _)| (id, name))
+        .collect();
+    let inbox = || match group {
+        Some(name) => Inbox::Group(name),
+        None => Inbox::User,
+    };
+    Ok(crate::post_view::PmCounts {
+        unread: lookup_count(&states, &groups, Kind::Unread, inbox()),
+        new: lookup_count(&states, &groups, Kind::New, inbox()),
+    })
+}
+
 /// pmTopicTrackingState#lookupCount over the report, the viewer's visible
 /// groups (`currentUser.visibleGroups`, id and name) given.
 pub fn lookup_count(states: &[State], groups: &[(i32, String)], kind: Kind, inbox: Inbox) -> i64 {

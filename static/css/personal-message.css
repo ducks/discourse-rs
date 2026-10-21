@@ -1,0 +1,228 @@
+/*
+ * A message's topic page, ported from base/personal-message.scss: the
+ * posts, small actions, notices, topic map and its participants, and the
+ * footer buttons under the body's archetype-private_message class. Each
+ * rule is the compiled rule of the source line it names; the phone's
+ * (width < 40rem) rules are in mobile.css, and the topic map's are in
+ * topic.css after components/topic-map.scss, which Rails compiles before
+ * the base stylesheets.
+ */
+/* common/base/personal-message.scss */
+
+/* personal-message.scss:3 */
+.archetype-private_message {
+  --pm-padding: var(--space-5);
+  --pm-content-width: calc(
+    var(--topic-body-width) + var(--topic-body-width-padding) * 2 +
+      var(--pm-padding)
+  );
+}
+/* personal-message.scss:10 */
+.archetype-private_message .topic-post {
+  margin-bottom: var(--space-4);
+}
+/* personal-message.scss:19 */
+.archetype-private_message .topic-post:last-child {
+  margin-bottom: var(--space-6);
+}
+/* personal-message.scss:24 */
+.archetype-private_message .small-action {
+  margin-bottom: var(--space-4);
+}
+/* personal-message.scss:32 */
+.archetype-private_message .small-action .topic-avatar {
+  border-top: none;
+  padding-top: 1.1em;
+}
+/* personal-message.scss:40 */
+.archetype-private_message .small-action .topic-avatar .d-icon {
+  margin-right: -0.25em;
+  background: var(--secondary);
+}
+/* personal-message.scss:46 */
+.archetype-private_message .small-action .small-action-desc {
+  margin-left: calc(var(--pm-padding) * -1);
+  padding-left: var(--space-8);
+  border-radius: var(--d-border-radius);
+  width: var(--pm-content-width);
+}
+/* personal-message.scss:46 */
+@media (width >= 40rem) {
+  .archetype-private_message .small-action .small-action-desc {
+    border: 1px solid var(--content-border-color);
+  }
+}
+/* personal-message.scss:61 */
+.archetype-private_message .small-action .small-action-buttons {
+  margin-right: var(--space-4);
+}
+/* personal-message.scss:65 */
+.archetype-private_message .small-action.topic-post-visited {
+  max-width: var(--pm-content-width);
+}
+/* personal-message.scss:65 */
+@media (width >= 40rem) {
+  .archetype-private_message .small-action.topic-post-visited {
+    margin-left: 1.6em;
+    margin-bottom: var(--space-6);
+  }
+}
+/* personal-message.scss:75 */
+.archetype-private_message .regular.contents {
+  border-radius: var(--d-border-radius);
+  border: 1px solid var(--content-border-color);
+  padding-left: var(--pm-padding);
+  margin-left: calc(var(--pm-padding) * -1);
+}
+/* personal-message.scss:87 */
+.archetype-private_message .topic-timer-info,
+.archetype-private_message .topic-avatar,
+.archetype-private_message .topic-body {
+  border: none;
+}
+/* personal-message.scss:94 */
+.archetype-private_message .topic-avatar .avatar {
+  background: var(--secondary);
+}
+/* personal-message.scss:110 */
+.archetype-private_message .topic-body .cooked {
+  box-sizing: border-box;
+  margin-top: var(--space-1);
+  padding-right: calc(var(--topic-body-width-padding) * 2);
+}
+/* personal-message.scss:122 */
+.archetype-private_message .post-menu-area {
+  margin: var(--space-2) 0 var(--topic-body-width-padding);
+}
+/* personal-message.scss:122 */
+@media (width >= 40rem) {
+  .archetype-private_message .post-menu-area {
+    padding-right: var(--topic-body-width-padding);
+  }
+}
+/* personal-message.scss:130 */
+.archetype-private_message .who-liked {
+  box-sizing: border-box;
+  padding-right: var(--topic-body-width-padding);
+}
+/* personal-message.scss:135 */
+.archetype-private_message .post-notice {
+  box-sizing: border-box;
+  border-radius: var(--d-border-radius);
+  background-color: var(--tertiary-very-low);
+  border-color: var(--tertiary-very-low);
+  margin-bottom: var(--space-4);
+  padding: var(--pm-padding) var(--space-4);
+  width: 100%;
+  max-width: calc(
+    var(--topic-body-width) + var(--topic-body-width-padding) * 2 +
+      var(--topic-avatar-width) - 1.65em
+  );
+}
+/* personal-message.scss:135 */
+@media (width >= 40rem) {
+  .archetype-private_message .post-notice {
+    margin-left: 1.65em;
+    padding-inline: var(--space-8);
+  }
+}
+/* personal-message.scss:153 */
+.archetype-private_message .post-notice.old {
+  border: 1px solid var(--content-border-color);
+}
+/* personal-message.scss:266 */
+.archetype-private_message .map:first-of-type .buttons .btn {
+  border: none;
+  border-radius: var(--d-border-radius);
+}
+/* personal-message.scss:271 */
+.archetype-private_message .embedded-posts {
+  border: none;
+}
+/* personal-message.scss:274 */
+.archetype-private_message .embedded-posts .topic-body {
+  overflow: visible;
+  width: 100%;
+}
+/* personal-message.scss:279 */
+.archetype-private_message .embedded-posts .topic-avatar {
+  padding-left: 0;
+}
+/* personal-message.scss:283 */
+.archetype-private_message .embedded-posts .collapse-down,
+.archetype-private_message .embedded-posts .collapse-up {
+  display: none;
+}
+/* personal-message.scss:288 */
+.archetype-private_message .embedded-posts.bottom {
+  margin-bottom: 0;
+  margin-right: calc(var(--topic-body-width-padding) * 2);
+}
+/* personal-message.scss:294 */
+.archetype-private_message .embedded-posts.top .cooked {
+  border: 1px solid var(--content-border-color);
+  border-radius: var(--d-border-radius);
+  margin-left: calc(var(--pm-padding) * -1);
+  padding-left: 2.15em;
+}
+/* personal-message.scss:302 */
+.archetype-private_message .embedded-posts.top .row .topic-body,
+.archetype-private_message .embedded-posts.top .row .topic-avatar {
+  border: none;
+}
+/* personal-message.scss:310 */
+.archetype-private_message .timeline-replies {
+  display: flex;
+  align-items: baseline;
+  margin-right: 0.15em;
+}
+/* personal-message.scss:318 */
+.archetype-private_message .current-user-post .regular.contents {
+  background: var(--tertiary-very-low);
+  border-color: var(--tertiary-very-low);
+}
+/* personal-message.scss:324 */
+.archetype-private_message .current-user-post .embedded-posts .topic-body .cooked {
+  background: transparent;
+}
+/* personal-message.scss:332 */
+.archetype-private_message .moderator .topic-body.highlighted .regular.contents {
+  animation: none;
+}
+/* personal-message.scss:337 */
+.archetype-private_message .moderator .regular.contents {
+  background: var(--highlight-low);
+  border-color: var(--highlight-low);
+}
+/* personal-message.scss:341 */
+.archetype-private_message .moderator .regular.contents .cooked {
+  background: transparent;
+}
+/* personal-message.scss:348 */
+.archetype-private_message .whisper .topic-body .regular.contents {
+  background: transparent;
+  border: 2px dashed var(--primary-low);
+}
+/* personal-message.scss:353 */
+.archetype-private_message .whisper.current-user-post .topic-body .regular.contents {
+  border: 2px dashed var(--tertiary-low);
+}
+/* personal-message.scss:359 */
+.archetype-private_message .deleted .topic-body .regular.contents {
+  background: var(--danger-low);
+  border-color: transparent;
+}
+/* personal-message.scss:363 */
+.archetype-private_message .deleted .topic-body .regular.contents .cooked {
+  background: transparent;
+}
+/* personal-message.scss:369 */
+.archetype-private_message .deleted.whisper .topic-body .regular.contents {
+  border-color: var(--danger-low-mid);
+}
+/* personal-message.scss:376 */
+@media (width >= 40rem) {
+  .archetype-private_message #topic-footer-buttons {
+    padding-left: var(--space-6);
+  }
+}

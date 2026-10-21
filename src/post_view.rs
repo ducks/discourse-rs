@@ -146,8 +146,16 @@ pub struct TopicInfo {
     /// Where Mark unread goes after (deferTopic): the home page, or for a
     /// message the viewer's inbox (User#pmPath).
     pub defer_to: String,
+    /// User#pmPath: the viewer's inbox for a message (their own when the
+    /// message is to them, else that of its first group they are in);
+    /// None for a topic, an anonymous reader, or no inbox that fits.
+    pub pm_path: Option<String>,
     /// The first post's topic map, rendered (empty when it has none).
     pub op_map: String,
+    /// `last_read_post_number` and `highest_post_number` as the reader
+    /// came in, for the visited line.
+    pub last_read_post_number: Option<i64>,
+    pub highest_post_number: Option<i64>,
 }
 
 impl TopicInfo {
@@ -174,7 +182,10 @@ impl TopicInfo {
             can_delete: view["details"]["can_delete"] == true,
             can_recover: view["details"]["can_recover"] == true,
             defer_to: "/".to_string(),
+            pm_path: None,
             op_map: String::new(),
+            last_read_post_number: view["last_read_post_number"].as_i64(),
+            highest_post_number: view["highest_post_number"].as_i64(),
         }
     }
 }
@@ -332,9 +343,40 @@ fn share_url(cx: &PostContext, number: i64) -> String {
     url
 }
 
-/// topic-title: the statuses, the title with its emoji, the category
-/// badge and the tags.
-pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
+/// PrivateMessageGlyph in a message's title (not a warning's): for who
+/// can send messages linked to their inbox for it (pmPath, `inbox`), for
+/// anyone else the envelope alone.
+pub fn private_message_glyph(
+    list: &ListContext,
+    view: &Value,
+    can_send_pms: bool,
+    inbox: Option<&str>,
+) -> String {
+    if view["archetype"] != "private_message" || view["is_warning"] == true {
+        return String::new();
+    }
+    // The template's whitespace after the icon and after the glyph, which
+    // part the glyph from the title by a space.
+    let glyph = format!(
+        "<span class=\"private-message-glyph-wrapper\">{} </span>",
+        icon("envelope", Some("private-message-glyph"))
+    );
+    if !can_send_pms {
+        return format!("{glyph} ");
+    }
+    format!(
+        "<a aria-label=\"{}\"{} title=\"{}\">{glyph}</a> ",
+        escape(&t(list, "user.messages.inbox")),
+        inbox
+            .map(|href| format!(" href=\"{}\"", escape(href)))
+            .unwrap_or_default(),
+        escape(&t(list, "topic_statuses.personal_message.title")),
+    )
+}
+
+/// topic-title: the message glyph (private_message_glyph), the statuses,
+/// the title with its emoji, the category badge and the tags.
+pub fn topic_title(list: &ListContext, view: &Value, url: &str, glyph: &str) -> String {
     let category = view["category_id"]
         .as_i64()
         .and_then(|id| list.categories.get(&id));
@@ -344,7 +386,7 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
     let title = s(&view["title"]);
     let fancy = view["fancy_title"].as_str().unwrap_or(title);
     format!(
-        "<div class=\"title-wrapper\"><h1 data-topic-id=\"{}\"><span class=\"topic-statuses\">{}</span><a class=\"fancy-title\" href=\"{}\">{}</a></h1><div class=\"topic-category\">{badge}<div class=\"topic-header-extra\"><div class=\"list-tags\">{}</div></div></div></div>",
+        "<div class=\"title-wrapper\"><h1 data-topic-id=\"{}\">{glyph}<span class=\"topic-statuses\">{}</span><a class=\"fancy-title\" href=\"{}\">{}</a></h1><div class=\"topic-category\">{badge}<div class=\"topic-header-extra\"><div class=\"list-tags\">{}</div></div></div></div>",
         view["id"],
         crate::topic_list_view::topic_statuses(list, view),
         escape(url),
@@ -358,7 +400,11 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
 pub fn stream(cx: &PostContext, posts: &[Value], gaps: &Value) -> Vec<String> {
     let mut out = Vec::with_capacity(posts.len());
     let mut prev: Option<Prev> = None;
-    for p in posts {
+    let max_post_number = posts
+        .last()
+        .and_then(|p| p["post_number"].as_i64())
+        .unwrap_or(0);
+    for (index, p) in posts.iter().enumerate() {
         let id = p["id"].to_string();
         let mut html = String::new();
         if let Some(ids) = gaps["before"][&id].as_array() {
@@ -367,6 +413,24 @@ pub fn stream(cx: &PostContext, posts: &[Value], gaps: &Value) -> Vec<String> {
         html.push_str(&post(cx, p, prev));
         if let Some(ids) = gaps["after"][&id].as_array() {
             html.push_str(&gap(cx, ids));
+        }
+        // shouldShowVisitedLine: after the post the reader had read up to
+        // when they came in, but not the last one shown nor the topic's
+        // last.
+        let number = p["post_number"].as_i64();
+        if index + 1 != posts.len()
+            && cx
+                .topic
+                .highest_post_number
+                .is_some_and(|h| max_post_number <= h)
+            && number.is_some()
+            && number == cx.topic.last_read_post_number
+        {
+            html.push_str(&format!(
+                "<div class=\"small-action topic-post-visited\"><div class=\"topic-post-visited-line post-{}\"><span aria-level=\"2\" class=\"topic-post-visited-message\" role=\"heading\">{}</span></div></div>",
+                number.unwrap_or(0),
+                escape(&t(cx.list, "topics.new_messages_marker"))
+            ));
         }
         out.push(html);
         if let Some(at) = date(&p["created_at"]) {
@@ -1656,9 +1720,111 @@ pub fn topic_map(cx: &PostContext, view: &Value, modifier: &str) -> String {
     } else {
         "topic-map --bottom"
     };
+    // showPMMap: a message's participants under its summary.
+    let pm_map = if view["archetype"] == "private_message" {
+        // What topic.js's remove buttons need: the topic, and for removing
+        // oneself the question first and one's messages after.
+        let messages = cx
+            .viewer
+            .map(|v| format!("{}/u/{}/messages", cx.list.base_path, v.to_lowercase()))
+            .unwrap_or_default();
+        format!(
+            "<section class=\"topic-map__private-message-map\" data-topic-url=\"{}/t/{}\" data-messages-url=\"{}\" data-remove-self-confirm=\"{}\">{}</section>",
+            cx.list.base_path,
+            cx.topic.id,
+            escape(&messages),
+            escape(&t(cx.list, "post.controls.remove_yourself_from_pm")),
+            private_message_map(cx, view)
+        )
+    } else {
+        String::new()
+    };
     format!(
-        "<div class=\"{class}\"><section class=\"topic-map__contents\"><div class=\"{stats_class}\">{stats}</div></section></div>"
+        "<div class=\"{class}\"><section class=\"topic-map__contents\"><div class=\"{stats_class}\">{stats}</div></section>{pm_map}</div>"
     )
+}
+
+/// PrivateMessageMap (components/topic-map/private-message-map.gjs): the
+/// message's groups, then its users, each with a remove button for who
+/// may remove them (can_remove_allowed_users, or the viewer themself:
+/// can_remove_self_id), then the add participant button for who may
+/// invite (can_invite_to). static/js/topic.js runs the buttons from their
+/// data attributes.
+fn private_message_map(cx: &PostContext, view: &Value) -> String {
+    let base = cx.list.base_path;
+    let details = &view["details"];
+    let empty = Vec::new();
+    let groups = details["allowed_groups"].as_array().unwrap_or(&empty);
+    let users = details["allowed_users"].as_array().unwrap_or(&empty);
+    let can_remove_allowed_users = details["can_remove_allowed_users"] == true;
+    let can_remove_self_id = details["can_remove_self_id"].as_i64();
+    let remove = |data: String| {
+        format!(
+            "<button class=\"btn no-text btn-icon btn-transparent remove-invited btn-small\"{data} type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            icon("xmark", None)
+        )
+    };
+    // participantsClasses
+    let class = if crate::mobile::mobile_view() && groups.len() > 4 {
+        "participants hide-names"
+    } else {
+        "participants"
+    };
+    let mut out = format!("<div class=\"{class}\">");
+    for group in groups {
+        let name = s(&group["name"]);
+        out.push_str(&format!(
+            "<div class=\"user group btn-default\" data-id=\"{}\"><a class=\"group-link\" href=\"{base}/g/{}\">{}<span class=\"group-name\">{}</span></a>{}</div>",
+            group["id"],
+            escape(name),
+            icon("users", None),
+            escape(name),
+            if can_remove_allowed_users {
+                remove(format!(" data-remove-group=\"{}\"", escape(name)))
+            } else {
+                String::new()
+            }
+        ));
+    }
+    for user in users {
+        let username = s(&user["username"]);
+        let title = user["name"]
+            .as_str()
+            .filter(|n| !n.is_empty())
+            .unwrap_or(username);
+        let current_user =
+            can_remove_self_id.is_some() && user["id"].as_i64() == can_remove_self_id;
+        out.push_str(&format!(
+            "<div class=\"user btn-default\" data-id=\"{}\"><a class=\"user-link trigger-user-card\" title=\"{}\"{}>{}<span class=\"username\">{}</span></a>{}</div>",
+            user["id"],
+            escape(username),
+            user_link_attrs(cx, username, false),
+            avatar_img(
+                s(&user["avatar_template"]),
+                cx.settings.avatar_size_24,
+                &format!(" title=\"{}\"", escape(title))
+            ),
+            escape(username),
+            if can_remove_allowed_users || current_user {
+                remove(format!(
+                    " data-remove-user=\"{}\"{}",
+                    escape(username),
+                    if current_user { " data-remove-self" } else { "" }
+                ))
+            } else {
+                String::new()
+            }
+        ));
+    }
+    if details["can_invite_to"] == true {
+        // The invite modal it opens (AddPmParticipants) is not ported.
+        out.push_str(&format!(
+            "<button class=\"btn no-text btn-icon btn-default btn-small add-participant-btn\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            icon("plus", None)
+        ));
+    }
+    out.push_str("</div>");
+    out
 }
 
 /// Whether the first post shows the topic map (post.gjs
@@ -1964,8 +2130,10 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
 }
 
 /// The topic's footer buttons: an anonymous reader's Reply (to log in);
-/// a member's share, bookmark and Reply. Flag, Mark unread, the pinned
-/// and notifications buttons and the admin menu are not ported yet.
+/// a member's share, bookmark, a message's Archive (or Move to Inbox),
+/// Flag, Mark unread, Reply and the notifications button; a message draws
+/// share and bookmark without labels on desktop (TopicFooterButtons). The
+/// pinned button and the admin menu are not ported yet.
 pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     let l = cx.list;
     let reply_label = escape(&t(l, "topic.reply.title"));
@@ -1977,13 +2145,25 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         );
     };
     let url = format!("{}/t/{}/{}", l.base_path, cx.topic.slug, cx.topic.id);
-    let mut actions = format!(
-        "<button class=\"btn btn-icon-text btn-default topic-footer-button share-and-invite\" aria-label=\"{share}\" data-share-url=\"{}\" id=\"topic-footer-button-share-and-invite\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{share}</span></button>",
-        escape(&url),
-        escape(&t(l, "topic.share.help")),
-        d_icon("d-topic-share", None),
-        share = escape(&t(l, "footer_nav.share"))
-    );
+    let private_message = view["archetype"] == "private_message";
+    let mobile = crate::mobile::mobile_view();
+    // Share's label: none for a message on desktop, the icon alone.
+    let mut actions = if private_message && !mobile {
+        format!(
+            "<button class=\"btn no-text btn-icon btn-default topic-footer-button share-and-invite\" data-share-url=\"{}\" id=\"topic-footer-button-share-and-invite\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&url),
+            escape(&t(l, "topic.share.help")),
+            d_icon("d-topic-share", None),
+        )
+    } else {
+        format!(
+            "<button class=\"btn btn-icon-text btn-default topic-footer-button share-and-invite\" aria-label=\"{share}\" data-share-url=\"{}\" id=\"topic-footer-button-share-and-invite\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{share}</span></button>",
+            escape(&url),
+            escape(&t(l, "topic.share.help")),
+            d_icon("d-topic-share", None),
+            share = escape(&t(l, "footer_nav.share"))
+        )
+    };
     // The topic's own bookmark.
     let topic_bookmark = view["bookmarks"].as_array().and_then(|b| {
         b.iter()
@@ -2010,16 +2190,72 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             ),
         ),
     };
+    // showBookmarkLabel: none for a message.
+    let (classes, label) = if private_message {
+        ("btn no-text btn-icon", String::new())
+    } else {
+        (
+            "btn btn-icon-text",
+            format!("<span class=\"d-button-label\">{}</span>", escape(&label)),
+        )
+    };
+    let label_classes = if private_message {
+        "btn-icon no-text"
+    } else {
+        "btn-icon-text"
+    };
     actions.push_str(&format!(
-        "<button class=\"btn btn-icon-text fk-d-menu__trigger bookmark-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon-text btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+        "<button class=\"{classes} fk-d-menu__trigger bookmark-menu-trigger bookmark widget-button bookmark-menu__trigger {label_classes} btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\" type=\"button\">{}{label}</button>",
         escape(title.trim()),
         icon(icon_name, None),
-        escape(&label)
     ));
-    let private_message = view["archetype"] == "private_message";
     // Flag and Mark unread: inline on desktop, in the mobile view the
     // dropdown buttons (`dropdown: () => site.mobileView`).
     let mut dropdown = Vec::new();
+    // Archive (canArchive): a message, for who can send them; Move to
+    // Inbox once archived. Inline on desktop, a dropdown button in the
+    // mobile view.
+    if private_message && cx.can_send_pms {
+        let (icon_name, label, title, path) = if view["message_archived"] == true {
+            (
+                "envelope",
+                "topic.move_to_inbox.title",
+                "topic.move_to_inbox.help",
+                "move-to-inbox",
+            )
+        } else {
+            (
+                "folder",
+                "topic.archive_message.title",
+                "topic.archive_message.help",
+                "archive-message",
+            )
+        };
+        let inbox = cx
+            .viewer
+            .map(|v| format!("{}/u/{}/messages", l.base_path, v.to_lowercase()))
+            .unwrap_or_default();
+        dropdown.push(
+            footer_button(
+                cx,
+                "archive",
+                "standard archive-topic",
+                icon_name,
+                label,
+                title,
+            )
+            .replacen(
+                " type=\"button\">",
+                &format!(
+                    " data-archive-url=\"{}/t/{}/{path}\" data-inbox-url=\"{}\" type=\"button\">",
+                    l.base_path,
+                    cx.topic.id,
+                    escape(&inbox)
+                ),
+                1,
+            ),
+        );
+    }
     if view["details"]["can_flag_topic"] == true && !private_message {
         dropdown.push(footer_button(
             cx,
@@ -2050,7 +2286,6 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             1,
         ),
     );
-    let mobile = crate::mobile::mobile_view();
     // showNotificationsButton: PMs only for those who can send them.
     let show_notifications = !private_message || cx.can_send_pms;
     if !mobile {
@@ -2264,26 +2499,195 @@ fn notifications_button_with(
     )
 }
 
-/// more-topics: the suggested topics and BrowseMore's line, with the
-/// member's new and unread counts (`topic.read_more_MF`). Private
-/// messages' line (pm topic tracking) is not ported.
+/// more-topics: the tabs' lists (a message's related messages, the
+/// suggested topics) and BrowseMore's line, with the member's new and
+/// unread counts (`topic.read_more_MF`), or for a message
+/// pmTopicTrackingState's (`pm_counts`).
 pub fn more_topics(
     cx: &PostContext,
     view: &Value,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
+    pm_counts: Option<PmCounts>,
 ) -> Result<String, crate::message_format::ParseError> {
     let l = cx.list;
-    let suggested = view["suggested_topics"]
-        .as_array()
-        .cloned()
-        .unwrap_or_default();
-    if suggested.is_empty() {
+    let private_message = view["archetype"] == "private_message";
+    let topics = |key: &str| view[key].as_array().cloned().unwrap_or_default();
+    let suggested = topics("suggested_topics");
+    // The more topics tabs (instance-initializers/more-topics-tabs): a
+    // message's related messages first, then the suggested topics, each
+    // when it has some.
+    let mut tabs: Vec<(&str, String)> = Vec::new();
+    let related = if private_message {
+        topics("related_messages")
+    } else {
+        Vec::new()
+    };
+    if !related.is_empty() {
+        tabs.push(("related-messages", t(l, "related_messages.pill")));
+    }
+    if !suggested.is_empty() {
+        tabs.push(("suggested-topics", t(l, "suggested_topics.pill")));
+    }
+    if tabs.is_empty() {
         return Ok("<div class=\"more-topics__container\"></div>".to_string());
     }
-    let rows: String = suggested
+    // A list's table: TopicCell's tabs in place of the topic column's
+    // heading when there are several, `active` its own.
+    let table = |id: &str, rows: String| {
+        let th = |class: &str, label: &str| {
+            format!(
+                "<th class=\"topic-list-data {class}\" data-sort-order=\"{}\" scope=\"col\"><span>{label}</span></th>",
+                class.split(' ').next().unwrap_or("")
+            )
+        };
+        let first = if tabs.len() > 1 {
+            let pills: String = tabs
+                .iter()
+                .map(|(tab, name)| {
+                    let active = *tab == id;
+                    format!(
+                        "<li><button class=\"btn btn-text topic-list-header-tab{}\" tabindex=\"{}\" data-tab-id=\"{tab}\" title=\"{name}\" type=\"button\"><span class=\"d-button-label\">{name}</span></button></li>",
+                        if active { " active" } else { "" },
+                        if active { "-1" } else { "0" },
+                        name = escape(name)
+                    )
+                })
+                .collect();
+            format!(
+                "<th class=\"topic-list-data default\" scope=\"col\"><ul class=\"nav nav-pills\">{pills}</ul></th>"
+            )
+        } else {
+            th("default", &escape(&t(l, "topic.title")))
+        };
+        // A message's lists show the posters.
+        let posters = if private_message {
+            let label = escape(&t(l, "posters"));
+            format!(
+                "<th class=\"topic-list-data posters\" data-sort-order=\"posters\" scope=\"col\" aria-label=\"{label}\"><span class=\"sr-only\">{label}</span></th>"
+            )
+        } else {
+            String::new()
+        };
+        format!(
+            "<table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header --has-tabs\"><tr>{first}{posters}{}{}{}</tr></thead><tbody class=\"topic-list-body\">{rows}</tbody></table>",
+            escape(&t(l, "sr_topic_list_caption")),
+            th("posts num", &escape(&t(l, "replies"))),
+            th("views num", &escape(&t(l, "views"))),
+            th("activity num", &escape(&t(l, "activity"))),
+        )
+    };
+    let row = |topic: &Value| {
+        if private_message {
+            crate::topic_list_view::suggested_message_row(l, topic)
+        } else {
+            crate::topic_list_view::suggested_row(l, topic)
+        }
+    };
+    let lists: Vec<String> = tabs
         .iter()
-        .map(|topic| crate::topic_list_view::suggested_row(l, topic))
+        .map(|(id, _)| {
+            if *id == "related-messages" {
+                // RelatedMessages, and its link to search them all for a
+                // conversation with one other member (targetUser).
+                let rows: String = related.iter().map(row).collect();
+                let details = &view["details"];
+                let users = details["allowed_users"].as_array();
+                let target = users
+                    .filter(|users| {
+                        related.len() >= 5
+                            && details["allowed_groups"]
+                                .as_array()
+                                .is_none_or(|g| g.is_empty())
+                            && users.len() == 2
+                            && users.iter().any(|u| u["username"].as_str() == cx.viewer)
+                    })
+                    .and_then(|users| {
+                        users
+                            .iter()
+                            .find(|u| u["username"].as_str() != cx.viewer)
+                    })
+                    .and_then(|u| u["username"].as_str());
+                let see_all = target
+                    .map(|username| {
+                        let path = format!(
+                            "{}/search?expanded=true&q=%40{username}%20in%3Apersonal-direct",
+                            l.base_path
+                        );
+                        format!(
+                            "<h3 class=\"see-all-pms-message\">{}</h3>",
+                            t_with(
+                                l,
+                                "related_messages.see_all",
+                                &[("path", &escape(&path)), ("username", username)]
+                            )
+                        )
+                    })
+                    .unwrap_or_default();
+                format!(
+                    "<div aria-labelledby=\"related-messages-title\" class=\"more-topics__list\" id=\"related-messages\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"related-messages-title\">{}</h3><div class=\"topics\">{}</div>{see_all}</div>",
+                    escape(&t(l, "related_messages.title")),
+                    table(id, rows)
+                )
+            } else {
+                // SuggestedTopics#suggestedTitle: Suggested Messages when
+                // the message has an inbox for the viewer (pmPath).
+                let title = if private_message && cx.topic.pm_path.is_some() {
+                    t(l, "suggested_topics.pm_title")
+                } else {
+                    t(l, "suggested_topics.title")
+                };
+                let rows: String = suggested.iter().map(row).collect();
+                format!(
+                    "<div aria-labelledby=\"suggested-topics-title\" class=\"more-topics__list\" id=\"suggested-topics\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"suggested-topics-title\">{}</h3><div class=\"topics\">{}</div></div>",
+                    escape(&title),
+                    table(id, rows)
+                )
+            }
+        })
         .collect();
+    // The first tab's list shows (selectedTab); topic.js swaps in another
+    // from its template, as the viewer picks it or picked it before
+    // (more-topics-preference-pm).
+    let mut shown = String::new();
+    for (i, list) in lists.iter().enumerate() {
+        if i == 0 {
+            shown.push_str(list);
+        } else {
+            shown.push_str(&format!(
+                "<template class=\"more-topics__tab\" data-tab-id=\"{}\">{list}</template>",
+                tabs[i].0
+            ));
+        }
+    }
+    let lists_class = if tabs.len() == 1 {
+        "more-topics__lists single-list"
+    } else {
+        "more-topics__lists"
+    };
+    let browse_more = if suggested.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "<h3 class=\"more-topics__browse-more\">{}</h3>",
+            browse_more(cx, view, tracking, pm_counts)?
+        )
+    };
+    Ok(format!(
+        "<div class=\"more-topics__container\"><div class=\"{lists_class}\">{shown}</div>{browse_more}</div>"
+    ))
+}
+
+/// BrowseMore: what is left to read, or where to browse more.
+fn browse_more(
+    cx: &PostContext,
+    view: &Value,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    pm_counts: Option<PmCounts>,
+) -> Result<String, crate::message_format::ParseError> {
+    let l = cx.list;
+    if view["archetype"] == "private_message" {
+        return private_message_browse_more(cx, view, pm_counts.unwrap_or_default());
+    }
     let base = l.base_path;
     let category = view["category_id"]
         .as_i64()
@@ -2291,7 +2695,6 @@ pub fn more_topics(
         .and_then(|id| l.categories.get(&id));
     use crate::topic_tracking_report::Kind;
     let (unread, new) = tracking
-        .filter(|_| view["archetype"] != "private_message")
         .map(|t| {
             (
                 t.count(Kind::Unread, None, None),
@@ -2301,7 +2704,7 @@ pub fn more_topics(
         .unwrap_or((0, 0));
     let unified_new = tracking.is_some_and(|t| t.unified_new);
     let category_link = category.map(|c| crate::topic_list_view::category_badge(l, c));
-    let browse_more = if unread + new > 0 {
+    Ok(if unread + new > 0 {
         use crate::message_format::{Arg, format};
         let message = l.i18n.t("js.topic.read_more_MF").unwrap_or_default();
         let (unread_url, new_url) = if unified_new {
@@ -2350,22 +2753,73 @@ pub fn more_topics(
                 ],
             ),
         }
-    };
-    let th = |class: &str, label: &str| {
+    })
+}
+
+/// pmTopicTrackingState's new and unread counts for the inbox a message's
+/// browse more line reads (its suggested_group_name's, else the viewer's
+/// own).
+#[derive(Clone, Copy, Default)]
+pub struct PmCounts {
+    pub unread: i64,
+    pub new: i64,
+}
+
+/// BrowseMore#privateMessageBrowseMoreMessage: the new and unread
+/// messages left in the inbox, or a link to browse it.
+fn private_message_browse_more(
+    cx: &PostContext,
+    view: &Value,
+    counts: PmCounts,
+) -> Result<String, crate::message_format::ParseError> {
+    use crate::message_format::{Arg, format};
+    let l = cx.list;
+    let base = l.base_path;
+    let username = cx.viewer.unwrap_or_default();
+    let group = view["suggested_group_name"]
+        .as_str()
+        .filter(|g| !g.is_empty());
+    // BrowseMore#groupLink
+    let group_link = |name: &str| {
         format!(
-            "<th class=\"topic-list-data {class}\" data-sort-order=\"{}\" scope=\"col\"><span>{label}</span></th>",
-            class.split(' ').next().unwrap_or("")
+            "<a class=\"group-link\" href=\"{base}/u/{username}/messages/group/{name}\">{} {name}</a>",
+            icon("users", None)
         )
     };
-    Ok(format!(
-        "<div class=\"more-topics__container\"><div class=\"more-topics__lists single-list\"><div aria-labelledby=\"suggested-topics-title\" class=\"more-topics__list\" id=\"suggested-topics\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"suggested-topics-title\">{}</h3><div class=\"topics\"><table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header --has-tabs\"><tr>{}{}{}{}</tr></thead><tbody class=\"topic-list-body\">{rows}</tbody></table></div></div></div><h3 class=\"more-topics__browse-more\">{browse_more}</h3></div>",
-        escape(&t(l, "suggested_topics.title")),
-        escape(&t(l, "sr_topic_list_caption")),
-        th("default", &escape(&t(l, "topic.title"))),
-        th("posts num", &escape(&t(l, "replies"))),
-        th("views num", &escape(&t(l, "views"))),
-        th("activity num", &escape(&t(l, "activity"))),
-    ))
+    if counts.unread + counts.new > 0 {
+        let has_both = counts.unread > 0 && counts.new > 0;
+        let link = group.map(group_link).unwrap_or_default();
+        let key = if group.is_some() {
+            "js.user.messages.read_more_group_pm_MF"
+        } else {
+            "js.user.messages.read_more_personal_pm_MF"
+        };
+        let message = l.i18n.t(key).unwrap_or_default();
+        format(
+            message,
+            &[
+                ("HAS_UNREAD_AND_NEW", Arg::Bool(has_both)),
+                ("UNREAD", Arg::Num(counts.unread)),
+                ("NEW", Arg::Num(counts.new)),
+                ("username", Arg::Str(username)),
+                ("groupName", Arg::Str(group.unwrap_or_default())),
+                ("groupLink", Arg::Str(&link)),
+                ("basePath", Arg::Str(base)),
+            ],
+        )
+    } else if let Some(group) = group {
+        Ok(t_with(
+            l,
+            "user.messages.read_more_in_group",
+            &[("groupLink", &group_link(group))],
+        ))
+    } else {
+        Ok(t_with(
+            l,
+            "user.messages.read_more",
+            &[("basePath", base), ("username", username)],
+        ))
+    }
 }
 
 #[cfg(test)]
@@ -2469,7 +2923,10 @@ mod tests {
             can_delete: false,
             can_recover: false,
             defer_to: "/".to_string(),
+            pm_path: None,
             op_map: String::new(),
+            last_read_post_number: None,
+            highest_post_number: None,
         };
         let cx = PostContext {
             list: &list,
@@ -2658,7 +3115,10 @@ mod tests {
             can_delete: false,
             can_recover: false,
             defer_to: "/".to_string(),
+            pm_path: None,
             op_map: String::new(),
+            last_read_post_number: None,
+            highest_post_number: None,
         };
         let cx = PostContext {
             list: &list,

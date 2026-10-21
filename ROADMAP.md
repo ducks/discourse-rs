@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a. Phases
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3018,6 +3018,45 @@ route table has been made, so this list may be short.
     `.custom-footer-content`) rather than crawler.html.erb's places;
     another theme's fields (the member's theme_ids, preview, safe mode)
     are 258a's
+
+261. ~~`fix/pm-topic-view`~~ (done) M: a message's topic page drew as a
+    regular topic. topic.gjs's body classes (AddCategoryTagClasses'
+    category and tags, AddTopicStatusClasses', `archetype-<archetype>`)
+    and DiscourseTopic's archetype class now come with every topic, and a
+    message draws its own chrome: PrivateMessageGlyph in the title (to the
+    viewer's inbox for it, User#pmPath, for who can send messages; none on
+    a warning, so the topic view JSON now has is_warning), the topic map's
+    PrivateMessageMap (its groups and users, the remove buttons for who
+    may remove them or themself, the add participant button for who may
+    invite), the footer's share and bookmark without labels on desktop and
+    Archive or Move to Inbox (PUT archive-message and move-to-inbox, then
+    the inbox, static/js/topic.js), the more topics tabs (Related
+    Messages and Suggested Messages with their posters, the pick kept in
+    localStorage as Ember's keyValueStore keeps it) and BrowseMore's line
+    from pmTopicTrackingState's counts (pm_tracking_state.rs
+    browse_more_counts). Removing a participant asks first for oneself
+    (dialog.js) and goes to one's messages after. Stylesheets:
+    base/personal-message.scss (personal-message.css, its topic map rules
+    after components/topic-map.scss in topic.css as Rails compiles them),
+    the glyph's, more-topics.scss's tabs and topic-post.scss's visited
+    line. Along the way: details.allowed_users comes in the order Rails'
+    join returns (the rows as added, not by user id), the post stream
+    draws the visited line (shouldShowVisitedLine) after the post the
+    reader had read up to, and the timeline asks displayTimeLineScrollArea
+    and checks its dock on topic:current-post-scrolled only, as Ember's
+    container does, and starts its scroller at the entered post
+    (calculatePosition), so a short one-post message keeps its scroll
+    area as Ember's does. Found by the screenshot run (/t/90 as admin and
+    as user1, parity/screens/pages). Left, split into 261a.
+    261a. `feat/pm-topic-view-rest` S: the add participant button draws
+    but its AddPmParticipants modal (InvitePanel with the email, group
+    and user chooser, POST /t/:id/invite) is not ported
+    (post_view.rs:1820); the browse more line is drawn once with the
+    page's own message read through the posts shown, not kept live from
+    the pmTopicTrackingState bus messages; the title's edit pencil and
+    title editing (TopicTitleEditor, the edit-title glyph's styles), the
+    header's topic title once scrolled past (with its glyph) and the
+    admin menu's wrench (194) are not drawn for any topic
 
 ### Phase 11: the bundled plugins' gaps (210)
 

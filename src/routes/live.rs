@@ -556,6 +556,8 @@ async fn render_title(live: &Live) -> Result<String, AppError> {
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
     let voter = guardian.user().map(|u| (u.id, u.trust_level));
+    let can_send_pms = guardian.can_send_private_messages(settings)?;
+    let member = guardian.user().map(|u| (u.username.as_str(), can_send_pms));
     let title = crate::html::topic_title_html(
         &mut conn,
         &state.i18n,
@@ -563,6 +565,7 @@ async fn render_title(live: &Live) -> Result<String, AppError> {
         &list,
         json,
         &topic_url,
+        member,
         voter,
     )
     .await?;
@@ -701,7 +704,10 @@ async fn render_post(
                 .await?
         },
         defer_to: String::new(),
+        pm_path: None,
         op_map: String::new(),
+        last_read_post_number: None,
+        highest_post_number: None,
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;

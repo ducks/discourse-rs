@@ -74,6 +74,7 @@
 /u/user1/messages as=admin
 /u/admin/messages/group/moderators as=admin
 /t/a-group-message-the-moderators-received/90 as=admin wait=4000
+/t/a-group-message-the-moderators-received/90 as=user1 wait=4000
 /latest as=user1
 /chat/c/-/3 as=user1 wait=3000 mask=.chat-time
 /chat/c/-/4 as=user2 wait=3000 mask=.chat-time
