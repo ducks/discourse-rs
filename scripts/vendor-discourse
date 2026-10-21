@@ -12,7 +12,6 @@ set -euo pipefail
 FILES=(
   db/structure.sql
   config/site_settings.yml
-  app/assets/stylesheets/common/foundation/colors.scss
   config/locales/server.en.yml
   config/locales/client.en.yml
   lib/common_passwords/10-char-common-passwords.txt
@@ -82,6 +81,37 @@ for f in "${FILES[@]}"; do
   mkdir -p "$dest/$(dirname "$f")"
   git -C "$src" show "$commit:$f" > "$dest/$f"
 done
+
+# The core stylesheets, Stylesheet::Compiler's ASSET_ROOT: theme SCSS is
+# compiled against them (Discourse's variables, mixins and functions, and
+# whatever else a theme imports), and the color definitions come from them.
+rm -rf "$dest/app/assets/stylesheets"
+stylesheets=0
+while read -r f; do
+  mkdir -p "$dest/$(dirname "$f")"
+  git -C "$src" show "$commit:$f" > "$dest/$f"
+  stylesheets=$((stylesheets + 1))
+done < <(git -C "$src" ls-tree -r --name-only "$commit" app/assets/stylesheets)
+echo "vendored $stylesheets core stylesheets"
+
+# The bundled plugins' color definitions (`register_asset "...",
+# :color_definitions`), which Stylesheet::Importer appends to every color
+# definitions stylesheet, listed in the order Rails loads the plugins (by
+# directory name) in config/plugin_color_definitions.
+color_list="$dest/config/plugin_color_definitions"
+: > "$color_list"
+while read -r plugin_rb; do
+  name="$(echo "$plugin_rb" | cut -d/ -f2)"
+  while read -r asset; do
+    f="plugins/$name/assets/$asset"
+    mkdir -p "$dest/$(dirname "$f")"
+    git -C "$src" show "$commit:$f" > "$dest/$f"
+    echo "$name $f" >> "$color_list"
+  done < <(git -C "$src" show "$commit:$plugin_rb" \
+    | sed -n 's/^ *register_asset "\([^"]*\)", :color_definitions.*/\1/p')
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/plugin\.rb$' | LC_ALL=C sort)
+echo "vendored $(wc -l < "$color_list") plugin color definitions"
 
 # The bundled plugins' settings, one YAML document per plugin in the order
 # Rails loads them (by directory name): the plugin, the setting its

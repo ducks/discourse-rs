@@ -1,0 +1,607 @@
+@use "sass:math";
+@use "lib/viewport";
+
+.fk-d-menu[data-identifier="usercard"],
+.fk-d-menu[data-identifier="category-card"] {
+  max-width: calc(100vw - 2em);
+  width: auto;
+
+  .fk-d-menu__inner-content {
+    min-width: 0;
+    overflow: visible;
+  }
+
+  @include viewport.until(sm) {
+    &[data-content] {
+      z-index: z("max");
+    }
+  }
+}
+
+.animated-placeholder {
+  height: 20px;
+  position: relative;
+}
+
+.card-avatar-placeholder {
+  width: var(--avatar-width);
+  height: var(--avatar-width);
+  border-radius: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    position: absolute;
+    left: 0;
+    content: "";
+    background: linear-gradient(
+      to right,
+      var(--primary-very-low) 10%,
+      var(--primary-low) 18%,
+      var(--primary-very-low) 33%
+    );
+    height: var(--avatar-width);
+    width: var(--card-width);
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: placeHolderShimmer 4s linear infinite forwards;
+    }
+  }
+}
+
+// shared styles for user, group, and category cards
+.user-card,
+.group-card,
+.category-card {
+  --card-width: 39em;
+  --avatar-width: 8em;
+  --avatar-margin: -3.3em; // extends the avatar above the card
+  min-width: 0;
+  width: var(--card-width);
+  color: var(--primary);
+  background: var(--secondary) center center;
+  background-size: cover;
+  position: unset !important;
+  margin: 0 !important;
+  border-radius: var(--d-border-radius) !important;
+  box-shadow: unset !important;
+  z-index: unset !important;
+
+  @include viewport.until(sm) {
+    box-sizing: border-box;
+    max-width: 95vw;
+    max-height: 85vh; // 2.5vh margin-top and margin-bottom. 10vh top
+  }
+
+  .card-content {
+    padding: 10px;
+    background: rgb(var(--secondary-rgb), 0.85);
+    border-radius: var(--d-border-radius);
+
+    &::after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+
+    a.card-huge-avatar {
+      border-radius: 50%;
+      display: block;
+    }
+
+    .bio {
+      @include line-clamp(2);
+    }
+  }
+
+  .card-row:not(.first-row) {
+    margin-top: 0.5em;
+  }
+
+  // avatar - names - controls
+  .first-row {
+    display: flex;
+
+    @include viewport.until(sm) {
+      flex-wrap: wrap;
+    }
+
+    .names {
+      padding-left: 1.25em;
+      flex: 1 1 auto;
+
+      @include viewport.until(sm) {
+        box-sizing: border-box;
+        flex: 1 1 0;
+      }
+
+      .user-profile-link {
+        display: flex;
+        align-items: center;
+        outline: none;
+
+        &:focus-visible {
+          border: 1px solid;
+
+          @include default-focus;
+        }
+      }
+
+      .d-icon {
+        margin: 0 0.25em;
+      }
+
+      .name-username-wrapper {
+        margin-right: 0;
+        flex: 0 1 auto;
+
+        @include ellipsis;
+      }
+
+      span {
+        display: block;
+      }
+    }
+
+    .usercard-controls {
+      list-style-type: none;
+      margin: 0;
+
+      @include viewport.until(sm) {
+        width: 100%; // always wraps to next line
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 1em;
+        gap: 0.5em;
+
+        li {
+          flex: 1 0 45%;
+          min-width: 8em;
+
+          &:empty {
+            display: none;
+          }
+
+          button {
+            margin: 0;
+
+            .d-button-label {
+              @include ellipsis;
+            }
+          }
+        }
+      }
+
+      @include viewport.from(sm) {
+        max-width: 225px;
+      }
+
+      button {
+        width: 100%;
+
+        @include viewport.from(sm) {
+          min-width: 150px;
+        }
+      }
+    }
+  }
+
+  .btn {
+    margin-bottom: 5px;
+  }
+
+  .names__primary {
+    @include ellipsis;
+    line-height: var(--line-height-medium);
+    font-size: var(--font-up-3);
+    font-weight: bold;
+
+    @include viewport.from(sm) {
+      font-size: var(--font-up-5);
+    }
+
+    .d-icon {
+      color: var(--primary);
+      font-size: var(--font-down-1);
+
+      @include viewport.until(sm) {
+        font-size: var(--font-down-2);
+      }
+    }
+  }
+
+  .names__secondary {
+    font-size: var(--font-up-1);
+
+    @include viewport.until(sm) {
+      font-size: var(--font-0);
+    }
+  }
+
+  .metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15em 0.5em;
+    color: var(--primary);
+
+    &.email,
+    .desc {
+      color: var(--primary-high);
+    }
+  }
+
+  .names__secondary,
+  [class*="metadata__"] {
+    margin: 0;
+
+    @include ellipsis;
+  }
+
+  .names__primary,
+  .names__secondary {
+    a {
+      color: var(--primary);
+    }
+  }
+
+  p {
+    margin: 0 0 5px 0;
+  }
+}
+
+// styles for user cards only
+.user-card {
+  &:focus-visible {
+    // we move focus to the card, but the outline isn't necessary until keyboard nav starts within
+    outline: none;
+  }
+
+  // avatar - names - controls
+  .first-row {
+    .avatar-placeholder {
+      width: var(--avatar-width);
+      height: var(--avatar-width);
+    }
+
+    .user-card-avatar {
+      margin-top: var(--avatar-margin);
+      max-height: var(--avatar-width);
+      position: relative;
+
+      @include viewport.until(sm) {
+        flex: 0 0 auto;
+      }
+
+      .own-avatar-pencil {
+        opacity: 0;
+        position: absolute;
+        width: 80%;
+        height: 85%;
+        right: 0%;
+        bottom: 0%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.2s;
+        z-index: 1;
+
+        &--icon {
+          position: absolute;
+          bottom: -4px;
+          right: -6px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: rgb(var(--secondary-rgb), 1);
+          border-radius: 50%;
+          padding: 0.75rem;
+          font-size: 1.25rem;
+          color: var(--primary);
+          box-shadow: var(--shadow-dropdown);
+          box-sizing: border-box;
+        }
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    .avatar {
+      width: var(--avatar-width);
+      height: var(--avatar-width);
+    }
+
+    .new-user a {
+      color: var(--primary-low-mid);
+    }
+  }
+
+  // user bio - suspension reason
+  .second-row {
+    max-height: 150px;
+    overflow: auto;
+
+    .bio {
+      a:not(.mention) {
+        color: var(--tertiary);
+      }
+
+      .overflow {
+        max-height: 60px;
+        overflow: hidden;
+      }
+    }
+
+    .suspended {
+      color: var(--danger);
+
+      .suspension-reason-title,
+      .suspension-date {
+        font-weight: bold;
+      }
+    }
+
+    .silenced {
+      color: var(--danger);
+
+      .silence-reason-title,
+      .silence-date {
+        font-weight: bold;
+      }
+    }
+
+    .profile-hidden,
+    .inactive-user {
+      font-size: var(--font-up-1);
+      margin-top: 0.5em;
+    }
+  }
+
+  .featured-topic {
+    text-align: left;
+
+    .desc {
+      color: var(--primary-high);
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+  }
+
+  // location and website
+  .location-and-website {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    align-items: center;
+
+    .location,
+    .website-name {
+      display: flex;
+      overflow: hidden;
+      align-items: center;
+
+      .d-icon {
+        margin-right: 0.25em;
+      }
+    }
+
+    .website-name a,
+    .location span {
+      @include ellipsis;
+      color: var(--primary);
+    }
+
+    .location,
+    .local-time,
+    .website-name {
+      margin-right: 0.5em;
+    }
+
+    .website-name a {
+      text-decoration: underline;
+    }
+  }
+
+  // custom user fields
+  .public-user-fields {
+    margin: 0;
+    text-align: left;
+
+    @include viewport.until(sm) {
+      max-height: 40vh;
+      overflow-y: auto;
+
+      .public-user-field {
+        @include line-clamp(3);
+      }
+    }
+
+    @media screen and (height <= 550px) {
+      max-height: 12vh;
+    }
+
+    .user-field-value-list-item:not(:last-of-type) {
+      &::after {
+        // create comma separated list
+        content: ",";
+      }
+    }
+  }
+
+  // badges
+  .badge-section {
+    line-height: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+
+    @include viewport.until(sm) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .user-badge {
+      @include ellipsis;
+      background: var(--primary-very-low);
+      border: 1px solid var(--content-border-color);
+      color: var(--primary);
+      border-radius: var(--d-border-radius);
+
+      @include viewport.until(sm) {
+        display: flex;
+        margin: 0;
+        width: 100%;
+
+        .badge-display-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      @include viewport.from(sm) {
+        display: block;
+        max-width: 185px;
+      }
+    }
+
+    .user-card-badge-link {
+      overflow: hidden;
+    }
+
+    .user-card-badge-link,
+    .more-user-badges {
+      vertical-align: top;
+      display: inline-block;
+
+      @include viewport.until(sm) {
+        display: flex;
+        box-sizing: border-box;
+
+        a {
+          width: 100%;
+          display: flex;
+        }
+      }
+    }
+
+    .more-user-badges {
+      @include viewport.from(sm) {
+        max-width: 125px;
+      }
+
+      a {
+        @extend .user-badge;
+      }
+    }
+  }
+
+  .user-status {
+    display: flex;
+    align-items: center;
+
+    @include viewport.until(sm) {
+      font-size: var(--font-down-1);
+    }
+
+    img.emoji {
+      margin-right: 0.3em;
+    }
+
+    .relative-date {
+      flex: 1 0 auto;
+      text-align: left;
+      font-size: var(--font-down-3);
+      padding-top: 0.5em;
+      margin-left: 0.6em;
+      color: var(--primary-medium);
+    }
+
+    &__description {
+      @include ellipsis;
+    }
+  }
+}
+
+// styles for group cards only
+.group-card {
+  // avatar - names and controls
+  .first-row {
+    .group-card-avatar {
+      margin-top: var(--avatar-margin);
+    }
+
+    .avatar-flair {
+      display: flex;
+      background-size: contain;
+      background-repeat: no-repeat;
+      width: var(--avatar-width);
+      height: var(--avatar-width);
+      color: var(--primary);
+
+      .d-icon {
+        margin: auto;
+        font-size: calc(var(--avatar-width) / 1.5);
+      }
+
+      &.rounded {
+        border-radius: 50%;
+      }
+    }
+  }
+
+  // group bio
+  .second-row {
+    max-height: 150px;
+    overflow: auto;
+
+    .bio {
+      a:not(.mention) {
+        color: var(--tertiary);
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .overflow {
+        max-height: 60px;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+@include viewport.until(sm) {
+  .card-cloak {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: z("mobile-composer") + 1; // 1101
+    height: 100vh;
+    width: 100vw;
+    background-color: #000;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.3s,
+      visibility 0s 0.3s;
+
+    &.--visible {
+      pointer-events: all;
+      opacity: 0.6;
+      visibility: visible;
+      transition:
+        opacity 0.3s,
+        visibility 0s;
+    }
+
+    @media (prefers-reduced-motion) {
+      transition-duration: 0s;
+    }
+  }
+}

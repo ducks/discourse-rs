@@ -1,0 +1,2313 @@
+@use "lib/viewport";
+
+#main-outlet > .regular {
+  background: var(--d-content-background);
+}
+
+.button-count.has-pending {
+  span {
+    background-color: var(--danger);
+    color: var(--secondary);
+    display: inline-block;
+    font-size: var(--font-down-2-rem);
+    border-radius: 1em;
+    height: 1rem;
+    width: 1rem;
+    line-height: 1rem;
+  }
+}
+
+.placeholder-avatar {
+  display: inline-block;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    position: absolute;
+    left: 0;
+    content: "";
+    background: linear-gradient(
+      to right,
+      var(--primary-very-low) 10%,
+      var(--primary-low) 28%,
+      var(--primary-very-low) 43%
+    );
+    height: 45px;
+    width: 700px;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: placeHolderShimmer 4s linear infinite forwards;
+    }
+  }
+}
+
+.placeholder-text {
+  margin-left: var(--topic-body-width-padding);
+  display: inline-block;
+  width: calc(100% - var(--topic-body-width-padding));
+  height: 1.5em;
+  margin-bottom: 0.6em;
+}
+
+.post-stream .placeholder .row {
+  display: flex;
+}
+
+@include viewport.until(sm) {
+  .placeholder .topic-body {
+    width: 100%;
+  }
+}
+
+.names {
+  flex: 1 1 auto;
+  overflow: hidden;
+
+  span.first {
+    display: flex;
+    align-items: baseline;
+    font-weight: bold;
+
+    &.new-user:not(.staff) a {
+      color: var(--primary-low-mid);
+    }
+  }
+
+  > span {
+    font-size: var(--font-0);
+    margin-right: 0.33em;
+    display: inline-block;
+
+    @include ellipsis;
+    vertical-align: middle;
+
+    a {
+      color: var(--primary-high-or-secondary-low);
+      outline-offset: -1px;
+    }
+  }
+
+  .fa {
+    font-size: var(--font-down-1);
+    color: var(--primary-med-or-secondary-med);
+  }
+
+  .svg-icon-title {
+    margin-left: 3px;
+    margin-right: 0;
+  }
+
+  .new_user a,
+  .user-title,
+  .user-title a {
+    color: var(--primary-medium);
+  }
+}
+
+// global styles for the cooked HTML content in posts (and preview)
+.cooked,
+.d-editor-preview {
+  overflow-wrap: break-word;
+  line-height: var(--cooked-line-height);
+
+  video {
+    max-width: 100%;
+
+    @include viewport.from(sm) {
+      max-height: 500px;
+    }
+  }
+
+  img:not(.thumbnail, .ytp-thumbnail-image, .emoji) {
+    max-width: 100%;
+    height: auto;
+    display: inline-block; // Ensure dimensions are maintained even after load error
+  }
+
+  svg {
+    max-height: 2000px;
+  }
+
+  > *:first-child {
+    margin-top: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 2rem 0 0.67rem;
+    line-height: var(--line-height-medium);
+
+    @extend %heading-anchor;
+  }
+
+  h1 {
+    font-size: var(--font-up-3-rem);
+  }
+
+  h2 {
+    font-size: var(--font-up-2-rem);
+  }
+
+  h3 {
+    font-size: var(--font-up-1-rem);
+  }
+
+  h4 {
+    font-size: var(--font-0-rem);
+  }
+
+  h5 {
+    font-size: var(--font-down-1-rem);
+  }
+
+  h6 {
+    font-size: var(--font-down-2-rem);
+  }
+
+  a {
+    overflow-wrap: break-word;
+  }
+
+  mark {
+    text-decoration: none;
+    background-color: var(--highlight);
+  }
+
+  ins {
+    background-color: var(--success-low);
+    text-decoration: underline;
+  }
+
+  del {
+    background-color: var(--danger-low);
+    text-decoration: line-through;
+  }
+
+  // Prevents users from breaking posts with tag nesting
+  big {
+    font-size: 1.5rem;
+  }
+
+  small {
+    font-size: 0.75rem;
+  }
+
+  small small {
+    font-size: 0.75em;
+  }
+
+  big big {
+    font-size: 1em;
+  }
+
+  sup sup,
+  sub sup,
+  sup sub,
+  sub sub {
+    top: 0;
+  }
+
+  sub sub sub {
+    bottom: 0;
+  }
+}
+
+.cooked-selection-barrier {
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  opacity: 0;
+}
+
+// add staff color
+.moderator {
+  .regular > .cooked {
+    background-color: var(--highlight-bg);
+  }
+
+  .clearfix > .topic-meta-data > .names {
+    span.user-title {
+      color: var(--primary-high-or-secondary-low);
+
+      a {
+        background-color: var(--highlight-bg);
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+    }
+  }
+}
+
+.topic-meta-data {
+  display: flex;
+  align-items: flex-start;
+
+  @include viewport.until(sm) {
+    margin-left: 50px;
+    font-size: var(--font-down-1);
+  }
+
+  @include viewport.from(sm) {
+    align-items: center;
+    padding: 0 var(--topic-body-width-padding) var(--space-1)
+      var(--topic-body-width-padding);
+
+    &::after {
+      visibility: hidden;
+      display: block;
+      font-size: 0;
+      content: " ";
+      clear: both;
+      height: 0;
+    }
+  }
+
+  .names {
+    margin-right: auto;
+    display: flex;
+
+    @include viewport.from(sm) {
+      align-items: center;
+    }
+
+    @include viewport.until(sm) {
+      line-height: var(--line-height-medium);
+      flex-wrap: wrap;
+
+      .full-name {
+        font-weight: bold;
+      }
+
+      .first {
+        order: 1;
+      }
+
+      .poster-icon {
+        order: 2;
+      }
+
+      .user-status-message-wrap {
+        order: 2;
+      }
+
+      .second {
+        order: 3;
+        flex-basis: 100%;
+      }
+
+      .user-title {
+        order: 4;
+        flex-basis: 100%;
+      }
+
+      .user-badge-buttons {
+        order: 5;
+
+        .user-badge {
+          padding-top: 0;
+        }
+      }
+
+      span {
+        margin-right: 0.26em;
+      }
+    }
+
+    .first {
+      flex-shrink: 0;
+    }
+  }
+
+  .user-badge-buttons {
+    display: flex;
+    flex-shrink: 0;
+
+    a {
+      background: none;
+    }
+
+    .user-badge {
+      background: none;
+      border: none;
+    }
+  }
+
+  .post-infos {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  .user-status-message-wrap {
+    display: flex;
+    flex-shrink: 0;
+
+    img.emoji {
+      width: 1em;
+      height: 1em;
+    }
+  }
+}
+
+:root {
+  --d-post-control-border-radius: var(--d-button-border-radius);
+  --d-post-control-text-color: var(--primary-low-mid);
+  --d-post-control-text-color--hover: var(--primary);
+  --d-post-control-icon-color: var(--primary-low-mid);
+  --d-post-control-icon-color--hover: var(--primary);
+  --d-post-control-background--hover: var(--primary-low);
+  --d-post-control-create-text-color: var(--primary-high);
+  --d-post-control-create-icon-color: var(--primary-high);
+  --d-post-control-sibling-text-color--hover: var(--primary-medium);
+}
+
+nav.post-controls {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--d-post-control-text-color);
+  user-select: none;
+  overflow-x: auto;
+
+  .fade-out {
+    .discourse-no-touch & {
+      opacity: 0.7;
+      transition: opacity 0.7s ease-in-out;
+    }
+
+    .discourse-touch & {
+      opacity: 1;
+    }
+  }
+
+  @include viewport.until(sm) {
+    --control-space: 0.58em;
+    --control-space-small: calc(var(--control-space) / 2);
+    --control-space-large: calc(var(--control-space) * 1.3);
+  }
+
+  .actions {
+    display: inline-flex;
+    text-align: right;
+    margin-left: auto;
+
+    @include viewport.until(sm) {
+      // using an auto margin on first-child instead of justify-content on the parent
+      // because justify-content breaks overflow scrolling
+      :first-child {
+        margin-left: auto;
+      }
+    }
+
+    @include viewport.from(sm) {
+      gap: var(--space-1);
+    }
+
+    .post-action-menu {
+      &__like {
+        &.has-like .d-icon {
+          color: var(--love);
+        }
+
+        .discourse-no-touch & {
+          &:not(.has-like):hover {
+            --d-post-control-background--hover: var(--love-low);
+            --d-button-flat-icon-color--hover: var(--love);
+          }
+        }
+      }
+
+      &__double-button {
+        .discourse-no-touch & {
+          &:not(.has-liked):hover {
+            --d-post-control-background--hover: var(--love-low);
+            --d-button-flat-icon-color--hover: var(--love);
+          }
+        }
+      }
+    }
+
+    // Some buttons can be doubled up, like likes or flags
+    .double-button {
+      display: inline-flex;
+      flex: 0 1 auto;
+      align-items: stretch; // should always be the same height
+      white-space: nowrap;
+
+      .discourse-no-touch & {
+        &:hover {
+          button {
+            background: var(--d-post-control-background--hover);
+            color: var(--d-post-control-sibling-text-color--hover);
+          }
+        }
+      }
+
+      button {
+        margin-inline: 0;
+
+        &:first-child {
+          border-radius: var(--d-post-control-border-radius) 0 0
+            var(--d-post-control-border-radius);
+        }
+
+        &:last-child {
+          border-radius: 0 var(--d-post-control-border-radius)
+            var(--d-post-control-border-radius) 0;
+        }
+
+        &:nth-child(2) {
+          padding-left: var(--space-1);
+        }
+
+        &:first-child:last-child {
+          border-radius: var(--d-post-control-border-radius);
+        }
+
+        &.has-like {
+          // Like button after I've liked
+          .d-icon {
+            color: var(--love);
+          }
+        }
+
+        &.button-count {
+          @include viewport.until(sm) {
+            padding: var(--control-space);
+
+            + .toggle-like,
+            + .create-flag {
+              padding: var(--control-space) var(--control-space-large)
+                var(--control-space) var(--control-space-small);
+            }
+
+            &.regular-likes {
+              padding: var(--control-space) var(--control-space-small)
+                var(--control-space) var(--control-space-large);
+            }
+          }
+
+          // Like count button
+          &:not(.my-likes) {
+            padding-right: 0;
+          }
+
+          &.my-likes {
+            flex-direction: row-reverse;
+          }
+
+          // Like count button
+          .discourse-no-touch & {
+            &:hover {
+              color: var(--primary);
+            }
+          }
+        }
+
+        &.my-likes,
+        &.read-indicator,
+        &.regular-likes {
+          // Like count on posts
+          .d-icon {
+            color: var(--d-post-control-icon-color);
+            padding-left: 0.45em;
+          }
+        }
+
+        &[disabled] {
+          // Disabled like button
+          cursor: not-allowed;
+          opacity: 1;
+        }
+      }
+    }
+
+    a,
+    button {
+      display: inline-flex;
+      color: var(--d-post-control-text-color);
+    }
+
+    button {
+      .discourse-no-touch & {
+        &:hover,
+        &:focus-visible,
+        &:active {
+          outline: none;
+          background: var(--d-post-control-background--hover);
+          color: var(--d-post-control-text-color--hover);
+        }
+
+        &.delete:hover,
+        &.delete:active,
+        &.delete:focus {
+          background: var(--danger);
+          color: var(--secondary);
+
+          .d-icon {
+            color: var(--secondary);
+          }
+        }
+      }
+
+      &.hidden {
+        display: none;
+      }
+
+      &.admin {
+        position: relative;
+      }
+
+      &.bookmarked .d-icon {
+        color: var(--tertiary);
+      }
+
+      &.create {
+        color: var(--d-post-control-create-text-color);
+
+        .d-icon {
+          color: var(--d-post-control-create-icon-color);
+        }
+      }
+    }
+  }
+
+  .post-action-menu__like-count {
+    display: inline-flex;
+    align-items: center;
+    color: var(--d-post-control-text-color) !important;
+    gap: var(--space-2);
+
+    &.has-liked .d-icon {
+      color: var(--danger);
+    }
+  }
+
+  .btn.show-replies {
+    --border-width: 1px;
+    font-size: inherit;
+    color: var(--primary-medium);
+    display: flex;
+    align-items: center;
+    border-radius: var(--d-button-border-radius);
+
+    &[aria-expanded="true"] {
+      background: var(--primary-low);
+      color: var(--primary-high);
+      z-index: 1;
+
+      .d-icon {
+        color: var(--primary-high);
+      }
+    }
+
+    .discourse-no-touch & {
+      &:hover {
+        color: var(--primary);
+
+        .d-icon {
+          color: var(--primary-high);
+        }
+      }
+    }
+
+    @include viewport.from(sm) {
+      white-space: nowrap;
+
+      .topic-post & {
+        margin-right: var(--space-2);
+      }
+    }
+
+    .d-icon {
+      font-size: var(--font-down-1);
+
+      @include viewport.until(sm) {
+        padding-left: var(--control-space);
+        margin-left: 0 !important;
+      }
+    }
+
+    .d-button-label + .d-icon {
+      margin-left: 0.45em;
+      margin-right: 0;
+    }
+  }
+
+  @include viewport.until(sm) {
+    .reply .d-icon {
+      color: var(--primary-high);
+    }
+
+    &.replies-button-visible {
+      display: flex;
+      align-items: center;
+
+      .show-replies {
+        display: flex;
+
+        + .reply {
+          margin-left: 0;
+        }
+
+        .d-icon {
+          padding-left: var(--control-space);
+        }
+      }
+
+      .actions {
+        flex-grow: 2;
+      }
+    }
+  }
+}
+
+.expand-post {
+  @include viewport.until(sm) {
+    margin: var(--space-3) 0;
+  }
+
+  @include viewport.from(sm) {
+    margin-top: var(--space-3);
+    margin-left: var(--topic-body-width-padding);
+  }
+}
+
+.deleted {
+  .regular > .cooked {
+    background-color: var(--danger-low-mid);
+  }
+
+  .topic-meta-data:not(.embedded-reply) {
+    color: var(--danger);
+
+    .post-info a,
+    a {
+      color: currentcolor;
+    }
+
+    .d-icon {
+      color: currentcolor;
+    }
+  }
+
+  nav.post-controls {
+    color: var(--danger);
+
+    .show-replies,
+    button.reply.create {
+      color: var(--danger);
+
+      .d-icon {
+        color: var(--danger);
+      }
+    }
+
+    .btn {
+      &:hover {
+        color: currentcolor;
+        background: var(--danger-low);
+
+        .d-icon {
+          color: currentcolor;
+        }
+      }
+
+      &[disabled]:hover {
+        background-color: transparent;
+        cursor: not-allowed;
+      }
+
+      &.fade-out {
+        opacity: 1;
+      }
+    }
+
+    .d-icon {
+      color: var(--danger);
+    }
+  }
+
+  .post-action {
+    color: var(--danger);
+  }
+}
+
+@keyframes heartBump {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.5);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.toggle-like.heart-animation .d-icon {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: heartBump 0.4s;
+  }
+}
+
+@keyframes slideout {
+  from {
+    max-height: 60px;
+  }
+
+  to {
+    max-height: 9999px;
+  }
+}
+
+blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0.75em;
+}
+
+// we use aside to hold expandable quotes (versus, say, static blockquotes)
+aside.quote {
+  margin-top: 1em;
+  margin-bottom: 1em;
+
+  .title {
+    display: flex;
+    align-items: start;
+    gap: var(--space-2);
+    color: var(--primary-high-or-secondary-low);
+    padding: 0.8em 0.8em 0 0.8em;
+    background: var(--d-post-aside-background);
+    border-left: var(--d-post-aside-border-left);
+
+    @include unselectable;
+
+    &[data-can-toggle-quote] {
+      cursor: pointer;
+    }
+
+    a {
+      @include ellipsis;
+    }
+
+    .badge-category__wrapper {
+      align-self: center;
+    }
+
+    .quote-controls {
+      min-height: 24px; // match avatar height for alignment
+    }
+
+    // empty control div can impact layout, so hide it
+    &:not([data-has-quote-controls]) {
+      .quote-controls {
+        display: none;
+      }
+    }
+  }
+
+  .quote-title__text-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-2);
+    min-width: 0;
+
+    .badge-category__wrapper {
+      align-self: auto;
+    }
+  }
+
+  // blockquote is docked within aside for content
+  blockquote {
+    margin-top: 0;
+
+    .expanded-quote {
+      overflow: hidden;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: slideout 1s ease-in-out;
+      }
+
+      &.icon-only {
+        text-align: center;
+        font-size: var(--font-up-4);
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+        color: var(--primary-medium);
+      }
+    }
+
+    .onebox-result {
+      background-color: var(--primary-very-low);
+    }
+  }
+
+  // nested quotes
+  aside {
+    .quote,
+    .title,
+    blockquote,
+    .onebox,
+    .onebox-result {
+      background: var(--primary-very-low);
+      border-left: 5px solid var(--primary-low);
+    }
+
+    aside.quote > blockquote,
+    aside.quote > .title {
+      border-left: 0;
+    }
+  }
+}
+
+.quote-controls,
+.quote-controls .d-icon {
+  color: var(--primary-low-mid-or-secondary-high);
+}
+
+.quote-controls {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  order: 2; // for non-glimmer post stream
+
+  a {
+    margin-left: 0.3em;
+  }
+
+  .quote-toggle,
+  .back {
+    padding: 0;
+  }
+}
+
+.cooked .highlight {
+  background-color: var(--tertiary-low);
+  padding: 0.15em;
+  margin: -0.15em;
+}
+
+.post-ignored {
+  font-style: italic;
+}
+
+.post-actions {
+  text-align: right;
+  margin-bottom: var(--space-2);
+
+  @include viewport.until(sm) {
+    margin-top: var(--space-2);
+  }
+
+  .post-action {
+    display: inline-block;
+    margin-left: var(--space-2);
+  }
+}
+
+.post-action {
+  color: var(--primary-medium);
+
+  @include viewport.from(sm) {
+    .relative-date {
+      margin-left: var(--space-1);
+    }
+
+    .avatar {
+      margin-right: var(--space-half);
+    }
+  }
+
+  .undo-action,
+  .act-action {
+    margin-left: 5px;
+  }
+}
+
+.small-user-list {
+  .small-user-list-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .unknown {
+    display: inline-block;
+    background-color: var(--primary-low);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.25em;
+  }
+}
+
+.post-hidden {
+  .topic-avatar,
+  .cooked,
+  .topic-meta-data,
+  .post-actions {
+    opacity: 0.5;
+  }
+}
+
+.topic-post.staged {
+  opacity: 0.4;
+}
+
+.post-stream--cloaked {
+  min-height: 1px; // ensures that cloaked items have a minimum height to force the intersection observers to work
+  overflow-anchor: none; // cloaked posts are empty placeholders with approximate height and must not be used as scroll anchors
+}
+
+// these elements appear/disappear dynamically inside the post stream and must
+// not be used as scroll anchors by the browser's native scroll anchoring
+.post-stream .load-more-sentinel,
+.post-stream .post-stream-load-more-accessible {
+  overflow-anchor: none;
+}
+
+.quote-button {
+  flex-direction: column;
+
+  &.visible {
+    display: flex;
+
+    @include viewport.until(sm) {
+      z-index: z("tooltip");
+    }
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+
+    .btn,
+    .ai-post-helper {
+      border-radius: 0;
+    }
+
+    @media screen and (width <= 420px) {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .btn,
+      .ai-post-helper {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  }
+
+  .extra {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-flat {
+    &:hover {
+      .d-icon {
+        color: var(--tertiary);
+      }
+    }
+
+    .d-button-label {
+      white-space: nowrap;
+    }
+  }
+}
+
+#fast-edit-input {
+  resize: block;
+}
+
+.post-avatar,
+.topic-avatar,
+.user-card-avatar {
+  position: relative;
+}
+
+.topic-avatar,
+.avatar-flair-preview,
+.user-card-avatar,
+.user-profile-avatar,
+.user-image,
+.latest-topic-list-item {
+  .avatar-flair {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    bottom: 0;
+    right: -6px;
+  }
+}
+
+.topic-avatar .avatar-flair,
+.avatar-flair-preview .avatar-flair,
+.collapsed-info .user-profile-avatar .avatar-flair,
+.user-image .avatar-flair,
+.latest-topic-list-item .avatar-flair {
+  background-size: 20px 20px;
+  width: 20px;
+  height: 20px;
+
+  &.rounded {
+    background-size: 18px 18px;
+    border-radius: 12px;
+    width: 24px;
+    height: 24px;
+    bottom: -2px;
+    right: -8px;
+  }
+}
+
+.user-card-avatar .avatar-flair,
+.user-profile-avatar .avatar-flair {
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+
+  &.rounded {
+    background-size: 30px 30px;
+    border-radius: 24px;
+    width: 40px;
+    height: 40px;
+    bottom: -2px;
+    right: -4px;
+  }
+
+  .fa {
+    font-size: var(--font-up-4);
+  }
+}
+
+.topic-body {
+  @include viewport.from(sm) {
+    width: calc(
+      var(--topic-body-width) + (var(--topic-body-width-padding) * 2)
+    );
+    float: left;
+    min-width: 0; // prevents some elements, like <pre>, from blowing out the width
+    position: relative;
+    border-top: 1px solid var(--content-border-color);
+    padding: var(--space-3) 0 0 0;
+
+    &:first-of-type {
+      border-top: none;
+    }
+
+    a.expand-hidden {
+      padding-left: var(--topic-body-width-padding);
+    }
+
+    &:hover .actions .fade-out,
+    .selected .actions .fade-out {
+      opacity: 1;
+    }
+  }
+
+  // hiding overflow is necessary for ANYTHING that extends past the right edge of
+  // the post body, such as an image in a deeply nested list, image in
+  // a deeply nested blockquote, and so on.. you get the idea.
+  .cooked {
+    overflow: hidden;
+
+    @include viewport.from(sm) {
+      padding: var(--space-4) var(--topic-body-width-padding) var(--space-1)
+        var(--topic-body-width-padding);
+    }
+
+    .button-wrapper {
+      display: none;
+    }
+  }
+
+  .group-request {
+    border-top: 1px solid var(--content-border-color);
+    padding-top: 0.5em;
+
+    @include viewport.from(sm) {
+      padding: var(space-2) var(--topic-body-width-padding) 0
+        var(--topic-body-width-padding);
+    }
+  }
+}
+
+.small-action-desc,
+.topic-body {
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.post-info {
+  flex: 0 0 auto;
+  margin-right: 0.5em;
+
+  .btn {
+    padding: revert;
+  }
+
+  &.post-date {
+    margin-right: 0;
+  }
+
+  &.via-email,
+  &.whisper,
+  &.post-locked {
+    .d-icon {
+      font-size: var(--font-0);
+    }
+  }
+
+  .wiki,
+  .last-wiki-edit {
+    color: var(--wiki);
+  }
+
+  @include viewport.from(sm) {
+    a.wiki {
+      color: var(--wiki);
+    }
+  }
+
+  &.via-email {
+    color: var(--primary-low-mid-or-secondary-high);
+  }
+
+  &.raw-email {
+    cursor: pointer;
+  }
+
+  &.edits {
+    .btn {
+      display: flex;
+      align-items: center;
+
+      .d-button-label {
+        order: 0;
+        padding-right: 0.25em;
+        color: var(--primary-med-or-secondary-med);
+      }
+
+      .d-icon {
+        margin-right: 0;
+        order: 1;
+        color: var(--primary-med-or-secondary-med);
+      }
+
+      .discourse-no-touch & {
+        &:hover {
+          .d-button-label {
+            color: var(--primary-high);
+          }
+
+          .d-icon {
+            color: var(--primary-high);
+          }
+        }
+      }
+
+      &:focus {
+        @include default-focus;
+        background: transparent;
+      }
+    }
+  }
+}
+
+pre {
+  // safety cap; also covers a `pre` with no `code` child
+  max-height: 2000px;
+
+  .bidi-warning,
+  .bidi-warning span {
+    font-style: normal;
+    background-color: var(--highlight);
+    color: var(--danger);
+    cursor: help;
+  }
+}
+
+.codeblock-buttons {
+  display: block;
+  position: relative;
+  overflow: visible;
+
+  .codeblock-button-wrapper {
+    position: absolute;
+    display: flex;
+  }
+
+  .copy-cmd,
+  .fullscreen-cmd {
+    @include unselectable;
+    top: 0;
+    min-height: 0;
+    font-size: var(--font-down-2);
+    opacity: 0.7;
+    cursor: pointer;
+
+    &.action-complete {
+      cursor: auto;
+
+      .d-icon {
+        color: var(--tertiary);
+      }
+    }
+
+    .d-icon {
+      pointer-events: none;
+      margin-right: 0;
+    }
+  }
+
+  @include viewport.until(sm) {
+    > code {
+      padding-right: 2.75em;
+    }
+  }
+
+  @include viewport.from(sm) {
+    .copy-cmd:not(.action-complete),
+    .fullscreen-cmd:not(.action-complete) {
+      opacity: 0;
+      transition: 0.2s;
+      visibility: hidden;
+    }
+
+    &:hover {
+      .copy-cmd,
+      .fullscreen-cmd {
+        opacity: 0.7;
+        visibility: visible;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+kbd {
+  align-items: center;
+  border: 1px solid var(--primary-low-mid);
+  background: var(--primary-very-low);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  box-sizing: border-box;
+  display: inline-flex;
+  gap: 0 0.5em; // space between text and images/emoji
+  font-size: var(--font-down-1);
+  justify-content: center;
+  line-height: var(--line-height-large);
+  margin: 0 0.15em;
+  min-width: 24px;
+  padding: 0.15em 0.6em;
+
+  // don't allow more than 3 nested elements to prevent FF from crashing
+  // cf. http://what.thedailywtf.com/t/nested-elements/7927
+  // 3 levels are needed to prevent highlighted words being hidden
+  // cf. https://meta.discourse.org/t/word-disappears-when-searched-and-in-details-summary-kbd-b/25741
+  * * * {
+    display: none;
+  }
+}
+
+// we assume blockquotes have their own margins, so all blockquotes
+// will remove margins from first (top) and last (bottom) child elements
+blockquote,
+blockquote .post__contents-cooked-quote {
+  overflow-wrap: break-word;
+
+  > *:first-child {
+    margin-top: 0 !important;
+  }
+
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  table {
+    table-layout: fixed; // prevents table from expanding past the post body width
+    width: 100%;
+  }
+}
+
+.gap {
+  box-sizing: border-box;
+  color: var(--primary-med-or-secondary-high);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: var(--font-down-1);
+  padding: 0.25em 0 0.5em
+    calc(var(--topic-avatar-width) + var(--topic-body-width-padding));
+
+  @include viewport.until(sm) {
+    padding: 0.25em 0;
+  }
+}
+
+.who-liked,
+.who-read {
+  transition: height 0.5s;
+
+  @include viewport.from(sm) {
+    margin-bottom: 0;
+    width: 100%;
+    text-align: right;
+
+    &.--expanded {
+      margin-top: var(--space-5);
+    }
+  }
+
+  a {
+    margin: 0 0.25em 0.5em 0;
+    display: inline-block;
+  }
+}
+
+.reviewable .post-body,
+.cooked table,
+.d-editor-preview table {
+  thead {
+    th {
+      text-align: left;
+      padding-bottom: 2px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+  }
+
+  td {
+    padding: 3px 3px 3px 0.5em;
+  }
+}
+
+.small-action {
+  display: flex;
+  align-items: center;
+
+  &.deleted {
+    .topic-avatar,
+    .small-action-desc {
+      background-color: var(--danger-low-mid);
+    }
+  }
+
+  .topic-avatar,
+  .small-action-desc {
+    border-top: 1px solid var(--content-border-color);
+  }
+
+  .topic-avatar {
+    display: flex;
+    align-self: stretch;
+    flex: 0 0 auto;
+    margin: 0;
+    padding-top: var(--space-4);
+    width: var(--topic-avatar-width);
+    justify-content: center;
+    height: auto;
+
+    .d-icon {
+      font-size: var(--font-up-3);
+      color: var(--primary-low-mid);
+    }
+  }
+
+  .small-action-desc {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 var(--space-2);
+    color: var(--primary-700);
+    padding: 0 0 var(--space-3) var(--topic-body-width-padding);
+    width: calc(
+      var(--topic-body-width) + (var(--topic-body-width-padding) * 2)
+    );
+    min-width: 0; // Allows container to shrink
+  }
+
+  .small-action-contents {
+    display: flex;
+    gap: var(--space-1);
+    align-items: start;
+    padding-top: 1.15em;
+
+    [data-user-card] {
+      margin-top: calc(var(--space-half) * -1);
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .small-action-buttons {
+    display: flex;
+    padding-top: var(--space-3);
+  }
+
+  .small-action-custom-message {
+    grid-column: 1 / -1;
+    flex: 1 1 100%;
+    font-weight: normal;
+    margin-top: var(--space-2);
+    word-break: break-word;
+    min-width: 0; // Allows content like oneboxes to shrink
+    color: var(--primary);
+
+    p {
+      margin-bottom: 0;
+
+      + *:not(.cooked-selection-barrier) {
+        margin-top: var(--space-4);
+      }
+    }
+  }
+
+  &.topic-post-visited {
+    .topic-post-visited-line {
+      text-align: center;
+      border-bottom: 1px solid var(--danger-medium);
+      z-index: z("base") + 2; // ensures last visit border is on top of post borders
+      line-height: 0;
+      margin: 0;
+      margin-bottom: -1px;
+      color: var(--danger-medium);
+      font-size: var(--font-down-1);
+      width: calc(
+        var(--topic-body-width) + var(--topic-avatar-width) +
+          (var(--topic-body-width-padding) * 2)
+      );
+
+      .topic-post-visited-message {
+        background-color: var(--secondary);
+        padding: 0 0.5em;
+      }
+    }
+  }
+}
+
+.time-gap {
+  .small-action-desc {
+    padding-top: var(--space-3);
+  }
+
+  + .topic-post {
+    .topic-body,
+    .topic-avatar {
+      border-top: none;
+    }
+
+    .embedded-posts.top {
+      border-bottom: none;
+    }
+  }
+
+  @include viewport.until(sm) {
+    + .topic-post article {
+      border-top: none;
+    }
+
+    .topic-avatar {
+      display: none;
+    }
+  }
+}
+
+.whisper {
+  .post-info.whisper {
+    margin-left: 0.5em;
+  }
+
+  .topic-body {
+    .cooked {
+      font-style: italic;
+      color: var(--primary-medium);
+    }
+  }
+}
+
+a.mention,
+a.mention-group {
+  // linked
+  @include mention;
+
+  .user-status-message {
+    user-select: none;
+  }
+}
+
+.mention .emoji {
+  width: 0.93em;
+  height: 0.93em;
+}
+
+span.mention {
+  // unlinked, invalid mention
+  color: var(--primary-high);
+}
+
+.suggested-topics {
+  .topics {
+    padding-bottom: 15px;
+  }
+}
+
+.large-image-placeholder {
+  > a {
+    &.link {
+      margin-right: 10px;
+    }
+
+    > * {
+      overflow: hidden;
+      vertical-align: middle;
+    }
+
+    > .d-icon {
+      color: var(--primary-med-or-secondary-med);
+      margin-right: 6px;
+      font-size: var(--font-0);
+      line-height: var(--line-height-large);
+    }
+
+    > span.url {
+      display: inline-block;
+      max-width: 300px;
+      margin-right: 6px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    > span.help {
+      display: inline-block;
+      color: var(--primary-med-or-secondary-med);
+      font-size: var(--font-down-1);
+      font-style: italic;
+      line-height: var(--line-height-large);
+      margin-bottom: 1px;
+    }
+
+    > span.badge-notification {
+      vertical-align: unset;
+    }
+  }
+}
+
+.broken-image,
+.blocked-hotlinked-placeholder {
+  display: inline-flex;
+  flex-direction: column;
+  border: 1px solid var(--content-border-color);
+  align-items: center;
+  justify-content: center;
+
+  &:not(a) {
+    color: var(--primary-low-mid-or-secondary-high);
+  }
+
+  .d-icon {
+    margin: 16px;
+    font-size: var(--font-up-5);
+  }
+
+  .notice {
+    margin: 0 0.5em 0.5em 0.5em;
+  }
+}
+
+a.reply-to-tab {
+  display: flex;
+  align-items: center;
+  margin-right: 2em;
+  max-width: 400px;
+  overflow: hidden;
+  gap: var(--space-1);
+
+  @include viewport.from(sm) {
+    z-index: z("base") + 1;
+    color: var(--primary-med-or-secondary-med);
+  }
+
+  .d-icon {
+    color: var(--primary-medium);
+  }
+}
+
+.topic-post {
+  @include viewport.until(sm) {
+    > article {
+      border-top: 1px solid var(--content-border-color);
+      padding: 15px 0 8px 0;
+    }
+  }
+
+  &.selected {
+    article.boxed {
+      .select-posts {
+        button.select-post {
+          background-color: var(--tertiary);
+          color: var(--secondary);
+          border-color: var(--tertiary);
+        }
+      }
+
+      .topic-body {
+        .contents::after {
+          display: none;
+        }
+      }
+    }
+  }
+
+  article.boxed {
+    position: relative;
+
+    .select-posts {
+      position: absolute;
+      right: 7em;
+      z-index: z("dropdown");
+      top: 0.5em;
+      height: 100px;
+
+      button {
+        margin-left: 8px;
+        background-color: var(--primary-low);
+        color: var(--primary);
+        box-shadow: var(--shadow-dropdown);
+      }
+    }
+  }
+}
+
+.selected-posts {
+  @include viewport.until(sm) {
+    padding: 0.1em 0.7em;
+  }
+
+  @include viewport.from(sm) {
+    width: 200px;
+    position: fixed;
+    z-index: z("dropdown") + 1; // 1 higher than .select-posts
+    box-shadow: var(--shadow-card);
+    padding: var(--space-3);
+    margin-bottom: var(--space-1);
+    right: 10px;
+
+    @include viewport.from(xl) {
+      right: auto;
+      margin-left: 330px;
+      left: 50%;
+    }
+
+    button {
+      width: 100%;
+      margin: 4px auto;
+      display: inline-block;
+      text-align: left;
+    }
+
+    &.hidden {
+      display: none;
+    }
+
+    .controls {
+      margin-top: 10px;
+    }
+
+    p {
+      font-size: var(--font-down-1);
+      margin: 0 0 10px 0;
+    }
+
+    p.cancel {
+      margin: 10px 0 0 0;
+    }
+
+    h3 {
+      font-size: var(--font-up-4);
+      color: var(--primary);
+      margin-bottom: 5px;
+
+      .d-icon {
+        margin-right: 7px;
+      }
+    }
+  }
+}
+
+@media all and (width <= 767px) {
+  .reply-to-tab {
+    span {
+      display: none;
+    }
+  }
+
+  .user-title {
+    float: left;
+    clear: left;
+  }
+}
+
+.signup-cta {
+  box-sizing: border-box;
+  max-width: calc(var(--topic-body-width) + 4.5em);
+  padding: 3em 5em 2em
+    calc(var(--topic-avatar-width) + var(--topic-body-width-padding));
+
+  @include viewport.until(sm) {
+    padding: 1.5em 1.5em 0.25em;
+  }
+
+  h3 {
+    margin-bottom: 0.5em;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 1.5em 0 1em;
+
+    > * {
+      margin-bottom: 0.5em;
+    }
+
+    .btn {
+      margin-right: 0.5em;
+      white-space: nowrap;
+
+      .d-icon {
+        color: inherit;
+      }
+
+      &.btn-remind {
+        background: var(--primary-very-low);
+        margin-right: auto;
+
+        @include hover {
+          background: var(--primary-medium);
+        }
+      }
+
+      @include viewport.until(sm) {
+        &.btn-primary {
+          margin-right: 100%;
+        }
+      }
+    }
+  }
+}
+
+.post-notice {
+  align-items: center;
+  background-color: var(--tertiary-very-low);
+  border-top: 1px solid var(--content-border-color);
+  display: flex;
+  width: 100%;
+  max-width: calc(
+    var(--topic-body-width) + (var(--topic-body-width-padding) * 2) +
+      var(--topic-avatar-width)
+  );
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-down-1-rem);
+  gap: var(--space-2);
+  box-sizing: border-box;
+
+  @include viewport.until(sm) {
+    margin-bottom: var(--space-4);
+  }
+
+  &.custom {
+    background: var(--danger-low);
+  }
+
+  .emoji {
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  .d-icon {
+    width: 1.25em;
+    height: 1.25em;
+    color: var(--primary-high);
+  }
+
+  .post-notice-message {
+    flex: 1;
+    min-width: 0;
+
+    img:not(.emoji) {
+      max-width: 100%;
+      height: auto;
+      display: inline-block;
+    }
+  }
+
+  p {
+    display: inline;
+    margin: 0;
+  }
+
+  .custom_created_by {
+    display: inline-block;
+  }
+}
+
+iframe {
+  max-width: 100%;
+  max-height: #{"min(1000px, 200vh)"};
+}
+
+.post-admin-menu {
+  display: inline-flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 320px;
+  position: absolute;
+  text-align: left;
+  bottom: -2px;
+  right: 15px;
+
+  @include viewport.until(sm) {
+    bottom: -50px;
+    left: 135px;
+  }
+
+  @media screen and (width <= 374px) {
+    left: 50px;
+  }
+}
+
+.posts-filtered-notice {
+  position: sticky;
+  background-color: var(--tertiary-low);
+  bottom: 0;
+  padding: 1em;
+  margin-top: 0.5em;
+  text-align: center;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: calc(
+    var(--topic-body-width) + (var(--topic-body-width-padding) * 2) +
+      var(--topic-avatar-width)
+  );
+
+  @include viewport.until(sm) {
+    padding-right: 8.5em;
+    padding-bottom: max(1em, env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 1em -9px;
+    z-index: 101;
+
+    .filtered-replies-viewing {
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .filtered-avatar {
+    margin: 0 0.5em;
+
+    @include viewport.until(sm) {
+      margin-left: 0;
+
+      img.avatar {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    + .names {
+      flex: inherit;
+    }
+  }
+
+  .filtered-replies-show-all {
+    margin-left: 1em;
+
+    @include viewport.until(sm) {
+      position: absolute;
+      right: 1em;
+    }
+  }
+
+  .filtered-user-row {
+    @include ellipsis;
+  }
+}
+
+.posts-wrapper {
+  position: relative;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+span.highlighted {
+  background-color: var(--highlight-bg);
+}
+
+.pausable-animated-image {
+  position: relative;
+  display: inline-block;
+
+  > canvas,
+  > .animated-image-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
+
+  > canvas {
+    background-color: var(--primary-very-low);
+  }
+
+  > .animated-image-overlay {
+    pointer-events: none;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+    > .d-icon {
+      padding: 0.5em;
+      margin: 0.5em;
+      background-color: rgb(var(--always-black-rgb), 0.25);
+      color: var(--secondary-or-primary);
+      cursor: pointer;
+      display: none;
+    }
+  }
+
+  img.animated {
+    cursor: pointer;
+  }
+
+  html.no-touch
+    &:not(.paused-animated-image)
+    .animated:hover
+    + .animated-image-overlay
+    .d-icon-pause {
+    display: initial;
+  }
+
+  &.paused-animated-image
+    .animated.manually-paused
+    + .animated-image-overlay
+    .d-icon-play {
+    display: initial;
+  }
+}
+
+.paused-animated-image {
+  img.animated {
+    // need to keep the image hidden but clickable
+    // so the user can resume animation
+    opacity: 0;
+  }
+}
+
+.btn-group {
+  position: relative;
+
+  @include viewport.until(sm) {
+    margin-top: 25px;
+  }
+}
+
+.dropdown-toggle {
+  float: left;
+  position: relative;
+}
+
+.deleted-user-avatar {
+  font-size: var(--font-up-6);
+
+  @include viewport.until(sm) {
+    font-size: var(--font-up-5);
+  }
+}
+
+.open-popup-link {
+  display: inline;
+  margin-inline: 0.25em;
+  position: sticky;
+  left: 1rem;
+  opacity: 0%;
+  white-space: nowrap;
+  transition: 0.25s ease-in-out opacity;
+
+  @include viewport.until(sm) {
+    opacity: 100%;
+    margin-bottom: 1rem;
+  }
+}
+
+.fullscreen-table-wrapper {
+  display: block;
+  position: relative;
+
+  html.discourse-no-touch & {
+    transition: box-shadow 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+}
+
+.fullscreen-table-modal {
+  .d-modal__container {
+    width: auto;
+  }
+
+  .d-modal__body {
+    padding-top: 0;
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: var(--secondary);
+    }
+
+    td {
+      padding: 5px 6px 5px 3px;
+    }
+  }
+}
+
+html.discourse-no-touch .fullscreen-table-wrapper:hover {
+  border-radius: 5px;
+
+  .open-popup-link {
+    opacity: 100%;
+  }
+
+  &.--has-overflow,
+  &.--editable {
+    box-shadow:
+      0 2px 5px 0 rgb(var(--always-black-rgb), 0.1),
+      0 2px 10px 0 rgb(var(--always-black-rgb), 0.1);
+  }
+}
+
+.read-state {
+  position: absolute;
+
+  // We use absolute positioning here because we want it to display in the padding
+  align-self: center;
+  color: var(--tertiary-medium);
+  right: 0;
+  font-size: 0.571em;
+
+  @include viewport.until(sm) {
+    // contained within the padding to prevent vertical overflow
+    max-width: var(--d-wrap-padding-x);
+    right: calc(var(--d-wrap-padding-x) * -1);
+    font-size: 6px; // static size to avoid overflow issues
+
+    svg {
+      right: -2px;
+    }
+  }
+
+  &.read {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      visibility 1s,
+      opacity ease-out 1s;
+  }
+}
+
+span.post-count {
+  background: var(--primary);
+  color: var(--secondary);
+  opacity: 0.8;
+}
+
+@include viewport.until(sm) {
+  .topic-avatar {
+    // puts avatar above self-background in PMs
+    z-index: z("base") + 1;
+  }
+
+  topic-post-visited {
+    + .topic-post > article {
+      border-top: none;
+    }
+  }
+
+  span.btn-text {
+    display: none;
+  }
+
+  span.badge-posts {
+    margin-right: 5px;
+  }
+
+  .topic-avatar {
+    float: left;
+    margin-right: var(--space-2);
+  }
+
+  .topic-post .boxed .contents {
+    clear: both;
+  }
+
+  // hide the full set of selection buttons on mobile
+  .select-posts button {
+    display: none;
+  }
+
+  // unhide the simple "select just this post" button
+  button.select-post {
+    display: inline-block;
+  }
+}
+
+@include viewport.from(sm) {
+  .staff {
+    .topic-post:first-child {
+      nav.post-controls .post-admin-menu {
+        bottom: -125px;
+      }
+    }
+  }
+
+  .topic-avatar {
+    border-top: 1px solid var(--content-border-color);
+    padding-top: var(--space-4);
+    width: var(--topic-avatar-width);
+    float: left;
+    z-index: z("base") + 1;
+    height: 100%;
+    overflow-anchor: none;
+  }
+
+  .video {
+    // Height determined by aspect-ratio
+    max-height: 500px;
+
+    > video {
+      max-height: unset;
+    }
+  }
+
+  .post-select {
+    float: right;
+    margin-right: 20px;
+    margin-top: -20px;
+  }
+
+  .info-line {
+    margin: 10px 0;
+    color: var(--primary);
+  }
+
+  .topic-post-visited {
+    + .topic-post {
+      .topic-avatar,
+      .topic-body {
+        border-top: none;
+      }
+    }
+  }
+
+  .topic-area > .loading-container {
+    overflow-anchor: none; // the loading spinner appears/disappears dynamically and must not be used as a scroll anchor
+    // loader needs to be same width as posts
+    // the extra 1px is to account for the left transparent border set to
+    // .topic_post in `keyboard_shortcuts.scss`
+    width: calc(
+      var(--topic-body-width) + var(--topic-avatar-width) +
+        (var(--topic-body-width-padding) * 2) + 1px
+    );
+    max-width: 100%;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-top: 4px solid var(--primary);
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    content: "";
+    margin-left: 5px;
+  }
+
+  .topic-post.sticky-avatar {
+    > article > .row > .topic-avatar {
+      position: sticky;
+      top: calc(var(--header-offset) - var(--space-1));
+      margin-bottom: 25px;
+    }
+  }
+
+  a.attachment::before {
+    display: inline-block;
+    margin-right: 4px;
+
+    // ideally, the SVG used here should be in HTML and reference the SVG sprite
+    content: svg-uri(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="14px" height="16px" viewBox="0 0 512 512" fill="#{$tertiary}"><path d="M216 0h80c13.3 0 24 10.7 24 24v168h87.7c17.8 0 26.7 21.5 14.1 34.1L269.7 378.3c-7.5 7.5-19.8 7.5-27.3 0L90.1 226.1c-12.6-12.6-3.7-34.1 14.1-34.1H192V24c0-13.3 10.7-24 24-24zm296 376v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h146.7l49 49c20.1 20.1 52.5 20.1 72.6 0l49-49H488c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z"></path></svg>'
+    );
+    vertical-align: middle;
+  }
+
+  /* Tablet (portrait) ----------- */
+
+  @media all and (width <= 790px) {
+    .topic-avatar {
+      width: 45px;
+    }
+
+    .topic-post .reply-to-tab {
+      right: 15%;
+    }
+
+    .topic-body {
+      box-sizing: border-box;
+      width: calc(100% - 47px); // 100% - [width of .topic-avatar + 2px]
+    }
+
+    .embedded-posts {
+      // top means "in reply to expansion" above a post
+      &.top {
+        width: calc(100% - 56px); // [100% - margin-left]
+      }
+    }
+  }
+}

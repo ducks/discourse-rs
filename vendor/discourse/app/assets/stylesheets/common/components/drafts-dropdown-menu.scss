@@ -1,0 +1,21 @@
+@use "lib/viewport";
+
+.topic-drafts-menu-content .dropdown-menu {
+  .btn .d-button-label {
+    @include ellipsis;
+  }
+
+  .view-all-drafts {
+    display: flex;
+    justify-content: space-between;
+
+    span:first-child {
+      color: var(--primary-high);
+    }
+  }
+
+  @include viewport.from(sm) {
+    max-width: 350px;
+    min-width: 275px;
+  }
+}

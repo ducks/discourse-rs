@@ -1,0 +1,726 @@
+@use "lib/viewport";
+
+.reviewable {
+  background: var(--d-content-background);
+
+  .reviewable-top-nav {
+    margin-bottom: 1em;
+  }
+
+  .status {
+    color: var(--primary-medium);
+
+    span.approved {
+      color: var(--success);
+
+      .d-icon {
+        color: currentcolor;
+      }
+    }
+
+    span.rejected {
+      color: var(--danger);
+
+      .d-icon {
+        color: currentcolor;
+      }
+    }
+  }
+
+  .explain {
+    margin-left: 0.5em;
+  }
+
+  .nav-pills {
+    margin: 0 0 1em;
+  }
+
+  .reviewable-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1em;
+    gap: var(--space-4);
+
+    @include viewport.until(sm) {
+      flex-direction: column;
+    }
+
+    .reviewable-list {
+      flex: 1;
+      box-sizing: border-box;
+      min-width: 0;
+      width: 100%;
+
+      @include viewport.until(sm) {
+        order: 2;
+        width: 100%;
+        padding-bottom: 4em;
+      }
+    }
+
+    .reviewable-filters {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+
+      &.--expanded {
+        --column-gap: 5em;
+        gap: 0 var(--column-gap);
+
+        @include viewport.from(sm) {
+          display: grid;
+          grid-template-columns: repeat(2, calc(50% - (var(--column-gap) / 2)));
+        }
+
+        @include viewport.until(lg) {
+          --column-gap: 2em;
+        }
+
+        .reviewable-filters-actions {
+          grid-column: 1 / -1;
+          margin-top: var(--space-4);
+        }
+
+        .reviewable-filter {
+          margin: 0 0 1em 0;
+        }
+      }
+
+      &.--collapsed {
+        display: flex;
+        gap: var(--space-2);
+        align-items: end;
+
+        @include viewport.until(sm) {
+          flex-wrap: wrap;
+        }
+
+        .reviewable-filter {
+          flex: 1 1 50%;
+          min-width: 5em;
+
+          @include viewport.until(sm) {
+            &:nth-child(2) {
+              display: none;
+            }
+          }
+
+          .name {
+            min-width: 0;
+            display: block;
+
+            @include ellipsis;
+          }
+        }
+      }
+
+      .reviewable-filters-actions {
+        display: flex;
+        gap: var(--space-2);
+        justify-content: space-between;
+
+        @include viewport.until(sm) {
+          width: 100%;
+        }
+      }
+
+      @include viewport.until(sm) {
+        order: 1;
+        padding: 0.5em 1em 1em 1em;
+        width: 100%;
+        background-color: var(--primary-very-low);
+
+        .reviewable-filter {
+          .filter-label {
+            margin: 0;
+          }
+        }
+      }
+    }
+
+    .d-date-time-input-range {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+
+      .from {
+        margin: 0;
+      }
+    }
+
+    .d-date-time-input {
+      flex: 1 1 auto;
+    }
+
+    .reviewable-list + .reviewable-filters {
+      margin-left: 1em;
+
+      @include viewport.until(sm) {
+        margin: 0 0 0.5em 0;
+      }
+    }
+  }
+}
+
+.reviewable-settings {
+  h4 {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  .saved {
+    margin-left: 0.5em;
+  }
+
+  .reviewable-score-type {
+    display: flex;
+    margin-bottom: 0.5em;
+
+    .select-kit {
+      min-width: 10em;
+    }
+
+    .title {
+      width: 30%;
+    }
+  }
+}
+
+.reviewable-user-info {
+  max-width: 100%;
+  margin: 0.5em 0;
+
+  .reviewable-user-fields {
+    margin-bottom: 2em;
+  }
+
+  .reviewable-user-details {
+    --name-width: 8em;
+    --name-margin: 1em;
+    padding-bottom: 0.25em;
+    display: flex;
+    margin-bottom: 0.5em;
+
+    @include viewport.until(sm) {
+      flex-direction: column;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--content-border-color);
+    }
+
+    .name {
+      width: var(--name-width);
+      font-weight: bold;
+      margin-right: var(--name-margin);
+    }
+
+    .value {
+      max-width: calc(100% - var(--name-width) - var(--name-margin));
+      overflow-wrap: anywhere;
+
+      @include viewport.until(sm) {
+        width: auto;
+      }
+    }
+
+    .reviewable-user-avatar {
+      width: 6em;
+      height: 6em;
+      object-fit: cover;
+      border-radius: var(--d-border-radius);
+    }
+  }
+}
+
+.scrub-rejected-user {
+  width: 100%;
+}
+
+.no-review {
+  margin-top: 1em;
+}
+
+.reviewable-filters {
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--content-border-color);
+  border-radius: var(--d-border-radius);
+
+  .reviewable-filter {
+    display: flex;
+    flex-direction: column;
+    break-inside: avoid;
+
+    .filter-label {
+      margin: 0 0 0.5em 0;
+    }
+
+    .category-chooser {
+      width: 100%;
+    }
+  }
+}
+
+.reviewable-claimed-topic {
+  display: flex;
+  align-items: center;
+
+  .btn-small {
+    margin-left: 0.5em;
+  }
+}
+
+.reviewable-topics {
+  width: 100%;
+
+  tbody {
+    td {
+      padding: 0.5em;
+    }
+  }
+
+  .reviewable-details {
+    display: flex;
+    justify-content: flex-end;
+
+    .btn {
+      display: flex;
+      align-items: center;
+      margin-left: 1em;
+    }
+  }
+}
+
+.user-flag-percentage {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5em;
+
+  .percentage-label {
+    margin-right: 0.25em;
+
+    &.agreed {
+      color: var(--success);
+
+      + .d-icon {
+        color: var(--success);
+      }
+    }
+
+    &.disagreed {
+      color: var(--danger);
+
+      + .d-icon {
+        color: var(--danger);
+      }
+    }
+
+    &.ignored {
+      color: var(--primary-medium);
+    }
+  }
+
+  .d-icon {
+    font-size: 0.9em;
+  }
+}
+
+.reviewable-item {
+  background: var(--primary-very-low);
+  padding: 1.5rem;
+  margin-block: 3rem;
+  padding-bottom: 1em;
+
+  &:first-of-type {
+    margin-top: var(--space-4);
+  }
+
+  .show-raw-email {
+    color: var(--primary-medium);
+    font-size: var(--font-down-2);
+  }
+
+  .post-title {
+    background-color: yellow;
+  }
+
+  .created-by {
+    margin-right: 1em;
+    padding-top: 0.35em;
+
+    @include viewport.until(sm) {
+      float: left;
+      margin-bottom: 1em;
+    }
+  }
+
+  .post-contents-wrapper {
+    width: 100%;
+    margin-top: 1em;
+    min-width: 275px;
+    word-break: break-word;
+
+    @include viewport.from(sm) {
+      display: flex;
+    }
+  }
+
+  .post-contents {
+    width: 100%;
+    min-width: 0; // Flexbox fix
+  }
+
+  .post-body {
+    position: relative;
+    margin-top: 0.5em;
+
+    &.is-collapsed {
+      max-height: 50vh;
+      overflow: hidden;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 25%;
+        width: 100%;
+        background: linear-gradient(to bottom, transparent, var(--secondary));
+      }
+
+      + .post-body__toggle-btn {
+        transform: translateX(-50%) translateY(-50%);
+      }
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+
+    &__toggle-btn {
+      background: var(--primary-very-low);
+      color: var(--primary-high);
+      font-size: var(--font-down-2);
+      box-shadow: var(--shadow-dropdown);
+      margin-left: 50%;
+      transform: translateX(-50%);
+      border-radius: 4px;
+
+      .d-icon {
+        color: var(--primary-high);
+      }
+
+      &:hover {
+        background: var(--primary-very-low);
+        color: var(--tertiary);
+
+        .d-icon {
+          color: var(--tertiary);
+        }
+      }
+    }
+
+    aside {
+      margin: 0 0 1em 0;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    pre,
+    code {
+      word-break: break-all;
+    }
+  }
+
+  .post-topic {
+    width: 100%;
+    color: var(--primary-medium);
+    margin-bottom: 0.75em;
+
+    .title-text {
+      font-weight: bold;
+      color: var(--primary);
+      display: block;
+      font-size: var(--font-up-2);
+      margin-right: 0.75em;
+    }
+
+    .badge-category__wrapper {
+      margin-left: 0.25em;
+    }
+
+    .discourse-tag {
+      vertical-align: bottom;
+      padding-left: 0.1em;
+    }
+  }
+
+  &__context-question {
+    margin-block: 1rem;
+  }
+
+  .topic-statuses {
+    font-size: var(--font-up-2);
+  }
+
+  .reviewable-meta-data {
+    color: var(--primary-med-or-secondary-med);
+    display: flex;
+    width: 100%;
+    margin-bottom: 0.5em;
+    font-size: var(--font-down-1);
+    align-items: baseline;
+
+    .reviewable-type {
+      margin-right: 0.25em;
+      padding: 0.25em 0.5em;
+      text-transform: uppercase;
+      font-size: var(--font-down-2);
+      color: var(--secondary);
+      border-radius: 8px;
+      background-color: var(--secondary-high);
+    }
+
+    .reply-count {
+      margin-left: 1em;
+    }
+
+    .created-at {
+      margin-left: 1em;
+      margin-right: auto;
+
+      a {
+        color: var(--primary-med-or-secondary-med);
+      }
+    }
+
+    .score {
+      font-size: var(--font-down-1);
+    }
+  }
+
+  &__meta-label {
+    font-weight: bold;
+  }
+
+  .reviewable-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+
+    button {
+      white-space: nowrap;
+    }
+  }
+}
+
+.reviewable-stale {
+  opacity: 0.7;
+}
+
+.blur-images {
+  img:not(.avatar, .emoji) {
+    filter: blur(10px);
+    transition: 0.2s ease-in-out;
+
+    &:hover {
+      filter: blur(0);
+      transition: 0.2s ease-in-out;
+    }
+  }
+}
+
+.reviewable-histories {
+  margin-top: 1em;
+}
+
+.reviewable-scores {
+  margin-top: 1rem;
+  min-width: 50%;
+  color: var(--primary-high);
+
+  @include viewport.until(sm) {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    border-top: 1px solid var(--content-border-color);
+  }
+
+  &__table-wrapper {
+    overflow-x: auto;
+  }
+
+  th {
+    white-space: nowrap;
+  }
+
+  .user {
+    display: flex;
+    align-items: center;
+  }
+
+  .user-flag-percentage {
+    margin-left: 0.5em;
+  }
+
+  .d-icon {
+    font-size: var(--font-down-1);
+    color: var(--primary-medium);
+  }
+
+  .badge-notification {
+    line-height: var(--line-height-medium);
+    vertical-align: text-top;
+  }
+
+  .approved,
+  .approved svg {
+    color: var(--success);
+  }
+
+  .rejected,
+  .rejected svg {
+    color: var(--danger);
+  }
+
+  @include viewport.until(sm) {
+    thead {
+      tr {
+        display: flex;
+        flex-direction: column;
+        border: 0;
+      }
+    }
+  }
+
+  tbody {
+    border-width: 1px;
+
+    @include viewport.until(sm) {
+      display: flex;
+      border: 0;
+
+      tr {
+        border: 0;
+      }
+
+      .reviewable-score {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    td {
+      white-space: nowrap;
+      vertical-align: baseline;
+
+      &.user a {
+        max-width: 150px;
+
+        @include ellipsis;
+      }
+    }
+
+    > tr > th {
+      text-align: left;
+    }
+
+    > tr > th,
+    > tr > td {
+      &:not(:empty) {
+        padding: 0.5em;
+      }
+
+      @include viewport.until(sm) {
+        @include ellipsis;
+        padding-right: 0.5em;
+      }
+    }
+  }
+}
+
+.reviewable-score-reason {
+  margin: 0.5em 0;
+  margin-bottom: 0.5em;
+}
+
+.reviewable-conversation {
+  margin: 0.5em 0;
+
+  .reviewable-conversation-post {
+    margin-bottom: 0.5em;
+
+    .username {
+      font-weight: bold;
+      margin-right: 0.25em;
+    }
+  }
+
+  .controls {
+    margin-top: 0.25em;
+  }
+}
+
+.editable-fields {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: var(--space-2) var(--space-4);
+
+  .editable-field {
+    .mini-tag-chooser {
+      margin: 0;
+    }
+
+    .reviewable-input-text {
+      width: 100%;
+      margin-bottom: 0;
+    }
+
+    .reviewable-input-textarea {
+      width: 100%;
+      height: 10em;
+    }
+  }
+
+  .created-by,
+  .payload-title,
+  .payload-raw {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .category-id {
+    .category-chooser {
+      height: 100%;
+    }
+  }
+
+  .category-id,
+  .payload-tags {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+
+    .select-kit {
+      width: 100%;
+    }
+  }
+
+  .composer-toggle-switch {
+    display: none;
+  }
+}
+
+.unknown-reviewables__options {
+  margin-top: 1em;
+}
+
+@include viewport.until(sm) {
+  .reviewable-scores-and-history table {
+    width: 100%;
+  }
+}

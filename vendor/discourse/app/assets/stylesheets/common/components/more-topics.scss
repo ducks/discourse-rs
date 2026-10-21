@@ -1,0 +1,107 @@
+@use "lib/viewport";
+
+.more-topics__container {
+  position: relative;
+  padding-bottom: max(env(safe-area-inset-bottom), 1em);
+  max-width: calc(var(--d-max-width) * 0.87);
+
+  .nav {
+    margin-block: 0;
+
+    @include viewport.until(sm) {
+      margin-block: 0 7px;
+      border-bottom: 1px solid var(--content-border-color);
+    }
+
+    li {
+      @include viewport.until(sm) {
+        position: relative;
+        bottom: -1px; // compensate for the border-bottom
+      }
+
+      .btn {
+        color: var(--d-nav-color);
+        background-color: var(--d-nav-bg-color);
+        padding: var(--d-topic-list-header-data-padding-y) 0.8em;
+        border: none;
+        border-radius: 0;
+        line-height: var(--line-height-medium);
+
+        .d-icon {
+          color: var(--primary-high);
+        }
+
+        &:focus-visible,
+        &:hover {
+          color: var(--d-nav-color--hover);
+          background: var(--d-nav-bg-color--hover);
+
+          .d-icon {
+            color: currentcolor;
+          }
+        }
+
+        &.active {
+          color: var(--d-nav-color--active);
+
+          .d-icon {
+            color: currentcolor;
+          }
+        }
+      }
+    }
+  }
+
+  .more-topics__lists {
+    &:not(.single-list) {
+      .more-topics__list-title {
+        display: none;
+      }
+    }
+  }
+
+  .more-topics__list {
+    .topic-list-body {
+      border-top-width: 1px;
+    }
+
+    .topic-list-header:has(.nav-pills) {
+      th.topic-list-data {
+        padding-bottom: 0;
+
+        &:first-of-type {
+          padding-left: 0;
+        }
+      }
+    }
+
+    @include viewport.until(sm) {
+      .topic-list-header.--has-tabs {
+        display: flex;
+
+        .nav-pills {
+          margin: 0;
+          border: none;
+        }
+
+        th:not(.default) {
+          display: none;
+        }
+      }
+    }
+  }
+
+  // Target the .badge-category text, the bullet icon needs to maintain `display: block`
+  .suggested-topics-message .badge-category__wrapper .badge-category {
+    display: inline;
+    vertical-align: baseline;
+    margin-right: 0;
+    line-height: 0.8;
+    max-width: 150px;
+  }
+
+  .more-topics__list-title,
+  .more-topics__browse-more {
+    padding-left: 0.5em;
+  }
+}

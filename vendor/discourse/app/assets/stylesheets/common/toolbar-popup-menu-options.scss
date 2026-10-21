@@ -1,0 +1,176 @@
+@use "lib/viewport";
+
+.fk-d-menu[class*="toolbar-menu"] {
+  z-index: z("composer", "dropdown");
+
+  @include viewport.from(sm) {
+    // making sure it's only limited in height on floating menu, not mobile menu
+    &.fk-d-menu {
+      max-height: 30vh;
+    }
+  }
+
+  .fk-d-menu__inner-content {
+    flex-direction: column;
+
+    --fade-height: 2.5em;
+
+    &::before,
+    &::after {
+      content: "";
+      position: sticky;
+      display: block;
+      flex-shrink: 0;
+      height: var(--fade-height);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    &::before {
+      top: 0;
+      margin-bottom: calc(var(--fade-height) * -1);
+      background: linear-gradient(to top, transparent, var(--secondary));
+    }
+
+    &::after {
+      bottom: 0;
+      margin-top: calc(var(--fade-height) * -1);
+      background: linear-gradient(to bottom, transparent, var(--secondary));
+    }
+  }
+
+  &.--scroll-top .fk-d-menu__inner-content::before,
+  &.--scroll-bottom .fk-d-menu__inner-content::after {
+    opacity: 1;
+  }
+
+  .fullscreen-composer & {
+    z-index: z("header") + 1;
+  }
+
+  // eventho mobile composer shouldnt be used in conjuction with fk-d-menu (floating version), on tablets the possibility unfortunately exists
+  .discourse-touch & {
+    z-index: z("mobile-composer");
+  }
+}
+
+.fk-d-menu[class*="toolbar-menu"] .dropdown-menu__header {
+  padding: var(--space-2) 0.35em;
+  color: var(--primary-medium);
+  font-size: var(--font-down-1-rem);
+}
+
+.toolbar-menu__options-content,
+.toolbar-menu__heading-content,
+.toolbar-menu__list-content {
+  .dropdown-menu {
+    .btn {
+      // The label is block content, so the button counts as icon-only and
+      // drops the gap after its icon; restore the labelled-button gap.
+      &.no-text .d-icon {
+        margin-right: 0.45em;
+      }
+
+      &.--active {
+        .d-button-label__active-icon {
+          visibility: visible;
+        }
+
+        // The check owns the trailing slot at rest, even for a shortcut that
+        // is otherwise always shown.
+        &:not(:hover, :focus, :focus-visible) .shortcut {
+          visibility: hidden;
+        }
+      }
+
+      &:hover,
+      &:focus,
+      &:focus-visible {
+        .shortcut {
+          visibility: visible;
+        }
+
+        .d-button-label__active-icon {
+          visibility: hidden;
+        }
+      }
+    }
+
+    // The shortcut and the active check share one trailing cell: both are
+    // laid out so the row reserves their width, and only one is shown.
+    .d-button-label {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: var(--space-4);
+      min-width: 0;
+
+      &__text {
+        text-align: start;
+      }
+
+      &__active-icon,
+      .shortcut {
+        grid-area: 1 / 2;
+        justify-self: end;
+        visibility: hidden;
+      }
+
+      .shortcut.--always-visible {
+        visibility: visible;
+      }
+    }
+  }
+}
+
+.toolbar-menu__heading-content {
+  .dropdown-menu {
+    .btn[data-name="heading-1"] {
+      .d-button-label__text,
+      .d-icon[class*="d-icon-discourse"] {
+        font-size: var(--font-up-2-rem);
+        font-weight: bold;
+      }
+    }
+
+    .btn[data-name="heading-2"] {
+      .d-button-label__text,
+      .d-icon {
+        font-size: var(--font-up-1-rem);
+        font-weight: bold;
+      }
+    }
+
+    .btn[data-name="heading-3"] {
+      .d-button-label__text,
+      .d-icon {
+        font-size: var(--font-0);
+        font-weight: bold;
+      }
+    }
+
+    .btn[data-name="heading-4"] {
+      .d-button-label__text,
+      .d-icon {
+        font-weight: bold;
+        font-size: var(--font-down-1-rem);
+      }
+    }
+
+    .btn[data-name="heading-paragraph"] {
+      .d-button-label__text,
+      .d-icon {
+        font-size: var(--font-down-1-rem);
+      }
+    }
+
+    .btn[data-name="heading-small"] {
+      .d-button-label__text,
+      .d-icon {
+        font-size: var(--font-down-2-rem);
+      }
+    }
+  }
+}

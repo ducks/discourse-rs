@@ -1,0 +1,25 @@
+.sidebar-custom-sections {
+  .sidebar-section-header {
+    display: flex;
+  }
+
+  .sidebar-section[data-section-name="community"]
+    .sidebar-section-link-prefix.icon {
+    cursor: pointer;
+  }
+
+  a {
+    -webkit-touch-callout: none !important;
+
+    @include unselectable;
+    cursor: pointer;
+  }
+}
+
+.discourse-touch {
+  .sidebar-custom-sections {
+    a:hover {
+      background: none !important;
+    }
+  }
+}

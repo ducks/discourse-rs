@@ -1,0 +1,117 @@
+.topic-list tr.selected td:first-of-type,
+.topic-list-item.selected td:first-of-type,
+.latest-topic-list-item.selected,
+.search-results .fps-result.selected {
+  box-shadow: inset 3px 0 0 var(--d-nav-color--active);
+}
+
+.featured-topic.selected,
+.topic-post.selected,
+.nested-view__op-article[data-keyboard-selected],
+.nested-post[data-keyboard-selected]
+  > .nested-post__main
+  > .nested-post__article,
+.nested-post[data-keyboard-selected]
+  > .nested-post__main
+  > .nested-post__collapsed-bar,
+.nested-post[data-keyboard-selected]
+  > .nested-post__main
+  > .nested-post__placeholder {
+  box-shadow: -3px 0 0 var(--d-nav-color--active);
+}
+
+.topic-list tr.selected,
+.topic-list-item.selected,
+.featured-topic.selected,
+.topic-post,
+.post-stream--cloaked,
+.latest-topic-list-item.selected,
+.nested-view__op-article[data-keyboard-selected],
+.nested-post[data-keyboard-selected],
+.search-results .fps-result.selected {
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.latest .featured-topic {
+  padding-left: 4px;
+}
+
+.topic-list-item.selected {
+  background-color: inherit;
+}
+
+.keyboard-shortcuts-modal.d-modal.--max {
+  .d-modal__container {
+    max-width: 70vw;
+  }
+}
+
+.shortcut-category {
+  border: 1px solid var(--content-border-color);
+
+  h2 {
+    font-size: var(--font-0);
+    background-color: var(--primary-very-low);
+    padding: 0.5rem 1rem;
+    margin: 0;
+  }
+}
+
+#keyboard-shortcuts-help {
+  box-sizing: border-box;
+
+  .filter-input-container {
+    grid-column: 1 / -1;
+    margin-bottom: 1em;
+  }
+
+  .keyboard-shortcuts-help__container {
+    columns: 2 20em; // Set maximum of 2 columns
+
+    section {
+      display: inline-block;
+      margin-bottom: 1.5em;
+      width: 100%;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  @for $i from 1 through 25 {
+    .span-#{$i} {
+      grid-row-end: span $i;
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--content-border-color);
+  }
+
+  td {
+    padding: 0.25rem 1rem;
+    vertical-align: middle;
+  }
+
+  .shortcut-description {
+    width: 100%;
+  }
+
+  .shortcut-key {
+    text-align: right;
+    white-space: nowrap;
+
+    .delimiter-newline {
+      display: block;
+      text-align: right;
+    }
+  }
+}

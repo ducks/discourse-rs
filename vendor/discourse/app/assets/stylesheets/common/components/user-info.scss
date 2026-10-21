@@ -1,0 +1,124 @@
+@use "lib/viewport";
+
+// Common styles for "user-info" component
+.user-info {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 0.75rem;
+
+  .user-image-inner {
+    position: relative;
+    display: inline-block;
+  }
+
+  .user-detail {
+    min-width: 0;
+
+    @include viewport.until(sm) {
+      font-size: var(--font-down-1);
+    }
+
+    .name-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 0.5em;
+
+      a {
+        color: var(--primary-high);
+      }
+
+      .username-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 0.35em;
+
+        .username {
+          font-weight: bold;
+
+          @include ellipsis;
+        }
+      }
+
+      .name-wrapper {
+        @include ellipsis;
+        min-width: 0;
+      }
+
+      // When name should appear first (site setting)
+      &--name-first:not(&--show-status) {
+        .username-wrapper {
+          order: 1;
+        }
+
+        .name-wrapper .name {
+          font-weight: bold;
+        }
+
+        .username-wrapper .username {
+          font-weight: normal;
+        }
+      }
+
+      // When showing status: username+status on first line, name on second
+      &--show-status {
+        .username-wrapper {
+          width: 100%;
+        }
+
+        .name-wrapper {
+          width: 100%;
+        }
+      }
+    }
+
+    .details {
+      color: var(--primary);
+
+      .d-icon-reply {
+        color: var(--primary-medium);
+      }
+    }
+
+    .title {
+      color: var(--primary-medium);
+
+      @include ellipsis;
+    }
+  }
+
+  &.medium {
+    min-height: 60px;
+
+    @include viewport.from(sm) {
+      display: flex;
+
+      .user-image {
+        width: 55px;
+        margin-right: 0;
+      }
+    }
+
+    .username,
+    .name {
+      display: block;
+    }
+
+    .margin a {
+      margin-left: 0;
+    }
+
+    &.badge-info {
+      min-height: 80px;
+      min-width: 250px;
+
+      .granted-on {
+        color: var(--primary-med-or-secondary-med);
+      }
+
+      .post-link {
+        display: block;
+        margin-top: 0.2em;
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+@use "breakpoints";
+
+$breakpoints: breakpoints.$breakpoints;
+
+@mixin from($bp) {
+  @media (width >= #{breakpoints.get($bp)}) {
+    @content;
+  }
+}
+
+@mixin until($bp) {
+  @media (width < #{breakpoints.get($bp)}) {
+    @content;
+  }
+}
+
+@mixin between($from, $until) {
+  @media (#{breakpoints.get($from)} <= width < #{breakpoints.get($until)}) {
+    @content;
+  }
+}
