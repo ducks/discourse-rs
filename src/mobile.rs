@@ -43,11 +43,22 @@ pub const NARROW_COOKIE: &str = "narrow_desktop";
 tokio::task_local! {
     static MOBILE_VIEW: bool;
     static NARROW_DESKTOP: bool;
+    static MOBILE_DEVICE: bool;
 }
 
 /// `MobileDetection.mobile_device?`: a phone's user agent, not an iPad's.
 pub fn mobile_device(user_agent: &str) -> bool {
     user_agent.contains("Mobile") && !user_agent.contains("iPad")
+}
+
+/// `mobile_device?` of the request's user agent, whatever the viewport.
+pub fn decide_device(headers: &HeaderMap) -> bool {
+    mobile_device(
+        headers
+            .get(header::USER_AGENT)
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or(""),
+    )
 }
 
 /// The request's layout: the `mobile_view` cookie the client wrote from its
@@ -56,12 +67,7 @@ pub fn decide(headers: &HeaderMap) -> bool {
     match crate::session::current::cookie(headers, COOKIE) {
         Some("1") => true,
         Some("0") => false,
-        _ => mobile_device(
-            headers
-                .get(header::USER_AGENT)
-                .and_then(|v| v.to_str().ok())
-                .unwrap_or(""),
-        ),
+        _ => decide_device(headers),
     }
 }
 
@@ -83,6 +89,14 @@ pub fn mobile_view() -> bool {
     MOBILE_VIEW.try_with(|m| *m).unwrap_or(false)
 }
 
+/// `ApplicationHelper#mobile_device?` for the request being rendered: the
+/// user agent's guess, which picks the theme's mobile or desktop html
+/// fields (theme_lookup, customHTML) even where the viewport cookie picks
+/// the other layout; desktop outside a request.
+pub fn on_mobile_device() -> bool {
+    MOBILE_DEVICE.try_with(|m| *m).unwrap_or(false)
+}
+
 /// Runs `f` as a request in the given layout would.
 pub async fn scope<F: std::future::Future>(mobile: bool, f: F) -> F::Output {
     MOBILE_VIEW.scope(mobile, f).await
@@ -92,8 +106,12 @@ pub async fn scope<F: std::future::Future>(mobile: bool, f: F) -> F::Output {
 pub async fn layer(request: Request, next: Next) -> Response {
     let mobile = decide(request.headers());
     let narrow = decide_narrow(request.headers());
+    let device = decide_device(request.headers());
     MOBILE_VIEW
-        .scope(mobile, NARROW_DESKTOP.scope(narrow, next.run(request)))
+        .scope(
+            mobile,
+            NARROW_DESKTOP.scope(narrow, MOBILE_DEVICE.scope(device, next.run(request))),
+        )
         .await
 }
 
@@ -129,6 +147,13 @@ mod tests {
         assert!(decide(&headers(DESKTOP, Some("a=b; mobile_view=1"))));
         assert!(!decide(&headers(IPHONE, Some("mobile_view=0"))));
         assert!(decide(&headers(IPHONE, Some("mobile_view=x"))));
+    }
+
+    #[test]
+    fn the_device_is_the_user_agent_s_whatever_the_cookie() {
+        assert!(decide_device(&headers(IPHONE, Some("mobile_view=0"))));
+        assert!(!decide_device(&headers(DESKTOP, Some("mobile_view=1"))));
+        assert!(!decide_device(&headers(IPAD, None)));
     }
 
     #[test]

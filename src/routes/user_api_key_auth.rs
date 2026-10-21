@@ -944,7 +944,7 @@ async fn page(
     .await?;
     drop(conn);
     site.chrome.sidebar = String::new();
-    site.chrome.powered_by = false;
+    site.chrome.show_footer = false;
     let urls = crate::url::Urls {
         config: &state.config,
         settings,

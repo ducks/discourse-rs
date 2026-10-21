@@ -844,6 +844,21 @@ fn ember_selector(text: &str) -> bool {
     RE.is_match(text)
 }
 
+/// `ThemeField#inline_javascript?` of a script element: no src, and a
+/// javascript type or none.
+pub fn inline_javascript(node: &markup5ever_rcdom::Handle) -> bool {
+    let src = crate::sanitize::attr(node, "src").filter(|s| !crate::ruby::is_blank(s));
+    let kind = crate::sanitize::attr(node, "type").filter(|s| !crate::ruby::is_blank(s));
+    match (&src, &kind) {
+        (Some(_), _) => false,
+        (None, Some(t)) => matches!(
+            t.to_lowercase().as_str(),
+            "text/javascript" | "application/javascript" | "application/ecmascript"
+        ),
+        (None, None) => true,
+    }
+}
+
 /// `ThemeField#process_html`: the fragment as Nokogiri's HTML5 parser
 /// writes it back, scripts given the CSP nonce placeholder.
 fn process_html(env: &Env<'_>, html: &str) -> Result<(String, Option<String>), AppError> {
@@ -852,17 +867,7 @@ fn process_html(env: &Env<'_>, html: &str) -> Result<(String, Option<String>), A
         if crate::sanitize::element_name(node).as_deref() != Some("script") {
             return;
         }
-        let src = crate::sanitize::attr(node, "src").filter(|s| !crate::ruby::is_blank(s));
-        let kind = crate::sanitize::attr(node, "type").filter(|s| !crate::ruby::is_blank(s));
-        let javascript = match (&src, &kind) {
-            (Some(_), _) => false,
-            (None, Some(t)) => matches!(
-                t.to_lowercase().as_str(),
-                "text/javascript" | "application/javascript" | "application/ecmascript"
-            ),
-            (None, None) => true,
-        };
-        if javascript {
+        if inline_javascript(node) {
             inline = true;
         }
         crate::sanitize::set_attr(node, "nonce", CSP_NONCE_PLACEHOLDER);

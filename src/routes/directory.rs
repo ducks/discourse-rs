@@ -301,7 +301,7 @@ pub async fn page(
         .map(|at| at.with_timezone(&chrono::Utc));
     // hideApplicationFooter while there is more to load.
     if (items.len() as i64) < total {
-        site.chrome.powered_by = false;
+        site.chrome.show_footer = false;
     }
     let main = crate::directory_view::render(
         &cx,

@@ -216,6 +216,7 @@ pub mod tag_groups;
 pub mod tag_writes;
 pub mod tagging;
 pub mod tags;
+pub mod theme_html;
 pub mod theme_import;
 pub mod theme_writes;
 pub mod themes;
