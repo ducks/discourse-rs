@@ -10,8 +10,7 @@
 //! Messages notify their directly targeted users, and their groups'
 //! members by their level on it, with the groups' inbox summaries.
 //!
-//! Refused rather than approximated: group SMTP, nested replies and push
-//! notifications.
+//! Refused rather than approximated: group SMTP and push notifications.
 //! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
@@ -307,9 +306,6 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             all_allowed.extend(moderators.into_iter().filter(|u| !not_allowed(*u)));
         }
     }
-    if s.get("nested_replies_enabled")?.truthy() {
-        return Err(Unsupported("alerts with nested replies").into());
-    }
     let mut alerter = Alerter::new(ctx, &post);
     alerter.skip_send_email = skip_send_email;
     alerter.notified.extend(post.user_id);
@@ -421,7 +417,12 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     let notify_about_reply = post.post_type == crate::posting::post_types::REGULAR
         || (post.post_type == crate::posting::post_types::WHISPER && post.action_code.is_none());
     // reply_notification_target
-    let reply_target: Option<i32> = match post.reply_to_post_number {
+    // (the topic's first post for a root reply in a nested topic)
+    let reply_to = match post.reply_to_post_number {
+        None if nested_view(ctx, conn, &post).await? => Some(1),
+        n => n,
+    };
+    let reply_target: Option<i32> = match reply_to {
         Some(n) => sqlx::query_scalar::<_, Option<i32>>(
             "SELECT user_id FROM posts WHERE topic_id = $1 AND post_number = $2 \
              AND user_id IS DISTINCT FROM $3 AND deleted_at IS NULL LIMIT 1",
@@ -699,6 +700,25 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
     Ok(())
+}
+
+/// `Topic#nested_view?`: nested replies on, not a message, and the topic
+/// converted (a nested_topics row) or nested by default.
+async fn nested_view(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<bool, AppError> {
+    let s = ctx.settings;
+    if !s.get("nested_replies_enabled")?.truthy() || post.archetype == "private_message" {
+        return Ok(false);
+    }
+    let converted: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM nested_topics WHERE topic_id = $1)")
+            .bind(post.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    Ok(converted || s.get("nested_replies_default")?.truthy())
 }
 
 /// `expand_group_mentions(groups, post)`: of the groups named, those the
@@ -1141,15 +1161,71 @@ impl Alerter<'_> {
             .clone()
             .filter(|u| !u.is_empty())
             .or_else(|| post.username.clone());
-        if COLLAPSED.contains(&notification_type) {
+        // In a nested topic a reply collapses only with those in its bucket
+        // (the post it answers, or the root: Notification::TOPIC_ROOT_BUCKET).
+        let mut bucket: Option<i32> = None;
+        let mut consolidated_count: Option<i64> = None;
+        let nested = COLLAPSED.contains(&notification_type) && nested_view(ctx, conn, post).await?;
+        if notification_type == types::REPLIED && nested {
+            let b = post.reply_to_post_number.unwrap_or(1);
+            bucket = Some(b);
+            // destroy_notifications(user, [replied], topic, bucket_post_number:)
+            sqlx::query(
+                "DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2 AND notification_type = $3 \
+                 AND data::jsonb ->> 'reply_to_post_number' = $4",
+            )
+            .bind(user_id)
+            .bind(post.topic_id)
+            .bind(types::REPLIED)
+            .bind(b.to_string())
+            .execute(&mut *conn)
+            .await?;
+            // unread_posts_in_bucket: secured, past the last read, replies
+            // to the bucket's post (the root: no reply_to or post 1, not
+            // post 1 itself).
+            let visible = guardian.visible_post_types(ctx.settings)?;
+            let (first, count): (Option<i32>, i64) = sqlx::query_as(
+                "SELECT MIN(post_number), COUNT(*) FROM posts WHERE topic_id = $2 AND deleted_at IS NULL \
+                   AND post_type = ANY($3) \
+                   AND post_number > COALESCE((SELECT last_read_post_number FROM topic_users tu \
+                                               WHERE tu.user_id = $1 AND tu.topic_id = $2), 0) \
+                   AND CASE WHEN $4 = 1 THEN (reply_to_post_number IS NULL OR reply_to_post_number = 1) \
+                                              AND post_number > 1 \
+                            ELSE reply_to_post_number = $4 END",
+            )
+            .bind(user_id)
+            .bind(post.topic_id)
+            .bind(&visible)
+            .bind(b)
+            .fetch_one(&mut *conn)
+            .await?;
+            if let Some(first) = first {
+                target_post_number = first;
+            }
+            if count > 1 {
+                consolidated_count = Some(count);
+                let n = count.to_string();
+                display_username = Some(
+                    ctx.i18n
+                        .t_with("embed.replies.other", &[("count", &n)])
+                        .unwrap_or_else(|| format!("{count} replies")),
+                );
+            }
+        } else if COLLAPSED.contains(&notification_type) {
             // destroy_notifications(user, COLLAPSED, topic) when the user can
-            // see the topic (checked above), then the first unread post.
+            // see the topic (checked above), less replied in a nested topic,
+            // then the first unread post.
+            let collapsed: Vec<i32> = COLLAPSED
+                .iter()
+                .copied()
+                .filter(|t| !(nested && *t == types::REPLIED))
+                .collect();
             sqlx::query(
                 "DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2 AND notification_type = ANY($3)",
             )
             .bind(user_id)
             .bind(post.topic_id)
-            .bind(&COLLAPSED[..])
+            .bind(&collapsed)
             .execute(&mut *conn)
             .await?;
             let visible = guardian.visible_post_types(ctx.settings)?;
@@ -1237,6 +1313,12 @@ impl Alerter<'_> {
         data.insert("original_username".into(), json!(original_username));
         data.insert("revision_number".into(), json!(opts.revision_number));
         data.insert("display_username".into(), json!(displayed));
+        if let Some(b) = bucket {
+            data.insert("reply_to_post_number".into(), json!(b));
+            if let Some(count) = consolidated_count {
+                data.insert("consolidated_count".into(), json!(count));
+            }
+        }
         if let Some(name) = opts.display_name.as_ref().or(target_name.as_ref()) {
             data.insert("display_name".into(), json!(name));
         }

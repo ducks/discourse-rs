@@ -22,8 +22,8 @@ smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
 distinct reasons); 166 more put the literal on the line after
-`Unsupported(`, which that grep misses, so 1870 in all. Four `not_yet`
-write cases are left (150, 152, 198, 252). By area, the grep's
+`Unsupported(`, which that grep misses, so 1870 in all. Six `not_yet`
+write cases are left (145, 150, 152, 198, 252). By area, the grep's
 count first and all of them second where they differ, with the items
 that own them:
 
@@ -1616,7 +1616,7 @@ have handlers now.
     (posting/create.rs:1398), returning-user post notices (:1623),
     featured topics with a category sort order (:2015),
     suppress_secured_categories_from_admin (:2018;
-    jobs/post_alert.rs:1021), site_archived (posting/create.rs:242;
+    jobs/post_alert.rs:1042), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
     regeneration (posting/create.rs:969; jobs/handlers.rs:1108;
     post_owner_changer.rs:372; post_mover.rs:901;
@@ -1778,9 +1778,13 @@ have handlers now.
 145. `feat/post-alert-rest` M (links to topics notifying someone and
     their consolidation, the skip_send_email option, posts by email
     skipping their to and cc addresses, populate_acting_user, mentions
-    in flagged messages and warnings, group and @here mentions done):
-    nested replies (jobs/post_alert.rs:311), post_alert options other
-    than skip_send_email (:214, none sent today)
+    in flagged messages and warnings, group and @here mentions, nested
+    replies done): post_alert options other than skip_send_email
+    (jobs/post_alert.rs:214, none sent today); nested reply stats
+    (HasNestedReplyStats: nested_view_post_stats on create, destroy and
+    PostRevisor's reparent), which the port skips without refusing; the
+    two `not_yet` cases posts/nested_reply_to_post and
+    nested_bucket_consolidate differ only there
 146. `feat/notification-email-rest` M: previous replies and in-reply-to
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
@@ -1995,7 +1999,7 @@ have handlers now.
     (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
     EmailCook)
 166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
-    jobs/post_alert.rs:553; routes/admin_groups.rs:1239;
+    jobs/post_alert.rs:555; routes/admin_groups.rs:1239;
     routes/groups.rs:642), the group SMTP credentials check
     (problem_checks.rs:342). Needs: network
 167. `feat/locales` L: every locale but English: server strings
@@ -2142,7 +2146,7 @@ have handlers now.
     (request_tracker.rs:465), keep_old_ip_address_count
     (session/current.rs:867). Needs: a GeoLite2 database
 186. `feat/push-notifications` M: push notifications
-    (jobs/post_alert.rs:1380) by web push and through user API keys'
+    (jobs/post_alert.rs:1463) by web push and through user API keys'
     push clients (84). Needs: network
 187. `fix/rails-error-answers` L (was M), split by area when started: about 175
     refusals when written, about 720 on 2026-10-20 (634 of the

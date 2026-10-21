@@ -1,0 +1,24 @@
+{
+  "not_yet": "nested reply stats on post create (HasNestedReplyStats: nested_view_post_stats); the notifications match",
+  "user": "user1",
+  "settings": {
+    "nested_replies_enabled": true
+  },
+  "setup": [
+    "INSERT INTO nested_topics (topic_id, created_at, updated_at) VALUES (35, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply to user2 in a nested topic, in the bucket of their post.",
+        "reply_to_post_number": 3
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

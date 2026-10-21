@@ -2297,5 +2297,7 @@ post_alert options.
 | services/post_alerter_spec.rb | 857 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
 | services/post_alerter_spec.rb | - | max_users_notified_per_group_mention | covered | posts/group_mention_too_many (new, match) |
 | services/post_alerter_spec.rb | 1006, 1039, 1046-1107 | group mentions in messages: only those allowed in it (x9) | covered | messages/pm_group_mention (new, match); the rest recordable as variants |
-| services/post_alerter_spec.rb | 1895-2203 | replies in nested topics and their buckets (x14) | unported | jobs/post_alert.rs:311 |
-| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:553, ROADMAP 166 |
+| services/post_alerter_spec.rb | 1909, 2020, 2064 | nested topics: the OP told of a root reply as replied, bucket 1 in the data, watchers still told | covered | posts/nested_root_reply, posts/nested_by_default (new, match) |
+| services/post_alerter_spec.rb | 1951, 2072, 2081 | nested topics: a reply in its parent's bucket, replies in a bucket consolidated | covered | posts/nested_reply_to_post, posts/nested_bucket_consolidate (new, not_yet: only nested_view_post_stats differs, HasNestedReplyStats) |
+| services/post_alerter_spec.rb | 1917-1991, 2094-2203 | nested topics: other buckets, whispers, conversion mid-life, flat regression guards (x9) | recordable | variants of the nested_* cases |
+| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:555, ROADMAP 166 |
