@@ -9,7 +9,15 @@ in
   buildInputs = [ postgresql ];
 
   shellHook = ''
-    export PGDATA="$PWD/.nix-postgres"
+    # One cluster per clone: a git worktree uses its main checkout's, so
+    # entering a worktree's shell doesn't initdb a second, empty one.
+    common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+    if [ -n "$common_dir" ]; then
+      export PGDATA="$(dirname "$common_dir")/.nix-postgres"
+    else
+      export PGDATA="$PWD/.nix-postgres"
+    fi
+    unset common_dir
     export PGHOST="$PGDATA"
     export PGPORT="${toString port}"
     export DATABASE_URL="postgresql://localhost:${toString port}/discourse_rs_development?host=$PGDATA"
