@@ -321,6 +321,13 @@
     header.dataset.name = name;
     var choice = header.querySelector(".select-kit-selected-name");
     choice.dataset.name = name;
+    [header, choice].forEach(function (el) {
+      if (value === "") {
+        delete el.dataset.value;
+      } else {
+        el.dataset.value = value;
+      }
+    });
     choice.title = name;
     choice.querySelector(".name").textContent = name;
     details.dataset.value = value;

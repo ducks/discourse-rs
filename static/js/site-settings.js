@@ -84,8 +84,16 @@
   // (AdminAreaSettings): the admin contents holding the filter controls.
   function page() {
     var controls = document.querySelector(".admin-site-settings-filter-controls");
-    return controls ? controls.closest(".admin-contents") : null;
+    if (controls) {
+      return controls.closest(".admin-contents");
+    }
+    // A theme's page: its settings, site settings, translations and
+    // relatives, each saved by the page's saver (Discourse.settingSavers).
+    return document.querySelector(".admin-contents .admin-customize-themes-show");
   }
+
+  // A setting's row; a theme translation's has no setting name.
+  var ROW = ".row.setting[data-setting], .row.setting[data-translation-key]";
 
   function base() {
     var meta = document.querySelector("meta[name='discourse-base-uri']");
@@ -138,7 +146,9 @@
   // The setting's value as the editor holds it, as the server takes it.
   function currentValue(row) {
     var type = row.dataset.type;
-    var checkbox = row.querySelector(".setting-value input.form-kit__control-checkbox");
+    var checkbox = row.querySelector(
+      ".setting-value input.form-kit__control-checkbox, .setting-value > label.checkbox-label > input[type='checkbox']"
+    );
     if (checkbox) {
       return checkbox.checked ? "true" : "false";
     }
@@ -175,7 +185,7 @@
       return listSetting.dataset.listValue;
     }
     var input = row.querySelector(
-      ".setting-value input.form-kit__control-input, .setting-value input.form-kit__control-password, .setting-value textarea"
+      ".setting-value input.form-kit__control-input, .setting-value input.form-kit__control-password, .setting-value textarea, .setting-value input.input-setting-string, .setting-value input.input-setting-integer"
     );
     if (input) {
       var value = input.value;
@@ -188,7 +198,9 @@
   }
 
   function setValue(row, value) {
-    var checkbox = row.querySelector(".setting-value input.form-kit__control-checkbox");
+    var checkbox = row.querySelector(
+      ".setting-value input.form-kit__control-checkbox, .setting-value > label.checkbox-label > input[type='checkbox']"
+    );
     if (checkbox) {
       checkbox.checked = value === "true";
       return;
@@ -211,6 +223,10 @@
     var listSetting = row.querySelector(".setting-value details.list-setting");
     if (listSetting && row.querySelector(".file-types-list__button")) {
       setFileTypes(listSetting, value);
+      return;
+    }
+    if (listSetting && listSetting.dataset.choices) {
+      setListSetting(listSetting, value);
       return;
     }
     var colorPicker = row.querySelector(".setting-value .color-picker");
@@ -243,7 +259,7 @@
       return;
     }
     var input = row.querySelector(
-      ".setting-value input.form-kit__control-input, .setting-value input.form-kit__control-password, .setting-value textarea"
+      ".setting-value input.form-kit__control-input, .setting-value input.form-kit__control-password, .setting-value textarea, .setting-value input.input-setting-string, .setting-value input.input-setting-integer"
     );
     if (input) {
       input.value = value;
@@ -256,7 +272,8 @@
       return [];
     }
     return Array.prototype.filter.call(root.querySelectorAll(".row.setting[data-setting]"), function (row) {
-      return row.classList.contains("--dirty");
+      // A row saved on its own (trackChanges off) is not the banner's.
+      return row.classList.contains("--dirty") && !row.dataset.saver;
     });
   }
 
@@ -478,6 +495,15 @@
         if (!ok) {
           return false;
         }
+        var saver = rows.length === 1 && rows[0].dataset.saver && (Discourse.settingSavers || {})[rows[0].dataset.saver];
+        if (saver) {
+          return saver(rows[0], values[0]).then(function () {
+            rows[0].dataset.value = values[0];
+            showError(rows[0], null);
+            syncRow(rows[0]);
+            return true;
+          });
+        }
         var body = new URLSearchParams();
         var path;
         if (rows.length === 1 && !bulk) {
@@ -695,6 +721,66 @@
     details.querySelector(".formatted-selection").textContent = values.length
       ? values.join(", ")
       : strings["select_kit.default_header_text"] || "";
+  }
+
+  // ListSetting's MultiSelect over its choices (data-choices): the header
+  // names the values; open, its body has each chosen one (SelectedChoice,
+  // its button removing it) over the choices not chosen.
+  function setListSetting(details, value) {
+    setFileTypes(details, value);
+    if (details.classList.contains("is-expanded")) {
+      openListSetting(details);
+    }
+  }
+
+  function openListSetting(details) {
+    var values = (details.dataset.listValue || "").split("|").filter(Boolean);
+    var esc = function (s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    };
+    details.classList.add("is-expanded");
+    details.open = true;
+    var chosen = values
+      .map(function (v) {
+        return (
+          '<button class="btn btn-default selected-choice" data-name="' +
+          esc(v) +
+          '" data-value="' +
+          esc(v) +
+          '" type="button">' +
+          icon("xmark") +
+          '<span class="d-button-label">' +
+          esc(v) +
+          "</span></button>"
+        );
+      })
+      .join("");
+    var rest = JSON.parse(details.dataset.choices).filter(function (c) {
+      return values.indexOf(String(c)) === -1;
+    });
+    details.querySelector(".select-kit-body").innerHTML =
+      (chosen ? '<div class="selected-content">' + chosen + "</div>" : "") +
+      '<div class="select-kit-collection" role="listbox">' +
+      rest
+        .map(function (c) {
+          return (
+            '<div class="select-kit-row" role="option" tabindex="0" data-value="' +
+            esc(c) +
+            '" data-name="' +
+            esc(c) +
+            '"><span class="name">' +
+            esc(c) +
+            "</span></div>"
+          );
+        })
+        .join("") +
+      "</div>";
+  }
+
+  function closeListSetting(details) {
+    details.classList.remove("is-expanded");
+    details.open = false;
+    details.querySelector(".select-kit-body").innerHTML = "";
   }
 
   // FileTypesList#insertDefaultTypes, with its toast.
@@ -926,7 +1012,7 @@
     if (event.target.matches(".file-size-input")) {
       fileSizeInput(event.target.closest(".file-size-picker"));
     }
-    var row = event.target.closest(".row.setting[data-setting]");
+    var row = event.target.closest(ROW);
     if (row) {
       syncRow(row);
     }
@@ -952,7 +1038,7 @@
       go(params);
       return;
     }
-    var row = event.target.closest(".row.setting[data-setting]");
+    var row = event.target.closest(ROW);
     if (row) {
       syncRow(row);
     }
@@ -1011,7 +1097,7 @@
       });
       return;
     }
-    var row = target.closest(".row.setting[data-setting]");
+    var row = target.closest(ROW);
     if (!row) {
       return;
     }
@@ -1029,6 +1115,45 @@
     }
     if (target.closest(".secret-value-list button")) {
       unsupported("the secret list setting editor");
+      return;
+    }
+    // setDefaultValues: the defaults added to the values.
+    var defaultsButton = target.closest(".setting-label [data-default-values]");
+    if (defaultsButton) {
+      var current = currentValue(row).split("|").filter(Boolean);
+      defaultsButton.dataset.defaultValues.split("|").forEach(function (v) {
+        if (v && current.indexOf(v) === -1) {
+          current.push(v);
+        }
+      });
+      setValue(row, current.join("|"));
+      showError(row, null);
+      syncRow(row);
+      defaultsButton.remove();
+      return;
+    }
+    var listChoices = target.closest("details.list-setting[data-choices]");
+    if (listChoices) {
+      event.preventDefault();
+      var chosen = (listChoices.dataset.listValue || "").split("|").filter(Boolean);
+      var pick = target.closest(".select-kit-row");
+      var drop = target.closest(".selected-choice");
+      if (pick) {
+        chosen.push(pick.dataset.value);
+      } else if (drop) {
+        chosen = chosen.filter(function (v) {
+          return v !== drop.dataset.value;
+        });
+      } else {
+        if (listChoices.classList.contains("is-expanded")) {
+          closeListSetting(listChoices);
+        } else {
+          openListSetting(listChoices);
+        }
+        return;
+      }
+      setListSetting(listChoices, chosen.join("|"));
+      syncRow(row);
       return;
     }
     var typesButton = target.closest(".file-types-list__button");

@@ -1831,6 +1831,262 @@ fn client_strings(cx: &AdminCx, settings: &[Value]) -> String {
     )
 }
 
+/// How a SiteSettingComponent subclass with `trackChanges` off draws its
+/// row (ThemeSettingEditor, ThemeSiteSettingEditor, ThemeTranslation,
+/// ThemeSettingRelativesSelector): the legacy editors, never FormKit.
+pub struct LegacyRow<'a> {
+    /// The invocation's classes (`class=`).
+    pub class: &'a str,
+    /// The row's `settingName`: the setting's label or humanized name
+    /// unless given.
+    pub name: Option<&'a str>,
+    /// staffLogFilter's subject and action, None for no history link.
+    pub staff_log: Option<(String, &'a str)>,
+    /// The type the component reads (ThemeTranslation's own `string`).
+    pub kind: Option<&'a str>,
+    /// For a list: the choices the MultiSelect offers (ListSetting's
+    /// settingChoices) and setDefaultValues' button label while the
+    /// defaults are not all chosen.
+    pub choices: Option<Vec<String>>,
+    pub default_values: Option<(Vec<String>, String)>,
+    /// Attributes for the page's script, already escaped.
+    pub attrs: String,
+}
+
+/// SiteSettingComponent's row with `trackChanges` off.
+pub fn legacy_row(cx: &AdminCx, setting: &Value, row: &LegacyRow) -> String {
+    let i18n = cx.i18n;
+    let name = s(&setting["setting"]);
+    let kind = match row.kind {
+        Some(k) => k.to_string(),
+        None => component_type(setting),
+    };
+    let over = overridden(setting);
+    let disabled = setting["disabled"] == Value::Bool(true);
+    let mut classes = format!("row setting {}", kind.replace('_', "-"));
+    if over {
+        classes.push_str(" overridden");
+    }
+    if disabled {
+        classes.push_str(" disabled");
+    }
+    if !row.class.is_empty() {
+        classes.push(' ');
+        classes.push_str(row.class);
+    }
+    let label = row.name.map(str::to_string).unwrap_or_else(|| {
+        setting["label"]
+            .as_str()
+            .filter(|l| !l.is_empty())
+            .unwrap_or(s(&setting["humanized_name"]))
+            .to_string()
+    });
+    let value = value_string(&setting["value"]);
+    let mut out = format!(
+        "<div class=\"{classes}\"{} data-type=\"{}\" data-default=\"{}\" data-value=\"{}\"{}><div class=\"setting-label\"><h3>{}",
+        if name.is_empty() {
+            String::new()
+        } else {
+            format!(" data-setting=\"{}\"", escape(name))
+        },
+        escape(&kind),
+        escape(&value_string(&setting["default"])),
+        escape(&value),
+        row.attrs,
+        escape(&label),
+    );
+    if let Some((subject, action)) = &row.staff_log {
+        let filters = serde_json::json!({ "subject": subject, "action_name": action }).to_string();
+        out.push_str(&format!(
+            " <a class=\"staff-action-log-link\" title=\"{}\" href=\"{}/admin/logs/staff_action_logs?filters={}&amp;force_refresh=true\"><span class=\"history-icon\">{}</span></a>",
+            escape(&t(i18n, "admin.settings.history")),
+            cx.base_path,
+            escape(&encode_component(&filters)),
+            icon("clock-rotate-left", None)
+        ));
+    }
+    out.push_str("</h3>");
+    let values: Vec<&str> = value.split('|').filter(|v| !v.is_empty()).collect();
+    if let Some((defaults, button)) = &row.default_values
+        && !defaults.is_empty()
+        && !defaults.iter().all(|d| values.contains(&d.as_str()))
+    {
+        out.push_str(&format!(
+            "<button class=\"btn btn-link\" data-default-values=\"{}\" type=\"button\"><span class=\"d-button-label\">{}</span></button>",
+            escape(&defaults.join("|")),
+            escape(button)
+        ));
+    }
+    out.push_str("</div><div class=\"setting-value\">");
+    let description = format!(
+        "<div class=\"desc\">{}</div>",
+        crate::admin_setting_links::linkify(cx.settings, cx.base_path, s(&setting["description"]))
+    );
+    let validation = format!(
+        "<div><div class=\"validation-error hidden\">{} </div></div>",
+        icon("xmark", None)
+    );
+    if !setting["objects_schema"].is_null() {
+        out.push_str(&format!(
+            "<button class=\"btn btn-icon-text btn-default setting-value-edit-button\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>{description}",
+            icon("pencil", None),
+            escape(&t(i18n, "admin.customize.theme.edit_objects_theme_setting"))
+        ));
+    } else {
+        let off = if disabled { " disabled=\"\"" } else { "" };
+        let editor = match kind.as_str() {
+            "string" if setting["textarea"] == Value::Bool(true) => format!(
+                "<div><textarea class=\"input-setting-textarea\"{off}>{}</textarea></div>",
+                escape(&value)
+            ),
+            "string" if setting["secret"] == Value::Bool(true) => format!(
+                "<div><input autocomplete=\"new-password\" class=\"input-setting-string\" type=\"password\" value=\"{}\"{off}></div>",
+                escape(&value)
+            ),
+            "string" => format!(
+                "<div><input placeholder=\"\" class=\"input-setting-string\" type=\"text\" value=\"{}\"{off}></div>",
+                escape(&value)
+            ),
+            "integer" => format!(
+                "<input class=\"input-setting-integer\"{}{}{off} step=\"1\" type=\"number\" value=\"{}\">",
+                setting["max"]
+                    .as_i64()
+                    .filter(|m| *m != 0)
+                    .map(|m| format!(" max=\"{m}\""))
+                    .unwrap_or_default(),
+                setting["min"]
+                    .as_i64()
+                    .filter(|m| *m != 0)
+                    .map(|m| format!(" min=\"{m}\""))
+                    .unwrap_or_default(),
+                escape(&value)
+            ),
+            "bool" => format!(
+                "<label class=\"checkbox-label\"><input{}{off} type=\"checkbox\"><span>{}</span></label>",
+                if value == "true" { " checked" } else { "" },
+                crate::admin_setting_links::linkify(
+                    cx.settings,
+                    cx.base_path,
+                    s(&setting["description"])
+                )
+            ),
+            "enum" => format!("<div>{}</div>", enum_combo(cx, setting, &value, disabled)),
+            "compact_list" => {
+                let choices = row.choices.clone().unwrap_or_else(|| {
+                    let mut c: Vec<String> = setting["choices"]
+                        .as_array()
+                        .map(|a| a.iter().map(value_string).collect())
+                        .unwrap_or_default();
+                    for v in &values {
+                        if !c.iter().any(|x| x == v) {
+                            c.push(v.to_string());
+                        }
+                    }
+                    c
+                });
+                format!(
+                    "<details class=\"select-kit multi-select list-setting{}\" data-list-value=\"{}\" data-choices=\"{}\"><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
+                    if values.is_empty() {
+                        ""
+                    } else {
+                        " has-selection"
+                    },
+                    escape(&value),
+                    escape(&Value::from(choices).to_string()),
+                    escape(&values.join(",")),
+                    escape(&values.join(",")),
+                    escape(&if values.is_empty() {
+                        t(i18n, "select_kit.default_header_text")
+                    } else {
+                        values.join(", ")
+                    }),
+                    icon("plus", Some("angle-icon")),
+                )
+            }
+            other => {
+                let page = Page {
+                    settings: &[],
+                    default_theme: &Value::Null,
+                    groups: &[],
+                    categories: &[],
+                    filters: &Filters::default(),
+                    category: "",
+                };
+                legacy(cx, &page, setting, other, disabled)
+            }
+        };
+        out.push_str(&editor);
+        out.push_str(&validation);
+        if kind != "bool" {
+            out.push_str(&description);
+        }
+    }
+    out.push_str("</div>");
+    if over && !disabled {
+        out.push_str(&format!(
+            "<button class=\"btn btn-icon-text btn-default undo setting-controls__undo\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+            icon("arrow-rotate-left", None),
+            escape(&t(i18n, "admin.settings.reset"))
+        ));
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// SettingEnum's ComboBox: the valid values (their names translated when
+/// the setting says so), the selected one in the header.
+fn enum_combo(cx: &AdminCx, setting: &Value, value: &str, disabled: bool) -> String {
+    let i18n = cx.i18n;
+    let translate = setting["translate_names"] == Value::Bool(true);
+    let options: Vec<Value> = setting["valid_values"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|v| match v {
+            Value::Object(_) => {
+                let raw = value_string(&v["name"]);
+                let name = if translate && !raw.is_empty() {
+                    t(i18n, &raw)
+                } else {
+                    raw
+                };
+                Some(serde_json::json!({ "id": value_string(&v["value"]), "name": name }))
+            }
+            Value::Null => None,
+            other => {
+                Some(serde_json::json!({ "id": value_string(other), "name": value_string(other) }))
+            }
+        })
+        .collect();
+    let selected = options
+        .iter()
+        .find(|o| o["id"] == value)
+        .map(|o| s(&o["name"]).to_string());
+    let label = selected.clone().unwrap_or_default();
+    let aria = match &selected {
+        Some(name) => t_with(i18n, "select_kit.filter_by", &[("name", name)]),
+        None => t(i18n, "select_kit.select_to_filter"),
+    };
+    let data_value = if selected.is_some() {
+        format!(" data-value=\"{}\"", escape(value))
+    } else {
+        String::new()
+    };
+    format!(
+        "<details class=\"select-kit single-select combobox combo-box{}{}\" data-options=\"{}\"><summary aria-label=\"{a}\" name=\"{a}\" data-name=\"{n}\"{data_value} tabindex=\"0\" class=\"select-kit-header single-select-header combo-box-header\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\"{data_value} title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details>",
+        if selected.is_some() {
+            " has-selection"
+        } else {
+            ""
+        },
+        if disabled { " is-disabled" } else { "" },
+        escape(&Value::Array(options.clone()).to_string()),
+        icon("angle-down", Some("angle-icon")),
+        a = escape(&aria),
+        n = escape(&label)
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
