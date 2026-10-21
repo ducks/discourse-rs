@@ -1,0 +1,13 @@
+# Third-party plugin guests, built to wasm32-unknown-unknown
+# (docs/plugin-wasm.md): `make wasm-plugins`. Not part of the server's
+# workspace: their target is WebAssembly.
+[workspace]
+members = ["sdk", "discourse-solved"]
+resolver = "3"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

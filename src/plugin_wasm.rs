@@ -1,0 +1,1005 @@
+//! Third-party plugins as WebAssembly, in wasmtime (docs/plugin-wasm.md).
+//! Spike: the topic list's lifecycle phases only.
+//!
+//! A plugin is a directory with `plugin.toml` (what it may read, its
+//! phases, the keys it adds, its limits) and `plugin.wasm`, a core
+//! WebAssembly module. The ABI is JSON over the guest's linear memory:
+//!
+//! - the guest exports `memory`, `dp_alloc(len) -> ptr` and one function
+//!   per phase, named `<pipeline>.<phase>`, `(ptr, len) -> packed` where
+//!   `packed` is the output's `ptr << 32 | len`. Input is
+//!   `{"payload": ..., "guardian": ...}`, output `{"ok": ...}` or
+//!   `{"error": "..."}`;
+//! - the host defines, in the import module `discourse`, only the calls
+//!   the manifest grants, each `(ptr, len) -> packed` with JSON in and
+//!   out: `rows` (the plugin's own tables), `core_rows` (core columns the
+//!   manifest lists), `setting` (site settings it lists), `t` (a server
+//!   translation). There is no WASI: no clock, files, network or
+//!   randomness.
+//!
+//! Every phase call gets a fresh instance from the pooling allocator, a
+//! memory cap, a wall-clock budget (epoch interruption) and a host call
+//! cap. Host calls are async host functions: the guest runs on a fiber,
+//! and a call sends its request to a loop beside it on the request's task,
+//! which answers on the request's own connection (as the Luau spike's
+//! coroutine yield did), so a phase never takes a second connection.
+
+use std::collections::HashMap;
+use std::path::Path;
+use std::sync::{Arc, LazyLock, RwLock};
+use std::time::Duration;
+
+use serde::Deserialize;
+use serde_json::{Map, Value, json};
+use sqlx::PgConnection;
+use tokio::sync::{mpsc, oneshot};
+use wasmtime::{
+    Caller, Config, Engine, InstanceAllocationStrategy, InstancePre, Linker, Module,
+    PoolingAllocationConfig, Store, StoreLimits, StoreLimitsBuilder,
+};
+
+use crate::guardian::Guardian;
+use crate::i18n::I18n;
+use crate::plugins::PosterInputs;
+use crate::site_settings::{SettingError, SiteSettings};
+
+/// The ABI version this host speaks (`api` in the manifest).
+pub const API: u32 = 1;
+
+/// How often the epoch advances: the wall-clock budget's resolution.
+const TICK: Duration = Duration::from_millis(1);
+
+/// The largest memory any plugin may ask for, and what the pool reserves
+/// per slot.
+const MAX_MEMORY_MIB: u64 = 64;
+
+/// A plugin that could not be loaded.
+#[derive(Debug)]
+pub struct LoadError(pub String);
+
+impl std::fmt::Display for LoadError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "loading wasm plugins: {}", self.0)
+    }
+}
+
+impl std::error::Error for LoadError {}
+
+/// One wasmtime engine for every plugin: Cranelift, the pooling
+/// allocator, epoch interruption, and a thread advancing the epoch.
+pub struct Runtime {
+    pub engine: Engine,
+}
+
+impl Runtime {
+    /// `pooling` false is the on-demand allocator, for measurements.
+    pub fn new(pooling: bool) -> Result<Runtime, LoadError> {
+        let mut config = Config::new();
+        config.epoch_interruption(true);
+        config.max_wasm_stack(512 << 10);
+        config.async_stack_size(1 << 20);
+        if pooling {
+            let mut pool = PoolingAllocationConfig::default();
+            // Concurrent phase calls across the process; one more waits
+            // for a slot to free rather than failing.
+            pool.total_core_instances(256);
+            pool.total_memories(256);
+            pool.total_tables(256);
+            pool.total_stacks(256);
+            pool.max_memory_size((MAX_MEMORY_MIB << 20) as usize);
+            pool.linear_memory_keep_resident(64 << 10);
+            config.allocation_strategy(InstanceAllocationStrategy::Pooling(pool));
+        }
+        let engine = Engine::new(&config).map_err(|e| LoadError(e.to_string()))?;
+        let ticking = engine.weak();
+        std::thread::Builder::new()
+            .name("wasm-epoch".into())
+            .spawn(move || {
+                while let Some(engine) = ticking.upgrade() {
+                    engine.increment_epoch();
+                    drop(engine);
+                    std::thread::sleep(TICK);
+                }
+            })
+            .map_err(|e| LoadError(e.to_string()))?;
+        Ok(Runtime { engine })
+    }
+}
+
+static RUNTIME: LazyLock<Result<Runtime, String>> =
+    LazyLock::new(|| Runtime::new(true).map_err(|e| e.to_string()));
+
+/// The process' engine.
+pub fn runtime() -> Result<&'static Runtime, LoadError> {
+    RUNTIME.as_ref().map_err(|e| LoadError(e.clone()))
+}
+
+/// A key's declared type, which the host coerces the phase's value to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum KeyType {
+    Bool,
+    Int,
+    String,
+    Object,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Phase {
+    AfterLoad,
+    BeforeSerialize,
+    AfterSerialize,
+}
+
+impl Phase {
+    pub fn name(self) -> &'static str {
+        match self {
+            Phase::AfterLoad => "after_load",
+            Phase::BeforeSerialize => "before_serialize",
+            Phase::AfterSerialize => "after_serialize",
+        }
+    }
+
+    /// What a phase may call. Reads only on the read pipelines; before
+    /// serialize works on what after load kept, without the database.
+    fn allows(self, call: &str) -> bool {
+        match self {
+            Phase::AfterLoad | Phase::AfterSerialize => true,
+            Phase::BeforeSerialize => matches!(call, "t" | "setting"),
+        }
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Pipeline {
+    phases: Vec<Phase>,
+    /// The keys `after_serialize` may add, `[[key, type], ...]`, in order.
+    #[serde(default)]
+    keys: Vec<(String, KeyType)>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Manifest {
+    plugin: ManifestPlugin,
+    #[serde(default)]
+    limits: Limits,
+    /// `read`: site settings the plugin may read with `setting`.
+    #[serde(default)]
+    settings: SettingsGrant,
+    /// table => the columns the plugin may read with `rows`.
+    #[serde(default)]
+    tables: HashMap<String, Vec<String>>,
+    /// core table => the columns the plugin may read with `core_rows`.
+    #[serde(default)]
+    core_reads: HashMap<String, Vec<String>>,
+    #[serde(default)]
+    topic_list: Option<Pipeline>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SettingsGrant {
+    read: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManifestPlugin {
+    name: String,
+    api: u32,
+    /// The site setting that turns the plugin on.
+    enabled_setting: Option<String>,
+    /// A bundled plugin (src/plugins) whose phases on the same pipelines
+    /// this one takes over while enabled.
+    replaces: Option<String>,
+}
+
+/// Per plugin, from the manifest's `[limits]`.
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct Limits {
+    /// Linear memory, at most MAX_MEMORY_MIB.
+    pub memory_mib: u64,
+    /// Wall-clock budget of one phase call, host calls included.
+    pub time_ms: u64,
+    /// Host calls per phase call.
+    pub host_calls: u32,
+}
+
+impl Default for Limits {
+    fn default() -> Self {
+        Limits {
+            memory_mib: 16,
+            time_ms: 50,
+            host_calls: 64,
+        }
+    }
+}
+
+/// What a plugin may read.
+#[derive(Debug)]
+struct Grants {
+    settings: Vec<String>,
+    tables: HashMap<String, Vec<String>>,
+    core_reads: HashMap<String, Vec<String>>,
+}
+
+pub struct Plugin {
+    pub name: String,
+    enabled_setting: Option<String>,
+    replaces: Option<String>,
+    limits: Limits,
+    grants: Grants,
+    topic_list: Option<Pipeline>,
+    pre: InstancePre<HostState>,
+}
+
+/// The plugins of the process.
+#[derive(Default)]
+pub struct Registry {
+    plugins: Vec<Plugin>,
+}
+
+static REGISTRY: LazyLock<RwLock<Arc<Registry>>> =
+    LazyLock::new(|| RwLock::new(Arc::new(Registry::default())));
+
+/// The installed plugins (none until `install`).
+pub fn registry() -> Arc<Registry> {
+    REGISTRY.read().map(|r| r.clone()).unwrap_or_default()
+}
+
+/// Makes `registry` the process' plugins (at boot; tests).
+pub fn install(registry: Registry) {
+    if let Ok(mut current) = REGISTRY.write() {
+        *current = Arc::new(registry);
+    }
+}
+
+/// Loads `PLUGINS_DIR` when set. A broken plugin stops the boot.
+pub fn load_from_env() -> Result<usize, LoadError> {
+    let Some(dir) = std::env::var_os("PLUGINS_DIR") else {
+        return Ok(0);
+    };
+    let registry = Registry::load(Path::new(&dir))?;
+    let count = registry.plugins.len();
+    install(registry);
+    Ok(count)
+}
+
+impl Registry {
+    /// Every directory under `dir` with a `plugin.toml`, by name.
+    pub fn load(dir: &Path) -> Result<Registry, LoadError> {
+        let entries =
+            std::fs::read_dir(dir).map_err(|e| LoadError(format!("{}: {e}", dir.display())))?;
+        let mut dirs: Vec<_> = entries
+            .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| p.join("plugin.toml").is_file())
+            .collect();
+        dirs.sort();
+        let mut registry = Registry::default();
+        for path in dirs {
+            let read = |name: &str| {
+                std::fs::read(path.join(name))
+                    .map_err(|e| LoadError(format!("{}/{name}: {e}", path.display())))
+            };
+            let manifest = String::from_utf8(read("plugin.toml")?)
+                .map_err(|e| LoadError(format!("{}/plugin.toml: {e}", path.display())))?;
+            registry.add(Plugin::new(runtime()?, &manifest, &read("plugin.wasm")?)?);
+        }
+        Ok(registry)
+    }
+
+    pub fn add(&mut self, plugin: Plugin) {
+        self.plugins.push(plugin);
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.plugins.is_empty()
+    }
+
+    fn enabled<'a>(
+        &'a self,
+        settings: &SiteSettings,
+    ) -> Result<impl Iterator<Item = &'a Plugin>, SettingError> {
+        let mut out = Vec::new();
+        for plugin in &self.plugins {
+            match &plugin.enabled_setting {
+                Some(s) if !settings.get(s)?.truthy() => {}
+                _ => out.push(plugin),
+            }
+        }
+        Ok(out.into_iter())
+    }
+
+    /// The bundled plugins enabled plugins replace.
+    pub fn replaced(&self, settings: &SiteSettings) -> Result<Vec<String>, SettingError> {
+        Ok(self
+            .enabled(settings)?
+            .filter_map(|p| p.replaces.clone())
+            .collect())
+    }
+
+    fn topic_list<'a>(
+        &'a self,
+        settings: &SiteSettings,
+        phase: Phase,
+    ) -> Result<Vec<(&'a Plugin, &'a Pipeline)>, SettingError> {
+        Ok(self
+            .enabled(settings)?
+            .filter_map(|p| p.topic_list.as_ref().map(|l| (p, l)))
+            .filter(|(_, l)| l.phases.contains(&phase))
+            .collect())
+    }
+
+    /// Whether any enabled plugin runs on the topic list at all.
+    pub fn on_topic_list(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
+        Ok(self
+            .enabled(settings)?
+            .any(|p| p.topic_list.as_ref().is_some_and(|l| !l.phases.is_empty())))
+    }
+
+    /// The topic list's after load and before serialize, for a page:
+    /// `facts` are the topics' payloads, `posters` each topic's poster
+    /// inputs (core's, after the bundled plugins' rewrites).
+    pub async fn topic_list_load(
+        &self,
+        ctx: &mut Ctx<'_>,
+        facts: Vec<Value>,
+        mut posters: HashMap<i32, PosterInputs>,
+        last_posters: &HashMap<i32, i32>,
+    ) -> Result<TopicListPage, SettingError> {
+        let mut page = TopicListPage {
+            facts,
+            ..TopicListPage::default()
+        };
+        if page.facts.is_empty() {
+            return Ok(page);
+        }
+        for (plugin, _) in self.topic_list(ctx.settings, Phase::AfterLoad)? {
+            let result = plugin
+                .run(ctx, "topic_list", Phase::AfterLoad, json!(page.facts))
+                .await
+                .and_then(|v| {
+                    serde_json::from_value::<AfterLoadResult>(v).map_err(|e| e.to_string())
+                });
+            match result {
+                Ok(result) => {
+                    page.user_ids.extend(result.user_ids);
+                    page.data.insert(plugin.name.clone(), result.topics);
+                }
+                Err(e) => plugin.log_skip(Phase::AfterLoad, &e),
+            }
+        }
+        let rewriting = self.topic_list(ctx.settings, Phase::BeforeSerialize)?;
+        if rewriting.is_empty() {
+            return Ok(page);
+        }
+        for (plugin, _) in rewriting {
+            let data = page.data.get(&plugin.name);
+            let mut payload = Map::new();
+            for (id, inputs) in &posters {
+                let key = id.to_string();
+                let mut topic = json!({
+                    "posters": inputs,
+                    "last_post_user_id": last_posters.get(id),
+                });
+                if let Some(data) = data.and_then(|d| d.get(&key)) {
+                    topic["data"] = data.clone();
+                }
+                payload.insert(key, topic);
+            }
+            let result = plugin
+                .run(
+                    ctx,
+                    "topic_list",
+                    Phase::BeforeSerialize,
+                    Value::Object(payload),
+                )
+                .await
+                .and_then(rewritten_posters);
+            match result {
+                Ok(rewritten) => {
+                    for (id, inputs) in rewritten {
+                        if let Some(slot) = posters.get_mut(&id) {
+                            *slot = inputs;
+                        }
+                    }
+                }
+                Err(e) => plugin.log_skip(Phase::BeforeSerialize, &e),
+            }
+        }
+        page.posters = posters;
+        Ok(page)
+    }
+
+    /// The topic list's after serialize for the page, once: the keys each
+    /// plugin adds to a topic, coerced and in declared order.
+    pub async fn topic_list_keys(
+        &self,
+        ctx: &mut Ctx<'_>,
+        page: &mut TopicListPage,
+    ) -> Result<(), SettingError> {
+        if page.keys.is_some() {
+            return Ok(());
+        }
+        let mut keys: HashMap<String, Vec<(String, Value)>> = HashMap::new();
+        for (plugin, pipeline) in self.topic_list(ctx.settings, Phase::AfterSerialize)? {
+            let data = page.data.get(&plugin.name);
+            let payload: Vec<Value> = page
+                .facts
+                .iter()
+                .map(|f| {
+                    let mut f = f.clone();
+                    if let Some(data) = data.and_then(|d| d.get(&f["id"].to_string())) {
+                        f["data"] = data.clone();
+                    }
+                    f
+                })
+                .collect();
+            let result = plugin
+                .run(ctx, "topic_list", Phase::AfterSerialize, json!(payload))
+                .await
+                .and_then(|v| coerce(&v, &pipeline.keys));
+            match result {
+                Ok(merged) => {
+                    for (id, extra) in merged {
+                        keys.entry(id).or_default().extend(extra);
+                    }
+                }
+                Err(e) => plugin.log_skip(Phase::AfterSerialize, &e),
+            }
+        }
+        page.keys = Some(keys);
+        Ok(())
+    }
+}
+
+/// The plugins' state for one page of the topic list.
+#[derive(Debug, Default)]
+pub struct TopicListPage {
+    /// The topics' payloads, as after load and after serialize see them.
+    facts: Vec<Value>,
+    /// plugin => topic id => what its after load kept.
+    data: HashMap<String, Map<String, Value>>,
+    /// Users to load as well.
+    pub user_ids: Vec<i32>,
+    /// The poster inputs after every plugin's before serialize (empty when
+    /// no plugin has one).
+    pub posters: HashMap<i32, PosterInputs>,
+    /// topic id => keys, once after serialize ran.
+    keys: Option<HashMap<String, Vec<(String, Value)>>>,
+}
+
+impl TopicListPage {
+    /// The keys for a topic, after `Registry::topic_list_keys`.
+    pub fn keys(&self, topic_id: i32) -> &[(String, Value)] {
+        self.keys
+            .as_ref()
+            .and_then(|k| k.get(&topic_id.to_string()))
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
+    }
+
+    pub fn has(&self, topic_id: i32) -> bool {
+        self.facts.iter().any(|f| f["id"] == topic_id)
+    }
+}
+
+/// A topic as the topic list's after load and after serialize see it.
+pub fn topic_facts(t: &crate::topic_query::TopicRow) -> Value {
+    json!({
+        "id": t.id,
+        "user_id": t.user_id,
+        "last_post_user_id": t.last_post_user_id,
+        "category_id": t.category_id,
+        "archetype": t.archetype,
+        "closed": t.closed,
+        "archived": t.archived,
+    })
+}
+
+/// What a phase runs with: the request's connection and context.
+pub struct Ctx<'a> {
+    pub conn: &'a mut PgConnection,
+    pub settings: &'a SiteSettings,
+    pub guardian: &'a Guardian,
+    pub i18n: &'a I18n,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AfterLoadResult {
+    #[serde(default)]
+    user_ids: Vec<i32>,
+    #[serde(default)]
+    topics: Map<String, Value>,
+}
+
+/// An instance's state: what its host calls may reach.
+pub struct HostState {
+    phase: Phase,
+    calls: u32,
+    max_calls: u32,
+    requests: mpsc::UnboundedSender<Request>,
+    limits: StoreLimits,
+}
+
+/// A host call on its way to the request's task.
+struct Request {
+    call: HostCall,
+    reply: oneshot::Sender<Result<Vec<u8>, String>>,
+}
+
+#[derive(Debug)]
+enum HostCall {
+    Rows {
+        core: bool,
+        table: String,
+        column: String,
+        ids: Vec<i64>,
+    },
+    Setting(String),
+    T(String),
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RowsArgs {
+    table: String,
+    column: String,
+    ids: Vec<i64>,
+}
+
+/// The import module's functions, each granted by the manifest.
+const HOST_CALLS: [&str; 4] = ["rows", "core_rows", "setting", "t"];
+
+impl Plugin {
+    /// Compiles `wasm` and links it against the calls `manifest` grants;
+    /// a module importing anything else does not load.
+    pub fn new(runtime: &Runtime, manifest: &str, wasm: &[u8]) -> Result<Plugin, LoadError> {
+        let manifest: Manifest =
+            toml::from_str(manifest).map_err(|e| LoadError(format!("plugin.toml: {e}")))?;
+        let name = manifest.plugin.name.clone();
+        let fail = |e: wasmtime::Error| LoadError(format!("{name}: {e}"));
+        if manifest.plugin.api != API {
+            return Err(LoadError(format!(
+                "{name}: api {} (this host speaks {API})",
+                manifest.plugin.api
+            )));
+        }
+        if manifest.limits.memory_mib > MAX_MEMORY_MIB {
+            return Err(LoadError(format!(
+                "{name}: memory_mib over {MAX_MEMORY_MIB}"
+            )));
+        }
+        let module = Module::new(&runtime.engine, wasm).map_err(fail)?;
+        let mut linker: Linker<HostState> = Linker::new(&runtime.engine);
+        for call in HOST_CALLS {
+            let granted = match call {
+                "rows" => !manifest.tables.is_empty(),
+                "core_rows" => !manifest.core_reads.is_empty(),
+                "setting" => !manifest.settings.read.is_empty(),
+                _ => true,
+            };
+            if granted {
+                define(&mut linker, call).map_err(fail)?;
+            }
+        }
+        let pre = linker.instantiate_pre(&module).map_err(fail)?;
+        // Every phase the manifest declares is an export of the module.
+        let exports: Vec<String> = module.exports().map(|e| e.name().to_string()).collect();
+        let mut needed = vec!["memory".to_string(), "dp_alloc".to_string()];
+        if let Some(list) = &manifest.topic_list {
+            needed.extend(
+                list.phases
+                    .iter()
+                    .map(|p| format!("topic_list.{}", p.name())),
+            );
+        }
+        if let Some(missing) = needed.iter().find(|n| !exports.contains(n)) {
+            return Err(LoadError(format!("{name}: no export {missing}")));
+        }
+        Ok(Plugin {
+            name,
+            enabled_setting: manifest.plugin.enabled_setting,
+            replaces: manifest.plugin.replaces,
+            limits: manifest.limits,
+            grants: Grants {
+                settings: manifest.settings.read,
+                tables: manifest.tables,
+                core_reads: manifest.core_reads,
+            },
+            topic_list: manifest.topic_list,
+            pre,
+        })
+    }
+
+    fn log_skip(&self, phase: Phase, error: &str) {
+        tracing::error!(plugin = %self.name, phase = phase.name(), error, "plugin phase skipped");
+    }
+
+    /// `<pipeline>.<phase>(payload)` in a fresh instance, its host calls
+    /// answered on the request's connection.
+    pub async fn run(
+        &self,
+        ctx: &mut Ctx<'_>,
+        pipeline: &str,
+        phase: Phase,
+        payload: Value,
+    ) -> Result<Value, String> {
+        let guardian = json!({
+            "user_id": ctx.guardian.user_id(),
+            "staff": ctx.guardian.is_staff(),
+            "admin": ctx.guardian.is_admin(),
+        });
+        let input = serde_json::to_vec(&json!({ "payload": payload, "guardian": guardian }))
+            .map_err(|e| e.to_string())?;
+        let (requests, mut incoming) = mpsc::unbounded_channel();
+        let state = HostState {
+            phase,
+            calls: 0,
+            max_calls: self.limits.host_calls,
+            requests,
+            limits: StoreLimitsBuilder::new()
+                .memory_size((self.limits.memory_mib << 20) as usize)
+                .instances(1)
+                .memories(1)
+                .tables(4)
+                .build(),
+        };
+        let export = format!("{pipeline}.{}", phase.name());
+        let guest = self.call(state, export, input);
+        // Beside the guest on this task: the host calls it sends, until
+        // its store (and the sender in it) is gone.
+        let serve = async {
+            while let Some(request) = incoming.recv().await {
+                let answer = answer(ctx, &self.grants, request.call).await;
+                let _ = request.reply.send(answer);
+            }
+        };
+        let (output, ()) = tokio::join!(guest, serve);
+        let output = output.map_err(|e| format!("{e:#}"))?;
+        let mut envelope: Value =
+            serde_json::from_slice(&output).map_err(|e| format!("output: {e}"))?;
+        if let Some(error) = envelope.get("error") {
+            return Err(format!("plugin error: {error}"));
+        }
+        match envelope.get_mut("ok") {
+            Some(ok) => Ok(ok.take()),
+            None => Err("output is neither ok nor error".into()),
+        }
+    }
+
+    async fn call(
+        &self,
+        state: HostState,
+        export: String,
+        input: Vec<u8>,
+    ) -> wasmtime::Result<Vec<u8>> {
+        let time_ms = self.limits.time_ms;
+        let mut store = Store::new(self.pre.module().engine(), state);
+        store.limiter(|s| &mut s.limits);
+        store.set_epoch_deadline(time_ms.div_ceil(TICK.as_millis() as u64));
+        let instance = self.pre.instantiate_async(&mut store).await?;
+        let memory = instance
+            .get_memory(&mut store, "memory")
+            .ok_or_else(|| wasmtime::format_err!("no memory export"))?;
+        let alloc = instance.get_typed_func::<u32, u32>(&mut store, "dp_alloc")?;
+        let phase = instance.get_typed_func::<(u32, u32), u64>(&mut store, &export)?;
+        let len = u32::try_from(input.len())?;
+        let ptr = alloc.call_async(&mut store, len).await?;
+        memory.write(&mut store, ptr as usize, &input)?;
+        let packed = phase.call_async(&mut store, (ptr, len)).await?;
+        read(&memory, &store, packed)
+    }
+}
+
+fn read<T: 'static>(
+    memory: &wasmtime::Memory,
+    store: impl wasmtime::AsContext<Data = T>,
+    packed: u64,
+) -> wasmtime::Result<Vec<u8>> {
+    let (ptr, len) = ((packed >> 32) as usize, (packed & 0xffff_ffff) as usize);
+    let data = memory.data(&store);
+    data.get(ptr..ptr.saturating_add(len))
+        .map(|s| s.to_vec())
+        .ok_or_else(|| wasmtime::format_err!("output outside memory"))
+}
+
+/// The host function `discourse.<call>`: reads the guest's request,
+/// checks the phase and the call cap, has the request's task answer it,
+/// and writes the answer into memory the guest allocates.
+fn define(linker: &mut Linker<HostState>, call: &'static str) -> wasmtime::Result<()> {
+    linker.func_wrap_async(
+        "discourse",
+        call,
+        move |mut caller: Caller<'_, HostState>, (ptr, len): (u32, u32)| {
+            Box::new(async move {
+                let state = caller.data_mut();
+                if !state.phase.allows(call) {
+                    wasmtime::bail!("{call} is not allowed in {}", state.phase.name());
+                }
+                state.calls += 1;
+                if state.calls > state.max_calls {
+                    wasmtime::bail!("over {} host calls", state.max_calls);
+                }
+                let memory = caller
+                    .get_export("memory")
+                    .and_then(|e| e.into_memory())
+                    .ok_or_else(|| wasmtime::format_err!("no memory export"))?;
+                let request = read(&memory, &caller, (u64::from(ptr) << 32) | u64::from(len))?;
+                let call = parse(call, &request).map_err(wasmtime::Error::msg)?;
+                let (reply, answer) = oneshot::channel();
+                caller
+                    .data()
+                    .requests
+                    .send(Request { call, reply })
+                    .map_err(|_| wasmtime::format_err!("host gone"))?;
+                let bytes = answer
+                    .await
+                    .map_err(|_| wasmtime::format_err!("host gone"))?
+                    .map_err(wasmtime::Error::msg)?;
+                let alloc = caller
+                    .get_export("dp_alloc")
+                    .and_then(|e| e.into_func())
+                    .ok_or_else(|| wasmtime::format_err!("no dp_alloc export"))?
+                    .typed::<u32, u32>(&caller)?;
+                let len = u32::try_from(bytes.len())?;
+                let out = alloc.call_async(&mut caller, len).await?;
+                memory.write(&mut caller, out as usize, &bytes)?;
+                Ok((u64::from(out) << 32) | u64::from(len))
+            })
+        },
+    )?;
+    Ok(())
+}
+
+fn parse(call: &str, request: &[u8]) -> Result<HostCall, String> {
+    let text = || String::from_utf8(request.to_vec()).map_err(|e| e.to_string());
+    Ok(match call {
+        "rows" | "core_rows" => {
+            let args: RowsArgs =
+                serde_json::from_slice(request).map_err(|e| format!("{call}: {e}"))?;
+            HostCall::Rows {
+                core: call == "core_rows",
+                table: args.table,
+                column: args.column,
+                ids: args.ids,
+            }
+        }
+        "setting" => HostCall::Setting(text()?),
+        "t" => HostCall::T(text()?),
+        other => return Err(format!("no host call {other}")),
+    })
+}
+
+/// A host call, answered on the request's connection.
+async fn answer(ctx: &mut Ctx<'_>, grants: &Grants, call: HostCall) -> Result<Vec<u8>, String> {
+    match call {
+        HostCall::Rows {
+            core,
+            table,
+            column,
+            ids,
+        } => {
+            let rows = if core {
+                core_rows(ctx.conn, &grants.core_reads, &table, &column, &ids).await?
+            } else {
+                own_rows(ctx.conn, &grants.tables, &table, &column, &ids).await?
+            };
+            serde_json::to_vec(&rows).map_err(|e| e.to_string())
+        }
+        HostCall::Setting(name) => {
+            if !grants.settings.contains(&name) {
+                return Err(format!("setting {name} is not in the manifest"));
+            }
+            let value = ctx.settings.get(&name).map_err(|e| e.to_string())?;
+            serde_json::to_vec(value).map_err(|e| e.to_string())
+        }
+        HostCall::T(key) => Ok(ctx.i18n.t(&key).unwrap_or(&key).as_bytes().to_vec()),
+    }
+}
+
+/// Identifiers come from the manifest, never from the guest.
+fn quote(name: &str) -> String {
+    format!("\"{}\"", name.replace('"', "\"\""))
+}
+
+async fn select_rows(
+    conn: &mut PgConnection,
+    table: &str,
+    columns: &[String],
+    column: &str,
+    order: &str,
+    ids: &[i64],
+) -> Result<Vec<Value>, String> {
+    if !columns.iter().any(|c| c == column) {
+        return Err(format!("{table}.{column} is not in the manifest"));
+    }
+    let select = columns
+        .iter()
+        .map(|c| quote(c))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!(
+        "SELECT row_to_json(r) FROM (SELECT {select} FROM {} WHERE {}::bigint = ANY($1) ORDER BY {}{order}) r",
+        quote(table),
+        quote(column),
+        quote(column),
+    );
+    sqlx::query_scalar(&sql)
+        .bind(ids)
+        .fetch_all(&mut *conn)
+        .await
+        .map_err(|e| format!("{table}: {e}"))
+}
+
+/// `rows`: rows of a table the plugin owns whose column is one of the
+/// ids, with the columns the manifest lists.
+async fn own_rows(
+    conn: &mut PgConnection,
+    tables: &HashMap<String, Vec<String>>,
+    table: &str,
+    column: &str,
+    ids: &[i64],
+) -> Result<Vec<Value>, String> {
+    let columns = tables
+        .get(table)
+        .ok_or_else(|| format!("rows: {table} is not this plugin's"))?;
+    let order = if columns.iter().any(|c| c == "id") {
+        ", \"id\""
+    } else {
+        ""
+    };
+    select_rows(conn, table, columns, column, order, ids).await
+}
+
+/// The core tables `core_rows` may read, each with its order within a
+/// key. Posts are read as an ActiveRecord join reads them (deleted ones
+/// included: discourse-solved's answerers join).
+const CORE_TABLES: &[(&str, &str)] = &[
+    ("posts", ", \"id\""),
+    ("category_custom_fields", ", \"id\""),
+    ("topic_tags", ", \"id\""),
+    ("tags", ""),
+    ("topic_allowed_groups", ", \"id\""),
+];
+
+/// `core_rows`: a core table's rows, limited to the columns the manifest
+/// lists.
+async fn core_rows(
+    conn: &mut PgConnection,
+    reads: &HashMap<String, Vec<String>>,
+    table: &str,
+    column: &str,
+    ids: &[i64],
+) -> Result<Vec<Value>, String> {
+    let columns = reads
+        .get(table)
+        .ok_or_else(|| format!("core_rows: {table} is not in core_reads"))?;
+    let (_, order) = CORE_TABLES
+        .iter()
+        .find(|(t, _)| *t == table)
+        .ok_or_else(|| format!("core_rows: {table} can't be read"))?;
+    select_rows(conn, table, columns, column, order, ids).await
+}
+
+/// `before_serialize`'s result: `{ id: { "posters": ... } }`.
+fn rewritten_posters(value: Value) -> Result<HashMap<i32, PosterInputs>, String> {
+    let Value::Object(topics) = value else {
+        return Err("before_serialize must return an object keyed by topic id".into());
+    };
+    let mut out = HashMap::new();
+    for (id, mut topic) in topics {
+        let id: i32 = id.parse().map_err(|_| format!("{id}: not a topic id"))?;
+        let Some(posters) = topic.get_mut("posters").map(Value::take) else {
+            continue;
+        };
+        let inputs: PosterInputs =
+            serde_json::from_value(posters).map_err(|e| format!("{id}.posters: {e}"))?;
+        out.insert(id, inputs);
+    }
+    Ok(out)
+}
+
+/// `after_serialize`'s result, `{ id: { key: value } }`, each key
+/// checked against the declaration and coerced to its type, in declared
+/// order.
+fn coerce(
+    result: &Value,
+    keys: &[(String, KeyType)],
+) -> Result<HashMap<String, Vec<(String, Value)>>, String> {
+    let objects = result
+        .as_object()
+        .ok_or("after_serialize must return an object keyed by id")?;
+    let mut out = HashMap::new();
+    for (id, extra) in objects {
+        let extra = extra
+            .as_object()
+            .ok_or_else(|| format!("{id}: not an object of keys"))?;
+        if let Some(unknown) = extra.keys().find(|k| !keys.iter().any(|(d, _)| d == *k)) {
+            return Err(format!("{id}: undeclared key {unknown}"));
+        }
+        let mut values = Vec::new();
+        for (key, kind) in keys {
+            let Some(value) = extra.get(key) else {
+                continue;
+            };
+            let ok = match (kind, value) {
+                (_, Value::Null) => true,
+                (KeyType::Bool, Value::Bool(_)) => true,
+                (KeyType::Int, Value::Number(n)) => n.is_i64() || n.is_u64(),
+                (KeyType::String, Value::String(_)) => true,
+                (KeyType::Object, Value::Object(_) | Value::Array(_)) => true,
+                _ => false,
+            };
+            if !ok {
+                return Err(format!("{id}.{key}: not a {kind:?}"));
+            }
+            values.push((key.clone(), value.clone()));
+        }
+        out.insert(id.clone(), values);
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn keys_are_checked_in_declared_order() {
+        let keys = vec![
+            ("has_accepted_answer".to_string(), KeyType::Bool),
+            ("count".to_string(), KeyType::Int),
+        ];
+        let result = json!({ "35": { "count": 2, "has_accepted_answer": true } });
+        let merged = coerce(&result, &keys).unwrap();
+        assert_eq!(
+            merged["35"],
+            vec![
+                ("has_accepted_answer".to_string(), Value::Bool(true)),
+                ("count".to_string(), Value::from(2)),
+            ]
+        );
+        assert!(coerce(&json!({ "35": { "other": 1 } }), &keys).is_err());
+        assert!(coerce(&json!({ "35": { "count": 1.5 } }), &keys).is_err());
+        assert!(coerce(&json!([]), &keys).is_err());
+    }
+
+    #[test]
+    fn rewritten_posters_are_checked() {
+        let value = json!({ "35": { "posters": {
+            "user_ids": [2, 3, null],
+            "descriptions": { "2": ["Original Poster"] },
+            "last_poster_stays": true,
+        } } });
+        let posters = rewritten_posters(value).unwrap();
+        assert_eq!(posters[&35].user_ids, vec![Some(2), Some(3), None]);
+        assert_eq!(
+            posters[&35].descriptions[&2],
+            vec!["Original Poster".to_string()]
+        );
+        assert!(
+            rewritten_posters(json!({ "35": { "posters": { "user_ids": [], "extra": 1 } } }))
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn a_module_importing_an_ungranted_call_does_not_load() {
+        let runtime = Runtime::new(false).unwrap();
+        let wat = r#"(module
+            (import "discourse" "rows" (func (param i32 i32) (result i64)))
+            (memory (export "memory") 1)
+            (func (export "dp_alloc") (param i32) (result i32) i32.const 0))"#;
+        let manifest = "[plugin]\nname = \"x\"\napi = 1\n";
+        let Err(e) = Plugin::new(&runtime, manifest, &wat::parse_str(wat).unwrap()) else {
+            panic!("loaded");
+        };
+        assert!(e.0.contains("rows"), "{e}");
+    }
+}

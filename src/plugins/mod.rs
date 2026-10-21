@@ -92,7 +92,10 @@ impl From<crate::guardian::GuardianError> for PluginError {
 /// A topic's poster inputs (TopicPostersSummary's `user_ids`,
 /// `descriptions_by_id` and `last_poster_is_topic_creator?`), the values
 /// plugins rewrite before core builds the posters.
-#[derive(Debug, Clone, PartialEq)]
+/// Serialized for third-party plugins (src/plugin_wasm.rs) as their
+/// before serialize payload.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PosterInputs {
     pub user_ids: Vec<Option<i32>>,
     pub descriptions: HashMap<i32, Vec<String>>,
@@ -118,15 +121,18 @@ impl TopicListData {
     }
 }
 
-/// After load: each enabled plugin's data for the page.
+/// After load: each enabled plugin's data for the page. `replaced` are
+/// the bundled plugins a third-party one (src/plugin_wasm.rs) took over.
 pub async fn topic_list_after_load(
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
     topic_ids: &[i32],
     user_id: Option<i32>,
+    replaced: &[String],
 ) -> Result<TopicListData, PluginError> {
     let mut data = TopicListData::default();
-    if !topic_ids.is_empty() && solved::enabled(settings)? {
+    let solved = solved::enabled(settings)? && !replaced.iter().any(|p| p == "discourse-solved");
+    if !topic_ids.is_empty() && solved {
         data.solved = Some(solved::TopicListData::load(conn, topic_ids).await?);
     }
     if !topic_ids.is_empty() && topic_voting::enabled(settings)? {

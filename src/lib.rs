@@ -152,6 +152,7 @@ pub mod owned_schema;
 pub mod params;
 pub mod parity;
 pub mod permalinks;
+pub mod plugin_wasm;
 pub mod plugins;
 pub mod pm_invite;
 pub mod pm_lists;
