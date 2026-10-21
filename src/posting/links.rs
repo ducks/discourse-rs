@@ -180,8 +180,9 @@ pub(crate) fn extract_with_quotes(cooked: &str) -> Result<Vec<String>, Unsupport
         .collect())
 }
 
-/// `PrettyText.extract_links(html)`'s DetectedLinks: the links outside
-/// quotes, then each quote's `/t/:topic_id/:post_number` (is_quote).
+/// `PrettyText.extract_links(html)`'s DetectedLinks: the oneboxes'
+/// sources, the links outside quotes, then each quote's
+/// `/t/:topic_id/:post_number` (is_quote), then each lazy video's page.
 fn detected_links(cooked: &str) -> Result<Vec<(String, bool)>, Unsupported> {
     let dom = parse(cooked);
     let root = fragment_root(&dom);
@@ -193,7 +194,8 @@ fn detected_links(cooked: &str) -> Result<Vec<(String, bool)>, Unsupported> {
         .map(|src| (src, false))
         .collect();
     let mut links = Vec::new();
-    collect(&root, false, &mut links)?;
+    let mut videos = Vec::new();
+    collect(&root, false, false, &mut links, &mut videos)?;
     out.extend(links.into_iter().map(|l| (l, false)));
     for node in crate::pretty_text::cleanup::all_elements(&dom) {
         if element_name(&node) == Some("aside") && has_class(&node, "quote") {
@@ -207,39 +209,64 @@ fn detected_links(cooked: &str) -> Result<Vec<(String, bool)>, Unsupported> {
             }
         }
     }
+    out.extend(videos.into_iter().map(|v| (v, false)));
     Ok(out)
 }
 
-/// The hrefs outside quotes, oneboxes, elided parts and image lightboxes.
-fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Unsupported> {
+/// The hrefs outside quotes, oneboxes, elided parts and image lightboxes,
+/// and the lazy videos' pages: each `div[data-video-id]` with a provider,
+/// unless inside a link Rails removes first (`removed`).
+fn collect(
+    node: &Handle,
+    skip: bool,
+    removed: bool,
+    links: &mut Vec<String>,
+    videos: &mut Vec<String>,
+) -> Result<(), Unsupported> {
     let name = element_name(node);
     let mut skip = skip;
+    let mut removed = removed;
     if let Some(name) = name {
-        if name == "div" && attr(node, "data-video-id").is_some() {
-            return Err(Unsupported("links from video embeds"));
+        if name == "div" && !removed {
+            let present = |a: &str| attr(node, a).filter(|v| !crate::ruby::is_blank(v));
+            if let (Some(id), Some(provider)) =
+                (present("data-video-id"), present("data-provider-name"))
+            {
+                let base = match provider.as_str() {
+                    "youtube" => "https://www.youtube.com/watch?v=",
+                    "vimeo" => "https://vimeo.com/",
+                    "tiktok" => "https://m.tiktok.com/v/",
+                    // `nil + id` raises.
+                    _ => return Err(Unsupported("lazy videos of other providers")),
+                };
+                videos.push(format!("{base}{id}"));
+            }
         }
         if (name == "aside" && (has_class(node, "quote") || has_class(node, "onebox")))
             || has_class(node, "elided")
         {
             skip = true;
         }
-        if name == "a" && !skip {
+        if name == "a" {
             let lightbox_image = (has_class(node, "lightbox") || has_class(node, "onebox"))
                 && node
                     .children
                     .borrow()
                     .iter()
                     .any(|c| element_name(c) == Some("img"));
-            if !lightbox_image
+            if skip || lightbox_image {
+                removed = true;
+            }
+            if !removed
                 && let Some(href) =
-                    attr(node, "href").filter(|h| !h.is_empty() && !h.starts_with('#'))
+                    attr(node, "href").filter(|h| !crate::ruby::is_blank(h) && !h.starts_with('#'))
             {
                 links.push(href);
             }
         }
     }
     for child in node.children.borrow().iter() {
-        collect(child, skip, links)?;
+        collect(child, skip, removed, links, videos)?;
     }
     Ok(())
 }
@@ -585,5 +612,26 @@ mod tests {
         assert_eq!(extension("/page"), None);
         assert_eq!(extension("/a/file.PNG"), Some("png".into()));
         assert_eq!(extension("/a/file."), Some(String::new()));
+    }
+
+    /// `PrettyText.extract_links` of the same html on the reference.
+    #[test]
+    fn detects_links_and_lazy_videos_as_rails() {
+        let html = "<p><a href=\"https://a.test/1\">one</a> <a href=\" \">blank</a> <a href=\"#x\">anchor</a></p>\n<div class=\"youtube-onebox lazy-video-container\" data-video-id=\"abc123\" data-video-title=\"T\" data-provider-name=\"youtube\">\n  <a href=\"https://www.youtube.com/watch?v=abc123\" target=\"_blank\" class=\"video-thumbnail\"><img class=\"youtube-thumbnail\" src=\"https://i.ytimg.com/x.jpg\"></a>\n</div>\n<aside class=\"quote\" data-topic=\"5\" data-post=\"2\"><blockquote><a href=\"https://q.test/\">q</a>\n<div class=\"vimeo-onebox lazy-video-container\" data-video-id=\"777\" data-provider-name=\"vimeo\"></div></blockquote></aside>\n<div data-video-id=\"999\" data-provider-name=\" \"></div>\n<a class=\"lightbox\" href=\"/full.png\"><img src=\"/t.png\"><div data-video-id=\"lost\" data-provider-name=\"tiktok\"></div></a>\n<div class=\"tiktok-onebox lazy-video-container\" data-video-id=\"t1\" data-provider-name=\"tiktok\"><a href=\"https://www.tiktok.com/@u/video/t1\">t</a></div>\n";
+        let expected = [
+            ("https://a.test/1", false),
+            ("https://www.youtube.com/watch?v=abc123", false),
+            ("https://www.tiktok.com/@u/video/t1", false),
+            ("/t/5/2", true),
+            ("https://www.youtube.com/watch?v=abc123", false),
+            ("https://vimeo.com/777", false),
+            ("https://m.tiktok.com/v/t1", false),
+        ];
+        let got = detected_links(html).unwrap();
+        let got: Vec<(&str, bool)> = got.iter().map(|(u, q)| (u.as_str(), *q)).collect();
+        assert_eq!(got, expected);
+        assert!(
+            detected_links("<div data-video-id=\"x\" data-provider-name=\"other\"></div>").is_err()
+        );
     }
 }

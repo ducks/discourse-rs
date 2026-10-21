@@ -1455,9 +1455,9 @@ have handlers now.
     (topic_view.rs:558; topic_list.rs:650,758;
     topic_view/web_hook.rs:436; email/digest.rs:660)
 127. `feat/topic-links` S: TopicLink.topic_map with clicks
-    (topic_view.rs:1658), links to topic and site paths the router
-    isn't ported for (posting/links.rs:65,454), links from video embeds
-    (:219)
+    (topic_view.rs:1655; its root_domain needs MiniSuffix, as 126 does),
+    links to topic and site paths the router isn't ported for
+    (posting/links.rs:65,481)
 128. `feat/category-lists-rest` M: the subcategories_with_featured_topics
     styles and paginated category lists (category_list.rs:148,167),
     parent slugs needing CGI escapes (:120), category logos
