@@ -285,14 +285,19 @@ fn target_field(target: &str) -> Option<(i32, &'static str)> {
 
 /// A theme's stylesheet for a target (`compile_asset` with its
 /// variables and entry point), None when the theme has no SCSS for it.
-/// A compile error is the comment Rails serves in its place.
+/// A compile error is the comment Rails serves in its place. A `_rtl`
+/// target is the same compile flipped by Rtlcss.
 pub async fn theme_css(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
     theme_id: i32,
     target: &str,
 ) -> Result<Option<String>, AppError> {
-    let Some((target_id, name)) = target_field(target) else {
+    let (base, rtl) = match target.strip_suffix("_rtl") {
+        Some(base) => (base, true),
+        None => (target, false),
+    };
+    let Some((target_id, name)) = target_field(base) else {
         return Ok(None);
     };
     let fields = scss_fields(conn, theme_id).await?;
@@ -321,6 +326,7 @@ pub async fn theme_css(
     let files = theme_files(conn, theme_id).await?;
     let annotation = format!("{target}_{theme_id}.css.map");
     Ok(Some(match compile(&source, Some(&files), &annotation)? {
+        Ok(css) if rtl => super::postcss::flip(&css)?,
         Ok(css) => css,
         Err(e) => format!("/* SCSS compilation error: {e} */"),
     }))
@@ -435,12 +441,14 @@ pub async fn color_definitions(
 }
 
 /// The theme stylesheets a page links (`discourse_stylesheet_link_tag`
-/// for common_theme, mobile_theme and desktop_theme): one per theme of
-/// `theme_id` with SCSS for the target.
+/// for common_theme, mobile_theme and desktop_theme with `supports_rtl`):
+/// one per theme of `theme_id` with SCSS for the target, the `_rtl`
+/// targets for a right-to-left locale.
 pub async fn link_tags(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
     theme_id: i32,
+    rtl: bool,
 ) -> Result<String, AppError> {
     let ids = theme_ids(conn, theme_id).await?;
     let host = cx.urls().current_hostname()?;
@@ -451,9 +459,14 @@ pub async fn link_tags(
         ("mobile_theme", "(width < 40rem)"),
         ("desktop_theme", "(width >= 40rem)"),
     ] {
+        let target = if rtl {
+            format!("{target}_rtl")
+        } else {
+            target.to_string()
+        };
         let mut sheets = Vec::new();
         for id in &ids {
-            let Some(css) = theme_css(conn, cx, *id, target).await? else {
+            let Some(css) = theme_css(conn, cx, *id, &target).await? else {
                 continue;
             };
             let Some(theme) = theme_row(conn, *id).await? else {

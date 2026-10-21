@@ -5,17 +5,19 @@
 //! @csstools/postcss-progressive-custom-properties 5.1.2), postcss-nesting
 //! (14.0.1) un-nesting what the polyfill nests, and
 //! postcss-variable-prefixer namespacing the polyfill's toggles by a hash
-//! of the input.
+//! of the input; and Rtlcss.flip_css for a right-to-left target ([`flip`]).
 //!
-//! The input is always dart-sass's compressed output, so the port parses
-//! that form (no whitespace between nodes) and writes new nodes with the
-//! raws PostCSS gives them there. vendor/csstools holds
-//! postcss-progressive-custom-properties' feature table and shorthands
-//! (MIT-0), extracted from its 5.1.2 build. autoprefixer is
-//! [`autoprefixer`].
+//! post_css's input is always dart-sass's compressed output, so new nodes
+//! get the raws PostCSS gives them there; flip parses post_css's own
+//! output, the whitespace between nodes kept as their raws. vendor/csstools
+//! holds postcss-progressive-custom-properties' feature table and
+//! shorthands (MIT-0), extracted from its 5.1.2 build. autoprefixer is
+//! [`autoprefixer`], Rtlcss [`rtl`].
 
 #[path = "autoprefixer.rs"]
 mod autoprefixer;
+#[path = "rtl.rs"]
+mod rtl;
 
 use std::collections::BTreeSet;
 use std::sync::LazyLock;
@@ -161,7 +163,12 @@ impl<'a> Parser<'a> {
             match self.peek() {
                 None if top => return Ok((nodes, semicolon)),
                 None => return Err(Unsupported("unbalanced braces in compiled CSS")),
-                Some(b'}') if !top => return Ok((nodes, semicolon)),
+                Some(b'}') if !top => {
+                    // The whitespace before the brace is the container's
+                    // raws.after.
+                    self.i -= before.len();
+                    return Ok((nodes, semicolon));
+                }
                 Some(b'}') => return Err(Unsupported("unbalanced braces in compiled CSS")),
                 Some(b';') => {
                     self.i += 1;
@@ -414,20 +421,11 @@ fn body(out: &mut String, nodes: &[Node], semicolon: Option<bool>, raws: &Raws) 
 /// annotation left out. `source` names the input for the toggles' hash
 /// (Rails hashes the compile's output with its annotation).
 pub fn post_css(css: &str, source: &str) -> Result<String, Unsupported> {
-    // postcss's Input drops a byte order mark (dart-sass writes one before
-    // non-ASCII output) from the text it parses and hashes, and the
-    // result has it back.
-    fn unmarked(text: &str) -> Option<&str> {
-        text.strip_prefix(['\u{feff}', '\u{fffe}'])
-    }
-    let bom = if unmarked(css).is_some() {
-        "\u{feff}"
-    } else {
-        ""
-    };
-    let css = unmarked(css).unwrap_or(css);
+    // dart-sass writes a byte order mark before non-ASCII output, which
+    // postcss leaves out of the text it parses and hashes.
+    let (bom, css) = unmarked(css);
     let mut nodes = parse(css)?;
-    let hash = djb2(unmarked(source).unwrap_or(source));
+    let hash = djb2(unmarked(source).1);
     // postcss runs every plugin's node visitors in one walk (the polyfill,
     // postcss-nesting, the prefixer), then the OnceExit ones in plugin
     // order: autoprefixer, then the progressive custom properties. So
@@ -440,6 +438,29 @@ pub fn post_css(css: &str, source: &str) -> Result<String, Unsupported> {
     // The root's raws.after: the whitespace after the last node.
     Ok(format!(
         "{bom}{}{}",
+        stringify(&nodes),
+        &css[css.trim_end().len()..]
+    ))
+}
+
+/// postcss's Input: the text without a byte order mark, and the mark the
+/// result gets back.
+fn unmarked(text: &str) -> (&'static str, &str) {
+    match text.strip_prefix(['\u{feff}', '\u{fffe}']) {
+        Some(rest) => ("\u{feff}", rest),
+        None => ("", text),
+    }
+}
+
+/// `Rtlcss.flip_css`: post_css's output for a right-to-left target, as
+/// Stylesheet::Compiler flips it (see [`rtl`]). rtlcss's own postcss gives
+/// no byte order mark back, and drops the source map annotation.
+pub fn flip(css: &str) -> Result<String, Unsupported> {
+    let (_, css) = unmarked(css);
+    let mut nodes = parse(css)?;
+    rtl::flip(&mut nodes)?;
+    Ok(format!(
+        "{}{}",
         stringify(&nodes),
         &css[css.trim_end().len()..]
     ))
@@ -1826,7 +1847,8 @@ mod tests {
     /// selectors, properties, values (old flexbox among them) and
     /// transition entries it removes, the property and value prefixes,
     /// transitions and @supports conditions it adds, and what it does
-    /// with the polyfill's declarations.
+    /// with the polyfill's declarations; and, for an `rtl_` input,
+    /// Rtlcss.flip_css of that.
     #[test]
     fn post_css_matches_the_reference() {
         for name in [
@@ -1841,15 +1863,23 @@ mod tests {
             "autoprefixer_flexbox",
             "autoprefixer_misc",
             "autoprefixer_light_dark",
+            "rtl_flip",
+            "rtl_bom",
         ] {
             let dir =
                 std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/stylesheets/postcss");
             let input = std::fs::read_to_string(dir.join(format!("{name}.css"))).unwrap();
             let rails = std::fs::read_to_string(dir.join(format!("{name}.out.css"))).unwrap();
-            let rails = rails
-                .strip_suffix("\n/*# sourceMappingURL=x.css.map */")
-                .unwrap();
             let ours = post_css(&input, &input).unwrap_or_else(|e| panic!("{name}: {e}"));
+            // A right-to-left one is flipped, which drops the annotation.
+            let (ours, rails) = if name.starts_with("rtl_") {
+                (flip(&ours).unwrap(), rails.as_str())
+            } else {
+                let rails = rails
+                    .strip_suffix("\n/*# sourceMappingURL=x.css.map */")
+                    .unwrap();
+                (ours, rails)
+            };
             if ours != rails {
                 let at = ours
                     .bytes()

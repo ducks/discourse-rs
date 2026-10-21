@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Record AssetProcessor#post_css on each parity/stylesheets/postcss/
-# <name>.css, from the reference agent, into <name>.out.css, with the
-# source map file `x.css.map` (scripts/postcss_export.rb, read-only). The
-# tests in src/stylesheet/postcss.rs run the same inputs.
+# <name>.css (then Rtlcss.flip_css for an `rtl_` name), from the reference
+# agent, into <name>.out.css, with the source map file `x.css.map`
+# (scripts/postcss_export.rb, read-only). The tests in
+# src/stylesheet/postcss.rs run the same inputs.
 #
 # Usage: scripts/record-postcss <agent-name>
 set -euo pipefail

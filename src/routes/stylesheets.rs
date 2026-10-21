@@ -111,8 +111,9 @@ pub async fn scheme(
 }
 
 /// `/stylesheets/:target_:theme_id_:digest.css` (StylesheetsController#
-/// show for the theme targets): a theme's compiled stylesheet, whatever
-/// digest the link named (the port keeps no older ones).
+/// show for the theme targets, `_rtl` ones too): a theme's compiled
+/// stylesheet, whatever digest the link named (the port keeps no older
+/// ones).
 pub async fn theme(
     State(state): State<AppState>,
     Path(file): Path<String>,
@@ -127,6 +128,10 @@ pub async fn theme(
     else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
+    let (target, rest) = match rest.strip_prefix("rtl_") {
+        Some(rest) => (format!("{target}_rtl"), rest),
+        None => (target.to_string(), rest),
+    };
     let theme_id = rest.split('_').next().and_then(|id| id.parse::<i32>().ok());
     let Some(theme_id) = theme_id else {
         return Ok(StatusCode::NOT_FOUND.into_response());
@@ -138,7 +143,7 @@ pub async fn theme(
         config: &state.config,
         settings: &settings,
     };
-    let css = manager::theme_css(&mut conn, &cx, theme_id, target).await?;
+    let css = manager::theme_css(&mut conn, &cx, theme_id, &target).await?;
     Ok(stylesheet(&headers, css.map(|css| css + "\n")))
 }
 

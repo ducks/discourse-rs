@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {"allow_user_locale": "true"},
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Sided", "theme_fields": [
+      {"name": "scss", "target": "common", "value": ".sided {\n  margin: 1px 2px 3px 4px;\n  padding-left: 10px;\n  float: left;\n  text-align: right;\n  border-radius: 4px 0 0 4px;\n  box-shadow: 2px 0 4px rgba($primary, .2);\n  transform: translateX(-50%) rotate(15deg);\n  background: url(arrow.png) left center no-repeat;\n  background-position: 10px 50%;\n  transition: left .2s, margin-right .2s;\n  cursor: ne-resize;\n  width: stretch;\n  user-select: none;\n  .inner { left: 0; right: auto; border-left: 1px solid $tertiary; }\n}\n:root { --sided-gap: light-dark(4px, 8px); }\n.mode { padding-right: light-dark(1px, 2px); color-scheme: light dark; }\n"},
+      {"name": "scss", "target": "desktop", "value": ".sided { margin-right: auto; direction: ltr; }\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "PUT", "path": "/u/admin.json", "params": {"locale": "ar"}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme_rtl"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "desktop_theme_rtl"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}

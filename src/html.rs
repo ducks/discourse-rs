@@ -880,6 +880,23 @@ impl Site {
         // The theme targets' stylesheets of the default theme and its
         // components (the port draws the default theme everywhere).
         if let Some(theme_id) = theme_id.and_then(|id| i32::try_from(id).ok()) {
+            // `supports_rtl`: a right-to-left locale (Rtl::LOCALES, the
+            // request's I18n.locale) gets the `_rtl` targets, flipped by
+            // Rtlcss.
+            let mut locale = settings.get("default_locale")?.to_s();
+            if let Some(user) = guardian.user()
+                && settings.get("allow_user_locale")?.truthy()
+            {
+                let own: Option<Option<String>> =
+                    sqlx::query_scalar("SELECT locale FROM users WHERE id = $1")
+                        .bind(user.id)
+                        .fetch_optional(&mut *conn)
+                        .await?;
+                if let Some(own) = own.flatten().filter(|l| !l.is_empty()) {
+                    locale = own;
+                }
+            }
+            let rtl = matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur");
             self.chrome.theme_stylesheets = crate::stylesheet::manager::link_tags(
                 &mut *conn,
                 &crate::stylesheet::manager::Cx {
@@ -887,31 +904,9 @@ impl Site {
                     settings,
                 },
                 theme_id,
+                rtl,
             )
             .await?;
-            // `supports_rtl`: a right-to-left locale gets the stylesheets
-            // flipped by Rtlcss, which is not ported.
-            if !self.chrome.theme_stylesheets.is_empty() {
-                let mut locale = settings.get("default_locale")?.to_s();
-                if let Some(user) = guardian.user()
-                    && settings.get("allow_user_locale")?.truthy()
-                {
-                    let own: Option<Option<String>> =
-                        sqlx::query_scalar("SELECT locale FROM users WHERE id = $1")
-                            .bind(user.id)
-                            .fetch_optional(&mut *conn)
-                            .await?;
-                    if let Some(own) = own.flatten().filter(|l| !l.is_empty()) {
-                        locale = own;
-                    }
-                }
-                if matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur") {
-                    return Err(crate::Unsupported(
-                        "theme stylesheets for a right-to-left locale (Rtlcss, 169a)",
-                    )
-                    .into());
-                }
-            }
         }
         if let Some(o) = &options {
             self.chrome.save_timezone = o.timezone.as_deref().is_none_or(str::is_empty);
