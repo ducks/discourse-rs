@@ -398,7 +398,7 @@ pub fn combo_box(
         ));
     }
     format!(
-        "<details class=\"select-kit single-select combobox combo-box {class}{}\"><summary aria-label=\"{fb}\" class=\"select-kit-header single-select-header combo-box-header\" data-name=\"{n}\"{value_attr} name=\"{fb}\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\" title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div><template class=\"select-kit-rows\">{template}</template></details>",
+        "<details class=\"select-kit single-select combobox combo-box {class}{}\"><summary aria-label=\"{fb}\" class=\"select-kit-header single-select-header combo-box-header\" data-name=\"{n}\"{value_attr} name=\"{fb}\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\"{value_attr} title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div><template class=\"select-kit-rows\">{template}</template></details>",
         if chosen.is_some() {
             " has-selection"
         } else {

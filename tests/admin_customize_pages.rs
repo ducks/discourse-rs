@@ -56,7 +56,9 @@ impl Client {
         if !cookies.is_empty() {
             request = request.header(header::COOKIE, cookies.join("; "));
         }
-        if !body.is_empty() {
+        if body.starts_with('{') {
+            request = request.header(header::CONTENT_TYPE, "application/json");
+        } else if !body.is_empty() {
             request = request.header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
         }
         let response = discourse_rs::app(self.state.clone())
@@ -497,4 +499,137 @@ async fn the_themes_and_components_pages() {
         .await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.starts_with("{\"themes\":"));
+}
+
+#[tokio::test]
+async fn a_themes_page_and_its_code_editor() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::POST,
+            "/admin/themes.json",
+            r#"{"theme":{"name":"Broken bits","component":true,"theme_fields":[{"name":"scss","target":"common","value":".a { color: $nope; }"},{"name":"yaml","target":"settings","value":"count:\n  default: 3\n  description: How many\nshow_it: true\n"},{"name":"en","target":"translations","value":"en:\n  greeting: Hello\n"}]}}"#,
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::CREATED, "{body}");
+    let id = serde_json::from_str::<serde_json::Value>(&body).unwrap()["theme"]["id"]
+        .as_i64()
+        .unwrap();
+
+    let (status, html) = admin
+        .page(&format!("/admin/customize/components/{id}"))
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Broken bits - Admin - "), "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-customize admin-customize-themes\"><div class=\"admin-config-page\"><div class=\"show-current-style admin-customize-themes-show\"><div class=\"back-to-themes-and-components\"><a href=\"/admin/config/customize/components\">"));
+    assert!(html.contains("Back to components</a></div><span></span><div class=\"title admin-customize-themes-show__title\"><button aria-label=\"Edit theme name: Broken bits\" class=\"btn no-text btn-transparent title-button\" aria-level=\"2\" role=\"heading\" type=\"button\"><span>Broken bits</span>"));
+    // The compile error, as the serializer's errors give it.
+    assert!(html.contains("<div class=\"alert alert-error\">Undefined variable.</div>"));
+    assert!(html.contains("<span class=\"heading created-by\">Created by:</span><span><a aria-label=\"admin&#x27;s profile\" data-user-card=\"admin\" href=\"/u/admin\" tabindex=\"0\">admin</a></span>"), "{html}");
+    // A component: no palettes, the themes it is on, Add all themes.
+    assert!(!html.contains("theme-settings__light-color-scheme"));
+    assert!(html.contains("relative-theme-selector parent-themes-setting"));
+    assert!(html.contains("<span class=\"d-button-label\">Add all themes</span>"));
+    assert!(html.contains(
+        "<div class=\"description\">Custom sections:</div><ul><li>Common: CSS</li></ul>"
+    ));
+    assert!(html.contains(
+        "<div class=\"description\">You can upload assets associated with your theme such as fonts and images</div>"
+    ));
+    assert!(html.contains(
+        "<div class=\"row setting integer theme-setting control-unit\" data-setting=\"count\""
+    ));
+    assert!(html.contains(
+        "<input class=\"input-setting-integer\" step=\"1\" type=\"number\" value=\"3\">"
+    ));
+    assert!(html.contains(
+        "<label class=\"checkbox-label\"><input checked type=\"checkbox\"><span></span></label>"
+    ));
+    assert!(html.contains("<h3>greeting</h3></div><div class=\"setting-value\"><div><textarea class=\"input-setting-textarea\">Hello</textarea></div>"));
+    assert!(html.contains(&format!("<a class=\"btn btn-icon-text btn-default export\" href=\"/admin/customize/themes/{id}/export\">")));
+    assert!(html.contains("<span class=\"d-button-label\">Disable</span>"));
+    // An XHR gets themes#index's JSON, as Rails routes it.
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            &format!("/admin/customize/themes/{id}"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("{\"themes\":"), "{body}");
+    // A theme the list lacks goes on to the themes.
+    let (status, location) = admin.page("/admin/customize/themes/99999").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/config/customize/themes");
+
+    // The editor: the field's error, the fields' nav, the advanced ones
+    // left out, the value in Ace.
+    let (status, html) = admin
+        .page(&format!(
+            "/admin/customize/components/{id}/common/scss/edit"
+        ))
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<div class=\"admin-contents admin-customize admin-customize-themes edit\">")
+    );
+    assert!(html.contains(&format!("<span class=\"editor-theme-name-wrapper\">Edit Code <a class=\"editor-theme-name\" href=\"/admin/customize/components/{id}\">Broken bits</a></span>")));
+    assert!(html.contains("<pre class=\"field-error\">Undefined variable.</pre><div class=\"field-info\">Custom CSS rules with support for SCSS syntax</div>"));
+    assert!(html.contains(&format!("<li><a class=\"active edited\" title=\"Custom CSS rules with support for SCSS syntax\" href=\"/admin/customize/components/{id}/common/scss/edit\">")));
+    assert!(!html.contains(&format!(
+        "href=\"/admin/customize/components/{id}/common/embedded_scss/edit\""
+    )));
+    // One target shown: no target nav.
+    assert!(!html.contains("<div class=\"edit-main-nav admin-controls\">"));
+    assert!(html.contains("data-ace-mode=\"scss\""));
+    assert!(html.contains("<button class=\"btn btn-primary save-theme\" disabled=\"\" type=\"button\"><span class=\"d-button-label\">Save</span></button>"));
+    // The JS field starts from the initializer's template.
+    let (_, html) = admin
+        .page(&format!("/admin/customize/components/{id}/common/js/edit"))
+        .await;
+    assert!(html.contains("data-ace-mode=\"javascript\""));
+    assert!(
+        html.contains("import { apiInitializer } from &quot;discourse/lib/api&quot;;"),
+        "{html}"
+    );
+    // A field the target lacks goes to its first.
+    let (status, location) = admin
+        .page(&format!("/admin/customize/components/{id}/desktop/js/edit"))
+        .await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(
+        location,
+        format!("/admin/customize/components/{id}/desktop/scss/edit")
+    );
+    // Saving the JS is refused, as theme javascript is (170).
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            &format!("/admin/themes/{id}.json"),
+            r#"{"theme":{"theme_fields":[{"name":"discourse/api-initializers/theme-initializer.gjs","target":"extra_js","value":"x"}]}}"#,
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+
+    // The system theme: no code, no delete, no export.
+    let (status, html) = admin.page("/admin/customize/themes/-1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"alert alert-info system-theme-info\">"));
+    assert!(!html.contains("edit-code"));
+    assert!(!html.contains("btn-danger delete"));
+    assert!(html.contains("theme-settings__light-color-scheme"));
+
+    let mut user = Client::logged_in(st.clone(), "user1").await;
+    let (status, _) = user.page(&format!("/admin/customize/themes/{id}")).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _) = user
+        .page(&format!("/admin/customize/themes/{id}/common/scss/edit"))
+        .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
 }

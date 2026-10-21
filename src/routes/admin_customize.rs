@@ -1162,3 +1162,284 @@ pub(super) async fn watched_words_page(
         StatusCode::OK,
     )
 }
+
+/// The strings admin-customize.js reads on a theme's page and its editor.
+const THEME_STRINGS: &[&str] = &[
+    "admin.customize.delete_confirm",
+    "admin.customize.theme.delete_success",
+    "admin.customize.theme.delete_upload_confirm",
+    "admin.customize.theme.convert_theme_alert",
+    "admin.customize.theme.convert_theme_alert_generic",
+    "admin.customize.theme.convert_component_alert",
+    "admin.customize.theme.convert_component_alert_generic",
+    "admin.customize.theme.edit_confirm",
+    "admin.customize.theme.theme_setting_saved",
+    "admin.customize.theme.theme_site_setting_saved",
+    "admin.customize.theme.unsaved_changes_alert",
+    "admin.customize.theme.unsaved_parent_themes",
+    "admin.customize.theme.discard",
+    "admin.customize.theme.stay",
+    "admin.customize.theme.add_upload",
+    "admin.customize.theme.upload_file_tip",
+    "admin.customize.theme.variable_name",
+    "admin.customize.theme.variable_name_error.invalid_syntax",
+    "admin.customize.theme.variable_name_error.no_overwrite",
+    "admin.customize.theme.variable_name_error.must_be_unique",
+    "admin.customize.theme.upload",
+    "admin.customize.theme.minimize_editor",
+    "admin.customize.theme.maximize_editor",
+    "admin.customize.theme.default_light_scheme",
+    "admin.customize.save",
+    "admin.customize.preview",
+    "admin.customize.explain_preview",
+    "select_kit.default_header_text",
+    "select_kit.filter_by",
+    "select_kit.select_to_filter",
+    "cancel",
+    "saving",
+    "generic_error",
+];
+
+/// The theme the route's `:theme_id` names among themes#index's
+/// (`parseInt`), with the document.
+async fn theme_doc(
+    state: &AppState,
+    guardian: &crate::session::current::AuthGuardian,
+    headers: &HeaderMap,
+    raw: &str,
+) -> Result<Option<(serde_json::Value, serde_json::Value)>, AppError> {
+    let doc = client_json("/admin/themes.json", |u| {
+        super::themes::index(
+            axum::extract::State(state.clone()),
+            crate::session::current::AuthGuardian(guardian.0.clone()),
+            headers.clone(),
+            u,
+        )
+    })
+    .await?;
+    let Ok(doc) = doc else {
+        return Ok(None);
+    };
+    let digits: String = {
+        let raw = raw.trim_start();
+        let (sign, rest) = match raw.strip_prefix('-') {
+            Some(rest) => ("-", rest),
+            None => ("", raw.strip_prefix('+').unwrap_or(raw)),
+        };
+        let n: String = rest.chars().take_while(char::is_ascii_digit).collect();
+        if n.is_empty() {
+            String::new()
+        } else {
+            format!("{sign}{n}")
+        }
+    };
+    let Ok(id) = digits.parse::<i64>() else {
+        return Ok(None);
+    };
+    let theme = doc["themes"]
+        .as_array()
+        .and_then(|a| a.iter().find(|t| t["id"].as_i64() == Some(id)))
+        .cloned();
+    Ok(theme.map(|t| (t, doc)))
+}
+
+/// adminCustomizeThemes.index, where a theme the list lacks goes:
+/// adminConfig.customize.themes.
+fn to_themes(state: &AppState) -> Response {
+    axum::response::Redirect::to(&format!(
+        "{}/admin/config/customize/themes",
+        state.config.globals.relative_url_root()
+    ))
+    .into_response()
+}
+
+/// GET /admin/customize/{themes,components}/:id: themes#index's JSON; a
+/// page request draws the theme's page (adminCustomizeThemes.show).
+pub async fn theme_page(
+    state: axum::extract::State<AppState>,
+    guardian: crate::session::current::AuthGuardian,
+    axum::extract::Path(raw): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.0.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if super::admin_pages::wants_json(&uri, &headers) {
+        return super::themes::index(state, guardian, headers, uri).await;
+    }
+    let Some((theme, doc)) = theme_doc(&state, &guardian, &headers, &raw).await? else {
+        return Ok(to_themes(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        &state,
+        &guardian.0,
+        &headers,
+        "admin_themes_and_components",
+    )
+    .await?;
+    drop(conn);
+    let cx = shell.cx(&state);
+    let default_locale = shell.settings.get("default_locale")?.to_s();
+    let locale = theme["locale"]
+        .as_str()
+        .or(doc["extras"]["locale"].as_str())
+        .filter(|l| !l.is_empty())
+        .unwrap_or(&default_locale)
+        .to_string();
+    let locales = available_locales(cx.i18n);
+    let all = doc["themes"].as_array().cloned().unwrap_or_default();
+    let schemes = doc["extras"]["color_schemes"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let page = crate::admin_theme_view::ShowCx {
+        all: &all,
+        color_schemes: &schemes,
+        locale: &locale,
+        locales: &locales,
+    };
+    let strings = crate::admin_ui::strings(&cx, "admin-customize-strings", THEME_STRINGS);
+    let data = format!(
+        "<script type=\"application/json\" id=\"theme-data\">{}</script>",
+        serde_json::json!({ "theme": theme, "themes": all, "color_schemes": schemes })
+            .to_string()
+            .replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}{}<script src=\"{}\"></script>",
+        crate::admin_theme_view::show(&cx, &theme, &page),
+        site_settings_strings(&cx),
+        crate::assets::url(cx.base_path, "site-settings.js")
+    );
+    let main = crate::admin_view::contents("admin-customize admin-customize-themes", &content);
+    let title = theme["name"].as_str().unwrap_or_default().to_string();
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "admin-customize.js",
+        StatusCode::OK,
+    )
+}
+
+/// The strings site-settings.js reads for the setting rows' controls.
+fn site_settings_strings(cx: &crate::admin_view::AdminCx) -> String {
+    let keys = [
+        "admin.settings.save",
+        "admin.settings.cancel",
+        "admin.settings.reset",
+        "no_value",
+        "select_kit.select_to_filter",
+        "select_kit.default_header_text",
+        "generic_error",
+    ];
+    let map: serde_json::Map<String, serde_json::Value> = keys
+        .iter()
+        .map(|k| (k.to_string(), crate::admin_view::t(cx.i18n, k).into()))
+        .collect();
+    format!(
+        "<script type=\"application/json\" id=\"site-settings-strings\">{}</script>",
+        serde_json::Value::Object(map)
+            .to_string()
+            .replace('<', "\\u003c")
+    )
+}
+
+/// GET /admin/customize/{themes,components}/:id/:target/:field_name/edit:
+/// themes#index's JSON; a page request draws the code editor
+/// (adminCustomizeThemes.edit) for the field, as its route sends it on: a
+/// git theme to the themes, a field the target lacks to its first.
+pub async fn theme_edit_page(
+    state: axum::extract::State<AppState>,
+    guardian: crate::session::current::AuthGuardian,
+    axum::extract::Path((raw, target, field)): axum::extract::Path<(String, String, String)>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.0.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let kind = route_type(&uri);
+    if super::admin_pages::wants_json(&uri, &headers) {
+        return super::themes::index(state, guardian, headers, uri).await;
+    }
+    let Some((theme, _)) = theme_doc(&state, &guardian, &headers, &raw).await? else {
+        return Ok(to_themes(&state));
+    };
+    let Some(fields) = crate::admin_theme_view::field_names(&target) else {
+        return Err(crate::Unsupported(
+            "a theme editor target other than common, desktop or mobile",
+        )
+        .into());
+    };
+    if theme["remote_theme"]["is_git"].as_bool() == Some(true) {
+        return Ok(to_themes(&state));
+    }
+    let id = theme["id"].as_i64().unwrap_or_default();
+    if !fields.contains(&field.as_str()) {
+        return Ok(axum::response::Redirect::to(&format!(
+            "{}/admin/customize/{kind}/{id}/{target}/{}/edit",
+            state.config.globals.relative_url_root(),
+            fields[0]
+        ))
+        .into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, &state, &guardian.0, &headers, "").await?;
+    drop(conn);
+    let cx = shell.cx(&state);
+    let strings = crate::admin_ui::strings(&cx, "admin-customize-strings", THEME_STRINGS);
+    let data = format!(
+        "<script type=\"application/json\" id=\"theme-editor-data\">{}</script>",
+        serde_json::json!({
+            "theme": theme,
+            "type": kind,
+            "target": target,
+            "field": field,
+            "fields": {
+                "common": crate::admin_theme_view::field_names("common"),
+                "desktop": crate::admin_theme_view::field_names("desktop"),
+                "mobile": crate::admin_theme_view::field_names("mobile"),
+            },
+            "js_default": crate::admin_theme_view::JS_DEFAULT_VALUE,
+            "navs": crate::admin_theme_view::editor_navs(&cx, &theme, &kind, &target, &field, true),
+        })
+        .to_string()
+        .replace('<', "\\u003c")
+    );
+    let content = format!(
+        "{}{data}{strings}",
+        crate::admin_theme_view::edit(&cx, &theme, &kind, &target, &field)
+    );
+    let main = crate::admin_view::contents("admin-customize admin-customize-themes edit", &content);
+    shell.render(&state, &uri, "", main, "admin-customize.js", StatusCode::OK)
+}
+
+/// GET /admin/customize/{themes,components}/:id/schema/:setting_name:
+/// themes#schema, the objects setting editor's page, not drawn yet.
+pub async fn theme_schema_page(
+    state: axum::extract::State<AppState>,
+    guardian: crate::session::current::AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.0.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let _ = (headers, uri);
+    Err(crate::Unsupported("a theme's objects setting editor (themes#schema)").into())
+}
+
+/// The route's `:type` (themes or components), as the path names it.
+fn route_type(uri: &Uri) -> String {
+    uri.path()
+        .split('/')
+        .skip_while(|s| *s != "customize")
+        .nth(1)
+        .unwrap_or("themes")
+        .to_string()
+}

@@ -1502,6 +1502,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/themes/{id}/source", put(themes::update_source))
         .route("/admin/themes/{id}/source.json", put(themes::update_source))
+        .route(
+            "/admin/customize/themes/{id}",
+            get(admin_customize::theme_page),
+        )
+        .route(
+            "/admin/customize/components/{id}",
+            get(admin_customize::theme_page),
+        )
+        .route(
+            "/admin/customize/themes/{id}/{target}/{field_name}/edit",
+            get(admin_customize::theme_edit_page),
+        )
+        .route(
+            "/admin/customize/components/{id}/{target}/{field_name}/edit",
+            get(admin_customize::theme_edit_page),
+        )
+        .route(
+            "/admin/customize/themes/{id}/schema/{setting_name}",
+            get(admin_customize::theme_schema_page),
+        )
+        .route(
+            "/admin/customize/components/{id}/schema/{setting_name}",
+            get(admin_customize::theme_schema_page),
+        )
         .route("/admin/customize/themes/{id}/export", get(themes::export))
         .route(
             "/admin/customize/themes/{id}/export.json",

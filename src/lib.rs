@@ -37,6 +37,7 @@ pub mod admin_setting_links;
 pub mod admin_site_settings;
 pub mod admin_site_settings_view;
 pub mod admin_site_texts_view;
+pub mod admin_theme_view;
 pub mod admin_themes_view;
 pub mod admin_traffic_explorer;
 pub mod admin_ui;

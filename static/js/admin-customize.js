@@ -3669,4 +3669,728 @@
     showWords = false;
     regexpErrors();
   });
+
+  // --- a theme's page ---------------------------------------------------------
+  //
+  // .admin-customize-themes-show (src/admin_theme_view.rs show): the
+  // controller's actions on the theme from #theme-data. A save is the
+  // Theme model's saveChanges, a JSON PUT of the changed attributes;
+  // what Ember re-renders from the saved model is the page fetched again
+  // in place. The setting rows are site-settings.js's, saved through the
+  // savers below.
+
+  function themeRoot() {
+    return document.querySelector(".admin-contents .admin-customize-themes-show");
+  }
+
+  function themeData() {
+    var el = document.getElementById("theme-data");
+    return el ? JSON.parse(el.textContent) : null;
+  }
+
+  // The page drawn again where it stands (history replaced, not pushed).
+  function themeRefresh() {
+    replaceGo(location.pathname.replace(ui().base(), "") + location.search);
+  }
+
+  function replaceGo(path) {
+    var url = ui().base() + path;
+    if (!window.htmx) {
+      location.replace(url);
+      return;
+    }
+    history.replaceState(history.state, "", url);
+    var link = document.createElement("a");
+    link.href = url;
+    link.hidden = true;
+    link.setAttribute("hx-push-url", "false");
+    document.getElementById("main-outlet").appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }
+
+  function saveTheme(id, attrs) {
+    return ui().ajax("PUT", "/admin/themes/" + id, { json: { theme: attrs } });
+  }
+
+  function smallButton(cls, iconName) {
+    return (
+      '<button class="btn no-text btn-icon ' +
+      cls +
+      '" type="button">' +
+      ui().icon(iconName) +
+      '<span aria-hidden="true">&#8203;</span></button>'
+    );
+  }
+
+  // The settings' savers (SiteSettingComponent#_save of each subclass),
+  // which site-settings.js calls for a row with data-saver.
+  Discourse.settingSavers = Discourse.settingSavers || {};
+  Discourse.settingSavers["theme-setting"] = function (row, value) {
+    var data = themeData();
+    return ui()
+      .ajax("PUT", "/admin/themes/" + data.theme.id + "/setting", { name: row.dataset.setting, value: value })
+      .then(function () {
+        ui().toast(t("admin.customize.theme.theme_setting_saved"));
+      });
+  };
+  Discourse.settingSavers["theme-site-setting"] = function (row, value) {
+    var data = themeData();
+    return ui()
+      .ajax("PUT", "/admin/themes/" + data.theme.id + "/site-setting", { name: row.dataset.setting, value: value })
+      .then(function () {
+        ui().toast(t("admin.customize.theme.theme_site_setting_saved"));
+      });
+  };
+  Discourse.settingSavers["theme-translation"] = function (row, value) {
+    var data = themeData();
+    var translations = {};
+    translations[row.dataset.translationKey] = value;
+    return saveTheme(data.theme.id, { translations: translations, locale: row.dataset.locale });
+  };
+  // ThemeSettingRelativesSelector: the names chosen as the themes' ids.
+  Discourse.settingSavers["theme-relatives"] = function (row, value) {
+    var data = themeData();
+    var ids = JSON.parse(row.dataset.themeIds);
+    var attrs = {};
+    attrs[row.dataset.setting] = value
+      .split("|")
+      .filter(Boolean)
+      .map(function (name) {
+        return ids[name];
+      });
+    return saveTheme(data.theme.id, attrs).then(function () {
+      themeRefresh();
+    });
+  };
+
+  // ThemeTranslation rows for the locale's translations.
+  function translationRows(translations, locale) {
+    return translations
+      .map(function (tr) {
+        var overridden = String(tr.value) !== String(tr["default"]);
+        return (
+          '<div class="row setting string' +
+          (overridden ? " overridden" : "") +
+          ' theme-translation" data-type="string" data-default="' +
+          escapeHtml(tr["default"] == null ? "" : String(tr["default"])) +
+          '" data-value="' +
+          escapeHtml(tr.value == null ? "" : String(tr.value)) +
+          '" data-saver="theme-translation" data-translation-key="' +
+          escapeHtml(tr.key) +
+          '" data-locale="' +
+          escapeHtml(locale) +
+          '"><div class="setting-label"><h3>' +
+          escapeHtml(tr.key) +
+          '</h3></div><div class="setting-value"><div><textarea class="input-setting-textarea">' +
+          escapeHtml(tr.value == null ? "" : String(tr.value)) +
+          '</textarea></div><div><div class="validation-error hidden">' +
+          ui().icon("xmark") +
+          ' </div></div><div class="desc"></div></div>' +
+          (overridden
+            ? '<button class="btn btn-icon-text btn-default undo setting-controls__undo" type="button">' +
+              ui().icon("arrow-rotate-left") +
+              '<span class="d-button-label">' +
+              escapeHtml(ui().t("admin.settings.reset")) +
+              "</span></button>"
+            : "") +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  // InlineEditCheckbox: the save and cancel buttons while it differs.
+  function syncInlineEdit(edit) {
+    var input = edit.querySelector("input[type='checkbox']");
+    var changed = String(input.checked) !== edit.dataset.checked;
+    var buttons = edit.querySelectorAll(".submit-edit, .cancel-edit");
+    if (changed && !buttons.length) {
+      edit.insertAdjacentHTML(
+        "beforeend",
+        smallButton("btn-success btn-small submit-edit", "check") + smallButton("btn-danger btn-small cancel-edit", "xmark")
+      );
+    } else if (!changed) {
+      buttons.forEach(function (b) {
+        b.remove();
+      });
+    }
+  }
+
+  // The color palette pickers' check and cancel while changed.
+  function syncPalette(section) {
+    var details = section.querySelector("details.combo-box");
+    var value = details.dataset.value !== undefined ? details.dataset.value : section.dataset.value;
+    var controls = section.querySelector(".setting-controls");
+    var dark = section.classList.contains("theme-settings__dark-color-scheme");
+    if (value !== section.dataset.value) {
+      if (!controls.children.length) {
+        controls.innerHTML =
+          smallButton("ok " + (dark ? "submit-dark-edit" : "submit-light-edit"), "check") +
+          smallButton("cancel " + (dark ? "cancel-dark-edit" : "cancel-light-edit"), "xmark");
+      }
+    } else {
+      controls.innerHTML = "";
+    }
+  }
+
+  // ThemeUploadAddModal
+  function uploadModal(data) {
+    var name = "";
+    var file = null;
+    var errorMessage = function () {
+      if (!name) {
+        return null;
+      }
+      if (!/^[a-z_][a-z0-9_-]*$/i.test(name)) {
+        return t("admin.customize.theme.variable_name_error.invalid_syntax");
+      }
+      var taken = (data.theme.theme_fields || []).some(function (f) {
+        return [2, 3, 4].indexOf(f.type_id) !== -1 && f.name === name;
+      });
+      if (taken) {
+        return t("admin.customize.theme.variable_name_error.must_be_unique");
+      }
+      return null;
+    };
+    var close = Discourse.modal.show({
+      className: "add-upload-modal",
+      title: t("admin.customize.theme.add_upload"),
+      body: function (body) {
+        body.innerHTML =
+          '<div class="inputs"><section class="field"><input accept="*" id="file-input" type="file"><label for="file-input">' +
+          escapeHtml(t("admin.customize.theme.upload_file_tip")) +
+          '</label></section><section class="field"><label for="theme-variable-name">' +
+          escapeHtml(t("admin.customize.theme.variable_name")) +
+          '</label><input id="theme-variable-name" class="ember-text-field" type="text"></section></div>';
+        var sync = function () {
+          var inputs = body.querySelector(".inputs");
+          var alert = inputs.querySelector(".alert-error");
+          if (alert) {
+            alert.remove();
+          }
+          var message = errorMessage();
+          if (file && message) {
+            inputs.insertAdjacentHTML("beforeend", '<span class="alert alert-error">' + escapeHtml(message) + "</span>");
+          }
+          var button = document.querySelector(".add-upload-modal .d-modal__footer .btn-primary");
+          if (button) {
+            button.disabled = !!(file && message);
+          }
+        };
+        body.querySelector("#file-input").addEventListener("change", function (event) {
+          file = event.target.files[0] || null;
+          if (file && !name) {
+            // updateName: the file's name up to its first dot.
+            name = file.name.split(".")[0];
+            body.querySelector("#theme-variable-name").value = name;
+          }
+          sync();
+        });
+        body.querySelector("#theme-variable-name").addEventListener("input", function (event) {
+          name = event.target.value;
+          sync();
+        });
+      },
+      footer: function (footer, closeModal) {
+        footer.innerHTML =
+          '<button class="btn btn-icon-text btn-primary" type="button">' +
+          ui().icon("upload") +
+          '<span class="d-button-label">' +
+          escapeHtml(t("admin.customize.theme.upload")) +
+          '</span></button><button class="btn btn-text btn-transparent d-modal-cancel" type="button"><span class="d-button-label">' +
+          escapeHtml(t("cancel")) +
+          "</span></button>";
+        footer.querySelector(".d-modal-cancel").addEventListener("click", closeModal);
+        footer.querySelector(".btn-primary").addEventListener("click", function () {
+          if (!file) {
+            return;
+          }
+          var form = new FormData();
+          form.append("file", file);
+          ui()
+            .ajax("POST", "/admin/themes/upload_asset", form)
+            .then(function (result) {
+              closeModal();
+              var fields = (data.theme.theme_fields || []).slice();
+              fields.push({ name: name, target: "common", value: "", upload_id: result.upload_id, type_id: 2 });
+              return saveTheme(data.theme.id, { theme_fields: fields }).then(themeRefresh, ui().failed);
+            })
+            .catch(function (e) {
+              // DModal's flash with the upload's error.
+              var modal = document.querySelector(".add-upload-modal .d-modal__body");
+              if (modal) {
+                var flash = modal.querySelector("#modal-alert");
+                if (!flash) {
+                  modal.insertAdjacentHTML("afterbegin", '<div id="modal-alert" role="alert" class="alert alert-error"></div>');
+                  flash = modal.querySelector("#modal-alert");
+                }
+                flash.textContent = e.message;
+              }
+            });
+        });
+      },
+    });
+    return close;
+  }
+
+  function themeAction(root, data, button) {
+    var theme = data.theme;
+    var action = button.dataset.action;
+    var refresh = function (promise) {
+      return promise.then(themeRefresh).catch(ui().failed);
+    };
+    if (action === "enable" || action === "disable") {
+      refresh(saveTheme(theme.id, { enabled: action === "enable" }));
+    } else if (action === "convert") {
+      var key = theme.component ? "admin.customize.theme.convert_component" : "admin.customize.theme.convert_theme";
+      var relatives = (theme.component ? theme.parent_themes : theme.child_themes) || [];
+      var message = relatives.length
+        ? t(key + "_alert", {
+            relatives: relatives
+              .map(function (r) {
+                return r.name;
+              })
+              .join(", "),
+          })
+        : t(key + "_alert_generic");
+      Discourse.dialog.yesNoConfirm({
+        message: message,
+        didConfirm: function () {
+          refresh(saveTheme(theme.id, { component: !theme.component }));
+        },
+      });
+    } else if (action === "delete") {
+      Discourse.dialog.deleteConfirm({
+        title: t("admin.customize.delete_confirm", { theme_name: theme.name }),
+        didConfirm: function () {
+          ui()
+            .ajax("DELETE", "/admin/themes/" + theme.id)
+            .then(function () {
+              ui().toast(t("admin.customize.theme.delete_success", { theme: theme.name }));
+              go("/admin/config/customize/themes");
+            })
+            .catch(ui().failed);
+        },
+      });
+    } else if (action === "settings-editor") {
+      ui().unsupported("the theme settings editor");
+    } else {
+      // update, check, change-source: remote themes' git operations.
+      ui().unsupported("updating a theme from its remote repository");
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    var root = themeRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = themeData();
+    var theme = data.theme;
+    var target = event.target;
+    var title = root.querySelector(".admin-customize-themes-show__title");
+    if (target.closest(".title-button")) {
+      title.innerHTML =
+        '<div class="container-edit-title"><input class="ember-text-field" type="text">' +
+        smallButton("btn-primary btn-small submit-edit", "check") +
+        smallButton("btn-default btn-small cancel-edit", "xmark") +
+        "</div>";
+      var input = title.querySelector("input");
+      input.value = theme.name;
+      input.focus();
+      return;
+    }
+    if (target.closest(".container-edit-title .cancel-edit")) {
+      themeRefresh();
+      return;
+    }
+    if (target.closest(".container-edit-title .submit-edit")) {
+      saveTheme(theme.id, { name: title.querySelector("input").value })
+        .then(themeRefresh)
+        .catch(ui().failed);
+      return;
+    }
+    var inline = target.closest(".inline-edit");
+    if (inline && target.closest(".submit-edit")) {
+      var attrs = {};
+      attrs[inline.dataset.field] = inline.querySelector("input").checked;
+      saveTheme(theme.id, attrs).then(themeRefresh).catch(ui().failed);
+      return;
+    }
+    if (inline && target.closest(".cancel-edit")) {
+      inline.querySelector("input").checked = inline.dataset.checked === "true";
+      syncInlineEdit(inline);
+      return;
+    }
+    var palette = target.closest("section[data-field]");
+    if (palette && target.closest(".setting-controls .ok")) {
+      var details = palette.querySelector("details.combo-box");
+      var value = details.dataset.value;
+      var change = {};
+      change[palette.dataset.field] = value === "" || value === undefined ? null : parseInt(value, 10);
+      saveTheme(theme.id, change).then(themeRefresh).catch(ui().failed);
+      return;
+    }
+    if (palette && target.closest(".setting-controls .cancel")) {
+      themeRefresh();
+      return;
+    }
+    var edit = target.closest(".edit-code");
+    if (edit) {
+      var path = "/admin/customize/" + (theme.component ? "components" : "themes") + "/" + theme.id + "/common/scss/edit";
+      if (edit.dataset.confirm) {
+        Discourse.dialog.confirm({
+          message: t("admin.customize.theme.edit_confirm"),
+          didConfirm: function () {
+            go(path);
+          },
+        });
+      } else {
+        go(path);
+      }
+      return;
+    }
+    if (target.closest(".removable-list .cancel-edit")) {
+      var name = target.closest("li").dataset.name;
+      Discourse.dialog.deleteConfirm({
+        title: t("admin.customize.theme.delete_upload_confirm"),
+        didConfirm: function () {
+          // Theme#removeField: the upload's field saved empty.
+          var fields = (theme.theme_fields || []).map(function (f) {
+            if (f.target === "common" && f.type_id === 2 && f.name === name) {
+              return Object.assign({}, f, { upload_id: null, value: null });
+            }
+            return f;
+          });
+          saveTheme(theme.id, { theme_fields: fields }).then(themeRefresh).catch(ui().failed);
+        },
+      });
+      return;
+    }
+    if (target.closest(".control-unit > .btn.upload")) {
+      uploadModal(data);
+      return;
+    }
+    var actionButton = target.closest("button[data-action]");
+    if (actionButton) {
+      themeAction(root, data, actionButton);
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    var root = themeRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var inline = event.target.closest(".inline-edit");
+    if (inline) {
+      syncInlineEdit(inline);
+      return;
+    }
+    var palette = event.target.closest("section[data-field]");
+    if (palette && event.target.matches("details.combo-box")) {
+      syncPalette(palette);
+      return;
+    }
+    if (event.target.matches("details.translation-selector")) {
+      var data = themeData();
+      var locale = event.target.dataset.value;
+      var section = root.querySelector("section.translations");
+      var spinner = section.parentElement;
+      spinner.innerHTML = '<div class="spinner"></div>';
+      ui()
+        .ajax("GET", "/admin/themes/" + data.theme.id + "/translations/" + encodeURIComponent(locale))
+        .then(function (result) {
+          spinner.innerHTML =
+            '<section class="form-horizontal theme settings translations control-unit">' +
+            translationRows(result.translations, locale) +
+            "</section>";
+        })
+        .catch(function (e) {
+          ui().failed(e);
+          themeRefresh();
+        });
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    var root = themeRoot();
+    if (!root || !event.target.closest || !event.target.closest(".container-edit-title input")) {
+      return;
+    }
+    if (event.key === "Enter") {
+      root.querySelector(".container-edit-title .submit-edit").click();
+    } else if (event.key === "Escape") {
+      root.querySelector(".container-edit-title .cancel-edit").click();
+    }
+  });
+
+  // --- a theme's code editor --------------------------------------------------
+  //
+  // .admin-customize-themes.edit (src/admin_theme_view.rs edit): the
+  // field's value in Ace; its edits go into the theme kept for the page
+  // (Discourse.themeEditor, which the editor's other fields, swapped in
+  // with replace, share as Ember's model does) until Save sends every
+  // field. Show advanced swaps in the navs with the advanced targets and
+  // fields (#theme-editor-data's), Maximize the wrapper's class.
+
+  function editorRoot() {
+    return document.querySelector(".admin-contents.admin-customize-themes.edit");
+  }
+
+  function editorData() {
+    var el = document.getElementById("theme-editor-data");
+    return el ? JSON.parse(el.textContent) : null;
+  }
+
+  function editorState() {
+    var data = editorData();
+    var state = Discourse.themeEditor;
+    if (!state || state.id !== data.theme.id) {
+      state = Discourse.themeEditor = {
+        id: data.theme.id,
+        theme: data.theme,
+        changed: false,
+        advanced: false,
+        maximized: false,
+      };
+    }
+    return state;
+  }
+
+  function fieldKey(target, name) {
+    if (target === "common" && name === "js") {
+      return ["extra_js", "discourse/api-initializers/theme-initializer.gjs"];
+    }
+    return [target, name];
+  }
+
+  // Theme#setField for a basic field.
+  function setField(theme, target, name, value) {
+    var key = fieldKey(target, name);
+    var fields = theme.theme_fields || (theme.theme_fields = []);
+    var found = null;
+    for (var i = fields.length - 1; i >= 0; i--) {
+      var f = fields[i];
+      if (f.target === key[0] && f.name === key[1] && (!f.type_id || [0, 1, 5, 6].indexOf(f.type_id) !== -1)) {
+        found = f;
+        break;
+      }
+    }
+    if (found) {
+      found.value = value;
+    } else {
+      fields.push({ name: key[1], target: key[0], value: value });
+    }
+  }
+
+  function getField(theme, target, name) {
+    var key = fieldKey(target, name);
+    var fields = theme.theme_fields || [];
+    for (var i = fields.length - 1; i >= 0; i--) {
+      var f = fields[i];
+      if (f.target === key[0] && f.name === key[1] && (!f.type_id || [0, 1, 5, 6].indexOf(f.type_id) !== -1)) {
+        return f;
+      }
+    }
+    return null;
+  }
+
+  function syncEditor(root, state) {
+    var save = root.querySelector(".save-theme");
+    save.disabled = !state.changed || !!state.saving;
+    save.querySelector(".d-button-label").textContent = state.saving ? t("saving") : t("admin.customize.save");
+    var preview = root.querySelector(".admin-footer .status-actions .preview-link");
+    if (preview) {
+      preview.hidden = state.changed;
+    }
+  }
+
+  function showField(root, data, state) {
+    var editor = root.querySelector("div.ace");
+    var field = getField(state.theme, data.target, data.field);
+    var value = field && field.value ? field.value : data.field === "js" ? data.js_default : "";
+    if (editor.aceEditor) {
+      if (editor.aceEditor.getValue() !== value) {
+        state.loading = true;
+        editor.aceEditor.getSession().setValue(value);
+        state.loading = false;
+      }
+    } else {
+      editor.textContent = value;
+    }
+  }
+
+  function showError(root, data, state) {
+    var field = getField(state.theme, data.target, data.field);
+    var error = field && data.field !== "js" ? field.error : "";
+    var pre = root.querySelector("pre.field-error");
+    if (error) {
+      if (!pre) {
+        pre = document.createElement("pre");
+        pre.className = "field-error";
+        root.querySelector(".field-info").insertAdjacentElement("beforebegin", pre);
+      }
+      pre.textContent = error;
+    } else if (pre) {
+      pre.remove();
+    }
+  }
+
+  var editorNavs = null;
+
+  function showNavs(root, data, state) {
+    var container = root.querySelector(".editor-container");
+    container.querySelectorAll(":scope > .admin-controls").forEach(function (nav) {
+      nav.remove();
+    });
+    var html = state.advanced ? data.navs : editorNavs;
+    container.querySelector(".editor-information").insertAdjacentHTML("afterend", html);
+    var toggle = root.querySelector(".d-toggle-switch__checkbox");
+    toggle.setAttribute("aria-checked", String(state.advanced));
+    root.querySelector(".d-toggle-switch__checkbox-slider").innerHTML = state.advanced ? ui().icon("check") : "";
+  }
+
+  function editorPath(data, target, field) {
+    return "/admin/customize/" + data.type + "/" + data.theme.id + "/" + target + "/" + field + "/edit";
+  }
+
+  // The unsaved changes question before leaving the editor.
+  function leaveEditor(path) {
+    var state = Discourse.themeEditor;
+    if (state && state.changed) {
+      Discourse.dialog.confirm({
+        message: t("admin.customize.theme.unsaved_changes_alert"),
+        confirmLabel: t("admin.customize.theme.discard"),
+        cancelLabel: t("admin.customize.theme.stay"),
+        didConfirm: function () {
+          Discourse.themeEditor = null;
+          replaceGo(path);
+        },
+      });
+      return;
+    }
+    Discourse.themeEditor = null;
+    replaceGo(path);
+  }
+
+  document.addEventListener("ace-change", function (event) {
+    var root = editorRoot();
+    if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var data = editorData();
+    var state = editorState();
+    if (state.loading) {
+      return;
+    }
+    var value = event.detail;
+    if (data.field === "js" && value === data.js_default) {
+      value = "";
+    }
+    setField(state.theme, data.target, data.field, value);
+    state.changed = true;
+    syncEditor(root, state);
+  });
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      var root = editorRoot();
+      if (!root || !root.contains(event.target)) {
+        return;
+      }
+      var data = editorData();
+      var state = editorState();
+      var target = event.target;
+      var navLink = target.closest(".admin-controls a[href]");
+      if (navLink) {
+        // LinkTo with @replace: the field swapped in, the edits kept.
+        event.preventDefault();
+        event.stopPropagation();
+        replaceGo(navLink.getAttribute("href").replace(ui().base(), ""));
+        return;
+      }
+      var showPath = "/admin/customize/" + data.type + "/" + data.theme.id;
+      if (target.closest(".editor-theme-name") || target.closest(".editor-back-button")) {
+        event.preventDefault();
+        event.stopPropagation();
+        leaveEditor(showPath);
+        return;
+      }
+      // The switch itself: a click on its label reaches it too.
+      if (target.closest(".d-toggle-switch__checkbox")) {
+        state.advanced = !state.advanced;
+        var targets = ["common", "desktop", "mobile"];
+        var visibleTarget = state.advanced || data.target === "common" || root.querySelector(".edit-main-nav a.active");
+        showNavs(root, data, state);
+        var visibleField = root.querySelector(".admin-controls:not(.edit-main-nav) a.active");
+        if (!state.advanced && (!visibleTarget || !visibleField)) {
+          var first = root.querySelector(".admin-controls:not(.edit-main-nav) a");
+          var firstTarget = root.querySelector(".edit-main-nav a");
+          var targetName = firstTarget ? firstTarget.getAttribute("href").split("/").slice(-3)[0] : targets[0];
+          var fieldName = first ? first.getAttribute("href").split("/").slice(-2)[0] : data.fields[targetName][0];
+          replaceGo(editorPath(data, visibleTarget ? data.target : targetName, visibleField ? data.field : fieldName));
+        }
+        return;
+      }
+      var maximize = target.closest(".theme-editor-maximize");
+      if (maximize) {
+        state.maximized = !state.maximized;
+        root.querySelector(".current-style").classList.toggle("maximized", state.maximized);
+        maximize.title = t(state.maximized ? "admin.customize.theme.minimize_editor" : "admin.customize.theme.maximize_editor");
+        maximize.querySelector("svg").outerHTML = ui().icon(state.maximized ? "discourse-compress" : "discourse-expand");
+        var ace = root.querySelector("div.ace").aceEditor;
+        if (ace) {
+          setTimeout(function () {
+            ace.resize();
+          });
+        }
+        return;
+      }
+      if (target.closest(".save-theme")) {
+        state.saving = true;
+        syncEditor(root, state);
+        saveTheme(data.theme.id, { theme_fields: state.theme.theme_fields })
+          .then(function (result) {
+            state.theme = result.theme;
+          })
+          .catch(ui().failed)
+          .finally(function () {
+            state.saving = false;
+            state.changed = false;
+            if (document.contains(root)) {
+              syncEditor(root, state);
+              showError(root, data, state);
+            }
+          });
+      }
+    },
+    true
+  );
+
+  Discourse.onPage(function () {
+    var root = editorRoot();
+    if (!root) {
+      if (!themeRoot()) {
+        Discourse.themeEditor = null;
+      }
+      return;
+    }
+    var data = editorData();
+    var state = editorState();
+    editorNavs = Array.prototype.map
+      .call(root.querySelectorAll(".editor-container > .admin-controls"), function (nav) {
+        return nav.outerHTML;
+      })
+      .join("");
+    if (state.advanced) {
+      showNavs(root, data, state);
+    }
+    root.querySelector(".current-style").classList.toggle("maximized", !!state.maximized);
+    showField(root, data, state);
+    showError(root, data, state);
+    syncEditor(root, state);
+  });
 })();
