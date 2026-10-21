@@ -75,7 +75,7 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-42 passing). Each step below fails today and is ignored with the item
+43 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
@@ -85,8 +85,6 @@ Core forum:
   late (opening_a_topic_records_the_visit): 257
 - [ ] A reply quoting a post is refused, so quote notifications never
   happen (a_quote_notifies): 135
-- [ ] A reply linking another topic makes post_alert refuse, so its
-  mentions notify nobody (a_reply_linking_a_topic_notifies): 145
 - [ ] pull_hotlinked_images and crawl_topic_link are refused after every
   post with an image or a link (posting_runs_its_background_jobs): 140,
   127
@@ -102,9 +100,9 @@ Admin:
 
 - [ ] The review queue's page /review is refused; its JSON and actions
   work (admin_review_queue_page): 194
-- [ ] Silencing a member: the system message's post_alert (its options)
-  and the account_silenced email are refused, so they are never told
-  (a_silenced_member_is_told): 145, 146
+- [ ] Silencing a member: the account_silenced email is refused, so the
+  step fails though the system message notifies them
+  (a_silenced_member_is_told): 146
 
 ## Now: the parity queue (2026-10-13)
 
@@ -1581,7 +1579,7 @@ have handlers now.
     opens the composer; the quoted user's notification email, which
     Email::Styles refuses with any quote (email/styles.rs:126, 146);
     linked notifications from a quote of another topic's post when the
-    quoted user wasn't notified (jobs/post_alert.rs:443, 145)) M: QuotedPost
+    quoted user wasn't notified, done in 145) M: QuotedPost
     on create, revise, recover and a moved first post's copy
     (quote_count, post_replies and reply counts for the posts quoted,
     reply_quoted), quote alerts and quotes in group messages (is_replying?),
@@ -1618,7 +1616,7 @@ have handlers now.
     (posting/create.rs:1398), returning-user post notices (:1623),
     featured topics with a category sort order (:2015),
     suppress_secured_categories_from_admin (:2018;
-    jobs/post_alert.rs:800), site_archived (posting/create.rs:242;
+    jobs/post_alert.rs:835), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
     regeneration (posting/create.rs:969; jobs/handlers.rs:1108;
     post_owner_changer.rs:372; post_mover.rs:901;
@@ -1777,12 +1775,13 @@ have handlers now.
     (search/mod.rs:693,696,699; the default sort order went to 143e),
     blurbs from old post_search_data rows (:1022,1029), human_only
     search logs (search_logs.rs:60), the index_category_for_search job
-145. `feat/post-alert-rest` M: group and @here mentions
-    (jobs/post_alert.rs:309,312), nested replies (:285), links to topics
-    notifying someone (:443), linked notifications and their consolidation (:790;
-    notification_create.rs:230), mentions in flagged messages and
-    warnings (:337), post_alert's options (:211), populate_acting_user
-    (notifications.rs:363,419); staged users' alerts no longer refuse
+145. `feat/post-alert-rest` M (links to topics notifying someone and
+    their consolidation, the skip_send_email option and posts by email
+    skipping their to and cc addresses done): group and @here mentions
+    (jobs/post_alert.rs:308,311), nested replies (:287), mentions in
+    flagged messages and warnings (:338), post_alert options other than
+    skip_send_email (:210, none sent today), populate_acting_user
+    (notifications.rs:363,419)
 146. `feat/notification-email-rest` M: previous replies and in-reply-to
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
@@ -1997,7 +1996,7 @@ have handlers now.
     (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
     EmailCook)
 166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
-    jobs/post_alert.rs:478; routes/admin_groups.rs:1239;
+    jobs/post_alert.rs:491; routes/admin_groups.rs:1239;
     routes/groups.rs:642), the group SMTP credentials check
     (problem_checks.rs:342). Needs: network
 167. `feat/locales` L: every locale but English: server strings
@@ -2144,7 +2143,7 @@ have handlers now.
     (request_tracker.rs:465), keep_old_ip_address_count
     (session/current.rs:867). Needs: a GeoLite2 database
 186. `feat/push-notifications` M: push notifications
-    (jobs/post_alert.rs:1117) by web push and through user API keys'
+    (jobs/post_alert.rs:1184) by web push and through user API keys'
     push clients (84). Needs: network
 187. `fix/rails-error-answers` L (was M), split by area when started: about 175
     refusals when written, about 720 on 2026-10-20 (634 of the

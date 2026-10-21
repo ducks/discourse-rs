@@ -2262,3 +2262,29 @@ and services a reply with a quote goes through, inventoried here.
 | jobs/rebake_quoted_posts_for_user | - | posts quoting the user rebaked | covered | avatars/select_avatar_rebake_quoted |
 | lib/post_destroyer_spec.rb | - | recovering a reply with quotes | covered | posts/post_recover_with_quote |
 | models/post_mover_spec.rb | - | a moved first post that quotes | covered | topics/move_posts_first_post_with_quotes |
+
+## PostAlerter (links, mentions, the job's options)
+
+The rest of what a post's alerts are specced on, beyond quotes:
+post_alerter_spec, the consolidation planner and the callers that pass
+post_alert options.
+
+| Spec | Line | Scenario | Class | Case / note |
+|---|---|---|---|---|
+| services/post_alerter_spec.rb | 680 | notifies the linked user | covered | posts/linked_post_alert (new, match: a topic, the system user's topic, a post linked; one notification for the user linked twice) |
+| services/post_alerter_spec.rb | 710 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
+| services/post_alerter_spec.rb | 718 | staged user, restricted category allowing strangers | recordable | linked_staged_restricted (setup: a staged user, a category with email_in_allow_strangers) |
+| services/post_alerter_spec.rb | 737 | no notification with linked post notifications off | covered | posts/linked_notify_off (new, match) |
+| services/post_alerter_spec.rb | 746 | still notifies by default | covered | posts/linked_post_alert |
+| services/post_alerter_spec.rb | 2746 | a deleted linked post: the topic's first post | recordable | linked_deleted_post (setup: link_post_id to a deleted post) |
+| services/post_alerter_spec.rb | 1760 | email only to users not on the incoming email's CC list | covered | incoming_mail/incoming_reply_cc_skips_email, incoming_mail/incoming_reply_alert (new, match) |
+| services/notifications/consolidation_planner_spec.rb | 37 | links below the threshold stay apart | covered | posts/linked_post_alert |
+| services/notifications/consolidation_planner_spec.rb | 60 | link notifications consolidate into one | covered | posts/linked_consolidate (new, match: another poster's and an old one left alone) |
+| services/notifications/consolidation_planner_spec.rb | 91 | the consolidated link notification updated | covered | posts/linked_consolidated_update (new, match) |
+| services/user_silencer_spec.rb | 43 | the silence message's post_alert skips the email | covered | admin_users/silence_system_message_alert (new, match) |
+| lib/post_creator_spec.rb | 425 | post_alert_options skip the notification email | covered | admin_users/silence_system_message_alert |
+| services/post_alerter_spec.rb | 756-805 | @here: unrelated users, a user named here, repliers, whisperers, staff colour, max_here_mentioned (x6) | unported | jobs/post_alert.rs:311 |
+| services/post_alerter_spec.rb | 812-857 | @group mentions, private mention precedence (x3) | unported | jobs/post_alert.rs:308 |
+| services/post_alerter_spec.rb | 1006, 1039, 1046-1107 | group mentions in messages (x9) | unported | jobs/post_alert.rs:308 |
+| services/post_alerter_spec.rb | 1895-2203 | replies in nested topics and their buckets (x14) | unported | jobs/post_alert.rs:287 |
+| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:491, ROADMAP 166 |

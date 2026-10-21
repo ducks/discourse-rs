@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET notify_on_linked_posts = FALSE WHERE user_id = 1"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "See [the unlisted one](/t/parity-fixture-unlisted-topic/39) for context, admin opted out of hearing about it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

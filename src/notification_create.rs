@@ -28,6 +28,7 @@ pub mod types {
     /// discourse-reactions' type.
     pub const REACTION: i32 = 25;
     pub const NEW_FEATURES: i32 = 37;
+    pub const LINKED_CONSOLIDATED: i32 = 39;
 }
 
 /// `Notification.high_priority_types`
@@ -214,7 +215,7 @@ fn data_hash(data: &str) -> Map<String, Value> {
 /// `Notification.consolidate_or_create!(attrs)`: the first of the
 /// ConsolidationPlanner's plans that takes the notification, or a plain
 /// `save!`; the id of what was created or updated. Ported plans:
-/// liked_by_two_users and liked, group_message_summary and
+/// liked_by_two_users and liked, linked, group_message_summary and
 /// group_membership (refused when it would consolidate), and
 /// discourse-reactions' reacted_by_two_users and consolidated_reactions.
 /// A plan that updates a consolidated notification runs only the update's
@@ -227,7 +228,7 @@ pub async fn consolidate_or_create(
 ) -> Result<i64, AppError> {
     match n.notification_type {
         types::LIKED | types::REACTION => consolidate_likes(conn, bus, settings, n).await,
-        types::LINKED => Err(Unsupported("linked notification consolidation").into()),
+        types::LINKED => consolidate_linked(conn, bus, settings, n).await,
         types::NEW_FEATURES => {
             // DeletePreviousNotifications: the user's earlier ones go.
             sqlx::query("DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2")
@@ -307,6 +308,109 @@ fn ruby_to_s(value: &Value) -> String {
         Value::String(s) => s.clone(),
         other => other.to_string(),
     }
+}
+
+/// The linked plan (ConsolidateNotifications from linked to
+/// linked_consolidated): one poster's links to the user's posts within
+/// the window roll into one, by display_username.
+async fn consolidate_linked(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    n: &NewNotification,
+) -> Result<i64, AppError> {
+    let threshold = settings.get("notification_consolidation_threshold")?.to_i();
+    // set_data_blk, then the precondition: no username2.
+    let mut data = n.data.clone();
+    data.insert(
+        "username".into(),
+        n.data
+            .get("display_username")
+            .cloned()
+            .unwrap_or(Value::Null),
+    );
+    if threshold == 0 || data.get("username2").is_some_and(present) {
+        return create(conn, bus, settings, n).await;
+    }
+    let window = settings
+        .get("linked_notification_consolidation_window_mins")?
+        .to_i() as i32;
+    // filtered_by_data_attribute("display_username"), both queries.
+    let display_username = data
+        .get("display_username")
+        .filter(|v| !v.is_null())
+        .map(ruby_to_s);
+
+    // update_consolidated_notification!
+    let consolidated: Option<(i64, String)> = sqlx::query_as(
+        "SELECT id, data FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+         AND created_at > now() - make_interval(mins => $3) \
+         AND ($4::text IS NULL OR data::json ->> 'display_username' = $4) \
+         ORDER BY id LIMIT 1",
+    )
+    .bind(n.user_id)
+    .bind(types::LINKED_CONSOLIDATED)
+    .bind(window)
+    .bind(&display_username)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some((id, existing)) = consolidated {
+        let mut merged = data_hash(&existing);
+        for (key, value) in &data {
+            merged.insert(key.clone(), value.clone());
+        }
+        if let Some(count) = merged.get("count").filter(|c| present(c)) {
+            let next = count.as_i64().unwrap_or(0) + 1;
+            merged.insert("count".into(), json!(next));
+        }
+        sqlx::query(
+            "UPDATE notifications SET data = $2, read = FALSE, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(id)
+        .bind(Value::Object(merged).to_string())
+        .execute(&mut *conn)
+        .await?;
+        // after_commit on update: refresh_notification_count only.
+        crate::bus::publish_notifications_state(bus, &mut *conn, settings, n.user_id).await?;
+        return Ok(id);
+    }
+
+    // create_consolidated_notification!
+    let unconsolidated: Vec<(i64, NaiveDateTime)> = sqlx::query_as(
+        "SELECT id, created_at FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+         AND created_at > now() - make_interval(mins => $3) \
+         AND ($4::text IS NULL OR data::json ->> 'display_username' = $4) ORDER BY id",
+    )
+    .bind(n.user_id)
+    .bind(types::LINKED)
+    .bind(window)
+    .bind(&display_username)
+    .fetch_all(&mut *conn)
+    .await?;
+    let count_after = unconsolidated.len() as i64 + 1;
+    let Some((_, timestamp)) = unconsolidated.last().filter(|_| count_after > threshold) else {
+        return create(conn, bus, settings, n).await;
+    };
+    let timestamp = *timestamp;
+    data.insert("count".into(), json!(count_after));
+    let ids: Vec<i64> = unconsolidated.iter().map(|(id, _)| *id).collect();
+    sqlx::query("DELETE FROM notifications WHERE id = ANY($1)")
+        .bind(&ids)
+        .execute(&mut *conn)
+        .await?;
+    let consolidated = NewNotification {
+        notification_type: types::LINKED_CONSOLIDATED,
+        user_id: n.user_id,
+        topic_id: None,
+        post_number: None,
+        data,
+        read: false,
+        high_priority: false,
+        post_action_id: None,
+        created_at: Some(timestamp),
+        skip_send_email: false,
+    };
+    create(conn, bus, settings, &consolidated).await
 }
 
 /// The like plans (liked_by_two_users, liked) and discourse-reactions'

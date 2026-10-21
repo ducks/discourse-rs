@@ -10,9 +10,8 @@
 //! Messages notify their directly targeted users, and their groups'
 //! members by their level on it, with the groups' inbox summaries.
 //!
-//! Refused rather than approximated: group and @here mentions, links to
-//! topics notifying someone, group SMTP, nested replies and push
-//! notifications.
+//! Refused rather than approximated: group and @here mentions, group
+//! SMTP, nested replies and push notifications.
 //! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
@@ -85,6 +84,7 @@ struct Post {
     topic_user_id: Option<i32>,
     category_id: Option<i32>,
     archetype: String,
+    via_email: bool,
 }
 
 /// Options `create_notification` takes from its callers.
@@ -112,7 +112,7 @@ async fn load_post(conn: &mut PgConnection, post_id: i32) -> Result<Option<Post>
     Ok(sqlx::query_as(
         "SELECT p.id, p.user_id, p.last_editor_id, p.topic_id, p.post_number, p.post_type, p.raw, p.cooked, \
                 p.reply_to_post_number, p.action_code, u.username, u.name, e.username AS editor_username, \
-                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype \
+                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype, p.via_email \
          FROM posts p JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
          LEFT JOIN users u ON u.id = p.user_id \
          LEFT JOIN users e ON e.id = COALESCE(p.last_editor_id, p.user_id) \
@@ -139,11 +139,7 @@ pub async fn notify_liked(
     let Some(author) = post.user_id else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let opts = Opts {
         user_id: Some(liker_id),
         display_username: Some(liker_username.to_string()),
@@ -184,11 +180,7 @@ pub async fn notify_reaction(
     if never {
         return Ok(());
     }
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let opts = Opts {
         user_id: Some(reactor_id),
         display_username: Some(reactor_username.to_string()),
@@ -206,11 +198,21 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     let Some(post_id) = args.get("post_id").and_then(Value::as_i64) else {
         return Ok(());
     };
-    if args
-        .get("options")
-        .is_some_and(|o| !o.is_null() && o != &json!({}))
-    {
-        return Err(Unsupported("post_alert options").into());
+    // `args[:options] || {}`, PostAlerter's default opts, merged under
+    // every create_notification's own. Callers pass only skip_send_email
+    // (the silenced user's system message, discourse-narrative-bot).
+    let mut skip_send_email = false;
+    match args.get("options") {
+        None | Some(Value::Null) => {}
+        Some(Value::Object(options)) => {
+            for (key, value) in options {
+                if key != "skip_send_email" {
+                    return Err(Unsupported("post_alert options other than skip_send_email").into());
+                }
+                skip_send_email = !matches!(value, Value::Null | Value::Bool(false));
+            }
+        }
+        Some(_) => return Err(Unsupported("post_alert options that are not a hash").into()),
     }
     let new_record = args.get("new_record") == Some(&json!(true));
     let post = load_post(conn, post_id as i32).await?;
@@ -284,11 +286,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     if s.get("nested_replies_enabled")?.truthy() {
         return Err(Unsupported("alerts with nested replies").into());
     }
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
+    alerter.skip_send_email = skip_send_email;
     alerter.notified.extend(post.user_id);
     if let Some(editor) = post.last_editor_id
         && !alerter.notified.contains(&editor)
@@ -423,8 +422,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     }
 
     // linked (none in a message either): extract_linked_users, the
-    // authors of the posts (or first posts of the topics) linked to; only
-    // those not notified yet would hear of it, which isn't ported.
+    // authors of the posts (or first posts of the topics) linked to, once
+    // per link; those not notified yet hear of it.
     let linked: Vec<i32> = sqlx::query_scalar(
         "SELECT COALESCE(lp.user_id, fp.user_id) FROM topic_links tl \
          LEFT JOIN posts lp ON lp.id = tl.link_post_id AND lp.deleted_at IS NULL \
@@ -433,14 +432,28 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
            AND fp.deleted_at IS NULL \
          WHERE tl.post_id = $1 AND NOT tl.reflection \
            AND COALESCE(lp.user_id, fp.user_id) IS DISTINCT FROM $2 \
-           AND EXISTS (SELECT 1 FROM users u WHERE u.id = COALESCE(lp.user_id, fp.user_id))",
+           AND EXISTS (SELECT 1 FROM users u WHERE u.id = COALESCE(lp.user_id, fp.user_id)) \
+         ORDER BY tl.id",
     )
     .bind(post.id)
     .bind(post.user_id)
     .fetch_all(&mut *conn)
     .await?;
-    if !private_message && linked.iter().any(|u| !alerter.notified.contains(u)) {
-        return Err(Unsupported("alerts for links to topics").into());
+    if !private_message {
+        let targets: Vec<i32> = linked
+            .into_iter()
+            .filter(|u| !alerter.notified.contains(u))
+            .collect();
+        let mut reached = Vec::new();
+        for user_id in targets {
+            if alerter
+                .create_notification(conn, user_id, types::LINKED, &Opts::default())
+                .await?
+            {
+                reached.push(user_id);
+            }
+        }
+        alerter.notified.extend(reached);
     }
 
     // category_or_tag_muters join the notified.
@@ -690,6 +703,19 @@ struct Alerter<'a> {
     ctx: &'a Ctx<'a>,
     post: &'a Post,
     notified: Vec<i32>,
+    /// The job's options (`@default_opts`): only `skip_send_email`.
+    skip_send_email: bool,
+}
+
+impl<'a> Alerter<'a> {
+    fn new(ctx: &'a Ctx<'a>, post: &'a Post) -> Self {
+        Alerter {
+            ctx,
+            post,
+            notified: Vec::new(),
+            skip_send_email: false,
+        }
+    }
 }
 
 impl Alerter<'_> {
@@ -787,7 +813,16 @@ impl Alerter<'_> {
             return Ok(false);
         }
         if notification_type == types::LINKED {
-            return Err(Unsupported("linked notifications").into());
+            let notify: bool = sqlx::query_scalar(
+                "SELECT notify_on_linked_posts FROM user_options WHERE user_id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .unwrap_or(true);
+            if !notify {
+                return Ok(false);
+            }
         }
         // can_receive_post_notifications?
         let guardian = Guardian::for_user(&mut *conn, &user).await?;
@@ -1029,6 +1064,38 @@ impl Alerter<'_> {
         )
         .topic(post.topic_id, Some(target_post_number));
         notification.post_action_id = opts.post_action_id;
+        // skip_send_email: (skip_send_email_to comes only with group
+        // SMTP, refused) a post by email skips those it was sent or copied
+        // to, else the options say.
+        let incoming: Option<(Option<String>, Option<String>)> = if post.via_email {
+            sqlx::query_as(
+                "SELECT to_addresses, cc_addresses FROM incoming_emails WHERE post_id = $1 \
+                 ORDER BY id LIMIT 1",
+            )
+            .bind(post.id)
+            .fetch_optional(&mut *conn)
+            .await?
+        } else {
+            None
+        };
+        notification.skip_send_email = match incoming {
+            Some((to, cc)) => {
+                let email: Option<String> = sqlx::query_scalar(
+                    "SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"",
+                )
+                .bind(user_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+                // to_addresses_split / cc_addresses_split
+                let listed = |addresses: &Option<String>| {
+                    addresses
+                        .as_deref()
+                        .is_some_and(|a| a.split(';').any(|a| Some(a) == email.as_deref()))
+                };
+                listed(&to) || listed(&cc)
+            }
+            None => self.skip_send_email,
+        };
         crate::notification_create::consolidate_or_create(
             &mut *conn,
             ctx.bus,
@@ -1273,11 +1340,7 @@ pub async fn notify_tag_change(
     let Some(post) = load_visible_post(conn, args).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let watchers =
         crate::tagging::tag_watchers(&mut *conn, post.topic_id, WATCHING_FIRST_POST_LEVEL).await?;
     alerter.notify_first_post_watchers(conn, watchers).await?;
@@ -1352,11 +1415,7 @@ pub async fn notify_category_change(
     let Some(post) = load_visible_post(conn, args).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let notified = id_list(args, "notified_user_ids");
     alerter
         .notify_watchers(conn, &notified, None, true, true, false)
@@ -1407,11 +1466,7 @@ pub async fn notify_post_revision(
     let Some(post) = load_post(conn, post_id).await? else {
         return Ok(());
     };
-    let mut alerter = Alerter {
-        ctx,
-        post: &post,
-        notified: Vec::new(),
-    };
+    let mut alerter = Alerter::new(ctx, &post);
     let users: Vec<(i32, bool)> =
         sqlx::query_as("SELECT id, admin OR moderator FROM users WHERE id = ANY($1) ORDER BY id")
             .bind(id_list(args, "user_ids"))

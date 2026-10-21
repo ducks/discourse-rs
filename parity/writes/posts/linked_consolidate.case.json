@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (11, 1, 38, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}', FALSE, FALSE, now() - interval '30 minutes', now() - interval '30 minutes'), (11, 1, 38, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}', FALSE, FALSE, now() - interval '20 minutes', now() - interval '20 minutes'), (11, 1, 38, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}', FALSE, FALSE, now() - interval '10 minutes', now() - interval '10 minutes'), (11, 1, 38, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user2\",\"revision_number\":null,\"display_username\":\"user2\",\"display_name\":\"User2\"}', FALSE, FALSE, now() - interval '5 minutes', now() - interval '5 minutes'), (11, 1, 38, 1, '{\"topic_title\":\"Parity fixture: tagged in a subcategory\",\"original_post_id\":42,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}', FALSE, FALSE, now() - interval '3 hours', now() - interval '3 hours')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "See [the unlisted one](/t/parity-fixture-unlisted-topic/39) once more, the fourth link from user1 this hour."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

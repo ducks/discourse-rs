@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "See [the unlisted one](/t/parity-fixture-unlisted-topic/39), [the welcome](/t/welcome-to-discourse/5) and [the archived reply](/t/parity-fixture-liked-and-archived/41/2) for context."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}
