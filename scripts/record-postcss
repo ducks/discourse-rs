@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Record AssetProcessor#post_css on each parity/stylesheets/postcss/
+# <name>.css (then Rtlcss.flip_css for an `rtl_` name), from the reference
+# agent, into <name>.out.css, with the source map file `x.css.map`
+# (scripts/postcss_export.rb, read-only). The tests in
+# src/stylesheet/postcss.rs run the same inputs.
+#
+# Usage: scripts/record-postcss <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+dir="$root/parity/stylesheets/postcss"
+
+dv run --name "$agent" -- rm -rf /tmp/postcss-fixtures
+dv run --name "$agent" -- mkdir -p /tmp/postcss-fixtures
+for f in "$dir"/*.css; do
+  case "$f" in *.out.css) continue ;; esac
+  dv copy "$f" "$agent:/tmp/postcss-fixtures/$(basename "$f")" > /dev/null
+done
+dv copy "$root/scripts/postcss_export.rb" "$agent:/tmp/postcss_export.rb" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/postcss_export.rb /tmp/postcss-fixtures | tail -1
+for f in "$dir"/*.css; do
+  case "$f" in *.out.css) continue ;; esac
+  name="$(basename "$f" .css)"
+  dv copy "$agent:/tmp/postcss-fixtures/$name.out.css" "$dir/$name.out.css" > /dev/null
+done
+dv run --name "$agent" -- rm -rf /tmp/postcss-fixtures
+echo "wrote $dir/*.out.css"

@@ -1,0 +1,865 @@
+{
+  "name": "objects",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Objects",
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n        required: true\n      url:\n        type: string\n      weight:\n        type: integer\n      ratio:\n        type: float\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\nempty_links:\n  type: objects\n  default: []\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n"
+            },
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".objects::after { content: \"#{$links}\"; }\n.objects-empty::after { content: \"#{$empty_links}\"; }\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "common_theme"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json",
+      "params": {
+        "name": "links",
+        "value": "[{\"name\": \"It's \\\"quoted\\\" \\\\ #{x}\", \"url\": \"https://example.com/a?b=c\", \"weight\": 3, \"ratio\": 1.5, \"flag\": false, \"children\": [{\"label\": \"Kid\"}]}, {\"name\": \"Second\", \"ratio\": 2.0, \"flag\": true}]"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "common_theme"
+    }
+  ],
+  "started_at": "2026-10-21T12:12:52.82666",
+  "transaction_started_at": "2026-10-21T12:12:49.600602",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Objects",
+          "description": null,
+          "created_at": "2026-10-21T12:12:52.861Z",
+          "updated_at": "2026-10-21T12:12:52.861Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "objects_schema": {
+                "name": "link",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer"
+                  },
+                  "ratio": {
+                    "type": "float"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "empty_links",
+              "humanized_name": "Empty links",
+              "type": "objects",
+              "default": [],
+              "value": [],
+              "objects_schema": {
+                "name": "link",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".objects::after { content: \"#{$links}\"; }\n.objects-empty::after { content: \"#{$empty_links}\"; }\n",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n        required: true\n      url:\n        type: string\n      weight:\n        type: integer\n      ratio:\n        type: float\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\nempty_links:\n  type: objects\n  default: []\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Objects",
+          "description": null,
+          "created_at": "2026-10-21T12:12:52.861Z",
+          "updated_at": "2026-10-21T12:12:52.861Z",
+          "default": true,
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "links",
+              "humanized_name": "Links",
+              "type": "objects",
+              "default": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "value": [
+                {
+                  "name": "Home",
+                  "url": "/latest"
+                }
+              ],
+              "objects_schema": {
+                "name": "link",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "required": true
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer"
+                  },
+                  "ratio": {
+                    "type": "float"
+                  },
+                  "flag": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "type": "objects",
+                    "schema": {
+                      "name": "child",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "required": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "setting": "empty_links",
+              "humanized_name": "Empty links",
+              "type": "objects",
+              "default": [],
+              "value": [],
+              "objects_schema": {
+                "name": "link",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".objects::after { content: \"#{$links}\"; }\n.objects-empty::after { content: \"#{$empty_links}\"; }\n",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n        required: true\n      url:\n        type: string\n      weight:\n        type: integer\n      ratio:\n        type: float\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\nempty_links:\n  type: objects\n  default: []\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_02af4ce199d6effc7d1b79295c147ee6306e4e8b.css.map?__ws=localhost */\n"
+    },
+    {
+      "status": 200,
+      "body": {
+        "links": [
+          {
+            "url": "https://example.com/a?b=c",
+            "flag": false,
+            "name": "It's \"quoted\" \\ #{x}",
+            "ratio": 1.5,
+            "weight": 3,
+            "children": [
+              {
+                "label": "Kid"
+              }
+            ]
+          },
+          {
+            "flag": true,
+            "name": "Second",
+            "ratio": 2.0
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_88e588d7c478004cc18c5bcef516b8ec2c3c8f98.css.map?__ws=localhost */\n"
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "-1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-07-25T05:58:21.4293"
+          },
+          "after": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-10-21T12:12:53.66513"
+          }
+        }
+      ]
+    },
+    "stylesheet_cache": {
+      "inserted": [
+        {
+          "id": 116,
+          "digest": "02af4ce199d6effc7d1b79295c147ee6306e4e8b",
+          "target": "common_theme_1",
+          "content": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_02af4ce199d6effc7d1b79295c147ee6306e4e8b.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T12:12:53.428523",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_41803c3297bf36f10b79c565d1705c73/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,kDAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-10-21T12:12:53.428523"
+        },
+        {
+          "id": 117,
+          "digest": "52d22e96ca4d7c5494a46562d0df099f8b6caa0b",
+          "target": "color_definitions_light-default_-1_1",
+          "content": ":root{--csstools-color-scheme--light:initial;color-scheme:light;--scheme-type: light;--primary: #222;--secondary: #fff;--tertiary: #08c;--quaternary: #e45735;--header_background: #fff;--header_primary: #333;--highlight: #ffff4d;--danger: #c80001;--success: #090;--love: #fa6c8d;--d-selected: #d1f0ff;--d-selected-text-color: var(--primary);--d-selected-hover: rgb(85.568627451%, 95.2941176471%, 100%);--d-hover: #f2f2f2;--always-black-rgb: 0, 0, 0;--primary-rgb: 34, 34, 34;--primary-low-rgb: 233, 233, 233;--primary-very-low-rgb: 248, 248, 248;--secondary-rgb: 255, 255, 255;--header_background-rgb: 255, 255, 255;--tertiary-rgb: 0, 136, 204;--highlight-rgb: 255, 255, 77;--success-rgb: 0, 153, 0;--primary-very-low: rgb(97.4%, 97.4%, 97.4%);--primary-low: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-low-mid: rgb(74%, 74%, 74%);--primary-medium: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-very-high: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--primary-50: rgb(97.4%, 97.4%, 97.4%);--primary-100: rgb(94.8%, 94.8%, 94.8%);--primary-200: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-300: rgb(82.6666666667%, 82.6666666667%, 82.6666666667%);--primary-400: rgb(74%, 74%, 74%);--primary-500: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--primary-600: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-700: rgb(46.2666666667%, 46.2666666667%, 46.2666666667%);--primary-800: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-900: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--header_primary-low: rgb(95.078914592%, 95.078914592%, 95.078914592%);--header_primary-low-mid: rgb(81.4861951499%, 81.4861951499%, 81.4861951499%);--header_primary-medium: rgb(68.7022561493%, 68.7022561493%, 68.7022561493%);--header_primary-high: rgb(57.2712842531%, 57.2712842531%, 57.2712842531%);--header_primary-very-high: rgb(36.8781778292%, 36.8781778292%, 36.8781778292%);--secondary-low: rgb(30%, 30%, 30%);--secondary-medium: rgb(50%, 50%, 50%);--secondary-high: rgb(65%, 65%, 65%);--secondary-very-high: rgb(93%, 93%, 93%);--tertiary-very-low: rgb(88%, 96%, 100%);--tertiary-low: rgb(82%, 94%, 100%);--tertiary-medium: #66ccff;--tertiary-high: rgb(4%, 68%, 100%);--tertiary-hover: #006699;--tertiary-25: rgb(91.6%, 97.2%, 100%);--tertiary-50: rgb(88%, 96%, 100%);--tertiary-100: rgb(85.6%, 95.2%, 100%);--tertiary-200: rgb(84.4%, 94.8%, 100%);--tertiary-300: rgb(82%, 94%, 100%);--tertiary-400: rgb(68.8%, 89.6%, 100%);--tertiary-500: rgb(55.6%, 85.2%, 100%);--tertiary-600: #66ccff;--tertiary-700: rgb(28%, 76%, 100%);--tertiary-800: rgb(16%, 72%, 100%);--tertiary-900: rgb(4%, 68%, 100%);--quaternary-low: rgb(96.8235294118%, 80.2352941176%, 76.2352941176%);--highlight-bg: rgb(100%, 100%, 79.0588235294%);--highlight-low: rgb(100%, 100%, 79.0588235294%);--highlight-medium: #ffffa6;--highlight-high: #a6a600;--danger-low: rgb(100%, 87.8431372549%, 87.9039215686%);--danger-low-mid: rgba(100%, 39.2156862745%, 39.5196078431%, 0.7);--danger-medium: rgb(100%, 14.9019607843%, 15.3274509804%);--danger-hover: rgb(62.7450980392%, 0%, 0.3137254902%);--success-very-low: rgb(86%, 100%, 86%);--success-low: rgb(72%, 100%, 72%);--success-medium: rgb(30%, 100%, 30%);--success-hover: rgb(0%, 48%, 0%);--love-low: rgb(99.7058823529%, 91.3529411765%, 93.2941176471%);--wiki: green;--blend-primary-secondary-5: rgb(97.5135318245%, 97.5135318245%, 97.5135318245%);--primary-med-or-secondary-med: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-med-or-secondary-high: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high-or-secondary-low: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-low-mid-or-secondary-high: rgb(74%, 74%, 74%);--primary-low-mid-or-secondary-low: rgb(74%, 74%, 74%);--primary-or-primary-low-mid: #222;--highlight-low-or-medium: rgb(100%, 100%, 79.0588235294%);--tertiary-or-tertiary-low: #08c;--tertiary-low-or-tertiary-high: rgb(82%, 94%, 100%);--tertiary-med-or-tertiary: #66ccff;--secondary-or-primary: #fff;--tertiary-or-white: #08c;--facebook-or-white: #0866ff;--twitter-or-white: #000;--hljs-attr: #015692;--hljs-attribute: #803378;--hljs-addition: #2f6f44;--hljs-bg: rgb(94.8%, 94.8%, 94.8%);--inline-code-bg: rgb(94.8%, 94.8%, 94.8%);--hljs-comment: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--hljs-deletion: #c02d2e;--hljs-keyword: #015692;--hljs-title: #b75501;--hljs-name: #b75501;--hljs-punctuation: #535a60;--hljs-symbol: #54790d;--hljs-variable: #54790d;--hljs-string: #54790d;--google: #fff;--google-hover: rgb(95%, 95%, 95%);--instagram: #e1306c;--instagram-hover: rgb(67.30454207%, 9.7542814594%, 29.2628443783%);--facebook: #0866ff;--facebook-hover: rgb(0%, 27.8336111773%, 73.137254902%);--cas: #70ba61;--twitter: #000;--github: #100e0f;--github-hover: rgb(27.6078431373%, 24.1568627451%, 25.8823529412%);--discord: #7289da;--discord-hover: rgb(28.8631857237%, 40.4670632298%, 81.3328927076%);--discourse_id-text: var(--d-button-primary-text-color);--discourse_id-text-hover: var(--d-button-primary-text-color--hover);--discourse_id-background: var(--d-button-primary-bg-color);--discourse_id-background-hover: var(--d-button-primary-bg-color--hover);--discourse_id-icon: var(--d-button-primary-icon-color);--discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);--discourse_id-border: var(--d-button-border);--gold: rgb(231, 195, 0);--silver: #c0c0c0;--bronze: #cd7f32;--d-link-color: var(--tertiary);--title-color--read: var(--primary-medium);--content-border-color: var(--primary-low);--input-border-color: var(--primary-400);--table-border-color: var(--content-border-color);--metadata-color: var(--primary-medium);--d-badge-card-background-color: var(--secondary);--mention-background-color: var(--primary-low);--title-color: var(--primary);--title-color--header: var(--header_primary);--excerpt-color: var(--primary-high);--shadow-modal: 0 8px 60px rgba(0, 0, 0, 0.6);--shadow-composer: 0 -1px 40px rgba(0, 0, 0, 0.22);--shadow-card: 0 4px 14px rgba(0, 0, 0, 0.15);--shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, 0.1);--shadow-menu-panel: var(--shadow-dropdown);--shadow-header: 0 0 0 1px var(--content-border-color);--shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, 0.2);--shadow-focus-danger: 0 0 6px 0 var(--danger);--shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);--float-kit-arrow-stroke-color: var(--primary-low);--float-kit-arrow-fill-color: var(--secondary);--topic-timeline-border-color: rgb(82%, 94%, 100%);--3ae5bf6b-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--3ae5bf6b-csstools-light-dark-toggle--0, var(--tertiary-400));}\n\n@supports (color: light-dark(red, red)){\n:root{--topic-timeline-handle-color: light-dark( var(--tertiary-400), var(--tertiary) );}\n}@supports not (color: light-dark(tan, tan)){:root *{--3ae5bf6b-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--3ae5bf6b-csstools-light-dark-toggle--0, var(--tertiary-400));}}:root{--chat-skeleton-animation-rgb: 248, 248, 248}:root{--calendar-normal: rgb(90%, 96.6666666667%, 100%);--calendar-close-to-working-hours: rgb(72.25%, 89.25%, 97.75%);--calendar-in-working-hours: rgb(64%, 85.3333333333%, 96%);--fc-border-color: var(--primary-low);--fc-button-text-color: var(--d-button-default-text-color);--fc-button-bg-color: var(--d-button-default-bg-color);--fc-button-border-color: transparent;--fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);--fc-button-hover-border-color: transparent;--fc-button-active-bg-color: var(--tertiary);--fc-button-active-border-color: transparent;--fc-event-border-color: var(--primary-low);--fc-today-bg-color: var(--highlight-medium);--fc-page-bg-color: var(--secondary);--fc-list-event-hover-bg-color: var(--secondary);--fc-neutral-bg-color: var(--primary-low)}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3050/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}html{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--font-family: Inter, Arial, sans-serif}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3050/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}h1,h2,h3,h4,h5,h6{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--heading-font-family: Inter, Arial, sans-serif}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3050/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\") format(\"woff2\");font-weight:400}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3050/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\") format(\"woff2\");font-weight:700}html{font-variation-settings:normal;font-feature-settings:normal;font-variant-ligatures:none}:root{--d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace}\n/*# sourceMappingURL=color_definitions_light-default_-1_1_52d22e96ca4d7c5494a46562d0df099f8b6caa0b.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T12:12:55.025084",
+          "source_map": "{\"version\":3,\"sources\":[\"app/assets/stylesheets/color_definitions.scss\",\"_color_definitions_entrypoint.scss\"],\"names\":[],\"mappings\":\"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\",\"file\":\"output.css\",\"sourcesContent\":[\"// This file maps all SCSS color variables to CSS custom properties.\\n// It is compiled to CSS separately from the rest of the app.\\n// The source variables come from color_transformations.scss and variables.scss\\n:root {\\n  color-scheme: #{schemeType()};\\n\\n  --scheme-type: #{schemeType()};\\n  --primary: #{$primary};\\n  --secondary: #{$secondary};\\n  --tertiary: #{$tertiary};\\n  --quaternary: #{$quaternary};\\n  --header_background: #{$header_background};\\n  --header_primary: #{$header_primary};\\n  --highlight: #{$highlight};\\n  --danger: #{$danger};\\n  --success: #{$success};\\n  --love: #{$love};\\n  --d-selected: #{$selected};\\n  --d-selected-text-color: var(--primary);\\n  --d-selected-hover: #{$selected-hover};\\n  --d-hover: #{$hover};\\n  --always-black-rgb: 0, 0, 0;\\n  --primary-rgb: #{hexToRGB($primary)};\\n  --primary-low-rgb: #{hexToRGB($primary-low)};\\n  --primary-very-low-rgb: #{hexToRGB($primary-very-low)};\\n  --secondary-rgb: #{hexToRGB($secondary)};\\n  --header_background-rgb: #{hexToRGB($header_background)};\\n  --tertiary-rgb: #{hexToRGB($tertiary)};\\n  --highlight-rgb: #{hexToRGB($highlight)};\\n  --success-rgb: #{hexToRGB($success)};\\n  --primary-very-low: #{$primary-very-low};\\n  --primary-low: #{$primary-low};\\n  --primary-low-mid: #{$primary-low-mid};\\n  --primary-medium: #{$primary-medium};\\n  --primary-high: #{$primary-high};\\n  --primary-very-high: #{$primary-very-high};\\n  --primary-50: #{$primary-50};\\n  --primary-100: #{$primary-100};\\n  --primary-200: #{$primary-200};\\n  --primary-300: #{$primary-300};\\n  --primary-400: #{$primary-400};\\n  --primary-500: #{$primary-500};\\n  --primary-600: #{$primary-600};\\n  --primary-700: #{$primary-700};\\n  --primary-800: #{$primary-800};\\n  --primary-900: #{$primary-900};\\n  --header_primary-low: #{$header_primary-low};\\n  --header_primary-low-mid: #{$header_primary-low-mid};\\n  --header_primary-medium: #{$header_primary-medium};\\n  --header_primary-high: #{$header_primary-high};\\n  --header_primary-very-high: #{$header_primary-very-high};\\n  --secondary-low: #{$secondary-low};\\n  --secondary-medium: #{$secondary-medium};\\n  --secondary-high: #{$secondary-high};\\n  --secondary-very-high: #{$secondary-very-high};\\n  --tertiary-very-low: #{$tertiary-very-low};\\n  --tertiary-low: #{$tertiary-low};\\n  --tertiary-medium: #{$tertiary-medium};\\n  --tertiary-high: #{$tertiary-high};\\n  --tertiary-hover: #{$tertiary-hover};\\n  --tertiary-25: #{$tertiary-25};\\n  --tertiary-50: #{$tertiary-50};\\n  --tertiary-100: #{$tertiary-100};\\n  --tertiary-200: #{$tertiary-200};\\n  --tertiary-300: #{$tertiary-300};\\n  --tertiary-400: #{$tertiary-400};\\n  --tertiary-500: #{$tertiary-500};\\n  --tertiary-600: #{$tertiary-600};\\n  --tertiary-700: #{$tertiary-700};\\n  --tertiary-800: #{$tertiary-800};\\n  --tertiary-900: #{$tertiary-900};\\n  --quaternary-low: #{$quaternary-low};\\n  --highlight-bg: #{$highlight-bg};\\n  --highlight-low: #{$highlight-low};\\n  --highlight-medium: #{$highlight-medium};\\n  --highlight-high: #{$highlight-high};\\n  --danger-low: #{$danger-low};\\n  --danger-low-mid: #{$danger-low-mid};\\n  --danger-medium: #{$danger-medium};\\n  --danger-hover: #{$danger-hover};\\n  --success-very-low: #{$success-very-low};\\n  --success-low: #{$success-low};\\n  --success-medium: #{$success-medium};\\n  --success-hover: #{$success-hover};\\n  --love-low: #{$love-low};\\n  --wiki: #{$wiki};\\n  --blend-primary-secondary-5: #{$blend-primary-secondary-5};\\n  --primary-med-or-secondary-med: #{$primary-med-or-secondary-med};\\n  --primary-med-or-secondary-high: #{$primary-med-or-secondary-high};\\n  --primary-high-or-secondary-low: #{$primary-high-or-secondary-low};\\n  --primary-low-mid-or-secondary-high: #{$primary-low-mid-or-secondary-high};\\n  --primary-low-mid-or-secondary-low: #{$primary-low-mid-or-secondary-low};\\n  --primary-or-primary-low-mid: #{$primary-or-primary-low-mid};\\n  --highlight-low-or-medium: #{$highlight-low-or-medium};\\n  --tertiary-or-tertiary-low: #{$tertiary-or-tertiary-low};\\n  --tertiary-low-or-tertiary-high: #{$tertiary-low-or-tertiary-high};\\n  --tertiary-med-or-tertiary: #{$tertiary-med-or-tertiary};\\n  --secondary-or-primary: #{$secondary-or-primary};\\n  --tertiary-or-white: #{$tertiary-or-white};\\n  --facebook-or-white: #{$facebook-or-white};\\n  --twitter-or-white: #{$twitter-or-white};\\n  --hljs-attr: #{$hljs-attr};\\n  --hljs-attribute: #{$hljs-attribute};\\n  --hljs-addition: #{$hljs-addition};\\n  --hljs-bg: #{$hljs-bg};\\n  --inline-code-bg: #{$inline-code-bg};\\n  --hljs-comment: #{$hljs-comment};\\n  --hljs-deletion: #{$hljs-deletion};\\n  --hljs-keyword: #{$hljs-keyword};\\n  --hljs-title: #{$hljs-title};\\n  --hljs-name: #{$hljs-name};\\n  --hljs-punctuation: #{$hljs-punctuation};\\n  --hljs-symbol: #{$hljs-symbol};\\n  --hljs-variable: #{$hljs-variable};\\n  --hljs-string: #{$hljs-string};\\n  --google: #{$google};\\n  --google-hover: #{$google-hover};\\n  --instagram: #{$instagram};\\n  --instagram-hover: #{$instagram-hover};\\n  --facebook: #{$facebook};\\n  --facebook-hover: #{$facebook-hover};\\n  --cas: #{$cas};\\n  --twitter: #{$twitter};\\n  --github: #{$github};\\n  --github-hover: #{$github-hover};\\n  --discord: #{$discord};\\n  --discord-hover: #{$discord-hover};\\n  --discourse_id-text: var(--d-button-primary-text-color);\\n  --discourse_id-text-hover: var(--d-button-primary-text-color--hover);\\n  --discourse_id-background: var(--d-button-primary-bg-color);\\n  --discourse_id-background-hover: var(--d-button-primary-bg-color--hover);\\n  --discourse_id-icon: var(--d-button-primary-icon-color);\\n  --discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);\\n  --discourse_id-border: var(--d-button-border);\\n  --gold: #{$gold};\\n  --silver: #{$silver};\\n  --bronze: #{$bronze};\\n  --d-link-color: var(--tertiary);\\n  --title-color--read: var(--primary-medium);\\n  --content-border-color: var(--primary-low);\\n  --input-border-color: var(--primary-400);\\n  --table-border-color: var(--content-border-color);\\n  --metadata-color: var(--primary-medium);\\n  --d-badge-card-background-color: var(--secondary);\\n  --mention-background-color: var(--primary-low);\\n  --title-color: var(--primary);\\n  --title-color--header: var(--header_primary);\\n  --excerpt-color: var(--primary-high);\\n  --shadow-modal: 0 8px 60px rgba(0, 0, 0, #{$shadow-opacity-modal});\\n  --shadow-composer: 0 -1px 40px rgba(0, 0, 0, #{$shadow-opacity-composer});\\n  --shadow-card: 0 4px 14px rgba(0, 0, 0, #{$shadow-opacity-card});\\n  --shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, #{$shadow-opacity-dropdown});\\n  --shadow-menu-panel: var(--shadow-dropdown);\\n  --shadow-header: 0 0 0 1px var(--content-border-color);\\n  --shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, #{$shadow-opacity-footer-nav});\\n  --shadow-focus-danger: 0 0 6px 0 var(--danger);\\n  --shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);\\n  --float-kit-arrow-stroke-color: var(--primary-low);\\n  --float-kit-arrow-fill-color: var(--secondary);\\n  --topic-timeline-border-color: #{$tertiary-low-or-tertiary-high};\\n  --topic-timeline-handle-color: light-dark(\\n    var(--tertiary-400),\\n    var(--tertiary)\\n  );\\n}\\n\",\"$primary: #222 !default; $secondary: #fff !default; $tertiary: #08c !default; $quaternary: #e45735 !default; $header_background: #fff !default; $header_primary: #333 !default; $highlight: #ffff4d !default; $selected: #d1f0ff !default; $hover: #f2f2f2 !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default;  $public_image_path: \\\"http://localhost:3050/images\\\";  @import \\\"common/foundation/variables\\\"; @import \\\"common/foundation/mixins\\\"; @import \\\"color_definitions\\\";\\n\\n\\n// Color definitions from chat\\n\\n:root {\\n  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};\\n}\\n\\n\\n\\n\\n// Color definitions from discourse-events\\n\\n/* stylelint-disable scss/no-global-function-names */\\n:root {\\n  --calendar-normal: #{dark-light-choose(\\n      lighten($tertiary, 55%),\\n      darken($tertiary, 25%)\\n    )};\\n  --calendar-close-to-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 45%), 15%),\\n      darken($tertiary, 15%)\\n    )};\\n  --calendar-in-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 40%), 20%),\\n      darken($tertiary, 10%)\\n    )};\\n  --fc-border-color: var(--primary-low);\\n  --fc-button-text-color: var(--d-button-default-text-color);\\n  --fc-button-bg-color: var(--d-button-default-bg-color);\\n  --fc-button-border-color: transparent;\\n  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);\\n  --fc-button-hover-border-color: transparent;\\n  --fc-button-active-bg-color: var(--tertiary);\\n  --fc-button-active-border-color: transparent;\\n  --fc-event-border-color: var(--primary-low);\\n  --fc-today-bg-color: var(--highlight-medium);\\n  --fc-page-bg-color: var(--secondary);\\n  --fc-list-event-hover-bg-color: var(--secondary);\\n  --fc-neutral-bg-color: var(--primary-low);\\n}\\n\\n\\n// Body font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3050/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --font-family: Inter, Arial, sans-serif;\\n}\\n\\n// Heading font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3050/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nh1, h2, h3, h4, h5, h6 {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --heading-font-family: Inter, Arial, sans-serif;\\n}\\n\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3050/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 400;\\n}\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3050/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 700;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: normal;\\n  font-variant-ligatures: none;\\n}\\n\\n:root {\\n  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;\\n}\\n\\n\"]}",
+          "updated_at": "2026-10-21T12:12:55.025084"
+        },
+        {
+          "id": 118,
+          "digest": "88e588d7c478004cc18c5bcef516b8ec2c3c8f98",
+          "target": "common_theme_1",
+          "content": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_88e588d7c478004cc18c5bcef516b8ec2c3c8f98.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T12:12:56.170931",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_97e6403abdc59492aa4d81a9f279b726/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,qQAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-10-21T12:12:56.170931"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 169,
+          "name": "yaml",
+          "error": null,
+          "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n        required: true\n      url:\n        type: string\n      weight:\n        type: integer\n      ratio:\n        type: float\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\nempty_links:\n  type: objects\n  default: []\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-10-21T12:12:52.864961",
+          "updated_at": "2026-10-21T12:12:52.864961",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 170,
+          "name": "scss",
+          "error": null,
+          "value": ".objects::after { content: \"#{$links}\"; }\n.objects-empty::after { content: \"#{$empty_links}\"; }\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-21T12:12:52.869052",
+          "updated_at": "2026-10-21T12:12:52.869052",
+          "value_baked": "9cef411867e925012c7cbad8dbae8612027c0257",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_settings": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "links",
+          "value": null,
+          "theme_id": 1,
+          "data_type": 7,
+          "created_at": "2026-10-21T12:12:55.849912",
+          "json_value": [
+            {
+              "url": "https://example.com/a?b=c",
+              "flag": false,
+              "name": "It's \"quoted\" \\ #{x}",
+              "ratio": 1.5,
+              "weight": 3,
+              "children": [
+                {
+                  "label": "Kid"
+                }
+              ]
+            },
+            {
+              "flag": true,
+              "name": "Second",
+              "ratio": 2.0
+            }
+          ],
+          "updated_at": "2026-10-21T12:12:55.849912"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Objects",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-21T12:12:52.861185",
+          "updated_at": "2026-10-21T12:12:52.861185",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 400,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l4saiqufTrBPKfJq/kmCJLV3Ogg=",
+            "created_at": "2026-10-21T12:12:50.980274",
+            "rotated_at": "2026-10-21T12:12:50.974379",
+            "updated_at": "2026-10-21T12:12:50.980274",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "l4saiqufTrBPKfJq/kmCJLV3Ogg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 400,
+            "seen_at": "2026-10-21T12:12:52.83724",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "l4saiqufTrBPKfJq/kmCJLV3Ogg=",
+            "created_at": "2026-10-21T12:12:50.980274",
+            "rotated_at": "2026-10-21T12:12:50.974379",
+            "updated_at": "2026-10-21T12:12:50.980274",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "l4saiqufTrBPKfJq/kmCJLV3Ogg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Objects",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Objects\",\"description\":null,\"created_at\":\"2026-10-21T12:12:52.861Z\",\"updated_at\":\"2026-10-21T12:12:52.861Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true},\"url\":{\"type\":\"string\"},\"weight\":{\"type\":\"integer\"},\"ratio\":{\"type\":\"float\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true}}}}}}},{\"setting\":\"empty_links\",\"humanized_name\":\"Empty links\",\"type\":\"objects\",\"default\":[],\"value\":[],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\"}}}}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      url:\\n        type: string\\n      weight:\\n        type: integer\\n      ratio:\\n        type: float\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\nempty_links:\\n  type: objects\\n  default: []\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-21T12:12:53.218879",
+          "ip_address": null,
+          "updated_at": "2026-10-21T12:12:53.218879",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Objects",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Objects\",\"default\":true}",
+          "admin_only": true,
+          "created_at": "2026-10-21T12:12:53.696099",
+          "ip_address": null,
+          "updated_at": "2026-10-21T12:12:53.696099",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Objects\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Objects: links",
+          "topic_id": null,
+          "new_value": "[{\"name\": \"It's \\\"quoted\\\" \\\\ #{x}\", \"url\": \"https://example.com/a?b=c\", \"weight\": 3, \"ratio\": 1.5, \"flag\": false, \"children\": [{\"label\": \"Kid\"}]}, {\"name\": \"Second\", \"ratio\": 2.0, \"flag\": true}]",
+          "admin_only": true,
+          "created_at": "2026-10-21T12:12:56.21175",
+          "ip_address": null,
+          "updated_at": "2026-10-21T12:12:56.21175",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "[{\"name\" => \"Home\", \"url\" => \"/latest\"}]",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 4,
+          "mobile": false,
+          "user_id": 1,
+          "time_read": 0,
+          "posts_read": 0,
+          "visited_at": "2026-10-21"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-21T12:12:55.746664",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T22:32:51.276926",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "refresh_latest_new_feature",
+      {}
+    ]
+  ],
+  "next_ids": {
+    "stylesheet_cache": 116,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "theme_settings": 1,
+    "themes": 1,
+    "user_histories": 74,
+    "user_visits": 4
+  },
+  "digests": [
+    "theme_fields.value_baked"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "cb378ae2b59c3567af61173952882f2f246c539e2407ad5c3fa1e8dbed35cfd6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

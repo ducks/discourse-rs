@@ -1,0 +1,1 @@
+@font-face{font-family:x;--x:light-dark(red, blue);color-scheme:light dark}@page{color:light-dark(#fff, #000)}@media print{@page{--y:light-dark(red, blue);color:red}}a{color:red}@font-face{--z:1px;--x:light-dark(red, blue);--w:light-dark(#fff, #000)}@page{color-scheme:dark}@page{color-scheme:light}@page{color-scheme:light dark;--q:light-dark(red, blue)}

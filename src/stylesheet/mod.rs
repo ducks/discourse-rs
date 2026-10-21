@@ -8,6 +8,7 @@ pub mod fonts;
 pub mod manager;
 pub mod postcss;
 pub mod scss;
+mod value_parser;
 
 #[cfg(test)]
 mod compile_tests {

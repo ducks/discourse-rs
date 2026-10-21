@@ -1030,29 +1030,46 @@ impl Restore<'_> {
     }
 
     /// Restorer#clear_theme_cache: `ThemeField.force_recompilation!`
-    /// compiles every theme field again, which the port can't (themes are
-    /// Rails'); with none there is nothing to compile.
+    /// bakes every theme field again. Theme.expire_site_cache! and
+    /// Stylesheet::Manager.cache.clear have nothing to clear here: the
+    /// port reads themes from the database and keeps compiles by their
+    /// whole input.
     async fn clear_theme_cache(&mut self) {
         self.log.log("Clear theme cache").await;
-        let fields: Result<i64, sqlx::Error> =
-            sqlx::query_scalar("SELECT COUNT(*) FROM theme_fields")
-                .fetch_one(&self.state.pool)
+        if let Err(e) = self.force_recompilation().await {
+            tracing::error!("{e}");
+            self.log
+                .log("Something went wrong while clearing theme cache.")
                 .await;
-        match fields {
-            Ok(0) => {}
-            Ok(_) => {
-                tracing::warn!("recompiling theme fields after a restore is not ported");
-                self.log
-                    .log("Something went wrong while clearing theme cache.")
-                    .await;
-            }
-            Err(e) => {
-                tracing::error!("{e}");
-                self.log
-                    .log("Something went wrong while clearing theme cache.")
-                    .await;
-            }
         }
+    }
+
+    async fn force_recompilation(&self) -> Result<(), AppError> {
+        let mut conn = self.state.pool.acquire().await?;
+        let fields: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM theme_fields")
+            .fetch_one(&mut *conn)
+            .await?;
+        if fields == 0 {
+            return Ok(());
+        }
+        let settings = SiteSettings::load(
+            &mut conn,
+            &self.state.site_setting_defs,
+            &self.state.config.globals,
+        )
+        .await?;
+        let urls = crate::url::Urls {
+            config: &self.state.config,
+            settings: &settings,
+        };
+        let cx = crate::themes::Ctx {
+            settings: &settings,
+            i18n: &self.state.i18n,
+            urls: &urls,
+            defs: &self.state.site_setting_defs,
+        };
+        let env = crate::theme_writes::Env::load(&mut conn, &cx).await?;
+        crate::theme_writes::force_recompilation(&mut conn, &env).await
     }
 
     /// DatabaseRestorer#rollback

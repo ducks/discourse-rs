@@ -1,0 +1,8956 @@
+{
+ "autoprefixer": "10.5.6",
+ "browsers": [
+  "last 1 chrome version",
+  "last 1 and_chr version",
+  "last 1 firefox version",
+  "last 1 and_ff version",
+  "last 1 safari version",
+  "safari 16.4",
+  "ios_saf 16.4"
+ ],
+ "prefixes": [
+  "-webkit-",
+  "-moz-",
+  "-ms-",
+  "-o-"
+ ],
+ "normalize": {
+  "box-flex": "flex",
+  "flex-order": "order",
+  "box-ordinal-group": "order",
+  "box-direction": "flex-direction",
+  "box-orient": "flex-direction",
+  "flex-grow": "flex",
+  "flex-positive": "flex",
+  "grid-row-start": "grid-row",
+  "grid-column-start": "grid-column",
+  "flex-item-align": "align-self",
+  "flex-preferred-size": "flex-basis",
+  "mask-box-image": "mask-border",
+  "mask-box-image-source": "mask-border-source",
+  "mask-box-image-slice": "mask-border-slice",
+  "mask-box-image-width": "mask-border-width",
+  "mask-box-image-outset": "mask-border-outset",
+  "mask-box-image-repeat": "mask-border-repeat",
+  "flex-align": "align-items",
+  "box-align": "align-items",
+  "flex-negative": "flex-shrink",
+  "page-break-inside": "break-inside",
+  "column-break-inside": "break-inside",
+  "page-break-before": "break-before",
+  "column-break-before": "break-before",
+  "page-break-after": "break-after",
+  "column-break-after": "break-after",
+  "flex-line-pack": "align-content",
+  "border-radius-topleft": "border-top-left-radius",
+  "border-radius-topright": "border-top-right-radius",
+  "border-radius-bottomleft": "border-bottom-left-radius",
+  "border-radius-bottomright": "border-bottom-right-radius",
+  "border-before": "border-block-start",
+  "border-after": "border-block-end",
+  "margin-before": "margin-block-start",
+  "margin-after": "margin-block-end",
+  "padding-before": "padding-block-start",
+  "padding-after": "padding-block-end",
+  "border-start": "border-inline-start",
+  "border-end": "border-inline-end",
+  "margin-start": "margin-inline-start",
+  "margin-end": "margin-inline-end",
+  "padding-start": "padding-inline-start",
+  "padding-end": "padding-inline-end",
+  "grid-row-align": "align-self",
+  "interpolation-mode": "image-rendering",
+  "flex-pack": "justify-content",
+  "box-pack": "justify-content",
+  "grid-rows": "grid-template-rows",
+  "grid-columns": "grid-template-columns",
+  "grid-column-align": "justify-self",
+  "scroll-chaining": "overscroll-behavior",
+  "color-adjust": "print-color-adjust"
+ },
+ "prefixed": {
+  "-ms-grid-template-rows": "-ms-grid-rows",
+  "-ms-grid-template-columns": "-ms-grid-columns"
+ },
+ "add_props": {
+  "backdrop-filter": [
+   "-webkit-"
+  ],
+  "user-select": [
+   "-webkit-"
+  ],
+  "hyphens": [
+   "-webkit-"
+  ],
+  "text-decoration-skip": [
+   "-webkit-"
+  ],
+  "text-decoration-skip-ink": [
+   "-webkit-"
+  ],
+  "text-decoration": [
+   "-webkit-"
+  ],
+  "text-size-adjust": [
+   "-webkit-",
+   "-moz-"
+  ],
+  "box-decoration-break": [
+   "-webkit-"
+  ]
+ },
+ "add_values": {
+  "background": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "background-image": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "border-image": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style-image": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "content": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask-image": [
+   {
+    "name": "element",
+    "prefixes": [
+     "-moz-"
+    ],
+    "kind": "Value",
+    "regexp": [
+     "(^|[\\s,(])(element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "cross-fade",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "CrossFade",
+    "regexp": [
+     "(^|[\\s,(])(cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "width": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-width": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-width": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "height": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-height": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-height": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "inline-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-inline-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-inline-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "block-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-block-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-block-size": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-rows": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-columns": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-columns": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-rows": [
+   {
+    "name": "fill",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "fill-available",
+    "prefixes": [
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "name": "stretch",
+    "prefixes": [
+     "-moz-",
+     "-webkit-"
+    ],
+    "kind": "Intrinsic",
+    "regexp": [
+     "(^|[\\s,(])(stretch($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ]
+ },
+ "remove_props": [
+  "-webkit-border-radius",
+  "-moz-border-radius",
+  "-khtml-border-radius",
+  "-ms-border-radius",
+  "-o-border-radius",
+  "-webkit-border-top-left-radius",
+  "-moz-border-radius-topleft",
+  "-khtml-border-top-left-radius",
+  "-ms-border-top-left-radius",
+  "-o-border-top-left-radius",
+  "-webkit-border-top-right-radius",
+  "-moz-border-radius-topright",
+  "-khtml-border-top-right-radius",
+  "-ms-border-top-right-radius",
+  "-o-border-top-right-radius",
+  "-webkit-border-bottom-right-radius",
+  "-moz-border-radius-bottomright",
+  "-khtml-border-bottom-right-radius",
+  "-ms-border-bottom-right-radius",
+  "-o-border-bottom-right-radius",
+  "-webkit-border-bottom-left-radius",
+  "-moz-border-radius-bottomleft",
+  "-khtml-border-bottom-left-radius",
+  "-ms-border-bottom-left-radius",
+  "-o-border-bottom-left-radius",
+  "-webkit-box-shadow",
+  "-moz-box-shadow",
+  "-khtml-box-shadow",
+  "-webkit-animation",
+  "-moz-animation",
+  "-o-animation",
+  "-khtml-animation",
+  "-ms-animation",
+  "-webkit-animation-name",
+  "-moz-animation-name",
+  "-o-animation-name",
+  "-khtml-animation-name",
+  "-ms-animation-name",
+  "-webkit-animation-duration",
+  "-moz-animation-duration",
+  "-o-animation-duration",
+  "-khtml-animation-duration",
+  "-ms-animation-duration",
+  "-webkit-animation-delay",
+  "-moz-animation-delay",
+  "-o-animation-delay",
+  "-khtml-animation-delay",
+  "-ms-animation-delay",
+  "-webkit-animation-direction",
+  "-moz-animation-direction",
+  "-o-animation-direction",
+  "-khtml-animation-direction",
+  "-ms-animation-direction",
+  "-webkit-animation-fill-mode",
+  "-moz-animation-fill-mode",
+  "-o-animation-fill-mode",
+  "-khtml-animation-fill-mode",
+  "-ms-animation-fill-mode",
+  "-webkit-animation-iteration-count",
+  "-moz-animation-iteration-count",
+  "-o-animation-iteration-count",
+  "-khtml-animation-iteration-count",
+  "-ms-animation-iteration-count",
+  "-webkit-animation-play-state",
+  "-moz-animation-play-state",
+  "-o-animation-play-state",
+  "-khtml-animation-play-state",
+  "-ms-animation-play-state",
+  "-webkit-animation-timing-function",
+  "-moz-animation-timing-function",
+  "-o-animation-timing-function",
+  "-khtml-animation-timing-function",
+  "-ms-animation-timing-function",
+  "-webkit-transition",
+  "-moz-transition",
+  "-o-transition",
+  "-khtml-transition",
+  "-ms-transition",
+  "-webkit-transition-property",
+  "-moz-transition-property",
+  "-o-transition-property",
+  "-khtml-transition-property",
+  "-ms-transition-property",
+  "-webkit-transition-duration",
+  "-moz-transition-duration",
+  "-o-transition-duration",
+  "-khtml-transition-duration",
+  "-ms-transition-duration",
+  "-webkit-transition-delay",
+  "-moz-transition-delay",
+  "-o-transition-delay",
+  "-khtml-transition-delay",
+  "-ms-transition-delay",
+  "-webkit-transition-timing-function",
+  "-moz-transition-timing-function",
+  "-o-transition-timing-function",
+  "-khtml-transition-timing-function",
+  "-ms-transition-timing-function",
+  "-webkit-transform",
+  "-moz-transform",
+  "-ms-transform",
+  "-o-transform",
+  "-webkit-transform-origin",
+  "-moz-transform-origin",
+  "-ms-transform-origin",
+  "-o-transform-origin",
+  "-webkit-perspective",
+  "-moz-perspective",
+  "-webkit-perspective-origin",
+  "-moz-perspective-origin",
+  "-webkit-transform-style",
+  "-moz-transform-style",
+  "-ms-transform-style",
+  "-o-transform-style",
+  "-webkit-backface-visibility",
+  "-moz-backface-visibility",
+  "-ms-backface-visibility",
+  "-o-backface-visibility",
+  "-webkit-box-sizing",
+  "-moz-box-sizing",
+  "-webkit-filter",
+  "-ms-backdrop-filter",
+  "-webkit-columns",
+  "-moz-columns",
+  "-webkit-column-width",
+  "-moz-column-width",
+  "-webkit-column-gap",
+  "-moz-column-gap",
+  "-webkit-column-rule",
+  "-moz-column-rule",
+  "-webkit-column-rule-color",
+  "-moz-column-rule-color",
+  "-webkit-column-rule-width",
+  "-moz-column-rule-width",
+  "-webkit-column-count",
+  "-moz-column-count",
+  "-webkit-column-rule-style",
+  "-moz-column-rule-style",
+  "-webkit-column-span",
+  "-moz-column-span",
+  "-webkit-column-fill",
+  "-moz-column-fill",
+  "-webkit-column-break-before",
+  "-moz-column-break-before",
+  "-webkit-column-break-after",
+  "-moz-column-break-after",
+  "-webkit-column-break-inside",
+  "-moz-column-break-inside",
+  "-ms-user-select",
+  "-moz-user-select",
+  "-khtml-user-select",
+  "-webkit-flex",
+  "-moz-box-flex",
+  "-ms-flex",
+  "-webkit-box-flex",
+  "-webkit-flex-grow",
+  "-ms-flex-positive",
+  "-webkit-flex-shrink",
+  "-moz-flex-shrink",
+  "-ms-flex-negative",
+  "-webkit-flex-basis",
+  "-moz-flex-basis",
+  "-ms-flex-preferred-size",
+  "-webkit-flex-direction",
+  "-moz-box-orient",
+  "-moz-box-direction",
+  "-ms-flex-direction",
+  "-webkit-box-orient",
+  "-webkit-box-direction",
+  "-webkit-flex-wrap",
+  "-moz-flex-wrap",
+  "-ms-flex-wrap",
+  "-webkit- 2009flex-wrap",
+  "-webkit-flex-flow",
+  "-moz-flex-flow",
+  "-ms-flex-flow",
+  "-webkit- 2009flex-flow",
+  "-webkit-justify-content",
+  "-moz-box-pack",
+  "-ms-flex-pack",
+  "-webkit-box-pack",
+  "-webkit-order",
+  "-moz-box-ordinal-group",
+  "-ms-flex-order",
+  "-webkit-box-ordinal-group",
+  "-webkit-align-items",
+  "-moz-box-align",
+  "-ms-flex-align",
+  "-webkit-box-align",
+  "-webkit-align-self",
+  "-moz-align-self",
+  "-ms-flex-item-align",
+  "-webkit-align-content",
+  "-moz-align-content",
+  "-ms-flex-line-pack",
+  "-webkit-background-origin",
+  "-moz-background-origin",
+  "-o-background-origin",
+  "-webkit-background-size",
+  "-moz-background-size",
+  "-o-background-size",
+  "-webkit-background-clip",
+  "-ms-background-clip",
+  "-webkit-font-feature-settings",
+  "-moz-font-feature-settings",
+  "-webkit-font-variant-ligatures",
+  "-moz-font-variant-ligatures",
+  "-webkit-font-language-override",
+  "-moz-font-language-override",
+  "-webkit-font-kerning",
+  "-webkit-border-image",
+  "-moz-border-image",
+  "-o-border-image",
+  "-ms-hyphens",
+  "-moz-hyphens",
+  "-moz-tab-size",
+  "-o-tab-size",
+  "-ms-touch-action",
+  "-moz-text-decoration-color",
+  "-webkit-text-decoration-color",
+  "-moz-text-decoration-line",
+  "-webkit-text-decoration-line",
+  "-moz-text-decoration-style",
+  "-webkit-text-decoration-style",
+  "-ms-text-size-adjust",
+  "-webkit-mask-clip",
+  "-webkit-mask-composite",
+  "-webkit-mask-image",
+  "-webkit-mask-origin",
+  "-webkit-mask-repeat",
+  "-webkit-mask-box-image-repeat",
+  "-webkit-mask-box-image-source",
+  "-webkit-mask",
+  "-webkit-mask-position",
+  "-webkit-mask-position-x",
+  "-webkit-mask-position-y",
+  "-webkit-mask-size",
+  "-webkit-mask-box-image",
+  "-webkit-mask-box-image-outset",
+  "-webkit-mask-box-image-width",
+  "-webkit-mask-box-image-slice",
+  "-webkit-clip-path",
+  "-o-object-fit",
+  "-o-object-position",
+  "-webkit-shape-margin",
+  "-webkit-shape-outside",
+  "-webkit-shape-image-threshold",
+  "-o-text-overflow",
+  "-moz-text-align-last",
+  "-ms-interpolation-mode",
+  "-webkit-border-start",
+  "-moz-border-start",
+  "-webkit-border-end",
+  "-moz-border-end",
+  "-webkit-margin-start",
+  "-moz-margin-start",
+  "-webkit-margin-end",
+  "-moz-margin-end",
+  "-webkit-padding-start",
+  "-moz-padding-start",
+  "-webkit-padding-end",
+  "-moz-padding-end",
+  "-webkit-border-before",
+  "-webkit-border-after",
+  "-webkit-margin-before",
+  "-webkit-margin-after",
+  "-webkit-padding-before",
+  "-webkit-padding-after",
+  "-webkit-appearance",
+  "-ms-appearance",
+  "-moz-appearance",
+  "-ms-scroll-snap-type",
+  "-webkit-scroll-snap-type",
+  "-ms-scroll-snap-coordinate",
+  "-webkit-scroll-snap-coordinate",
+  "-ms-scroll-snap-destination",
+  "-webkit-scroll-snap-destination",
+  "-ms-scroll-snap-points-x",
+  "-webkit-scroll-snap-points-x",
+  "-ms-scroll-snap-points-y",
+  "-webkit-scroll-snap-points-y",
+  "-webkit-flow-into",
+  "-ms-flow-into",
+  "-webkit-flow-from",
+  "-ms-flow-from",
+  "-webkit-region-fragment",
+  "-ms-region-fragment",
+  "-webkit-writing-mode",
+  "-ms-writing-mode",
+  "-webkit-text-emphasis",
+  "-webkit-text-emphasis-position",
+  "-webkit-text-emphasis-style",
+  "-webkit-text-emphasis-color",
+  "-ms-grid-columns",
+  "-ms-grid-rows",
+  "-ms-grid-row",
+  "-ms-grid-column",
+  "-ms-grid-row-end",
+  "-ms-grid-column-end",
+  "-ms-grid-area",
+  "-ms-grid-template",
+  "-ms-grid-template-areas",
+  "-ms-place-self",
+  "-ms-grid-column-align",
+  "-ms-grid-row-align",
+  "-ms-text-spacing",
+  "-ms-scroll-chaining",
+  "-webkit-text-orientation",
+  "-webkit-print-color-adjust",
+  "color-adjust"
+ ],
+ "remove_values": {
+  "background": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "background-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "border-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "content": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "display": [
+   {
+    "unprefixed": "flex",
+    "string": "-webkit-flex",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-flex($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-moz-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-ms-flexbox",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-flexbox($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-webkit-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-webkit-inline-flex",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-inline\\-flex($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-moz-inline-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-inline\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-ms-inline-flexbox",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-inline\\-flexbox($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-webkit-inline-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-inline\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grid",
+    "string": "-ms-grid",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-grid($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-grid",
+    "string": "-ms-inline-grid",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-inline\\-grid($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "*": [
+   {
+    "unprefixed": "calc",
+    "string": "-webkit-calc",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-calc($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "calc",
+    "string": "-moz-calc",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-calc($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-rows": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-columns": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-columns": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-rows": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "cursor": [
+   {
+    "unprefixed": "zoom-in",
+    "string": "-webkit-zoom-in",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-zoom\\-in($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-in",
+    "string": "-moz-zoom-in",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-zoom\\-in($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-out",
+    "string": "-webkit-zoom-out",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-zoom\\-out($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-out",
+    "string": "-moz-zoom-out",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-zoom\\-out($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grab",
+    "string": "-webkit-grab",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-grab($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grab",
+    "string": "-moz-grab",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-grab($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grabbing",
+    "string": "-webkit-grabbing",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-grabbing($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grabbing",
+    "string": "-moz-grabbing",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-grabbing($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "position": [
+   {
+    "unprefixed": "sticky",
+    "string": "-webkit-sticky",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-sticky($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "image-rendering": [
+   {
+    "unprefixed": "pixelated",
+    "string": "-webkit-optimize-contrast",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-optimize\\-contrast($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "pixelated",
+    "string": "-moz-crisp-edges",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-crisp\\-edges($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "pixelated",
+    "string": "-o-pixelated",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-pixelated($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "unicode-bidi": [
+   {
+    "unprefixed": "isolate",
+    "string": "-webkit-isolate",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-isolate($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate",
+    "string": "-moz-isolate",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-isolate($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "plaintext",
+    "string": "-moz-plaintext",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-plaintext($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "plaintext",
+    "string": "-webkit-plaintext",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-plaintext($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate-override",
+    "string": "-moz-isolate-override",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-isolate\\-override($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate-override",
+    "string": "-webkit-isolate-override",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-isolate\\-override($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ]
+ },
+ "remove_selectors": [
+  {
+   "prefixed": "::-moz-selection",
+   "regexp": [
+    "(^|[^:\"'=])::\\-moz\\-selection",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-selection",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-selection",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-selection",
+     [
+      "(^|[^:\"'=])::\\-moz\\-selection",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-selection",
+     [
+      "(^|[^:\"'=])::\\-ms\\-selection",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-selection",
+     [
+      "(^|[^:\"'=])::\\-o\\-selection",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::selection",
+   "name_regexp": [
+    "(^|[^:\"'=])::selection",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-webkit-input-placeholder",
+   "regexp": [
+    "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-placeholder",
+     [
+      "(^|[^:\"'=])::\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-placeholder",
+     [
+      "(^|[^:\"'=])::\\-o\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::placeholder",
+   "name_regexp": [
+    "(^|[^:\"'=])::placeholder",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-ms-input-placeholder",
+   "regexp": [
+    "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-placeholder",
+     [
+      "(^|[^:\"'=])::\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-placeholder",
+     [
+      "(^|[^:\"'=])::\\-o\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::placeholder",
+   "name_regexp": [
+    "(^|[^:\"'=])::placeholder",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-moz-placeholder",
+   "regexp": [
+    "(^|[^:\"'=])::\\-moz\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-placeholder",
+     [
+      "(^|[^:\"'=])::\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-placeholder",
+     [
+      "(^|[^:\"'=])::\\-o\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::placeholder",
+   "name_regexp": [
+    "(^|[^:\"'=])::placeholder",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-ms-input-placeholder",
+   "regexp": [
+    "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-placeholder",
+     [
+      "(^|[^:\"'=])::\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-placeholder",
+     [
+      "(^|[^:\"'=])::\\-o\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::placeholder",
+   "name_regexp": [
+    "(^|[^:\"'=])::placeholder",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-placeholder",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-placeholder",
+     [
+      "(^|[^:\"'=])::\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-input-placeholder",
+     [
+      "(^|[^:\"'=])::\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-placeholder",
+     [
+      "(^|[^:\"'=])::\\-o\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::placeholder",
+   "name_regexp": [
+    "(^|[^:\"'=])::placeholder",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-placeholder",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-placeholder-shown",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-placeholder\\-shown",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-placeholder-shown",
+     [
+      "(^|[^:\"'=]):\\-o\\-placeholder\\-shown",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":placeholder-shown",
+   "name_regexp": [
+    "(^|[^:\"'=]):placeholder\\-shown",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-ms-input-placeholder",
+   "regexp": [
+    "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-placeholder-shown",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-placeholder\\-shown",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-placeholder",
+     [
+      "(^|[^:\"'=]):\\-moz\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-input-placeholder",
+     [
+      "(^|[^:\"'=]):\\-ms\\-input\\-placeholder",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-placeholder-shown",
+     [
+      "(^|[^:\"'=]):\\-o\\-placeholder\\-shown",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":placeholder-shown",
+   "name_regexp": [
+    "(^|[^:\"'=]):placeholder\\-shown",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-webkit-full-screen",
+   "regexp": [
+    "(^|[^:\"'=]):\\-webkit\\-full\\-screen",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-full-screen",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-full-screen",
+     [
+      "(^|[^:\"'=]):\\-moz\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-ms\\-fullscreen",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-o\\-fullscreen",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":fullscreen",
+   "name_regexp": [
+    "(^|[^:\"'=]):fullscreen",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-full-screen",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-full\\-screen",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-full-screen",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-full-screen",
+     [
+      "(^|[^:\"'=]):\\-moz\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-ms\\-fullscreen",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-o\\-fullscreen",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":fullscreen",
+   "name_regexp": [
+    "(^|[^:\"'=]):fullscreen",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-ms-fullscreen",
+   "regexp": [
+    "(^|[^:\"'=]):\\-ms\\-fullscreen",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-full-screen",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-full-screen",
+     [
+      "(^|[^:\"'=]):\\-moz\\-full\\-screen",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-ms\\-fullscreen",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-fullscreen",
+     [
+      "(^|[^:\"'=]):\\-o\\-fullscreen",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":fullscreen",
+   "name_regexp": [
+    "(^|[^:\"'=]):fullscreen",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-webkit-backdrop",
+   "regexp": [
+    "(^|[^:\"'=])::\\-webkit\\-backdrop",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-backdrop",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-backdrop",
+     [
+      "(^|[^:\"'=])::\\-moz\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-backdrop",
+     [
+      "(^|[^:\"'=])::\\-ms\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-backdrop",
+     [
+      "(^|[^:\"'=])::\\-o\\-backdrop",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::backdrop",
+   "name_regexp": [
+    "(^|[^:\"'=])::backdrop",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-ms-backdrop",
+   "regexp": [
+    "(^|[^:\"'=])::\\-ms\\-backdrop",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-backdrop",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-backdrop",
+     [
+      "(^|[^:\"'=])::\\-moz\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-backdrop",
+     [
+      "(^|[^:\"'=])::\\-ms\\-backdrop",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-backdrop",
+     [
+      "(^|[^:\"'=])::\\-o\\-backdrop",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::backdrop",
+   "name_regexp": [
+    "(^|[^:\"'=])::backdrop",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-webkit-file-upload-button",
+   "regexp": [
+    "(^|[^:\"'=])::\\-webkit\\-file\\-upload\\-button",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-file-upload-button",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-file\\-upload\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-moz\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-ms\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-o\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::file-selector-button",
+   "name_regexp": [
+    "(^|[^:\"'=])::file\\-selector\\-button",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": "::-ms-file-selector-button",
+   "regexp": [
+    "(^|[^:\"'=])::\\-ms\\-file\\-selector\\-button",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     "::-webkit-file-upload-button",
+     [
+      "(^|[^:\"'=])::\\-webkit\\-file\\-upload\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-moz-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-moz\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-ms-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-ms\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ],
+    [
+     "::-o-file-selector-button",
+     [
+      "(^|[^:\"'=])::\\-o\\-file\\-selector\\-button",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": "::file-selector-button",
+   "name_regexp": [
+    "(^|[^:\"'=])::file\\-selector\\-button",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-webkit-autofill",
+   "regexp": [
+    "(^|[^:\"'=]):\\-webkit\\-autofill",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-autofill",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-autofill",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-autofill",
+     [
+      "(^|[^:\"'=]):\\-moz\\-autofill",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-autofill",
+     [
+      "(^|[^:\"'=]):\\-ms\\-autofill",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-autofill",
+     [
+      "(^|[^:\"'=]):\\-o\\-autofill",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":autofill",
+   "name_regexp": [
+    "(^|[^:\"'=]):autofill",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-read-only",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-read\\-only",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-read-only",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-read\\-only",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-read-only",
+     [
+      "(^|[^:\"'=]):\\-moz\\-read\\-only",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-read-only",
+     [
+      "(^|[^:\"'=]):\\-ms\\-read\\-only",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-read-only",
+     [
+      "(^|[^:\"'=]):\\-o\\-read\\-only",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":read-only",
+   "name_regexp": [
+    "(^|[^:\"'=]):read\\-only",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-read-write",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-read\\-write",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-read-write",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-read\\-write",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-read-write",
+     [
+      "(^|[^:\"'=]):\\-moz\\-read\\-write",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-read-write",
+     [
+      "(^|[^:\"'=]):\\-ms\\-read\\-write",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-read-write",
+     [
+      "(^|[^:\"'=]):\\-o\\-read\\-write",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":read-write",
+   "name_regexp": [
+    "(^|[^:\"'=]):read\\-write",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-webkit-any-link",
+   "regexp": [
+    "(^|[^:\"'=]):\\-webkit\\-any\\-link",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-any-link",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-any-link",
+     [
+      "(^|[^:\"'=]):\\-moz\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-any-link",
+     [
+      "(^|[^:\"'=]):\\-ms\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-any-link",
+     [
+      "(^|[^:\"'=]):\\-o\\-any\\-link",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":any-link",
+   "name_regexp": [
+    "(^|[^:\"'=]):any\\-link",
+    "gi"
+   ]
+  },
+  {
+   "prefixed": ":-moz-any-link",
+   "regexp": [
+    "(^|[^:\"'=]):\\-moz\\-any\\-link",
+    "gi"
+   ],
+   "prefixeds": [
+    [
+     ":-webkit-any-link",
+     [
+      "(^|[^:\"'=]):\\-webkit\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-moz-any-link",
+     [
+      "(^|[^:\"'=]):\\-moz\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-ms-any-link",
+     [
+      "(^|[^:\"'=]):\\-ms\\-any\\-link",
+      "gi"
+     ]
+    ],
+    [
+     ":-o-any-link",
+     [
+      "(^|[^:\"'=]):\\-o\\-any\\-link",
+      "gi"
+     ]
+    ]
+   ],
+   "unprefixed": ":any-link",
+   "name_regexp": [
+    "(^|[^:\"'=]):any\\-link",
+    "gi"
+   ]
+  }
+ ],
+ "remove_at_rules": [
+  "@-webkit-keyframes",
+  "@-moz-keyframes",
+  "@-o-keyframes",
+  "@-khtml-keyframes",
+  "@-ms-keyframes",
+  "@-ms-viewport",
+  "@-o-viewport"
+ ],
+ "resolution_prefixes": [
+  "-webkit-",
+  "-moz-",
+  "-o-"
+ ],
+ "cleaner_remove_props": [
+  "-webkit-border-radius",
+  "-moz-border-radius",
+  "-khtml-border-radius",
+  "-ms-border-radius",
+  "-o-border-radius",
+  "-webkit-border-top-left-radius",
+  "-moz-border-radius-topleft",
+  "-khtml-border-top-left-radius",
+  "-ms-border-top-left-radius",
+  "-o-border-top-left-radius",
+  "-webkit-border-top-right-radius",
+  "-moz-border-radius-topright",
+  "-khtml-border-top-right-radius",
+  "-ms-border-top-right-radius",
+  "-o-border-top-right-radius",
+  "-webkit-border-bottom-right-radius",
+  "-moz-border-radius-bottomright",
+  "-khtml-border-bottom-right-radius",
+  "-ms-border-bottom-right-radius",
+  "-o-border-bottom-right-radius",
+  "-webkit-border-bottom-left-radius",
+  "-moz-border-radius-bottomleft",
+  "-khtml-border-bottom-left-radius",
+  "-ms-border-bottom-left-radius",
+  "-o-border-bottom-left-radius",
+  "-webkit-box-shadow",
+  "-moz-box-shadow",
+  "-khtml-box-shadow",
+  "-webkit-animation",
+  "-moz-animation",
+  "-o-animation",
+  "-khtml-animation",
+  "-ms-animation",
+  "-webkit-animation-name",
+  "-moz-animation-name",
+  "-o-animation-name",
+  "-khtml-animation-name",
+  "-ms-animation-name",
+  "-webkit-animation-duration",
+  "-moz-animation-duration",
+  "-o-animation-duration",
+  "-khtml-animation-duration",
+  "-ms-animation-duration",
+  "-webkit-animation-delay",
+  "-moz-animation-delay",
+  "-o-animation-delay",
+  "-khtml-animation-delay",
+  "-ms-animation-delay",
+  "-webkit-animation-direction",
+  "-moz-animation-direction",
+  "-o-animation-direction",
+  "-khtml-animation-direction",
+  "-ms-animation-direction",
+  "-webkit-animation-fill-mode",
+  "-moz-animation-fill-mode",
+  "-o-animation-fill-mode",
+  "-khtml-animation-fill-mode",
+  "-ms-animation-fill-mode",
+  "-webkit-animation-iteration-count",
+  "-moz-animation-iteration-count",
+  "-o-animation-iteration-count",
+  "-khtml-animation-iteration-count",
+  "-ms-animation-iteration-count",
+  "-webkit-animation-play-state",
+  "-moz-animation-play-state",
+  "-o-animation-play-state",
+  "-khtml-animation-play-state",
+  "-ms-animation-play-state",
+  "-webkit-animation-timing-function",
+  "-moz-animation-timing-function",
+  "-o-animation-timing-function",
+  "-khtml-animation-timing-function",
+  "-ms-animation-timing-function",
+  "-webkit-transition",
+  "-moz-transition",
+  "-o-transition",
+  "-khtml-transition",
+  "-ms-transition",
+  "-webkit-transition-property",
+  "-moz-transition-property",
+  "-o-transition-property",
+  "-khtml-transition-property",
+  "-ms-transition-property",
+  "-webkit-transition-duration",
+  "-moz-transition-duration",
+  "-o-transition-duration",
+  "-khtml-transition-duration",
+  "-ms-transition-duration",
+  "-webkit-transition-delay",
+  "-moz-transition-delay",
+  "-o-transition-delay",
+  "-khtml-transition-delay",
+  "-ms-transition-delay",
+  "-webkit-transition-timing-function",
+  "-moz-transition-timing-function",
+  "-o-transition-timing-function",
+  "-khtml-transition-timing-function",
+  "-ms-transition-timing-function",
+  "-webkit-transform",
+  "-moz-transform",
+  "-ms-transform",
+  "-o-transform",
+  "-webkit-transform-origin",
+  "-moz-transform-origin",
+  "-ms-transform-origin",
+  "-o-transform-origin",
+  "-webkit-perspective",
+  "-moz-perspective",
+  "-webkit-perspective-origin",
+  "-moz-perspective-origin",
+  "-webkit-transform-style",
+  "-moz-transform-style",
+  "-ms-transform-style",
+  "-o-transform-style",
+  "-webkit-backface-visibility",
+  "-moz-backface-visibility",
+  "-ms-backface-visibility",
+  "-o-backface-visibility",
+  "-webkit-box-sizing",
+  "-moz-box-sizing",
+  "-webkit-filter",
+  "-ms-backdrop-filter",
+  "-webkit-backdrop-filter",
+  "-webkit-columns",
+  "-moz-columns",
+  "-webkit-column-width",
+  "-moz-column-width",
+  "-webkit-column-gap",
+  "-moz-column-gap",
+  "-webkit-column-rule",
+  "-moz-column-rule",
+  "-webkit-column-rule-color",
+  "-moz-column-rule-color",
+  "-webkit-column-rule-width",
+  "-moz-column-rule-width",
+  "-webkit-column-count",
+  "-moz-column-count",
+  "-webkit-column-rule-style",
+  "-moz-column-rule-style",
+  "-webkit-column-span",
+  "-moz-column-span",
+  "-webkit-column-fill",
+  "-moz-column-fill",
+  "-webkit-column-break-before",
+  "-moz-column-break-before",
+  "-webkit-column-break-after",
+  "-moz-column-break-after",
+  "-webkit-column-break-inside",
+  "-moz-column-break-inside",
+  "-webkit-user-select",
+  "-ms-user-select",
+  "-moz-user-select",
+  "-khtml-user-select",
+  "-webkit-flex",
+  "-moz-box-flex",
+  "-ms-flex",
+  "-webkit-box-flex",
+  "-webkit-flex-grow",
+  "-ms-flex-positive",
+  "-webkit-flex-shrink",
+  "-moz-flex-shrink",
+  "-ms-flex-negative",
+  "-webkit-flex-basis",
+  "-moz-flex-basis",
+  "-ms-flex-preferred-size",
+  "-webkit-flex-direction",
+  "-moz-box-orient",
+  "-moz-box-direction",
+  "-ms-flex-direction",
+  "-webkit-box-orient",
+  "-webkit-box-direction",
+  "-webkit-flex-wrap",
+  "-moz-flex-wrap",
+  "-ms-flex-wrap",
+  "-webkit- 2009flex-wrap",
+  "-webkit-flex-flow",
+  "-moz-flex-flow",
+  "-ms-flex-flow",
+  "-webkit- 2009flex-flow",
+  "-webkit-justify-content",
+  "-moz-box-pack",
+  "-ms-flex-pack",
+  "-webkit-box-pack",
+  "-webkit-order",
+  "-moz-box-ordinal-group",
+  "-ms-flex-order",
+  "-webkit-box-ordinal-group",
+  "-webkit-align-items",
+  "-moz-box-align",
+  "-ms-flex-align",
+  "-webkit-box-align",
+  "-webkit-align-self",
+  "-moz-align-self",
+  "-ms-flex-item-align",
+  "-webkit-align-content",
+  "-moz-align-content",
+  "-ms-flex-line-pack",
+  "-webkit-background-origin",
+  "-moz-background-origin",
+  "-o-background-origin",
+  "-webkit-background-size",
+  "-moz-background-size",
+  "-o-background-size",
+  "-webkit-background-clip",
+  "-ms-background-clip",
+  "-webkit-font-feature-settings",
+  "-moz-font-feature-settings",
+  "-webkit-font-variant-ligatures",
+  "-moz-font-variant-ligatures",
+  "-webkit-font-language-override",
+  "-moz-font-language-override",
+  "-webkit-font-kerning",
+  "-webkit-border-image",
+  "-moz-border-image",
+  "-o-border-image",
+  "-ms-hyphens",
+  "-moz-hyphens",
+  "-webkit-hyphens",
+  "-moz-tab-size",
+  "-o-tab-size",
+  "-ms-touch-action",
+  "-webkit-text-decoration-skip",
+  "-webkit-text-decoration-skip-ink",
+  "-webkit-text-decoration",
+  "-moz-text-decoration-color",
+  "-webkit-text-decoration-color",
+  "-moz-text-decoration-line",
+  "-webkit-text-decoration-line",
+  "-moz-text-decoration-style",
+  "-webkit-text-decoration-style",
+  "-moz-text-size-adjust",
+  "-ms-text-size-adjust",
+  "-webkit-text-size-adjust",
+  "-webkit-mask-clip",
+  "-webkit-mask-composite",
+  "-webkit-mask-image",
+  "-webkit-mask-origin",
+  "-webkit-mask-repeat",
+  "-webkit-mask-box-image-repeat",
+  "-webkit-mask-box-image-source",
+  "-webkit-mask",
+  "-webkit-mask-position",
+  "-webkit-mask-position-x",
+  "-webkit-mask-position-y",
+  "-webkit-mask-size",
+  "-webkit-mask-box-image",
+  "-webkit-mask-box-image-outset",
+  "-webkit-mask-box-image-width",
+  "-webkit-mask-box-image-slice",
+  "-webkit-clip-path",
+  "-webkit-box-decoration-break",
+  "-o-object-fit",
+  "-o-object-position",
+  "-webkit-shape-margin",
+  "-webkit-shape-outside",
+  "-webkit-shape-image-threshold",
+  "-o-text-overflow",
+  "-moz-text-align-last",
+  "-ms-interpolation-mode",
+  "-webkit-border-start",
+  "-moz-border-start",
+  "-webkit-border-end",
+  "-moz-border-end",
+  "-webkit-margin-start",
+  "-moz-margin-start",
+  "-webkit-margin-end",
+  "-moz-margin-end",
+  "-webkit-padding-start",
+  "-moz-padding-start",
+  "-webkit-padding-end",
+  "-moz-padding-end",
+  "-webkit-border-before",
+  "-webkit-border-after",
+  "-webkit-margin-before",
+  "-webkit-margin-after",
+  "-webkit-padding-before",
+  "-webkit-padding-after",
+  "-webkit-appearance",
+  "-ms-appearance",
+  "-moz-appearance",
+  "-ms-scroll-snap-type",
+  "-webkit-scroll-snap-type",
+  "-ms-scroll-snap-coordinate",
+  "-webkit-scroll-snap-coordinate",
+  "-ms-scroll-snap-destination",
+  "-webkit-scroll-snap-destination",
+  "-ms-scroll-snap-points-x",
+  "-webkit-scroll-snap-points-x",
+  "-ms-scroll-snap-points-y",
+  "-webkit-scroll-snap-points-y",
+  "-webkit-flow-into",
+  "-ms-flow-into",
+  "-webkit-flow-from",
+  "-ms-flow-from",
+  "-webkit-region-fragment",
+  "-ms-region-fragment",
+  "-webkit-writing-mode",
+  "-ms-writing-mode",
+  "-webkit-text-emphasis",
+  "-webkit-text-emphasis-position",
+  "-webkit-text-emphasis-style",
+  "-webkit-text-emphasis-color",
+  "-ms-grid-columns",
+  "-ms-grid-rows",
+  "-ms-grid-row",
+  "-ms-grid-column",
+  "-ms-grid-row-end",
+  "-ms-grid-column-end",
+  "-ms-grid-area",
+  "-ms-grid-template",
+  "-ms-grid-template-areas",
+  "-ms-place-self",
+  "-ms-grid-column-align",
+  "-ms-grid-row-align",
+  "-ms-text-spacing",
+  "-ms-scroll-chaining",
+  "-webkit-text-orientation",
+  "-webkit-print-color-adjust",
+  "color-adjust"
+ ],
+ "cleaner_remove_values": {
+  "background": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "background-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "border-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "list-style-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "content": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "mask-image": [
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(linear-gradient|gradient\\(\\s*linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-moz-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-o-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-ms-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "linear-gradient",
+    "string": "-webkit- oldlinear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldlinear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-linear-gradient|gradient\\(\\s*repeating-linear)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-moz-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-o-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-ms-repeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-linear-gradient",
+    "string": "-webkit- oldrepeating-linear-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-linear\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(radial-gradient|gradient\\(\\s*radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-moz-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-o-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-ms-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "radial-gradient",
+    "string": "-webkit- oldradial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldradial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-gradient",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-(repeating-radial-gradient|gradient\\(\\s*repeating-radial)($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-moz-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-o-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-ms-repeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-repeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "repeating-radial-gradient",
+    "string": "-webkit- oldrepeating-radial-gradient",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\- oldrepeating\\-radial\\-gradient($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "filter",
+    "string": "-webkit-filter",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-filter($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "element",
+    "string": "-moz-element",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-element($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "cross-fade",
+    "string": "-webkit-cross-fade",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-cross\\-fade($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "display": [
+   {
+    "unprefixed": "flex",
+    "string": "-webkit-flex",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-flex($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-moz-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-ms-flexbox",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-flexbox($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "flex",
+    "string": "-webkit-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-webkit-inline-flex",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-inline\\-flex($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-moz-inline-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-inline\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-ms-inline-flexbox",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-inline\\-flexbox($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-flex",
+    "string": "-webkit-inline-box",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-inline\\-box($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grid",
+    "string": "-ms-grid",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-grid($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "inline-grid",
+    "string": "-ms-inline-grid",
+    "regexp": [
+     "(^|[\\s,(])(\\-ms\\-inline\\-grid($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "*": [
+   {
+    "unprefixed": "calc",
+    "string": "-webkit-calc",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-calc($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "calc",
+    "string": "-moz-calc",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-calc($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-width": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-height": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-inline-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "min-block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "max-block-size": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-rows": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-template-columns": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-columns": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "grid-auto-rows": [
+   {
+    "unprefixed": "max-content",
+    "string": "-webkit-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "max-content",
+    "string": "-moz-max-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-max-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-webkit-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "min-content",
+    "string": "-moz-min-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-min-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fill-available",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-webkit-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "fit-content",
+    "string": "-moz-fit-content",
+    "regexp": [
+     "(^|[\\s,(])(-moz-fit-content($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-moz-available",
+    "regexp": [
+     "(^|[\\s,(])(-moz-available($|[\\s),]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "stretch",
+    "string": "-webkit-fill-available",
+    "regexp": [
+     "(^|[\\s,(])(-webkit-fill-available($|[\\s),]))",
+     "gi"
+    ]
+   }
+  ],
+  "cursor": [
+   {
+    "unprefixed": "zoom-in",
+    "string": "-webkit-zoom-in",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-zoom\\-in($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-in",
+    "string": "-moz-zoom-in",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-zoom\\-in($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-out",
+    "string": "-webkit-zoom-out",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-zoom\\-out($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "zoom-out",
+    "string": "-moz-zoom-out",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-zoom\\-out($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grab",
+    "string": "-webkit-grab",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-grab($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grab",
+    "string": "-moz-grab",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-grab($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grabbing",
+    "string": "-webkit-grabbing",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-grabbing($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "grabbing",
+    "string": "-moz-grabbing",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-grabbing($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "image-set",
+    "string": "-webkit-image-set",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-image\\-set($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "position": [
+   {
+    "unprefixed": "sticky",
+    "string": "-webkit-sticky",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-sticky($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "image-rendering": [
+   {
+    "unprefixed": "pixelated",
+    "string": "-webkit-optimize-contrast",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-optimize\\-contrast($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "pixelated",
+    "string": "-moz-crisp-edges",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-crisp\\-edges($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "pixelated",
+    "string": "-o-pixelated",
+    "regexp": [
+     "(^|[\\s,(])(\\-o\\-pixelated($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ],
+  "unicode-bidi": [
+   {
+    "unprefixed": "isolate",
+    "string": "-webkit-isolate",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-isolate($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate",
+    "string": "-moz-isolate",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-isolate($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "plaintext",
+    "string": "-moz-plaintext",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-plaintext($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "plaintext",
+    "string": "-webkit-plaintext",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-plaintext($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate-override",
+    "string": "-moz-isolate-override",
+    "regexp": [
+     "(^|[\\s,(])(\\-moz\\-isolate\\-override($|[\\s(,]))",
+     "gi"
+    ]
+   },
+   {
+    "unprefixed": "isolate-override",
+    "string": "-webkit-isolate-override",
+    "regexp": [
+     "(^|[\\s,(])(\\-webkit\\-isolate\\-override($|[\\s(,]))",
+     "gi"
+    ]
+   }
+  ]
+ }
+}

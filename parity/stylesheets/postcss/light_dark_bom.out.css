@@ -1,0 +1,6 @@
+﻿.a::after{content:"→"}:root{--ac37af26-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) blue;--x:var(--ac37af26-csstools-light-dark-toggle--0, red);}
+
+@supports (color: light-dark(red, red)){
+:root{--x:light-dark(red, blue);}
+}@supports not (color: light-dark(tan, tan)){:root *{--ac37af26-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) blue;--x:var(--ac37af26-csstools-light-dark-toggle--0, red)}}
+/*# sourceMappingURL=x.css.map */

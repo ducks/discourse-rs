@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Objects", "theme_fields": [
+      {"name": "yaml", "target": "settings", "value": "links:\n  type: objects\n  default:\n    - name: Home\n      url: /latest\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n        required: true\n      url:\n        type: string\n      weight:\n        type: integer\n      ratio:\n        type: float\n      flag:\n        type: boolean\n      children:\n        type: objects\n        schema:\n          name: child\n          properties:\n            label:\n              type: string\n              required: true\nempty_links:\n  type: objects\n  default: []\n  schema:\n    name: link\n    properties:\n      name:\n        type: string\n"},
+      {"name": "scss", "target": "common", "value": ".objects::after { content: \"#{$links}\"; }\n.objects-empty::after { content: \"#{$empty_links}\"; }\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "links", "value": "[{\"name\": \"It's \\\"quoted\\\" \\\\ #{x}\", \"url\": \"https://example.com/a?b=c\", \"weight\": 3, \"ratio\": 1.5, \"flag\": false, \"children\": [{\"label\": \"Kid\"}]}, {\"name\": \"Second\", \"ratio\": 2.0, \"flag\": true}]"}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}

@@ -722,11 +722,35 @@ struct BakeRow {
     upload_id: Option<i32>,
 }
 
+/// `ThemeField.force_recompilation!`: every field, in id order, baked
+/// again as though its compiler_version were 0.
+pub async fn force_recompilation(conn: &mut PgConnection, env: &Env<'_>) -> Result<(), AppError> {
+    let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM theme_fields ORDER BY id")
+        .fetch_all(&mut *conn)
+        .await?;
+    for id in ids {
+        bake(conn, env, id, true).await?;
+    }
+    Ok(())
+}
+
 /// `ThemeField#ensure_baked!`
 pub async fn ensure_baked(
     conn: &mut PgConnection,
     env: &Env<'_>,
     field_id: i32,
+) -> Result<(), AppError> {
+    bake(conn, env, field_id, false).await
+}
+
+/// ensure_baked!, `forced` with the field's compiler_version set to 0
+/// first (force_recompilation!): baked whatever it held, and a field no
+/// branch bakes saved with that 0.
+async fn bake(
+    conn: &mut PgConnection,
+    env: &Env<'_>,
+    field_id: i32,
+    forced: bool,
 ) -> Result<(), AppError> {
     let Some(f): Option<BakeRow> = sqlx::query_as(
         "SELECT theme_id, target_id, name, type_id, value, value_baked, compiler_version, error, \
@@ -738,7 +762,7 @@ pub async fn ensure_baked(
     else {
         return Ok(());
     };
-    if f.value_baked.is_some() && f.compiler_version == env.compiler_version {
+    if !forced && f.value_baked.is_some() && f.compiler_version == env.compiler_version {
         return Ok(());
     }
     let cv = env.compiler_version.clone();
@@ -805,6 +829,8 @@ pub async fn ensure_baked(
             (Some("baked".into()), error, cv)
         } else if f.target_id == MIGRATIONS {
             (Some("baked".into()), f.error.clone(), cv)
+        } else if forced {
+            (f.value_baked.clone(), f.error.clone(), "0".to_string())
         } else {
             return Ok(());
         };

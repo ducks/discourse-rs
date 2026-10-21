@@ -41,7 +41,7 @@ that own them:
 - Anonymous mode: 72: 133, 211
 - Users, groups, categories and tags: 64 (68): 130, 156, 157, 184, 252
 - Chat: 63 (66): 160-162, 215, 216, 218, 224, 227
-- Site settings and themes: 62 (78): 164, 169a, 170, 171, 173
+- Site settings and themes: 62 (78): 164, 169b, 170, 171, 173
 - Uploads, media, CDN, S3: 62 (66): 121, 123, 139-141, 256
 - Locales and content localization: 60 (64): 167, 168
 - Badges, about, drafts, messages: 41 (42): 180-183
@@ -2096,16 +2096,39 @@ have handlers now.
     for byte but the toggles' hash and the source map annotation, which
     name Rails' digests) and parity/stylesheets/compile. Left, split into
     169a.
-    169a. `feat/theme-scss-rest` S: recompiling theme fields on restore
-    (91c; backup_restore/restorer.rs:1044, left while the restore code is
-    being changed on another branch), Rtlcss for right-to-left locales
-    (html.rs:909), autoprefixer's other rewrites
-    (stylesheet/postcss.rs:1136: value and selector prefixes,
-    transitions, @supports, old flexbox properties), the polyfill's
-    light-dark() custom properties and `color-scheme: light dark` outside
-    a style rule (postcss.rs:1793), objects settings as SCSS variables
-    (stylesheet/manager.rs:114), source maps. Another theme's
+    169a. ~~`feat/theme-scss-rest`~~ (done; what it leaves is 169b) S:
+    recompiling theme fields on restore (ThemeField.force_recompilation!,
+    theme_writes::force_recompilation), Rtlcss for right-to-left locales
+    (stylesheet/rtl.rs: the `_rtl` theme targets linked, served and
+    flipped), the rest of autoprefixer (stylesheet/autoprefixer.rs on
+    vendor/autoprefixer's tables for targets.js's browsers: value and
+    selector prefixes, transitions, @supports, old flexbox, @viewport
+    and resolution queries; run after the polyfill, as postcss's
+    OnceExit runs), the polyfill's custom properties and `color-scheme:
+    light dark` in at-rules, objects settings as SCSS variables (Ruby's
+    inspect), and the toggles' hash of a stylesheet with a byte order
+    mark. Measured in parity/stylesheets/postcss (scripts/record-postcss),
+    parity/writes/stylesheets (objects, prefixes, rtl) and
+    tests/backup_restore.rs, byte for byte; and against the reference's
+    asset processor and rtlcss run by node on Discourse's core
+    stylesheets and over 12,000 generated ones. Another theme's
     stylesheets are 258a's
+    169b. `feat/theme-scss-maps` M: source maps: Rails serves each
+    stylesheet's map (StylesheetsController#show_source_map, refused at
+    routes/stylesheets.rs:128) and names it in the CSS's annotation,
+    which the port leaves out (stylesheet/manager.rs:9). Not ported:
+    grass makes no source maps, so it needs dart-sass's mappings tracked
+    through grass's serializer, then postcss's map carried through
+    autoprefixer, the polyfill and postcss-nesting; and Rails' maps name
+    the compile's temporary load path directory and its digests, so they
+    can only be compared by structure. Also refused here, none of which
+    dart-sass's compressed output gives unless a theme asks for it:
+    autoprefixer's control comments (`/*! autoprefixer: off */`,
+    stylesheet/autoprefixer.rs:519), its visual cascade (:573) and a
+    prefixed value in a transition it removes (:586); rtlcss directives
+    (`/*! rtl:ignore */` and the others, stylesheet/rtl.rs:622), comments
+    in a declaration it flips (:632) and a number it would write with an
+    exponent (:87)
 170. `feat/theme-javascript` L: extra_js (theme_writes.rs:326,532),
     so imported bundles with javascripts/ (90f1), inline scripts in
     theme html (:877, theme_html.rs:104, AssetProcessor; with them

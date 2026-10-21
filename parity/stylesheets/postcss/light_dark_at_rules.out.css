@@ -1,0 +1,18 @@
+@font-face{font-family:x;--e75e3a07-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) blue;--x:var(--e75e3a07-csstools-light-dark-toggle--0, red);--csstools-color-scheme--light:initial;color-scheme:light dark;@supports not (color: light-dark(tan, tan)){:scope *{--e75e3a07-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) blue;--x:var(--e75e3a07-csstools-light-dark-toggle--0, red)}}}
+
+@supports (color: light-dark(red, red)){
+@font-face{--x:light-dark(red, blue)}
+}@media (prefers-color-scheme: dark){@font-face{--csstools-color-scheme--light: }}@page{--e75e3a07-csstools-light-dark-toggle--1:var(--csstools-color-scheme--light) #000;color:var(--e75e3a07-csstools-light-dark-toggle--1, #fff);color:light-dark(#fff, #000)}@media print{@page{--e75e3a07-csstools-light-dark-toggle--2:var(--csstools-color-scheme--light) blue;--y:var(--e75e3a07-csstools-light-dark-toggle--2, red);color:red;@supports not (color: light-dark(tan, tan)){:scope *{--e75e3a07-csstools-light-dark-toggle--2:var(--csstools-color-scheme--light) blue;--y:var(--e75e3a07-csstools-light-dark-toggle--2, red)}}}
+
+@supports (color: light-dark(red, red)){
+@page{--y:light-dark(red, blue)}
+}}a{color:red}@font-face{--z:1px;--e75e3a07-csstools-light-dark-toggle--3:var(--csstools-color-scheme--light) blue;--x:var(--e75e3a07-csstools-light-dark-toggle--3, red);--e75e3a07-csstools-light-dark-toggle--4:var(--csstools-color-scheme--light) #000;--w:var(--e75e3a07-csstools-light-dark-toggle--4, #fff);@supports not (color: light-dark(tan, tan)){:scope *{--e75e3a07-csstools-light-dark-toggle--3:var(--csstools-color-scheme--light) blue;--x:var(--e75e3a07-csstools-light-dark-toggle--3, red);--e75e3a07-csstools-light-dark-toggle--4:var(--csstools-color-scheme--light) #000;--w:var(--e75e3a07-csstools-light-dark-toggle--4, #fff)}}}
+
+@supports (color: light-dark(red, red)){
+@font-face{--x:light-dark(red, blue);--w:light-dark(#fff, #000)}
+}@page{--csstools-color-scheme--light: ;color-scheme:dark}@page{--csstools-color-scheme--light:initial;color-scheme:light}@page{--csstools-color-scheme--light:initial;color-scheme:light dark;--e75e3a07-csstools-light-dark-toggle--5:var(--csstools-color-scheme--light) blue;--q:var(--e75e3a07-csstools-light-dark-toggle--5, red);@supports not (color: light-dark(tan, tan)){:scope *{--e75e3a07-csstools-light-dark-toggle--5:var(--csstools-color-scheme--light) blue;--q:var(--e75e3a07-csstools-light-dark-toggle--5, red)}}}
+
+@supports (color: light-dark(red, red)){
+@page{--q:light-dark(red, blue)}
+}@media (prefers-color-scheme: dark){@page{--csstools-color-scheme--light: }}
+/*# sourceMappingURL=x.css.map */

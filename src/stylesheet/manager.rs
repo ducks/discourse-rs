@@ -6,9 +6,10 @@
 //!
 //! Compiles are kept by their whole input (source and theme files), as
 //! Rails keeps them by digest in its stylesheet cache. The served CSS
-//! leaves out Rails' source map annotation (the port serves no maps), and
-//! the light-dark() toggles' hash is the port's own input's, as Rails'
-//! is its input's (which names the stylesheet's digest).
+//! leaves out Rails' source map annotation (grass makes no source maps,
+//! and their requests are refused: routes/stylesheets.rs, 169b), and the
+//! light-dark() toggles' hash is the port's own input's, as Rails' is
+//! its input's (which names the stylesheet's digest).
 
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
@@ -100,9 +101,10 @@ pub async fn theme_files(conn: &mut PgConnection, theme_id: i32) -> Result<Theme
     Ok(ThemeFiles::from_exported(exported))
 }
 
-/// A setting's value as Ruby's `to_s` writes it into SCSS.
-fn setting_to_s(type_name: &str, value: &Value) -> Result<String, Unsupported> {
-    Ok(match value {
+/// A setting's value as Ruby's `to_s` writes it into SCSS (an objects
+/// setting's array of hashes as its `inspect`).
+fn setting_to_s(type_name: &str, value: &Value) -> String {
+    match value {
         Value::Null => String::new(),
         Value::Bool(b) => b.to_string(),
         Value::String(s) => s.clone(),
@@ -110,10 +112,8 @@ fn setting_to_s(type_name: &str, value: &Value) -> Result<String, Unsupported> {
             crate::ruby::float_to_s(n.as_f64().unwrap_or_default())
         }
         Value::Number(n) => n.to_string(),
-        Value::Array(_) | Value::Object(_) => {
-            return Err(Unsupported("an objects theme setting in SCSS (169a)"));
-        }
-    })
+        Value::Array(_) | Value::Object(_) => crate::ruby::inspect_json(value),
+    }
 }
 
 /// `Theme#scss_variables`: the theme's upload variables, then its
@@ -166,7 +166,7 @@ pub async fn scss_variables(
         .await?;
         out.push_str(&scss::to_scss_variable(
             &setting.name,
-            &setting_to_s(setting.type_name, &value)?,
+            &setting_to_s(setting.type_name, &value),
         ));
     }
     Ok(Some(out))
@@ -286,14 +286,19 @@ fn target_field(target: &str) -> Option<(i32, &'static str)> {
 
 /// A theme's stylesheet for a target (`compile_asset` with its
 /// variables and entry point), None when the theme has no SCSS for it.
-/// A compile error is the comment Rails serves in its place.
+/// A compile error is the comment Rails serves in its place. A `_rtl`
+/// target is the same compile flipped by Rtlcss.
 pub async fn theme_css(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
     theme_id: i32,
     target: &str,
 ) -> Result<Option<String>, AppError> {
-    let Some((target_id, name)) = target_field(target) else {
+    let (base, rtl) = match target.strip_suffix("_rtl") {
+        Some(base) => (base, true),
+        None => (target, false),
+    };
+    let Some((target_id, name)) = target_field(base) else {
         return Ok(None);
     };
     let fields = scss_fields(conn, theme_id).await?;
@@ -322,6 +327,7 @@ pub async fn theme_css(
     let files = theme_files(conn, theme_id).await?;
     let annotation = format!("{target}_{theme_id}.css.map");
     Ok(Some(match compile(&source, Some(&files), &annotation)? {
+        Ok(css) if rtl => super::postcss::flip(&css)?,
         Ok(css) => css,
         Err(e) => format!("/* SCSS compilation error: {e} */"),
     }))
@@ -436,12 +442,14 @@ pub async fn color_definitions(
 }
 
 /// The theme stylesheets a page links (`discourse_stylesheet_link_tag`
-/// for common_theme, mobile_theme and desktop_theme): one per theme of
-/// `theme_id` with SCSS for the target.
+/// for common_theme, mobile_theme and desktop_theme with `supports_rtl`):
+/// one per theme of `theme_id` with SCSS for the target, the `_rtl`
+/// targets for a right-to-left locale.
 pub async fn link_tags(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
     theme_id: i32,
+    rtl: bool,
 ) -> Result<String, AppError> {
     let ids = theme_ids(conn, theme_id).await?;
     let host = cx.urls().current_hostname()?;
@@ -452,9 +460,14 @@ pub async fn link_tags(
         ("mobile_theme", "(width < 40rem)"),
         ("desktop_theme", "(width >= 40rem)"),
     ] {
+        let target = if rtl {
+            format!("{target}_rtl")
+        } else {
+            target.to_string()
+        };
         let mut sheets = Vec::new();
         for id in &ids {
-            let Some(css) = theme_css(conn, cx, *id, target).await? else {
+            let Some(css) = theme_css(conn, cx, *id, &target).await? else {
                 continue;
             };
             let Some(theme) = theme_row(conn, *id).await? else {
@@ -489,13 +502,18 @@ mod tests {
 
     #[test]
     fn settings_write_as_ruby_to_s() {
-        assert_eq!(setting_to_s("bool", &Value::Bool(true)).unwrap(), "true");
-        assert_eq!(setting_to_s("integer", &serde_json::json!(5)).unwrap(), "5");
+        assert_eq!(setting_to_s("bool", &Value::Bool(true)), "true");
+        assert_eq!(setting_to_s("integer", &serde_json::json!(5)), "5");
+        assert_eq!(setting_to_s("float", &serde_json::json!(1.0)), "1.0");
+        assert_eq!(setting_to_s("upload", &Value::Null), "");
+        // What Ruby 3.4 prints on the reference for
+        // `[{"a"=>1.0,"b"=>nil,"c"=>[true, "x\""],"d e"=>{}}].to_s`.
         assert_eq!(
-            setting_to_s("float", &serde_json::json!(1.0)).unwrap(),
-            "1.0"
+            setting_to_s(
+                "objects",
+                &serde_json::json!([{"a": 1.0, "b": null, "c": [true, "x\""], "d e": {}}])
+            ),
+            r#"[{"a" => 1.0, "b" => nil, "c" => [true, "x\""], "d e" => {}}]"#
         );
-        assert_eq!(setting_to_s("upload", &Value::Null).unwrap(), "");
-        assert!(setting_to_s("objects", &serde_json::json!([{"a": 1}])).is_err());
     }
 }
