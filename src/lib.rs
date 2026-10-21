@@ -74,6 +74,7 @@ pub mod category_type_config;
 pub mod category_types;
 pub mod category_writes;
 pub mod clock;
+pub mod color_mode;
 pub mod color_scheme;
 pub mod composer_view;
 pub mod config;
@@ -311,6 +312,7 @@ pub fn app(state: AppState) -> Router {
             translation_overrides,
         ))
         .layer(axum::middleware::from_fn(mobile::layer))
+        .layer(axum::middleware::from_fn(color_mode::layer))
         .layer(axum::middleware::from_fn(routes::method_override))
         .layer(axum::middleware::from_fn(routes::request_format))
         .layer(axum::middleware::from_fn_with_state(

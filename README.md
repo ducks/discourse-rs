@@ -110,6 +110,11 @@ before the snapshot), as the reply-by-email cases do for their reply key.
 `ignore` lists JSON pointers into the recording (`*` for any key or index)
 left out on both sides, for what Rails leaves to chance, such as a topic's
 random suggested topics.
+A page case can set `cookies` (put in the jar after the login, such as the
+interface color selector's `forced_color_mode`) and compare only what its
+`extract` regexes capture from the HTML, a line a match with the groups
+joined by `|`, so the two sides' differing markup and URLs are left out
+(the head's color scheme tags in `color_modes/`).
 A case with `s3` runs on an S3-compatible server (MinIO, from shell.nix):
 its settings point the site at `http://minio.localhost:9122`, its
 `buckets` start empty, its `objects` (`"bucket/key": fixture`) are put

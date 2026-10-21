@@ -1,0 +1,34 @@
+{
+  "name": "anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-21T03:15:43.471765",
+  "transaction_started_at": "2026-10-21T03:15:39.421013",
+  "responses": [
+    {
+      "status": 200,
+      "body": "theme-color| media=\"(prefers-color-scheme: light)\"|#fff\ntheme-color| media=\"(prefers-color-scheme: dark)\"|#111111\ncolor-scheme||light dark\n(prefers-color-scheme: light)|light-scheme|\n(prefers-color-scheme: dark)|dark-scheme| data-scheme-id=\"13\""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ],
+  "recorded_from": {
+    "case": "4810d34bc8967903116afa4a628fd3d10e09f2e201aabe030d507ed596cbdf29",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

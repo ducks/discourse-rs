@@ -10,6 +10,7 @@
     {%- if !chrome.apple_touch_icon_url.is_empty() %}
     <link rel="apple-touch-icon" type="image/png" href="{{ chrome.apple_touch_icon_url }}">
     {%- endif %}
+    {{- chrome.color_head.meta|safe }}
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
     <meta name="description" content="{{ crawler.description }}">
     {% if !crawler.canonical.is_empty() %}<link rel="canonical" href="{{ crawler.canonical }}">{% endif %}
@@ -38,7 +39,13 @@
     <meta name="bus-position" content="{{ bus_position }}">
     {% endif %}
     {% block head %}{% endblock %}
-    <link rel="stylesheet" href="{{ base_path }}/assets/color_definitions_light.css">
+    {#- discourse_color_scheme_stylesheets (crate::color_mode); the light
+        palette alone on a page drawn without the chrome. -#}
+    {%- if chrome.color_head.links.is_empty() %}
+    <link href="{{ base_path }}/assets/color_definitions_light.css" media="all" rel="stylesheet" class="light-scheme"/>
+    {%- else %}
+    {{ chrome.color_head.links|safe }}
+    {%- endif %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse.css") }}">
     {#- Styles of the pages not ported to Discourse's look yet. -#}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">

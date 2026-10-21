@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c. Phases
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c, 258a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -76,7 +76,7 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-46 passing). Each step below fails today and is ignored with the item
+47 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
@@ -89,7 +89,7 @@ Core forum:
   127
 - [ ] The interface preferences page is a 500 once a palette is user
   selectable (offers_light_and_dark_palettes): 169
-- [ ] No dark mode: pages link only the light color definitions
+- [x] No dark mode: pages linked only the light color definitions
   (switches_to_dark_mode): 258
 
 Chat: every step passes (chat page, a channel, sending, another member
@@ -583,7 +583,7 @@ then by what running a forum needs (milestone 6). Briefs:
     fields' code editor (90g7; routes/themes.rs:77); the setup wizard's
     and the admin design wizard's pages (routes/wizard.rs:62,163,247);
     the admin user's badges and TL3 requirements tabs
-    (routes/admin_pages.rs:415); login's Discourse ID tab
+    (routes/admin_pages.rs:423); login's Discourse ID tab
     (routes/admin_config.rs:776); a search log term's page (90g5); the
     non-XHR requests to JSON-only admin endpoints that Ember would
     answer with its shell (the "(Ember)" refusals:
@@ -2112,7 +2112,7 @@ have handlers now.
     Psych-compatible YAML emitter
 180. `feat/about-rest` S: the about page's visitor stats, banner image
     and localized settings (about.rs:125,302; about_view.rs:151), the
-    welcome banner below the site header (html.rs:1643)
+    welcome banner below the site header (html.rs:1665)
 181. `feat/badges-rest` S: badge counts past a thousand, emoji in long
     descriptions, more grants than the first page, the title picker,
     grants without a time or topic (badges_page.rs:20,42,352,391,403,
@@ -2843,16 +2843,30 @@ route table has been made, so this list may be short.
     records its IncomingLink (another site's referer, a `?u=` share
     link). Left: referers other than plain http(s) URLs (175).
     Found by tests/demo_smoke.rs (opening_a_topic_records_the_visit)
-258. `feat/color-modes` M: pages link only the light color definitions
-    (templates/layout.html:122; templates/no_ember.html:41). The default
-    theme's dark palette, served at /assets/color_definitions_dark.css
-    (routes/stylesheets.rs), is never linked with
-    `media="(prefers-color-scheme: dark)"`; interface_color_mode (light,
-    dark, auto), a member's color_scheme_id and dark_scheme_id, and the
-    forced_color_mode cookie of the interface_color_selector toggle
-    (header or sidebar footer, not drawn) don't change the page.
-    Choosing a palette in the interface preferences is 169's refusal.
-    Found by tests/demo_smoke.rs (switches_to_dark_mode)
+258. ~~`feat/color-modes`~~ (done) M: every page's head links the light
+    and dark color definitions with their media queries (all or none
+    when forced) and draws the theme-color and color-scheme meta tags
+    (color_mode.rs: ApplicationHelper's scheme_id, dark_scheme_id,
+    dark_color_scheme?, forced_light_mode? and forced_dark_mode?), from
+    interface_color_mode, the member's color_scheme_id and
+    dark_scheme_id, and the color_scheme_id, dark_scheme_id and
+    forced_color_mode cookies; a member's own palette is served at
+    /assets/color_definitions_scheme/:id.css. The interface color
+    selector is drawn in the header or the sidebar footer
+    (interface_color_selector) and switches the mode
+    (static/js/interface-color.js). Measured in
+    parity/writes/color_modes. Choosing a palette in the interface
+    preferences is 169's refusal. Found by tests/demo_smoke.rs
+    (switches_to_dark_mode). Left, split into 258a.
+    `feat/color-modes-themes` S: the helpers read the default theme, as
+    the whole port does; Rails reads the request's theme
+    (request.env[:resolved_theme_id]: a member's theme_ids, the
+    theme_ids cookie, preview_theme_id, none under safe mode), so a
+    member on another user selectable theme gets the default theme's
+    palettes. The dark logos (site_logo_dark_url and
+    site_mobile_logo_dark_url in Header::Logo's light/dark picture,
+    application_logo_dark_url, a category's uploaded_logo_dark) are not
+    drawn, so a dark page keeps the light logos
 
 ### Phase 11: the bundled plugins' gaps (210)
 
@@ -3045,7 +3059,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     validation, results visibility, public defaulting to
     poll_default_public, bar or pie, the groups chooser, automatic close,
     dynamic, Insert as BBCode; the menu's condition gains
-    pm_with_non_human_user (html.rs:1099). The rich editor's node view
+    pm_with_non_human_user (html.rs:1118). The rich editor's node view
     follows 196
 230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
     (the options without ids, the link_to_poll link, polls of trashed
@@ -3127,7 +3141,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     `/discourse-presence/translate/<post>` subscription and announce
     (static/js/topic-presence.js:132-141,171-179), the
     presence.translating strings in the composer's data
-    (html.rs:1078-1084). The whisper state follows 196's whisper toggle
+    (html.rs:1097-1103). The whisper state follows 196's whisper toggle
     (topic-presence.js:139)
 239. `feat/local-dates-cook-rest` S: the dates the markdown refuses and
     Rails cooks, each recorded against Rails: times moment reads through

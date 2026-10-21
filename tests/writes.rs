@@ -1851,6 +1851,13 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         let (_, csrf) = client.send(Method::GET, "/session/csrf.json", None).await;
         client.csrf = csrf["csrf"].as_str().map(str::to_string);
     }
+    // `cookies`: set after the login, as the recorder sets them in its jar.
+    for (name, value) in case["cookies"].as_object().into_iter().flatten() {
+        client.cookies.retain(|(n, _)| n != name);
+        client
+            .cookies
+            .push((name.clone(), value.as_str().unwrap_or("").to_string()));
+    }
     apply_settings(&db.pool, &client.state, case).await;
     // `remote`: the other site's pages the case fetches, served as the
     // recorder served them; held until the case is done.
@@ -2179,6 +2186,34 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 let to = rest.find(end).map_or(rest.len(), |i| i + end.len());
                 response["body"] = Value::String(TOKEN.replace_all(&rest[..to], "").into_owned());
             }
+        }
+    }
+    // `extract` (regexes): an HTML page is compared by what each regex
+    // captures, every match's groups joined by `|`, a line a match: the
+    // tags of the layout's head (the color scheme stylesheets) less the
+    // parts each side names its own way (the stylesheets' URLs). The
+    // recorder keeps Rails' page that way already.
+    if let Some(patterns) = case["extract"].as_array() {
+        let patterns: Vec<regex::Regex> = patterns
+            .iter()
+            .map(|p| regex::Regex::new(p.as_str().unwrap_or("")).expect("extract regex"))
+            .collect();
+        for response in ours["responses"].as_array_mut().into_iter().flatten() {
+            let Some(body) = response["body"].as_str() else {
+                continue;
+            };
+            let mut lines = Vec::new();
+            for pattern in &patterns {
+                for captures in pattern.captures_iter(body) {
+                    let groups: Vec<&str> = captures
+                        .iter()
+                        .skip(1)
+                        .map(|g| g.map_or("", |m| m.as_str()))
+                        .collect();
+                    lines.push(groups.join("|"));
+                }
+            }
+            response["body"] = Value::String(lines.join("\n"));
         }
     }
     for doc in [&mut rails, &mut ours] {

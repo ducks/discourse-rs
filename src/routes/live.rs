@@ -877,6 +877,7 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
                 active,
                 member: member.as_ref(),
                 plugin_sections: "",
+                color_selector: "",
             },
         )?;
         out.push_str(&links.concat());
@@ -1069,6 +1070,7 @@ async fn chat_chrome(live: &mut Live, id: Option<Position>) -> Result<(), AppErr
         active: &active,
         member: member.as_ref(),
         plugin_sections: "",
+        color_selector: "",
     };
     let Some(chat) = crate::plugins::chat::view::load(
         &mut conn,

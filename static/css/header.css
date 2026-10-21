@@ -248,3 +248,10 @@
   .header-dropdown-toggle:not(.user-menu-panel) .d-icon {
   font-size: var(--font-up-3);
 }
+
+/* header.scss:307: the interface color selector's menu, tucked under the
+   header icon */
+.fk-d-menu.interface-color-selector-content.-expanded {
+  margin-top: -0.75em;
+  z-index: 1000;
+}

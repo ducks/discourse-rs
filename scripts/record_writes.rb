@@ -216,10 +216,13 @@ def clear_redis_state
   # minute ban after a size mismatch, which would refuse later cases.
   # user-profile-view:*: UserProfileView.add's once-a-day marks, which
   # would leave out a profile an earlier case viewed.
+  # user:<id>:<date>: User.should_update_last_seen?'s mark, kept
+  # active_user_rate_limit_secs, which would leave out a page load's
+  # last_seen_at and visit when an earlier case loaded one as the same user.
   # new_features*, latest_new_feature_created_at, refresh_latest_new_feature_lock,
   # last_viewed_feature_dates_for_users_hash: DiscourseUpdates' feed and
   # what each admin has seen of it (a case's `redis`, its requests).
-  %w[ban_user_from_external_uploads_* user-profile-view:* readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
+  %w[ban_user_from_external_uploads_* user-profile-view:* user:*:????-??-?? readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -506,6 +509,9 @@ cases.each do |c|
       raise "login as #{c["user"]} failed: #{session.response.status}" if session.response.status != 200
       Scheduler::Defer.do_all_work
     end
+    # `cookies`: set in the session's jar after the login (the
+    # forced_color_mode cookie the interface color selector writes).
+    (c["cookies"] || {}).each { |name, value| session.cookies[name] = value }
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
@@ -589,6 +595,15 @@ cases.each do |c|
           else
             (JSON.parse(body) rescue body)
           end
+        # `extract`: an HTML page kept as what the regexes capture, every
+        # match's groups joined by `|`, a line a match (tests/writes.rs
+        # extracts the same from the port's page).
+        if c["extract"] && body.is_a?(String)
+          body =
+            c["extract"]
+              .flat_map { |pattern| body.scan(Regexp.new(pattern)).map { |groups| Array(groups).map(&:to_s).join("|") } }
+              .join("\n")
+        end
         response = { status: session.response.status, body: body }
         # The rate limit headers, kept only when a response has them, and
         # those the case names in `keep_headers` (a redirect's Location, as
@@ -658,6 +673,8 @@ cases.each do |c|
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
     record[:keep_headers] = c["keep_headers"] if c["keep_headers"]
     record[:fragment] = c["fragment"] if c["fragment"]
+    record[:extract] = c["extract"] if c["extract"]
+    record[:cookies] = c["cookies"] if c["cookies"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     if c["s3"]
       record[:s3] = c["s3"]

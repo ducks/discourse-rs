@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE themes SET color_scheme_id = 13, dark_color_scheme_id = NULL WHERE id = -1"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ]
+}

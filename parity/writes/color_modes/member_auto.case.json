@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ]
+}

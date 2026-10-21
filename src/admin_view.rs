@@ -1022,7 +1022,7 @@ fn icon_button(class: &str, icon_name: &str, title: Option<&str>) -> String {
 /// collapsed until opened (collapsedByDefault) unless it holds `active`,
 /// the current page's link (expandActiveSection). sidebar.js applies the
 /// state the member stored.
-pub fn panel(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
+pub fn panel(cx: &AdminCx, active: &str, color_selector: &str) -> Result<String, SettingError> {
     let mut out = String::from("<div class=\"sidebar-sections admin-panel\">");
     out.push_str("<div class=\"sidebar-panel-header\"><div class=\"sidebar-panel-header__row\">");
     out.push_str(&format!(
@@ -1119,7 +1119,7 @@ pub fn panel(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
         ));
     }
     out.push_str("</div>");
-    out.push_str(&crate::sidebar::footer(cx.i18n, false));
+    out.push_str(&crate::sidebar::footer(cx.i18n, false, color_selector));
     Ok(out)
 }
 
@@ -1182,13 +1182,20 @@ fn link_html(cx: &AdminCx, l: &Link, active: bool) -> String {
 }
 
 /// The desktop sidebar with the admin panel.
-pub fn sidebar(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
-    Ok(crate::sidebar::wrap_sidebar(cx.i18n, &panel(cx, active)?))
+pub fn sidebar(cx: &AdminCx, active: &str, color_selector: &str) -> Result<String, SettingError> {
+    Ok(crate::sidebar::wrap_sidebar(
+        cx.i18n,
+        &panel(cx, active, color_selector)?,
+    ))
 }
 
 /// The mobile view's header menu with the admin panel.
-pub fn hamburger(cx: &AdminCx, active: &str) -> Result<String, SettingError> {
-    Ok(crate::sidebar::wrap_hamburger(&panel(cx, active)?))
+pub fn hamburger(cx: &AdminCx, active: &str, color_selector: &str) -> Result<String, SettingError> {
+    Ok(crate::sidebar::wrap_hamburger(&panel(
+        cx,
+        active,
+        color_selector,
+    )?))
 }
 
 /// A breadcrumb: its label and path.
@@ -1349,7 +1356,7 @@ mod tests {
             base_path: "",
             viewer: &viewer,
         };
-        panel(&cx, active).unwrap()
+        panel(&cx, active, "").unwrap()
     }
 
     #[test]

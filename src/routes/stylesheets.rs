@@ -56,12 +56,16 @@ pub async fn light(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let theme_id = settings.get("default_theme_id")?.to_i();
-    let scheme_id: Option<i32> =
-        sqlx::query_scalar("SELECT color_scheme_id FROM themes WHERE id = $1")
-            .bind(theme_id as i32)
-            .fetch_optional(&mut *conn)
-            .await?
-            .flatten();
+    // theme.color_scheme: a scheme that is gone (or a remote copy) is the
+    // base palette, as Stylesheet::Manager falls back to it.
+    let scheme_id: Option<i32> = sqlx::query_scalar(
+        "SELECT cs.id FROM themes t \
+         JOIN color_schemes cs ON cs.id = t.color_scheme_id AND NOT cs.remote_copy \
+         WHERE t.id = $1",
+    )
+    .bind(theme_id as i32)
+    .fetch_optional(&mut *conn)
+    .await?;
     let body = scheme_css(&mut conn, scheme_id).await?;
     Ok(stylesheet(
         &headers,
@@ -91,6 +95,29 @@ pub async fn dark(State(state): State<AppState>, headers: HeaderMap) -> Result<R
         }
         None => Ok(StatusCode::NOT_FOUND.into_response()),
     }
+}
+
+/// `/assets/color_definitions_scheme/:id.css`: any other scheme a page
+/// links (a member's own light or dark palette, crate::color_mode).
+pub async fn scheme(
+    State(state): State<AppState>,
+    Path(file): Path<String>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let Some(id) = file
+        .strip_suffix(".css")
+        .and_then(|id| id.parse::<i32>().ok())
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let body = scheme_css(&mut conn, Some(id)).await?;
+    Ok(stylesheet(
+        &headers,
+        body.map(|css| css + &font_css(&state, &settings)),
+    ))
 }
 
 /// The font definitions Rails adds to every color definitions file.

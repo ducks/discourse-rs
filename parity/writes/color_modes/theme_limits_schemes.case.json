@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE color_schemes SET user_selectable = true WHERE id = 15",
+    "UPDATE user_options SET dark_scheme_id = 15 WHERE user_id = 3",
+    "UPDATE theme_modifier_sets SET only_theme_color_schemes = true WHERE theme_id = -1"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ]
+}

@@ -142,6 +142,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ("dates.js", JS, include_str!("../static/js/dates.js")),
     ("float.js", JS, include_str!("../static/js/float.js")),
     (
+        "interface-color.js",
+        JS,
+        include_str!("../static/js/interface-color.js"),
+    ),
+    (
         "auth-complete.js",
         JS,
         include_str!("../static/js/auth-complete.js"),
