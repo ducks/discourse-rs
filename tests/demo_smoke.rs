@@ -339,30 +339,51 @@ async fn user_id(db: &TestDb, username: &str) -> i32 {
         .unwrap()
 }
 
-/// Jobs every post enqueues whose refusal nobody sees on a demo's local
-/// content: pull_hotlinked_images downloads images from other sites
-/// (ROADMAP 140), crawl_topic_link fetches linked pages' titles (127).
-/// posting_runs_its_background_jobs holds them to account instead.
-const UNSEEN_JOBS: [&str; 2] = ["pull_hotlinked_images", "crawl_topic_link"];
-
 /// The job worker's turn: runs what the requests enqueued (post alerts,
-/// notifications, chat processing), and fails the step on a job that was
-/// refused or failed, but for `UNSEEN_JOBS`.
+/// notifications, chat processing, hotlinked images, link titles), and
+/// fails the step on a job that was refused or failed.
 async fn settle(db: &TestDb, state: &AppState) {
-    settle_except(db, state, &UNSEEN_JOBS).await;
-}
-
-async fn settle_except(db: &TestDb, state: &AppState, unseen: &[&str]) {
     discourse_rs::jobs::drain(state).await.unwrap();
     let failed: Vec<(String, String, String)> = sqlx::query_as(
-        "SELECT name, last_error, args::text FROM discourse_rs.jobs \
-         WHERE last_error IS NOT NULL AND NOT name = ANY($1)",
+        "SELECT name, last_error, args::text FROM discourse_rs.jobs WHERE last_error IS NOT NULL",
     )
-    .bind(unseen)
     .fetch_all(&db.pool)
     .await
     .unwrap();
     assert!(failed.is_empty(), "jobs failed: {failed:?}");
+}
+
+/// Another site for a post to link, kept off the internet: `html` at
+/// every path of http://fixtures.localhost:<port> (loopback, both
+/// families), which FinalDestination reaches as an allowed internal host
+/// on the S3 endpoint's port. Its base url.
+async fn linked_site(state: &AppState, html: &'static str) -> String {
+    let app = axum::Router::new().fallback(move || async move {
+        ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], html)
+    });
+    let (v4, v6) = loop {
+        let v4 = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = v4.local_addr().unwrap().port();
+        if let Ok(v6) = tokio::net::TcpListener::bind(("::1", port)).await {
+            break (v4, v6);
+        }
+    };
+    let base = format!(
+        "http://fixtures.localhost:{}",
+        v4.local_addr().unwrap().port()
+    );
+    for listener in [v4, v6] {
+        let app = app.clone();
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    }
+    for (name, value) in [
+        ("allowed_internal_hosts", "fixtures.localhost"),
+        ("s3_endpoint", base.as_str()),
+    ] {
+        let data_type = state.site_setting_defs.get(name).unwrap().data_type as i32;
+        common::set_setting(&state.pool, name, data_type, value).await;
+    }
+    base
 }
 
 /// A post in the fixture topic by someone other than `not_by`, which
@@ -729,20 +750,32 @@ async fn a_mention_notifies() {
 }
 
 /// Every job a reply with a link and an image enqueues runs, none
-/// refused.
+/// refused, and the linked page's title is crawled.
 #[tokio::test]
-#[ignore = "the pull_hotlinked_images and crawl_topic_link jobs are refused, ROADMAP 140 and 127"]
 async fn posting_runs_its_background_jobs() {
     let (db, state) = app().await;
+    let site = linked_site(
+        &state,
+        "<html><head><title>The slides</title></head></html>",
+    )
+    .await;
     let mut user1 = member(&state, "user1").await;
     let upload = user1
         .upload("/uploads.json", &[("upload_type", "composer")], "small.png")
         .await;
     ok("POST /uploads.json", &upload);
     let short_url = upload.json()["short_url"].as_str().unwrap().to_string();
-    let raw = format!("The slides are at https://example.com/slides and\n\n![small]({short_url})");
+    let raw = format!("The slides are at {site}/slides and\n\n![small]({short_url})");
     reply_to(&mut user1, TOPIC as i64, &raw).await;
-    settle_except(&db, &state, &[]).await;
+    settle(&db, &state).await;
+    let title: Option<String> = sqlx::query_scalar(
+        "SELECT title FROM topic_links WHERE url = $1 AND crawled_at IS NOT NULL",
+    )
+    .bind(format!("{site}/slides"))
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(title.as_deref(), Some("The slides"));
 }
 
 /// A reply that links another topic still alerts the people it mentions

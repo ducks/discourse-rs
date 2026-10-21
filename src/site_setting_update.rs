@@ -656,6 +656,26 @@ pub async fn log_site_setting_change(
     log_change(conn, actor_id, name, Some(previous), new_value, None).await
 }
 
+/// StaffActionLogger#log_site_setting_change with `details:`.
+pub async fn log_site_setting_change_details(
+    conn: &mut PgConnection,
+    actor_id: i32,
+    name: &str,
+    previous: &str,
+    new_value: &str,
+    details: &str,
+) -> Result<(), AppError> {
+    log_change(
+        conn,
+        actor_id,
+        name,
+        Some(previous),
+        new_value,
+        Some(details),
+    )
+    .await
+}
+
 async fn log_change(
     conn: &mut PgConnection,
     actor_id: i32,

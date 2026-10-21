@@ -227,7 +227,7 @@ fn parent_of(node: &Handle) -> Option<Handle> {
     parent
 }
 
-fn ancestors(node: &Handle) -> Vec<Handle> {
+pub(crate) fn ancestors(node: &Handle) -> Vec<Handle> {
     let mut out = Vec::new();
     let mut current = parent_of(node);
     while let Some(p) = current {
@@ -329,6 +329,60 @@ enum Edit {
     },
 }
 
+/// `get_size(url)` uncached: an upload's own size, else the image's over
+/// HTTP (FastImage). The site's own images count as unreachable, as the
+/// reference's container finds its own public URL (FastImage gives nil
+/// there). None for a url that isn't http(s), which Rails doesn't cache;
+/// Some(size) otherwise.
+pub(crate) async fn image_size(
+    conn: &mut PgConnection,
+    urls: &Urls<'_>,
+    src: &str,
+) -> Result<Option<Option<(i64, i64)>>, CookError> {
+    let mut absolute = src.to_string();
+    if src.starts_with('/') && !src.starts_with("//") {
+        absolute = format!("{}{src}", urls.base_url_no_prefix()?);
+    }
+    if absolute.starts_with("//") {
+        absolute = format!("{}:{absolute}", urls.scheme()?);
+    }
+    // is_valid_image_url?
+    if !crate::onebox::uri::RubyUri::parse(&absolute)
+        .is_some_and(|u| matches!(u.scheme.as_deref(), Some("http" | "https")))
+    {
+        return Ok(None);
+    }
+    let upload = match crate::upload_references::get_from_url(&mut *conn, &absolute).await? {
+        Some((id, _)) => crate::optimized_images::Upload::find(&mut *conn, id).await?,
+        None => None,
+    };
+    if let Some(upload) = upload.filter(|u| u.width.is_some_and(|w| w > 0)) {
+        return Ok(Some(Some((
+            i64::from(upload.width.unwrap_or(0)),
+            i64::from(upload.height.unwrap_or(0)),
+        ))));
+    }
+    let own_host = urls.current_hostname()?;
+    let host = absolute
+        .split_once("://")
+        .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
+    if host == Some(own_host.as_str()) {
+        return Ok(Some(None));
+    }
+    let fetcher = crate::final_destination::Fetcher {
+        settings: urls.settings,
+        urls: Urls {
+            config: urls.config,
+            settings: urls.settings,
+        },
+    };
+    Ok(Some(
+        crate::fast_image::size(&fetcher, &absolute)
+            .await
+            .map_err(CookError::App)?,
+    ))
+}
+
 /// What the image steps read besides the document.
 struct ImageSteps<'a> {
     settings: &'a SiteSettings,
@@ -340,6 +394,8 @@ struct ImageSteps<'a> {
     /// responsive_post_image_sizes over 1, ascending.
     ratios: Vec<f64>,
     min_ratio_to_crop: f64,
+    /// `@size_cache`: get_size's answers by url.
+    size_cache: std::sync::Mutex<std::collections::HashMap<String, Option<(i64, i64)>>>,
 }
 
 impl ImageSteps<'_> {
@@ -355,47 +411,31 @@ impl ImageSteps<'_> {
         }
     }
 
-    /// `get_size(url)`: an upload's own size. Anything else is read over
-    /// HTTP (FastImage): another site's is refused; the site's own (a
-    /// letter avatar, say) counts as unreachable, as the reference's
-    /// container finds its own public URL (FastImage gives nil).
+    /// `get_size(url)`, cached by url (`@size_cache`).
     async fn get_size(
         &self,
         conn: &mut PgConnection,
         src: &str,
     ) -> Result<Option<(i64, i64)>, CookError> {
-        let mut absolute = src.to_string();
-        if src.starts_with('/') && !src.starts_with("//") {
-            absolute = format!("{}{src}", self.urls.base_url_no_prefix()?);
+        if let Some(cached) = self.cached_size(src) {
+            return Ok(cached);
         }
-        if absolute.starts_with("//") {
-            absolute = format!("{}:{absolute}", self.urls.scheme()?);
+        let size = image_size(&mut *conn, &self.urls, src).await?;
+        if let Some(size) = size {
+            self.size_cache
+                .lock()
+                .expect("the size cache is never poisoned")
+                .insert(src.to_string(), size);
         }
-        if let Some(upload) = self.upload_for(&mut *conn, &absolute).await?
-            && let (Some(w), Some(h)) = (upload.width, upload.height)
-            && w > 0
-        {
-            return Ok(Some((i64::from(w), i64::from(h))));
-        }
-        let own_host = self.urls.current_hostname()?;
-        let host = absolute
-            .split_once("://")
-            .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
-        if host == Some(own_host.as_str()) {
-            return Ok(None);
-        }
-        Err(Unsupported("sizing images from other sites (FastImage over HTTP)").into())
+        Ok(size.flatten())
     }
 
-    /// Whether an image's URL is on the site's own host (or relative).
-    fn own_site(&self, src: &str) -> Result<bool, CookError> {
-        if src.starts_with('/') && !src.starts_with("//") {
-            return Ok(true);
-        }
-        let host = src
-            .split_once("//")
-            .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
-        Ok(host == Some(self.urls.current_hostname()?.as_str()))
+    fn cached_size(&self, src: &str) -> Option<Option<(i64, i64)>> {
+        self.size_cache
+            .lock()
+            .expect("the size cache is never poisoned")
+            .get(src)
+            .copied()
     }
 
     /// `get_size_from_attributes(img)`
@@ -470,24 +510,10 @@ impl ImageSteps<'_> {
                 i64::from(u.height.unwrap_or(0)),
             ),
             None => {
-                // An image from elsewhere: Rails reads its size over HTTP,
-                // which past this point only decides the animated class.
-                if gif_source(&img.src) {
-                    return Err(Unsupported(
-                        "sizing images from other sites (FastImage over HTTP)",
-                    )
-                    .into());
-                }
-                // get_size(src): the site's own image can't be reached
-                // ("Can't reach ... to get its dimension"), so it stops here.
-                let own = self
-                    .get_size(&mut *conn, &img.src.clone())
-                    .await
-                    .ok()
-                    .flatten();
-                match (own, user.or(limit)) {
-                    (Some(size), _) => size,
-                    (None, Some(size)) if !self.own_site(&img.src)? => size,
+                // `(get_size(src) || [0, 0])`: an image that can't be
+                // reached (or sized) is left as limit_size! made it.
+                match self.get_size(&mut *conn, &img.src.clone()).await? {
+                    Some((w, h)) if w != 0 && h != 0 => (w, h),
                     _ => return Ok(edits),
                 }
             }
@@ -854,6 +880,7 @@ pub(crate) async fn post_process(
             ratios.into_iter().filter(|r| *r > 1.0).collect()
         },
         min_ratio_to_crop: settings.get("min_ratio_to_crop")?.to_f(),
+        size_cache: Default::default(),
     };
     let image_edits = post_process_images(conn, &steps, html, post_id).await?;
     let marks = mark_quotes(conn, html).await?;

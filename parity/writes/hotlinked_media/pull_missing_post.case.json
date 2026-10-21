@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "requests": [],
+  "enqueue": [
+    ["pull_hotlinked_images", {"post_id": 999999}]
+  ],
+  "run_jobs": ["pull_hotlinked_images"]
+}

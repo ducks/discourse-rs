@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "settings": {"download_remote_images_to_local": true, "download_remote_images_threshold": 0},
+  "setup": [
+    "UPDATE posts SET cooked = '<p>Remote <img src=\"http://fixtures.localhost:8099/cat.png\"></p>' WHERE id = 36",
+    "INSERT INTO post_hotlinked_media (post_id, url, status, created_at, updated_at) VALUES (36, '//fixtures.localhost:8099/cat.png', 'download_failed', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [],
+  "enqueue": [
+    ["pull_hotlinked_images", {"post_id": 36}]
+  ],
+  "run_jobs": ["pull_hotlinked_images"]
+}

@@ -1437,42 +1437,101 @@ pub async fn post_process(
     }
     let max_width = site.settings.get("max_image_width")?.to_f();
     let max_height = site.settings.get("max_image_height")?.to_f();
-    let dom = parse(html);
-    let (elements, _) = marked_links(&dom);
-    // The onebox documents, kept until the cooked is serialized: an RcDom
-    // clears its nodes' children when dropped.
-    let mut fragments: Vec<RcDom> = Vec::new();
-    for (element, outcome) in elements.iter().zip(outcomes) {
-        let is_onebox = attr(element, "class").as_deref() == Some("onebox");
-        match outcome {
-            None => {}
-            Some(Outcome::Unmark) => remove_class(
-                element,
-                if is_onebox {
-                    "onebox"
-                } else {
-                    "inline-onebox-loading"
-                },
-            ),
-            Some(Outcome::Onebox(html)) => {
-                let fragment = parse(&html);
-                apply(element, &fragment);
-                fragments.push(fragment);
-            }
-            Some(Outcome::Inline(title)) => {
-                // process_inline_onebox
-                if let Some(title) = title {
-                    set_children(element, vec![new_text(&title)]);
-                    add_class(element, "inline-onebox");
+    // The document with its oneboxes, and the oneboxed images limit_size!
+    // has to read the size of (get_size), read after it is let go.
+    let (mut out, to_size) = {
+        let dom = parse(html);
+        let (elements, _) = marked_links(&dom);
+        // The onebox documents, kept until the cooked is serialized: an RcDom
+        // clears its nodes' children when dropped.
+        let mut fragments: Vec<RcDom> = Vec::new();
+        for (element, outcome) in elements.iter().zip(outcomes) {
+            let is_onebox = attr(element, "class").as_deref() == Some("onebox");
+            match outcome {
+                None => {}
+                Some(Outcome::Unmark) => remove_class(
+                    element,
+                    if is_onebox {
+                        "onebox"
+                    } else {
+                        "inline-onebox-loading"
+                    },
+                ),
+                Some(Outcome::Onebox(html)) => {
+                    let fragment = parse(&html);
+                    apply(element, &fragment);
+                    fragments.push(fragment);
                 }
-                remove_class(element, "inline-onebox-loading");
+                Some(Outcome::Inline(title)) => {
+                    // process_inline_onebox
+                    if let Some(title) = title {
+                        set_children(element, vec![new_text(&title)]);
+                        add_class(element, "inline-onebox");
+                    }
+                    remove_class(element, "inline-onebox-loading");
+                }
             }
         }
+        let to_size = unsized_oneboxed_images(&dom);
+        if to_size.is_empty() {
+            oneboxed_images(&dom, max_width, max_height, &Default::default())?;
+        }
+        (crate::pretty_text::cleanup::to_html(&dom), to_size)
+    };
+    if !to_size.is_empty() {
+        let mut sizes = std::collections::HashMap::new();
+        for src in to_size {
+            if sizes.contains_key(&src) {
+                continue;
+            }
+            let size =
+                crate::pretty_text::cooked_post_processor::image_size(&mut *conn, &site.urls, &src)
+                    .await
+                    .map_err(|e| match e {
+                        crate::pretty_text::CookError::App(e) => e,
+                        e => AppError::from(std::io::Error::other(e.to_string())),
+                    })?;
+            sizes.insert(src, size.flatten());
+        }
+        let dom = parse(&out);
+        oneboxed_images(&dom, max_width, max_height, &sizes)?;
+        out = crate::pretty_text::cleanup::to_html(&dom);
     }
-    oneboxed_images(&dom, max_width, max_height)?;
-    let out = crate::pretty_text::cleanup::to_html(&dom);
-    drop(fragments);
     Ok(out)
+}
+
+/// `img["class"] = img["class"].to_s + " name"`: appended with its space,
+/// even to no class.
+fn append_class(node: &Handle, name: &str) {
+    let classes = attr(node, "class").unwrap_or_default();
+    set_attr(node, "class", &format!("{classes} {name}"));
+}
+
+/// The oneboxed images (`.onebox-body img, .onebox img, img.onebox`), in
+/// document order.
+fn oneboxed(dom: &RcDom) -> Vec<Handle> {
+    all_elements(dom)
+        .into_iter()
+        .filter(|e| {
+            element_name(e) == Some("img")
+                && (has_class(e, "onebox")
+                    || ancestors(e)
+                        .iter()
+                        .any(|a| has_class(a, "onebox") || has_class(a, "onebox-body")))
+        })
+        .collect()
+}
+
+/// The srcs of the oneboxed images without both a width and a height.
+fn unsized_oneboxed_images(dom: &RcDom) -> Vec<String> {
+    oneboxed(dom)
+        .iter()
+        .filter_map(|img| {
+            let src = attr(img, "src").filter(|s| !crate::ruby::is_blank(s))?;
+            let num = |name: &str| attr(img, name).map_or(0, |v| crate::ruby::to_i(&v));
+            (num("width") <= 0 || num("height") <= 0).then_some(src)
+        })
+        .collect()
 }
 
 /// `ImageSizer.resize`
@@ -1496,33 +1555,54 @@ fn ancestors(node: &Handle) -> Vec<Handle> {
 }
 
 /// `post_process_oneboxes`' pass over the oneboxed images (`.onebox-body
-/// img, .onebox img, img.onebox`): sized (`limit_size!`), then a square
+/// img, .onebox img, img.onebox`): sized (`limit_size!`, `sizes` giving
+/// get_size's answer for those without both attributes), then a square
 /// one in a generic or topic onebox marked an avatar, a small one shown
-/// whole, any other wrapped to keep its aspect ratio.
-fn oneboxed_images(dom: &RcDom, max_width: f64, max_height: f64) -> Result<(), Unsupported> {
-    let images: Vec<Handle> = all_elements(dom)
-        .into_iter()
-        .filter(|e| {
-            element_name(e) == Some("img")
-                && (has_class(e, "onebox")
-                    || ancestors(e)
-                        .iter()
-                        .any(|a| has_class(a, "onebox") || has_class(a, "onebox-body")))
-        })
-        .collect();
-    for img in images {
-        if attr(&img, "src").is_none_or(|s| s.trim().is_empty()) {
+/// whole, any other wrapped to keep its aspect ratio, and one in an
+/// Instagram, tweet or scaled set of images sized by its parent.
+fn oneboxed_images(
+    dom: &RcDom,
+    max_width: f64,
+    max_height: f64,
+    sizes: &std::collections::HashMap<String, Option<(i64, i64)>>,
+) -> Result<(), Unsupported> {
+    for img in oneboxed(dom) {
+        let Some(src) = attr(&img, "src").filter(|s| !crate::ruby::is_blank(s)) else {
             continue;
-        }
+        };
         let num = |name: &str| attr(&img, name).map_or(0, |v| crate::ruby::to_i(&v));
-        let (w, h) = (num("width"), num("height"));
-        if w <= 0 || h <= 0 {
-            // Sized from the upload or by fetching the image.
-            return Err(Unsupported("oneboxed images without their size"));
-        }
-        let (w, h) = resize(w, h, max_width, max_height);
-        set_attr(&img, "width", &w.to_string());
-        set_attr(&img, "height", &h.to_string());
+        let (aw, ah) = (num("width"), num("height"));
+        // get_size_from_attributes(img) || get_size(src)
+        let size = if aw > 0 && ah > 0 {
+            Some((aw, ah))
+        } else {
+            let original = sizes.get(&src).copied().flatten();
+            match original {
+                Some((ow, oh)) if aw > 0 || ah > 0 => {
+                    let (ow, oh) = (ow as f64, oh as f64);
+                    Some(if aw > 0 {
+                        (aw, (oh * (aw as f64 / ow)).floor() as i64)
+                    } else {
+                        ((ow * (ah as f64 / oh)).floor() as i64, ah)
+                    })
+                }
+                other => other,
+            }
+        };
+        // ImageSizer.resize gives nil without a size: empty attributes.
+        let (w, h) = match size {
+            Some((w, h)) => resize(w, h, max_width, max_height),
+            None => (0, 0),
+        };
+        let shown = |n: i64| {
+            if size.is_some() {
+                n.to_string()
+            } else {
+                String::new()
+            }
+        };
+        set_attr(&img, "width", &shown(w));
+        set_attr(&img, "height", &shown(h));
         if has_class(&img, "onebox-avatar") {
             continue;
         }
@@ -1534,7 +1614,7 @@ fn oneboxed_images(dom: &RcDom, max_width: f64, max_height: f64) -> Result<(), U
             .as_ref()
             .and_then(|p| attr(p, "class"))
             .unwrap_or_default();
-        if parent_class.contains("onebox-body") {
+        if parent_class.contains("onebox-body") && w > 0 && h > 0 {
             if w == h {
                 let found = ancestors(&img).iter().any(|a| {
                     attr(a, "class").is_some_and(|c| {
@@ -1543,12 +1623,12 @@ fn oneboxed_images(dom: &RcDom, max_width: f64, max_height: f64) -> Result<(), U
                     })
                 });
                 if found {
-                    add_class(&img, "onebox-avatar");
+                    append_class(&img, "onebox-avatar");
                     continue;
                 }
             }
             if w < 64 && h < 64 {
-                add_class(&img, "onebox-full-image");
+                append_class(&img, "onebox-full-image");
             } else {
                 if let NodeData::Element { attrs, .. } = &img.data {
                     attrs
@@ -1569,8 +1649,18 @@ fn oneboxed_images(dom: &RcDom, max_width: f64, max_height: f64) -> Result<(), U
         } else if ["instagram-images", "tweet-images", "scale-images"]
             .iter()
             .any(|c| parent_class.contains(c))
+            && w > 0
+            && h > 0
         {
-            return Err(Unsupported("oneboxed images of other sites"));
+            if let NodeData::Element { attrs, .. } = &img.data {
+                attrs
+                    .borrow_mut()
+                    .retain(|a| &*a.name.local != "width" && &*a.name.local != "height");
+            }
+            if let Some(parent) = &parent {
+                set_attr(parent, "class", "aspect-image-full-size");
+                set_attr(parent, "style", &format!("--aspect-ratio:{w}/{h};"));
+            }
         }
     }
     Ok(())
@@ -1579,6 +1669,27 @@ fn oneboxed_images(dom: &RcDom, max_width: f64, max_height: f64) -> Result<(), U
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// CookedPostProcessor#post_process_oneboxes' image pass on the
+    /// reference, the same sizes in its @size_cache (max 690x500).
+    #[test]
+    fn sizes_oneboxed_images_as_rails() {
+        let html = "<aside class=\"onebox allowlistedgeneric\"><article class=\"onebox-body\"><img src=\"http://x.test/square.png\" class=\"thumbnail\"><img src=\"http://x.test/wide.png\" class=\"thumbnail\"><img src=\"http://x.test/tiny.png\"><img src=\"http://x.test/unknown.png\"><img src=\"http://x.test/wide.png\" width=\"320\"><a href=\"http://x.test/\"><img src=\"http://x.test/tall.png\" height=\"50\"></a></article></aside>\n<aside class=\"onebox\"><div class=\"tweet-images\"><img src=\"http://x.test/wide.png\"></div><div class=\"scale-images\"><a href=\"http://x.test/\"><img src=\"http://x.test/unknown.png\"></a></div></aside>\n<p><img class=\"onebox\" src=\"http://x.test/wide.png\"></p>";
+        let rails = "<aside class=\"onebox allowlistedgeneric\"><article class=\"onebox-body\"><img src=\"http://x.test/square.png\" class=\"thumbnail onebox-avatar\" width=\"100\" height=\"100\"><div class=\"aspect-image\" style=\"--aspect-ratio:690/388;\"><img src=\"http://x.test/wide.png\" class=\"thumbnail\"></div><img src=\"http://x.test/tiny.png\" width=\"40\" height=\"30\" class=\" onebox-full-image\"><img src=\"http://x.test/unknown.png\" width=\"\" height=\"\"><div class=\"aspect-image\" style=\"--aspect-ratio:320/180;\"><img src=\"http://x.test/wide.png\"></div><a href=\"http://x.test/\"><img src=\"http://x.test/tall.png\" height=\"50\" width=\"12\" class=\" onebox-full-image\"></a></article></aside>\n<aside class=\"onebox\"><div class=\"aspect-image-full-size\" style=\"--aspect-ratio:690/388;\"><img src=\"http://x.test/wide.png\"></div><div class=\"scale-images\"><a href=\"http://x.test/\"><img src=\"http://x.test/unknown.png\" width=\"\" height=\"\"></a></div></aside>\n<p><img class=\"onebox\" src=\"http://x.test/wide.png\" width=\"690\" height=\"388\"></p>";
+        let sizes: std::collections::HashMap<String, Option<(i64, i64)>> = [
+            ("http://x.test/square.png", Some((100, 100))),
+            ("http://x.test/wide.png", Some((1600, 900))),
+            ("http://x.test/tiny.png", Some((40, 30))),
+            ("http://x.test/tall.png", Some((300, 1200))),
+            ("http://x.test/unknown.png", None),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect();
+        let dom = parse(html);
+        oneboxed_images(&dom, 690.0, 500.0, &sizes).unwrap();
+        assert_eq!(crate::pretty_text::cleanup::to_html(&dom), rails);
+    }
 
     #[test]
     fn recognizes_the_onebox_routes() {

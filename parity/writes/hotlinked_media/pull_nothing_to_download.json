@@ -1,0 +1,28 @@
+{
+  "name": "pull_nothing_to_download",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-21T03:29:39.558585",
+  "transaction_started_at": "2026-10-21T03:29:37.323769",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE posts SET cooked = '<p>Local <img src=\"/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png\" width=\"10\" height=\"10\">, remote <img src=\"http://fixtures.localhost:8099/cat.png\"> and <img class=\"avatar\" src=\"http://fixtures.localhost:8099/a.png\"></p>' WHERE id = 36"
+  ],
+  "enqueue": [
+    [
+      "pull_hotlinked_images",
+      {
+        "post_id": 36
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "71bec42bfbbda0f07b61bd9feb5087fcba92e0e81d7e8001b9186bb144cef895",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

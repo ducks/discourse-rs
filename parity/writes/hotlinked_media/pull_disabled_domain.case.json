@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "settings": {"download_remote_images_to_local": true, "download_remote_images_threshold": 0, "disabled_image_download_domains": "fixtures.localhost"},
+  "setup": [
+    "UPDATE posts SET cooked = '<p>Remote <img src=\"http://fixtures.localhost:8099/cat.png\"></p>' WHERE id = 36"
+  ],
+  "requests": [],
+  "enqueue": [
+    ["pull_hotlinked_images", {"post_id": 36}]
+  ],
+  "run_jobs": ["pull_hotlinked_images"]
+}
