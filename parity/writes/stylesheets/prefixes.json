@@ -1,0 +1,579 @@
+{
+  "name": "prefixes",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Prefixed",
+          "theme_fields": [
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".pill {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n  flex-direction: column;\n  -webkit-box-pack: center;\n  justify-content: center;\n  width: stretch;\n  min-height: -webkit-fill-available;\n  position: -webkit-sticky;\n  position: sticky;\n  transition: transform .3s ease, backdrop-filter .2s;\n  backdrop-filter: blur(4px);\n  user-select: none;\n  background: -webkit-linear-gradient(top, red, blue);\n  background: linear-gradient(to bottom, red, blue);\n  &::-moz-selection { color: red; }\n  &::selection { color: red; }\n}\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\n::-webkit-input-placeholder { color: gray; }\n::placeholder { color: gray; }\n@-webkit-keyframes pulse { from { opacity: 0; } }\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\n@supports (backdrop-filter: blur(1px)) {\n  .glass { background: rgba($secondary, .5); }\n}\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\n}\n.mode {\n  text-size-adjust: light-dark(100%, 90%);\n  box-decoration-break: clone;\n  text-decoration: underline dotted;\n  hyphens: auto;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n@font-face {\n  font-family: Prefixed;\n  --face-color: light-dark(#{$primary}, #{$secondary});\n}\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "common_theme"
+    }
+  ],
+  "started_at": "2026-10-21T14:28:32.794397",
+  "transaction_started_at": "2026-10-21T14:28:30.061708",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Prefixed",
+          "description": null,
+          "created_at": "2026-10-21T14:28:32.817Z",
+          "updated_at": "2026-10-21T14:28:32.817Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".pill {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n  flex-direction: column;\n  -webkit-box-pack: center;\n  justify-content: center;\n  width: stretch;\n  min-height: -webkit-fill-available;\n  position: -webkit-sticky;\n  position: sticky;\n  transition: transform .3s ease, backdrop-filter .2s;\n  backdrop-filter: blur(4px);\n  user-select: none;\n  background: -webkit-linear-gradient(top, red, blue);\n  background: linear-gradient(to bottom, red, blue);\n  &::-moz-selection { color: red; }\n  &::selection { color: red; }\n}\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\n::-webkit-input-placeholder { color: gray; }\n::placeholder { color: gray; }\n@-webkit-keyframes pulse { from { opacity: 0; } }\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\n@supports (backdrop-filter: blur(1px)) {\n  .glass { background: rgba($secondary, .5); }\n}\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\n}\n.mode {\n  text-size-adjust: light-dark(100%, 90%);\n  box-decoration-break: clone;\n  text-decoration: underline dotted;\n  hyphens: auto;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n@font-face {\n  font-family: Prefixed;\n  --face-color: light-dark(#{$primary}, #{$secondary});\n}\n",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Prefixed",
+          "description": null,
+          "created_at": "2026-10-21T14:28:32.817Z",
+          "updated_at": "2026-10-21T14:28:32.817Z",
+          "default": true,
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "scss",
+              "target": "common",
+              "value": ".pill {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n  flex-direction: column;\n  -webkit-box-pack: center;\n  justify-content: center;\n  width: stretch;\n  min-height: -webkit-fill-available;\n  position: -webkit-sticky;\n  position: sticky;\n  transition: transform .3s ease, backdrop-filter .2s;\n  backdrop-filter: blur(4px);\n  user-select: none;\n  background: -webkit-linear-gradient(top, red, blue);\n  background: linear-gradient(to bottom, red, blue);\n  &::-moz-selection { color: red; }\n  &::selection { color: red; }\n}\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\n::-webkit-input-placeholder { color: gray; }\n::placeholder { color: gray; }\n@-webkit-keyframes pulse { from { opacity: 0; } }\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\n@supports (backdrop-filter: blur(1px)) {\n  .glass { background: rgba($secondary, .5); }\n}\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\n}\n.mode {\n  text-size-adjust: light-dark(100%, 90%);\n  box-decoration-break: clone;\n  text-decoration: underline dotted;\n  hyphens: auto;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n@font-face {\n  font-family: Prefixed;\n  --face-color: light-dark(#{$primary}, #{$secondary});\n}\n",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": ".pill{display:flex;flex-direction:column;justify-content:center;width:-moz-available;width:-webkit-fill-available;width:stretch;min-height:-webkit-fill-available;position:sticky;transition:transform .3s ease,-webkit-backdrop-filter .2s;transition:transform .3s ease,backdrop-filter .2s;transition:transform .3s ease,backdrop-filter .2s,-webkit-backdrop-filter .2s;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-user-select:none;user-select:none;background:linear-gradient(to bottom, red, blue)}.pill::selection{color:red}.clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}::placeholder{color:gray}@keyframes pulse{from{opacity:0}to{opacity:1}}@supports((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))){.glass{background:rgba(255,255,255,.5)}}@media(min-resolution: 192dpi){.hd{background-image:image-set(url(a.png) 1x, url(b.png) 2x)}}.mode{--7120e28a-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) 90%;-webkit-text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);-moz-text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);-webkit-text-size-adjust:light-dark(100%, 90%);-moz-text-size-adjust:light-dark(100%, 90%);text-size-adjust:light-dark(100%, 90%);-webkit-box-decoration-break:clone;box-decoration-break:clone;-webkit-text-decoration:underline dotted;text-decoration:underline dotted;-webkit-hyphens:auto;hyphens:auto;cursor:grab}@font-face{font-family:Prefixed;--7120e28a-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) #fff;--face-color: var(--7120e28a-csstools-light-dark-toggle--1, #222);@supports not (color: light-dark(tan, tan)){:scope *{--7120e28a-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) #fff;--face-color: var(--7120e28a-csstools-light-dark-toggle--1, #222)}}}\n\n@supports (color: light-dark(red, red)){\n@font-face{--face-color: light-dark(#222, #fff)}\n}\n/*# sourceMappingURL=common_theme_1_0d21c5b2e3e562eb223be691da54ebbff0005d23.css.map?__ws=localhost */\n"
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "-1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-07-25T05:58:21.4293"
+          },
+          "after": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-10-21T14:28:33.411858"
+          }
+        }
+      ]
+    },
+    "stylesheet_cache": {
+      "inserted": [
+        {
+          "id": 116,
+          "digest": "0d21c5b2e3e562eb223be691da54ebbff0005d23",
+          "target": "common_theme_1",
+          "content": ".pill{display:flex;flex-direction:column;justify-content:center;width:-moz-available;width:-webkit-fill-available;width:stretch;min-height:-webkit-fill-available;position:sticky;transition:transform .3s ease,-webkit-backdrop-filter .2s;transition:transform .3s ease,backdrop-filter .2s;transition:transform .3s ease,backdrop-filter .2s,-webkit-backdrop-filter .2s;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-user-select:none;user-select:none;background:linear-gradient(to bottom, red, blue)}.pill::selection{color:red}.clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}::placeholder{color:gray}@keyframes pulse{from{opacity:0}to{opacity:1}}@supports((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))){.glass{background:rgba(255,255,255,.5)}}@media(min-resolution: 192dpi){.hd{background-image:image-set(url(a.png) 1x, url(b.png) 2x)}}.mode{--7120e28a-csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) 90%;-webkit-text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);-moz-text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);text-size-adjust:var(--7120e28a-csstools-light-dark-toggle--0, 100%);-webkit-text-size-adjust:light-dark(100%, 90%);-moz-text-size-adjust:light-dark(100%, 90%);text-size-adjust:light-dark(100%, 90%);-webkit-box-decoration-break:clone;box-decoration-break:clone;-webkit-text-decoration:underline dotted;text-decoration:underline dotted;-webkit-hyphens:auto;hyphens:auto;cursor:grab}@font-face{font-family:Prefixed;--7120e28a-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) #fff;--face-color: var(--7120e28a-csstools-light-dark-toggle--1, #222);@supports not (color: light-dark(tan, tan)){:scope *{--7120e28a-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) #fff;--face-color: var(--7120e28a-csstools-light-dark-toggle--1, #222)}}}\n\n@supports (color: light-dark(red, red)){\n@font-face{--face-color: light-dark(#222, #fff)}\n}\n/*# sourceMappingURL=common_theme_1_0d21c5b2e3e562eb223be691da54ebbff0005d23.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T14:28:33.223776",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_a096863dfba362538c6df33dc4624dae/discourse-prefixed/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,MAGE,YAAA,CAGA,qBAAA,CAEA,sBAAA,CACA,oBAAA,CAAA,4BAAA,CAAA,aAAA,CACA,iCAAA,CAEA,eAAA,CACA,yDAAA,CAAA,iDAAA,CAAA,6EAAA,CACA,iCAAA,CAAA,yBAAA,CACA,wBAAA,CAAA,gBAAA,CAEA,gDAAA,CAEA,iBAAA,SAAA,CAEF,OAAA,mBAAA,CAAA,2BAAA,CAAA,oBAAA,CAAA,eAAA,CAEA,cAAA,UAAA,CAEA,iBAAA,KAAA,SAAA,CAAA,GAAA,SAAA,CAAA,CACA,gFACE,OAAA,+BAAA,CAAA,CAEF,+BACE,IAAA,wDAAA,CAAA,CAEF,MACE,gFAAA,CAAA,4EAAA,CAAA,yEAAA,CAAA,oEAAA,CAAA,8CAAA,CAAA,2CAAA,CAAA,sCAAA,CACA,kCAAA,CAAA,0BAAA,CACA,wCAAA,CAAA,gCAAA,CACA,oBAAA,CAAA,YAAA,CAEA,WAAA,CAEF,WACE,oBAAA,CACA,kFAAA,CAAA,iEAAA,CAAA,4CAAA,SAAA,kFAAA,CAAA,iEAAA,CAAA,CAAA;;AAFF;AAAA,WAEE,oCAAA;AAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".pill {\\n  display: -webkit-box;\\n  display: -ms-flexbox;\\n  display: flex;\\n  -webkit-box-orient: vertical;\\n  -webkit-box-direction: normal;\\n  flex-direction: column;\\n  -webkit-box-pack: center;\\n  justify-content: center;\\n  width: stretch;\\n  min-height: -webkit-fill-available;\\n  position: -webkit-sticky;\\n  position: sticky;\\n  transition: transform .3s ease, backdrop-filter .2s;\\n  backdrop-filter: blur(4px);\\n  user-select: none;\\n  background: -webkit-linear-gradient(top, red, blue);\\n  background: linear-gradient(to bottom, red, blue);\\n  &::-moz-selection { color: red; }\\n  &::selection { color: red; }\\n}\\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\\n::-webkit-input-placeholder { color: gray; }\\n::placeholder { color: gray; }\\n@-webkit-keyframes pulse { from { opacity: 0; } }\\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\\n@supports (backdrop-filter: blur(1px)) {\\n  .glass { background: rgba($secondary, .5); }\\n}\\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\\n}\\n.mode {\\n  text-size-adjust: light-dark(100%, 90%);\\n  box-decoration-break: clone;\\n  text-decoration: underline dotted;\\n  hyphens: auto;\\n  cursor: -webkit-grab;\\n  cursor: grab;\\n}\\n@font-face {\\n  font-family: Prefixed;\\n  --face-color: light-dark(#{$primary}, #{$secondary});\\n}\\n\"]}",
+          "updated_at": "2026-10-21T14:28:33.223776"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 169,
+          "name": "scss",
+          "error": null,
+          "value": ".pill {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n  flex-direction: column;\n  -webkit-box-pack: center;\n  justify-content: center;\n  width: stretch;\n  min-height: -webkit-fill-available;\n  position: -webkit-sticky;\n  position: sticky;\n  transition: transform .3s ease, backdrop-filter .2s;\n  backdrop-filter: blur(4px);\n  user-select: none;\n  background: -webkit-linear-gradient(top, red, blue);\n  background: linear-gradient(to bottom, red, blue);\n  &::-moz-selection { color: red; }\n  &::selection { color: red; }\n}\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\n::-webkit-input-placeholder { color: gray; }\n::placeholder { color: gray; }\n@-webkit-keyframes pulse { from { opacity: 0; } }\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\n@supports (backdrop-filter: blur(1px)) {\n  .glass { background: rgba($secondary, .5); }\n}\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\n}\n.mode {\n  text-size-adjust: light-dark(100%, 90%);\n  box-decoration-break: clone;\n  text-decoration: underline dotted;\n  hyphens: auto;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n@font-face {\n  font-family: Prefixed;\n  --face-color: light-dark(#{$primary}, #{$secondary});\n}\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-21T14:28:32.820429",
+          "updated_at": "2026-10-21T14:28:32.820429",
+          "value_baked": "8c848a86005087af0bca6b9e7d8b20304a1be862",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Prefixed",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-21T14:28:32.817486",
+          "updated_at": "2026-10-21T14:28:32.817486",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 400,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bHtQli9ewRknnuNhQQLbxd+yA+k=",
+            "created_at": "2026-10-21T14:28:31.184117",
+            "rotated_at": "2026-10-21T14:28:31.178815",
+            "updated_at": "2026-10-21T14:28:31.184117",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bHtQli9ewRknnuNhQQLbxd+yA+k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 400,
+            "seen_at": "2026-10-21T14:28:32.800703",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bHtQli9ewRknnuNhQQLbxd+yA+k=",
+            "created_at": "2026-10-21T14:28:31.184117",
+            "rotated_at": "2026-10-21T14:28:31.178815",
+            "updated_at": "2026-10-21T14:28:31.184117",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bHtQli9ewRknnuNhQQLbxd+yA+k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Prefixed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Prefixed\",\"description\":null,\"created_at\":\"2026-10-21T14:28:32.817Z\",\"updated_at\":\"2026-10-21T14:28:32.817Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".pill {\\n  display: -webkit-box;\\n  display: -ms-flexbox;\\n  display: flex;\\n  -webkit-box-orient: vertical;\\n  -webkit-box-direction: normal;\\n  flex-direction: column;\\n  -webkit-box-pack: center;\\n  justify-content: center;\\n  width: stretch;\\n  min-height: -webkit-fill-available;\\n  position: -webkit-sticky;\\n  position: sticky;\\n  transition: transform .3s ease, backdrop-filter .2s;\\n  backdrop-filter: blur(4px);\\n  user-select: none;\\n  background: -webkit-linear-gradient(top, red, blue);\\n  background: linear-gradient(to bottom, red, blue);\\n  \\u0026::-moz-selection { color: red; }\\n  \\u0026::selection { color: red; }\\n}\\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\\n::-webkit-input-placeholder { color: gray; }\\n::placeholder { color: gray; }\\n@-webkit-keyframes pulse { from { opacity: 0; } }\\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\\n@supports (backdrop-filter: blur(1px)) {\\n  .glass { background: rgba($secondary, .5); }\\n}\\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\\n}\\n.mode {\\n  text-size-adjust: light-dark(100%, 90%);\\n  box-decoration-break: clone;\\n  text-decoration: underline dotted;\\n  hyphens: auto;\\n  cursor: -webkit-grab;\\n  cursor: grab;\\n}\\n@font-face {\\n  font-family: Prefixed;\\n  --face-color: light-dark(#{$primary}, #{$secondary});\\n}\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-21T14:28:33.045699",
+          "ip_address": null,
+          "updated_at": "2026-10-21T14:28:33.045699",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Prefixed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Prefixed\",\"default\":true}",
+          "admin_only": true,
+          "created_at": "2026-10-21T14:28:33.447617",
+          "ip_address": null,
+          "updated_at": "2026-10-21T14:28:33.447617",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Prefixed\"}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 4,
+          "mobile": false,
+          "user_id": 1,
+          "time_read": 0,
+          "posts_read": 0,
+          "visited_at": "2026-10-21"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-21T14:28:35.165981",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T22:32:51.276926",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "refresh_latest_new_feature",
+      {}
+    ]
+  ],
+  "next_ids": {
+    "stylesheet_cache": 116,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "user_histories": 74,
+    "user_visits": 4
+  },
+  "digests": [
+    "theme_fields.value_baked"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "3d08db396dc74d7bda895b741e649e07299b3f2b118761ffe67206fcc8832bca",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

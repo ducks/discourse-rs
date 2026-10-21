@@ -11,12 +11,11 @@
 //! that form (no whitespace between nodes) and writes new nodes with the
 //! raws PostCSS gives them there. vendor/csstools holds
 //! postcss-progressive-custom-properties' feature table and shorthands
-//! (MIT-0), extracted from its 5.1.2 build.
-//!
-//! What autoprefixer would change is refused, except the prefixes it adds
-//! to a handful of properties for these browsers: the port has not ported
-//! its removal of outdated prefixes, its value, selector and at-rule
-//! prefixes, or its transition and @supports rewriting.
+//! (MIT-0), extracted from its 5.1.2 build. autoprefixer is
+//! [`autoprefixer`].
+
+#[path = "autoprefixer.rs"]
+mod autoprefixer;
 
 use std::collections::BTreeSet;
 use std::sync::LazyLock;
@@ -415,15 +414,35 @@ fn body(out: &mut String, nodes: &[Node], semicolon: Option<bool>, raws: &Raws) 
 /// annotation left out. `source` names the input for the toggles' hash
 /// (Rails hashes the compile's output with its annotation).
 pub fn post_css(css: &str, source: &str) -> Result<String, Unsupported> {
+    // postcss's Input drops a byte order mark (dart-sass writes one before
+    // non-ASCII output) from the text it parses and hashes, and the
+    // result has it back.
+    fn unmarked(text: &str) -> Option<&str> {
+        text.strip_prefix(['\u{feff}', '\u{fffe}'])
+    }
+    let bom = if unmarked(css).is_some() {
+        "\u{feff}"
+    } else {
+        ""
+    };
+    let css = unmarked(css).unwrap_or(css);
     let mut nodes = parse(css)?;
-    autoprefixer(&mut nodes, true)?;
-    let hash = djb2(source);
+    let hash = djb2(unmarked(source).unwrap_or(source));
+    // postcss runs every plugin's node visitors in one walk (the polyfill,
+    // postcss-nesting, the prefixer), then the OnceExit ones in plugin
+    // order: autoprefixer, then the progressive custom properties. So
+    // autoprefixer sees the polyfilled declarations.
     let mut toggles = 0;
     light_dark(&mut nodes, &mut toggles, false)?;
+    autoprefixer::autoprefixer(&mut nodes)?;
     progressive(&mut nodes)?;
     prefix_toggles(&mut nodes, &hash);
     // The root's raws.after: the whitespace after the last node.
-    Ok(stringify(&nodes) + &css[css.trim_end().len()..])
+    Ok(format!(
+        "{bom}{}{}",
+        stringify(&nodes),
+        &css[css.trim_end().len()..]
+    ))
 }
 
 /// postcss-variable-prefixer's `hashString` (djb2, as hex, at most eight
@@ -463,908 +482,6 @@ fn prefix_toggles(nodes: &mut [Node], hash: &str) {
             Node::Comment(_) => {}
         }
     }
-}
-
-// ---------------------------------------------------------------------------
-// autoprefixer, for frontend/discourse/config/targets.js's browsers (the
-// last Chrome and Firefox, Safari 16.4). Measured on the reference: the
-// prefixes it adds to properties, the outdated prefixed properties,
-// values and keyframes it removes; anything else it would change is
-// refused.
-
-/// Properties autoprefixer prefixes for these browsers, with their
-/// prefixes in the order it inserts them.
-const PREFIXED_PROPS: [(&str, &[&str]); 8] = [
-    ("backdrop-filter", &["-webkit-"]),
-    ("box-decoration-break", &["-webkit-"]),
-    ("hyphens", &["-webkit-"]),
-    ("text-decoration", &["-webkit-"]),
-    ("text-decoration-skip", &["-webkit-"]),
-    ("text-decoration-skip-ink", &["-webkit-"]),
-    ("text-size-adjust", &["-webkit-", "-moz-"]),
-    ("user-select", &["-webkit-"]),
-];
-
-/// The prefixed properties autoprefixer removes when the unprefixed one
-/// follows them (in the run of the same property's declarations).
-const REMOVED_PROPS: &[&str] = &[
-    "-moz-align-content",
-    "-moz-align-self",
-    "-moz-animation",
-    "-moz-animation-delay",
-    "-moz-animation-direction",
-    "-moz-animation-duration",
-    "-moz-animation-fill-mode",
-    "-moz-animation-iteration-count",
-    "-moz-animation-name",
-    "-moz-animation-play-state",
-    "-moz-animation-timing-function",
-    "-moz-appearance",
-    "-moz-backface-visibility",
-    "-moz-background-origin",
-    "-moz-background-size",
-    "-moz-border-end",
-    "-moz-border-image",
-    "-moz-border-radius",
-    "-moz-border-start",
-    "-moz-box-align",
-    "-moz-box-direction",
-    "-moz-box-flex",
-    "-moz-box-ordinal-group",
-    "-moz-box-orient",
-    "-moz-box-pack",
-    "-moz-box-shadow",
-    "-moz-box-sizing",
-    "-moz-column-count",
-    "-moz-column-fill",
-    "-moz-column-gap",
-    "-moz-column-rule",
-    "-moz-column-rule-color",
-    "-moz-column-rule-style",
-    "-moz-column-rule-width",
-    "-moz-columns",
-    "-moz-column-span",
-    "-moz-column-width",
-    "-moz-flex-basis",
-    "-moz-flex-flow",
-    "-moz-flex-shrink",
-    "-moz-flex-wrap",
-    "-moz-font-feature-settings",
-    "-moz-font-language-override",
-    "-moz-font-variant-ligatures",
-    "-moz-hyphens",
-    "-moz-margin-end",
-    "-moz-margin-start",
-    "-moz-padding-end",
-    "-moz-padding-start",
-    "-moz-perspective",
-    "-moz-perspective-origin",
-    "-moz-tab-size",
-    "-moz-text-align-last",
-    "-moz-text-decoration-color",
-    "-moz-text-decoration-line",
-    "-moz-text-decoration-style",
-    "-moz-transform",
-    "-moz-transform-origin",
-    "-moz-transform-style",
-    "-moz-transition",
-    "-moz-transition-delay",
-    "-moz-transition-duration",
-    "-moz-transition-property",
-    "-moz-transition-timing-function",
-    "-moz-user-select",
-    "-ms-animation",
-    "-ms-animation-delay",
-    "-ms-animation-direction",
-    "-ms-animation-duration",
-    "-ms-animation-fill-mode",
-    "-ms-animation-iteration-count",
-    "-ms-animation-name",
-    "-ms-animation-play-state",
-    "-ms-animation-timing-function",
-    "-ms-appearance",
-    "-ms-backdrop-filter",
-    "-ms-backface-visibility",
-    "-ms-background-clip",
-    "-ms-border-bottom-left-radius",
-    "-ms-border-bottom-right-radius",
-    "-ms-border-radius",
-    "-ms-border-top-left-radius",
-    "-ms-border-top-right-radius",
-    "-ms-flex",
-    "-ms-flex-align",
-    "-ms-flex-direction",
-    "-ms-flex-flow",
-    "-ms-flex-item-align",
-    "-ms-flex-line-pack",
-    "-ms-flex-negative",
-    "-ms-flex-order",
-    "-ms-flex-pack",
-    "-ms-flex-positive",
-    "-ms-flex-preferred-size",
-    "-ms-flex-wrap",
-    "-ms-flow-from",
-    "-ms-flow-into",
-    "-ms-grid-area",
-    "-ms-grid-column",
-    "-ms-grid-column-align",
-    "-ms-grid-column-end",
-    "-ms-grid-row",
-    "-ms-grid-row-align",
-    "-ms-grid-row-end",
-    "-ms-grid-template",
-    "-ms-grid-template-areas",
-    "-ms-hyphens",
-    "-ms-place-self",
-    "-ms-region-fragment",
-    "-ms-scroll-snap-coordinate",
-    "-ms-scroll-snap-destination",
-    "-ms-scroll-snap-points-x",
-    "-ms-scroll-snap-points-y",
-    "-ms-scroll-snap-type",
-    "-ms-text-size-adjust",
-    "-ms-text-spacing",
-    "-ms-touch-action",
-    "-ms-transform",
-    "-ms-transform-origin",
-    "-ms-transform-style",
-    "-ms-transition",
-    "-ms-transition-delay",
-    "-ms-transition-duration",
-    "-ms-transition-property",
-    "-ms-transition-timing-function",
-    "-ms-user-select",
-    "-ms-writing-mode",
-    "-o-animation",
-    "-o-animation-delay",
-    "-o-animation-direction",
-    "-o-animation-duration",
-    "-o-animation-fill-mode",
-    "-o-animation-iteration-count",
-    "-o-animation-name",
-    "-o-animation-play-state",
-    "-o-animation-timing-function",
-    "-o-backface-visibility",
-    "-o-background-origin",
-    "-o-background-size",
-    "-o-border-bottom-left-radius",
-    "-o-border-bottom-right-radius",
-    "-o-border-image",
-    "-o-border-radius",
-    "-o-border-top-left-radius",
-    "-o-border-top-right-radius",
-    "-o-object-fit",
-    "-o-object-position",
-    "-o-tab-size",
-    "-o-text-overflow",
-    "-o-transform",
-    "-o-transform-origin",
-    "-o-transform-style",
-    "-o-transition",
-    "-o-transition-delay",
-    "-o-transition-duration",
-    "-o-transition-property",
-    "-o-transition-timing-function",
-    "-webkit-align-content",
-    "-webkit-align-items",
-    "-webkit-align-self",
-    "-webkit-animation",
-    "-webkit-animation-delay",
-    "-webkit-animation-direction",
-    "-webkit-animation-duration",
-    "-webkit-animation-fill-mode",
-    "-webkit-animation-iteration-count",
-    "-webkit-animation-name",
-    "-webkit-animation-play-state",
-    "-webkit-animation-timing-function",
-    "-webkit-appearance",
-    "-webkit-backface-visibility",
-    "-webkit-background-clip",
-    "-webkit-background-origin",
-    "-webkit-background-size",
-    "-webkit-border-after",
-    "-webkit-border-before",
-    "-webkit-border-bottom-left-radius",
-    "-webkit-border-bottom-right-radius",
-    "-webkit-border-end",
-    "-webkit-border-image",
-    "-webkit-border-radius",
-    "-webkit-border-start",
-    "-webkit-border-top-left-radius",
-    "-webkit-border-top-right-radius",
-    "-webkit-box-align",
-    "-webkit-box-direction",
-    "-webkit-box-flex",
-    "-webkit-box-ordinal-group",
-    "-webkit-box-pack",
-    "-webkit-box-shadow",
-    "-webkit-box-sizing",
-    "-webkit-clip-path",
-    "-webkit-column-count",
-    "-webkit-column-fill",
-    "-webkit-column-gap",
-    "-webkit-column-rule",
-    "-webkit-column-rule-color",
-    "-webkit-column-rule-style",
-    "-webkit-column-rule-width",
-    "-webkit-columns",
-    "-webkit-column-span",
-    "-webkit-column-width",
-    "-webkit-filter",
-    "-webkit-flex",
-    "-webkit-flex-basis",
-    "-webkit-flex-direction",
-    "-webkit-flex-flow",
-    "-webkit-flex-grow",
-    "-webkit-flex-shrink",
-    "-webkit-flex-wrap",
-    "-webkit-flow-from",
-    "-webkit-flow-into",
-    "-webkit-font-feature-settings",
-    "-webkit-font-kerning",
-    "-webkit-font-language-override",
-    "-webkit-font-variant-ligatures",
-    "-webkit-justify-content",
-    "-webkit-margin-after",
-    "-webkit-margin-before",
-    "-webkit-margin-end",
-    "-webkit-margin-start",
-    "-webkit-mask",
-    "-webkit-mask-box-image",
-    "-webkit-mask-box-image-outset",
-    "-webkit-mask-box-image-repeat",
-    "-webkit-mask-box-image-slice",
-    "-webkit-mask-box-image-source",
-    "-webkit-mask-box-image-width",
-    "-webkit-mask-clip",
-    "-webkit-mask-composite",
-    "-webkit-mask-image",
-    "-webkit-mask-origin",
-    "-webkit-mask-position",
-    "-webkit-mask-position-x",
-    "-webkit-mask-position-y",
-    "-webkit-mask-repeat",
-    "-webkit-mask-size",
-    "-webkit-order",
-    "-webkit-padding-after",
-    "-webkit-padding-before",
-    "-webkit-padding-end",
-    "-webkit-padding-start",
-    "-webkit-perspective",
-    "-webkit-perspective-origin",
-    "-webkit-print-color-adjust",
-    "-webkit-region-fragment",
-    "-webkit-scroll-snap-coordinate",
-    "-webkit-scroll-snap-destination",
-    "-webkit-scroll-snap-points-x",
-    "-webkit-scroll-snap-points-y",
-    "-webkit-scroll-snap-type",
-    "-webkit-shape-image-threshold",
-    "-webkit-shape-margin",
-    "-webkit-shape-outside",
-    "-webkit-text-decoration-color",
-    "-webkit-text-decoration-line",
-    "-webkit-text-decoration-style",
-    "-webkit-text-emphasis",
-    "-webkit-text-emphasis-color",
-    "-webkit-text-emphasis-position",
-    "-webkit-text-emphasis-style",
-    "-webkit-text-orientation",
-    "-webkit-transform",
-    "-webkit-transform-origin",
-    "-webkit-transform-style",
-    "-webkit-transition",
-    "-webkit-transition-delay",
-    "-webkit-transition-duration",
-    "-webkit-transition-property",
-    "-webkit-transition-timing-function",
-    "-webkit-writing-mode",
-];
-
-/// Old flexbox properties autoprefixer maps to other names: not ported.
-const FLEXBOX_HACKS: &[&str] = &[
-    "box-align",
-    "box-direction",
-    "box-flex",
-    "box-ordinal-group",
-    "box-orient",
-    "box-pack",
-    "flex-align",
-    "flex-item-align",
-    "flex-line-pack",
-    "flex-negative",
-    "flex-order",
-    "flex-pack",
-    "flex-positive",
-    "flex-preferred-size",
-];
-
-/// Prefixed values autoprefixer removes when a later declaration of the
-/// property has the value in the second column.
-const REMOVED_VALUES: &[(&str, &str)] = &[
-    ("-moz-linear-gradient", "linear-gradient"),
-    ("-moz-radial-gradient", "radial-gradient"),
-    (
-        "-moz-repeating-linear-gradient",
-        "repeating-linear-gradient",
-    ),
-    (
-        "-moz-repeating-radial-gradient",
-        "repeating-radial-gradient",
-    ),
-    ("-ms-linear-gradient", "linear-gradient"),
-    ("-ms-radial-gradient", "radial-gradient"),
-    ("-ms-repeating-linear-gradient", "repeating-linear-gradient"),
-    ("-ms-repeating-radial-gradient", "repeating-radial-gradient"),
-    ("-o-linear-gradient", "linear-gradient"),
-    ("-o-radial-gradient", "radial-gradient"),
-    ("-o-repeating-linear-gradient", "repeating-linear-gradient"),
-    ("-o-repeating-radial-gradient", "repeating-radial-gradient"),
-    ("-webkit-image-set", "image-set"),
-    ("-webkit-linear-gradient", "linear-gradient"),
-    ("-webkit-radial-gradient", "radial-gradient"),
-    (
-        "-webkit-repeating-linear-gradient",
-        "repeating-linear-gradient",
-    ),
-    (
-        "-webkit-repeating-radial-gradient",
-        "repeating-radial-gradient",
-    ),
-    ("-moz-grabbing", "grabbing"),
-    ("-moz-grab", "grab"),
-    ("-moz-zoom-in", "zoom-in"),
-    ("-moz-zoom-out", "zoom-out"),
-    ("-webkit-grabbing", "grabbing"),
-    ("-webkit-grab", "grab"),
-    ("-webkit-zoom-in", "zoom-in"),
-    ("-webkit-zoom-out", "zoom-out"),
-    ("-moz-box", "flex"),
-    ("-moz-inline-box", "inline-flex"),
-    ("-ms-flexbox", "flex"),
-    ("-ms-grid", "grid"),
-    ("-ms-inline-flexbox", "inline-flex"),
-    ("-ms-inline-grid", "inline-grid"),
-    ("-webkit-box", "flex"),
-    ("-webkit-flex", "flex"),
-    ("-webkit-inline-box", "inline-flex"),
-    ("-webkit-inline-flex", "inline-flex"),
-    ("-moz-crisp-edges", "pixelated"),
-    ("-webkit-optimize-contrast", "pixelated"),
-    ("-webkit-sticky", "sticky"),
-    ("-moz-calc", "calc"),
-    ("-moz-fit-content", "fit-content"),
-    ("-moz-max-content", "max-content"),
-    ("-moz-min-content", "min-content"),
-    ("-webkit-calc", "calc"),
-    ("-webkit-fit-content", "fit-content"),
-    ("-webkit-max-content", "max-content"),
-    ("-webkit-min-content", "min-content"),
-];
-
-/// Every property, value, selector or at-rule autoprefixer knows a prefix
-/// for (its data/prefixes.js), the unprefixed name.
-const KNOWN_FEATURES: &[&str] = &[
-    "align-content",
-    "align-items",
-    "align-self",
-    "animation",
-    "animation-delay",
-    "animation-direction",
-    "animation-duration",
-    "animation-fill-mode",
-    "animation-iteration-count",
-    "animation-name",
-    "animation-play-state",
-    "animation-timing-function",
-    "any-link",
-    "appearance",
-    "autofill",
-    "backdrop",
-    "backdrop-filter",
-    "backface-visibility",
-    "background-clip",
-    "background-origin",
-    "background-size",
-    "border-block-end",
-    "border-block-start",
-    "border-bottom-left-radius",
-    "border-bottom-right-radius",
-    "border-image",
-    "border-inline-end",
-    "border-inline-start",
-    "border-radius",
-    "border-top-left-radius",
-    "border-top-right-radius",
-    "box-decoration-break",
-    "box-shadow",
-    "box-sizing",
-    "break-after",
-    "break-before",
-    "break-inside",
-    "calc",
-    "clip-path",
-    "color-adjust",
-    "column-count",
-    "column-fill",
-    "column-gap",
-    "column-rule",
-    "column-rule-color",
-    "column-rule-style",
-    "column-rule-width",
-    "columns",
-    "column-span",
-    "column-width",
-    "cross-fade",
-    "element",
-    "file-selector-button",
-    "fill",
-    "fill-available",
-    "filter",
-    "fit-content",
-    "flex",
-    "flex-basis",
-    "flex-direction",
-    "flex-flow",
-    "flex-grow",
-    "flex-shrink",
-    "flex-wrap",
-    "flow-from",
-    "flow-into",
-    "font-feature-settings",
-    "font-kerning",
-    "font-language-override",
-    "font-variant-ligatures",
-    "fullscreen",
-    "full-screen",
-    "grab",
-    "grabbing",
-    "grid-area",
-    "grid-column",
-    "grid-column-align",
-    "grid-column-end",
-    "grid-column-start",
-    "grid-row",
-    "grid-row-align",
-    "grid-row-end",
-    "grid-row-start",
-    "grid-template",
-    "grid-template-areas",
-    "grid-template-columns",
-    "grid-template-rows",
-    "hyphens",
-    "image-rendering",
-    "image-set",
-    "inline-flex",
-    "inline-grid",
-    "isolate",
-    "isolate-override",
-    "justify-content",
-    "keyframes",
-    "linear-gradient",
-    "margin-block-end",
-    "margin-block-start",
-    "margin-inline-end",
-    "margin-inline-start",
-    "mask",
-    "mask-border",
-    "mask-border-outset",
-    "mask-border-repeat",
-    "mask-border-slice",
-    "mask-border-source",
-    "mask-border-width",
-    "mask-clip",
-    "mask-composite",
-    "mask-image",
-    "mask-origin",
-    "mask-position",
-    "mask-position-x",
-    "mask-position-y",
-    "mask-repeat",
-    "mask-size",
-    "max-content",
-    "min-content",
-    "object-fit",
-    "object-position",
-    "order",
-    "overscroll-behavior",
-    "padding-block-end",
-    "padding-block-start",
-    "padding-inline-end",
-    "padding-inline-start",
-    "perspective",
-    "perspective-origin",
-    "pixelated",
-    "placeholder",
-    "placeholder-shown",
-    "place-self",
-    "plaintext",
-    "print-color-adjust",
-    "radial-gradient",
-    "read-only",
-    "read-write",
-    "region-fragment",
-    "repeating-linear-gradient",
-    "repeating-radial-gradient",
-    "resolution",
-    "scroll-snap-coordinate",
-    "scroll-snap-destination",
-    "scroll-snap-points-x",
-    "scroll-snap-points-y",
-    "scroll-snap-type",
-    "selection",
-    "shape-image-threshold",
-    "shape-margin",
-    "shape-outside",
-    "sticky",
-    "stretch",
-    "tab-size",
-    "text-align-last",
-    "text-decoration",
-    "text-decoration-color",
-    "text-decoration-line",
-    "text-decoration-skip",
-    "text-decoration-skip-ink",
-    "text-decoration-style",
-    "text-emphasis",
-    "text-emphasis-color",
-    "text-emphasis-position",
-    "text-emphasis-style",
-    "text-orientation",
-    "text-overflow",
-    "text-size-adjust",
-    "text-spacing",
-    "touch-action",
-    "transform",
-    "transform-origin",
-    "transform-style",
-    "transition",
-    "transition-delay",
-    "transition-duration",
-    "transition-property",
-    "transition-timing-function",
-    "user-select",
-    "viewport",
-    "writing-mode",
-    "zoom-in",
-    "zoom-out",
-    "box",
-    "flexbox",
-    "input-placeholder",
-    "box-orient",
-    "box-direction",
-    "box-flex",
-    "box-pack",
-    "box-align",
-    "box-ordinal-group",
-    "flex-align",
-    "flex-pack",
-    "flex-order",
-    "flex-item-align",
-    "flex-line-pack",
-    "flex-negative",
-    "flex-positive",
-    "flex-preferred-size",
-    "min-device-pixel-ratio",
-    "max-device-pixel-ratio",
-    "device-pixel-ratio",
-    "available",
-    "background-inline-policy",
-    "border-before",
-    "border-after",
-    "border-start",
-    "border-end",
-    "margin-before",
-    "margin-after",
-    "margin-start",
-    "margin-end",
-    "padding-before",
-    "padding-after",
-    "padding-start",
-    "padding-end",
-    "mask-box-image",
-    "mask-box-image-outset",
-    "mask-box-image-repeat",
-    "mask-box-image-slice",
-    "mask-box-image-source",
-    "mask-box-image-width",
-    "mask-source-type",
-    "content-zoom-chaining",
-    "zoom",
-];
-
-/// The value keywords and functions autoprefixer prefixes or rewrites for
-/// these browsers.
-const PREFIXED_VALUES: &[&str] = &["fill", "fill-available", "stretch", "available"];
-const PREFIXED_VALUE_FUNCTIONS: &[&str] = &["cross-fade(", "element("];
-
-const VENDORS: [&str; 4] = ["-webkit-", "-moz-", "-ms-", "-o-"];
-
-fn vendor_split(name: &str) -> Option<(&'static str, &str)> {
-    let lower = name.to_ascii_lowercase();
-    VENDORS
-        .iter()
-        .find(|v| lower.starts_with(**v))
-        .map(|v| (*v, &name[v.len()..]))
-}
-
-/// `unprefixed(prop)`: without its vendor prefix.
-fn unprefixed(prop: &str) -> String {
-    let lower = prop.to_ascii_lowercase();
-    match vendor_split(&lower) {
-        Some((_, base)) => base.to_string(),
-        None => lower,
-    }
-}
-
-fn known(name: &str) -> bool {
-    KNOWN_FEATURES.contains(&name.to_ascii_lowercase().as_str())
-}
-
-/// The vendor-prefixed names a value mentions (`-webkit-box`,
-/// `-moz-linear-gradient`...), lowercased.
-fn prefixed_names(value: &str) -> Vec<String> {
-    let lower = value.to_ascii_lowercase();
-    let mut out = Vec::new();
-    for vendor in VENDORS {
-        for (i, _) in lower.match_indices(vendor) {
-            if i > 0
-                && lower[..i]
-                    .chars()
-                    .next_back()
-                    .is_some_and(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-            {
-                continue;
-            }
-            let start = i + vendor.len();
-            let end = lower[start..]
-                .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-'))
-                .map_or(lower.len(), |e| start + e);
-            out.push(lower[i..end].to_string());
-        }
-    }
-    out
-}
-
-fn words(value: &str) -> impl Iterator<Item = String> + '_ {
-    value
-        .split(|c: char| c.is_whitespace() || c == ',' || c == '(' || c == ')')
-        .filter(|w| !w.is_empty())
-        .map(str::to_ascii_lowercase)
-}
-
-const REFUSED: Unsupported = Unsupported("CSS autoprefixer rewrites (169a)");
-
-/// autoprefixer's work on the stylesheet.
-fn autoprefixer(nodes: &mut Vec<Node>, root: bool) -> Result<(), Unsupported> {
-    let mut i = 0;
-    while i < nodes.len() {
-        match &mut nodes[i] {
-            Node::AtRule(a) => {
-                let name = a.name.to_ascii_lowercase();
-                if let Some((_, base)) = vendor_split(&name) {
-                    if base == "keyframes" {
-                        // Prefixed keyframes are not needed by any of the
-                        // browsers: removed. Root#removeChild gives the
-                        // first node's raws.before to the next one.
-                        let removed = nodes.remove(i);
-                        if root
-                            && i == 0
-                            && let (Node::AtRule(gone), Some(next)) = (removed, nodes.first_mut())
-                        {
-                            let before = gone.before;
-                            match next {
-                                Node::Rule(n) => n.before = before,
-                                Node::AtRule(n) => n.before = before,
-                                Node::Decl(n) => n.before = before,
-                                Node::Comment(n) => n.before = before,
-                            }
-                        }
-                        continue;
-                    }
-                    if known(base) {
-                        return Err(REFUSED);
-                    }
-                }
-                let params = a.params.to_ascii_lowercase();
-                if name == "supports"
-                    && (PREFIXED_PROPS.iter().any(|(p, _)| params.contains(p))
-                        || prefixed_names(&params)
-                            .iter()
-                            .any(|n| vendor_split(n).is_some_and(|(_, b)| known(b))))
-                {
-                    return Err(REFUSED);
-                }
-                if name == "media"
-                    && (params.contains("resolution") || params.contains("device-pixel-ratio"))
-                {
-                    return Err(REFUSED);
-                }
-                if let Some(kids) = a.nodes.as_mut() {
-                    autoprefixer(kids, false)?;
-                }
-            }
-            Node::Rule(r) => {
-                let lower = r.selector.to_ascii_lowercase();
-                for vendor in VENDORS {
-                    for (at, _) in lower.match_indices(&format!(":{vendor}")) {
-                        let start = at + 1 + vendor.len();
-                        let end = lower[start..]
-                            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-'))
-                            .map_or(lower.len(), |e| start + e);
-                        if known(&lower[start..end]) {
-                            return Err(REFUSED);
-                        }
-                    }
-                }
-                autoprefixer(&mut r.nodes, false)?;
-            }
-            Node::Decl(_) | Node::Comment(_) => {}
-        }
-        i += 1;
-    }
-    prefix_declarations(nodes)
-}
-
-/// Whether a later declaration of the same run (declarations of the same
-/// unprefixed property; others end it) passes `test`.
-fn group_down(nodes: &[Node], i: usize, test: impl Fn(&Decl) -> bool) -> bool {
-    let Node::Decl(d) = &nodes[i] else {
-        return false;
-    };
-    let base = unprefixed(&d.prop);
-    for node in &nodes[i + 1..] {
-        let Node::Decl(o) = node else {
-            continue;
-        };
-        if unprefixed(&o.prop) != base {
-            return false;
-        }
-        if test(o) {
-            return true;
-        }
-    }
-    false
-}
-
-/// The declarations of one container: `remove` (outdated prefixes),
-/// then `add`.
-fn prefix_declarations(nodes: &mut Vec<Node>) -> Result<(), Unsupported> {
-    // Removal.
-    let mut i = 0;
-    while i < nodes.len() {
-        let Node::Decl(d) = &nodes[i] else {
-            i += 1;
-            continue;
-        };
-        if d.variable() {
-            i += 1;
-            continue;
-        }
-        let prop = d.prop.to_ascii_lowercase();
-        if let Some((_, base)) = vendor_split(&prop) {
-            let base = base.to_string();
-            if FLEXBOX_HACKS.contains(&base.as_str()) {
-                let line_clamp = nodes
-                    .iter()
-                    .any(|n| matches!(n, Node::Decl(o) if o.prop.eq_ignore_ascii_case("-webkit-line-clamp")));
-                let flex = nodes.iter().any(|n| {
-                    matches!(n, Node::Decl(o) if matches!(o.prop.to_ascii_lowercase().as_str(), "flex-direction" | "flex-flow"))
-                });
-                // -webkit-box-orient stays beside -webkit-line-clamp or
-                // without flex-direction.
-                if prop == "-webkit-box-orient" && (line_clamp || !flex) {
-                    i += 1;
-                    continue;
-                }
-                return Err(REFUSED);
-            }
-            if REMOVED_PROPS.contains(&prop.as_str()) {
-                let hack = prop == "-webkit-background-clip" && d.value == "text";
-                if !hack && group_down(nodes, i, |o| o.prop.eq_ignore_ascii_case(&base)) {
-                    nodes.remove(i);
-                    continue;
-                }
-            }
-        }
-        let Node::Decl(d) = &nodes[i] else {
-            unreachable!()
-        };
-        let removable = prefixed_names(&d.value).into_iter().find_map(|name| {
-            REMOVED_VALUES
-                .iter()
-                .find(|(prefixed, _)| *prefixed == name)
-                .map(|(_, plain)| *plain)
-        });
-        if let Some(plain) = removable
-            && group_down(nodes, i, |o| o.value.to_ascii_lowercase().contains(plain))
-        {
-            nodes.remove(i);
-            continue;
-        }
-        i += 1;
-    }
-
-    // What remains: refusals, and the prefixes added.
-    let mut i = 0;
-    while i < nodes.len() {
-        let Node::Decl(d) = &nodes[i] else {
-            i += 1;
-            continue;
-        };
-        let d = d.clone();
-        if d.variable() {
-            i += 1;
-            continue;
-        }
-        let prop = d.prop.to_ascii_lowercase();
-        let value = d.value.to_ascii_lowercase();
-        if words(&value).any(|w| PREFIXED_VALUES.contains(&w.as_str()) || w.ends_with("-available"))
-            || PREFIXED_VALUE_FUNCTIONS.iter().any(|f| value.contains(f))
-        {
-            return Err(REFUSED);
-        }
-        let transitions = matches!(
-            unprefixed(&prop).as_str(),
-            "transition" | "transition-property" | "will-change"
-        );
-        if transitions
-            && (words(&value).any(|w| PREFIXED_PROPS.iter().any(|(p, _)| *p == w))
-                || !prefixed_names(&value).is_empty())
-        {
-            return Err(REFUSED);
-        }
-        let Some((_, prefixes)) = PREFIXED_PROPS.iter().find(|(p, _)| *p == prop) else {
-            i += 1;
-            continue;
-        };
-        // TextDecoration: basic values are not prefixed.
-        const BASIC: [&str; 8] = [
-            "none",
-            "underline",
-            "overline",
-            "line-through",
-            "blink",
-            "inherit",
-            "initial",
-            "unset",
-        ];
-        if prop == "text-decoration" && value.split_whitespace().all(|w| BASIC.contains(&w)) {
-            i += 1;
-            continue;
-        }
-        let mut inserted = 0;
-        for prefix in prefixes.iter() {
-            // UserSelect: no prefix for `contain`.
-            if prop == "user-select" && value == "contain" {
-                continue;
-            }
-            // otherPrefixes: a value with another vendor's prefix.
-            if VENDORS.iter().any(|v| v != prefix && value.contains(v)) {
-                continue;
-            }
-            let (prefixed_prop, prefixed_value) =
-                if prop == "text-decoration-skip-ink" && value == "auto" {
-                    (format!("{prefix}text-decoration-skip"), "ink".to_string())
-                } else {
-                    (format!("{prefix}{}", d.prop), d.value.clone())
-                };
-            // isAlready: the prefixed property in the run around it.
-            let already = nodes.iter().any(|n| {
-                matches!(n, Node::Decl(o) if o.prop.eq_ignore_ascii_case(&format!("{prefix}{}", d.prop)) || o.prop.eq_ignore_ascii_case(&prefixed_prop))
-            });
-            if already {
-                continue;
-            }
-            let mut clone = d.clone();
-            clone.prop = prefixed_prop;
-            clone.value = prefixed_value;
-            nodes.insert(i + inserted, Node::Decl(clone));
-            inserted += 1;
-        }
-        i += inserted + 1;
-    }
-    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -2704,11 +1821,27 @@ mod tests {
     /// properties and other declarations, nested, with `!important`, under
     /// list, complex and pseudo-element selectors and in @media, in
     /// at-rules that hold declarations (@font-face, @page), the
-    /// progressive @supports of repeated declarations, color-scheme; and autoprefixer's removed
-    /// keyframes, properties and values and its added prefixes.
+    /// progressive @supports of repeated declarations, color-scheme, a
+    /// byte order mark; and autoprefixer: the outdated at-rules,
+    /// selectors, properties, values (old flexbox among them) and
+    /// transition entries it removes, the property and value prefixes,
+    /// transitions and @supports conditions it adds, and what it does
+    /// with the polyfill's declarations.
     #[test]
     fn post_css_matches_the_reference() {
-        for name in ["light_dark", "light_dark_at_rules", "autoprefixer"] {
+        for name in [
+            "light_dark",
+            "light_dark_at_rules",
+            "light_dark_bom",
+            "autoprefixer",
+            "autoprefixer_values",
+            "autoprefixer_selectors",
+            "autoprefixer_transitions",
+            "autoprefixer_supports",
+            "autoprefixer_flexbox",
+            "autoprefixer_misc",
+            "autoprefixer_light_dark",
+        ] {
             let dir =
                 std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/stylesheets/postcss");
             let input = std::fs::read_to_string(dir.join(format!("{name}.css"))).unwrap();
@@ -2716,7 +1849,19 @@ mod tests {
             let rails = rails
                 .strip_suffix("\n/*# sourceMappingURL=x.css.map */")
                 .unwrap();
-            assert_eq!(post_css(&input, &input).unwrap(), rails, "{name}");
+            let ours = post_css(&input, &input).unwrap_or_else(|e| panic!("{name}: {e}"));
+            if ours != rails {
+                let at = ours
+                    .bytes()
+                    .zip(rails.bytes())
+                    .position(|(a, b)| a != b)
+                    .unwrap_or(ours.len().min(rails.len()));
+                panic!(
+                    "{name} differs at {at}:\nours:  {}\nrails: {}",
+                    &ours[at.saturating_sub(60)..(at + 120).min(ours.len())],
+                    &rails[at.saturating_sub(60)..(at + 120).min(rails.len())]
+                );
+            }
         }
     }
 

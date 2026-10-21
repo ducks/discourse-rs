@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Prefixed", "theme_fields": [
+      {"name": "scss", "target": "common", "value": ".pill {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n  flex-direction: column;\n  -webkit-box-pack: center;\n  justify-content: center;\n  width: stretch;\n  min-height: -webkit-fill-available;\n  position: -webkit-sticky;\n  position: sticky;\n  transition: transform .3s ease, backdrop-filter .2s;\n  backdrop-filter: blur(4px);\n  user-select: none;\n  background: -webkit-linear-gradient(top, red, blue);\n  background: linear-gradient(to bottom, red, blue);\n  &::-moz-selection { color: red; }\n  &::selection { color: red; }\n}\n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }\n::-webkit-input-placeholder { color: gray; }\n::placeholder { color: gray; }\n@-webkit-keyframes pulse { from { opacity: 0; } }\n@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }\n@supports (backdrop-filter: blur(1px)) {\n  .glass { background: rgba($secondary, .5); }\n}\n@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {\n  .hd { background-image: image-set(url(a.png) 1x, url(b.png) 2x); }\n}\n.mode {\n  text-size-adjust: light-dark(100%, 90%);\n  box-decoration-break: clone;\n  text-decoration: underline dotted;\n  hyphens: auto;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n@font-face {\n  font-family: Prefixed;\n  --face-color: light-dark(#{$primary}, #{$secondary});\n}\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}
