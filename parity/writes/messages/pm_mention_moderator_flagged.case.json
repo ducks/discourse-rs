@@ -1,0 +1,20 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "INSERT INTO reviewables (id, type, status, created_by_id, target_type, target_id, topic_id, category_id, created_at, updated_at, payload, potential_spam, score, force_review) VALUES (9401, 'ReviewableFlaggedPost', 0, 2, 'Post', 48, 42, NULL, now() - interval '1 day', now() - interval '1 day', '{}', false, 1.0, false)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "Looping in @user3 and @user2 on this, the moderator should hear of it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

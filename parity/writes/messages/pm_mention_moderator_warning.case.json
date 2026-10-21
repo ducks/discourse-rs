@@ -1,0 +1,20 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "UPDATE topics SET subtype = 'moderator_warning' WHERE id = 42"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "Looping in @user3 and @user2 on this, the moderator should hear of it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

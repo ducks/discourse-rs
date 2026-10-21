@@ -276,13 +276,33 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     } else {
         Vec::new()
     };
-    // all_allowed_users: moderators join them in a flagged message or an
-    // official warning.
-    let all_allowed: Vec<i32> = allowed_users
+    // all_allowed_users: moderators join them in a flagged message
+    // (has_flags?: a pending ReviewableFlaggedPost scored at least
+    // min_score_for_priority) or an official warning.
+    let mut all_allowed: Vec<i32> = allowed_users
         .iter()
         .map(|(u, _)| *u)
         .chain(allowed_group_users.iter().copied())
         .collect();
+    if private_message {
+        let min_score = crate::reviewables::min_score_for_priority(&mut *conn, s).await?;
+        let with_moderators: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
+             OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
+                        AND type = 'ReviewableFlaggedPost' AND status = 0 AND score >= $2)",
+        )
+        .bind(post.topic_id)
+        .bind(min_score)
+        .fetch_one(&mut *conn)
+        .await?;
+        if with_moderators {
+            let moderators: Vec<i32> =
+                sqlx::query_scalar("SELECT id FROM users WHERE moderator ORDER BY id")
+                    .fetch_all(&mut *conn)
+                    .await?;
+            all_allowed.extend(moderators.into_iter().filter(|u| !not_allowed(*u)));
+        }
+    }
     if s.get("nested_replies_enabled")?.truthy() {
         return Err(Unsupported("alerts with nested replies").into());
     }
@@ -324,21 +344,6 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .fetch_all(&mut *conn)
         .await?;
         // only_allowed_users and, in a message, not its watchers.
-        if private_message {
-            let with_moderators: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
-                 OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
-                            AND type = 'ReviewableFlaggedPost' AND status = 0)",
-            )
-            .bind(post.topic_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if with_moderators {
-                return Err(
-                    Unsupported("mentions in flagged messages and official warnings").into(),
-                );
-            }
-        }
         let targets: Vec<i32> = users
             .into_iter()
             .filter(|u| !private_message || all_allowed.contains(u))
