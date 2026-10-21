@@ -35,6 +35,33 @@ async fn table_digest(pool: &sqlx::PgPool, schema: &str, table: &str) -> String 
     .unwrap()
 }
 
+/// theme_fields, the digests the basic SCSS fields bake left out.
+async fn theme_fields_but_scss_digests(pool: &sqlx::PgPool) -> String {
+    sqlx::query_scalar(
+        "SELECT md5(string_agg(x::text, '|' ORDER BY x.id)) FROM ( \
+           SELECT id, theme_id, target_id, name, value, compiler_version, error, upload_id, \
+             type_id, created_at, updated_at, \
+             CASE WHEN type_id = 1 AND target_id IN (0, 1, 2) \
+               AND name IN ('scss', 'embedded_scss', 'color_definitions') \
+               THEN NULL ELSE value_baked END AS value_baked \
+           FROM theme_fields) x",
+    )
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+/// The basic SCSS fields' baked digests, by id.
+async fn scss_digests(pool: &sqlx::PgPool) -> Vec<(i32, Option<String>)> {
+    sqlx::query_as(
+        "SELECT id, value_baked FROM theme_fields WHERE type_id = 1 AND target_id IN (0, 1, 2) \
+         AND name IN ('scss', 'embedded_scss', 'color_definitions') ORDER BY id",
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap()
+}
+
 #[tokio::test]
 async fn a_backup_restored_over_a_changed_site_brings_it_back() {
     let db = TestDb::new().await;
@@ -76,6 +103,9 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
     for table in &tables {
         before.push(table_digest(&db.pool, "public", table).await);
     }
+    let fields_before = theme_fields_but_scss_digests(&db.pool).await;
+    let scss_before = scss_digests(&db.pool).await;
+    assert!(!scss_before.is_empty());
 
     // The site moves on: a renamed admin, a new topic, an upload gone.
     sqlx::query("UPDATE users SET name = 'After backup' WHERE id = 1")
@@ -131,6 +161,7 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
         "Remapping uploads...",
         "Restoring uploads, this may take a while...",
         "Optimizing site icons...",
+        "Clear theme cache",
         "Executing the after_restore_hook...",
         "Cleaning stuff up...",
         "Unpausing sidekiq...",
@@ -142,6 +173,10 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
         assert!(lines.contains(&expected), "no {expected:?} in {lines:#?}");
     }
     assert_eq!(lines.last(), Some(&"[SUCCESS]"));
+    assert!(
+        !lines.contains(&"Something went wrong while clearing theme cache."),
+        "{lines:#?}"
+    );
 
     // Every table as backed up, but what the restore itself writes.
     let changed_by_restore = [
@@ -166,6 +201,14 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
         "uploads",
         "upload_references",
         "user_uploads",
+        // ThemeField.force_recompilation!: what Rails changes on the seed
+        // (measured on the reference in a rolled back transaction) is the
+        // digest each SCSS field bakes, of its compile with a source map
+        // naming a temporary directory, so new on every compile.
+        "theme_fields",
+        // and the translation fields' scripts, made again (the seed has
+        // none: Rails rebuilds the cache).
+        "javascript_caches",
     ];
     for (table, digest) in tables.iter().zip(&before) {
         if changed_by_restore.contains(&table.as_str()) {
@@ -177,6 +220,42 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
             "{table} differs from the backup"
         );
     }
+    assert_eq!(theme_fields_but_scss_digests(&db.pool).await, fields_before);
+    let scss_after = scss_digests(&db.pool).await;
+    assert_eq!(scss_after.len(), scss_before.len());
+    for (b, a) in scss_before.iter().zip(&scss_after) {
+        assert_eq!(a.0, b.0);
+        assert_ne!(a.1, b.1, "field {} was not compiled again", a.0);
+    }
+    // The scripts Rails' force_recompilation! makes on the seed, measured
+    // on the reference (parity/backup_restore): field, theme, digest, a
+    // SHA1 of the content and whether the source map is nil.
+    let caches: Vec<(i64, Option<i64>, Option<String>, String, Option<String>)> = sqlx::query_as(
+        "SELECT theme_field_id, theme_id, digest, content, source_map FROM javascript_caches \
+         ORDER BY theme_field_id",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    let ours: Vec<String> = caches
+        .iter()
+        .map(|(field, theme, digest, content, map)| {
+            use sha1::Digest;
+            format!(
+                "{field} {} {} {:x} {}",
+                theme.map_or("nil".to_string(), |t| t.to_string()),
+                digest.as_deref().unwrap_or_default(),
+                sha1::Sha1::digest(content.as_bytes()),
+                map.is_none()
+            )
+        })
+        .collect();
+    let rails = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/backup_restore/recompiled_javascript_caches.txt"),
+    )
+    .unwrap();
+    assert_eq!(ours, rails.lines().collect::<Vec<_>>());
     let name: String = scalar(&db.pool, "SELECT name FROM users WHERE id = 1").await;
     assert_eq!(name, "Before backup");
     // The old tables wait in `backup`.
