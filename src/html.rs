@@ -1993,6 +1993,8 @@ pub struct TopicPage {
     pub chrome: Chrome,
     pub title: String,
     pub canonical_url: String,
+    /// The topic's archetype, the class of DiscourseTopic's element.
+    pub archetype: String,
     /// `#topic-title`'s title wrapper (post_view::topic_title).
     pub title_html: String,
     /// The posts as Ember renders them (post_view::stream).
@@ -2018,6 +2020,9 @@ pub struct TopicPage {
     pub ignored_users: String,
     /// quote-button.js's config (`quote_button_config`).
     pub quote_config: String,
+    /// dialog.js's strings, for a message whose participants the viewer
+    /// may remove (removing oneself asks first); empty otherwise.
+    pub dialog_strings: String,
 }
 
 /// `categories` rows the pages link to.
@@ -2150,18 +2155,18 @@ pub async fn latest_page(
     })
 }
 
-/// User#pmPath for Mark unread: a message the viewer is on goes to their
-/// inbox, one they see through a group to that group's (the first of the
-/// message's groups they are in); anything else to the home page.
-async fn defer_to(
+/// User#pmPath: a message the viewer is on goes to their inbox, one they
+/// see through a group to that group's (the first of the message's groups
+/// they are in); None for a topic, an anonymous reader, or a message to
+/// none of their groups.
+pub(crate) async fn pm_path(
     conn: &mut PgConnection,
     view: &Value,
     base: &str,
     viewer: Option<&str>,
-) -> Result<String, HtmlError> {
-    let home = format!("{base}/");
+) -> Result<Option<String>, sqlx::Error> {
     let Some(username) = viewer.filter(|_| view["archetype"] == "private_message") else {
-        return Ok(home);
+        return Ok(None);
     };
     let lower = username.to_lowercase();
     let details = &view["details"];
@@ -2174,7 +2179,7 @@ async fn defer_to(
         })
     });
     let Some(groups) = groups.filter(|_| !direct) else {
-        return Ok(format!("{base}/u/{lower}/messages"));
+        return Ok(Some(format!("{base}/u/{lower}/messages")));
     };
     let member_of: Vec<i32> = sqlx::query_scalar(
         "SELECT gu.group_id FROM group_users gu JOIN users u ON u.id = gu.user_id \
@@ -2191,13 +2196,15 @@ async fn defer_to(
                 .is_some_and(|id| member_of.contains(&(id as i32)))
         })
         .and_then(|g| g["name"].as_str())
-        .map(|name| format!("{base}/u/{lower}/messages/group/{name}"))
-        .unwrap_or(home))
+        .map(|name| format!("{base}/u/{lower}/messages/group/{name}")))
 }
 
-/// The topic's title block (`#topic-title`'s contents): its title,
-/// statuses, category and tags, and discourse-topic-voting's outlet for
-/// `voter` (the viewer's id and trust level, when they may vote).
+/// The topic's title block (`#topic-title`'s contents): a message's glyph
+/// for `member` (the viewer's username and whether they can send
+/// messages), its title, statuses, category and tags, and
+/// discourse-topic-voting's outlet for `voter` (the viewer's id and trust
+/// level, when they may vote).
+#[allow(clippy::too_many_arguments)]
 pub async fn topic_title_html(
     conn: &mut sqlx::PgConnection,
     i18n: &I18n,
@@ -2205,9 +2212,17 @@ pub async fn topic_title_html(
     list: &crate::topic_list_view::ListContext<'_>,
     view: &Value,
     topic_url: &str,
+    member: Option<(&str, bool)>,
     voter: Option<(i32, i32)>,
 ) -> Result<String, HtmlError> {
-    let mut title_html = crate::post_view::topic_title(list, view, topic_url);
+    let can_send_pms = member.is_some_and(|(_, can)| can);
+    let inbox = if can_send_pms {
+        pm_path(conn, view, list.base_path, member.map(|(u, _)| u)).await?
+    } else {
+        None
+    };
+    let glyph = crate::post_view::private_message_glyph(list, view, can_send_pms, inbox.as_deref());
+    let mut title_html = crate::post_view::topic_title(list, view, topic_url, &glyph);
     // discourse-topic-voting's topic-title outlet.
     if view["can_vote"] == serde_json::Value::Bool(true) {
         let voter = match voter {
@@ -2342,7 +2357,8 @@ async fn quote_button_config(
     Ok(config.to_string().replace('<', "\\u003c"))
 }
 
-/// The topic page from the /t/:id.json document.
+/// The topic page from the /t/:id.json document; `pm_counts` for a
+/// message's browse more line (pm_tracking_state::browse_more_counts).
 pub async fn topic_page(
     conn: &mut PgConnection,
     i18n: &I18n,
@@ -2350,6 +2366,7 @@ pub async fn topic_page(
     mut site: Site,
     view: &Value,
     page: i64,
+    pm_counts: Option<crate::post_view::PmCounts>,
 ) -> Result<TopicPage, HtmlError> {
     let base = site.base_path.clone();
     let slug = s(&view["slug"]);
@@ -2376,7 +2393,6 @@ pub async fn topic_page(
         }
         _ => None,
     };
-    let title_html = topic_title_html(conn, i18n, settings, &list, view, &topic_url, voter).await?;
     let post_settings = crate::post_view::PostSettings::load(settings)?;
     let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
     let staff = site.viewer.as_ref().is_some_and(|v| v.staff);
@@ -2384,13 +2400,26 @@ pub async fn topic_page(
         .viewer
         .as_ref()
         .is_some_and(|v| v.can_send_private_messages);
+    let title_html = topic_title_html(
+        conn,
+        i18n,
+        settings,
+        &list,
+        view,
+        &topic_url,
+        viewer.map(|v| (v, can_send_pms)),
+        voter,
+    )
+    .await?;
     // currentUser.ignored_users
     let ignored_users = match viewer {
         Some(username) => ignored_usernames(conn, username).await?,
         None => Vec::new(),
     };
     let mut topic = crate::post_view::TopicInfo::from_view(view);
-    topic.defer_to = defer_to(conn, view, &base, viewer).await?;
+    topic.pm_path = pm_path(conn, view, &base, viewer).await?;
+    // Mark unread's destination: the message's inbox, else home.
+    topic.defer_to = topic.pm_path.clone().unwrap_or_else(|| format!("{base}/"));
     // The first post's topic map, rendered before the posts that carry it.
     if crate::post_view::shows_op_map(view, &post_settings) {
         let cx = crate::post_view::PostContext {
@@ -2435,8 +2464,22 @@ pub async fn topic_page(
         t.update_seen(id as i32, highest_seen as i32);
         t
     });
-    let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref())?;
+    let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref(), pm_counts)?;
     let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
+    let dialog_strings = if view["archetype"] == "private_message" && viewer.is_some() {
+        let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+        serde_json::json!({
+            "ok_value": t("ok_value"),
+            "cancel": t("cancel"),
+            "yes_value": t("yes_value"),
+            "no_value": t("no_value"),
+            "modal.close": t("modal.close"),
+        })
+        .to_string()
+        .replace('<', "\\u003c")
+    } else {
+        String::new()
+    };
 
     let stream_len = view["post_stream"]["stream"]
         .as_array()
@@ -2471,6 +2514,12 @@ pub async fn topic_page(
     if page < last_page {
         site.chrome.show_footer = false;
     }
+    // topic.gjs's body classes: AddCategoryTagClasses, AddTopicStatusClasses
+    // and the archetype's.
+    let archetype = s(&view["archetype"]);
+    site.chrome
+        .body_classes
+        .push_str(&topic_body_classes(&list, view, &archetype));
     Ok(TopicPage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -2482,6 +2531,7 @@ pub async fn topic_page(
         crawler: Crawler::default(),
         title: s(&view["title"]),
         canonical_url: page_url(page),
+        archetype,
         title_html,
         posts,
         bottom_map,
@@ -2495,9 +2545,49 @@ pub async fn topic_page(
         solved: post_settings.solved.is_some(),
         ignored_users: ignored_users.join(","),
         quote_config,
+        dialog_strings,
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })
+}
+
+/// The body classes topic.gjs adds, each after a space:
+/// AddCategoryTagClasses' `category` and `category-<fullSlug>` and a
+/// `tag-<name>` per tag, AddTopicStatusClasses' unlisted, pinned and
+/// unpinned, then `archetype-<archetype>`.
+fn topic_body_classes(
+    list: &crate::topic_list_view::ListContext,
+    view: &Value,
+    archetype: &str,
+) -> String {
+    let mut out = String::new();
+    if let Some(category) = view["category_id"]
+        .as_i64()
+        .and_then(|id| list.categories.get(&id))
+    {
+        out.push_str(&format!(
+            " category category-{}",
+            crate::topic_list_view::category_full_slug(list, category)
+        ));
+    }
+    for tag in view["tags"].as_array().into_iter().flatten() {
+        // A tag is its name, or an object with one (tags_descriptions on).
+        if let Some(name) = tag.as_str().or_else(|| tag["name"].as_str()) {
+            out.push_str(&format!(" tag-{name}"));
+        }
+    }
+    // Topic#invisible, #pinned and #unpinned (pinned once, now not).
+    if view["visible"] == false {
+        out.push_str(" topic-status-unlisted");
+    }
+    if view["pinned"] == true {
+        out.push_str(" topic-status-pinned");
+    }
+    if view["unpinned"] == true {
+        out.push_str(" topic-status-unpinned");
+    }
+    out.push_str(&format!(" archetype-{archetype}"));
+    out
 }
 
 #[cfg(test)]

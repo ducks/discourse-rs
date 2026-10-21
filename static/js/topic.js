@@ -117,36 +117,190 @@
     });
   });
 
+  // The member's CSRF token and XHR header, from the body's hx-headers.
+  function memberHeaders() {
+    try {
+      return JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+    } catch (e) {
+      // No token: the server refuses the request.
+      return {};
+    }
+  }
+
+  // popupAjaxError: the error the server gave.
+  function popupError(r) {
+    return r
+      .json()
+      .then(function (body) {
+        window.alert((body.errors || [r.statusText]).join("\n"));
+      })
+      .catch(function () {
+        window.alert(r.statusText);
+      });
+  }
+
+  // A message's participant off it (TopicController#removeAllowedUser and
+  // #removeAllowedGroup): PUT remove-allowed-user or remove-allowed-group,
+  // then their entry leaves the map. Removing oneself asks first, then
+  // goes to one's messages.
+  function removeParticipant(button) {
+    var self = button.hasAttribute("data-remove-self");
+    var user = button.dataset.removeUser;
+    var form = new URLSearchParams();
+    var path;
+    if (user !== undefined) {
+      form.set("username", user);
+      path = "/remove-allowed-user";
+    } else {
+      form.set("name", button.dataset.removeGroup);
+      path = "/remove-allowed-group";
+    }
+    var map = button.closest(".topic-map__private-message-map");
+    var url = map.dataset.topicUrl + path;
+    function send() {
+      var headers = memberHeaders();
+      headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+      fetch(url, {
+        method: "PUT",
+        headers: headers,
+        body: form.toString(),
+        credentials: "same-origin",
+      }).then(function (r) {
+        if (!r.ok) {
+          return popupError(r);
+        }
+        if (self) {
+          location.href = map.dataset.messagesUrl;
+          return;
+        }
+        // Every copy of the map (the first post's and the bottom one).
+        var kind = user !== undefined ? "data-remove-user" : "data-remove-group";
+        var name = user !== undefined ? user : button.dataset.removeGroup;
+        document
+          .querySelectorAll(".topic-map__private-message-map [" + kind + "]")
+          .forEach(function (b) {
+            if (b.getAttribute(kind) === name) {
+              b.closest(".user").remove();
+            }
+          });
+      });
+    }
+    if (self) {
+      Discourse.dialog.yesNoConfirm({
+        message: map.dataset.removeSelfConfirm,
+        didConfirm: send,
+      });
+    } else {
+      send();
+    }
+  }
+
+  // The more topics tabs (services/more-topics-tabs): the list shown is
+  // the picked tab's, remembered per context in localStorage as Ember's
+  // keyValueStore keeps it; the others wait in templates.
+  function moreTopicsKey() {
+    var pm = document.body.classList.contains("archetype-private_message");
+    return "discourse_more-topics-preference-" + (pm ? "pm" : "topic");
+  }
+
+  function showMoreTopicsTab(id) {
+    var lists = document.querySelector(".more-topics__lists");
+    var template = lists && lists.querySelector('template.more-topics__tab[data-tab-id="' + id + '"]');
+    if (!template) {
+      return;
+    }
+    var current = lists.querySelector(".more-topics__list");
+    var active = current.querySelector(".topic-list-header-tab.active");
+    var stash = document.createElement("template");
+    stash.className = "more-topics__tab";
+    stash.dataset.tabId = active.dataset.tabId;
+    stash.content.appendChild(current);
+    template.replaceWith(template.content);
+    lists.appendChild(stash);
+  }
+
+  Discourse.onPage(function () {
+    var saved = null;
+    try {
+      saved =
+        window.localStorage.getItem(moreTopicsKey()) ||
+        window.localStorage.getItem("discourse_more-topics-list-preference");
+    } catch (e) {
+      // No storage: the first tab stays.
+    }
+    if (saved) {
+      showMoreTopicsTab(saved);
+    }
+  });
+
   document.addEventListener("click", function (event) {
+    var tab = event.target.closest(".topic-list-header-tab");
+    if (tab) {
+      if (!tab.classList.contains("active")) {
+        try {
+          window.localStorage.setItem(moreTopicsKey(), tab.dataset.tabId);
+        } catch (e) {
+          // No storage: the pick lasts this page.
+        }
+        showMoreTopicsTab(tab.dataset.tabId);
+      }
+      return;
+    }
+    var remove = event.target.closest(
+      ".topic-map__private-message-map .remove-invited"
+    );
+    if (remove) {
+      removeParticipant(remove);
+      return;
+    }
+    // Archive and Move to Inbox (toggleArchiveMessage): then the inbox the
+    // message left or went back to, its group's when it is a group's.
+    var archive = event.target.closest("[data-archive-url]");
+    if (archive) {
+      if (archive.disabled) {
+        return;
+      }
+      archive.disabled = true;
+      fetch(archive.dataset.archiveUrl, {
+        method: "PUT",
+        headers: memberHeaders(),
+        credentials: "same-origin",
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            // Ember leaves the failure unhandled: the button comes back.
+            throw new Error(archive.dataset.archiveUrl + ": " + r.status);
+          }
+          return r.json();
+        })
+        .then(function (body) {
+          var url = archive.dataset.inboxUrl;
+          if (body && body.group_name) {
+            url += "/group/" + encodeURIComponent(body.group_name);
+          }
+          location.href = url;
+        })
+        .catch(function (e) {
+          archive.disabled = false;
+          console.error(e);
+        });
+      return;
+    }
     // Mark unread (deferTopic): stop timing the page, unread its last
     // post, then go home (or to the message's inbox).
     var defer = event.target.closest("[data-defer-url]");
     if (defer) {
       document.dispatchEvent(new Event("screen-track:stop"));
-      var headers = {};
-      try {
-        headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
-      } catch (e) {
-        // No token: the server refuses the request.
-      }
       fetch(defer.dataset.deferUrl, {
         method: "DELETE",
-        headers: headers,
+        headers: memberHeaders(),
         credentials: "same-origin",
       }).then(function (r) {
         if (r.ok) {
           location.href = defer.dataset.deferTo;
           return;
         }
-        // popupAjaxError: the error the server gave.
-        return r
-          .json()
-          .then(function (body) {
-            window.alert((body.errors || [r.statusText]).join("\n"));
-          })
-          .catch(function () {
-            window.alert(r.statusText);
-          });
+        return popupError(r);
       });
       return;
     }
@@ -384,10 +538,16 @@
     var total = Math.max(stream.length, 1);
     // displayTimeLineScrollArea: a lone post under 1000px tall gets no
     // scroll area, and no footer controls with it; the container still
-    // docks.
-    var postsWrapper = document.querySelector(".posts-wrapper");
-    var bare = stream.length === 1 && postsWrapper && postsWrapper.offsetHeight < 1000;
-    if (bare) {
+    // docks. Ember first asks as the timeline renders, before the posts
+    // are there, so the area shows; it asks again on each
+    // topic:current-post-scrolled (onScroll, below).
+    var bare = false;
+    function checkBare() {
+      var postsWrapper = document.querySelector(".posts-wrapper");
+      if (bare || stream.length !== 1 || !postsWrapper || postsWrapper.offsetHeight >= 1000) {
+        return;
+      }
+      bare = true;
       container
         .querySelectorAll(".timeline-scrollarea-wrapper, .timeline-footer-controls")
         .forEach(function (el) {
@@ -460,6 +620,10 @@
       container.classList.toggle("timeline-docked-bottom", past);
     }
 
+    // The container acts on topic:current-post-scrolled, which the
+    // viewport tracker sends only while a post is at the eyeline: then it
+    // asks displayTimeLineScrollArea again, moves the scroller and checks
+    // the dock (dockCheck).
     var pending = false;
     function onScroll() {
       if (pending) {
@@ -468,8 +632,12 @@
       pending = true;
       window.requestAnimationFrame(function () {
         pending = false;
-        var percent = bare ? null : percentNow();
-        if (percent !== null) {
+        var percent = percentNow();
+        if (percent === null) {
+          return;
+        }
+        checkBare();
+        if (!bare) {
           render(percent);
         }
         if (!fullscreen) {
@@ -514,9 +682,43 @@
       });
     }
 
+    // Where the scroller starts (calculatePosition from the constructor):
+    // _percentFor the entered post's progress index (enteredIndex), the
+    // post nearest the URL's post number, else the first.
+    function enteredPercent() {
+      var m = location.pathname.match(/\/t\/[^/]+\/\d+\/(\d+)/);
+      var near = m ? parseInt(m[1], 10) : 1;
+      var closest = null;
+      var distance = Infinity;
+      document.querySelectorAll("#posts > [data-post-number]").forEach(function (el) {
+        var d = Math.abs(parseInt(el.dataset.postNumber, 10) - near);
+        var article = el.querySelector("article[data-post-id]");
+        if (article && d < distance) {
+          distance = d;
+          closest = article;
+        }
+      });
+      if (!closest) {
+        return null;
+      }
+      var index = stream.indexOf(parseInt(closest.dataset.postId, 10)) + 1;
+      // The switch _percentFor has, on the one-based index it is given.
+      if (index === 0) {
+        return 0;
+      }
+      if (index === total - 1) {
+        return 1;
+      }
+      return clamp(index / total, 0, 1);
+    }
+
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", resize);
     resize();
+    var entered = enteredPercent();
+    if (entered !== null) {
+      render(entered);
+    }
     return function () {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", resize);

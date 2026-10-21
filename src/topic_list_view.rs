@@ -328,6 +328,11 @@ fn slug_for(cx: &ListContext, category: &ListCategory, depth: u32) -> String {
     }
 }
 
+/// Category#fullSlug: the slug path, parents first, joined by dashes.
+pub fn category_full_slug(cx: &ListContext, category: &ListCategory) -> String {
+    slug_for(cx, category, 3).replace('/', "-")
+}
+
 /// `categoryBadgeHTML` with the default renderer, linked.
 pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
     category_badge_html(cx, category, true, false)
@@ -699,6 +704,22 @@ pub fn suggested_row(cx: &ListContext, topic: &Value) -> String {
     row_for(cx, topic, &[], true, false, false)
 }
 
+/// A suggested message's row (SuggestedTopics for a message: showPosters,
+/// hideCategory, which a message has none for): the posters' users come
+/// inside them (SuggestedPosterSerializer's `user`).
+pub fn suggested_message_row(cx: &ListContext, topic: &Value) -> String {
+    let mut topic = topic.clone();
+    let mut users = Vec::new();
+    if let Some(posters) = topic["posters"].as_array_mut() {
+        for poster in posters {
+            let user = poster["user"].clone();
+            poster["user_id"] = user["id"].clone();
+            users.push(user);
+        }
+    }
+    row_for(cx, &topic, &users, true, false, true)
+}
+
 fn row_for(
     cx: &ListContext,
     topic: &Value,
@@ -743,7 +764,7 @@ fn row_for(
     // The row's classes.
     let mut classes = vec!["topic-list-item".to_string()];
     if let Some(c) = category {
-        classes.push(format!("category-{}", slug_for(cx, c, 3).replace('/', "-")));
+        classes.push(format!("category-{}", category_full_slug(cx, c)));
     }
     if last_visit {
         classes.push("last-visit".to_string());

@@ -672,6 +672,28 @@ async fn show(
     // TopicRoute#setupController: the topic's searchContext.
     site.chrome
         .set_search_context("topic", &rendered.json["id"].to_string());
+    // A message's browse more line: the viewer's pmTopicTrackingState
+    // counts for the inbox it reads, with this message read through the
+    // posts the page shows.
+    let highest_seen = rendered.json["post_stream"]["posts"]
+        .as_array()
+        .and_then(|p| p.iter().filter_map(|p| p["post_number"].as_i64()).max())
+        .and_then(|n| i32::try_from(n).ok())
+        .unwrap_or(0);
+    let pm_counts = if rendered.json["archetype"] == "private_message" {
+        Some(
+            crate::pm_tracking_state::browse_more_counts(
+                &mut conn,
+                &settings,
+                guardian,
+                rendered.json["suggested_group_name"].as_str(),
+                (topic_id, highest_seen),
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
     let mut page = crate::html::topic_page(
         &mut conn,
         &state.i18n,
@@ -679,6 +701,7 @@ async fn show(
         site,
         &rendered.json,
         page,
+        pm_counts,
     )
     .await?;
     page.crawler = topic_crawler(
