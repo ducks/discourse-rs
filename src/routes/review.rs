@@ -391,3 +391,44 @@ pub async fn page(
         &vs,
     )?)
 }
+
+/// GET /review/user-menu-list: ReviewablesController#user_menu_list, the
+/// user menu's review queue (`Reviewable.user_menu_list_for` through the
+/// basic serializers) with the user's reviewable count.
+pub async fn user_menu_list(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    // requires_login
+    let Some(user) = guardian.user().cloned() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_can_see: can_see_review_queue?
+    if !guardian.is_staff() {
+        if settings.get("enable_category_group_moderation")?.truthy() {
+            return Err(Unsupported("the review queue for category group moderators").into());
+        }
+        return Ok(super::search::invalid_access(&state));
+    }
+    let reviewables = crate::reviewables::user_menu_list(
+        &mut conn,
+        &settings,
+        user.id,
+        user.admin,
+        user.moderator,
+    )
+    .await?;
+    let (count, _) =
+        crate::reviewables::staff_counts(&mut conn, &settings, user.id, user.admin, user.moderator)
+            .await?;
+    // render_json_dump with rest_serializer: true
+    Ok(Json(json!({
+        "reviewables": reviewables,
+        "reviewable_count": count,
+        "__rest_serializer": "1",
+    }))
+    .into_response())
+}

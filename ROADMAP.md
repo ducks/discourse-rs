@@ -1390,8 +1390,8 @@ have handlers now.
 
 120. `feat/slug-for` M: topics without a stored slug (`Slug.for`),
     refused wherever a topic is linked (topic_view.rs:406,937;
-    topic_list.rs:557; users.rs:1865; notifications.rs:562;
-    bookmarks.rs:532; pretty_text/helpers.rs:275;
+    topic_list.rs:557; users.rs:1865; notifications.rs:568;
+    bookmarks.rs:536; pretty_text/helpers.rs:275;
     topic_view/web_hook.rs:156,322; not_found_page.rs:190;
     review_list.rs:650; email/digest.rs:291,1058,1217;
     jobs/bookmark_reminders.rs:148; reports/counts.rs:1204;
@@ -1466,7 +1466,7 @@ have handlers now.
     styles and paginated category lists (category_list.rs:148,167),
     parent slugs needing CGI escapes (:120), category logos
     (categories_view.rs:203,396), lazy-loaded categories
-    (categories.rs:189; bookmarks.rs:406; routes/drafts.rs:333),
+    (categories.rs:189; bookmarks.rs:410; routes/drafts.rs:333),
     three-level nesting (topic_query.rs:386; hashtags.rs:424), encoded
     slugs and hidden parents in hashtags (pretty_text/helpers.rs:509,551;
     hashtags.rs:393), unknown style_types (pretty_text/helpers.rs:573;
@@ -1783,7 +1783,7 @@ have handlers now.
     notifying someone (:443), linked notifications and their consolidation (:790;
     notification_create.rs:230), mentions in flagged messages and
     warnings (:337), post_alert's options (:211), populate_acting_user
-    (notifications.rs:363,419); staged users' alerts no longer refuse
+    (notifications.rs:369,425); staged users' alerts no longer refuse
 146. `feat/notification-email-rest` M: previous replies and in-reply-to
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
@@ -1824,8 +1824,8 @@ have handlers now.
 149. `feat/category-group-moderation` M: enable_category_group_moderation
     and moderators in the review queue (topic_guardian.rs:191;
     posting/validate.rs:449; review.rs:170; review_posts.rs:413,1138;
-    review_list.rs:178; routes/review.rs:147,285; user_destroyer.rs:620;
-    current_user.rs:552,972; reviewables.rs:91), moderators' view of
+    review_list.rs:178; routes/review.rs:147,285,412; user_destroyer.rs:620;
+    current_user.rs:552,972; reviewables.rs:91,137), moderators' view of
     flagged messages and warnings (guardian.rs:282;
     topic_guardian.rs:242; jobs/handlers.rs:1230), moderators and
     owner-only groups on the admin view of a user
@@ -1950,7 +1950,7 @@ have handlers now.
     (plugins/chat/messages.rs:276,588; plugins/chat/create.rs:99;
     plugins/chat/modify.rs:301; plugins/chat/page.rs:880,1315),
     oneboxes, images and videos in messages (plugins/chat/create.rs:747),
-    chat message bookmarks (bookmarks.rs:266,743;
+    chat message bookmarks (bookmarks.rs:270,747;
     bookmark_manager.rs:168), chat transcripts in posts (crates/markdown's
     bbcode refusal)
 162. `feat/chat-rest` M: messages of deleted users
@@ -2017,7 +2017,7 @@ have handlers now.
     client's
 168. `feat/content-localization` M: content_localization_enabled
     (search/mod.rs:710; current_user.rs:1089;
-    routes/sidebar_sections.rs:319; bookmarks.rs:410; review_list.rs:181;
+    routes/sidebar_sections.rs:319; bookmarks.rs:414; review_list.rs:181;
     routes/drafts.rs:330; plugins/reactions/users.rs:665;
     plugins/solved/by_user.rs:47; about.rs:299; posting/rebake.rs:52;
     routes/users.rs:1604; routes/posts.rs:404; onebox/mod.rs:560;
@@ -2382,7 +2382,7 @@ route table has been made, so this list may be short.
     and associated accounts (site.rs:1233; user_private.rs:130;
     admin_user_show.rs:185; current_user.rs:641,644;
     reports/lists.rs:297), external ids (web_hooks/payloads.rs:95;
-    notifications.rs:538; session/api_key.rs:135;
+    notifications.rs:544; session/api_key.rs:135;
     routes/user_api_key_auth.rs:296; group_manager.rs:753),
     auth_immediately and logout with only external logins
     (routes/login_required.rs:132; routes/session.rs:605), Twitter's
@@ -2667,10 +2667,13 @@ route table has been made, so this list may be short.
     insights tab (IpLookup), the client actions (the composer's edit,
     suspend, silence), the reject reason and revise modals, editing a
     reviewable, the pin toggle and loading past the first ten; the
-    /review/topics, /review/settings and /review/:id pages; the user
-    menu's review tab (routes/user_menu.rs:88; notifications.rs:270,
-    pending_reviewables), the staff topic and post admin menus,
-    show_user_menu_avatars (routes/user_menu.rs:50)
+    /review/topics, /review/settings and /review/:id pages (the user
+    menu's review items link to the last); the header avatar's
+    new-reviewables and new-pms badges; the staff topic and post admin
+    menus; show_user_menu_avatars (routes/user_menu.rs:51). The user
+    menu's review tab and the pending reviewables of the recent
+    notifications are done (reviewables.rs user_menu_list, with
+    bump_last_seen_reviewable)
 195. `feat/rss` M: the .rss feeds of the lists, categories, tags, topics,
     a user's posts and activity, topic voting's votes feed, and the
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the
@@ -3093,7 +3096,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
 234. `feat/solved-ui-rest` M: show_who_marked_solved's tooltip
     (plugins/solved/view.rs:9), the confetti
     (static/js/discourse-solved.js:7), the notification.solved.* icons
-    (user_menu_view.rs:580), solved's tracking and watching descriptions
+    (user_menu_view.rs:586), solved's tracking and watching descriptions
     (left in 98), SolvedRemovalConfirmation with its don't-show-again key
     and the stream refresh on a solved change, MoveSolutionConfirmation
     (after core's move-to-topic modal), the accepted_solutions related
@@ -3110,7 +3113,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     Most Votes order (search_view.rs:45; static/js/search-page.js:16),
     votes among the category editor's default view and sort order
     choices (category_edit_view.rs:307, free text today), the
-    voting_closed icon as `lock` (user_menu_view.rs:611 draws
+    voting_closed icon as `lock` (user_menu_view.rs:617 draws
     far-envelope), the voters modal on mobile
 237. `feat/topic-voting-rest` S: the vote and unvote integer check, a
     400 where the port 404s (routes/topic_voting.rs:86), voted_by with
@@ -3392,14 +3395,14 @@ Logged-in readers, no writes yet.
       required-fields redirects, pending reviewables. Group PMs' related
       messages (33c), the required-fields redirect (87b), the 2FA
       redirect (155c), deleted topics and posts and ignored users (124)
-      done; category group moderators: 149; shared drafts: 158; pending
-      reviewables: 194
+      done, pending reviewables (194); category group moderators: 149;
+      shared drafts: 158
 - [x] Bookmarks: `/u/:username/bookmarks.json` and
       `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks;
       the `.ics` feed and plugin bookmarkables are refused)
-- [ ] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
-      `/review/user-menu-list`). The messages one is done (95);
-      `/review/user-menu-list`: 194
+- [x] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
+      `/review/user-menu-list`): the messages one (95), the review queue
+      (194)
 - [x] Live updates, the transport: pg-bus (its own crate,
       github.com/ducks/pg-bus) in MessageBus's place, Postgres only: a
       message is written in the transaction that made the change and

@@ -20,6 +20,7 @@ pub struct Params {
     filter: Option<String>,
     username: Option<String>,
     filter_by_types: Option<String>,
+    bump_last_seen_reviewable: Option<String>,
 }
 
 /// GET /notifications(.json)
@@ -99,6 +100,25 @@ pub async fn index(
     .await?;
     if bumped {
         crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id).await?;
+    }
+    // bump_last_seen_reviewable! for the all notifications tab, which
+    // lists the pending reviewables (Rails defers it past the response).
+    if recent
+        && query.types.is_empty()
+        && !query.silent
+        && params.bump_last_seen_reviewable.is_some()
+        && guardian.is_staff()
+        && !crate::readonly::mode(&mut conn).await?.readonly
+    {
+        crate::reviewables::bump_last_seen(
+            &mut conn,
+            &state.bus,
+            &settings,
+            viewer.id,
+            viewer.admin,
+            viewer.moderator,
+        )
+        .await?;
     }
     Ok((
         StatusCode::OK,

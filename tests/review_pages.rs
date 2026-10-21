@@ -1,6 +1,8 @@
 //! The review queue's page (/review): the queue drawn from the document
 //! /review.json serves with the route's params, the exception page for
-//! anyone who may not see it, and the action's redraw review.js fetches.
+//! anyone who may not see it, and the action's redraw review.js fetches;
+//! and the user menu's review queue with the pending reviewables the
+//! recent notifications carry.
 
 mod common;
 
@@ -239,4 +241,84 @@ async fn an_unknown_status_is_the_models_bad_request() {
     assert!(
         html.contains("/review?priority&#x3D;low&amp;status&#x3D;bogus&amp;sort_order&#x3D;score")
     );
+}
+
+#[tokio::test]
+async fn the_user_menus_review_queue() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    flag(&st).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+
+    // ReviewablesController#user_menu_list through the basic serializers.
+    let (status, body) = admin
+        .send(Method::GET, "/review/user-menu-list", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let item = &json["reviewables"][0];
+    assert_eq!(item["flagger_username"], "user1");
+    assert_eq!(item["type"], "ReviewableFlaggedPost");
+    assert_eq!(item["pending"], true);
+    assert_eq!(item["post_number"], 1);
+    assert_eq!(item["topic_fancy_title"], "About the Sub General category");
+    assert_eq!(json["reviewable_count"], 1);
+    assert_eq!(json["__rest_serializer"], "1");
+    let id = item["id"].as_i64().unwrap();
+
+    // The tab: the item linking to the reviewable, View All to the queue.
+    let (status, html) = admin.page("/user-menu?tab=review-queue").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(&format!(
+        "<li class=\"reviewable pending\"><a href=\"/review/{id}\" title=\"\">"
+    )));
+    assert!(
+        html.contains("<span class=\"item-label \">user1</span>"),
+        "{html}"
+    );
+    assert!(html.contains("post #1 - About the Sub General category</span>"));
+    assert!(html.contains("class=\"btn no-text btn-default show-all\" href=\"/review\""));
+    assert!(!html.contains("notifications-dismiss"));
+
+    // The recent notifications carry them for the all notifications tab,
+    // which lists them first while every notification is unread, and
+    // marks them seen.
+    let (_, body) = admin
+        .send(
+            Method::GET,
+            "/notifications.json?recent=true&limit=30&bump_last_seen_reviewable=true",
+            "",
+            true,
+        )
+        .await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["pending_reviewables"][0]["id"], id, "{body}");
+    let seen: Option<i32> =
+        sqlx::query_scalar("SELECT last_seen_reviewable_id FROM users WHERE username = 'admin'")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(seen.map(i64::from), Some(id));
+    let (_, html) = admin.page("/user-menu").await;
+    assert!(html.contains(&format!(
+        "<li class=\"reviewable pending\"><a href=\"/review/{id}\""
+    )));
+
+    // A filtered tab lists none.
+    let (_, body) = admin
+        .send(
+            Method::GET,
+            "/notifications.json?recent=true&filter_by_types=mentioned&silent=true",
+            "",
+            true,
+        )
+        .await;
+    assert!(!body.contains("pending_reviewables"), "{body}");
+
+    // A member may not.
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let (status, _) = user1
+        .send(Method::GET, "/review/user-menu-list", "", true)
+        .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
 }

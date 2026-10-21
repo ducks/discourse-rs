@@ -2044,6 +2044,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/review", get(review::page))
         .route("/review.json", get(review::index))
+        .route("/review/user-menu-list", get(review::user_menu_list))
+        .route("/review/user-menu-list.json", get(review::user_menu_list))
         .route(
             "/review/{reviewable_id}",
             get(permalinks::show).delete(user_activity::destroy_reviewable),

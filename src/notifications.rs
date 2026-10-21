@@ -74,6 +74,8 @@ pub enum NotificationsError {
     Db(sqlx::Error),
     Setting(SettingError),
     Unsupported(Unsupported),
+    /// The pending reviewables' list (crate::reviewables::user_menu_list).
+    Review(crate::AppError),
 }
 
 impl std::fmt::Display for NotificationsError {
@@ -82,6 +84,7 @@ impl std::fmt::Display for NotificationsError {
             NotificationsError::Db(e) => write!(f, "loading notifications: {e}"),
             NotificationsError::Setting(e) => e.fmt(f),
             NotificationsError::Unsupported(e) => e.fmt(f),
+            NotificationsError::Review(e) => e.fmt(f),
         }
     }
 }
@@ -261,19 +264,22 @@ impl Notifications<'_> {
         let mut out = Map::new();
         out.insert("notifications".into(), self.serialize(&rows)?);
         out.insert("seen_notification_id".into(), json!(seen));
-        // pending_reviewables for staff: the review queue isn't ported, so
-        // only an empty one can be served.
-        if q.types.is_empty() && self.guardian.is_staff() {
-            let pending: bool =
-                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM reviewables WHERE status = 0)")
-                    .fetch_one(&mut *self.conn)
-                    .await?;
-            if pending {
-                return Err(
-                    Unsupported("pending_reviewables (Reviewable.user_menu_list_for)").into(),
-                );
-            }
-            out.insert("pending_reviewables".into(), json!([]));
+        // pending_reviewables for the all notifications tab, when the user
+        // can see the review queue.
+        if q.types.is_empty()
+            && self.guardian.is_staff()
+            && let Some(user) = self.guardian.user()
+        {
+            let pending = crate::reviewables::user_menu_list(
+                &mut *self.conn,
+                self.settings,
+                user.id,
+                user.admin,
+                user.moderator,
+            )
+            .await
+            .map_err(NotificationsError::Review)?;
+            out.insert("pending_reviewables".into(), Value::Array(pending));
         }
         Ok((Value::Object(out), bumped))
     }

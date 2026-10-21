@@ -5,8 +5,10 @@
 //! seen, whose published notification state clears the header's count
 //! over the live stream; the others `filter_by_types` and silent), the
 //! messages tab from UsersController#user_menu_messages, the bookmarks tab
-//! from #user_menu_bookmarks. GET /u/:username/user-menu-private-messages
-//! is that action's JSON.
+//! from #user_menu_bookmarks, the review queue from
+//! ReviewablesController#user_menu_list (its pending reviewables also
+//! merged into the all-notifications tab). GET
+//! /u/:username/user-menu-private-messages is the messages action's JSON.
 
 use axum::Json;
 use axum::extract::{Path, Query, State};
@@ -85,9 +87,21 @@ pub async fn show(
     let panel = match tab.id {
         "profile" => user_menu_view::profile_tab(&cx),
         "review-queue" => {
-            return Err(
-                Unsupported("the user menu's review queue (UserMenuReviewablesList)").into(),
-            );
+            // UserMenuReviewablesList#fetchItems: /review/user-menu-list.
+            let reviewables = crate::reviewables::user_menu_list(
+                &mut conn,
+                &settings,
+                user.id,
+                user.admin,
+                user.moderator,
+            )
+            .await?;
+            let items: Vec<String> = reviewables
+                .iter()
+                .map(|r| user_menu_view::reviewable_item(&cx, r))
+                .collect();
+            let options = user_menu_view::list_options(&cx, tab);
+            user_menu_view::items_list(tab, &items, &options)
         }
         "messages" => {
             let doc = messages_doc(&state, &mut conn, &settings, &guardian, user.id).await?;
@@ -155,12 +169,29 @@ pub async fn show(
                 crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user.id)
                     .await?;
             }
-            let items: Vec<String> = doc["notifications"]
+            // bump_last_seen_reviewable: the all notifications tab, which
+            // lists the pending reviewables.
+            if tab.types.is_empty()
+                && guardian.is_staff()
+                && !crate::readonly::mode(&mut conn).await?.readonly
+            {
+                crate::reviewables::bump_last_seen(
+                    &mut conn,
+                    &state.bus,
+                    &settings,
+                    user.id,
+                    user.admin,
+                    user.moderator,
+                )
+                .await?;
+            }
+            let notifications: Vec<Value> =
+                doc["notifications"].as_array().cloned().unwrap_or_default();
+            let pending: Vec<Value> = doc["pending_reviewables"]
                 .as_array()
-                .into_iter()
-                .flatten()
-                .map(|n| user_menu_view::notification_item(&cx, n))
-                .collect();
+                .cloned()
+                .unwrap_or_default();
+            let items = notification_items(&cx, notifications, &pending);
             let options = user_menu_view::list_options(&cx, tab);
             user_menu_view::items_list(tab, &items, &options)
         }
@@ -402,4 +433,47 @@ pub(crate) fn slugify_channel(slug: Option<&str>, title: &str) -> String {
     } else {
         resolved
     }
+}
+
+/// UserMenuNotificationsList#fetchItems: the pending reviewables merged
+/// newest first into the unread notifications before the first read one
+/// (none when every notification is unread: `splice(0, -1)`), then the
+/// rest of the notifications.
+fn notification_items(
+    cx: &MenuContext,
+    mut notifications: Vec<Value>,
+    pending: &[Value],
+) -> Vec<String> {
+    let mut items = Vec::new();
+    if !pending.is_empty() {
+        let unread: Vec<Value> = match notifications.iter().position(|n| n["read"] == true) {
+            Some(first_read) => notifications.drain(..first_read).collect(),
+            None => Vec::new(),
+        };
+        let time = |v: &Value| {
+            v["created_at"]
+                .as_str()
+                .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+                .map(|d| d.timestamp_millis())
+        };
+        // mergeSortedLists(unread, reviewables, reviewable newer)
+        let (mut i, mut j) = (0, 0);
+        while i < unread.len() || j < pending.len() {
+            let take_reviewable =
+                i == unread.len() || (j < pending.len() && time(&pending[j]) > time(&unread[i]));
+            if take_reviewable {
+                items.push(user_menu_view::reviewable_item(cx, &pending[j]));
+                j += 1;
+            } else {
+                items.push(user_menu_view::notification_item(cx, &unread[i]));
+                i += 1;
+            }
+        }
+    }
+    items.extend(
+        notifications
+            .iter()
+            .map(|n| user_menu_view::notification_item(cx, n)),
+    );
+    items
 }
