@@ -84,7 +84,7 @@ fn js_number(n: f64) -> Result<String, Unsupported> {
     let abs = n.abs();
     if !(1e-6..1e21).contains(&abs) {
         return Err(Unsupported(
-            "rtlcss on a number JavaScript writes with an exponent",
+            "rtlcss on a number JavaScript writes with an exponent (169b)",
         ));
     }
     Ok(format!("{n}"))
@@ -619,7 +619,7 @@ pub(super) fn flip(nodes: &mut [Node]) -> Result<(), Unsupported> {
                     .and_then(|t| t.strip_suffix("*/"))
                     .unwrap_or(&c.text);
                 if is_match(&DIRECTIVE, text) {
-                    return Err(Unsupported("rtlcss directives"));
+                    return Err(Unsupported("rtlcss directives (169b)"));
                 }
             }
         }
@@ -629,7 +629,7 @@ pub(super) fn flip(nodes: &mut [Node]) -> Result<(), Unsupported> {
 
 fn flip_decl(decl: &mut Decl) -> Result<(), Unsupported> {
     if decl.value.contains("/*") || decl.between.contains("/*") {
-        return Err(Unsupported("comments in a declaration under rtlcss"));
+        return Err(Unsupported("comments in a declaration under rtlcss (169b)"));
     }
     // saveComments (none here), then processEnv's swap.
     let saved = save(

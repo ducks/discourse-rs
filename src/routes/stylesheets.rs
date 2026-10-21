@@ -119,6 +119,14 @@ pub async fn theme(
     Path(file): Path<String>,
     headers: HeaderMap,
 ) -> Result<Response, AppError> {
+    // StylesheetsController#show_source_map: grass makes no source maps.
+    if let Some(stem) = file.strip_suffix(".css.map")
+        && manager::THEME_TARGETS
+            .iter()
+            .any(|t| stem.starts_with(&format!("{t}_")))
+    {
+        return Err(crate::Unsupported("theme stylesheet source maps (169b)").into());
+    }
     let Some(name) = file.strip_suffix(".css") else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };

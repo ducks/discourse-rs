@@ -516,7 +516,7 @@ fn refuse_control_comments(nodes: &[Node]) -> Result<(), Unsupported> {
     for node in nodes {
         match node {
             Node::Comment(c) if c.text.to_ascii_lowercase().contains("autoprefixer") => {
-                return Err(Unsupported("autoprefixer control comments"));
+                return Err(Unsupported("autoprefixer control comments (169b)"));
             }
             Node::Rule(r) => refuse_control_comments(&r.nodes)?,
             Node::AtRule(AtRule {
@@ -570,7 +570,7 @@ fn remove(nodes: &mut Vec<Node>) -> Result<(), Unsupported> {
         };
         let decl = decl.clone();
         if decl.before.as_deref().is_some_and(|b| b.contains('\n')) {
-            return Err(Unsupported("autoprefixer's visual cascade"));
+            return Err(Unsupported("autoprefixer's visual cascade (169b)"));
         }
         let base = unprefixed(&decl.prop);
         if decl.prop == "transition" || decl.prop == "transition-property" {
@@ -582,7 +582,9 @@ fn remove(nodes: &mut Vec<Node>) -> Result<(), Unsupported> {
                         .iter()
                         .any(|c| c.check(&decl.value))
                     {
-                        return Err(Unsupported("a prefixed value in a removed transition"));
+                        return Err(Unsupported(
+                            "a prefixed value in a removed transition (169b)",
+                        ));
                     }
                     return Ok(Visit::Removed);
                 }

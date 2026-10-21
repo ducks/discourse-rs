@@ -6,9 +6,10 @@
 //!
 //! Compiles are kept by their whole input (source and theme files), as
 //! Rails keeps them by digest in its stylesheet cache. The served CSS
-//! leaves out Rails' source map annotation (the port serves no maps), and
-//! the light-dark() toggles' hash is the port's own input's, as Rails'
-//! is its input's (which names the stylesheet's digest).
+//! leaves out Rails' source map annotation (grass makes no source maps,
+//! and their requests are refused: routes/stylesheets.rs, 169b), and the
+//! light-dark() toggles' hash is the port's own input's, as Rails' is
+//! its input's (which names the stylesheet's digest).
 
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
