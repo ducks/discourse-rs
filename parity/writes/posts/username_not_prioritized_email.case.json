@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "settings": {
+    "prioritize_username_in_ux": "false",
+    "post_excerpts_in_emails": "true"
+  },
+  "setup": [
+    "UPDATE users SET name = 'Pond Keeper' WHERE id = 3",
+    "UPDATE user_search_data SET raw_data = 'user1 pond keeper', search_data = '''keeper'':3B ''pond'':2B ''user1'':1A'::tsvector WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "@user0 a mention in an email naming the poster first, with the post as its excerpt.\n\nA second paragraph the excerpt may cut."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

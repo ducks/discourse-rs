@@ -1782,17 +1782,20 @@ have handlers now.
     PostRevisor's reparent), which the port skips without refusing; the
     two `not_yet` cases posts/nested_reply_to_post and
     nested_bucket_consolidate differ only there
-146. `feat/notification-email-rest` M: previous replies and in-reply-to
-    excerpts (email/notification.rs:353,381), staged users and
-    private_email (:190,204), group notification emails (:249),
-    restricted tags in subjects (:318), the daily limit notice (:377),
-    lightboxes and Vimeo iframes (:887,893), prioritize_username_in_ux
-    off (:970), user oneboxes, iframes with an address outside the plain
-    http(s) form and secure media (email/styles.rs:226,236,243),
-    uploads, attachments and provider headers
-    (email/sender.rs:256,434,452,501), the other email types
-    (jobs/user_email.rs:93,101,105,507; account_silenced and
-    account_suspended done), sendmail delivery
+146. `feat/notification-email-rest` M (account_silenced and
+    account_suspended, quotes, oneboxes and iframes restyled, replies to
+    several posts or deeper than one level, previous replies, in-reply-to
+    excerpts, the daily limit notice, lightboxes, upload links in the
+    text part, prioritize_username_in_ux off, post_excerpts_in_emails
+    and right-to-left styles done; left:) staged users of a topic started
+    by email and private_email (email/notification.rs:184,198), group
+    notification emails (:243), restricted tags in subjects (:312),
+    lightboxes with secure uploads and Vimeo iframes (:940,955), posts of
+    deleted users in the view (:1034), user oneboxes, iframes with an
+    address outside the plain http(s) form and secure media
+    (email/styles.rs:226,236,243), attachments and provider headers
+    (email/sender.rs:447,465,514), the other email types
+    (jobs/user_email.rs:93,101,105,507), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
 147. `feat/flags-rest` M: flags that send a message (notify user,
@@ -1853,7 +1856,7 @@ have handlers now.
     signup.rs:99; routes/accounts.rs:162; routes/user_preferences.rs:174;
     username_changer.rs:92,568; user_name_suggester.rs:124,131;
     routes/invite_redeem.rs:403; pretty_text/mod.rs:491 for mentions;
-    email/notification.rs:1048,1091; routes/required_fields.rs:206,321;
+    email/notification.rs:1248,1291; routes/required_fields.rs:206,321;
     group_message.rs:41), flag name keys from non-ASCII names
     (admin_flags.rs:207), titleizing a non-ASCII user field
     (plugins/poll/vote.rs:742), the change_display_name job
@@ -1996,14 +1999,14 @@ have handlers now.
     (email/incoming.rs:418,441), POP3 polling, rebaking emailed posts
     (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
     EmailCook)
-166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:292;
+166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:305;
     jobs/post_alert.rs:555; routes/admin_groups.rs:1239;
     routes/groups.rs:642), the group SMTP credentials check
     (problem_checks.rs:342). Needs: network
 167. `feat/locales` L: every locale but English: server strings
     (badge_granter.rs:409; system_message.rs:258; jobs/badges.rs:249;
     email/digest.rs:481; email/account.rs:118; email/sender.rs:170;
-    email/notification.rs:201; review_posts.rs:941;
+    email/notification.rs:195; review_posts.rs:941;
     routes/group_membership.rs:370; category_types.rs:457), site texts
     and reseeding (routes/site_texts.rs:65,863), the unsubscribe pages
     (routes/email.rs:45), email templates
@@ -3049,7 +3052,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     follows 196
 230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
     (the options without ids, the link_to_poll link, polls of trashed
-    posts dropped; email/notification.rs:845-880 passes the raw widget
+    posts dropped; email/notification.rs:901-945 passes the raw widget
     markup), the clean_up_inactive_users modifier sparing poll voters
     (jobs/user_cleanup.rs:106-119 would delete them), reduce_excerpt
     through `I18n.t("poll.poll")` (excerpt.rs:203-206 hardcodes English),
@@ -3141,7 +3144,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     play_video label, LazyIframe's YouTube (list, start time), Vimeo and
     TikTok embeds, the per-provider settings, lazy-videos.scss
     (src/assets.rs); the email reduce_cooked turning each video into a
-    paragraph link (email/notification.rs:857-880)
+    paragraph link (email/notification.rs:913-945)
 241. `feat/lazy-videos-crawler` S: CrawlerPostEnd's VideoObject JSON-LD
     per video at the end of each crawler post
     (server:topic-show-crawler-post-end); with 163's solved schema
@@ -3166,11 +3169,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     static/js/inline-footnotes.js finding the new ids
 244. `feat/spoiler-email` S: spoiler-alert's reduce_cooked in emails
     (each spoiler a link to the post with excerpt_spoiler;
-    email/notification.rs:857-880 sends spoilers in the clear), and the
+    email/notification.rs:913-945 sends spoilers in the clear), and the
     enabled-setting gate Plugin#on puts on every handler
     (lib/plugin/instance.rb:692): the excerpt's spoiler removal
     (excerpt.rs:196), discourse-details' email reduce_cooked
-    (email/notification.rs:857), local dates' excerpt " (UTC)"
+    (email/notification.rs:913), local dates' excerpt " (UTC)"
     (excerpt.rs:210)
 245. `feat/oauth2-basic-rest` S: oauth2_debug_auth (an OAuth2LogRedactor
     and every `log` call) and the always-on token and user_json failure
@@ -3602,8 +3605,7 @@ Logged-in readers, no writes yet.
 - [ ] Reply by email, next: staged users, attachments, bounces, likes
       and notification levels by email,
       POP3 polling, group and category addresses (email_in): 165
-- [ ] PM emails, previous-replies context. PM emails done (above); the
-      previous replies: 146
+- [x] PM emails, previous-replies context (previous replies done in 146)
 - [ ] Jobs, next: digests, pull_hotlinked_images,
       notify_mailing_list_subscribers, scheduled jobs (category stats, top
       topics, digests), rate limits. Digests (70, 71), the scheduled jobs

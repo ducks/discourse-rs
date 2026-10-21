@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET email_previous_replies = 0 WHERE user_id = 4",
+    "UPDATE posts SET raw = 'A picture: <img src=\"/uploads/default/original/1X/0123456789abcdef0123456789abcdef01234567.png\" width=\"690\" height=\"460\"> and <a class=\"attachment\" href=\"/uploads/default/original/1X/fedcba9876543210fedcba9876543210fedcba98.pdf\">notes.pdf</a>', cooked = '<p>A picture:</p><div class=\"lightbox-wrapper\"><a class=\"lightbox\" href=\"/uploads/default/original/1X/0123456789abcdef0123456789abcdef01234567.png\" data-download-href=\"/uploads/default/0123456789abcdef0123456789abcdef01234567\" title=\"pond\"><img src=\"/uploads/default/optimized/1X/0123456789abcdef0123456789abcdef01234567_2_690x460.png\" alt=\"pond\" width=\"690\" height=\"460\"><div class=\"meta\"><svg class=\"fa d-icon d-icon-far-image svg-icon\" aria-hidden=\"true\"><use href=\"#far-image\"></use></svg><span class=\"filename\">pond</span><span class=\"informations\">1380×920 120 KB</span><svg class=\"fa d-icon d-icon-discourse-expand svg-icon\" aria-hidden=\"true\"><use href=\"#discourse-expand\"></use></svg></div></a></div><p>and <a class=\"attachment\" href=\"/uploads/default/original/1X/fedcba9876543210fedcba9876543210fedcba98.pdf\">notes.pdf</a></p>' WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "reply_to_post_number": 3,
+        "raw": "A reply whose previous replies hold a lightboxed image and an attachment."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

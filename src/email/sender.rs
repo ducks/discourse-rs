@@ -248,13 +248,26 @@ pub async fn send(
     let base_url = urls.base_url()?;
 
     let rendered = renderer_html(ctx, &built.html_part)?;
-    let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
-    if message
-        .text
-        .contains(&format!("{}/", store.relative_base_url()))
-    {
-        return Err(Unsupported("uploads in email text").into());
-    }
+    // Upload links and images written as HTML in the markdown, made
+    // absolute markdown for the text part (the default store's path, as
+    // Rails matches it whatever the store).
+    static ATTACHMENT: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"<a class="attachment" href="(/uploads/default/[^"]+)">([^<]*)</a>"#)
+            .expect("a valid regex")
+    });
+    static IMAGE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"<img src="(/uploads/default/[^"]+)"([^>]*)>"#).expect("a valid regex")
+    });
+    let text = ATTACHMENT
+        .replace_all(&message.text, |c: &regex::Captures| {
+            format!("[{}|attachment]({base_url}{})", &c[2], &c[1])
+        })
+        .into_owned();
+    message.text = IMAGE
+        .replace_all(&text, |c: &regex::Captures| {
+            format!("![]({base_url}{})", &c[1])
+        })
+        .into_owned();
 
     let host = base_url
         .split_once("://")
