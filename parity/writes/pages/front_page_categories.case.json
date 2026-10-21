@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "settings": {
+    "default_homepage": "categories"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ]
+}

@@ -2875,16 +2875,22 @@ route table has been made, so this list may be short.
     Header::Logo's light/dark picture, application_logo_dark_url, a
     category's uploaded_logo_dark) are not drawn, so a dark page keeps
     the light logos
-259. `fix/front-page-homepage` S: `/` always draws latest
-    (routes/mod.rs:198, list::latest) whatever the current homepage is
-    (homepage.rs: a member's homepage_id, SiteSetting.homepage, the
-    anonymous homepage, a custom homepage, "blank" when login is required),
-    so a site whose homepage is top or categories serves the wrong page at
-    the root with the homepage's title. Rails routes `/` to the
-    homepage's list through HomePageConstraint. Also unchecked: a
-    member who sees a subcategory but not its parent gets the parent's
-    name in the list title, where Ember's title code would throw. Found
-    by fix/list-page-titles
+259. ~~`fix/front-page-homepage`~~ (done) S: `/` always drew latest
+    whatever the current homepage was; it now goes where config/routes.rb's
+    root routes under HomePageConstraint send it (list::front_page): the
+    homepage's list (latest, top, hot, unread, new, unseen, read, posted,
+    bookmarks, votes) or categories#index, HTML or JSON by `?format=json`
+    or the Accept header, with the short site description in the title.
+    The blank homepage (anonymous, login required) stays the login page
+    the login_required gate draws, and its JSON is now the 403
+    not_logged_in as Rails answers. A category the viewer sees under a
+    parent they can't (left out of Site's categories) now goes to /404
+    as BuildCategoryRoute does; one whose parent Site leaves out (a hidden
+    grandparent), or found by lazy loading, is refused, as Ember's
+    titleToken throws there. Refused, not ported: a theme's custom
+    homepage (and custom_homepage_crawler_route), finish_installation
+    while has_login_hint, and `?format=` other than json or html (Rails
+    406s rss; markdown not ported)
 
 ### Phase 11: the bundled plugins' gaps (210)
 

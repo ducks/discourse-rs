@@ -1,0 +1,37 @@
+{
+  "name": "front_page_login_required",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ],
+  "started_at": "2026-10-21T07:41:56.025194",
+  "transaction_started_at": "2026-10-21T07:41:54.795418",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "login_required": true
+  },
+  "recorded_from": {
+    "case": "f9a800473b756c23053266d8536c00fd81bd5a519bbdaa7fc65b481e80039f36",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

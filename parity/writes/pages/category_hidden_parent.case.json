@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE categories SET read_restricted = true WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/general/sub-general/34.json"
+    }
+  ]
+}

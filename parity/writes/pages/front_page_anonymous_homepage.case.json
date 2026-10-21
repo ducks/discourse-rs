@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "settings": {
+    "top_menu": "top|latest|new|categories",
+    "default_homepage": "new"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "settings": {
+    "default_homepage": "categories"
+  },
+  "setup": [
+    "UPDATE user_options SET homepage_id = 5 WHERE user_id = (SELECT id FROM users WHERE username = 'user1')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/?format=json"
+    }
+  ]
+}
