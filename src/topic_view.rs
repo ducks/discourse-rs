@@ -643,6 +643,10 @@ impl TopicView<'_> {
             .actions_summary(posts.is_empty(), &viewer, posts.first())
             .await?;
         out.insert("actions_summary".into(), topic_actions.clone());
+        // is_warning: a message that is a moderator's warning.
+        if pm && topic.subtype.as_deref() == Some("moderator_warning") {
+            out.insert("is_warning".into(), json!(true));
+        }
         out.insert("chunk_size".into(), json!(CHUNK_SIZE));
         out.insert("bookmarked".into(), json!(!viewer.bookmarks.is_empty()));
         if pm {
@@ -2461,8 +2465,8 @@ impl TopicView<'_> {
 
     /// `details.allowed_users`: the PM's direct members (those only
     /// present through an allowed group are left out, the viewer kept),
-    /// in the order Rails' unordered join came back with on the reference
-    /// (by user id, descending).
+    /// in the order Rails' unordered join comes back with (its heap scan of
+    /// topic_allowed_users: the rows as added).
     async fn allowed_users(
         &mut self,
         topic_id: i32,
@@ -2473,7 +2477,7 @@ impl TopicView<'_> {
              WHERE tau.topic_id = $1 AND (tau.user_id = $2 OR tau.user_id NOT IN ( \
                  SELECT gu.user_id FROM group_users gu \
                  WHERE gu.group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1))) \
-             ORDER BY tau.user_id DESC",
+             ORDER BY tau.id",
         )
         .bind(topic_id)
         .bind(self.guardian.user_id().unwrap_or(0))
