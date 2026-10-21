@@ -416,6 +416,12 @@ pub fn list_options(cx: &MenuContext, tab: &Tab) -> ListOptions {
                 )),
             )
         }
+        // UserMenuReviewablesList: the queue's page, no dismiss.
+        "review-queue" => {
+            options.show_all_href = format!("{}/review", cx.base_path);
+            options.show_all_title = cx.t("user_menu.reviewable.view_all");
+            options.show_dismiss = false;
+        }
         "other-notifications" => {
             options.empty_state = empty_state(
                 cx,
@@ -1140,6 +1146,89 @@ pub fn message_item(cx: &MenuContext, topic: &Value, users: &[Value]) -> String 
             ))),
             description_class: String::new(),
             topic_id: topic["id"].as_i64(),
+            notification_id: None,
+        },
+    )
+}
+
+/// UserMenuReviewableItem with its type's render director
+/// (lib/reviewable-types): a pending reviewable from
+/// `/review/user-menu-list` or the notifications' pending_reviewables.
+pub fn reviewable_item(cx: &MenuContext, r: &Value) -> String {
+    let flagger = r["flagger_username"]
+        .as_str()
+        .map(str::to_string)
+        .unwrap_or_else(|| cx.t("user_menu.reviewable.deleted_user"));
+    let id = r["id"].as_i64().unwrap_or(0);
+    let unescape = |title: &str| emoji_unescape(title, cx.emojis, cx.base_path);
+    let (icon_name, label, description) = match s(&r["type"]) {
+        "ReviewableFlaggedPost" => {
+            let description = match (r["topic_fancy_title"].as_str(), r["post_number"].as_i64()) {
+                (Some(title), Some(n)) if !title.is_empty() => Text::Html(cx.t_with(
+                    "user_menu.reviewable.post_number_with_topic_title",
+                    &[("post_number", &n.to_string()), ("title", &unescape(title))],
+                )),
+                _ => Text::Plain(cx.t("user_menu.reviewable.deleted_post")),
+            };
+            ("flag", flagger, description)
+        }
+        "ReviewableQueuedPost" => {
+            let title = r["topic_fancy_title"]
+                .as_str()
+                .filter(|t| !t.is_empty())
+                .map(str::to_string)
+                .unwrap_or_else(|| escape(s(&r["payload_title"])));
+            let title = unescape(&title);
+            let description = if r["is_new_topic"] == true {
+                Text::Html(title)
+            } else if !title.is_empty() {
+                Text::Html(cx.t_with(
+                    "user_menu.reviewable.new_post_in_topic",
+                    &[("title", &title)],
+                ))
+            } else {
+                Text::Plain(cx.t("user_menu.reviewable.new_post_in_deleted_topic"))
+            };
+            (
+                "layer-group",
+                cx.t("user_menu.reviewable.queue"),
+                description,
+            )
+        }
+        "ReviewableUser" => (
+            "user",
+            flagger,
+            Text::Plain(cx.t_with(
+                "user_menu.reviewable.user_requires_approval",
+                &[("username", s(&r["username"]))],
+            )),
+        ),
+        _ => (
+            "flag",
+            flagger,
+            Text::Plain(cx.t_with(
+                "user_menu.reviewable.default_item",
+                &[("reviewable_id", &id.to_string())],
+            )),
+        ),
+    };
+    render_item(
+        cx,
+        &Item {
+            class: if r["pending"] == true {
+                "reviewable pending".into()
+            } else {
+                "reviewable reviewed".into()
+            },
+            href: Some(format!("{}/review/{id}", cx.base_path)),
+            // linkTitle: "" (a TODO in Ember).
+            title: Some(String::new()),
+            icon: icon_name.into(),
+            label: Some(label),
+            label_class: String::new(),
+            description: Some(description),
+            description_class: String::new(),
+            topic_id: None,
             notification_id: None,
         },
     )

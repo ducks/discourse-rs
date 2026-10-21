@@ -176,13 +176,259 @@ pub async fn index(
     )
 }
 
-/// GET /review: the Ember app's page, behind requires_login.
+/// The HTML of /review (layout plus the review.index route).
+#[derive(askama::Template)]
+#[template(path = "review.html")]
+pub struct ReviewHtml {
+    pub site_title: String,
+    pub lang: String,
+    pub base_path: String,
+    pub crawler: crate::html::Crawler,
+    pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
+    pub chrome: crate::html::Chrome,
+    /// The route's titleToken (`Review`), empty on the exception page.
+    pub page_title: String,
+    pub main: String,
+}
+
+/// The review.index route's query params in the order the controller
+/// declares them, as its model asks /review.json for them: the defaults
+/// filled in (status pending, priority the reviewable_default_visibility
+/// setting, sort_order by status), the empty ones left out.
+const QUERY_PARAMS: [&str; 14] = [
+    "priority",
+    "type",
+    "status",
+    "category_id",
+    "topic_id",
+    "username",
+    "reviewed_by",
+    "claimed_by",
+    "from_date",
+    "to_date",
+    "sort_order",
+    "additional_filters",
+    "flagged_by",
+    "score_type",
+];
+
+fn encode(pairs: &[(String, String)]) -> String {
+    form_urlencoded::Serializer::new(String::new())
+        .extend_pairs(pairs)
+        .finish()
+}
+
+/// GET /review: the Ember app's page, behind requires_login. Its model is
+/// /review.json with the route's params; staff see the queue, anyone else
+/// the exception page that request's 403 leaves.
 pub async fn page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
+    use askama::Template;
+
     if guardian.is_anonymous() {
         return Ok(super::login_required::not_logged_in(&state));
     }
-    Err(Unsupported("the review page (HTML)").into())
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let default_priority = settings
+        .get("reviewable_default_visibility")?
+        .to_s()
+        .to_string();
+    let q = params::parse(uri.query(), &headers, &Bytes::new());
+    let given = |k: &str| q.get(k).and_then(params::scalar).filter(|v| !v.is_empty());
+    let status = given("status").unwrap_or_else(|| "pending".into());
+    let mut pairs: Vec<(String, String)> = Vec::new();
+    for key in QUERY_PARAMS {
+        let value = match key {
+            "priority" => Some(given(key).unwrap_or_else(|| default_priority.clone())),
+            "status" => Some(status.clone()),
+            "sort_order" => Some(given(key).unwrap_or_else(|| {
+                if status == "reviewed" || status == "all" {
+                    "created_at".into()
+                } else {
+                    "score".into()
+                }
+            })),
+            _ => given(key),
+        };
+        if let Some(v) = value {
+            pairs.push((key.to_string(), v));
+        }
+    }
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let request_url = format!("{base_path}/review?{}", encode(&pairs));
+    // The View All link (and the sidebar's Review): the params that
+    // differ from the controller's defaults, which leave sort_order unset.
+    let view_all: Vec<(String, String)> = pairs
+        .iter()
+        .filter(|(k, v)| match k.as_str() {
+            "priority" => *v != default_priority,
+            "status" => v != "pending",
+            _ => true,
+        })
+        .cloned()
+        .collect();
+    let view_all_query = if view_all.is_empty() {
+        String::new()
+    } else {
+        format!("?{}", encode(&view_all))
+    };
+
+    if !guardian.is_staff() && settings.get("enable_category_group_moderation")?.truthy() {
+        return Err(Unsupported("the review queue for category group moderators").into());
+    }
+    let listed = if guardian.is_staff() {
+        let p: Map<String, Value> = pairs
+            .iter()
+            .map(|(k, v)| (k.clone(), Value::String(v.clone())))
+            .collect();
+        Some(
+            crate::review_list::index(
+                &mut tx,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
+                &guardian,
+                &p,
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
+
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
+    let active = if matches!(listed, Some(Listed::Page(_))) {
+        crate::sidebar::Active::Review(view_all_query.clone())
+    } else {
+        crate::sidebar::Active::None
+    };
+    site.load_chrome(&mut tx, &state, &settings, &guardian, active)
+        .await?;
+    site.bus_position = bus_position;
+    let categories = crate::topic_list_view::categories(&mut tx).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let (main, page_title) = match &listed {
+        Some(Listed::Page(doc)) => {
+            let viewer = crate::admin_view::AdminViewer::from_current_user(&json!({
+                "admin": guardian.is_admin(),
+                "staff": guardian.is_staff(),
+                "id": guardian.user_id(),
+            }));
+            let acx = crate::admin_view::AdminCx {
+                i18n: &state.i18n,
+                settings: &settings,
+                base_path: &base_path,
+                viewer: &viewer,
+            };
+            let claiming = settings.get("reviewable_claiming")?.to_s().to_string();
+            let main = crate::review_view::render(&crate::review_view::Page {
+                cx: &cx,
+                acx: &acx,
+                doc,
+                viewer_id: guardian.user_id().map(i64::from).unwrap_or(0),
+                admin: guardian.is_admin(),
+                claiming: &claiming,
+                blur_tl0: settings.get("blur_tl0_flagged_posts_media")?.truthy(),
+                view_all_query: &view_all_query,
+                default_priority: &default_priority,
+            });
+            (main, crate::topic_list_view::t(&cx, "review.title"))
+        }
+        // Discourse::InvalidParameters: the 400 the model's request gets.
+        Some(Listed::InvalidParameter(_)) => (
+            crate::messages_view::exception(&cx, 400, &request_url),
+            String::new(),
+        ),
+        // ensure_can_see: a 403.
+        None => (
+            crate::messages_view::exception(&cx, 403, &request_url),
+            String::new(),
+        ),
+    };
+    // Listing writes nothing that should stay.
+    tx.rollback().await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
+    let page = ReviewHtml {
+        site_title: site.site_title,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler,
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        page_title,
+        main,
+    };
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+        &vs,
+    )?)
+}
+
+/// GET /review/user-menu-list: ReviewablesController#user_menu_list, the
+/// user menu's review queue (`Reviewable.user_menu_list_for` through the
+/// basic serializers) with the user's reviewable count.
+pub async fn user_menu_list(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    // requires_login
+    let Some(user) = guardian.user().cloned() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_can_see: can_see_review_queue?
+    if !guardian.is_staff() {
+        if settings.get("enable_category_group_moderation")?.truthy() {
+            return Err(Unsupported("the review queue for category group moderators").into());
+        }
+        return Ok(super::search::invalid_access(&state));
+    }
+    let reviewables = crate::reviewables::user_menu_list(
+        &mut conn,
+        &settings,
+        user.id,
+        user.admin,
+        user.moderator,
+    )
+    .await?;
+    let (count, _) =
+        crate::reviewables::staff_counts(&mut conn, &settings, user.id, user.admin, user.moderator)
+            .await?;
+    // render_json_dump with rest_serializer: true
+    Ok(Json(json!({
+        "reviewables": reviewables,
+        "reviewable_count": count,
+        "__rest_serializer": "1",
+    }))
+    .into_response())
 }

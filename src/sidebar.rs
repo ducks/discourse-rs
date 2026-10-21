@@ -45,6 +45,9 @@ pub enum Active {
     /// The badges pages (badges.index, badges.show): the More section's
     /// Badges link.
     Badges,
+    /// review.index: the Review link, its href the route's query (the
+    /// params that differ from their defaults, `?sort_order=score`).
+    Review(String),
 }
 
 impl Active {
@@ -65,6 +68,7 @@ impl Active {
             Active::Users => "users".into(),
             Active::Groups => "groups".into(),
             Active::Badges => "badges".into(),
+            Active::Review(query) => format!("review:{query}"),
         }
     }
 
@@ -72,6 +76,7 @@ impl Active {
         match key.split_once(':') {
             Some(("category", id)) => id.parse().map(Active::Category).unwrap_or(Active::None),
             Some(("tag", name)) => Active::Tag(name.to_string()),
+            Some(("review", query)) => Active::Review(query.to_string()),
             Some(("chat-channel", id)) => {
                 id.parse().map(Active::ChatChannel).unwrap_or(Active::None)
             }
@@ -945,7 +950,11 @@ fn member_link(
                 return None;
             }
             link.link_name = Some("review".into());
-            link.href = format!("{base}/review");
+            link.href = match cx.active {
+                Active::Review(query) => format!("{base}/review{query}"),
+                _ => format!("{base}/review"),
+            };
+            link.active = matches!(cx.active, Active::Review(_));
             link.title = title("review.title");
             link.content = escape(&text);
             link.prefix = icon("flag");

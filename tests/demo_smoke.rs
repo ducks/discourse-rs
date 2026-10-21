@@ -1299,7 +1299,6 @@ async fn admin_staff_action_logs() {
 }
 
 #[tokio::test]
-#[ignore = "the review queue's page is refused, ROADMAP 194"]
 async fn admin_review_queue_page() {
     let (db, state) = app().await;
     let post = post_by_another(&db, "user1").await.to_string();
@@ -1318,7 +1317,7 @@ async fn admin_review_queue_page() {
     settle(&db, &state).await;
     let mut admin = member(&state, "admin").await;
     let page = admin.page("/review").await;
-    drawn("/review", &page, "reviewable-item");
+    drawn("/review", &page, "review-item reviewable-flagged-post");
 }
 
 #[tokio::test]

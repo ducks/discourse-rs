@@ -122,6 +122,183 @@ pub async fn staff_counts(
     Ok((count, unseen))
 }
 
+/// The pending reviewables a staff member's own lists read
+/// (`Reviewable.list_for` with the pending status, the default priority
+/// and `include_claimed_by_others: false`): the FROM and WHERE, `$1` the
+/// user. Moderators see through the category and group scopes, which
+/// aren't ported.
+async fn pending_for_staff(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    admin: bool,
+    moderator: bool,
+) -> Result<String, AppError> {
+    if moderator && !admin {
+        return Err(Unsupported("the review queue for moderators").into());
+    }
+    let types = STI_NAMES
+        .iter()
+        .map(|t| format!("'{t}'"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let mut base = format!(
+        "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
+         WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
+         AND reviewables.type IN ({types})"
+    );
+    let min = min_score_for_priority(&mut *conn, s).await?;
+    if min > 0.0 {
+        base.push_str(&format!(
+            " AND (reviewables.score >= {min} OR reviewables.force_review)"
+        ));
+    }
+    Ok(base)
+}
+
+/// `Reviewable.user_menu_list_for(user)` (30 at most, by score then
+/// newest) through `Reviewable.basic_serializers_for_list`: the basic
+/// serializer of each type (BasicReviewableFlaggedPostSerializer,
+/// ...QueuedPostSerializer, ...UserSerializer, else
+/// BasicReviewableSerializer).
+pub async fn user_menu_list(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    user_id: i32,
+    admin: bool,
+    moderator: bool,
+) -> Result<Vec<serde_json::Value>, AppError> {
+    type Row = (
+        i64,
+        String,
+        i32,
+        chrono::NaiveDateTime,
+        Option<String>,
+        Option<String>,
+        Option<i32>,
+        Option<i32>,
+        Option<serde_json::Value>,
+    );
+    let base = pending_for_staff(&mut *conn, s, admin, moderator).await?;
+    let rows: Vec<Row> = sqlx::query_as(&format!(
+        "SELECT reviewables.id, reviewables.type, reviewables.status, reviewables.created_at, \
+                (SELECT username FROM users WHERE users.id = reviewables.created_by_id), \
+                reviewables.target_type, reviewables.target_id, reviewables.topic_id, reviewables.payload \
+         {base} ORDER BY reviewables.score DESC, reviewables.created_at DESC LIMIT 30"
+    ))
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut out = Vec::new();
+    for (id, kind, status, created_at, flagger, target_type, target_id, topic_id, payload) in rows {
+        let mut r = serde_json::Map::new();
+        r.insert("flagger_username".into(), json!(flagger));
+        r.insert("id".into(), json!(id));
+        r.insert("type".into(), json!(kind));
+        r.insert("pending".into(), json!(status == PENDING));
+        r.insert(
+            "created_at".into(),
+            json!(crate::topic_list::time_json(created_at)),
+        );
+        // The topic as `object.topic` loads it: Trashable leaves a
+        // deleted one out.
+        let topic: Option<(i32, String, Option<String>)> = match topic_id {
+            Some(tid) => sqlx::query_as(
+                "SELECT id, title, fancy_title FROM topics WHERE id = $1 AND deleted_at IS NULL",
+            )
+            .bind(tid)
+            .fetch_optional(&mut *conn)
+            .await?,
+            None => None,
+        };
+        let fancy = match &topic {
+            Some((tid, title, stored)) => Some(
+                crate::topic_query::fancy_title(&mut *conn, s, *tid, title, stored.as_deref())
+                    .await?,
+            ),
+            None => None,
+        };
+        let payload = payload.unwrap_or(serde_json::Value::Null);
+        // `payload["title"].present?`
+        let payload_title = payload["title"]
+            .as_str()
+            .filter(|t| !t.trim().is_empty())
+            .map(str::to_string);
+        match kind.as_str() {
+            "ReviewableFlaggedPost" => {
+                let post_number: Option<i32> =
+                    match (target_type.as_deref(), target_id) {
+                        (Some("Post"), Some(pid)) => sqlx::query_scalar(
+                            "SELECT post_number FROM posts WHERE id = $1 AND deleted_at IS NULL",
+                        )
+                        .bind(pid)
+                        .fetch_optional(&mut *conn)
+                        .await?,
+                        _ => None,
+                    };
+                if let Some(n) = post_number {
+                    r.insert("post_number".into(), json!(n));
+                }
+                if let Some(f) = fancy {
+                    r.insert("topic_fancy_title".into(), json!(f));
+                }
+            }
+            "ReviewableQueuedPost" => {
+                if let Some(f) = fancy {
+                    r.insert("topic_fancy_title".into(), json!(f));
+                }
+                if let Some(title) = &payload_title {
+                    r.insert("payload_title".into(), json!(title));
+                }
+                r.insert("is_new_topic".into(), json!(payload_title.is_some()));
+            }
+            "ReviewableUser" => {
+                r.insert("username".into(), payload["username"].clone());
+            }
+            _ => {}
+        }
+        out.push(serde_json::Value::Object(r));
+    }
+    Ok(out)
+}
+
+/// `User#bump_last_seen_reviewable!`: the newest of
+/// `Reviewable.unseen_list_for(user)` past the one last seen becomes it,
+/// and the user's reviewable counts go out on `/reviewable_counts/:id`.
+pub async fn bump_last_seen(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    s: &SiteSettings,
+    user_id: i32,
+    admin: bool,
+    moderator: bool,
+) -> Result<(), AppError> {
+    let base = pending_for_staff(&mut *conn, s, admin, moderator).await?;
+    let max: Option<i64> = sqlx::query_scalar(&format!(
+        "SELECT MAX(reviewables.id) {base} AND reviewables.id > \
+         COALESCE((SELECT last_seen_reviewable_id FROM users WHERE id = $1), 0)"
+    ))
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let Some(max) = max else {
+        return Ok(());
+    };
+    sqlx::query("UPDATE users SET last_seen_reviewable_id = $2, updated_at = now() WHERE id = $1")
+        .bind(user_id)
+        .bind(i32::try_from(max).unwrap_or(i32::MAX))
+        .execute(&mut *conn)
+        .await?;
+    let (count, unseen) = staff_counts(&mut *conn, s, user_id, admin, moderator).await?;
+    bus.publish(
+        &mut *conn,
+        &format!("/reviewable_counts/{user_id}"),
+        &json!({ "reviewable_count": count, "unseen_reviewable_count": unseen }),
+        Some(&[crate::bus::user_tag(user_id)]),
+    )
+    .await?;
+    Ok(())
+}
+
 /// `ReviewableScore.calc_user_accuracy_bonus(agreed, disagreed)`
 fn accuracy_bonus(agreed: i32, disagreed: i32) -> f64 {
     let total = f64::from(agreed + disagreed);

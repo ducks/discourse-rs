@@ -37,6 +37,8 @@ pub enum BookmarksError {
     Setting(SettingError),
     Url(UrlError),
     Unsupported(Unsupported),
+    /// What NotificationsError::Review carries.
+    Review(crate::AppError),
 }
 
 impl std::fmt::Display for BookmarksError {
@@ -46,6 +48,7 @@ impl std::fmt::Display for BookmarksError {
             BookmarksError::Setting(e) => e.fmt(f),
             BookmarksError::Url(e) => e.fmt(f),
             BookmarksError::Unsupported(e) => e.fmt(f),
+            BookmarksError::Review(e) => e.fmt(f),
         }
     }
 }
@@ -119,6 +122,7 @@ impl From<NotificationsError> for BookmarksError {
             NotificationsError::Db(e) => BookmarksError::Db(e),
             NotificationsError::Setting(e) => BookmarksError::Setting(e),
             NotificationsError::Unsupported(e) => BookmarksError::Unsupported(e),
+            NotificationsError::Review(e) => BookmarksError::Review(e),
         }
     }
 }
