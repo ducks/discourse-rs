@@ -62,8 +62,9 @@ What a visitor or a new member meets first, by how soon:
   vote (228); building one from the composer is 229.
 - A post with an uploaded video or audio file is refused
   (posting/create.rs:591, 138, with 141).
-- Checklists can't be checked (242), the staff review queue has no page
-  (194), user status can't be set (130), chat has no drawer (223).
+- Checklists can't be checked (242), the staff review queue's claims,
+  notes and client actions are refused (194), user status can't be set
+  (130), chat has no drawer (223).
 
 ## Before the demo
 
@@ -100,8 +101,8 @@ receiving it, a DM and a reaction).
 
 Admin:
 
-- [ ] The review queue's page /review is refused; its JSON and actions
-  work (admin_review_queue_page): 194
+- [x] The review queue's page /review (admin_review_queue_page); its
+  claims, notes and client actions are refused: 194
 - [ ] Silencing a member: the system message's post_alert (its options)
   and the account_silenced email are refused, so they are never told
   (a_silenced_member_is_told): 145, 146
@@ -1823,7 +1824,7 @@ have handlers now.
 149. `feat/category-group-moderation` M: enable_category_group_moderation
     and moderators in the review queue (topic_guardian.rs:191;
     posting/validate.rs:449; review.rs:170; review_posts.rs:413,1138;
-    review_list.rs:178; routes/review.rs:147; user_destroyer.rs:620;
+    review_list.rs:178; routes/review.rs:147,285; user_destroyer.rs:620;
     current_user.rs:552,972; reviewables.rs:91), moderators' view of
     flagged messages and warnings (guardian.rs:282;
     topic_guardian.rs:242; jobs/handlers.rs:1230), moderators and
@@ -2657,10 +2658,19 @@ route table has been made, so this list may be short.
     exception page for one who isn't staff) and the profile's Admin
     button for staff (displayTopLevelAdminButton). Refused, naming their
     items: the invites pages (192), view_user_route profile-hidden
-194. `feat/review-pages` M: the review queue's page (routes/review.rs:187),
-    the user menu's review tab (routes/user_menu.rs:88;
-    notifications.rs:270, pending_reviewables), the staff topic and post
-    admin menus, show_user_menu_avatars (routes/user_menu.rs:50)
+194. `feat/review-pages` M: the review queue's page done (review_view.rs,
+    static/js/review.js: the queue and its filters, the bundled actions
+    performed and the reviewable redrawn). Left: what the page refuses in
+    review.js, its parts leaning on what isn't ported: claiming
+    (reviewable_claimed_topics, and the claim a confirmation, a modal or a
+    client action takes first), notes (ReviewableNotesController), the
+    insights tab (IpLookup), the client actions (the composer's edit,
+    suspend, silence), the reject reason and revise modals, editing a
+    reviewable, the pin toggle and loading past the first ten; the
+    /review/topics, /review/settings and /review/:id pages; the user
+    menu's review tab (routes/user_menu.rs:88; notifications.rs:270,
+    pending_reviewables), the staff topic and post admin menus,
+    show_user_menu_avatars (routes/user_menu.rs:50)
 195. `feat/rss` M: the .rss feeds of the lists, categories, tags, topics,
     a user's posts and activity, topic voting's votes feed, and the
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the

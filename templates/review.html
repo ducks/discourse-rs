@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}{% if !page_title.is_empty() %}{{ page_title }} - {% endif %}{{ site_title }}{% endblock %}
+{% block content %}
+{{ main|safe }}
+{%- if main.contains("review-page-data") %}
+{#- The confirmations (dialog.js) and the queue's own script; the page
+    loads admin-ui.js for the filters' choosers. -#}
+<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "review.js") }}"></script>
+{%- endif %}
+{% endblock %}

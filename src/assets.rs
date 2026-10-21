@@ -62,6 +62,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/date-time-input.css"),
     include_str!("../static/css/segmented-control.css"),
     include_str!("../static/css/powered-by.css"),
+    include_str!("../static/css/review.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),
     include_str!("../static/css/discourse-reactions.css"),
@@ -478,6 +479,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/notifications-page.js"),
     ),
+    ("review.js", JS, include_str!("../static/js/review.js")),
     (
         "user-activity.js",
         JS,

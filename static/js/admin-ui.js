@@ -1,5 +1,5 @@
 // What the advanced and customize admin pages' scripts share
-// (src/admin_ui.rs draws their markup):
+// (src/admin_ui.rs draws their markup), and the review queue's filters:
 //
 //   Discourse.adminUi.t(key, args)      the page's strings (a JSON block
 //                                       read by strings(id)), `%{name}`
@@ -20,6 +20,9 @@
 //   Discourse.adminUi.subscribe(channel, fn)
 //                                       the message bus's channel, from the
 //                                       page's position; returns a stop()
+//   Discourse.adminUi.floatBody(details)
+//                                       a select-kit body floated under its
+//                                       header
 (function () {
   "use strict";
 
@@ -285,7 +288,7 @@
     "toggle",
     function (event) {
       var details = event.target;
-      if (!details.matches || !details.matches(".admin-contents details.combo-box")) {
+      if (!details.matches || !details.matches(":is(.admin-contents, .reviewable-filters) details.combo-box")) {
         return;
       }
       var template = details.querySelector("template.select-kit-rows");
@@ -307,7 +310,7 @@
   );
 
   document.addEventListener("click", function (event) {
-    var row = event.target.closest(".admin-contents details.combo-box .select-kit-row");
+    var row = event.target.closest(":is(.admin-contents, .reviewable-filters) details.combo-box .select-kit-row");
     if (!row) {
       return;
     }
@@ -379,7 +382,7 @@
     "toggle",
     function (event) {
       var chooser = event.target;
-      if (!chooser.matches || !chooser.matches(".admin-contents details.email-group-user-chooser")) {
+      if (!chooser.matches || !chooser.matches(":is(.admin-contents, .reviewable-filters) details.email-group-user-chooser")) {
         return;
       }
       chooser.classList.toggle("is-expanded", chooser.open);
@@ -414,7 +417,7 @@
 
   // The selected user's choice, clicked: no one chosen.
   document.addEventListener("click", function (event) {
-    var choice = event.target.closest(".admin-contents .email-group-user-chooser .selected-choice");
+    var choice = event.target.closest(":is(.admin-contents, .reviewable-filters) .email-group-user-chooser .selected-choice");
     if (!choice) {
       return;
     }
@@ -428,14 +431,14 @@
   });
 
   document.addEventListener("input", function (event) {
-    var input = event.target.closest(".admin-contents .email-group-user-chooser .filter-input");
+    var input = event.target.closest(":is(.admin-contents, .reviewable-filters) .email-group-user-chooser .filter-input");
     if (input) {
       searchUsers(input.closest(".email-group-user-chooser"), input.value);
     }
   });
 
   document.addEventListener("click", function (event) {
-    var row = event.target.closest(".admin-contents .email-group-user-chooser .select-kit-row");
+    var row = event.target.closest(":is(.admin-contents, .reviewable-filters) .email-group-user-chooser .select-kit-row");
     if (!row) {
       return;
     }
@@ -685,6 +688,7 @@
     subscribe: subscribe,
     toast: toast,
     escapeHtml: escapeHtml,
+    floatBody: floatBody,
     multiSelect: multiSelect,
     loadMore: loadMore,
   };
