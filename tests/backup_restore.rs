@@ -230,7 +230,9 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
     // The scripts Rails' force_recompilation! makes on the seed, measured
     // on the reference (parity/backup_restore): field, theme, digest, a
     // SHA1 of the content and whether the source map is nil.
-    let caches: Vec<(i64, Option<i64>, Option<String>, String, Option<String>)> = sqlx::query_as(
+    // (theme_field_id, theme_id, digest, content, source_map)
+    type Cache = (i64, Option<i64>, Option<String>, String, Option<String>);
+    let caches: Vec<Cache> = sqlx::query_as(
         "SELECT theme_field_id, theme_id, digest, content, source_map FROM javascript_caches \
          ORDER BY theme_field_id",
     )
