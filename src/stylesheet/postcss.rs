@@ -1785,16 +1785,59 @@ fn light_dark(
             Node::AtRule(a) => {
                 let supports = supports
                     || (a.name.eq_ignore_ascii_case("supports") && has_light_dark(&a.params));
+                let mut dark_at_rule = None;
                 if let Some(kids) = a.nodes.as_mut() {
-                    // Declarations directly in an at-rule: only those that
-                    // need nothing after a rule.
-                    let polyfilled = rule_light_dark(kids, toggles, supports)?;
-                    if !polyfilled.nested.is_empty() || polyfilled.dark_media.is_some() {
-                        return Err(Unsupported(
-                            "light-dark() or color-scheme outside a style rule (169a)",
-                        ));
-                    }
+                    // Declarations directly in an at-rule (@font-face,
+                    // @page...): postcss-nesting leaves the nested rule in
+                    // place there, its `&` made `:scope`.
+                    let Polyfilled { nested, dark_media } =
+                        rule_light_dark(kids, toggles, supports)?;
                     light_dark(kids, toggles, supports)?;
+                    if !nested.is_empty() {
+                        kids.push(Node::AtRule(AtRule {
+                            before: Some(String::new()),
+                            name: "supports".to_string(),
+                            after_name: None,
+                            params: "not (color: light-dark(tan, tan))".to_string(),
+                            between: Some(String::new()),
+                            nodes: Some(vec![Node::Rule(Rule {
+                                before: Some(String::new()),
+                                selector: ":scope *".to_string(),
+                                between: Some(String::new()),
+                                nodes: nested,
+                                semicolon: None,
+                                after: Some(String::new()),
+                            })]),
+                            semicolon: None,
+                            after: Some(String::new()),
+                        }));
+                    }
+                    dark_at_rule = dark_media.map(|decl| AtRule {
+                        before: a.before.clone(),
+                        name: a.name.clone(),
+                        after_name: a.after_name.clone(),
+                        params: a.params.clone(),
+                        between: a.between.clone(),
+                        nodes: Some(vec![Node::Decl(decl)]),
+                        semicolon: a.semicolon,
+                        after: a.after.clone(),
+                    });
+                }
+                if let Some(at_rule) = dark_at_rule {
+                    nodes.insert(
+                        i + 1,
+                        Node::AtRule(AtRule {
+                            before: Some(String::new()),
+                            name: "media".to_string(),
+                            after_name: None,
+                            params: "(prefers-color-scheme: dark)".to_string(),
+                            between: None,
+                            nodes: Some(vec![Node::AtRule(at_rule)]),
+                            semicolon: None,
+                            after: None,
+                        }),
+                    );
+                    i += 1;
                 }
             }
             Node::Decl(_) | Node::Comment(_) => {}
@@ -2656,15 +2699,16 @@ mod tests {
     }
 
     /// What AssetProcessor#post_css made of each input on the reference
-    /// (parity/stylesheets/postcss, run by rails runner with the source
-    /// map file `x.css.map`): light-dark() in custom properties and other
-    /// declarations, nested, with `!important`, under list, complex and
-    /// pseudo-element selectors and in @media, the progressive @supports
-    /// of repeated declarations, color-scheme; and autoprefixer's removed
+    /// (parity/stylesheets/postcss, recorded by scripts/record-postcss
+    /// with the source map file `x.css.map`): light-dark() in custom
+    /// properties and other declarations, nested, with `!important`, under
+    /// list, complex and pseudo-element selectors and in @media, in
+    /// at-rules that hold declarations (@font-face, @page), the
+    /// progressive @supports of repeated declarations, color-scheme; and autoprefixer's removed
     /// keyframes, properties and values and its added prefixes.
     #[test]
     fn post_css_matches_the_reference() {
-        for name in ["light_dark", "autoprefixer"] {
+        for name in ["light_dark", "light_dark_at_rules", "autoprefixer"] {
             let dir =
                 std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/stylesheets/postcss");
             let input = std::fs::read_to_string(dir.join(format!("{name}.css"))).unwrap();
