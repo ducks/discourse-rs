@@ -278,7 +278,7 @@ async fn tag_pages_render_html() {
     let db = TestDb::new().await;
     let (status, _, html) = get(&db.pool, "/tag/howto/1").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<title>Topics tagged howto - Discourse</title>"));
+    assert!(html.contains("<title>Latest howto topics - Discourse</title>"));
     // The tag's navigation (Ember draws no heading): its drop selected,
     // the pills under the tag, and the info button with its hidden panel.
     assert!(!html.contains(r#"class="tag-heading""#));

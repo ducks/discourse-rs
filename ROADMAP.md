@@ -2863,10 +2863,12 @@ route table has been made, so this list may be short.
     (request.env[:resolved_theme_id]: a member's theme_ids, the
     theme_ids cookie, preview_theme_id, none under safe mode), so a
     member on another user selectable theme gets the default theme's
-    palettes. The dark logos (site_logo_dark_url and
-    site_mobile_logo_dark_url in Header::Logo's light/dark picture,
-    application_logo_dark_url, a category's uploaded_logo_dark) are not
-    drawn, so a dark page keeps the light logos
+    palettes (and its custom_homepage modifier, which decides the
+    current homepage and so the list titles: homepage.rs). The dark
+    logos (site_logo_dark_url and site_mobile_logo_dark_url in
+    Header::Logo's light/dark picture, application_logo_dark_url, a
+    category's uploaded_logo_dark) are not drawn, so a dark page keeps
+    the light logos
 
 ### Phase 11: the bundled plugins' gaps (210)
 

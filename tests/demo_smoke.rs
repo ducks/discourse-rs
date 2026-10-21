@@ -1164,11 +1164,7 @@ async fn admin_changes_a_site_setting() {
         .await;
     ok("PUT /admin/site_settings/title.json", &changed);
     let home = anonymous(&state).await.page("/latest").await;
-    drawn(
-        "/latest",
-        &home,
-        "<title>Latest topics - Demo Night</title>",
-    );
+    drawn("/latest", &home, "<title>Demo Night</title>");
 }
 
 #[tokio::test]

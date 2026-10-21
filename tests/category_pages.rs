@@ -123,7 +123,7 @@ async fn category_page_renders_the_category_navigation() {
     let db = TestDb::new().await;
     let (status, _, html) = get(&db.pool, "/c/general/4").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<title>General - Discourse</title>"));
+    assert!(html.contains("<title>Latest General topics - Discourse</title>"));
     assert!(html.contains(r#"<section class="navigation-container category-navigation">"#));
     // The category selected, its subcategories, then the tags.
     assert!(html.contains(r#"data-name="General" data-value="4" title="General""#));

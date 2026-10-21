@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% import "macros.html" as m %}
-{% block title %}{{ chrome.t("filters.categories.title") }} - {{ site_title }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
 {% if !main.is_empty() %}
