@@ -76,7 +76,7 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-44 passing). Each step below fails today and is ignored with the item
+46 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
@@ -84,7 +84,7 @@ Core forum:
 
 - [ ] A reply linking another topic makes post_alert refuse, so its
   mentions notify nobody (a_reply_linking_a_topic_notifies): 145
-- [ ] pull_hotlinked_images and crawl_topic_link are refused after every
+- [x] pull_hotlinked_images and crawl_topic_link are refused after every
   post with an image or a link (posting_runs_its_background_jobs): 140,
   127
 - [ ] The interface preferences page is a 500 once a palette is user
@@ -1376,7 +1376,7 @@ positions were 100, dropped: they stay placeholders.
 
 The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146),
-crawl_topic_link (127), index_category_for_search (144),
+index_category_for_search (144),
 change_display_name (153),
 update_hotlinked_raw and pull_user_profile_hotlinked_images (140),
 user_suspension_expired (151),
@@ -1457,7 +1457,7 @@ have handlers now.
 127. `feat/topic-links` S: TopicLink.topic_map with clicks
     (topic_view.rs:1658), links to topic and site paths the router
     isn't ported for (posting/links.rs:65,454), links from video embeds
-    (:219), the crawl_topic_link job
+    (:219)
 128. `feat/category-lists-rest` M: the subcategories_with_featured_topics
     styles and paginated category lists (category_list.rs:148,167),
     parent slugs needing CGI escapes (:120), category logos

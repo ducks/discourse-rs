@@ -43,6 +43,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
+        super::crawl_topic_link::CRAWL_TOPIC_LINK => {
+            super::crawl_topic_link::crawl_topic_link(state, &job.args).await
+        }
         super::hotlinked_images::PULL_HOTLINKED_IMAGES => {
             super::hotlinked_images::pull_hotlinked_images(state, &job.args).await
         }

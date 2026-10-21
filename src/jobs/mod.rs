@@ -13,6 +13,7 @@ pub mod badges;
 pub mod bookmark_reminders;
 pub mod cleanup;
 pub mod consistency;
+pub mod crawl_topic_link;
 pub mod dashboard;
 pub mod group_messages;
 pub(crate) mod handlers;

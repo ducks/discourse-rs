@@ -1,0 +1,351 @@
+{
+  "name": "crawl",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-21T03:29:42.045919",
+  "transaction_started_at": "2026-10-21T03:29:40.233008",
+  "responses": [],
+  "changes": {
+    "topic_links": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "url": "http://fixtures.localhost:8099/titled",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 900,
+            "url": "http://fixtures.localhost:8099/titled",
+            "quote": false,
+            "title": "A remote page",
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        },
+        {
+          "before": {
+            "id": 901,
+            "url": "http://fixtures.localhost:8099/untitled",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 901,
+            "url": "http://fixtures.localhost:8099/untitled",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        },
+        {
+          "before": {
+            "id": 902,
+            "url": "http://fixtures.localhost:8099/missing",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 902,
+            "url": "http://fixtures.localhost:8099/missing",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        },
+        {
+          "before": {
+            "id": 903,
+            "url": "http://fixtures.localhost:8099/pics/cat.PNG",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 903,
+            "url": "http://fixtures.localhost:8099/pics/cat.PNG",
+            "quote": false,
+            "title": "cat.PNG",
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        },
+        {
+          "before": {
+            "id": 904,
+            "url": "http://fixtures.localhost:8099/embedded",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 904,
+            "url": "http://fixtures.localhost:8099/embedded",
+            "quote": false,
+            "title": "Parity fixture: replies and posters",
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        },
+        {
+          "before": {
+            "id": 907,
+            "url": "http://fixtures.localhost:8099/moved",
+            "quote": false,
+            "title": null,
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": null,
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          },
+          "after": {
+            "id": 907,
+            "url": "http://fixtures.localhost:8099/moved",
+            "quote": false,
+            "title": "A remote page",
+            "clicks": 0,
+            "domain": "fixtures.localhost",
+            "post_id": 36,
+            "user_id": 3,
+            "internal": false,
+            "topic_id": 35,
+            "extension": null,
+            "crawled_at": "2026-10-21T03:29:40.233008",
+            "created_at": "2026-10-01T10:00:00",
+            "reflection": false,
+            "updated_at": "2026-10-01T10:00:00",
+            "link_post_id": null,
+            "link_topic_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "setup": [
+    "INSERT INTO topic_links (id, topic_id, post_id, user_id, url, domain, internal, reflection, quote, created_at, updated_at, crawled_at) VALUES (900, 35, 36, 3, 'http://fixtures.localhost:8099/titled', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (901, 35, 36, 3, 'http://fixtures.localhost:8099/untitled', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (902, 35, 36, 3, 'http://fixtures.localhost:8099/missing', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (903, 35, 36, 3, 'http://fixtures.localhost:8099/pics/cat.PNG', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (904, 35, 36, 3, 'http://fixtures.localhost:8099/embedded', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (905, 35, 36, 3, '/guidelines', 'localhost', TRUE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (906, 35, 36, 3, 'http://fixtures.localhost:8099/titled?again', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', '2026-10-01 11:00:00'), (907, 35, 36, 3, 'http://fixtures.localhost:8099/moved', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL)",
+    "INSERT INTO topic_embeds (id, topic_id, post_id, embed_url, created_at, updated_at) VALUES (900, 35, 36, 'http://fixtures.localhost:8099/embedded', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "enqueue": [
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 900
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 901
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 902
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 903
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 904
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 905
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 906
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 907
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 999999
+      }
+    ]
+  ],
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><head><title>\n  A   remote\n  page </title></head><body>hi</body></html>"
+    },
+    "/untitled": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8"
+      },
+      "body": "<html><body><p>nothing</p></body></html>"
+    },
+    "/moved": {
+      "status": 301,
+      "headers": {
+        "Location": "http://fixtures.localhost:8099/titled"
+      },
+      "body": ""
+    }
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "102a5a33a3cda00651482a3a68d33162d52577d283463df004b8c8162918917d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

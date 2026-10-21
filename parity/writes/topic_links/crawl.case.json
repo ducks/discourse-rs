@@ -1,0 +1,41 @@
+{
+  "user": null,
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/titled": {
+      "status": 200,
+      "headers": {"Content-Type": "text/html; charset=utf-8"},
+      "body": "<html><head><title>\n  A   remote\n  page </title></head><body>hi</body></html>"
+    },
+    "/untitled": {
+      "status": 200,
+      "headers": {"Content-Type": "text/html; charset=utf-8"},
+      "body": "<html><body><p>nothing</p></body></html>"
+    },
+    "/moved": {
+      "status": 301,
+      "headers": {"Location": "http://fixtures.localhost:8099/titled"},
+      "body": ""
+    }
+  },
+  "setup": [
+    "INSERT INTO topic_links (id, topic_id, post_id, user_id, url, domain, internal, reflection, quote, created_at, updated_at, crawled_at) VALUES (900, 35, 36, 3, 'http://fixtures.localhost:8099/titled', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (901, 35, 36, 3, 'http://fixtures.localhost:8099/untitled', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (902, 35, 36, 3, 'http://fixtures.localhost:8099/missing', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (903, 35, 36, 3, 'http://fixtures.localhost:8099/pics/cat.PNG', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (904, 35, 36, 3, 'http://fixtures.localhost:8099/embedded', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (905, 35, 36, 3, '/guidelines', 'localhost', TRUE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL), (906, 35, 36, 3, 'http://fixtures.localhost:8099/titled?again', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', '2026-10-01 11:00:00'), (907, 35, 36, 3, 'http://fixtures.localhost:8099/moved', 'fixtures.localhost', FALSE, FALSE, FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL)",
+    "INSERT INTO topic_embeds (id, topic_id, post_id, embed_url, created_at, updated_at) VALUES (900, 35, 36, 'http://fixtures.localhost:8099/embedded', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [],
+  "enqueue": [
+    ["crawl_topic_link", {"topic_link_id": 900}],
+    ["crawl_topic_link", {"topic_link_id": 901}],
+    ["crawl_topic_link", {"topic_link_id": 902}],
+    ["crawl_topic_link", {"topic_link_id": 903}],
+    ["crawl_topic_link", {"topic_link_id": 904}],
+    ["crawl_topic_link", {"topic_link_id": 905}],
+    ["crawl_topic_link", {"topic_link_id": 906}],
+    ["crawl_topic_link", {"topic_link_id": 907}],
+    ["crawl_topic_link", {"topic_link_id": 999999}]
+  ],
+  "run_jobs": ["crawl_topic_link"]
+}

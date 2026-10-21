@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "s3_endpoint": "http://fixtures.localhost:8099"
+  },
+  "remote": {
+    "/slides": {
+      "status": 200,
+      "headers": {"Content-Type": "text/html; charset=utf-8"},
+      "body": "<html><head><title>The slides</title></head></html>"
+    }
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The slides are at http://fixtures.localhost:8099/slides for everyone."
+      }
+    }
+  ],
+  "run_jobs": ["crawl_topic_link"]
+}
