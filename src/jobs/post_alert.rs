@@ -10,8 +10,8 @@
 //! Messages notify their directly targeted users, and their groups'
 //! members by their level on it, with the groups' inbox summaries.
 //!
-//! Refused rather than approximated: group and @here mentions, group
-//! SMTP, nested replies and push notifications.
+//! Refused rather than approximated: group SMTP, nested replies and push
+//! notifications.
 //! The notifications themselves go through `notification_create`.
 
 use serde_json::{Map, Value, json};
@@ -34,6 +34,7 @@ mod types {
     pub const POSTED: i32 = 9;
     pub const PRIVATE_MESSAGE: i32 = 6;
     pub const LINKED: i32 = 11;
+    pub const GROUP_MENTIONED: i32 = 15;
     pub const WATCHING_FIRST_POST: i32 = 17;
     pub const WATCHING_CATEGORY_OR_TAG: i32 = 36;
     /// discourse-reactions' type.
@@ -51,15 +52,16 @@ const COLLAPSED: [i32; 4] = [
 ];
 
 /// `PostAlerter::NOTIFIABLE_TYPES`: the types that alert the user live
-/// and by push. Group mentions are refused, and event reminders and
-/// invitations come from a plugin, so neither is here.
-const NOTIFIABLE: [i32; 8] = [
+/// and by push. Event reminders and invitations come from a plugin, so
+/// they are not here.
+const NOTIFIABLE: [i32; 9] = [
     types::MENTIONED,
     types::REPLIED,
     types::QUOTED,
     types::POSTED,
     types::LINKED,
     types::PRIVATE_MESSAGE,
+    types::GROUP_MENTIONED,
     types::WATCHING_FIRST_POST,
     types::WATCHING_CATEGORY_OR_TAG,
 ];
@@ -104,6 +106,8 @@ struct Opts {
     acting_user_id: Option<i32>,
     /// `revision_number`, an edit's.
     revision_number: Option<i32>,
+    /// `group`: the group mentioned (id, name).
+    group: Option<(i32, String)>,
 }
 
 /// The post and what create_notification reads about it; None when it or
@@ -318,18 +322,24 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     // mentions
     let analysis = analyze(&post.cooked, ctx.config.globals.relative_url_root())?;
     let mentions = analysis.mention_names;
-    if !mentions.is_empty() {
-        let groups: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM groups WHERE LOWER(name) = ANY($1)")
-                .bind(&mentions)
-                .fetch_one(&mut *conn)
-                .await?;
-        if groups > 0 {
-            return Err(Unsupported("group mentions").into());
-        }
-        if mentions.contains(&s.get("here_mention")?.to_s()) {
-            return Err(Unsupported("@here mentions").into());
-        }
+    // extract_mentions: the groups named, the rest as users.
+    let mentioned_groups: Vec<(i32, String)> = if mentions.is_empty() {
+        Vec::new()
+    } else {
+        sqlx::query_as("SELECT id, name FROM groups WHERE LOWER(name) = ANY($1) ORDER BY ctid")
+            .bind(&mentions)
+            .fetch_all(&mut *conn)
+            .await?
+    };
+    let group_names: Vec<String> = mentioned_groups
+        .iter()
+        .map(|(_, name)| name.to_lowercase())
+        .collect();
+    let mentions: Vec<String> = mentions
+        .into_iter()
+        .filter(|m| !group_names.contains(m))
+        .collect();
+    if !mentions.is_empty() || !mentioned_groups.is_empty() {
         let mut opts = Opts::default();
         if post.last_editor_id != post.user_id {
             opts.user_id = post.last_editor_id;
@@ -356,6 +366,53 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
                 .await?
             {
                 alerter.notified.push(user_id);
+            }
+        }
+        // expand_group_mentions: the groups the author may mention (public
+        // ones not included), each under max_users_notified_per_group_mention
+        // members; its members allowed in a message and not notified yet
+        // hear of it as group_mentioned.
+        for (group_id, group_name, members) in
+            expand_group_mentions(ctx, conn, &post, &mentioned_groups).await?
+        {
+            let targets: Vec<i32> = members
+                .into_iter()
+                .filter(|u| !private_message || all_allowed.contains(u))
+                .filter(|u| !alerter.notified.contains(u))
+                .collect();
+            let group_opts = Opts {
+                group: Some((group_id, group_name)),
+                ..opts.clone()
+            };
+            let mut reached = Vec::new();
+            for user_id in targets {
+                if alerter
+                    .create_notification(conn, user_id, types::GROUP_MENTIONED, &group_opts)
+                    .await?
+                {
+                    reached.push(user_id);
+                }
+            }
+            alerter.notified.extend(reached);
+        }
+        // @here, when the author can_mention_here?: expand_here_mention's
+        // posters not notified yet, only those allowed in a message.
+        if mentions.contains(&s.get("here_mention")?.to_s())
+            && can_mention_here(ctx, conn, &post).await?
+        {
+            let users = expand_here_mention(ctx, conn, &post, &alerter.notified).await?;
+            let targets: Vec<i32> = users
+                .into_iter()
+                .filter(|u| !private_message || all_allowed.contains(u))
+                .filter(|u| !alerter.notified.contains(u))
+                .collect();
+            for user_id in targets {
+                if alerter
+                    .create_notification(conn, user_id, types::MENTIONED, &opts)
+                    .await?
+                {
+                    alerter.notified.push(user_id);
+                }
             }
         }
     }
@@ -591,11 +648,22 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         alerter.notify_post_users(conn, false, true).await?;
     }
 
-    // sync_group_mentions: no group mentions, so the post has none.
+    // sync_group_mentions: the post's group mentions replaced by the
+    // groups it names.
     sqlx::query("DELETE FROM group_mentions WHERE post_id = $1")
         .bind(post.id)
         .execute(&mut *conn)
         .await?;
+    for (group_id, _) in &mentioned_groups {
+        sqlx::query(
+            "INSERT INTO group_mentions (post_id, group_id, created_at, updated_at) \
+             VALUES ($1, $2, now(), now()) ON CONFLICT DO NOTHING",
+        )
+        .bind(post.id)
+        .bind(group_id)
+        .execute(&mut *conn)
+        .await?;
+    }
 
     if new_record && post.post_number == 1 {
         let mut watchers: Vec<i32> = sqlx::query_scalar(
@@ -631,6 +699,119 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
     Ok(())
+}
+
+/// `expand_group_mentions(groups, post)`: of the groups named, those the
+/// author may mention (`Group.mentionable(user, include_public: false)`),
+/// each with fewer members than max_users_notified_per_group_mention, with
+/// its members (`group.users`); none without an author.
+async fn expand_group_mentions(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+    groups: &[(i32, String)],
+) -> Result<Vec<(i32, String, Vec<i32>)>, AppError> {
+    let Some(author) = post.user_id.filter(|_| !groups.is_empty()) else {
+        return Ok(Vec::new());
+    };
+    let Some(user) = SessionUser::load(&mut *conn, author).await? else {
+        return Ok(Vec::new());
+    };
+    let guardian = Guardian::for_user(&mut *conn, &user).await?;
+    let ids: Vec<i32> = groups.iter().map(|(id, _)| *id).collect();
+    let mentionable: Vec<(i32, String, i32)> = sqlx::query_as(&format!(
+        "SELECT id, name, user_count FROM groups WHERE ({}) AND id = ANY($1) ORDER BY ctid",
+        crate::user_search::mentionable_where_with(&guardian, author, false)
+    ))
+    .bind(&ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    let max = ctx
+        .settings
+        .get("max_users_notified_per_group_mention")?
+        .to_i();
+    let mut out = Vec::new();
+    for (id, name, user_count) in mentionable {
+        if i64::from(user_count) >= max {
+            continue;
+        }
+        let members: Vec<i32> = sqlx::query_scalar(
+            "SELECT users.id FROM users JOIN group_users ON users.id = group_users.user_id \
+             WHERE group_users.group_id = $1 ORDER BY group_users.ctid",
+        )
+        .bind(id)
+        .fetch_all(&mut *conn)
+        .await?;
+        out.push((id, name, members));
+    }
+    Ok(out)
+}
+
+/// `Guardian#can_mention_here?` for the post's author: a here_mention set,
+/// max_here_mentioned at least one, no user named it, and the author in
+/// here_mention_allowed_groups.
+async fn can_mention_here(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<bool, AppError> {
+    let s = ctx.settings;
+    let here = s.get("here_mention")?.to_s();
+    if here.trim().is_empty() || s.get("max_here_mentioned")?.to_i() < 1 {
+        return Ok(false);
+    }
+    let Some(author) = post.user_id else {
+        return Ok(false);
+    };
+    let Some(user) = SessionUser::load(&mut *conn, author).await? else {
+        return Ok(false);
+    };
+    let taken: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE username_lower = $1)")
+            .bind(&here)
+            .fetch_one(&mut *conn)
+            .await?;
+    if taken {
+        return Ok(false);
+    }
+    let guardian = Guardian::for_user(&mut *conn, &user).await?;
+    Ok(guardian.in_setting_groups(s, "here_mention_allowed_groups")?)
+}
+
+/// `expand_here_mention(post, exclude_ids:)`: real users with a regular or
+/// moderator action post in the topic (a whisper too when the author is
+/// staff), less those excluded, at most max_here_mentioned, in the
+/// table's order.
+async fn expand_here_mention(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+    exclude: &[i32],
+) -> Result<Vec<i32>, AppError> {
+    use crate::posting::post_types;
+    let staff: bool = sqlx::query_scalar(
+        "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), FALSE)",
+    )
+    .bind(post.user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let mut types = vec![post_types::REGULAR, post_types::MODERATOR_ACTION];
+    if staff {
+        types.push(post_types::WHISPER);
+    }
+    Ok(sqlx::query_scalar(
+        "SELECT id FROM users WHERE id > 0 \
+           AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
+           AND id IN (SELECT user_id FROM posts WHERE topic_id = $1 AND post_type = ANY($2) \
+                      AND deleted_at IS NULL AND NOT (user_id = ANY($3))) \
+         ORDER BY ctid LIMIT $4",
+    )
+    .bind(post.topic_id)
+    .bind(&types)
+    .bind(exclude)
+    .bind(ctx.settings.get("max_here_mentioned")?.to_i())
+    .fetch_all(&mut *conn)
+    .await?)
 }
 
 /// `group_notifying_via_smtp(post)`: with SMTP on, a regular post in a
@@ -893,6 +1074,8 @@ impl Alerter<'_> {
         if muted {
             return Ok(false);
         }
+        // Muted on the mentioned group: Rails looks the GroupUser up by
+        // opts[:group_id], which no caller sets, so it never applies.
         let existing: Vec<i32> = sqlx::query_scalar(
             "SELECT notification_type FROM notifications WHERE user_id = $1 AND topic_id = $2 \
              AND post_number = $3 ORDER BY id DESC LIMIT 10",
@@ -1060,6 +1243,10 @@ impl Alerter<'_> {
         for (key, value) in &opts.custom_data {
             data.insert(key.clone(), value.clone());
         }
+        if let Some((group_id, group_name)) = &opts.group {
+            data.insert("group_id".into(), json!(group_id));
+            data.insert("group_name".into(), json!(group_name));
+        }
         // consolidate_or_create!, with its after_commit work (the count,
         // and the email or the shelf).
         let mut notification = crate::notification_create::NewNotification::new(
@@ -1128,7 +1315,7 @@ impl Alerter<'_> {
                     ..Default::default()
                 },
             );
-            let payload = json!({
+            let mut payload = json!({
                 "notification_type": notification_type,
                 "post_number": post.post_number,
                 "topic_title": post.topic_title,
@@ -1144,6 +1331,10 @@ impl Alerter<'_> {
                     post.post_number
                 ),
             });
+            if let Some((_, group_name)) = opts.group.as_ref().filter(|(_, n)| !n.trim().is_empty())
+            {
+                payload["group_name"] = json!(group_name);
+            }
             crate::bus::publish_notification_alert(ctx.bus, &mut *conn, user_id, &payload).await?;
             push_notification(conn, ctx.settings, user_id).await?;
         }

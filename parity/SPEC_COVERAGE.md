@@ -2287,8 +2287,15 @@ post_alert options.
 | services/post_alerter_spec.rb | 1024 | an admin mentioned outside the message isn't notified | covered | messages/pm_mention_moderator_plain (new, match) |
 | models/topic_spec.rb | 2886-2903 | all_allowed_users: moderators in a flagged message or an official warning, not otherwise (x4) | covered | messages/pm_mention_moderator_flagged, pm_mention_moderator_warning, pm_mention_moderator_plain (new, match) |
 | lib/guardian_spec.rb | 643 | moderators see a flagged private message | covered | messages/pm_mention_moderator_flagged (the mentioned moderator's notification passes can_see) |
-| services/post_alerter_spec.rb | 756-805 | @here: unrelated users, a user named here, repliers, whisperers, staff colour, max_here_mentioned (x6) | unported | jobs/post_alert.rs:331 |
-| services/post_alerter_spec.rb | 812-857 | @group mentions, private mention precedence (x3) | unported | jobs/post_alert.rs:328 |
-| services/post_alerter_spec.rb | 1006, 1039, 1046-1107 | group mentions in messages (x9) | unported | jobs/post_alert.rs:328 |
-| services/post_alerter_spec.rb | 1895-2203 | replies in nested topics and their buckets (x14) | unported | jobs/post_alert.rs:307 |
-| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:496, ROADMAP 166 |
+| services/post_alerter_spec.rb | 765, 774, 796 | @here: unrelated users left out, repliers and staff-colour posters notified, whisperers not for a non-staff author (x3) | covered | posts/here_mention_post_alert (new, match) |
+| services/post_alerter_spec.rb | 769 | @here does nothing once a user is named here | recordable | here_mention_user_named_here (setup: a user named here) |
+| services/post_alerter_spec.rb | 784 | whisperers notified for a staff author | covered | posts/here_mention_staff_whisper (new, match) |
+| services/post_alerter_spec.rb | 805 | only max_here_mentioned users | covered | posts/here_mention_max (new, match) |
+| lib/guardian_spec.rb | - | can_mention_here? outside here_mention_allowed_groups | covered | posts/here_mention_not_allowed (new, match) |
+| services/post_alerter_spec.rb | 820 | @group mentions: notified, GroupMention rows, not mentionable, members and owners levels | covered | posts/group_mention_post_alert, group_mention_not_mentionable, group_mention_members_level, group_mention_members_level_member (new, match) |
+| services/post_alerter_spec.rb | 850 | a user mention takes precedence | covered | posts/group_mention_user_precedence (new, match) |
+| services/post_alerter_spec.rb | 857 | :before_create_notifications_for_users | needs-harness | DiscourseEvent subscription |
+| services/post_alerter_spec.rb | - | max_users_notified_per_group_mention | covered | posts/group_mention_too_many (new, match) |
+| services/post_alerter_spec.rb | 1006, 1039, 1046-1107 | group mentions in messages: only those allowed in it (x9) | covered | messages/pm_group_mention (new, match); the rest recordable as variants |
+| services/post_alerter_spec.rb | 1895-2203 | replies in nested topics and their buckets (x14) | unported | jobs/post_alert.rs:311 |
+| services/post_alerter_spec.rb | 2805-3120 | group SMTP (x13) | unported | jobs/post_alert.rs:553, ROADMAP 166 |
