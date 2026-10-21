@@ -18,7 +18,7 @@ pub struct DefaultTheme {
 }
 
 /// SvgSingleColorPalettePlaceholder.
-const PLACEHOLDER: &str = "<svg fill=\"none\" viewBox=\"0 0 558 171\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"var(--primary-low--preview, #e9e9e9)\" height=\"25.616\" rx=\"4\" width=\"120\" x=\"436.298\" y=\"95.819\"></rect><rect fill=\"var(--tertiary--preview, #08c)\" height=\"24.64\" rx=\"4\" width=\"120\" x=\"436.298\" y=\"144.442\"></rect><rect fill=\"var(--tertiary-low--preview, #d1f0ff)\" height=\"71.394\" rx=\"4\" width=\"555.265\" x=\".22\" y=\".341\"></rect><rect fill=\"var(--danger--preview, #c80001)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"23.451\" y=\"145.418\"></rect><rect fill=\"var(--success--preview, #090)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"88.578\" y=\"145.418\"></rect><rect fill=\"var(--love--preview, #fa6c8d)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"153.704\" y=\"145.418\"></rect><rect fill=\"var(--highlight--preview, #ffff4d)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"218.831\" y=\"145.418\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"200.35\" x=\"23.451\" y=\"43.772\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"333.847\" x=\"23.451\" y=\"66.295\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"267.897\" x=\"23.451\" y=\"90.819\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"299.961\" x=\"23.451\" y=\"116.342\"></rect></svg>";
+pub const PLACEHOLDER: &str = "<svg fill=\"none\" viewBox=\"0 0 558 171\" xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"var(--primary-low--preview, #e9e9e9)\" height=\"25.616\" rx=\"4\" width=\"120\" x=\"436.298\" y=\"95.819\"></rect><rect fill=\"var(--tertiary--preview, #08c)\" height=\"24.64\" rx=\"4\" width=\"120\" x=\"436.298\" y=\"144.442\"></rect><rect fill=\"var(--tertiary-low--preview, #d1f0ff)\" height=\"71.394\" rx=\"4\" width=\"555.265\" x=\".22\" y=\".341\"></rect><rect fill=\"var(--danger--preview, #c80001)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"23.451\" y=\"145.418\"></rect><rect fill=\"var(--success--preview, #090)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"88.578\" y=\"145.418\"></rect><rect fill=\"var(--love--preview, #fa6c8d)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"153.704\" y=\"145.418\"></rect><rect fill=\"var(--highlight--preview, #ffff4d)\" height=\"24.64\" rx=\"4\" width=\"30\" x=\"218.831\" y=\"145.418\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"200.35\" x=\"23.451\" y=\"43.772\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"333.847\" x=\"23.451\" y=\"66.295\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"267.897\" x=\"23.451\" y=\"90.819\"></rect><rect fill=\"var(--primary--preview, #222)\" height=\"4.526\" rx=\"2.263\" width=\"299.961\" x=\"23.451\" y=\"116.342\"></rect></svg>";
 
 fn normalize_hex(hex: &str) -> String {
     let hex = hex.trim_start_matches('#');
@@ -137,8 +137,16 @@ fn preview_color(colors: &[Value], name: &str) -> String {
 
 /// ColorPalettePreview: its style and the placeholder drawing.
 pub fn preview(scheme: &Value) -> String {
+    format!(
+        "<div class=\"color-palette__preview\" style=\"{}\">{PLACEHOLDER}</div>",
+        escape(&preview_style(scheme))
+    )
+}
+
+/// ColorPalettePreview's style.
+pub fn preview_style(scheme: &Value) -> String {
     let colors = scheme["colors"].as_array().cloned().unwrap_or_default();
-    let style = if scheme["is_builtin_default"].as_bool() == Some(true) || colors.is_empty() {
+    if scheme["is_builtin_default"].as_bool() == Some(true) || colors.is_empty() {
         "--primary-low--preview: #e9e9e9; --tertiary-low--preview: #d1f0ff;".to_string()
     } else {
         let vars: Vec<String> = colors
@@ -165,11 +173,7 @@ pub fn preview(scheme: &Value) -> String {
             preview_color(&colors, "tertiary"),
             vars.join("; ")
         )
-    };
-    format!(
-        "<div class=\"color-palette__preview\" style=\"{}\">{PLACEHOLDER}</div>",
-        escape(&style)
-    )
+    }
 }
 
 /// The list's query params (DFilterControls' textFilterQueryParam and

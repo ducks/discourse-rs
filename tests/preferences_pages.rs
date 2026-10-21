@@ -556,6 +556,91 @@ async fn another_members_notifications_go_to_the_404_route() {
 }
 
 #[tokio::test]
+async fn the_interface_tab_draws_the_palettes_members_may_pick() {
+    let (db, mut user1) = client("user1").await;
+    sqlx::query("UPDATE color_schemes SET user_selectable = TRUE WHERE id IN (1, 2)")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = user1.page("/u/user1/preferences/interface").await.html;
+    // Light: the theme default, then the light palettes before the dark
+    // ones; dark: the theme default and the dark ones.
+    let light = &html[html.find("light-color-scheme").unwrap()..];
+    let light = &light[..light.find("dark-color-scheme").unwrap()];
+    let names: Vec<&str> = light
+        .split("class=\"color-palette-picker-row__name\">")
+        .skip(1)
+        .map(|s| &s[..s.find('<').unwrap()])
+        .collect();
+    assert_eq!(names, ["Theme default", "Horizon", "Horizon Dark"]);
+    // The session's palette (none: the theme default) is the active one.
+    assert!(light.contains(
+        "data-value=\"-1\" title=\"Theme default\" tabindex=\"0\" class=\"select-kit-row color-palette-picker-row is-highlighted is-selected\"><span class=\"color-palette-picker-row__badge --active\">Active</span>"
+    ));
+    assert!(light.contains("--primary--preview: #1a1a1a"));
+    let dark = &html[html.find("dark-color-scheme").unwrap()..];
+    assert!(dark.contains("data-name=\"Horizon Dark\""));
+    assert!(!dark[..dark.find("</fieldset>").unwrap()].contains("data-name=\"Horizon\""));
+    // Foundation has no light palette of its own, so no mode selector.
+    assert!(!html.contains("interface-color-mode"));
+    let attrs = save_attrs(&html);
+    assert_eq!(attrs["color_scheme_id"], -1);
+    assert_eq!(attrs["dark_scheme_id"], -1);
+
+    // A dark palette of one's own shows the mode selector too.
+    sqlx::query("UPDATE user_options SET dark_scheme_id = 2 WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = user1.page("/u/user1/preferences/interface").await.html;
+    assert!(html.contains("control-subgroup interface-color-mode"));
+    assert_eq!(save_attrs(&html)["dark_scheme_id"], 2);
+}
+
+#[tokio::test]
+async fn a_palette_preview_names_its_stylesheet() {
+    let (_db, mut user1) = client("user1").await;
+    let json = |body: &str| serde_json::from_str::<serde_json::Value>(body).unwrap();
+    let scheme = user1
+        .send(Method::GET, "/color-scheme-stylesheet/2.json", "")
+        .await;
+    assert_eq!(
+        json(&scheme),
+        serde_json::json!({
+            "color_scheme_id": 2,
+            "new_href": "/assets/color_definitions_scheme/2.css",
+        })
+    );
+    // The default theme's dark palette, and with the theme named.
+    let dark = user1
+        .send(Method::GET, "/color-scheme-stylesheet/13/-1.json", "")
+        .await;
+    assert_eq!(
+        json(&dark)["new_href"],
+        "/assets/color_definitions_dark.css"
+    );
+    // No such palette: the theme's, or the base one (-1).
+    for missing in [
+        "/color-scheme-stylesheet/9999.json",
+        "/color-scheme-stylesheet/abc",
+    ] {
+        let base = user1.send(Method::GET, missing, "").await;
+        assert_eq!(
+            json(&base),
+            serde_json::json!({
+                "color_scheme_id": -1,
+                "new_href": "/assets/color_definitions_light.css",
+            }),
+            "{missing}"
+        );
+    }
+    user1
+        .send(Method::GET, "/color-scheme-stylesheet/2/x.json", "")
+        .await;
+    assert_eq!(user1.status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn a_second_theme_is_refused() {
     let (db, mut user1) = client("user1").await;
     sqlx::query(

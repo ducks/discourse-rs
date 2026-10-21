@@ -1,0 +1,97 @@
+$primary: #ffffff !default; $secondary: #1a1a1a !default; $tertiary: #6568e6 !default; $quaternary: #e45735 !default; $header_background: #1a1a1a !default; $header_primary: #ffffff !default; $highlight: #ffff4d !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default; $selected: #3b3e56 !default; $hover: #333548 !default; $tertiary-med-or-tertiary: #6568e6 !default;  $public_image_path: "http://localhost:3048/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
+
+
+// Color definitions from chat
+
+:root {
+  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};
+}
+
+
+
+
+// Color definitions from discourse-events
+
+/* stylelint-disable scss/no-global-function-names */
+:root {
+  --calendar-normal: #{dark-light-choose(
+      lighten($tertiary, 55%),
+      darken($tertiary, 25%)
+    )};
+  --calendar-close-to-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 45%), 15%),
+      darken($tertiary, 15%)
+    )};
+  --calendar-in-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 40%), 20%),
+      darken($tertiary, 10%)
+    )};
+  --fc-border-color: var(--primary-low);
+  --fc-button-text-color: var(--d-button-default-text-color);
+  --fc-button-bg-color: var(--d-button-default-bg-color);
+  --fc-button-border-color: transparent;
+  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--tertiary);
+  --fc-button-active-border-color: transparent;
+  --fc-event-border-color: var(--primary-low);
+  --fc-today-bg-color: var(--highlight-medium);
+  --fc-page-bg-color: var(--secondary);
+  --fc-list-event-hover-bg-color: var(--secondary);
+  --fc-neutral-bg-color: var(--primary-low);
+}
+
+
+// Body font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --font-family: Inter, Arial, sans-serif;
+}
+
+// Heading font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --heading-font-family: Inter, Arial, sans-serif;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
+  font-weight: 700;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
+}
+
+:root {
+  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;
+}
+

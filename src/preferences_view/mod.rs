@@ -541,6 +541,20 @@ pub(crate) struct Combo<'a> {
 }
 
 pub(crate) fn combo(cx: &ListContext, c: &Combo) -> String {
+    combo_rows(cx, c, "", &|_, name, _| {
+        format!("<span class=\"name\">{}</span>", escape(name))
+    })
+}
+
+/// A ComboBox whose rows draw their own content (a select-kit row
+/// component's): `row_class` after select-kit-row, `row(value, name,
+/// selected)` inside the row.
+pub(crate) fn combo_rows(
+    cx: &ListContext,
+    c: &Combo,
+    row_class: &str,
+    row: &dyn Fn(&str, &str, bool) -> String,
+) -> String {
     let selected = c
         .value
         .as_ref()
@@ -568,8 +582,9 @@ pub(crate) fn combo(cx: &ListContext, c: &Combo) -> String {
     for (value, row_name) in &c.rows {
         let is = selected.is_some_and(|(v, _)| v == value);
         rows.push_str(&format!(
-            "<li aria-checked=\"{is}\" role=\"menuitemradio\" data-index=\"{index}\" data-name=\"{n}\" data-value=\"{v}\" title=\"{n}\" tabindex=\"0\" class=\"select-kit-row{}\"><span class=\"name\">{n}</span></li>",
+            "<li aria-checked=\"{is}\" role=\"menuitemradio\" data-index=\"{index}\" data-name=\"{n}\" data-value=\"{v}\" title=\"{n}\" tabindex=\"0\" class=\"select-kit-row{row_class}{}\">{}</li>",
             if is { " is-highlighted is-selected" } else { "" },
+            row(value, row_name, is),
             n = escape(row_name),
             v = escape(value),
         ));

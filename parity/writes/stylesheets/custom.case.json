@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Styled", "theme_fields": [
+      {"name": "yaml", "target": "settings", "value": "accent: \"#ff6600\"\nshow_border: true\nwidth: 3\nratio:\n  default: 1.5\n  type: float\nlabel: \"it's a \\\"test\\\"\"\nchoice:\n  type: enum\n  default: b\n  choices:\n    - a\n    - b\nitems:\n  type: list\n  default: \"one|two\"\n"},
+      {"name": "buttons", "target": "extra_scss", "value": "@mixin pill($r) {\n  border-radius: $r;\n  padding: 0.5em 1em;\n}\n.styled-button {\n  @include pill(999px);\n  background: lighten($tertiary, 10%);\n  color: darken($tertiary, 20%);\n  &:hover { background: mix($primary, $secondary, 30%); }\n}\n"},
+      {"name": "scss", "target": "common", "value": "@import \"buttons\";\n.styled {\n  color: $accent;\n  border: if($show_border == \"true\", #{$width}px solid rgba($primary, 0.25), none);\n  background-image: url($hero);\n  width: calc(100% - #{$width * 2}px);\n  transform: scale($ratio);\n  &::after { content: $label; }\n  .nested > a { text-decoration: underline dotted; user-select: none; }\n  @media (max-width: 600px) { display: none; }\n}\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\n.items { content: \"#{$items}\"; }\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\n:root {\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\n}\n.dark { color-scheme: dark; }\n@supports (display: grid) { .grid { display: grid; } }\n"},
+      {"name": "scss", "target": "desktop", "value": ".styled { max-width: 960px; .side { float: right; } }\n"},
+      {"name": "scss", "target": "mobile", "value": ".styled { padding: 0.25em; font-size: $font-down-1; }\n"},
+      {"name": "color_definitions", "target": "common", "value": ":root {\n  --styled-accent: #{$tertiary};\n  --styled-mix: #{mix($primary, $secondary, 30%)};\n  --styled-rgb: #{hexToRGB($primary)};\n}\n"}
+    ]}}},
+    {"method": "POST", "path": "/admin/themes/upload_asset.json", "params": {"file": {"fixture": "small.png"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true", "theme_fields": [
+      {"name": "hero", "target": "common", "type_id": "2", "upload_id": "{{responses.1.body.upload_id}}"}
+    ]}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "desktop_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "mobile_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "light-scheme"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "accent", "value": "#00aa00"}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json", "params": {"name": "show_border", "value": "false"}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}

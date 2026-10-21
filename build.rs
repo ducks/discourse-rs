@@ -4,7 +4,8 @@
 //! reruns when the markdown crate or the data it embeds changes.
 //!
 //! Also lists the vendored highlight.js languages for src/highlight_js.rs
-//! and the moment locales for src/moment_locale.rs.
+//! and the moment locales for src/moment_locale.rs, and the core and
+//! plugin stylesheets theme SCSS compiles against for src/stylesheet.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -18,6 +19,8 @@ fn main() {
         "static/vendor/highlightjs/languages",
         "static/vendor/moment/locale",
         "static/vendor/moment-timezone-names",
+        "vendor/discourse/app/assets/stylesheets",
+        "vendor/discourse/config/plugin_color_definitions",
     ] {
         println!("cargo:rerun-if-changed={path}");
     }
@@ -62,6 +65,7 @@ fn main() {
     );
     highlight_js_languages(&out);
     moment_locales(&out);
+    core_stylesheets(&out);
 }
 
 /// `HIGHLIGHT_JS_LANGUAGES`: each `<name>.min.js` in
@@ -122,4 +126,53 @@ fn moment_locales(out: &Path) {
         table.push_str("];\n");
     }
     std::fs::write(out.join("moment_locales.rs"), table).expect("OUT_DIR is writable");
+}
+
+/// `CORE_STYLESHEETS`: every file of the vendored app/assets/stylesheets
+/// (Stylesheet::Compiler's ASSET_ROOT) as (path under it, contents), by
+/// path; `PLUGIN_COLOR_DEFINITIONS`: the bundled plugins' color definitions
+/// as (plugin, contents), in the order config/plugin_color_definitions
+/// lists them.
+fn core_stylesheets(out: &Path) {
+    let root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"))
+        .join("vendor/discourse");
+    let base = root.join("app/assets/stylesheets");
+    let mut files = Vec::new();
+    let mut dirs = vec![base.clone()];
+    while let Some(dir) = dirs.pop() {
+        for entry in std::fs::read_dir(&dir).expect("the core stylesheets are vendored") {
+            let path = entry.expect("a directory entry").path();
+            if path.is_dir() {
+                dirs.push(path);
+            } else {
+                let relative = path
+                    .strip_prefix(&base)
+                    .expect("under the stylesheets")
+                    .to_string_lossy()
+                    .into_owned();
+                files.push((relative, path));
+            }
+        }
+    }
+    files.sort();
+    let mut table = String::from("pub const CORE_STYLESHEETS: &[(&str, &str)] = &[\n");
+    for (relative, path) in files {
+        table.push_str(&format!(
+            "    ({relative:?}, include_str!({:?})),\n",
+            path.display().to_string()
+        ));
+    }
+    table.push_str("];\n");
+    table.push_str("pub const PLUGIN_COLOR_DEFINITIONS: &[(&str, &str)] = &[\n");
+    let list = std::fs::read_to_string(root.join("config/plugin_color_definitions"))
+        .expect("the plugin color definitions are listed");
+    for line in list.lines().filter(|l| !l.trim().is_empty()) {
+        let (plugin, file) = line.split_once(' ').expect("`<plugin> <path>`");
+        table.push_str(&format!(
+            "    ({plugin:?}, include_str!({:?})),\n",
+            root.join(file).display().to_string()
+        ));
+    }
+    table.push_str("];\n");
+    std::fs::write(out.join("core_stylesheets.rs"), table).expect("OUT_DIR is writable");
 }

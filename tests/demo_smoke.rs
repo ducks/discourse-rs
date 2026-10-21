@@ -1017,7 +1017,6 @@ async fn flags_a_post() {
 }
 
 #[tokio::test]
-#[ignore = "the interface preferences refuse choosing a theme or color palette, ROADMAP 169"]
 async fn offers_light_and_dark_palettes() {
     let (db, state) = app().await;
     // A light and a dark palette members may pick, as an admin sets up

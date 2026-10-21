@@ -1,0 +1,15 @@
+.admin-reports {
+  .admin-report {
+    width: 100%;
+
+    .report-header {
+      padding-bottom: 0.5em;
+      margin-bottom: 1em;
+      border-bottom: 1px solid var(--content-border-color);
+    }
+  }
+
+  .admin-report-chart .chart-canvas-container {
+    height: clamp(200px, 50vh, 350px);
+  }
+}

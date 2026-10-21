@@ -515,6 +515,18 @@ fn unrandom(s: &str) -> String {
     static PORT: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"//localhost:\d{4}\b").unwrap());
     let s = PORT.replace_all(&s, "//localhost:<port>");
+    // A compiled stylesheet: the light-dark() polyfill's toggles are
+    // namespaced by a hash of the compile's output with its source map
+    // annotation, which names the stylesheet's digest (Rails'
+    // instance-specific; the port serves no maps).
+    static TOGGLE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"--[0-9a-f]{1,8}-csstools-light-dark-toggle-").unwrap()
+    });
+    let s = TOGGLE.replace_all(&s, "--<hash>-csstools-light-dark-toggle-");
+    static SOURCE_MAP: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\n/\*# sourceMappingURL=[^*]*\*/").unwrap()
+    });
+    let s = SOURCE_MAP.replace_all(&s, "");
     // LetterAvatar.version: Rails' hashes its ImageMagick and font list,
     // the port's its renderer and font (src/letter_avatar.rs).
     static LETTER_AVATAR: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
@@ -1947,7 +1959,30 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             );
         }
         let extra = request["headers"].as_object().cloned().unwrap_or_default();
-        let (status, body) = client.send_with(method, &path, body, &extra).await;
+        let (mut status, mut body) = client.send_with(method, &path, body, &extra).await;
+        // `stylesheet`: the page's link of that data-target (or class)
+        // fetched in its place, as the recorder fetches it.
+        if let Some(target) = request["stylesheet"].as_str() {
+            let html = body.as_str().unwrap_or_default().to_string();
+            let pattern = format!(
+                r#"<link href="([^"]+)"(?:\s+[a-z-]+="[^"]*")*\s+(?:data-target|class)="{}""#,
+                regex::escape(target)
+            );
+            let href = regex::Regex::new(&pattern)
+                .unwrap()
+                .captures(&html)
+                .map(|c| c[1].replace("&amp;", "&"))
+                .unwrap_or_else(|| panic!("no {target} stylesheet on {path}"));
+            // The path of an absolute link.
+            let href = match href
+                .strip_prefix("http://")
+                .or_else(|| href.strip_prefix("https://"))
+            {
+                Some(rest) => rest[rest.find('/').unwrap_or(rest.len())..].to_string(),
+                None => href,
+            };
+            (status, body) = client.send_with(Method::GET, &href, None, &extra).await;
+        }
         let mut response = serde_json::json!({ "status": status, "body": body });
         if !client.rate_headers.is_empty() {
             response["headers"] = Value::Object(client.rate_headers.clone());

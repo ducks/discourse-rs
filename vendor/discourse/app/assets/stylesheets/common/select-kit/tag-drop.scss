@@ -1,0 +1,47 @@
+@use "lib/viewport";
+
+.select-kit {
+  &.combo-box {
+    &.tag-drop {
+      min-width: auto;
+
+      .tag-drop-header,
+      .selected-name {
+        color: var(--primary-high);
+      }
+
+      @include viewport.until(sm) {
+        .tag-drop-header {
+          font-size: var(--font-0);
+
+          .d-icon {
+            font-size: var(--font-0);
+          }
+        }
+      }
+
+      .select-kit-row {
+        &[data-value="all-tags"],
+        &[data-value="no-tags"] {
+          color: var(--tertiary);
+          font-weight: 700;
+        }
+
+        @include viewport.until(sm) {
+          font-weight: normal;
+        }
+      }
+
+      .angle-icon {
+        color: var(--primary-high);
+      }
+
+      &.has-selection {
+        .tag-drop-header {
+          color: var(--d-nav-border-color--active);
+          border-color: var(--d-nav-border-color--active);
+        }
+      }
+    }
+  }
+}

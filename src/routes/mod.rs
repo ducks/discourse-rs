@@ -2428,6 +2428,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(stylesheets::scheme),
         )
         .route("/fonts/{file}", get(stylesheets::font))
+        .route("/stylesheets/{file}", get(stylesheets::theme))
+        .route(
+            "/color-scheme-stylesheet/{id}",
+            get(stylesheets::color_scheme),
+        )
+        .route(
+            "/color-scheme-stylesheet/{id}/{theme_id}",
+            get(stylesheets::color_scheme),
+        )
         .route(
             "/letter_avatar_proxy/{version}/letter/{letter}/{color}/{size}",
             get(user_avatars::show_proxy_letter),

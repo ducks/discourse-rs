@@ -1,0 +1,22 @@
+.horizontal-overflow-nav {
+  min-width: 0;
+  width: 100%;
+
+  .nav-pills {
+    @include horizontal-scroll-strip;
+    margin: 0;
+    height: 100%;
+    position: relative;
+  }
+}
+
+// Chained to outrank the primitive's own declaration on the same element.
+.d-overflow-controls.horizontal-overflow-nav__controls {
+  --fade-width: 1.5em;
+  height: 100%;
+
+  .d-overflow-controls__btn .d-icon {
+    color: var(--d-nav-color--active);
+    margin-bottom: 0.2em;
+  }
+}

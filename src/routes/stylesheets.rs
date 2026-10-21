@@ -8,31 +8,30 @@ use axum::response::{IntoResponse, Response};
 
 use crate::color_scheme::ColorScheme;
 use crate::site_settings::SiteSettings;
-use crate::stylesheet::color_definitions::{SchemeColors, css};
-use crate::stylesheet::fonts;
+use crate::stylesheet::manager;
 use crate::{AppError, AppState};
 
+/// A scheme's color definitions (None: the theme's own palette, else the
+/// base one) under the default theme, compiled (crate::stylesheet).
+/// None for a scheme that is gone.
 async fn scheme_css(
+    state: &AppState,
     conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
     id: Option<i32>,
 ) -> Result<Option<String>, AppError> {
-    let colors = match id {
-        None => SchemeColors::from_hex(|_| None),
-        Some(id) => {
-            let Some(scheme) = ColorScheme::find(conn, id).await? else {
-                return Ok(None);
-            };
-            let resolved = scheme.resolved_colors()?;
-            SchemeColors::from_hex(|name| {
-                resolved
-                    .iter()
-                    .find(|(n, _)| n == name)
-                    .map(|(_, hex)| hex.clone())
-            })
-            .with_defined(&resolved)
-        }
+    if let Some(id) = id
+        && ColorScheme::find(conn, id).await?.is_none()
+    {
+        return Ok(None);
+    }
+    let cx = manager::Cx {
+        config: &state.config,
+        settings,
     };
-    Ok(Some(css(&colors)))
+    Ok(Some(
+        manager::color_definitions(conn, &cx, None, id).await? + "\n",
+    ))
 }
 
 /// The stylesheet, revalidated by its ETag on every use: it follows the
@@ -66,11 +65,8 @@ pub async fn light(
     .bind(theme_id as i32)
     .fetch_optional(&mut *conn)
     .await?;
-    let body = scheme_css(&mut conn, scheme_id).await?;
-    Ok(stylesheet(
-        &headers,
-        body.map(|css| css + &font_css(&state, &settings)),
-    ))
+    let body = scheme_css(&state, &mut conn, &settings, scheme_id).await?;
+    Ok(stylesheet(&headers, body))
 }
 
 /// The default theme's dark scheme (`dark_scheme_id`), if it has one.
@@ -87,11 +83,8 @@ pub async fn dark(State(state): State<AppState>, headers: HeaderMap) -> Result<R
             .flatten();
     match id.filter(|id| *id > 0) {
         Some(id) => {
-            let body = scheme_css(&mut conn, Some(id)).await?;
-            Ok(stylesheet(
-                &headers,
-                body.map(|css| css + &font_css(&state, &settings)),
-            ))
+            let body = scheme_css(&state, &mut conn, &settings, Some(id)).await?;
+            Ok(stylesheet(&headers, body))
         }
         None => Ok(StatusCode::NOT_FOUND.into_response()),
     }
@@ -113,23 +106,40 @@ pub async fn scheme(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let body = scheme_css(&mut conn, Some(id)).await?;
-    Ok(stylesheet(
-        &headers,
-        body.map(|css| css + &font_css(&state, &settings)),
-    ))
+    let body = scheme_css(&state, &mut conn, &settings, Some(id)).await?;
+    Ok(stylesheet(&headers, body))
 }
 
-/// The font definitions Rails adds to every color definitions file.
-fn font_css(state: &AppState, settings: &SiteSettings) -> String {
-    let setting = |name| {
-        settings
-            .get(name)
-            .map(|v| v.to_s().to_string())
-            .unwrap_or_default()
+/// `/stylesheets/:target_:theme_id_:digest.css` (StylesheetsController#
+/// show for the theme targets): a theme's compiled stylesheet, whatever
+/// digest the link named (the port keeps no older ones).
+pub async fn theme(
+    State(state): State<AppState>,
+    Path(file): Path<String>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let Some(name) = file.strip_suffix(".css") else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    let fonts_dir = format!("{}/fonts", state.config.globals.relative_url_root());
-    fonts::css(&setting("base_font"), &setting("heading_font"), &fonts_dir)
+    let Some((target, rest)) = manager::THEME_TARGETS
+        .iter()
+        .find_map(|t| name.strip_prefix(&format!("{t}_")).map(|rest| (*t, rest)))
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let theme_id = rest.split('_').next().and_then(|id| id.parse::<i32>().ok());
+    let Some(theme_id) = theme_id else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cx = manager::Cx {
+        config: &state.config,
+        settings: &settings,
+    };
+    let css = manager::theme_css(&mut conn, &cx, theme_id, target).await?;
+    Ok(stylesheet(&headers, css.map(|css| css + "\n")))
 }
 
 /// The discourse-fonts files this port has (static/fonts/README).
@@ -161,4 +171,83 @@ pub async fn font(Path(file): Path<String>) -> Response {
             .into_response(),
         None => StatusCode::NOT_FOUND.into_response(),
     }
+}
+
+/// `/color-scheme-stylesheet/:id(/:theme_id)` (StylesheetsController#
+/// color_scheme): the stylesheet a palette preview links, as
+/// `{color_scheme_id, new_href}`. A theme the viewer may use other than the
+/// default one would serve its own color definitions, which the port does
+/// not draw.
+pub async fn color_scheme(
+    State(state): State<AppState>,
+    crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
+    axum::extract::RawQuery(query): axum::extract::RawQuery,
+    Path(segments): Path<Vec<(String, String)>>,
+) -> Result<Response, AppError> {
+    let get = |name: &str| {
+        segments
+            .iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.as_str())
+    };
+    // The route's `.json` format; any other dot ends the id elsewhere.
+    let id = get("id").unwrap_or_default();
+    let id = id.strip_suffix(".json").unwrap_or(id);
+    if id.contains('.') {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let theme_param = match get("theme_id") {
+        Some(t) => {
+            let t = t.strip_suffix(".json").unwrap_or(t);
+            let digits = t.strip_prefix('-').unwrap_or(t);
+            if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
+                return Ok(StatusCode::NOT_FOUND.into_response());
+            }
+            Some(t.to_string())
+        }
+        None => crate::params::parse_query(query.as_deref().unwrap_or_default())
+            .get("theme_id")
+            .and_then(crate::params::scalar),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let default_theme = settings.get("default_theme_id")?.to_i();
+    // `params[:theme_id]&.to_i`, nil unless guardian.allow_themes?([id],
+    // include_preview: true).
+    if let Some(theme_id) = theme_param.map(|t| crate::ruby::to_i(&t))
+        && theme_id != default_theme
+    {
+        let staff_preview = guardian.is_staff()
+            && sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1)")
+                .bind(i32::try_from(theme_id).unwrap_or(0))
+                .fetch_one(&mut *conn)
+                .await?;
+        let selectable = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1 AND user_selectable)",
+        )
+        .bind(i32::try_from(theme_id).unwrap_or(0))
+        .fetch_one(&mut *conn)
+        .await?;
+        if staff_preview || selectable {
+            return Err(crate::Unsupported(
+                "color definitions of a theme other than the default (258a)",
+            )
+            .into());
+        }
+    }
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let (scheme_id, href) = crate::color_mode::scheme_stylesheet(
+        &mut conn,
+        &settings,
+        &base_path,
+        // find_by(id:) casts as ActiveModel's integer type does (to_i).
+        Some(crate::ruby::to_i(id)),
+    )
+    .await?;
+    Ok(axum::Json(serde_json::json!({
+        "color_scheme_id": scheme_id,
+        "new_href": href,
+    }))
+    .into_response())
 }

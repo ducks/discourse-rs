@@ -1,0 +1,119 @@
+.fk-d-menu {
+  width: max-content;
+  position: absolute;
+  top: 0;
+  max-width: 600px;
+  display: flex;
+  padding: 0;
+  z-index: calc(z("composer", "dropdown") + 1);
+
+  &__trigger {
+    .touch & {
+      @include unselectable;
+    }
+  }
+
+  &.-animated {
+    @include d-animation(float-down, 250ms, ease);
+
+    &.-closing {
+      @include d-animation(dissolve-up, 125ms, ease);
+    }
+
+    &[data-placement^="bottom"] {
+      transform-origin: top center;
+    }
+
+    &[data-placement^="top"] {
+      @include d-animation(float-up, 250ms, ease);
+      transform-origin: bottom center;
+
+      &.-closing {
+        @include d-animation(dissolve-down, 125ms, ease);
+      }
+    }
+
+    &[data-placement^="right"] {
+      transform-origin: center left;
+    }
+
+    &[data-placement^="left"] {
+      transform-origin: center right;
+    }
+  }
+
+  &[data-strategy="fixed"] {
+    position: fixed;
+  }
+
+  &__inner-content {
+    display: flex;
+    border-radius: var(--d-border-radius);
+    background-color: var(--secondary);
+    border: 1px solid var(--content-border-color);
+    box-shadow: var(--shadow-dropdown);
+    overscroll-behavior: contain;
+    overflow: auto;
+  }
+
+  .arrow {
+    position: absolute;
+    color: var(--secondary);
+  }
+
+  &[data-placement^="top"] {
+    .arrow {
+      bottom: -9px;
+      rotate: 180deg;
+    }
+  }
+
+  &[data-placement^="bottom"] {
+    .arrow {
+      top: -10px;
+    }
+  }
+
+  &[data-placement^="right"] {
+    .arrow {
+      rotate: -90deg;
+      left: -9px;
+    }
+  }
+
+  &[data-placement^="left"] {
+    .arrow {
+      rotate: 90deg;
+      right: -9px;
+    }
+  }
+}
+
+// should probably be renamed fk-d-menu__list
+.dropdown-menu {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--d-sidebar-vertical-gap);
+  padding: var(--space-1);
+  margin: 0;
+  list-style: none;
+
+  &__item {
+    .btn {
+      @include menu-item;
+    }
+  }
+
+  &__divider {
+    margin: 0;
+  }
+
+  &__subheader {
+    padding: var(--space-2) var(--d-sidebar-row-horizontal-padding)
+      var(--space-1);
+    color: var(--primary-medium);
+    font-size: var(--font-down-1-rem);
+    font-weight: bold;
+  }
+}

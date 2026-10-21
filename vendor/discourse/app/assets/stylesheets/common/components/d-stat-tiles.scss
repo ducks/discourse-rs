@@ -1,0 +1,45 @@
+.d-stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+  margin-bottom: 2em;
+
+  .d-stat-tile {
+    display: flex;
+    flex-direction: column;
+    padding: 1em;
+    background: var(--primary-very-low);
+    border-radius: 0.25em;
+
+    &__label {
+      color: var(--primary-medium);
+      font-size: 0.875em;
+      margin-bottom: 0.5em;
+    }
+
+    &__value {
+      color: var(--primary);
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+  }
+
+  &.--compact {
+    display: flex;
+    gap: 0.5em;
+    margin-bottom: 0;
+
+    .d-stat-tile {
+      padding: 0.25em 0.5em;
+
+      &__label {
+        font-size: var(--font-down-2);
+        margin-bottom: 0;
+      }
+
+      &__value {
+        font-size: var(--font-down-1);
+      }
+    }
+  }
+}

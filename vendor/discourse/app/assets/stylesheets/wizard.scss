@@ -1,0 +1,557 @@
+@use "lib/viewport";
+
+:root {
+  --wizard-primary: var(--tertiary);
+  --wizard-primary-100: var(--tertiary-low);
+  --wizard-primary-300: var(--tertiary-medium);
+  --wizard-primary-400: var(--tertiary-hover);
+  --wizard-primary-800: var(--tertiary-high);
+  --wizard-bg-color: light-dark(#{$discourse-bg-light}, #{$discourse-bg-dark});
+  --wizard-bg-color-2: light-dark(
+    #{$discourse-brand-light},
+    var(--wizard-primary-800)
+  );
+  --wizard-button-text-color: light-dark(var(--secondary), var(--primary));
+  --wizard-input-radius: 8px;
+  --wizard-button-radius: 6.25em;
+}
+
+@keyframes bump {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+// horizon specific style
+.experimental-screen {
+  .wizard & {
+    display: none;
+  }
+}
+
+html:has(body.wizard) {
+  background-color: var(--wizard-bg-color);
+}
+
+body.wizard {
+  background-color: var(--wizard-bg-color);
+  color: var(--primary-very-high);
+
+  #wizard-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1.5em;
+    height: 100%;
+  }
+
+  .desktop-view & {
+    #main-outlet {
+      padding-top: 0;
+    }
+  }
+
+  #main-outlet-wrapper {
+    @include viewport.until(md) {
+      gap: 0;
+      padding-inline: 0.5em;
+    }
+  }
+
+  .discourse-logo {
+    z-index: z("header");
+
+    svg {
+      height: 40px;
+      width: auto;
+
+      @include viewport.until(sm) {
+        height: 40px;
+      }
+
+      @media screen and (height <= 900px) {
+        .desktop-view & {
+          display: none;
+        }
+      }
+    }
+  }
+
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 600px;
+    background: linear-gradient(
+      to bottom,
+      var(--wizard-bg-color-2) 0%,
+      var(--wizard-bg-color) 100%
+    );
+    z-index: z("base");
+    pointer-events: none;
+  }
+
+  // Clean takeover when the skeleton is the backdrop.
+  &:has(.site-skeleton) {
+    &::before {
+      display: none;
+    }
+
+    .d-header-wrap {
+      display: none;
+    }
+
+    // Full-viewport flex container so the card centers; scrolls if a step is tall.
+    #wizard-main {
+      position: fixed;
+      inset: 0;
+
+      // inset must size the box alone; height + padding on a content-box
+      // element pushes it past the viewport and skews centering
+      height: auto;
+      padding: 1.5rem;
+      overflow: auto;
+    }
+
+    // auto margins center the step when short, but unlike justify-content:
+    // center keep the top reachable when a tall step overflows
+    .wizard-container__step {
+      margin-block: auto;
+    }
+
+    #wizard-main::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: rgb(0 0 0 / 0.34);
+      pointer-events: none;
+    }
+
+    .wizard-container {
+      border: 1px solid light-dark(rgb(0, 0, 0, 0.08), var(--primary-low));
+      border-radius: 8px;
+      box-shadow:
+        0 34px 110px rgb(30, 36, 72, 0.34),
+        0 8px 24px rgb(30, 36, 72, 0.18);
+    }
+  }
+}
+
+// Refactored SCSS
+.wizard-container {
+  position: relative;
+  z-index: 11;
+  background-color: var(--secondary);
+  box-shadow: 0 10px 30px light-dark(rgb(123, 95, 226, 0.15), transparent);
+  box-sizing: border-box;
+  border-radius: 16px;
+  padding: var(--space-8, 2rem);
+
+  @include viewport.until(md) {
+    padding: 2em 1.5em;
+  }
+
+  &__step {
+    max-width: 700px;
+    width: 100%;
+
+    .wizard-container__button:not(.wizard-container__button-upload) {
+      @include viewport.until(sm) {
+        width: 100%;
+        margin: 0 0 0.5em;
+      }
+    }
+  }
+
+  &__fields {
+    width: 100%;
+  }
+
+  &__field {
+    margin-bottom: var(--space-4, 1rem);
+  }
+
+  &__field.invalid input {
+    outline: 0;
+    border: 3px solid var(--danger);
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: bump 0.25s ease-in-out;
+      animation-iteration-count: 2;
+    }
+  }
+
+  &__field label {
+    display: block;
+    margin-bottom: 0.5em;
+  }
+
+  &__step-form {
+    display: flex;
+    flex: 1 0 50%;
+
+    @media only screen and (width <= 568px) {
+      width: 100%;
+    }
+  }
+
+  &__step-header {
+    text-align: center;
+    margin-bottom: var(--space-8, 2rem);
+  }
+
+  &__step-title {
+    font-size: 2em;
+    color: var(--primary);
+    line-height: var(--line-height-medium);
+    margin: 0 0 0.5em 0;
+    font-weight: 900;
+  }
+
+  &__step-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__step-contents {
+    min-height: 37em;
+
+    @include viewport.until(sm) {
+      min-height: 30em;
+    }
+  }
+
+  &__step-text {
+    display: inline;
+
+    @media only screen and (width <= 568px) {
+      display: none;
+    }
+  }
+
+  &__step-count {
+    min-width: 3.2em;
+    text-align: center;
+  }
+
+  .preloaded-font-styles {
+    font-size: 1px;
+  }
+
+  &__link {
+    margin-right: 1em;
+    text-decoration: none;
+    color: var(--primary-high);
+    font-size: var(--font-up-1);
+  }
+
+  &__link:hover {
+    color: var(--tertiary-hover);
+  }
+
+  &__button {
+    --accent-color: var(--wizard-primary);
+    --d-button-primary-bg-color: var(--wizard-primary);
+    --d-button-primary-text-color: var(--wizard-button-text-color);
+    width: 100%;
+    padding: 0.75em 2em;
+    font-weight: bold;
+    border-radius: var(--wizard-button-radius);
+  }
+
+  &__button.small {
+    padding: 0.25em 0.5em;
+    font-size: var(--font-down-1);
+  }
+
+  &__button:hover {
+    --accent-color: var(--wizard-primary-400);
+    --button-box-shadow: none;
+  }
+
+  &__button:focus {
+    --button-box-shadow: var(--wizard-primary-300);
+  }
+
+  &__button:active {
+    --accent-color: var(--wizard-primary);
+  }
+
+  &__button:disabled,
+  &__button.disabled {
+    background-color: var(--primary-medium);
+  }
+
+  &__step-footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    @include viewport.until(sm) {
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+    }
+  }
+
+  &__label {
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  &__label.required {
+    display: inline;
+    color: var(--danger);
+  }
+
+  &__description {
+    color: var(--primary-high);
+    font-size: var(--font-0);
+    font-weight: normal;
+    margin: 0.25em 0 1em;
+
+    a {
+      margin: 0;
+    }
+
+    @media only screen and (width <= 568px) {
+      font-size: var(--font-0);
+    }
+  }
+
+  &__description.extra {
+    color: var(--primary-high);
+    font-size: var(--font-up-1);
+    margin: 0.25em 0 0.5em 3.5em;
+
+    @media only screen and (width <= 568px) {
+      margin-left: 2em;
+    }
+  }
+
+  &__text-input,
+  input[type="text"] {
+    --accent-color: var(--wizard-primary);
+    --d-input-border-radius: var(--wizard-input-radius);
+    --d-input-border: 1px solid var(--primary-300);
+    width: 100%;
+    margin: 0;
+    padding: 0.75em;
+  }
+
+  &__dropdown {
+    width: 100%;
+  }
+
+  &__dropdown .select-kit-header:not(.btn) {
+    --d-input-focused-color: var(--wizard-primary);
+    border-radius: var(--wizard-input-radius);
+    padding: 0.75em;
+    height: auto;
+    border-color: var(--primary-300);
+
+    .name {
+      font-weight: 400;
+      color: var(--d-input-text-color);
+    }
+  }
+
+  &__radio {
+    // these must be accessible in the DOM for accessibilty
+    // so we can't use visibility: hidden or display: none
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  &__radio-choices {
+    align-items: stretch;
+    display: flex;
+    gap: 1em;
+
+    @include viewport.until(sm) {
+      flex-direction: column;
+    }
+  }
+
+  &__radio-choice {
+    flex-basis: 0;
+    flex-grow: 1;
+    display: flex;
+
+    &.--selected {
+      .wizard-container__label {
+        background-color: var(--wizard-primary-100);
+        border-color: var(--wizard-primary);
+        border-width: 2px;
+        margin: 0;
+        color: light-dark(var(--wizard-primary), var(--primary));
+        font-weight: bold;
+      }
+    }
+
+    &:focus-within {
+      .wizard-container__label {
+        outline: 2px solid var(--wizard-primary);
+        outline-offset: 2px;
+      }
+    }
+
+    .wizard-container__label {
+      border-radius: var(--wizard-input-radius);
+      border: 1px solid var(--primary-300);
+      flex-grow: 1;
+      margin: 1px 0;
+    }
+
+    label {
+      align-content: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      font-weight: normal;
+      padding: 1em;
+      text-align: center;
+
+      .svg-icon {
+        margin-bottom: 0.5em;
+        width: 100%;
+      }
+    }
+  }
+
+  label .svg-icon {
+    top: 2px;
+  }
+
+  .finish-installation {
+    .wizard-congratulations-wrap {
+      display: flex;
+      gap: 1em;
+
+      @media screen and (width <= 750px) {
+        flex-direction: column-reverse;
+      }
+    }
+
+    h1 {
+      margin: 0 auto 0.5em;
+      font-weight: 900;
+    }
+
+    p {
+      margin-bottom: 1.5em;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .tada {
+      max-height: 3em;
+      margin-bottom: 1em;
+    }
+
+    .help-text {
+      margin: 2em 0;
+    }
+  }
+}
+
+// New instance setup screens
+// /finish-installation and /finish-installation/register
+.wizard-container-contents.finish-installation {
+  font-family: var(--font-family);
+  max-width: 500px;
+
+  a {
+    color: var(--wizard-primary);
+
+    &:hover {
+      color: var(--wizard-primary-400);
+    }
+  }
+
+  form {
+    margin-bottom: 0;
+  }
+
+  .wizard-container__combobox {
+    background: var(--secondary);
+    color: var(--primary);
+    padding: 0.5em;
+    font-size: var(--font-up-1);
+    border-radius: 4px;
+    border: 1px solid var(--primary-low-mid);
+    margin-top: 0.25em;
+  }
+
+  .wizard-container__fields {
+    max-width: 500px;
+  }
+
+  .wizard-container__text-input {
+    color: var(--primary);
+  }
+
+  .wizard-container__button {
+    border-radius: 2px;
+    border: 0;
+    padding: 0.5em;
+    transition: var(--d-button-transition);
+    text-decoration: none;
+    background-color: var(--secondary);
+    color: var(--primary-very-high);
+    cursor: pointer;
+
+    &.btn-primary {
+      background-color: var(--wizard-primary);
+      color: light-dark(var(--secondary), var(--primary));
+      display: inline-block;
+      padding: 0.75em 2em;
+      border-radius: var(--wizard-button-radius);
+      width: auto;
+      font-size: 1rem;
+
+      &:hover {
+        background-color: var(--wizard-primary-400);
+      }
+
+      &:focus {
+        background-color: var(--wizard-primary-300);
+      }
+
+      &:active {
+        background-color: var(--wizard-primary);
+      }
+    }
+
+    &:disabled {
+      background-color: var(--tertiary-low);
+    }
+  }
+
+  .alert-error {
+    padding: 0.5em 2.5em 0.5em 1em;
+    background-color: var(--danger-low);
+    color: var(--primary);
+    position: relative;
+    margin-bottom: 1em;
+  }
+}

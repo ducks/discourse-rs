@@ -1,0 +1,11 @@
+.x{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.y{-webkit-box-shadow:0 0 1px red;color:blue;box-shadow:0 0 1px red}
+.z{box-shadow:0 0 1px red}
+.w{-webkit-appearance:none}
+.v{transform:none}
+.u{-webkit-transform:none;transition:transform 1s}
+.t{-webkit-user-select:none;user-select:none}
+.s{-webkit-background-clip:text;background-clip:text}
+.r{display:flex}
+
+/*# sourceMappingURL=x.css.map */

@@ -7,6 +7,9 @@ default-run = "discourse-rs"
 
 [workspace]
 members = ["crates/markdown"]
+# A patched copy of grass's compiler (crates/grass_compiler/PATCHES.md),
+# built as a dependency and not linted with the workspace.
+exclude = ["crates/grass_compiler"]
 
 [dependencies]
 discourse-markdown = { path = "crates/markdown" }
@@ -74,6 +77,10 @@ p521 = { version = "0.13", default-features = false, features = ["ecdsa", "std"]
 ed25519-dalek = "2"
 ciborium = "0.2"
 qrcode = { version = "0.14", default-features = false }
+
+# grass's compiler with the fixes theme SCSS needs (crates/grass_compiler/PATCHES.md).
+[patch.crates-io]
+grass_compiler = { path = "crates/grass_compiler" }
 
 [dev-dependencies]
 http-body-util = "0.1"

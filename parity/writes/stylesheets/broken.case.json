@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Broken", "theme_fields": [
+      {"name": "scss", "target": "common", "value": ".a { color: $nope; }\n"},
+      {"name": "scss", "target": "desktop", "value": ".a { color: red\n.b { x: y }\n"},
+      {"name": "lib", "target": "extra_scss", "value": ".x { y: z\n"},
+      {"name": "scss", "target": "mobile", "value": "@import \"lib\";\n"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [
+      {"name": "scss", "target": "common", "value": ".a { color: $primary; }\n"}
+    ]}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}

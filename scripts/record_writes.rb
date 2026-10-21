@@ -242,6 +242,12 @@ end
 def reset_plugin_caches
   Site.clear_cache
   Emoji.clear_cache
+  # The theme caches (the user selectable and parent theme ids) and the
+  # stylesheet manager's, which settings (default_theme_id) and theme
+  # writes expire after commit, so never within a case.
+  Theme.clear_cache!
+  Stylesheet::Manager.cache.clear
+  ApplicationSerializer.expire_cache_fragment!("user_themes")
   Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
   # discourse-solved's in-memory list of categories that take answers.
   DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)
@@ -588,9 +594,22 @@ cases.each do |c|
         options[:env] = { "REQUEST_PATH" => path.split("?").first }
         session.public_send(r["method"].downcase, path, **options)
         Scheduler::Defer.do_all_work
-        body = session.response.body
+        # `stylesheet`: the page's stylesheet link of that data-target (or
+        # class, for the color definitions) fetched in its place, by a
+        # session of its own (StylesheetsController#show drops the
+        # cookies); the response is the stylesheet's.
+        last = session.response
+        if (target = r["stylesheet"])
+          link = last.body[/<link href="([^"]+)"(?:\s+[a-z-]+="[^"]*")*\s+(?:data-target|class)="#{Regexp.escape(target)}"/, 1]
+          raise "no #{target} stylesheet on #{path}" if !link
+          sheets = ActionDispatch::Integration::Session.new(Rails.application)
+          sheets.host! Discourse.current_hostname
+          sheets.get(CGI.unescapeHTML(link).sub(%r{\Ahttps?://[^/]+}, ""))
+          last = sheets.response
+        end
+        body = last.body
         body =
-          if session.response.media_type == "application/zip"
+          if last.media_type == "application/zip"
             zip_entries(body)
           else
             (JSON.parse(body) rescue body)
@@ -604,11 +623,11 @@ cases.each do |c|
               .flat_map { |pattern| body.scan(Regexp.new(pattern)).map { |groups| Array(groups).map(&:to_s).join("|") } }
               .join("\n")
         end
-        response = { status: session.response.status, body: body }
+        response = { status: last.status, body: body }
         # The rate limit headers, kept only when a response has them, and
         # those the case names in `keep_headers` (a redirect's Location, as
         # its path, the host being each side's own).
-        kept = session.response.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max", *(c["keep_headers"] || []))
+        kept = last.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max", *(c["keep_headers"] || []))
         # A relative one (OmniAuth's failure redirect) is kept as sent.
         if kept["Location"]
           location = URI(kept["Location"])

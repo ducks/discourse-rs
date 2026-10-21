@@ -1,0 +1,63 @@
+@use "lib/viewport";
+
+.composer-image-gallery {
+  &__mode-buttons {
+    display: flex;
+
+    @include viewport.until(sm) {
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+  }
+
+  &__mode-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    border: 0;
+    border-radius: var(--d-border-radius);
+    background: var(--secondary);
+    color: var(--primary-medium);
+    font-size: var(--font-down-1-rem);
+    padding: var(--space-1) var(--space-2);
+    cursor: pointer;
+
+    @include viewport.until(sm) {
+      padding: var(--space-2) var(--space-4);
+    }
+
+    @include viewport.from(sm) {
+      &:first-child {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+      }
+
+      &:last-child {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+      }
+
+      &:not(:first-child) {
+        border-inline-start: 1px solid var(--content-border-color);
+      }
+    }
+
+    html.discourse-no-touch &:hover:not(:disabled, .is-active) {
+      color: var(--primary);
+      background-color: var(--d-hover);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--secondary);
+    }
+
+    &.is-active {
+      background-color: var(--tertiary-low);
+      color: var(--tertiary);
+    }
+
+    &:focus-visible {
+      @include default-focus;
+    }
+  }
+}

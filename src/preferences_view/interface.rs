@@ -2,7 +2,9 @@
 
 use serde_json::{Map, Value, json};
 
-use super::{Combo, Prefs, button, checkbox, combo, save_attrs, save_controls, value_string};
+use super::{
+    Combo, Prefs, button, checkbox, combo, combo_rows, save_attrs, save_controls, value_string,
+};
 use crate::topic_list_view::{escape, t, t_with};
 use crate::{AppError, Unsupported};
 
@@ -29,6 +31,14 @@ pub struct Interface<'a> {
     pub text_size_cookie: Option<&'a str>,
     /// `site.user_tips`: the user tips are on.
     pub user_tips: bool,
+    /// `site.default_light_color_scheme` and `default_dark_color_scheme`.
+    pub default_light_color_scheme: &'a Value,
+    pub default_dark_color_scheme: &'a Value,
+    /// The session's userColorSchemeId and userDarkSchemeId, and the
+    /// InterfaceColor service's colorMode (crate::color_mode::Head).
+    pub session_scheme_id: i32,
+    pub session_dark_scheme_id: i32,
+    pub color_mode: Option<&'a str>,
 }
 
 /// `user.currentTextSize`: the cookie's size when its sequence is at
@@ -68,33 +78,14 @@ pub fn render(p: &Prefs, i: &Interface) -> Result<(String, Map<String, Value>), 
     let viewing_self = p.viewing_self();
     let mut out = String::from("<span></span>");
 
-    // showThemeSelector, showColorSchemeSelector: the port draws the
-    // default theme's stylesheets only.
-    let themes = i.user_themes.as_array().map(Vec::len).unwrap_or(0)
-        + usize::from(
-            !i.user_themes
-                .as_array()
-                .into_iter()
-                .flatten()
-                .any(|t| t["default"] == true),
-        );
-    let schemes = i.user_color_schemes.as_array().map(Vec::len).unwrap_or(0);
-    // showInterfaceColorModeSelector
-    let theme = i
-        .user_themes
-        .as_array()
-        .into_iter()
-        .flatten()
-        .find(|t| t["default"] == true);
-    let dark = theme
-        .and_then(|t| t["dark_color_scheme_id"].as_i64())
-        .unwrap_or(-1);
-    let light = theme.and_then(|t| t["color_scheme_id"].as_i64());
-    let mode_selector = (dark > 0 && light.is_some_and(|l| l != dark))
-        || p.option("dark_scheme_id").as_i64().unwrap_or(-1) > 0;
-    if themes > 1 || schemes > 0 || mode_selector {
-        return Err(Unsupported("choosing a theme or color palette (169)").into());
+    // showThemeSelector: another theme would draw its own stylesheets,
+    // and the port draws the default theme's.
+    let themes = list_themes(i.user_themes);
+    if themes.len() > 1 {
+        return Err(Unsupported("choosing a theme (258a)").into());
     }
+    let palettes = color_schemes(p, i, &themes);
+    out.push_str(&palettes.html);
 
     // textSize: one's own is the cookie's when it is newer.
     let option_size = p.option("text_size").as_str().map(str::to_string);
@@ -415,9 +406,11 @@ pub fn render(p: &Prefs, i: &Interface) -> Result<(String, Map<String, Value>), 
     if make_theme_default {
         fields.push("theme_ids");
     }
+    // save: the palettes go null without the selector, else the chosen
+    // ones (makeColorSchemeDefault starts checked).
     let mut values: Vec<(&str, Value)> = vec![
-        ("color_scheme_id", Value::Null),
-        ("dark_scheme_id", Value::Null),
+        ("color_scheme_id", palettes.save_light),
+        ("dark_scheme_id", palettes.save_dark),
     ];
     if make_theme_default {
         values.push((
@@ -437,4 +430,303 @@ fn default_theme_id(user_themes: &Value) -> Option<i64> {
         .flatten()
         .find(|t| t["default"] == true)
         .and_then(|t| t["theme_id"].as_i64())
+}
+
+/// A theme as `listThemes` lists it.
+struct ListedTheme {
+    id: Option<i64>,
+    color_scheme_id: Option<i64>,
+    dark_color_scheme_id: Option<i64>,
+    only_theme_color_schemes: bool,
+}
+
+/// `listThemes(site)`: the user themes, after a nameless default when none
+/// of them is the default.
+fn list_themes(user_themes: &Value) -> Vec<ListedTheme> {
+    let themes = user_themes.as_array().cloned().unwrap_or_default();
+    let mut out = Vec::new();
+    if !themes.iter().any(|t| t["default"] == true) {
+        out.push(ListedTheme {
+            id: None,
+            color_scheme_id: None,
+            dark_color_scheme_id: None,
+            only_theme_color_schemes: false,
+        });
+    }
+    out.extend(themes.iter().map(|t| ListedTheme {
+        id: t["theme_id"].as_i64(),
+        color_scheme_id: t["color_scheme_id"].as_i64(),
+        dark_color_scheme_id: t["dark_color_scheme_id"].as_i64(),
+        only_theme_color_schemes: t["only_theme_color_schemes"] == true,
+    }));
+    out
+}
+
+/// A palette as `listColorSchemes` lists it (`is_dark` None for the
+/// theme default).
+struct ListedScheme {
+    id: i64,
+    name: String,
+    is_dark: Option<bool>,
+    preview: Value,
+}
+
+/// `listColorSchemes(site, {darkOnly, currentTheme})`: the user selectable
+/// palettes (light ones first), only the theme's own when it limits them,
+/// after the theme default (-1) unless it does.
+fn list_color_schemes(
+    p: &Prefs,
+    i: &Interface,
+    theme: Option<&ListedTheme>,
+    dark_only: bool,
+) -> Vec<ListedScheme> {
+    let mut schemes = i.user_color_schemes.as_array().cloned().unwrap_or_default();
+    let limit = theme.is_some_and(|t| {
+        t.only_theme_color_schemes && schemes.iter().any(|s| s["theme_id"].as_i64() == t.id)
+    });
+    if !dark_only {
+        // A stable sort, as Array#sort is.
+        schemes.sort_by_key(|s| s["is_dark"] == true);
+    }
+    let mut out: Vec<ListedScheme> = schemes
+        .iter()
+        .filter(|s| !limit || s["theme_id"].as_i64() == theme.and_then(|t| t.id))
+        .filter(|s| !dark_only || s["is_dark"] == true)
+        .map(|s| ListedScheme {
+            id: s["id"].as_i64().unwrap_or_default(),
+            name: s["name"].as_str().unwrap_or_default().to_string(),
+            is_dark: Some(s["is_dark"] == true),
+            preview: s.clone(),
+        })
+        .collect();
+    if !limit {
+        let default = if dark_only {
+            i.default_dark_color_scheme
+        } else {
+            i.default_light_color_scheme
+        };
+        out.insert(
+            0,
+            ListedScheme {
+                id: -1,
+                name: t(p.cx, "user.color_schemes.default_description"),
+                is_dark: None,
+                preview: json!({"colors": default["colors"].as_array().cloned().unwrap_or_default()}),
+            },
+        );
+    }
+    out
+}
+
+/// What the color palette fieldset drew and what Save Changes sends.
+struct Palettes {
+    html: String,
+    save_light: Value,
+    save_dark: Value,
+}
+
+/// showColorSchemeSelector's fieldset: the light and dark
+/// ColorPalettePickers, the interface color mode, and (while previewing,
+/// static/js/preferences.js) Undo and the all devices checkbox.
+fn color_schemes(p: &Prefs, i: &Interface, themes: &[ListedTheme]) -> Palettes {
+    let cx = p.cx;
+    let own = p.viewing_self();
+    // currentThemeId: the theme the page draws, the default one.
+    let current_id = default_theme_id(i.user_themes);
+    let theme = themes.iter().find(|t| t.id.is_some() && t.id == current_id);
+    let light = list_color_schemes(p, i, theme, false);
+    let dark = list_color_schemes(p, i, theme, true);
+    let only = theme.is_some_and(|t| t.only_theme_color_schemes);
+    let show_light =
+        light.len() > 1 && (!only || light.iter().filter(|s| s.is_dark != Some(true)).count() > 1);
+    let show_dark =
+        dark.len() > 1 && (!only || dark.iter().filter(|s| s.is_dark == Some(true)).count() > 1);
+    let default_dark = theme
+        .and_then(|t| t.dark_color_scheme_id)
+        .filter(|id| *id != 0)
+        .unwrap_or(-1);
+
+    // The route's selectedColorSchemeId and selectedDarkColorSchemeId:
+    // one's own from the session (getSelectedColorSchemeId leaves out the
+    // theme's palette when it is not user selectable), another's from
+    // their options.
+    let (selected_light, selected_dark) = if own {
+        let session = i64::from(i.session_scheme_id);
+        let hidden = session != 0
+            && theme.and_then(|t| t.color_scheme_id) == Some(session)
+            && !light.iter().any(|s| s.id == session);
+        (
+            (session != 0 && !hidden).then_some(session),
+            Some(i64::from(i.session_dark_scheme_id)),
+        )
+    } else {
+        (
+            p.option("color_scheme_id").as_i64(),
+            p.option("dark_scheme_id").as_i64(),
+        )
+    };
+    let show_mode = (default_dark > 0
+        && theme
+            .and_then(|t| t.color_scheme_id)
+            .is_some_and(|l| l != 0 && Some(l) != theme.and_then(|t| t.dark_color_scheme_id)))
+        || selected_dark.is_some_and(|d| d > 0);
+    if !(show_light || show_dark || show_mode) {
+        return Palettes {
+            html: String::new(),
+            save_light: Value::Null,
+            save_dark: Value::Null,
+        };
+    }
+
+    let picker = |schemes: &[ListedScheme], selected: Option<i64>, key: &str| {
+        combo_rows(
+            cx,
+            &Combo {
+                id: None,
+                component_class: "color-palette-picker",
+                class: "",
+                rows: schemes
+                    .iter()
+                    .map(|s| (s.id.to_string(), s.name.clone()))
+                    .collect(),
+                value: selected.map(|s| s.to_string()),
+                none: None,
+                key: Some(key),
+                filterable: false,
+            },
+            " color-palette-picker-row",
+            &|value, name, active| {
+                let preview = schemes
+                    .iter()
+                    .find(|s| s.id.to_string() == value)
+                    .map(|s| crate::admin_colors_view::preview_style(&s.preview))
+                    .unwrap_or_default();
+                format!(
+                    "{}<div style=\"{}\" class=\"color-palette-picker-row__preview\">{}</div><div class=\"color-palette-picker-row__name\">{}</div>",
+                    if active {
+                        active_badge(cx)
+                    } else {
+                        String::new()
+                    },
+                    escape(&preview),
+                    crate::admin_colors_view::PLACEHOLDER,
+                    escape(name)
+                )
+            },
+        )
+    };
+    let subgroup = |class: &str, label: &str, control: String| {
+        format!(
+            "<div class=\"control-subgroup {class}\"><div class=\"instructions\">{}</div><div class=\"controls\">{control}</div></div>",
+            escape(&t(cx, label))
+        )
+    };
+    let mut html = String::new();
+    if show_light {
+        html.push_str(&subgroup(
+            "light-color-scheme",
+            "user.color_schemes.regular",
+            picker(&light, selected_light, "color_scheme_id"),
+        ));
+    }
+    if show_dark {
+        html.push_str(&subgroup(
+            "dark-color-scheme",
+            "user.color_schemes.dark",
+            picker(&dark, selected_dark, "dark_scheme_id"),
+        ));
+    }
+    if show_mode {
+        // selectedInterfaceColorMode: one's own the service's mode, else
+        // the option.
+        let mode = match i.color_mode.filter(|_| own) {
+            Some("auto") => Some("1".to_string()),
+            Some("light") => Some("2".to_string()),
+            Some("dark") => Some("3".to_string()),
+            _ => value_string(p.option("interface_color_mode")),
+        };
+        html.push_str(&subgroup(
+            "interface-color-mode",
+            "user.color_schemes.interface_mode",
+            combo(
+                cx,
+                &Combo {
+                    id: None,
+                    component_class: "",
+                    class: "",
+                    rows: [(1, "auto"), (2, "light"), (3, "dark")]
+                        .iter()
+                        .map(|(id, k)| {
+                            (
+                                id.to_string(),
+                                t(cx, &format!("user.color_schemes.interface_modes.{k}")),
+                            )
+                        })
+                        .collect(),
+                    value: mode,
+                    none: None,
+                    key: Some("interface_color_mode"),
+                    filterable: false,
+                },
+            ),
+        ));
+    }
+    // previewingColorScheme's Undo and checkbox, which the script puts
+    // in after the controls while a palette is previewed.
+    let preview = format!(
+        "{}<div class=\"controls color-scheme-checkbox\">{}</div>",
+        button(
+            "btn-default btn-small undo-preview",
+            Some("arrow-rotate-left"),
+            Some(&t(cx, "user.color_schemes.undo")),
+            "",
+        ),
+        checkbox(
+            "",
+            None,
+            true,
+            &t(cx, "user.color_scheme_default_on_all_devices"),
+            None
+        )
+    );
+    let data = json!({
+        "own": own,
+        "themeId": current_id,
+        "themeLight": theme.and_then(|t| t.color_scheme_id),
+        "themeDark": theme.and_then(|t| t.dark_color_scheme_id),
+        "defaultDark": default_dark,
+        "sessionLight": own.then_some(i.session_scheme_id),
+        "sessionDark": own.then_some(i.session_dark_scheme_id),
+        "colorMode": i.color_mode.filter(|_| own),
+        "optionMode": p.option("interface_color_mode"),
+        "modelLight": p.option("color_scheme_id"),
+        "modelDark": p.option("dark_scheme_id"),
+        "activeLabel": t(cx, "user.color_schemes.picker.active"),
+        "previewHtml": preview,
+    });
+    let instructions = if show_dark {
+        format!(
+            "<div class=\"instructions\">{}</div>",
+            escape(&t(cx, "user.color_schemes.interface_mode_instructions"))
+        )
+    } else {
+        String::new()
+    };
+    Palettes {
+        html: format!(
+            "<fieldset class=\"control-group color-scheme\" data-setting-name=\"user-color-scheme\" data-color-schemes=\"{}\"><legend class=\"control-label\">{}</legend><div class=\"controls\">{html}</div>{instructions}</fieldset>",
+            escape(&data.to_string()),
+            escape(&t(cx, "user.color_scheme"))
+        ),
+        save_light: selected_light.map_or(Value::Null, Value::from),
+        save_dark: selected_dark.map_or(Value::Null, Value::from),
+    }
+}
+
+/// ColorPalettePickerRow's badge on the selected palette.
+fn active_badge(cx: &crate::topic_list_view::ListContext) -> String {
+    format!(
+        "<span class=\"color-palette-picker-row__badge --active\">{}</span>",
+        escape(&t(cx, "user.color_schemes.picker.active"))
+    )
 }

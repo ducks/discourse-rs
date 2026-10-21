@@ -574,3 +574,47 @@ html.text-size-largest {
   width: 60px;
   height: 60px;
 }
+
+/* base/user.scss: the interface tab's color palettes */
+.user-preferences .color-scheme .controls {
+  display: flex;
+}
+.user-preferences .control-subgroup + .controls {
+  clear: both;
+  padding-top: 1em;
+}
+.user-preferences .light-color-scheme,
+.user-preferences .dark-color-scheme {
+  margin-right: 1em;
+}
+.user-preferences .undo-preview {
+  margin: 1em 0;
+}
+
+/* select-kit/color-palette-picker.scss */
+.select-kit.color-palette-picker .color-palette-picker-row {
+  gap: 0.5em;
+  position: relative;
+}
+.select-kit.color-palette-picker .color-palette-picker-row__badge {
+  padding: 0.07rem 0.15rem;
+  border-radius: 4px;
+  letter-spacing: 0.25px;
+  align-items: center;
+  display: inline-flex;
+  gap: 0.25rem;
+  background-color: var(--tertiary);
+  color: var(--secondary);
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: var(--font-down-6);
+  text-transform: uppercase;
+}
+.select-kit.color-palette-picker .color-palette-picker-row__preview {
+  background: var(--secondary--preview, #fff);
+  padding: 5px;
+}
+.select-kit.color-palette-picker .color-palette-picker-row__preview svg {
+  height: 40px;
+}
