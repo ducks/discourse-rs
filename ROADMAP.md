@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c, 258a. Phases
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -576,10 +576,8 @@ then by what running a forum needs (milestone 6). Briefs:
     enable_performance_http_headers' SQL and Redis timings)
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages.
-    Left (2026-10-20), everything else below merged: a theme's page
-    /admin/customize/themes/:id with its settings, colors, components,
-    uploads, translations and theme site settings tabs and the html
-    fields' code editor (90g7; routes/themes.rs:77); the setup wizard's
+    Left (2026-10-21), everything else below merged: the rest of a
+    theme's page and its code editor (90g7a); the setup wizard's
     and the admin design wizard's pages (routes/wizard.rs:62,163,247);
     the admin user's badges and TL3 requirements tabs
     (routes/admin_pages.rs:423); login's Discourse ID tab
@@ -1019,8 +1017,8 @@ then by what running a forum needs (milestone 6). Briefs:
     (parity/writes/files/new_features_feed.json), served by the fixtures
     server: record_writes.rb and tests/writes.rs take a case's `env`
     (the endpoint), fixture-file `redis` values and remote bodies, and
-    a remote target without a query for any query), 90g7. `feat/admin-shell-customize` L, in part; left: a theme's
-    page and its code editor, the rest merged (done,
+    a remote target without a query for any query), 90g7. ~~`feat/admin-shell-customize`~~ (done; a theme's page and its
+    code editor in feat/admin-theme-page, their leftovers 90g7a) L (done,
     in feat/admin-shell-customize-content: /admin/customize/watched_words
     (on to the first action) and an action's page: the filter (the
     route's query param), the action nav with its counts and the mobile
@@ -1098,7 +1096,54 @@ then by what running a forum needs (milestone 6). Briefs:
     editor for the html fields, then theme SCSS compiled through grass
     and theme JS compiled (ThemeJavascriptCompiler) as their own items,
     since the server refuses both today; the base palette modal's ColorPalettePicker is a native
-    select), 90g8. ~~`feat/admin-shell-advanced`~~ (done; its left
+    select. Then feat/admin-theme-page: /admin/customize/themes/:id and
+    /components/:id (themes#index's JSON for an XHR, as Rails routes
+    them; a theme the list lacks on to the themes): show.gjs and
+    show/index.gjs over themes#index's document (the back link, the
+    name's inline edit, the serializer's errors, the remote theme's
+    metadata and finish install, the required version and disabled
+    alerts, the system and own palettes notes, the creator, the default,
+    user selectable and auto update InlineEditCheckboxes, the light and
+    dark ColorPalettePickers with their check and cancel, the included
+    components or parent themes ThemeSettingRelativesSelector with Add
+    all, Custom Code's edited sections and Edit Code, the uploads with
+    remove and ThemeUploadAddModal, the extra files, the theme site
+    settings, the theme settings and the translations as
+    SiteSettingComponent rows with trackChanges off (legacy editors: text,
+    textarea, integer, checkbox, enum ComboBox, compact list MultiSelect,
+    value list, upload; each saved by its own endpoint with its toast),
+    the translations' locale ComboBox, Preview, Export, Convert,
+    Enable/Disable and Delete); the code editor
+    /admin/customize/{themes,components}/:id/:target/:field_name/edit
+    (a git theme on to the themes, a field the target lacks to its
+    first): AdminThemeEditor's back button and theme link with the
+    unsaved changes' discard or stay, Show advanced, Maximize, the
+    target and field navs with their edited, error and icon marks, the
+    field's compile error, its help, Ace in the field's mode (the JS
+    initializer's template), the preview link and Save sending every
+    field as saveChanges("theme_fields") does, edits kept across the
+    fields until then. Compared with rs-ref-b: the pages' DOM (normalized
+    outerHTML of #main-outlet from both, matching) and their behaviour
+    (two playwright runs saving settings, translations, site settings,
+    name, checkboxes, palettes, relatives, uploads, the editor's fields
+    with an SCSS error, convert and delete, with the same results); write
+    case themes/page_routes), 90g7a. `feat/admin-theme-page-rest` M: what
+    the theme's page and editor still refuse or leave out, saying so:
+    the theme settings editor dialog (ThemeSettingsEditor;
+    static/js/admin-customize.js:3977), the objects setting's schema page
+    and its edit button (themes#schema; routes/admin_customize.rs:1434,
+    static/js/site-settings.js:1288), a remote theme's update, check for
+    updates and change source (static/js/admin-customize.js:3980; the
+    server refuses git fetches), uploading an upload setting's file
+    (static/js/site-settings.js:1028), translations in other locales
+    (routes/themes.rs:1064,1469; the locale ComboBox shows the server's
+    refusal), saving theme JS (170; the editor shows the refusal's error),
+    the color_definitions field's Ace placeholder, the
+    ColorPalettePicker's and MultiSelect's open rows drawn without their
+    swatches and filter; the remote theme branches (finish install,
+    commits behind, the metadata links) are drawn from the serializer but
+    not compared, no remote theme being installable on the reference
+    without a network fetch, 90g8. ~~`feat/admin-shell-advanced`~~ (done; its left
     plugin pages are 221 and 202) M (done, one branch
     an area: `feat/admin-shell-backups`: /admin/backups with
     AdminBackupsActions (backup through the StartBackup modal, cancel,
@@ -3896,9 +3941,9 @@ API keys for posting, and grant_moderation! for the first admin's login.
       (translation overrides), sidebar defaults; the `/admin/config` pages.
       Site texts (90a), color schemes (90b), sidebar defaults (90c) and
       the themes' reads and writes (90d, 90e), imports, exports,
-      setting types and the wizards (90f) and the admin pages but a
-      theme's (90g) done; left: 90g7's theme page and the leftovers
-      named under 90, and 169-171
+      setting types and the wizards (90f) and the admin pages (90g, a theme's page in
+      90g7) done; left: 90g7a's leftovers of a theme's page and the
+      leftovers named under 90, and 169-171
 
 ## Not planned
 
