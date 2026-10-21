@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) VALUES (36, 37, now(), now())",
+    "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) VALUES (35, 36, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "reply_to_post_number": 3,
+        "raw": "A reply to a reply, deeper in the thread than one level."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

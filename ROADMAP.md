@@ -1426,7 +1426,7 @@ have handlers now.
 123. `feat/secure-uploads` M, after 122: secure uploads and media
     (uploads.rs:388; posting/rebake.rs:49; pretty_text/helpers.rs:339;
     pretty_text/cooked_post_processor.rs:775; upload_references.rs:370;
-    topic_list.rs:1026; email/styles.rs:132)
+    topic_list.rs:1026; email/styles.rs:243)
 124. `feat/topic-view-staff` M (rewritten 2026-10-20: deleted topics and
     replies for staff with `post_stream.gaps`, `has_deleted`,
     `show_deleted`, `deleted_by`, `can_recover` and
@@ -1574,9 +1574,8 @@ have handlers now.
     rules (tables, details, polls and the like come out as their text,
     quote-button.js:238,367); the q and e shortcuts (no keyboard
     shortcuts are ported) and the caret placed at the selection when Edit
-    opens the composer; the quoted user's notification email, which
-    Email::Styles refuses with any quote (email/styles.rs:126, 146);
-    linked notifications from a quote of another topic's post when the
+    opens the composer; the quoted user's notification email, done in
+    146; linked notifications from a quote of another topic's post when the
     quoted user wasn't notified, done in 145) M: QuotedPost
     on create, revise, recover and a moved first post's copy
     (quote_count, post_replies and reply counts for the posts quoted,
@@ -1787,11 +1786,11 @@ have handlers now.
     excerpts (email/notification.rs:342,370), staged users and
     private_email (:189,193), group notification emails (:238),
     restricted tags in subjects (:307), the daily limit notice (:366),
-    lightboxes and iframes (:863,866), prioritize_username_in_ux off
-    (:943), quotes, oneboxes and iframes restyled and right-to-left
-    styles (email/styles.rs:126,221), replies to several posts or deeper
-    than one level, uploads, attachments and provider headers
-    (email/sender.rs:251,344,361,431,449,498), the other email types
+    lightboxes and Vimeo iframes (:863,869), prioritize_username_in_ux
+    off (:946), user oneboxes, iframes with an address outside the plain
+    http(s) form and secure media (email/styles.rs:226,236,243),
+    right-to-left styles (:332), uploads, attachments and provider
+    headers (email/sender.rs:251,429,447,496), the other email types
     (jobs/user_email.rs:93,101,105,507; account_silenced and
     account_suspended done), sendmail delivery
     (email/mod.rs:169), mailing list mode (the

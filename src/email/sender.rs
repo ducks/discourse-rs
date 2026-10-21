@@ -340,11 +340,11 @@ pub async fn send(
                 message.set_header("In-Reply-To", op.first().cloned());
                 message.set_header("References", op.first().cloned());
             } else {
-                if referenced.len() > 1 {
-                    return Err(Unsupported("emails for posts replying to several posts").into());
-                }
+                // Every post replied to or quoted is in In-Reply-To; the
+                // References thread runs from the first post through the
+                // reply tree above the newest one replied to (one parent
+                // per post, the latest) to the most recent by creation.
                 let in_reply_to = message_ids(&mut *conn, &referenced, &host).await?;
-                // The reply tree above the replied-to post.
                 let parents: Vec<i32> = sqlx::query_scalar(
                     "WITH RECURSIVE cte AS ( \
                        SELECT reply_post_id, post_id FROM post_replies WHERE reply_post_id = $1 \
@@ -357,17 +357,15 @@ pub async fn send(
                 .bind(referenced[0])
                 .fetch_all(&mut *conn)
                 .await?;
-                if !parents.is_empty() {
-                    return Err(Unsupported("emails for replies deeper than one level").into());
-                }
+                let parent_ids = message_ids(&mut *conn, &parents, &host).await?;
                 let mut references: Vec<String> = Vec::new();
-                for id in op.iter().chain(in_reply_to.last()) {
+                for id in op.iter().chain(&parent_ids).chain(in_reply_to.last()) {
                     if !references.contains(id) {
                         references.push(id.clone());
                     }
                 }
-                message.set_header("In-Reply-To", Some(in_reply_to.join(" ")));
                 // Mail's message id fields fold one id per line.
+                message.set_header("In-Reply-To", Some(in_reply_to.join("\r\n ")));
                 message.set_header("References", Some(references.join("\r\n ")));
             }
         }

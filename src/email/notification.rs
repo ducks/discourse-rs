@@ -862,8 +862,11 @@ pub(crate) fn format_for_email(
         if crate::pretty_text::cleanup::has_class(&node, "lightbox-wrapper") {
             return Err(Unsupported("lightboxes in emails").into());
         }
-        if crate::pretty_text::cleanup::element_name(&node) == Some("iframe") {
-            return Err(Unsupported("iframes in emails").into());
+        // convert_vimeo_iframes; Email::Styles makes the others links.
+        if crate::pretty_text::cleanup::element_name(&node) == Some("iframe")
+            && attr(&node, "src").is_some_and(|s| s.contains("player.vimeo.com"))
+        {
+            return Err(Unsupported("Vimeo iframes in emails").into());
         }
         if crate::pretty_text::cleanup::element_name(&node) == Some("a")
             && attr(&node, "href").is_some()
