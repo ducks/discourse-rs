@@ -2875,6 +2875,16 @@ route table has been made, so this list may be short.
     Header::Logo's light/dark picture, application_logo_dark_url, a
     category's uploaded_logo_dark) are not drawn, so a dark page keeps
     the light logos
+259. `fix/front-page-homepage` S: `/` always draws latest
+    (routes/mod.rs:198, list::latest) whatever the current homepage is
+    (homepage.rs: a member's homepage_id, SiteSetting.homepage, the
+    anonymous homepage, a custom homepage, "blank" when login is required),
+    so a site whose homepage is top or categories serves the wrong page at
+    the root with the homepage's title. Rails routes `/` to the
+    homepage's list through HomePageConstraint. Also unchecked: a
+    member who sees a subcategory but not its parent gets the parent's
+    name in the list title, where Ember's title code would throw. Found
+    by fix/list-page-titles
 
 ### Phase 11: the bundled plugins' gaps (210)
 
