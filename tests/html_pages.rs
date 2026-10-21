@@ -47,7 +47,8 @@ async fn home_and_latest_render_the_topic_list() {
             "{path}: {content_type}"
         );
         assert!(html.contains("<!DOCTYPE html>"));
-        assert!(html.contains("<title>Latest topics - Discourse</title>"));
+        // Latest is the homepage: no title token (BuildTopicRoute).
+        assert!(html.contains("<title>Discourse</title>"), "{path}");
         assert!(
             html.contains(r#"href="/t/welcome-to-discourse/5/1""#),
             "{path}"
@@ -460,7 +461,7 @@ async fn site_texts_reach_the_templates_client_strings() {
         ("js.log_in", "Enter"),
         ("js.sr_topic_list_caption", "All the topics"),
         ("js.replies", "Answers"),
-        ("js.filters.latest.title", "Newest"),
+        ("js.filters.top.title", "Best"),
         ("js.user.card", "Member card"),
         ("js.tagging.tags", "Labels"),
     ] {
@@ -475,11 +476,12 @@ async fn site_texts_reach_the_templates_client_strings() {
         .await
         .unwrap();
     }
-    let (_, _, html) = get(&db.pool, "/latest").await;
+    let (_, _, top) = get(&db.pool, "/top").await;
     assert!(
-        html.contains("<title>Newest topics - Discourse</title>"),
-        "{html}"
+        top.contains("<title>Best topics - Discourse</title>"),
+        "{top}"
     );
+    let (_, _, html) = get(&db.pool, "/latest").await;
     assert!(html.contains(r#"<span class="d-button-label">Join us</span>"#));
     assert!(html.contains(r#"<span class="d-button-label">Enter</span>"#));
     assert!(html.contains(r#"<caption class="sr-only">All the topics</caption>"#));
@@ -488,4 +490,159 @@ async fn site_texts_reach_the_templates_client_strings() {
     assert!(!html.contains(">Sign Up<"));
     let (_, _, tags) = get(&db.pool, "/tags").await;
     assert!(tags.contains("<title>Labels - Discourse</title>"), "{tags}");
+}
+
+/// The `<title>` of each list: what Ember sets once the route loads
+/// (BuildTopicRoute, BuildCategoryRoute, TagShowRoute and
+/// DiscoveryCategoriesRoute titleTokens, then the site title).
+#[tokio::test]
+async fn list_titles_follow_the_filter_category_and_tag() {
+    let db = TestDb::new().await;
+    for (path, title) in [
+        ("/", "Discourse"),
+        ("/latest", "Discourse"),
+        ("/latest?page=1", "Discourse"),
+        ("/top", "Top topics - Discourse"),
+        ("/top?period=weekly", "Top topics - Discourse"),
+        ("/hot", "Hot topics - Discourse"),
+        ("/categories", "Categories - Discourse"),
+        ("/c/general/4", "Latest General topics - Discourse"),
+        ("/c/general/4/none", "Latest General topics - Discourse"),
+        ("/c/general/4/l/top", "Top General topics - Discourse"),
+        ("/c/general/4/l/hot", "Hot General topics - Discourse"),
+        (
+            "/c/general/sub-general/34",
+            "Latest General/Sub General topics - Discourse",
+        ),
+        (
+            "/c/general/sub-general/34/l/top",
+            "Top General/Sub General topics - Discourse",
+        ),
+        ("/tag/howto/1", "Latest howto topics - Discourse"),
+        ("/tag/howto/1/l/top", "Top howto topics - Discourse"),
+        (
+            "/tags/c/general/4/howto/1",
+            "Latest howto topics in General - Discourse",
+        ),
+        (
+            "/tags/c/general/4/howto/1/l/hot",
+            "Hot howto topics in General - Discourse",
+        ),
+        ("/tag/none", "Latest untagged topics - Discourse"),
+        (
+            "/tags/c/general/4/none",
+            "Latest untagged topics in General - Discourse",
+        ),
+    ] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert!(
+            html.contains(&format!("<title>{title}</title>")),
+            "{path}: {}",
+            &html[..html.find("</title>").unwrap_or(0)]
+        );
+    }
+
+    // The short site description follows the site title on the front
+    // page only.
+    common::set_setting(&db.pool, "short_site_description", 1, "Talk shop").await;
+    let (_, _, html) = get(&db.pool, "/").await;
+    assert!(html.contains("<title>Discourse - Talk shop</title>"));
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    assert!(html.contains("<title>Discourse</title>"));
+
+    // Another homepage: its list loses the token, latest gains one.
+    common::set_setting(&db.pool, "default_homepage", 7, "top").await;
+    let (_, _, html) = get(&db.pool, "/top").await;
+    assert!(html.contains("<title>Discourse</title>"));
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    assert!(html.contains("<title>Latest topics - Discourse</title>"));
+    common::set_setting(&db.pool, "default_homepage", 7, "categories").await;
+    let (_, _, html) = get(&db.pool, "/categories").await;
+    assert!(html.contains("<title>Discourse</title>"));
+    // A category's list keeps its token whatever the homepage.
+    let (_, _, html) = get(&db.pool, "/c/general/4/l/top").await;
+    assert!(html.contains("<title>Top General topics - Discourse</title>"));
+
+    // The member filters, and a member's own homepage.
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    for (path, title) in [
+        ("/new", "New topics - Discourse"),
+        ("/unread", "Unread topics - Discourse"),
+        ("/unseen", "Unseen topics - Discourse"),
+        ("/read", "Read topics - Discourse"),
+        ("/posted", "My posts topics - Discourse"),
+        ("/bookmarks", "Bookmarks topics - Discourse"),
+        ("/c/general/4/l/new", "New General topics - Discourse"),
+        ("/c/general/4/l/unread", "Unread General topics - Discourse"),
+        ("/latest", "Latest topics - Discourse"),
+        ("/categories", "Discourse"),
+    ] {
+        let html = user1.page(path).await;
+        assert!(
+            html.contains(&format!("<title>{title}</title>")),
+            "{path}: {}",
+            &html[..html.find("</title>").unwrap_or(0)]
+        );
+    }
+    sqlx::query("UPDATE user_options SET homepage_id = 4 FROM users WHERE users.id = user_id AND username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = user1.page("/new").await;
+    assert!(html.contains("<title>Discourse</title>"));
+    let html = user1.page("/categories").await;
+    assert!(html.contains("<title>Categories - Discourse</title>"));
+}
+
+/// A member's session on the in-process router.
+struct Member {
+    state: discourse_rs::AppState,
+    cookies: Vec<String>,
+}
+
+impl Member {
+    async fn send(&mut self, request: axum::http::request::Builder, body: &str) -> String {
+        let request = request
+            .header(header::HOST, "test.localhost")
+            .header(header::COOKIE, self.cookies.join("; "));
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(request.body(Body::from(body.to_string())).unwrap())
+            .await
+            .unwrap();
+        for v in response.headers().get_all(header::SET_COOKIE) {
+            let pair = v.to_str().unwrap().split(';').next().unwrap().to_string();
+            let name = pair.split('=').next().unwrap().to_string();
+            self.cookies.retain(|c| !c.starts_with(&format!("{name}=")));
+            if !pair.ends_with('=') {
+                self.cookies.push(pair);
+            }
+        }
+        let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        String::from_utf8_lossy(&bytes).into_owned()
+    }
+
+    async fn logged_in(state: discourse_rs::AppState, username: &str) -> Member {
+        let mut member = Member {
+            state,
+            cookies: Vec::new(),
+        };
+        let xhr = |r: axum::http::request::Builder| r.header("x-requested-with", "XMLHttpRequest");
+        let csrf = member
+            .send(xhr(Request::get("/session/csrf.json")), "")
+            .await;
+        let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
+        let login = Request::post("/session")
+            .header("x-csrf-token", csrf["csrf"].as_str().unwrap())
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+        member
+            .send(xhr(login), &format!("login={username}&password=password"))
+            .await;
+        member
+    }
+
+    async fn page(&mut self, path: &str) -> String {
+        self.send(Request::get(path), "").await
+    }
 }

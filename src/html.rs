@@ -1168,6 +1168,8 @@ pub struct CategoryBadge {
 #[template(path = "latest.html")]
 pub struct LatestPage {
     pub site_title: String,
+    /// The `<title>` (document_title).
+    pub title: String,
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
@@ -1835,6 +1837,82 @@ pub fn nav_label(
     }
 }
 
+/// The document title Ember sets once the route loads
+/// (ApplicationRoute#_collectTitleTokens): the route's titleToken, if it
+/// has one, the site title, and on the front page the short site
+/// description when there is one, joined with " - ".
+pub fn document_title(token: Option<&str>, site_title: &str, short_description: &str) -> String {
+    let mut tokens: Vec<&str> = token.into_iter().collect();
+    tokens.push(site_title);
+    if !short_description.is_empty() {
+        tokens.push(short_description);
+    }
+    tokens.join(" - ")
+}
+
+impl Chrome {
+    /// `i18n("filters.<filter>.title")`, a `/` in the filter read as `.`.
+    fn filter_title(&self, filter: &str) -> String {
+        self.t(&format!("filters.{}.title", filter.replacen('/', ".", 1)))
+    }
+
+    fn t_args(&self, key: &str, args: &[(&str, &str)]) -> String {
+        self.i18n()
+            .t_with(&format!("js.{key}"), args)
+            .unwrap_or_else(|| format!("[en.{key}]"))
+    }
+
+    /// BuildTopicRoute#titleToken: none for the homepage's own list.
+    pub fn topics_title_token(&self, filter: &str, homepage: &str) -> Option<String> {
+        (filter != homepage)
+            .then(|| self.t_with("filters.with_topics", "filter", self.filter_title(filter)))
+    }
+
+    /// BuildCategoryRoute#titleToken: a subcategory's name after its
+    /// parent's, `parent/child`.
+    pub fn category_title_token(&self, filter: &str, name: &str, parent: Option<&str>) -> String {
+        let category = match parent {
+            Some(p) => format!("{p}/{name}"),
+            None => name.to_string(),
+        };
+        self.t_args(
+            "filters.with_category",
+            &[
+                ("filter", &self.filter_title(filter)),
+                ("category", &category),
+            ],
+        )
+    }
+
+    /// TagShowRoute#titleToken: `tag` None for the untagged (`none`) list.
+    pub fn tag_title_token(
+        &self,
+        filter: &str,
+        tag: Option<&str>,
+        category: Option<&str>,
+    ) -> String {
+        let filter = self.filter_title(filter);
+        match (tag, category) {
+            (Some(tag), Some(category)) => self.t_args(
+                "tagging.filters.with_category",
+                &[("filter", &filter), ("tag", tag), ("category", category)],
+            ),
+            (Some(tag), None) => self.t_args(
+                "tagging.filters.without_category",
+                &[("filter", &filter), ("tag", tag)],
+            ),
+            (None, Some(category)) => self.t_args(
+                "tagging.filters.untagged_with_category",
+                &[("filter", &filter), ("category", category)],
+            ),
+            (None, None) => self.t_args(
+                "tagging.filters.untagged_without_category",
+                &[("filter", &filter)],
+            ),
+        }
+    }
+}
+
 pub struct TagHeading {
     pub name: String,
     pub url: String,
@@ -1983,6 +2061,7 @@ pub async fn latest_page(
         site.chrome.powered_by = false;
     }
     Ok(LatestPage {
+        title: site.site_title.clone(),
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
@@ -2481,6 +2560,8 @@ pub struct FeaturedTopic {
 #[template(path = "categories.html")]
 pub struct CategoriesPage {
     pub site_title: String,
+    /// The `<title>` (document_title).
+    pub title: String,
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
@@ -2559,6 +2640,7 @@ pub async fn categories_page(
         })
         .unwrap_or_default();
     Ok(CategoriesPage {
+        title: site.site_title.clone(),
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,

@@ -518,6 +518,12 @@ async fn show_list(
             crate::html::category_heading(&mut conn, &base_path, c, params.page.is_none()).await?,
         );
     }
+    let token = page.chrome.tag_title_token(
+        kind.name(),
+        (tag_name != "none").then_some(tag_name.as_str()),
+        category.as_ref().map(|c| c.name.as_str()),
+    );
+    page.title = crate::html::document_title(Some(&token), &page.site_title, "");
     page.tag = Some(crate::html::TagHeading {
         name: tag_name.clone(),
         url: match &tag {

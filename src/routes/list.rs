@@ -391,6 +391,19 @@ pub async fn latest(
         base_path,
         "latest",
     )?;
+    // The front page has no title token; the short site description
+    // follows the site title there.
+    page.title = if uri.path() == "/" {
+        crate::html::document_title(
+            None,
+            &page.site_title,
+            &settings.get("short_site_description")?.to_s(),
+        )
+    } else {
+        let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+        let token = page.chrome.topics_title_token("latest", &homepage);
+        crate::html::document_title(token.as_deref(), &page.site_title, "")
+    };
     page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     page.nav = crate::html::nav_items(
@@ -615,10 +628,16 @@ pub async fn category(
         highlights_last_visited(kind, &params),
     )
     .await?;
-    page.heading = Some(
+    let heading =
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
-            .await?,
+            .await?;
+    let token = page.chrome.category_title_token(
+        kind.name(),
+        &category.name,
+        heading.parent.as_ref().map(|p| p.name.as_str()),
     );
+    page.title = crate::html::document_title(Some(&token), &page.site_title, "");
+    page.heading = Some(heading);
     // The category navigation: breadcrumbs, the category's pills, and a
     // member's notification level in it.
     let categories = crate::topic_list_view::categories(&mut conn).await?;
@@ -767,6 +786,11 @@ async fn categories_response(
     site.bus_position = bus_position;
     let mut page =
         crate::html::categories_page(&mut conn, &state.i18n, settings.emojis(), site, &doc).await?;
+    // DiscoveryCategoriesRoute#titleToken: none when categories is the
+    // homepage.
+    let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+    let token = (homepage != "categories").then(|| page.chrome.t("filters.categories.title"));
+    page.title = crate::html::document_title(token.as_deref(), &page.site_title, "");
     let base_path = state.config.globals.relative_url_root();
     // CategoriesDisplay#style: the mobile view has its own setting.
     let mobile = crate::mobile::mobile_view();
@@ -1174,6 +1198,9 @@ async fn front_list(
         state.config.globals.relative_url_root(),
         kind.name(),
     )?;
+    let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+    let token = page.chrome.topics_title_token(kind.name(), &homepage);
+    page.title = crate::html::document_title(token.as_deref(), &page.site_title, "");
     page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {

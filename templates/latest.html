@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% import "macros.html" as m %}
-{% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}{{ chrome.t_with("discovery.headings.multi_tag.default", "tags", t.name) }}{% else %}{{ chrome.t_with("filters.with_topics", "filter", chrome.t("filters.latest.title")) }}{% endif %} - {{ site_title }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
 {% if let Some(h) = heading %}{% if !category_nav %}
