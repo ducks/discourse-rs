@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Real-browser checks of the login page (Ember's full-page login) against a
+# disposable fixture database, not production: desktop and mobile layout,
+# the password mask, a refused login, a network failure, the forgot
+# password modal, and logging in from a topic back to that topic.
+# Screenshots go to the output directory.
+set -euo pipefail
+if [[ $# != 2 ]]; then
+  echo "usage: LOGIN_USER=... LOGIN_PASSWORD=... $0 <base-url> <output-directory>" >&2
+  exit 64
+fi
+: "${LOGIN_USER:?Set a disposable fixture account}"
+: "${LOGIN_PASSWORD:?Set its password}"
+exec nix-shell -p 'python3.withPackages (ps: [ ps.playwright ])' playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 - $(printf '%q ' "$@")
+" <<'PYTHON'
+import os
+from pathlib import Path
+import sys
+
+from playwright.sync_api import sync_playwright, expect
+
+base, output = sys.argv[1:]
+base = base.rstrip("/")
+out = Path(output)
+out.mkdir(parents=True, exist_ok=True)
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    for width, height, label in [(1280, 900, "desktop"), (390, 844, "mobile")]:
+        context = browser.new_context(viewport={"width": width, "height": height})
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(base + "/login")
+        name = page.locator("#login-account-name")
+        password = page.locator("#login-account-password")
+        button = page.locator("#login-button")
+        flash = page.locator(".login-fullpage > .alert.alert-error")
+        expect(name).to_be_visible()
+        assert page.locator("#d-sidebar").count() == 0
+        assert page.evaluate("document.body.classList.contains('login-page')")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        page.screenshot(path=str(out / f"login-{label}.png"), full_page=True)
+
+        # LoginPageController#localLogin's blank check.
+        button.click()
+        expect(flash).to_be_visible()
+
+        name.fill(os.environ["LOGIN_USER"])
+        password.fill("deliberately-wrong-password")
+        # DTogglePasswordMask shows once a password is typed.
+        toggle = page.locator(".toggle-password-mask")
+        expect(toggle).to_be_visible()
+        toggle.click()
+        expect(password).to_have_attribute("type", "text")
+        expect(toggle).to_have_attribute("title", "Hide password")
+        toggle.click()
+        expect(password).to_have_attribute("type", "password")
+        button.click()
+        expect(flash).to_have_text("Incorrect username, email or password")
+        expect(button).to_be_enabled()
+        expect(button).not_to_have_class("is-loading")
+        assert page.url == base + "/login"
+        page.screenshot(path=str(out / f"login-error-{label}.png"), full_page=True)
+
+        context.set_offline(True)
+        button.click()
+        expect(flash).to_have_text("Unknown error")
+        expect(button).to_be_enabled()
+        expect(button).not_to_have_class("is-loading")
+        context.set_offline(False)
+
+        # The forgot password modal carries an email over.
+        page.locator("#forgot-password-link").click()
+        modal = page.locator(".d-modal.forgot-password-modal")
+        expect(modal).to_be_visible()
+        expect(modal.locator("#username-or-email")).to_be_visible()
+        page.screenshot(path=str(out / f"login-forgot-{label}.png"), full_page=True)
+        modal.locator(".modal-close").click()
+        expect(modal).to_have_count(0)
+
+        # A real topic click must preserve its destination through sign-in.
+        page.goto(base + "/t/welcome-to-discourse/5")
+        page.locator(".d-header a.login-button").click()
+        expect(name).to_be_visible()
+        name.fill(os.environ["LOGIN_USER"])
+        password.fill(os.environ["LOGIN_PASSWORD"])
+        button.click()
+        page.wait_for_url("**/t/welcome-to-discourse/5")
+        expect(page.locator("#current-user")).to_be_visible()
+        assert not errors, errors
+        context.close()
+        print(f"PASS {label}: layout, blank and refused logins, password mask, network failure, forgot password, sign-in and return path")
+    browser.close()
+PYTHON

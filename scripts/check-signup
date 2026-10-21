@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Real-browser checks of the signup page (Ember's create-account form)
+# against a disposable fixture database, not production: desktop and
+# mobile layout, the validations, a network failure, and an account
+# created through to the account-created page. The form needs
+# enable_local_logins_via_code off; with login codes on the page shows the
+# code signup, whose email step alone is checked (the code steps wait on
+# /session/login-code). Screenshots go to the output directory.
+set -euo pipefail
+if [[ $# != 2 ]]; then
+  echo "usage: $0 <base-url> <output-directory>" >&2
+  exit 64
+fi
+exec nix-shell -p 'python3.withPackages (ps: [ ps.playwright ])' playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 - $(printf '%q ' "$@")
+" <<'PYTHON'
+from pathlib import Path
+import sys
+import uuid
+from playwright.sync_api import sync_playwright, expect
+
+base, output = sys.argv[1:]
+base = base.rstrip("/")
+out = Path(output)
+out.mkdir(parents=True, exist_ok=True)
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    for width, height, label in [(1280, 900, "desktop"), (390, 844, "mobile")]:
+        context = browser.new_context(viewport={"width": width, "height": height})
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(base + "/signup")
+        assert page.locator("#d-sidebar").count() == 0
+        assert page.evaluate("document.body.classList.contains('signup-page')")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        page.screenshot(path=str(out / f"signup-{label}.png"), full_page=True)
+        if page.locator(".code-login-form").count():
+            email = page.locator(".code-login-form input[type=email]")
+            expect(email).to_be_visible()
+            email.fill("not-an-email")
+            page.locator(".code-login-form__continue").click()
+            expect(page.locator(".form-kit__errors")).to_be_visible()
+            assert not errors, errors
+            context.close()
+            print(f"PASS {label}: code signup layout and its email check (the form needs login codes off)")
+            continue
+
+        submit = page.locator(".signup-page-cta__signup")
+        email = page.locator("#new-account-email")
+        username = page.locator("#new-account-username")
+        password = page.locator("#new-account-password")
+        flash = page.locator(".signup-fullpage > .alert")
+        expect(email).to_be_visible()
+
+        # SignupPageController#createAccount: every missing field says so,
+        # the first gets the focus.
+        submit.click()
+        expect(page.locator("#account-email-validation.bad")).to_be_visible()
+        expect(page.locator("#username-validation.bad")).not_to_be_empty()
+        expect(page.locator("#password-validation.bad")).to_be_visible()
+        expect(email).to_be_focused()
+
+        account = "signup" + uuid.uuid4().hex[:10]
+        email.fill(account + "@example.com")
+        username.fill(account)
+        expect(page.locator("#username-validation.good")).to_be_visible()
+        password.fill("short")
+        expect(page.locator("#password-validation.bad")).to_contain_text("too short")
+        submit.click()
+        expect(password).to_be_focused()
+        page.screenshot(path=str(out / f"signup-error-{label}.png"), full_page=True)
+
+        password.fill("Fixture-password-" + uuid.uuid4().hex)
+        expect(page.locator("#password-validation.good")).to_be_visible()
+        context.set_offline(True)
+        submit.click()
+        expect(flash).to_be_visible()
+        expect(submit).to_be_enabled()
+        expect(submit).not_to_have_class("is-loading")
+        context.set_offline(False)
+
+        submit.click()
+        page.wait_for_url("**/u/account-created")
+        expect(page.locator(".account-created .success-info")).not_to_be_empty()
+        page.screenshot(path=str(out / f"signup-confirmation-{label}.png"), full_page=True)
+        assert not errors, errors
+        context.close()
+        print(f"PASS {label}: layout, validations, network failure, account creation and the account-created page")
+    browser.close()
+PYTHON
