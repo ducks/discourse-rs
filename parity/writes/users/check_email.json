@@ -1,0 +1,81 @@
+{
+  "name": "check_email",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/check_email.json?email=fresh%40example.com"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_email.json?email=USER1%40example.com"
+    },
+    {
+      "method": "GET",
+      "path": "/users/check_email.json?email=not-an-email"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_email.json?email=someone%40blocked.example"
+    },
+    {
+      "method": "GET",
+      "path": "/u/check_email.json"
+    }
+  ],
+  "started_at": "2026-10-21T20:21:37.320493",
+  "transaction_started_at": "2026-10-21T20:21:34.060268",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Email has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Email is invalid."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Email is not allowed from that email provider. Please use another email address."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "hide_email_address_taken": false,
+    "blocked_email_domains": "blocked.example"
+  },
+  "recorded_from": {
+    "case": "d2e67934b5399e43146db235b5d3f2058ccfda19b20baeef8b424bf24a2457bf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

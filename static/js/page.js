@@ -132,9 +132,11 @@
 
   // A page is asked for as the browser asks for one: not as XHR, which
   // the server answers with JSON (a member's hx-headers say so for their
-  // other requests).
+  // other requests). The page it leaves is kept for the pages that
+  // return to it (the login and signup routes' destination_url).
   document.addEventListener("htmx:configRequest", function (event) {
     if (boosted(event)) {
+      Discourse.previousUrl = location.pathname + location.search;
       delete event.detail.headers["X-Requested-With"];
     }
   });

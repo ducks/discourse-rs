@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+exec nix-shell -p 'python3.withPackages (ps: [ ps.playwright ])' playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 $(printf '%q ' "$root/scripts/bench-browser.py" "$@")
+"

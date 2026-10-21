@@ -108,18 +108,21 @@ async fn html_requests_redirect_to_login_with_a_destination_cookie() {
         assert_eq!(status, StatusCode::FOUND, "{path}");
     }
 
-    // The front page and /login render the login page, with nothing from
-    // the forum on it.
-    for path in ["/", "/login"] {
+    // The front page renders the login-required page and /login the login
+    // page, with nothing from the forum on them.
+    for (path, title) in [
+        ("/", "Welcome to Discourse</h1>"),
+        ("/login", "<h1 class=\"login-title\">Welcome back</h1>"),
+    ] {
         let (status, headers, html) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}");
         assert_eq!(
             header(&headers, "cache-control"),
             Some("no-store, must-revalidate, private, max-age=0")
         );
-        assert!(html.contains("<h1>Welcome to Discourse</h1>"), "{html}");
+        assert!(html.contains(title), "{html}");
         assert!(!html.contains("Parity fixture"), "{path}");
-        assert!(!html.contains("welcome-to-discourse"), "{path}");
+        assert!(!html.contains("/t/welcome-to-discourse"), "{path}");
     }
 }
 
@@ -150,7 +153,7 @@ async fn nothing_changes_when_the_setting_is_off() {
     // /login is the login page whether or not login is required.
     let (status, _, html) = get(&db.pool, "/login").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("Welcome to Discourse"));
+    assert!(html.contains("<h1 class=\"login-title\">Welcome back</h1>"));
 }
 
 /// The gate guards routes, as Rails' before_action does: a path nothing

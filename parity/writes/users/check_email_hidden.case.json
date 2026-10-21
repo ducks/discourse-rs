@@ -1,0 +1,6 @@
+{
+  "user": null,
+  "requests": [
+    { "method": "GET", "path": "/u/check_email.json?email=user1%40example.com" }
+  ]
+}

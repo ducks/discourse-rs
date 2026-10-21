@@ -1,9 +1,67 @@
 /* The invite page and the profile's Invites tab (invites/show,
- * user-invited/show) as Rails compiles them into common.css: every rule
- * whose selector names the invite page, its form and the login code form,
- * the signup progress bar and welcome header, the invite list or DTable,
- * in common.css's order. */
+ * user-invited/show), and the login flow's pages (login, signup, the
+ * login-required front page, account-created, password reset), as Rails
+ * compiles them into common.css: every rule whose selector names those
+ * pages, their forms, the login code form, the login buttons, the
+ * password mask, the security key form, the signup progress bar and
+ * welcome header, the invite list or DTable, in common.css's order. */
 
+.btn-social {
+  color:#000;
+  background:#fff;
+  border-radius:var(--d-border-radius);
+}
+.btn-social:focus-visible {
+  outline:1px solid #000;
+}
+.btn-social[href] {
+  color:var(--secondary);
+}
+.btn-social::before {
+  margin-right:9px;
+  font-size:var(--font-0);
+}
+.btn-social .d-icon,.btn-social.btn:hover .d-icon,.d-modal.json-schema-editor-modal .je-ready button.btn-social:hover .d-icon,.d-modal.json-schema-editor-modal .je-ready .btn-social.json-editor-btn-add:hover .d-icon {
+  color:#000;
+}
+.btn-social.cas .d-icon {
+  color:var(--cas);
+}
+.btn-social.cas:hover .d-icon {
+  color:var(--cas);
+}
+.btn-social.twitter .d-icon {
+  color:var(--twitter);
+}
+.btn-social.twitter:hover .d-icon {
+  color:var(--twitter);
+}
+.btn-social.github .d-icon {
+  color:var(--github);
+}
+.btn-social.github:hover .d-icon {
+  color:var(--github);
+}
+.btn-social.discord .d-icon {
+  color:var(--discord);
+}
+.btn-social.discord:hover .d-icon {
+  color:var(--discord);
+}
+.btn-social.discourse_id {
+  background-color:var(--discourse_id-background);
+  color:var(--discourse_id-text);
+}
+.btn-social.discourse_id .d-icon {
+  color:var(--discourse_id-icon);
+}
+.btn-social.discourse_id:hover {
+  background-color:var(--discourse_id-background-hover);
+  color:var(--discourse_id-text-hover);
+}
+.btn-social.discourse_id:hover .d-icon {
+  color:var(--discourse_id-icon-hover);
+}
 /* signup-progress-bar.scss */
 :root {
   --progress-bar-line-width: 1px;
@@ -421,12 +479,53 @@
 .d-otp-input[data-com-onepassword-filled] {
   background-clip:text;
 }
+.account-created-page,.activate-account-page {
+  background:var(--secondary);
+}
+.account-created-page #main-outlet,.activate-account-page #main-outlet {
+  padding:0;
+  height:100%;
+}
+.account-created-page .above-main-container-outlet,.activate-account-page .above-main-container-outlet {
+  display:none;
+}
+.account-created,.activate-account {
+  max-width:500px;
+  padding:2rem 3rem;
+  background:var(--secondary);
+  margin:10vh auto 1em auto;
+}
+.account-created .ac-message {
+  font-size:var(--font-up-1);
+  line-height:var(--line-height-large);
+}
+.account-created .activation-controls {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5em;
+  margin-top:1em;
+}
+.account-created .edit-cancel {
+  text-transform:capitalize;
+}
+.account-created .success-info p:last-child {
+  margin-bottom:0;
+}
 .activate-account .login-welcome-header {
   width:fit-content;
 }
 .authorize-api-key__code-form .d-otp-slot {
   font-size:var(--font-up-1);
   padding:.625em .8em;
+}
+.body-page-button-container {
+  display:flex;
+}
+.body-page-button-container button {
+  margin-right:1rem;
+}
+.body-page-button-container button:last-child {
+  margin-right:0;
 }
 body.invite-page {
   font-family:system-ui,Arial,sans-serif;
@@ -449,6 +548,63 @@ body.invite-page #main-outlet-wrapper {
   overflow:hidden;
   display:inline;
 }
+#login-link,#new-account-link {
+  cursor:pointer;
+  text-align:left;
+}
+.password-reset-page .change-password-form {
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  width:400px;
+}
+.password-reset-page .change-password-form__password {
+  width:100%;
+}
+.password-reset-page .change-password-form .input {
+  position:relative;
+  margin-bottom:1em;
+}
+.password-reset-page .change-password-form .tip {
+  display:block;
+}
+.signup-fullpage .input-group input[type=password] {
+  padding-right:3em;
+}
+.toggle-password-mask {
+  position:absolute;
+  right:0;
+  top:0;
+  padding:.75em .77em;
+}
+.ios-device .toggle-password-mask {
+  padding:.7em;
+  font-size:var(--font-0);
+}
+#security-key {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+}
+#security-key p {
+  margin:0;
+  font-size:var(--font-0);
+}
+#security-key a {
+  display:inline-block;
+  padding:1em .5em 1em 0;
+  color:var(--tertiary);
+}
+#security-key button {
+  margin-right:1em;
+}
+.login-fullpage,.signup-fullpage {
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
 body.login-page .powered-by-discourse,body.login-page .above-main-container-outlet,body.login-page .before-header-panel-outlet,body.login-page .below-site-header-outlet,body.signup-page .powered-by-discourse,body.signup-page .above-main-container-outlet,body.signup-page .before-header-panel-outlet,body.signup-page .below-site-header-outlet,body.invite-page .powered-by-discourse,body.invite-page .above-main-container-outlet,body.invite-page .before-header-panel-outlet,body.invite-page .below-site-header-outlet,body.password-reset-page .powered-by-discourse,body.password-reset-page .above-main-container-outlet,body.password-reset-page .before-header-panel-outlet,body.password-reset-page .below-site-header-outlet,body.activate-account-page .powered-by-discourse,body.activate-account-page .above-main-container-outlet,body.activate-account-page .before-header-panel-outlet,body.activate-account-page .below-site-header-outlet {
   display:none;
 }
@@ -465,6 +621,12 @@ body.login-page .d-header .home-logo-wrapper-outlet,body.signup-page .d-header .
 }
 body.login-page .d-header .title a,body.signup-page .d-header .title a,body.invite-page .d-header .title a,body.password-reset-page .d-header .title a,body.activate-account-page .d-header .title a {
   margin:0 auto;
+}
+body.login-page,body.signup-page {
+  background-color:var(--secondary);
+}
+body.login-page .sidebar-wrapper,body.signup-page .sidebar-wrapper {
+  display:none;
 }
 .login-fullpage,.signup-fullpage,.invites-show,.password-reset-page {
   min-height:calc(90vh - var(--header-offset));
@@ -979,6 +1141,51 @@ html.keyboard-visible:not(.ios-device) .login-fullpage,html.keyboard-visible:not
     max-width:550px;
   }
 }
+body.static-login {
+  background-color:var(--primary-very-low);
+}
+body.static-login .d-header {
+  display:none;
+}
+body.static-login .body-page {
+  margin:15% auto;
+}
+body.static-login .logo-container {
+  border-bottom:1px solid var(--content-border-color);
+  padding-bottom:1em;
+  margin-bottom:1em;
+  display:block;
+}
+body.static-login .site-logo {
+  width:auto;
+  object-fit:contain;
+  max-width:60%;
+  max-height:150px;
+}
+body.static-login .waving-hand {
+  width:35px;
+  height:35px;
+  margin-bottom:1em;
+}
+body.static-login .login-welcome {
+  background-color:var(--secondary);
+  border:1px solid var(--content-border-color);
+  text-align:center;
+  padding:2em;
+  box-shadow:var(--shadow-card);
+  border-radius:5px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+body.static-login .login-welcome__text {
+  order:4;
+  color:var(--primary-medium);
+}
+body.static-login .login-welcome .body-page-button-container {
+  order:3;
+}
 .login-form .required,.user-field .required,.invites-show .required {
   vertical-align:top;
   color:var(--danger);
@@ -1384,4 +1591,9 @@ html.keyboard-visible:not(.ios-device) .login-fullpage,html.keyboard-visible:not
 #simple-container .invite-error .error-image {
   text-align:center;
   padding-bottom:1em;
+}
+@media screen and (height <= 700px) {
+  .account-created,.activate-account {
+    margin:1em auto 1em auto;
+  }
 }

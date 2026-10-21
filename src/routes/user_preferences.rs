@@ -114,6 +114,66 @@ pub struct CheckUsernameParams {
     for_user_id: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct CheckEmailParams {
+    email: Option<String>,
+}
+
+/// GET /u/check_email(.json): users#check_email, the signup page's check
+/// of an address as its field is left.
+pub async fn check_email(
+    State(state): State<AppState>,
+    Query(params): Query<CheckEmailParams>,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+) -> Result<Response, AppError> {
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    if let Err(refused) =
+        crate::rate_limiter::RateLimiter::new(None, &format!("check-email-{ip}"), 10, 60)
+            .performed(&state.pool, state.config.rate_limits)
+            .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // Email.downcase
+    let email = params.email.unwrap_or_default().trim().to_lowercase();
+    let success = || Ok(Json(json!({ "success": "OK" })).into_response());
+    if email.is_empty() || settings.get("hide_email_address_taken")?.truthy() {
+        return success();
+    }
+    let t = |key: &str| state.i18n.t(key).unwrap_or(key).to_string();
+    // User.new.errors.full_message(:email, ...)
+    let failed = |message: String| {
+        Ok(
+            Json(json!({ "failed": "FAILED", "errors": [format!("Email {message}")] }))
+                .into_response(),
+        )
+    };
+    if !crate::accounts::valid_email(&email) {
+        return failed(t("user.email.invalid"));
+    }
+    if !crate::signup::email_allowed(&settings, &email)? {
+        return failed(t("user.email.not_allowed"));
+    }
+    if crate::email_updater::should_block(&mut conn, &settings, &email).await? {
+        return failed(t("user.email.blocked"));
+    }
+    let taken: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM user_emails e JOIN users u ON u.id = e.user_id \
+         WHERE lower(e.email) = $1 AND NOT u.staged)",
+    )
+    .bind(&email)
+    .fetch_one(&mut *conn)
+    .await?;
+    if taken {
+        return failed(t("errors.messages.taken"));
+    }
+    success()
+}
+
 /// GET /u/check_username(.json): users#check_username, the username
 /// preference's (and signup's) availability check.
 pub async fn check_username(

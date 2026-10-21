@@ -1,0 +1,6 @@
+[
+  {"name": "latest", "path": "/latest", "ready": ".topic-list tbody .topic-list-item", "kind": "list"},
+  {"name": "short-topic", "path": "/t/new-to-discourse-start-here/67", "ready": ".topic-post .cooked", "kind": "topic"},
+  {"name": "long-topic", "path": "/t/discourse-is-not-going-closed-source/77", "ready": ".topic-post .cooked", "kind": "topic"},
+  {"name": "search", "path": "/search?q=Discourse", "ready": ".fps-result-entries .fps-result", "kind": "search"}
+]

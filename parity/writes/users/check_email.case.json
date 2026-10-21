@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "settings": {
+    "hide_email_address_taken": false,
+    "blocked_email_domains": "blocked.example"
+  },
+  "requests": [
+    { "method": "GET", "path": "/u/check_email.json?email=fresh%40example.com" },
+    { "method": "GET", "path": "/u/check_email.json?email=USER1%40example.com" },
+    { "method": "GET", "path": "/users/check_email.json?email=not-an-email" },
+    { "method": "GET", "path": "/u/check_email.json?email=someone%40blocked.example" },
+    { "method": "GET", "path": "/u/check_email.json" }
+  ]
+}

@@ -1174,9 +1174,9 @@ async fn members_reply_from_the_topic_page() {
     assert_eq!(after, before + 1);
 }
 
-/// The token the login page's form sends, from its hx-headers.
+/// The token the login page's script sends, from its #login-data.
 fn form_token(html: &str) -> String {
-    let marker = r#""X-CSRF-Token": ""#;
+    let marker = r#""csrf":""#;
     let at = html.find(marker).expect("the form carries a token");
     let rest = &html[at + marker.len()..];
     html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned()
@@ -1195,7 +1195,7 @@ async fn the_login_page_logs_in() {
 
         let page = client.get("/login").await;
         assert_eq!(page.status, StatusCode::OK);
-        assert!(page.body.contains(r#"hx-post="/session""#), "{}", page.body);
+        assert!(page.body.contains(r#"id="login-form""#), "{}", page.body);
         assert!(
             client.cookie("_forum_session").is_some(),
             "the token lives in the session the page started"
@@ -1255,7 +1255,7 @@ async fn no_login_form_without_local_logins() {
     let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
     let page = client.get("/login").await;
     assert_eq!(page.status, StatusCode::OK);
-    assert!(!page.body.contains("hx-post="), "{}", page.body);
+    assert!(!page.body.contains(r#"id="login-form""#), "{}", page.body);
 }
 
 impl Client {
