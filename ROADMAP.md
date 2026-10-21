@@ -1643,9 +1643,7 @@ have handlers now.
     other sites, and the broken headers FastImage raises on
     (fast_image.rs:246-247,360,424,452,478; the other images are sized
     over HTTP), remote uploads checked or downloaded
-    (jobs/upload_jobs.rs:48,124), oneboxed
-    images of other sites or without a size (onebox/mod.rs:1521,1573),
-    blocked and pulled hotlinked media
+    (jobs/upload_jobs.rs:48,124), blocked and pulled hotlinked media
     (pretty_text/cooked_post_processor.rs:719,746;
     pretty_text/cleanup.rs:574), downloading hotlinked media in
     pull_hotlinked_images (jobs/hotlinked_images.rs:101; the job runs,

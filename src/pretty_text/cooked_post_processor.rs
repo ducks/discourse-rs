@@ -329,6 +329,60 @@ enum Edit {
     },
 }
 
+/// `get_size(url)` uncached: an upload's own size, else the image's over
+/// HTTP (FastImage). The site's own images count as unreachable, as the
+/// reference's container finds its own public URL (FastImage gives nil
+/// there). None for a url that isn't http(s), which Rails doesn't cache;
+/// Some(size) otherwise.
+pub(crate) async fn image_size(
+    conn: &mut PgConnection,
+    urls: &Urls<'_>,
+    src: &str,
+) -> Result<Option<Option<(i64, i64)>>, CookError> {
+    let mut absolute = src.to_string();
+    if src.starts_with('/') && !src.starts_with("//") {
+        absolute = format!("{}{src}", urls.base_url_no_prefix()?);
+    }
+    if absolute.starts_with("//") {
+        absolute = format!("{}:{absolute}", urls.scheme()?);
+    }
+    // is_valid_image_url?
+    if !crate::onebox::uri::RubyUri::parse(&absolute)
+        .is_some_and(|u| matches!(u.scheme.as_deref(), Some("http" | "https")))
+    {
+        return Ok(None);
+    }
+    let upload = match crate::upload_references::get_from_url(&mut *conn, &absolute).await? {
+        Some((id, _)) => crate::optimized_images::Upload::find(&mut *conn, id).await?,
+        None => None,
+    };
+    if let Some(upload) = upload.filter(|u| u.width.is_some_and(|w| w > 0)) {
+        return Ok(Some(Some((
+            i64::from(upload.width.unwrap_or(0)),
+            i64::from(upload.height.unwrap_or(0)),
+        ))));
+    }
+    let own_host = urls.current_hostname()?;
+    let host = absolute
+        .split_once("://")
+        .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
+    if host == Some(own_host.as_str()) {
+        return Ok(Some(None));
+    }
+    let fetcher = crate::final_destination::Fetcher {
+        settings: urls.settings,
+        urls: Urls {
+            config: urls.config,
+            settings: urls.settings,
+        },
+    };
+    Ok(Some(
+        crate::fast_image::size(&fetcher, &absolute)
+            .await
+            .map_err(CookError::App)?,
+    ))
+}
+
 /// What the image steps read besides the document.
 struct ImageSteps<'a> {
     settings: &'a SiteSettings,
@@ -357,10 +411,7 @@ impl ImageSteps<'_> {
         }
     }
 
-    /// `get_size(url)`, cached by url: an upload's own size, else the
-    /// image's over HTTP (FastImage). The site's own images count as
-    /// unreachable, as the reference's container finds its own public URL
-    /// (FastImage gives nil there).
+    /// `get_size(url)`, cached by url (`@size_cache`).
     async fn get_size(
         &self,
         conn: &mut PgConnection,
@@ -369,50 +420,14 @@ impl ImageSteps<'_> {
         if let Some(cached) = self.cached_size(src) {
             return Ok(cached);
         }
-        let mut absolute = src.to_string();
-        if src.starts_with('/') && !src.starts_with("//") {
-            absolute = format!("{}{src}", self.urls.base_url_no_prefix()?);
+        let size = image_size(&mut *conn, &self.urls, src).await?;
+        if let Some(size) = size {
+            self.size_cache
+                .lock()
+                .expect("the size cache is never poisoned")
+                .insert(src.to_string(), size);
         }
-        if absolute.starts_with("//") {
-            absolute = format!("{}:{absolute}", self.urls.scheme()?);
-        }
-        // is_valid_image_url?: an http(s) URI, else nil (uncached).
-        if !crate::onebox::uri::RubyUri::parse(&absolute)
-            .is_some_and(|u| matches!(u.scheme.as_deref(), Some("http" | "https")))
-        {
-            return Ok(None);
-        }
-        let size = match self.upload_for(&mut *conn, &absolute).await? {
-            Some(upload) if upload.width.is_some_and(|w| w > 0) => Some((
-                i64::from(upload.width.unwrap_or(0)),
-                i64::from(upload.height.unwrap_or(0)),
-            )),
-            _ => {
-                let own_host = self.urls.current_hostname()?;
-                let host = absolute
-                    .split_once("://")
-                    .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
-                if host == Some(own_host.as_str()) {
-                    None
-                } else {
-                    let fetcher = crate::final_destination::Fetcher {
-                        settings: self.settings,
-                        urls: Urls {
-                            config: self.urls.config,
-                            settings: self.urls.settings,
-                        },
-                    };
-                    crate::fast_image::size(&fetcher, &absolute)
-                        .await
-                        .map_err(CookError::App)?
-                }
-            }
-        };
-        self.size_cache
-            .lock()
-            .expect("the size cache is never poisoned")
-            .insert(src.to_string(), size);
-        Ok(size)
+        Ok(size.flatten())
     }
 
     fn cached_size(&self, src: &str) -> Option<Option<(i64, i64)>> {
