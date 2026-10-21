@@ -328,10 +328,14 @@ impl Styles {
         let accent_bg = settings.get("email_accent_bg_color")?.to_s();
         let accent_fg = settings.get("email_accent_fg_color")?.to_s();
         let locale = settings.get("default_locale")?.to_s();
-        if matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur") {
-            return Err(Unsupported("right-to-left email styles").into());
-        }
-        let (align, dir) = ("left", "ltr");
+        // Rtl.new(nil).enabled?: the site's locale, whether or not users
+        // may pick their own.
+        let rtl = matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur");
+        let (align, dir) = if rtl {
+            ("right", "rtl")
+        } else {
+            ("left", "ltr")
+        };
 
         // correct_first_body_margin
         for p in self.select("div.body p") {

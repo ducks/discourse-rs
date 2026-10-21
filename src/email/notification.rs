@@ -115,6 +115,7 @@ struct Recipient {
     mailing_list_mode: bool,
     email_in_reply_to: bool,
     email_previous_replies: i32,
+    locale: Option<String>,
 }
 
 /// `user_notifications.user_<type>` (`UserNotifications.<email_type>`).
@@ -169,7 +170,7 @@ pub async fn build(
     let user: Recipient = sqlx::query_as(
         "SELECT u.username, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
                 u.staged, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
-                o.mailing_list_mode, o.email_in_reply_to, o.email_previous_replies \
+                o.mailing_list_mode, o.email_in_reply_to, o.email_previous_replies, u.locale \
          FROM users u JOIN user_options o ON o.user_id = u.id WHERE u.id = $1",
     )
     .bind(req.user_id)
@@ -188,6 +189,16 @@ pub async fn build(
         if incoming {
             return Err(Unsupported("emails to staged users of a topic started by email").into());
         }
+    }
+    // user_locale(user): User#effective_locale, the user's own when users
+    // may pick one; only English strings are vendored.
+    if s.get("allow_user_locale")?.truthy()
+        && user
+            .locale
+            .as_deref()
+            .is_some_and(|l| !l.trim().is_empty() && l != "en")
+    {
+        return Err(Unsupported("notification emails in a user's own locale").into());
     }
     if s.get("private_email")?.truthy() {
         return Err(Unsupported("private_email").into());
@@ -418,6 +429,19 @@ pub async fn build(
     );
 
     // The views.
+    // Rtl.new(user).css_class: the user's locale (else the site's) when
+    // users may pick one, the site's otherwise.
+    let default_locale = s.get("default_locale")?.to_s();
+    let reading_locale = if s.get("allow_user_locale")?.truthy() {
+        user.locale.as_deref().unwrap_or(&default_locale)
+    } else {
+        default_locale.as_str()
+    };
+    let classes = if matches!(reading_locale, "ar" | "fa_IR" | "he" | "ug" | "ur") {
+        "rtl"
+    } else {
+        ""
+    };
     let first_footer_classes = if user.suspended || user.staged {
         ""
     } else {
@@ -462,7 +486,7 @@ pub async fn build(
         },
     )?;
     let notification_html = format!(
-        "<div id='main' class=>\n\n  <div class='email-preview'>%{{email_preview}}</div>\n\n  <div class='header-instructions'>%{{header_instructions}}</div>\n\n    {post_html}\n\n\n\n\n\n  <div class='footer undecorated-link-footer {first_footer_classes}'>%{{respond_instructions}}</div>\n  <div class='footer'>%{{unsubscribe_instructions}}</div>\n\n</div>\n\n<div itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"{}{}\" />\n    <meta itemprop=\"name\" content=\"{}\"/>\n  </div>\n</div>\n",
+        "<div id='main' class={classes}>\n\n  <div class='email-preview'>%{{email_preview}}</div>\n\n  <div class='header-instructions'>%{{header_instructions}}</div>\n\n    {post_html}\n\n\n\n\n\n  <div class='footer undecorated-link-footer {first_footer_classes}'>%{{respond_instructions}}</div>\n  <div class='footer'>%{{unsubscribe_instructions}}</div>\n\n</div>\n\n<div itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"{}{}\" />\n    <meta itemprop=\"name\" content=\"{}\"/>\n  </div>\n</div>\n",
         html_escape(&base_url),
         html_escape(&url),
         html_escape(&t(ctx, "read_full_topic", &[])?),

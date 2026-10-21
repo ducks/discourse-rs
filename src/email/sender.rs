@@ -164,6 +164,11 @@ pub fn renderer_html(ctx: &Ctx<'_>, html_part: &str) -> Result<String, AppError>
     };
     let base_url = urls.base_url()?;
     let base_url_no_prefix = urls.base_url_no_prefix()?;
+    // Only English server strings are vendored: another site locale's
+    // emails (the right-to-left ones among them) would read in English.
+    if ctx.settings.get("default_locale")?.to_s() != "en" {
+        return Err(Unsupported("emails in locales other than English").into());
+    }
     let style = Styles::new(html_part);
     style.format_basic(&base_url)?;
     style.format_html(ctx.settings)?;
