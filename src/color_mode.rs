@@ -86,6 +86,13 @@ pub struct Head {
     pub header_item: String,
     /// The selector's sidebar footer button under `sidebar_footer`.
     pub footer_button: String,
+    /// The session's userColorSchemeId and userDarkSchemeId
+    /// (`user_scheme_id || -1`, `user_dark_scheme_id || -1`).
+    pub user_scheme_id: i32,
+    pub user_dark_scheme_id: i32,
+    /// InterfaceColor's selectorAvailable and colorMode.
+    pub selector_available: bool,
+    pub selector_mode: Option<&'static str>,
 }
 
 impl Head {
@@ -100,6 +107,10 @@ impl Head {
             ),
             header_item: String::new(),
             footer_button: String::new(),
+            user_scheme_id: -1,
+            user_dark_scheme_id: -1,
+            selector_available: false,
+            selector_mode: None,
         }
     }
 }
@@ -183,6 +194,41 @@ fn href(base_path: &str, theme: &Theme, scheme: Option<i32>) -> String {
             None => format!("{base_path}/assets/color_definitions_light.css"),
         }
     }
+}
+
+/// `color_scheme_stylesheet_details(id, fallback_to_base: true)` for the
+/// default theme: the scheme it serves (the one asked for when it exists,
+/// else the theme's own, else the base palette, -1) and its stylesheet.
+pub async fn scheme_stylesheet(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    base_path: &str,
+    id: Option<i64>,
+) -> Result<(i32, String), crate::AppError> {
+    let theme_id = i32::try_from(settings.get("default_theme_id")?.to_i()).unwrap_or(0);
+    let row: Option<(Option<i32>, Option<i32>, Option<i32>)> = sqlx::query_as(
+        "SELECT t.color_scheme_id, t.dark_color_scheme_id, cs.id \
+         FROM themes t \
+         LEFT JOIN color_schemes cs ON cs.id = t.color_scheme_id AND NOT cs.remote_copy \
+         WHERE t.id = $1",
+    )
+    .bind(theme_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let (color_scheme_id, dark_color_scheme_id, color_scheme) = row.unwrap_or_default();
+    let theme = Theme {
+        id: theme_id,
+        color_scheme_id,
+        dark_color_scheme_id,
+        color_scheme,
+    };
+    // ColorScheme.find_by(id:)
+    let found = match id.and_then(|id| i32::try_from(id).ok()) {
+        Some(id) => ColorScheme::find(&mut *conn, id).await?.map(|s| s.id),
+        None => None,
+    };
+    let scheme = found.or(theme.color_scheme);
+    Ok((scheme.unwrap_or(-1), href(base_path, &theme, scheme)))
 }
 
 /// `color_scheme_stylesheet_link_tag`
@@ -390,6 +436,14 @@ pub async fn head(
         links,
         header_item,
         footer_button,
+        user_scheme_id: user_light.unwrap_or(-1),
+        user_dark_scheme_id: user_dark.unwrap_or(-1),
+        selector_available,
+        selector_mode: if selector_available {
+            selector_mode(cookies, mode)
+        } else {
+            None
+        },
     })
 }
 

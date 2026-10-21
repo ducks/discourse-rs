@@ -162,3 +162,82 @@ pub async fn font(Path(file): Path<String>) -> Response {
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
+
+/// `/color-scheme-stylesheet/:id(/:theme_id)` (StylesheetsController#
+/// color_scheme): the stylesheet a palette preview links, as
+/// `{color_scheme_id, new_href}`. A theme the viewer may use other than the
+/// default one would serve its own color definitions, which the port does
+/// not draw.
+pub async fn color_scheme(
+    State(state): State<AppState>,
+    crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
+    axum::extract::RawQuery(query): axum::extract::RawQuery,
+    Path(segments): Path<Vec<(String, String)>>,
+) -> Result<Response, AppError> {
+    let get = |name: &str| {
+        segments
+            .iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.as_str())
+    };
+    // The route's `.json` format; any other dot ends the id elsewhere.
+    let id = get("id").unwrap_or_default();
+    let id = id.strip_suffix(".json").unwrap_or(id);
+    if id.contains('.') {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let theme_param = match get("theme_id") {
+        Some(t) => {
+            let t = t.strip_suffix(".json").unwrap_or(t);
+            let digits = t.strip_prefix('-').unwrap_or(t);
+            if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
+                return Ok(StatusCode::NOT_FOUND.into_response());
+            }
+            Some(t.to_string())
+        }
+        None => crate::params::parse_query(query.as_deref().unwrap_or_default())
+            .get("theme_id")
+            .and_then(crate::params::scalar),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let default_theme = settings.get("default_theme_id")?.to_i();
+    // `params[:theme_id]&.to_i`, nil unless guardian.allow_themes?([id],
+    // include_preview: true).
+    if let Some(theme_id) = theme_param.map(|t| crate::ruby::to_i(&t))
+        && theme_id != default_theme
+    {
+        let staff_preview = guardian.is_staff()
+            && sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1)")
+                .bind(i32::try_from(theme_id).unwrap_or(0))
+                .fetch_one(&mut *conn)
+                .await?;
+        let selectable = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1 AND user_selectable)",
+        )
+        .bind(i32::try_from(theme_id).unwrap_or(0))
+        .fetch_one(&mut *conn)
+        .await?;
+        if staff_preview || selectable {
+            return Err(crate::Unsupported(
+                "color definitions of a theme other than the default (258a)",
+            )
+            .into());
+        }
+    }
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let (scheme_id, href) = crate::color_mode::scheme_stylesheet(
+        &mut conn,
+        &settings,
+        &base_path,
+        // find_by(id:) casts as ActiveModel's integer type does (to_i).
+        Some(crate::ruby::to_i(id)),
+    )
+    .await?;
+    Ok(axum::Json(serde_json::json!({
+        "color_scheme_id": scheme_id,
+        "new_href": href,
+    }))
+    .into_response())
+}

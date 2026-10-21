@@ -288,6 +288,10 @@
       save();
       return;
     }
+    if (event.target.closest(".user-preferences .undo-preview")) {
+      undoPalettePreview();
+      return;
+    }
     if (event.target.closest(".username-preference__edit-username")) {
       editUsername();
       return;
@@ -414,6 +418,7 @@
         data.text_size = comboValue(size);
       }
     }
+    collectPalettes(f, data);
     return data;
   }
 
@@ -459,6 +464,7 @@
   }
 
   function afterSave(f, result) {
+    palettesSaved();
     var size = f.querySelector("#text-size-selector");
     if (size && f.querySelector(".text-size-default")) {
       var makeDefault = f.querySelector(".text-size-default input").checked;
@@ -516,6 +522,7 @@
     if (chooser.id === "text-size-selector") {
       textSizeChanged(value);
     }
+    paletteChanged(chooser);
     if (chooser.classList.contains("push-notification-select")) {
       pushLevelChanged(chooser, value);
     }
@@ -597,6 +604,278 @@
     } else {
       var to = row.closest(".notification-schedule").dataset.to || "to";
       row.insertAdjacentHTML("beforeend", '<td class="to">' + escape(to) + '</td><td class="ends-at">' + html + "</td>");
+    }
+  }
+
+  // The color palette pickers (controllers/preferences/interface.js and
+  // lib/color-scheme-picker): a pick previews its palette on one's own
+  // page through /color-scheme-stylesheet, the mode applies at once, Undo
+  // puts the session's back; Save Changes sends them, or with the all
+  // devices box unchecked keeps the options and sets this browser's
+  // cookies.
+  function palettes() {
+    var fieldset = document.querySelector(".user-preferences fieldset.color-scheme");
+    if (!fieldset) {
+      return null;
+    }
+    var data = JSON.parse(fieldset.dataset.colorSchemes || "{}");
+    // The mode applied since the page loaded.
+    if (fieldset.dataset.colorMode) {
+      data.colorMode = fieldset.dataset.colorMode;
+    }
+    return { el: fieldset, data: data };
+  }
+
+  function writeCookie(name, value) {
+    if (value) {
+      var expires = new Date();
+      expires.setTime(+expires + 365 * 864e5);
+      document.cookie = name + "=" + encodeURIComponent(value) + "; expires=" + expires.toUTCString() + "; path=/";
+    } else {
+      document.cookie = name + "=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  }
+
+  // InterfaceColor's forceLightMode, forceDarkMode and useAutoMode.
+  function applyColorMode(pal, modeId) {
+    var mode = { 1: "auto", 2: "light", 3: "dark" }[modeId];
+    if (!mode) {
+      return;
+    }
+    pal.data.colorMode = mode;
+    pal.el.dataset.colorMode = mode;
+    var expires = new Date();
+    expires.setTime(+expires + 365 * 864e5);
+    document.cookie = "forced_color_mode=" + mode + "; expires=" + expires.toUTCString() + "; path=/;samesite=Lax";
+    var light = document.querySelector("link.light-scheme");
+    var dark = document.querySelector("link.dark-scheme");
+    if (light && dark) {
+      if (mode === "light") {
+        light.media = "all";
+        dark.media = "none";
+      } else if (mode === "dark") {
+        light.media = "none";
+        dark.media = "all";
+      } else {
+        light.media = "(prefers-color-scheme: light)";
+        dark.media = "(prefers-color-scheme: dark)";
+      }
+    }
+  }
+
+  function prefersDark() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function inLightMode(pal) {
+    return pal.data.colorMode === "light" || (pal.data.colorMode === "auto" && !prefersDark());
+  }
+
+  function inDarkMode(pal) {
+    return pal.data.colorMode === "dark" || (pal.data.colorMode === "auto" && prefersDark());
+  }
+
+  function pickerValue(pal, cls) {
+    var picker = pal.el.querySelector("." + cls + " details");
+    var v = picker ? comboValue(picker) : null;
+    return v === null ? null : parseInt(v, 10);
+  }
+
+  function selectedLight(pal) {
+    var picker = pal.el.querySelector(".light-color-scheme details");
+    return picker ? pickerValue(pal, "light-color-scheme") : pal.data.sessionLight;
+  }
+
+  function selectedDark(pal) {
+    var picker = pal.el.querySelector(".dark-color-scheme details");
+    return picker ? pickerValue(pal, "dark-color-scheme") : pal.data.sessionDark;
+  }
+
+  // loadColorSchemeStylesheet: the preview link, light or dark.
+  function loadSchemeStylesheet(id, themeId, dark) {
+    var url = "/color-scheme-stylesheet/" + id + (themeId ? "/" + themeId : "") + ".json";
+    return ajax("GET", url).then(function (result) {
+      if (!result || !result.new_href) {
+        return;
+      }
+      var elementId = dark ? "cs-preview-dark" : "cs-preview-light";
+      var link = document.querySelector("link#" + elementId);
+      if (link) {
+        link.href = result.new_href;
+      } else {
+        link = document.createElement("link");
+        link.href = result.new_href;
+        link.media = dark ? "(prefers-color-scheme: dark)" : "(prefers-color-scheme: light)";
+        link.rel = "stylesheet";
+        link.id = elementId;
+        document.body.appendChild(link);
+      }
+    });
+  }
+
+  // #previewColorScheme with #resolveThemeDefaultColorScheme: the theme
+  // default (-1) is the theme's own palette.
+  function previewScheme(pal, dark) {
+    var id = dark ? selectedDark(pal) : selectedLight(pal);
+    var itself = dark ? id !== -1 : id >= 0;
+    if (!itself && pal.data.themeId !== null && pal.data.themeId !== undefined) {
+      id = dark ? pal.data.themeDark || selectedLight(pal) : pal.data.themeLight || id;
+    }
+    if (dark) {
+      loadSchemeStylesheet(id, pal.data.themeId, true).catch(popupAjaxError);
+    } else {
+      loadSchemeStylesheet(id, pal.data.themeId, false).catch(popupAjaxError);
+      loadSchemeStylesheet(id, pal.data.themeId, true).catch(popupAjaxError);
+    }
+  }
+
+  // previewingColorScheme: Undo and the all devices box after the
+  // controls (put in once, so the box keeps its state).
+  function showPreviewing(pal, on) {
+    if (on && !pal.el.querySelector(".undo-preview")) {
+      pal.el.querySelector(":scope > .controls").insertAdjacentHTML("afterend", pal.data.previewHtml);
+    }
+    pal.el.querySelectorAll(".undo-preview, .color-scheme-checkbox").forEach(function (el) {
+      el.style.display = on ? "" : "none";
+    });
+  }
+
+  function markActive(pal, picker) {
+    var value = comboValue(picker);
+    picker.querySelectorAll(".color-palette-picker-row").forEach(function (row) {
+      var badge = row.querySelector(".color-palette-picker-row__badge");
+      if (row.dataset.value === value && !badge) {
+        row.insertAdjacentHTML(
+          "afterbegin",
+          '<span class="color-palette-picker-row__badge --active">' + escape(pal.data.activeLabel) + "</span>"
+        );
+      } else if (row.dataset.value !== value && badge) {
+        badge.remove();
+      }
+    });
+  }
+
+  function paletteChanged(chooser) {
+    var pal = palettes();
+    if (!pal || !pal.el.contains(chooser)) {
+      return;
+    }
+    var own = pal.data.own;
+    if (chooser.closest(".light-color-scheme")) {
+      markActive(pal, chooser);
+      showPreviewing(pal, own && inLightMode(pal));
+      if (own && inLightMode(pal)) {
+        previewScheme(pal, false);
+      }
+    } else if (chooser.closest(".dark-color-scheme")) {
+      markActive(pal, chooser);
+      showPreviewing(pal, own && inDarkMode(pal));
+      if (own && inDarkMode(pal)) {
+        previewScheme(pal, true);
+      }
+    } else if (chooser.closest(".interface-color-mode")) {
+      var modeId = parseInt(comboValue(chooser), 10);
+      pal.el.dataset.modeChosen = String(modeId);
+      showPreviewing(pal, own);
+      if (!own) {
+        return;
+      }
+      applyColorMode(pal, modeId);
+      // #previewColorSchemeForMode
+      var light = modeId === 2 || (modeId === 1 && !prefersDark());
+      var dark = modeId === 3 || (modeId === 1 && prefersDark());
+      if (light) {
+        var d = document.querySelector("link#cs-preview-dark");
+        if (d) {
+          d.remove();
+        }
+        previewScheme(pal, false);
+      } else if (dark) {
+        var l = document.querySelector("link#cs-preview-light");
+        if (l) {
+          l.remove();
+        }
+        previewScheme(pal, true);
+      }
+    }
+  }
+
+  // undoColorSchemePreview
+  function undoPalettePreview() {
+    var pal = palettes();
+    if (!pal) {
+      return;
+    }
+    [
+      [".light-color-scheme details", pal.data.sessionLight],
+      [".dark-color-scheme details", pal.data.sessionDark],
+    ].forEach(function (pair) {
+      var picker = pal.el.querySelector(pair[0]);
+      if (picker && pair[1] !== null && pair[1] !== undefined) {
+        setValue(picker, pair[1]);
+        delete picker.dataset.dirty;
+        markActive(pal, picker);
+      }
+    });
+    var mode = pal.el.querySelector(".interface-color-mode details");
+    if (mode) {
+      delete mode.dataset.dirty;
+    }
+    delete pal.el.dataset.modeChosen;
+    showPreviewing(pal, false);
+    if (pal.data.own) {
+      applyColorMode(pal, pal.data.optionMode);
+    }
+    ["link#cs-preview-dark", "link#cs-preview-light"].forEach(function (selector) {
+      var link = document.querySelector(selector);
+      if (link) {
+        link.remove();
+      }
+    });
+  }
+
+  // save(): with the all devices box unchecked the options stay as they
+  // were.
+  function collectPalettes(f, data) {
+    var pal = palettes();
+    if (!pal) {
+      return;
+    }
+    var box = pal.el.querySelector(".color-scheme-checkbox input");
+    if (box && !box.checked) {
+      data.color_scheme_id = pal.data.modelLight;
+      data.dark_scheme_id = pal.data.modelDark;
+      data.interface_color_mode = JSON.parse(f.dataset.saveAttrs || "{}").interface_color_mode;
+      return;
+    }
+    ["color_scheme_id", "dark_scheme_id", "interface_color_mode"].forEach(function (key) {
+      if (typeof data[key] === "string") {
+        data[key] = parseInt(data[key], 10);
+      }
+    });
+  }
+
+  function palettesSaved() {
+    var pal = palettes();
+    if (!pal || !pal.data.own) {
+      return;
+    }
+    var box = pal.el.querySelector(".color-scheme-checkbox input");
+    if (!box || box.checked) {
+      writeCookie("color_scheme_id", null);
+      writeCookie("dark_scheme_id", null);
+    } else {
+      writeCookie("color_scheme_id", selectedLight(pal));
+      var dark = selectedDark(pal);
+      if (pal.data.defaultDark > 0 && dark === pal.data.defaultDark) {
+        writeCookie("dark_scheme_id", null);
+      } else {
+        writeCookie("dark_scheme_id", dark);
+      }
+    }
+    if (pal.el.dataset.modeChosen) {
+      applyColorMode(pal, parseInt(pal.el.dataset.modeChosen, 10));
+      delete pal.el.dataset.modeChosen;
     }
   }
 

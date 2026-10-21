@@ -707,15 +707,52 @@ pub async fn page(
                 },
             )?
         }
-        PrefTab::Interface => view::interface::render(
-            &p,
-            &view::interface::Interface {
-                user_themes: &site_doc["user_themes"],
-                user_color_schemes: &site_doc["user_color_schemes"],
-                text_size_cookie: crate::session::current::cookie(&headers, "text_size"),
-                user_tips: site_doc["user_tips"] == true,
-            },
-        )?,
+        PrefTab::Interface => {
+            // The session's palettes and the color mode, as the viewer's
+            // page draws them (crate::color_mode).
+            let options: Option<(Option<i32>, Option<i32>, i32)> = match guardian.user() {
+                Some(viewer) => {
+                    sqlx::query_as(
+                        "SELECT color_scheme_id, dark_scheme_id, interface_color_mode \
+                         FROM user_options WHERE user_id = $1",
+                    )
+                    .bind(viewer.id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+                }
+                None => None,
+            };
+            let options = options.map(|(color_scheme_id, dark_scheme_id, interface_color_mode)| {
+                crate::color_mode::Options {
+                    color_scheme_id,
+                    dark_scheme_id,
+                    interface_color_mode,
+                }
+            });
+            let head = crate::color_mode::head(
+                &mut conn,
+                &settings,
+                &state.i18n,
+                &base_path,
+                &crate::color_mode::cookies(),
+                options.as_ref(),
+            )
+            .await?;
+            view::interface::render(
+                &p,
+                &view::interface::Interface {
+                    user_themes: &site_doc["user_themes"],
+                    user_color_schemes: &site_doc["user_color_schemes"],
+                    text_size_cookie: crate::session::current::cookie(&headers, "text_size"),
+                    user_tips: site_doc["user_tips"] == true,
+                    default_light_color_scheme: &site_doc["default_light_color_scheme"],
+                    default_dark_color_scheme: &site_doc["default_dark_color_scheme"],
+                    session_scheme_id: head.user_scheme_id,
+                    session_dark_scheme_id: head.user_dark_scheme_id,
+                    color_mode: head.selector_mode,
+                },
+            )?
+        }
         PrefTab::Emails => view::emails::render(&p, &view::emails::Emails { chat_enabled })?,
         PrefTab::Email => {
             let new = crate::params::parse_query(uri.query().unwrap_or_default())

@@ -76,7 +76,7 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-49 passing). Each step below fails today and is ignored with the item
+50 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
@@ -87,7 +87,7 @@ Core forum:
 - [x] pull_hotlinked_images and crawl_topic_link are refused after every
   post with an image or a link (posting_runs_its_background_jobs): 140,
   127
-- [ ] The interface preferences page is a 500 once a palette is user
+- [x] The interface preferences page is a 500 once a palette is user
   selectable (offers_light_and_dark_palettes): 169
 - [x] No dark mode: pages linked only the light color definitions
   (switches_to_dark_mode): 258
@@ -2595,7 +2595,7 @@ route table has been made, so this list may be short.
     the alternate emails' actions (193d, since done), logging out a
     device (193e, since done),
     subscribing to push notifications (186), chat's notification sounds
-    (162), choosing a theme or color palette (169), hiding composer
+    (162), choosing a theme (258a; a color palette since 169), hiding composer
     toolbar buttons and the bio's rich editor (196, drawn in markdown
     mode), content languages (168), a multiselect user field (196's
     MultiSelect)
@@ -2862,14 +2862,17 @@ route table has been made, so this list may be short.
     (interface_color_selector) and switches the mode
     (static/js/interface-color.js). Measured in
     parity/writes/color_modes. Choosing a palette in the interface
-    preferences is 169's refusal. Found by tests/demo_smoke.rs
+    preferences came with 169. Found by tests/demo_smoke.rs
     (switches_to_dark_mode). Left, split into 258a.
     `feat/color-modes-themes` S: the helpers read the default theme, as
     the whole port does; Rails reads the request's theme
     (request.env[:resolved_theme_id]: a member's theme_ids, the
     theme_ids cookie, preview_theme_id, none under safe mode), so a
     member on another user selectable theme gets the default theme's
-    palettes. The dark logos (site_logo_dark_url and
+    palettes, and the interface preferences refuse the theme selector
+    (preferences_view/interface.rs:85; another theme draws its own
+    stylesheets and palettes, /color-scheme-stylesheet refuses one at
+    routes/stylesheets.rs:223). The dark logos (site_logo_dark_url and
     site_mobile_logo_dark_url in Header::Logo's light/dark picture,
     application_logo_dark_url, a category's uploaded_logo_dark) are not
     drawn, so a dark page keeps the light logos

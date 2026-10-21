@@ -270,6 +270,8 @@ impl Site<'_> {
             "user_fields": self.user_fields().await?,
             "user_themes": self.user_themes().await?,
             "user_color_schemes": self.user_color_schemes().await?,
+            "default_light_color_scheme": self.default_color_scheme("color_scheme_id").await?,
+            "default_dark_color_scheme": self.default_color_scheme("dark_color_scheme_id").await?,
             "user_tips": self.truthy("enable_user_tips")?,
         }))
     }
