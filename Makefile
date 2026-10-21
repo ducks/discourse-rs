@@ -159,7 +159,7 @@ emoji-assets:
 wasm-plugins:
 	cd plugins && cargo build --release --target wasm32-unknown-unknown
 	cp plugins/target/wasm32-unknown-unknown/release/discourse_solved_wasm.wasm plugins/discourse-solved/plugin.wasm
-	wizer --allow-wasi=false --init-func wizer.initialize -o plugins/js-solved/plugin.wasm \
+	wizer --init-func wizer.initialize -o plugins/js-solved/plugin.wasm \
 		plugins/target/wasm32-unknown-unknown/release/js_solved_wasm.wasm
 
 vendor-discourse:

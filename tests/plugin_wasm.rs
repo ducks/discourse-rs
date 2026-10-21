@@ -15,7 +15,7 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use common::{TestDb, config, set_setting, state};
 use discourse_rs::config::RailsEnv;
-use discourse_rs::plugin_wasm::{self, Plugin, Registry, Runtime};
+use discourse_rs::plugin_wasm::{self, Plugin, Registry, Runtime, Tuning};
 use http_body_util::BodyExt;
 use serde_json::Value;
 use sqlx::PgPool;
@@ -217,6 +217,16 @@ async fn solved_disabled_adds_nothing() {
 /// A guest written by hand: `body` is the after_serialize function's,
 /// returning a packed pointer; `data` is placed at 1024.
 fn wat_plugin(manifest_extra: &str, imports: &str, body: &str, data: &str) -> Plugin {
+    wat_plugin_on(runtime(), manifest_extra, imports, body, data)
+}
+
+fn wat_plugin_on(
+    runtime: &Runtime,
+    manifest_extra: &str,
+    imports: &str,
+    body: &str,
+    data: &str,
+) -> Plugin {
     let wat = format!(
         r#"(module
             {imports}
@@ -238,7 +248,7 @@ fn wat_plugin(manifest_extra: &str, imports: &str, body: &str, data: &str) -> Pl
     let manifest = format!(
         "[plugin]\nname = \"misbehaving\"\napi = 1\n{manifest_extra}\n[topic_list]\nphases = [\"after_serialize\"]\nkeys = [[\"misbehaved\", \"bool\"]]\n"
     );
-    Plugin::new(runtime(), &manifest, &wat::parse_str(wat).unwrap()).unwrap()
+    Plugin::new(runtime, &manifest, &wat::parse_str(wat).unwrap()).unwrap()
 }
 
 /// The packed pointer to `len` bytes at 1024.
@@ -432,7 +442,6 @@ async fn measure() {
     .await
     .unwrap();
     let guardian = discourse_rs::guardian::Guardian::anonymous();
-    let plugin = Plugin::new(runtime(), &solved_manifest(), solved_wasm()).unwrap();
     let facts: Vec<Value> = [5, 35, 41, 38, 37]
         .iter()
         .map(|id| serde_json::json!({"id": id, "category_id": 4, "archetype": "regular", "closed": false, "archived": false, "last_post_user_id": 2, "user_id": 2}))
@@ -444,33 +453,92 @@ async fn measure() {
         i18n: &state.i18n,
     };
     let posters = serde_json::json!({"35": {"posters": {"user_ids": [2, 2], "descriptions": {"2": ["Original Poster", "Most Recent Poster"]}, "last_poster_stays": true}, "last_post_user_id": 2, "data": {"answerers": [3], "answered": true}}});
-    let cases: [(&str, plugin_wasm::Phase, Value); 3] = [
+    let tunings = [
+        ("pooling, keep 1 MiB, pagemap scan", Tuning::default()),
         (
-            "before_serialize (one t call, no db)",
-            plugin_wasm::Phase::BeforeSerialize,
-            posters,
+            "pooling, keep 1 MiB, memset",
+            Tuning {
+                pagemap_scan: false,
+                ..Tuning::default()
+            },
         ),
         (
-            "after_load (3 queries)",
-            plugin_wasm::Phase::AfterLoad,
-            Value::from(facts.clone()),
+            "pooling, keep 64 KiB, memset",
+            Tuning {
+                keep_resident: 64 << 10,
+                pagemap_scan: false,
+                ..Tuning::default()
+            },
         ),
         (
-            "after_serialize (1 query)",
-            plugin_wasm::Phase::AfterSerialize,
-            Value::from(facts.clone()),
+            "on demand",
+            Tuning {
+                pooling: false,
+                ..Tuning::default()
+            },
         ),
     ];
-    for (name, phase, payload) in cases {
-        let n = 500;
-        let started = Instant::now();
-        for _ in 0..n {
-            plugin
-                .run(&mut ctx, "topic_list", phase, payload.clone())
-                .await
-                .unwrap();
+    for (tuning_name, tuning) in tunings {
+        println!("{tuning_name}:");
+        let runtime = Runtime::new(tuning).unwrap();
+        // The fixed cost of a phase call: a guest that returns at once;
+        // then the same with one host call (t).
+        let noop = wat_plugin_on(&runtime, "", "", &at_1024(9), r#"{\"ok\":{}}"#);
+        let one_call = wat_plugin_on(
+            &runtime,
+            "",
+            r#"(import "discourse" "t" (func $t (param i32 i32) (result i64)))"#,
+            &format!(
+                "(drop (call $t (i32.const 1033) (i32.const 1))) {}",
+                at_1024(9)
+            ),
+            r#"{\"ok\":{}}k"#,
+        );
+        for (name, plugin) in [("no-op phase", &noop), ("one t host call", &one_call)] {
+            let n = 2000;
+            let started = Instant::now();
+            for _ in 0..n {
+                plugin
+                    .run(
+                        &mut ctx,
+                        "topic_list",
+                        plugin_wasm::Phase::AfterSerialize,
+                        Value::from(facts.clone()),
+                    )
+                    .await
+                    .unwrap();
+            }
+            println!("  {name}: {} per call", per(started.elapsed(), n));
         }
-        println!("solved {name}: {} per call", per(started.elapsed(), n));
+        let plugin = Plugin::new(&runtime, &solved_manifest(), solved_wasm()).unwrap();
+        let cases: [(&str, plugin_wasm::Phase, Value); 3] = [
+            (
+                "solved before_serialize (one t call, no db)",
+                plugin_wasm::Phase::BeforeSerialize,
+                posters.clone(),
+            ),
+            (
+                "solved after_load (3 queries)",
+                plugin_wasm::Phase::AfterLoad,
+                Value::from(facts.clone()),
+            ),
+            (
+                "solved after_serialize (1 query)",
+                plugin_wasm::Phase::AfterSerialize,
+                Value::from(facts.clone()),
+            ),
+        ];
+        for (name, phase, payload) in cases {
+            let n = 500;
+            let started = Instant::now();
+            for _ in 0..n {
+                plugin
+                    .run(&mut ctx, "topic_list", phase, payload.clone())
+                    .await
+                    .unwrap();
+            }
+            println!("  {name}: {} per call", per(started.elapsed(), n));
+        }
     }
     // The same queries without the plugin: what the host calls cost on top.
     let n = 500;

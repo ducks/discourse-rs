@@ -71,23 +71,50 @@ pub struct Runtime {
     pub engine: Engine,
 }
 
+/// How the engine allocates instances; `Tuning::default()` is the
+/// server's, the others are for measurements (docs/plugin-wasm.md).
+#[derive(Debug, Clone, Copy)]
+pub struct Tuning {
+    /// The pooling allocator, else on demand.
+    pub pooling: bool,
+    /// What a released memory slot keeps mapped and resets in place
+    /// instead of handing back to the kernel (madvise), so the next
+    /// instance does not fault it in again.
+    pub keep_resident: usize,
+    /// Reset only the pages a guest dirtied (Linux 6.7's PAGEMAP_SCAN)
+    /// rather than memset all of `keep_resident`.
+    pub pagemap_scan: bool,
+}
+
+impl Default for Tuning {
+    fn default() -> Self {
+        Tuning {
+            pooling: true,
+            keep_resident: 1 << 20,
+            pagemap_scan: true,
+        }
+    }
+}
+
 impl Runtime {
-    /// `pooling` false is the on-demand allocator, for measurements.
-    pub fn new(pooling: bool) -> Result<Runtime, LoadError> {
+    pub fn new(tuning: Tuning) -> Result<Runtime, LoadError> {
         let mut config = Config::new();
         config.epoch_interruption(true);
         config.max_wasm_stack(512 << 10);
         config.async_stack_size(1 << 20);
-        if pooling {
+        if tuning.pooling {
             let mut pool = PoolingAllocationConfig::default();
-            // Concurrent phase calls across the process; one more waits
-            // for a slot to free rather than failing.
+            // Concurrent phase calls across the process.
             pool.total_core_instances(256);
             pool.total_memories(256);
             pool.total_tables(256);
             pool.total_stacks(256);
             pool.max_memory_size((MAX_MEMORY_MIB << 20) as usize);
-            pool.linear_memory_keep_resident(64 << 10);
+            pool.linear_memory_keep_resident(tuning.keep_resident);
+            pool.async_stack_keep_resident(tuning.keep_resident.min(256 << 10));
+            if tuning.pagemap_scan {
+                pool.pagemap_scan(wasmtime::Enabled::Auto);
+            }
             config.allocation_strategy(InstanceAllocationStrategy::Pooling(pool));
         }
         let engine = Engine::new(&config).map_err(|e| LoadError(e.to_string()))?;
@@ -107,7 +134,7 @@ impl Runtime {
 }
 
 static RUNTIME: LazyLock<Result<Runtime, String>> =
-    LazyLock::new(|| Runtime::new(true).map_err(|e| e.to_string()));
+    LazyLock::new(|| Runtime::new(Tuning::default()).map_err(|e| e.to_string()));
 
 /// The process' engine.
 pub fn runtime() -> Result<&'static Runtime, LoadError> {
@@ -650,6 +677,7 @@ impl Plugin {
                 .tables(4)
                 .build(),
         };
+        let started = std::time::Instant::now();
         let export = format!("{pipeline}.{}", phase.name());
         let guest = self.call(state, export, input);
         // Beside the guest on this task: the host calls it sends, until
@@ -661,6 +689,7 @@ impl Plugin {
             }
         };
         let (output, ()) = tokio::join!(guest, serve);
+        tracing::debug!(plugin = %self.name, phase = phase.name(), us = started.elapsed().as_micros() as u64, "plugin phase");
         let output = output.map_err(|e| format!("{e:#}"))?;
         let mut envelope: Value =
             serde_json::from_slice(&output).map_err(|e| format!("output: {e}"))?;
@@ -991,7 +1020,7 @@ mod tests {
 
     #[test]
     fn a_module_importing_an_ungranted_call_does_not_load() {
-        let runtime = Runtime::new(false).unwrap();
+        let runtime = Runtime::new(Tuning::default()).unwrap();
         let wat = r#"(module
             (import "discourse" "rows" (func (param i32 i32) (result i64)))
             (memory (export "memory") 1)
