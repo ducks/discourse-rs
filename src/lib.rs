@@ -99,6 +99,7 @@ pub mod auth;
 pub mod crass;
 pub mod crawler_detection;
 pub mod excerpt;
+pub mod fast_image;
 pub mod file_store;
 pub mod final_destination;
 pub mod flags;

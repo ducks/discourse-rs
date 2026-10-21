@@ -1403,7 +1403,7 @@ have handlers now.
 121. `feat/cdn` M: URLs behind a CDN (avatar.rs:66, the system
     avatar; pretty_text/helpers.rs:345;
     pretty_text/mod.rs:496; pretty_text/cleanup.rs:607;
-    pretty_text/cooked_post_processor.rs:782; topic_list.rs:1038;
+    pretty_text/cooked_post_processor.rs:793; topic_list.rs:1038;
     users.rs:1074; badges_view.rs:114; reports/tables.rs:564)
 122. ~~`feat/s3-store`~~ (done: feat/s3-store-interface, feat/s3-store-uploads,
     feat/s3-backups, feat/s3-direct-uploads) L: the S3 store for uploads
@@ -1426,7 +1426,7 @@ have handlers now.
     external store's redirect, the local store's send_file) is not routed
 123. `feat/secure-uploads` M, after 122: secure uploads and media
     (uploads.rs:388; posting/rebake.rs:49; pretty_text/helpers.rs:339;
-    pretty_text/cooked_post_processor.rs:775; upload_references.rs:370;
+    pretty_text/cooked_post_processor.rs:786; upload_references.rs:370;
     topic_list.rs:1026; email/styles.rs:132)
 124. `feat/topic-view-staff` M (rewritten 2026-10-20: deleted topics and
     replies for staff with `post_stream.gaps`, `has_deleted`,
@@ -1639,12 +1639,14 @@ have handlers now.
     profile backgrounds (promotion.rs:325,361; user_updater.rs:1712;
     discourse_connect.rs:898; jobs/periodical.rs:129;
     group_writes.rs:420), uploaded video or audio in posts with 138
-140. `feat/hotlinked-media` M: images from other sites sized over HTTP
-    (pretty_text/cooked_post_processor.rs:387, FastImage; remote uploads
-    checked or downloaded, jobs/upload_jobs.rs:48,124), oneboxed
+140. `feat/hotlinked-media` M: SVG, HEIC, AVIF and JPEG XL images from
+    other sites, and the broken headers FastImage raises on
+    (fast_image.rs:246-247,360,424,452,478; the other images are sized
+    over HTTP), remote uploads checked or downloaded
+    (jobs/upload_jobs.rs:48,124), oneboxed
     images of other sites or without a size (onebox/mod.rs:1521,1573),
     blocked and pulled hotlinked media
-    (pretty_text/cooked_post_processor.rs:708,735;
+    (pretty_text/cooked_post_processor.rs:719,746;
     pretty_text/cleanup.rs:574), downloading hotlinked media in
     pull_hotlinked_images (jobs/hotlinked_images.rs:101; the job runs,
     downloads refused) and the update_hotlinked_raw job it schedules
@@ -1652,10 +1654,10 @@ have handlers now.
     pull_user_profile_hotlinked_images job. Needs: network fetches,
     through 52's FinalDestination
 141. `feat/optimized-videos` S: videos in the post processor
-    (pretty_text/cooked_post_processor.rs:828), video thumbnails
+    (pretty_text/cooked_post_processor.rs:839), video thumbnails
     (upload_references.rs:387; pretty_text/cleanup.rs:610), destroying an
     upload an optimized video was made into (jobs/upload_cleanup.rs:39),
-    oneboxes outside a post (pretty_text/cooked_post_processor.rs:788)
+    oneboxes outside a post (pretty_text/cooked_post_processor.rs:799)
 142. `feat/onebox-rest` M: X posts through the Twitter API
     (onebox/api_engines.rs:806), inline pull requests with
     discourse-github's status (onebox/github.rs:1143), the engines not
@@ -1994,7 +1996,7 @@ have handlers now.
     (email/receiver.rs:524,528,625,628,637,672,690,694,771,780,783,795,
     798,852,857), mailing list and resent emails and several senders
     (email/incoming.rs:418,441), POP3 polling, rebaking emailed posts
-    (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
+    (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:963,
     EmailCook)
 166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
     jobs/post_alert.rs:478; routes/admin_groups.rs:1239;
@@ -3471,8 +3473,9 @@ Logged-in readers, no writes yet.
 - [ ] Post processor, the rest: oneboxes (network fetches, the onebox
       engines), images from other sites sized over HTTP, hotlinked media,
       optimized videos, badges, a category description synced from its
-      definition. Oneboxes (43, 51-55) and badges (57) done; images from
-      other sites and hotlinked media: 140; optimized videos: 141; the
+      definition. Oneboxes (43, 51-55), badges (57) and sizing images
+      from other sites (FastImage) done; SVG, HEIC, AVIF and JPEG XL
+      ones and hotlinked media: 140; optimized videos: 141; the
       category description: 137
 - [x] Posting, editing, revisions: replies, regular topics, raw and
       edit-reason edits, revision diffs; the 14 cases in parity/writes

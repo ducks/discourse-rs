@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "remote": {
+    "/photo.png": {"status": 200, "headers": {"Content-Type": "image/png"}, "body": {"fixture": "photo.png"}},
+    "/small.png": {"status": 200, "headers": {"Content-Type": "image/png"}, "body": {"fixture": "small.png"}},
+    "/photo.jpg": {"status": 200, "headers": {"Content-Type": "image/jpeg"}, "body": {"fixture": "photo.jpg"}},
+    "/static.gif": {"status": 200, "headers": {"Content-Type": "image/gif"}, "body": {"fixture": "static.gif"}},
+    "/favicon.ico": {"status": 200, "headers": {"Content-Type": "image/x-icon"}, "body": {"fixture": "favicon.ico"}},
+    "/notes.png": {"status": 200, "headers": {"Content-Type": "image/png"}, "body": {"fixture": "notes.txt"}},
+    "/moved.png": {"status": 302, "headers": {"Location": "/small.png"}, "body": ""}
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A large photo\n\n![photo](http://fixtures.localhost:8099/photo.png)\n\nA small one ![small](http://fixtures.localhost:8099/small.png) and a jpeg ![jpg](http://fixtures.localhost:8099/photo.jpg)\n\nA gif ![gif](http://fixtures.localhost:8099/static.gif), an icon ![icon](http://fixtures.localhost:8099/favicon.ico), no image ![text](http://fixtures.localhost:8099/notes.png), a missing one ![gone](http://fixtures.localhost:8099/gone.png) and a moved one ![moved](http://fixtures.localhost:8099/moved.png)\n\n<img src=\"http://fixtures.localhost:8099/small.png\" width=\"150\"> <img src=\"http://fixtures.localhost:8099/photo.png\" height=\"100\">"
+      }
+    }
+  ],
+  "run_jobs": ["process_post"]
+}

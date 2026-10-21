@@ -1606,14 +1606,19 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
 /// resolves to loopback here and in the reference's container.
 const REMOTE_ADDRS: [&str; 2] = ["127.0.0.1:8099", "[::1]:8099"];
 
-/// A file of parity/writes/files as text.
-fn fixture_text(name: &str) -> String {
-    std::fs::read_to_string(
+/// A file of parity/writes/files.
+fn fixture_bytes(name: &str) -> Vec<u8> {
+    std::fs::read(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("parity/writes/files")
             .join(name),
     )
     .unwrap_or_else(|e| panic!("fixture {name}: {e}"))
+}
+
+/// A file of parity/writes/files as text.
+fn fixture_text(name: &str) -> String {
+    String::from_utf8(fixture_bytes(name)).unwrap_or_else(|e| panic!("fixture {name}: {e}"))
 }
 
 /// A case's `remote`: request targets (path and query) on
@@ -1624,11 +1629,13 @@ async fn serve_remote(case: &Value) -> Vec<tokio::task::JoinHandle<()>> {
     let Some(pages) = case["remote"].as_object() else {
         return Vec::new();
     };
-    // A `{"fixture": name}` body: that file of parity/writes/files.
+    // A `{"fixture": name}` body: that file of parity/writes/files, as
+    // bytes (an image is no text).
     let mut pages = pages.clone();
     for page in pages.values_mut() {
         if let Some(name) = page["body"]["fixture"].as_str() {
-            page["body"] = Value::String(fixture_text(name));
+            let bytes = fixture_bytes(name);
+            page["body"] = Value::Array(bytes.into_iter().map(Value::from).collect());
         }
     }
     let pages = std::sync::Arc::new(pages);
@@ -1708,7 +1715,14 @@ async fn answer_remote(
         .get(target)
         .or_else(|| pages.get(target.split('?').next().unwrap_or(target)));
     let status = page.and_then(|p| p["status"].as_u64()).unwrap_or(404);
-    let body = page.and_then(|p| p["body"].as_str()).unwrap_or("");
+    let body: Vec<u8> = match page.map(|p| &p["body"]) {
+        Some(Value::String(s)) => s.as_bytes().to_vec(),
+        Some(Value::Array(bytes)) => bytes
+            .iter()
+            .map(|b| b.as_u64().unwrap_or(0) as u8)
+            .collect(),
+        _ => Vec::new(),
+    };
     let mut head = format!(
         "HTTP/1.1 {status} X\r\nConnection: close\r\nContent-Length: {}\r\n",
         body.len()
@@ -1723,7 +1737,7 @@ async fn answer_remote(
     head.push_str("\r\n");
     let _ = socket.write_all(head.as_bytes()).await;
     if method != "HEAD" {
-        let _ = socket.write_all(body.as_bytes()).await;
+        let _ = socket.write_all(&body).await;
     }
     let _ = socket.shutdown().await;
 }
