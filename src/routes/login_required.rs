@@ -100,7 +100,15 @@ pub async fn gate(
         return Ok(next.run(request).await);
     }
 
-    let json = path.ends_with(".json");
+    // `request.format.json? || request.xhr?`: request_format sent the other
+    // JSON pages to their `.json` twins, but not the front page.
+    let json = path.ends_with(".json")
+        || (path == "/"
+            && (super::wants_json(request.uri().query(), request.headers())
+                || request
+                    .headers()
+                    .get("x-requested-with")
+                    .is_some_and(|v| v == "XMLHttpRequest")));
     if json || request.method() != axum::http::Method::GET {
         // topics#show adds the not-found page, as 403 forbids it.
         if request.method() == axum::http::Method::GET

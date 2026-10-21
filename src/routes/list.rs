@@ -332,8 +332,137 @@ pub async fn latest_json(
     }
 }
 
-/// GET / and GET /latest: the server-rendered list. The "more" link
-/// points at the HTML page.
+/// GET /: config/routes.rb's root routes, each under HomePageConstraint,
+/// which picks the request's current_homepage: list#<filter> for
+/// Discourse.filters (discourse-topic-voting's votes among them),
+/// categories#index, finish_installation#index while has_login_hint,
+/// home_page#custom and home_page#blank. The routes take JSON as well as
+/// HTML, by `?format=json` or the Accept header.
+pub async fn front_page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    let homepage = {
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        // HomePageConstraint: only finish_installation matches meanwhile.
+        if settings.get("has_login_hint")?.truthy() {
+            return Err(Unsupported("the finish installation page").into());
+        }
+        crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?
+    };
+    // Another format is Rails' 406 page, or markdown, neither ported.
+    if uri
+        .query()
+        .into_iter()
+        .flat_map(|q| q.split('&'))
+        .filter_map(|p| p.strip_prefix("format="))
+        .any(|f| f != "json" && f != "html")
+    {
+        return Err(Unsupported("the front page in a format other than json or html").into());
+    }
+    let json = super::wants_json(uri.query(), &headers);
+    if homepage == "categories" {
+        let params = match Query::<CategoriesParams>::try_from_uri(&uri) {
+            Ok(Query(params)) => params,
+            Err(rejection) => return Ok(rejection.into_response()),
+        };
+        return categories_response(
+            state,
+            guardian,
+            params,
+            json,
+            headers,
+            (!json).then_some(uri),
+        )
+        .await;
+    }
+    let Some(kind) = ListKind::from_name(&homepage) else {
+        return Err(match homepage.as_str() {
+            // The theme's connector for the custom-homepage outlet.
+            "custom" => Unsupported("a theme's custom homepage"),
+            // Only for an anonymous request while login is required, which
+            // login_required::gate answers first.
+            "blank" => Unsupported("the blank homepage"),
+            // top_menu must hold latest, which every viewer may have, so
+            // HomepageHelper always finds one.
+            _ => Unsupported("a front page without a homepage route"),
+        }
+        .into());
+    };
+    let params = match Query::<ListParams>::try_from_uri(&uri) {
+        Ok(Query(params)) => params,
+        Err(rejection) => return Ok(rejection.into_response()),
+    };
+    match (kind, json) {
+        (ListKind::Latest, true) => {
+            latest_json(State(state), AuthGuardian(guardian), Query(params)).await
+        }
+        (ListKind::Latest, false) => {
+            latest(
+                State(state),
+                AuthGuardian(guardian),
+                Query(params),
+                headers,
+                uri,
+            )
+            .await
+        }
+        (kind, json) => {
+            front_list(
+                state,
+                guardian,
+                params,
+                kind,
+                json,
+                headers,
+                (!json).then_some(uri),
+            )
+            .await
+        }
+    }
+}
+
+/// Whether `Site#categories` holds the category: one the viewer can see
+/// (can_see_serialized_category?) whose parent, if any, the viewer can see
+/// too.
+async fn in_site_categories(
+    conn: &mut sqlx::PgConnection,
+    secure: &[i32],
+    id: i32,
+) -> Result<bool, AppError> {
+    let rows: Vec<(i32, bool)> = sqlx::query_as(
+        "SELECT p.id, p.read_restricted FROM categories c \
+         JOIN categories p ON p.id = c.id OR p.id = c.parent_category_id \
+         WHERE c.id = $1",
+    )
+    .bind(id)
+    .fetch_all(conn)
+    .await?;
+    Ok(!rows.is_empty()
+        && rows
+            .iter()
+            .all(|(id, restricted)| !restricted || secure.contains(id)))
+}
+
+/// ApplicationRoute#_collectTitleTokens: the short site description after
+/// the site title on the front page.
+fn front_page_description(
+    uri: Option<&axum::http::Uri>,
+    settings: &SiteSettings,
+) -> Result<String, AppError> {
+    Ok(if uri.is_some_and(|u| u.path() == "/") {
+        settings.get("short_site_description")?.to_s()
+    } else {
+        String::new()
+    })
+}
+
+/// GET /latest, and the front page when latest is the homepage: the
+/// server-rendered list. The "more" link points at the HTML page.
 pub async fn latest(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -569,6 +698,35 @@ pub async fn category(
         )
             .into_response());
     }
+    if !json {
+        // BuildCategoryRoute#model finds the category among the site's,
+        // which leave out a category whose parent the viewer can't see:
+        // not found there, the route goes to /404. Lazy loading finds it
+        // with /categories/find instead, and titleToken then throws on
+        // the missing parent, as it does for a category found whose
+        // parent the site's categories leave out.
+        let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+        if !in_site_categories(&mut conn, &secure, category.id).await? {
+            if guardian.can_lazy_load_categories(&settings)? {
+                return Err(Unsupported(
+                    "a lazy-loaded category whose parent the viewer can't see",
+                )
+                .into());
+            }
+            return Ok(super::user_activity::found(
+                &headers,
+                format!("{base_path}/404"),
+            ));
+        }
+        if let Some(parent) = category.parent_category_id
+            && !in_site_categories(&mut conn, &secure, parent).await?
+        {
+            return Err(Unsupported(
+                "a category whose parent the site's categories leave out (Ember's titleToken throws)",
+            )
+            .into());
+        }
+    }
     drop(conn);
 
     // category_default_view: the category's default_view when anonymous users
@@ -790,7 +948,11 @@ async fn categories_response(
     // homepage.
     let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
     let token = (homepage != "categories").then(|| page.chrome.t("filters.categories.title"));
-    page.title = crate::html::document_title(token.as_deref(), &page.site_title, "");
+    page.title = crate::html::document_title(
+        token.as_deref(),
+        &page.site_title,
+        &front_page_description(uri.as_ref(), &settings)?,
+    );
     let base_path = state.config.globals.relative_url_root();
     // CategoriesDisplay#style: the mobile view has its own setting.
     let mobile = crate::mobile::mobile_view();
@@ -1200,7 +1362,11 @@ async fn front_list(
     )?;
     let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
     let token = page.chrome.topics_title_token(kind.name(), &homepage);
-    page.title = crate::html::document_title(token.as_deref(), &page.site_title, "");
+    page.title = crate::html::document_title(
+        token.as_deref(),
+        &page.site_title,
+        &front_page_description(uri.as_ref(), &settings)?,
+    );
     page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {

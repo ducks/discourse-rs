@@ -195,7 +195,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
         )
-        .route("/", cached!(get(list::latest)))
+        .route("/", cached!(get(list::front_page)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))
         .route("/top", cached!(get(list::top)))
@@ -2744,8 +2744,8 @@ pub async fn method_override(
 /// that is not browser-like: no `*/*` beside other types) whose preferred
 /// type is JSON. The port tells JSON by the `.json` suffix, so such a GET
 /// goes to the path's `.json` twin, for the pages whose controllers then
-/// answer JSON (/search, /login and the /my redirects stay HTML; so does
-/// the front page, whose JSON is the homepage list's, not ported).
+/// answer JSON (/search, /login and the /my redirects stay HTML). The
+/// front page has no twin: list::front_page reads the format itself.
 pub async fn request_format(
     mut request: axum::extract::Request,
     next: axum::middleware::Next,

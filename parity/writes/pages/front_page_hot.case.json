@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "settings": {
+    "default_homepage": "hot"
+  },
+  "setup": [
+    "UPDATE topic_hot_scores SET score = 1 + topic_id / 1000.0"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ]
+}

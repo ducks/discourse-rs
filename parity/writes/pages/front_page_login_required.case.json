@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ]
+}

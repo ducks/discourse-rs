@@ -646,3 +646,227 @@ impl Member {
         self.send(Request::get(path), "").await
     }
 }
+
+impl Member {
+    async fn json(&mut self, path: &str) -> serde_json::Value {
+        let body = self
+            .send(
+                Request::get(path).header(header::ACCEPT, "application/json"),
+                "",
+            )
+            .await;
+        serde_json::from_str(&body).unwrap_or_else(|e| panic!("{path}: {e}: {body}"))
+    }
+}
+
+async fn get_json(pool: &PgPool, path: &str) -> (StatusCode, serde_json::Value) {
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
+    let response = app
+        .oneshot(
+            Request::get(path)
+                .header(header::HOST, "test.localhost")
+                .header(header::ACCEPT, "application/json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let body = String::from_utf8_lossy(&bytes);
+    let json = serde_json::from_str(&body).unwrap_or_else(|e| panic!("{path}: {e}: {body}"));
+    (status, json)
+}
+
+/// The filter of the list's active navigation item.
+fn active_nav(html: &str) -> Option<&str> {
+    let start = html.find("<li class=\"active ")?;
+    let rest = &html[start..];
+    let item = &rest[rest.find("nav-item_")? + "nav-item_".len()..];
+    Some(&item[..item.find('"')?])
+}
+
+/// `/` is the current homepage's page (config/routes.rb's root routes under
+/// HomePageConstraint), as HTML and as JSON: SiteSetting.homepage, the
+/// anonymous homepage and a member's own.
+#[tokio::test]
+async fn front_page_serves_the_current_homepage() {
+    let db = TestDb::new().await;
+    common::set_setting(&db.pool, "short_site_description", 1, "Talk shop").await;
+
+    for homepage in ["latest", "top", "hot", "categories"] {
+        common::set_setting(&db.pool, "default_homepage", 7, homepage).await;
+        let (status, _, html) = get(&db.pool, "/").await;
+        assert_eq!(status, StatusCode::OK, "{homepage}");
+        // No title token on the homepage's own route; the short site
+        // description on the front page.
+        assert!(
+            html.contains("<title>Discourse - Talk shop</title>"),
+            "{homepage}: {}",
+            &html[..html.find("</title>").unwrap_or(0)]
+        );
+        let (status, json) = get_json(&db.pool, "/").await;
+        assert_eq!(status, StatusCode::OK, "{homepage}");
+        let (_, twin) = get_json(&db.pool, &format!("/{homepage}.json")).await;
+        assert_eq!(json, twin, "{homepage}");
+        if homepage == "categories" {
+            assert!(html.contains("category-list"), "{homepage}");
+            assert!(json["category_list"].is_object());
+        } else {
+            assert_eq!(active_nav(&html), Some(homepage), "{homepage}");
+            assert!(json["topic_list"].is_object());
+        }
+    }
+
+    // `?format=json` asks for JSON too.
+    let (_, _, body) = get(&db.pool, "/?format=json").await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert!(json["category_list"].is_object());
+
+    // A homepage only members have: anonymous readers get the first top
+    // menu item they may have (SiteSetting.anonymous_homepage).
+    common::set_setting(&db.pool, "top_menu", 8, "latest|new|top|categories").await;
+    common::set_setting(&db.pool, "default_homepage", 7, "new").await;
+    let (_, _, html) = get(&db.pool, "/").await;
+    assert_eq!(active_nav(&html), Some("latest"));
+    common::set_setting(&db.pool, "top_menu", 8, "top|latest|new|categories").await;
+    let (_, _, html) = get(&db.pool, "/").await;
+    assert_eq!(active_nav(&html), Some("top"));
+    let (_, json) = get_json(&db.pool, "/").await;
+    let (_, top) = get_json(&db.pool, "/top.json").await;
+    assert_eq!(json, top);
+
+    // Members get SiteSetting.homepage, unless they picked their own.
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let html = user1.page("/").await;
+    assert_eq!(active_nav(&html), Some("new"));
+    assert!(html.contains("<title>Discourse - Talk shop</title>"));
+    assert_eq!(user1.json("/").await, user1.json("/new.json").await);
+    for (homepage_id, homepage) in [(5, "top"), (6, "bookmarks"), (2, "categories")] {
+        sqlx::query(
+            "UPDATE user_options SET homepage_id = $1 FROM users \
+             WHERE users.id = user_id AND username = 'user1'",
+        )
+        .bind(homepage_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let html = user1.page("/").await;
+        assert!(
+            html.contains("<title>Discourse - Talk shop</title>"),
+            "{homepage}"
+        );
+        assert_eq!(
+            user1.json("/").await,
+            user1.json(&format!("/{homepage}.json")).await,
+            "{homepage}"
+        );
+        if homepage == "categories" {
+            assert!(html.contains("category-list"), "{homepage}");
+        } else {
+            assert_eq!(active_nav(&html), Some(homepage), "{homepage}");
+        }
+    }
+    // hot is a member's homepage only while it is in the top menu.
+    sqlx::query(
+        "UPDATE user_options SET homepage_id = 8 FROM users \
+         WHERE users.id = user_id AND username = 'user1'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    common::set_setting(&db.pool, "top_menu", 8, "latest|new|hot|categories").await;
+    let html = user1.page("/").await;
+    assert_eq!(active_nav(&html), Some("hot"));
+    common::set_setting(&db.pool, "top_menu", 8, "latest|new|categories").await;
+    let html = user1.page("/").await;
+    assert_eq!(active_nav(&html), Some("new"));
+}
+
+/// The homepages `/` has no page for: a theme's custom homepage, and the
+/// installation page while has_login_hint is on. Login required answers
+/// the front page's JSON as Rails does (home_page#blank's
+/// redirect_to_login_if_required).
+#[tokio::test]
+async fn front_page_refuses_custom_and_finish_installation() {
+    let db = TestDb::new().await;
+    // The default theme's modifiers (theme -1, the seed's default_theme_id).
+    sqlx::query("UPDATE theme_modifier_sets SET custom_homepage = TRUE WHERE theme_id = -1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, _) = get(&db.pool, "/").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    sqlx::query("UPDATE theme_modifier_sets SET custom_homepage = NULL")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+
+    let (status, _, _) = get(&db.pool, "/?format=rss").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+
+    common::set_setting(&db.pool, "has_login_hint", 5, "t").await;
+    let (status, _, _) = get(&db.pool, "/").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    common::set_setting(&db.pool, "has_login_hint", 5, "f").await;
+
+    common::set_setting(&db.pool, "login_required", 5, "t").await;
+    let (status, json) = get_json(&db.pool, "/").await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(json["error_type"], "not_logged_in");
+    let (status, content_type, html) = get(&db.pool, "/").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(content_type.starts_with("text/html"));
+    assert!(html.contains("login"), "the login page");
+}
+
+/// A category the viewer may see under a parent they may not: Site's
+/// categories leave it out, so BuildCategoryRoute finds nothing and goes
+/// to /404; its JSON is served as before. One whose parent the site's
+/// categories leave out (a hidden grandparent) has Ember's titleToken
+/// throw on the missing parent: refused.
+#[tokio::test]
+async fn category_list_under_a_hidden_parent() {
+    let db = TestDb::new().await;
+    common::set_setting(&db.pool, "max_category_nesting", 3, "3").await;
+    let grandchild: i32 = sqlx::query_scalar(
+        "INSERT INTO categories (name, name_lower, slug, color, text_color, user_id, \
+         parent_category_id, read_restricted, position, created_at, updated_at) \
+         VALUES ('Deep', 'deep', 'deep', '0088CC', 'FFFFFF', -1, 34, false, \
+                 (SELECT max(position) + 1 FROM categories), now(), now()) RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let deep = format!("/c/general/sub-general/deep/{grandchild}");
+    let (status, _, html) = get(&db.pool, &deep).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<title>Latest Sub General/Deep topics - Discourse</title>"));
+
+    sqlx::query("UPDATE categories SET read_restricted = TRUE WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let app = discourse_rs::app(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let response = app
+        .oneshot(
+            Request::get("/c/general/sub-general/34")
+                .header(header::HOST, "test.localhost")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::FOUND);
+    assert_eq!(
+        response.headers()[header::LOCATION],
+        "http://test.localhost/404"
+    );
+    let (status, json) = get_json(&db.pool, "/c/general/sub-general/34.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(json["topic_list"].is_object());
+
+    let (status, _, _) = get(&db.pool, &deep).await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
