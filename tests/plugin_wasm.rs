@@ -27,30 +27,35 @@ fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// plugins/discourse-solved built for wasm32-unknown-unknown, once per
-/// test process (cargo serializes concurrent builds).
+/// A guest of plugins/ (its package) built for wasm32-unknown-unknown
+/// (cargo serializes concurrent builds).
+fn build_guest(package: &str) -> Vec<u8> {
+    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
+    let status = std::process::Command::new(cargo)
+        .args([
+            "build",
+            "--release",
+            "--target",
+            "wasm32-unknown-unknown",
+            "-p",
+            package,
+        ])
+        .current_dir(root().join("plugins"))
+        .env_remove("RUSTFLAGS")
+        .status()
+        .expect("cargo runs");
+    assert!(status.success(), "building {package}");
+    let path: PathBuf = root().join(format!(
+        "plugins/target/wasm32-unknown-unknown/release/{}.wasm",
+        package.replace('-', "_")
+    ));
+    std::fs::read(path).unwrap()
+}
+
+/// plugins/discourse-solved, once per test process.
 fn solved_wasm() -> &'static [u8] {
     static WASM: OnceLock<Vec<u8>> = OnceLock::new();
-    WASM.get_or_init(|| {
-        let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
-        let status = std::process::Command::new(cargo)
-            .args([
-                "build",
-                "--release",
-                "--target",
-                "wasm32-unknown-unknown",
-                "-p",
-                "discourse-solved-wasm",
-            ])
-            .current_dir(root().join("plugins"))
-            .env_remove("RUSTFLAGS")
-            .status()
-            .expect("cargo runs");
-        assert!(status.success(), "building plugins/discourse-solved");
-        let path: PathBuf =
-            root().join("plugins/target/wasm32-unknown-unknown/release/discourse_solved_wasm.wasm");
-        std::fs::read(path).unwrap()
-    })
+    WASM.get_or_init(|| build_guest("discourse-solved-wasm"))
 }
 
 fn solved_manifest() -> String {
@@ -515,4 +520,18 @@ async fn measure() {
             );
         }
     }
+}
+
+/// plugins/js-solved: Boa inside the guest running plugin.js.
+#[tokio::test]
+async fn a_javascript_plugin_runs_in_boa_inside_the_guest() {
+    let db = TestDb::new().await;
+    setup_case(&db.pool, "latest").await;
+    let manifest = std::fs::read_to_string(root().join("plugins/js-solved/plugin.toml")).unwrap();
+    let wasm = build_guest("js-solved-wasm");
+    install(vec![Plugin::new(runtime(), &manifest, &wasm).unwrap()]);
+    let (status, json) = get(&db.pool, "/latest.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(topic(&json, 35)["has_accepted_answer"], true);
+    assert_eq!(topic(&json, 41)["has_accepted_answer"], false);
 }
