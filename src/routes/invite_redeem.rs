@@ -1439,7 +1439,8 @@ struct InvitePage {
     strings: String,
 }
 
-/// A legal page's url (Site's tos_url, privacy_policy_url): the setting,
+/// `Discourse.tos_url` / `privacy_policy_url` (Site's, the static pages'
+/// and the about page's navigation): the setting,
 /// else the topic's path when it exists.
 pub(super) async fn legal_url(
     conn: &mut PgConnection,
@@ -1456,10 +1457,12 @@ pub(super) async fn legal_url(
     if topic_id <= 0 {
         return Ok(None);
     }
-    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1)")
-        .bind(i32::try_from(topic_id).unwrap_or(0))
-        .fetch_one(conn)
-        .await?;
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+    )
+    .bind(i32::try_from(topic_id).unwrap_or(0))
+    .fetch_one(conn)
+    .await?;
     Ok(exists.then(|| format!("{base_path}{path}")))
 }
 

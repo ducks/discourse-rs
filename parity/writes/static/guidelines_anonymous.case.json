@@ -1,0 +1,12 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    },
+    {
+      "method": "GET",
+      "path": "/guidelines.html"
+    }
+  ]
+}

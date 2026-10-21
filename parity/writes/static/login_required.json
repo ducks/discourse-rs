@@ -1,0 +1,66 @@
+{
+  "name": "login_required",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    },
+    {
+      "method": "GET",
+      "path": "/faq"
+    },
+    {
+      "method": "GET",
+      "path": "/rules"
+    },
+    {
+      "method": "GET",
+      "path": "/tos"
+    }
+  ],
+  "started_at": "2026-10-21T22:05:19.129953",
+  "transaction_started_at": "2026-10-21T22:05:18.211976",
+  "responses": [
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/login"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/login"
+      }
+    },
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/login"
+      }
+    },
+    {
+      "status": 200,
+      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-09-30'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class='nav-item-tos'><a href='/tos' class='active'>Terms of Service</a></li>\n  </ul>\n\n\n  <div itemprop='mainContentOfPage'>\n    <p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n  </div>\n</div>\n\n  \n"
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "login_required": true,
+    "tos_topic_id": 35
+  },
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "ea60e6ccba3410524a54298444ce3588d78d0d97c73807118f3e6822e199c413",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

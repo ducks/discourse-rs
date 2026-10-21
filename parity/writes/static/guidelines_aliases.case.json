@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/faq"
+    },
+    {
+      "method": "GET",
+      "path": "/rules"
+    },
+    {
+      "method": "GET",
+      "path": "/conduct"
+    },
+    {
+      "method": "GET",
+      "path": "/faq.html"
+    },
+    {
+      "method": "GET",
+      "path": "/rules.html"
+    }
+  ]
+}

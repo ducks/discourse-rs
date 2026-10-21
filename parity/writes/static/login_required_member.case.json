@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "settings": {
+    "login_required": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    }
+  ]
+}

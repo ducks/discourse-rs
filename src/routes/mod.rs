@@ -102,6 +102,7 @@ mod site_texts;
 mod sitemap;
 mod solved;
 mod srv;
+mod static_pages;
 mod stylesheets;
 mod svg_sprite;
 mod tag_admin;
@@ -2306,6 +2307,25 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/about", get(about::page))
         .route("/about.json", get(about::show))
+        // static#show: the guidelines, terms and privacy pages.
+        .route("/faq", get(static_pages::show))
+        .route("/faq.html", get(static_pages::show))
+        .route("/faq.json", get(static_pages::show))
+        .route("/guidelines", get(static_pages::show))
+        .route("/guidelines.html", get(static_pages::show))
+        .route("/guidelines.json", get(static_pages::show))
+        .route("/rules", get(static_pages::show))
+        .route("/rules.html", get(static_pages::show))
+        .route("/rules.json", get(static_pages::show))
+        .route("/conduct", get(static_pages::show))
+        .route("/conduct.html", get(static_pages::show))
+        .route("/conduct.json", get(static_pages::show))
+        .route("/tos", get(static_pages::show))
+        .route("/tos.html", get(static_pages::show))
+        .route("/tos.json", get(static_pages::show))
+        .route("/privacy", get(static_pages::show))
+        .route("/privacy.html", get(static_pages::show))
+        .route("/privacy.json", get(static_pages::show))
         .route("/groups", get(groups::index_page))
         .route("/groups.json", get(groups::index))
         .route("/g", get(groups::index_page))

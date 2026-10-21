@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "rename_faq_to_guidelines": false,
+    "faq_url": "/custom-faq"
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/faq"
+    },
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    }
+  ]
+}

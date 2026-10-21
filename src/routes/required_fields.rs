@@ -79,14 +79,9 @@ fn skipped(path: &str, method: &axum::http::Method) -> bool {
             | "/login"
             | "/signup"
             | "/password-reset"
-            | "/faq"
-            | "/guidelines"
-            | "/tos"
-            | "/privacy"
-            | "/rules"
-            | "/conduct"
             | "/llms.txt"
-    ) {
+    ) || super::static_pages::is_page(path)
+    {
         return true;
     }
     // UsersController: show (/u/:username), staff_info, update, and the

@@ -83,6 +83,12 @@
 /about as=user1
 /about as=admin
 
+# The guidelines page (static#show); /faq, /rules and /conduct redirect
+# there (parity/writes/static records the redirects).
+/guidelines
+/guidelines as=user1
+/guidelines as=admin
+
 # The groups pages on the seed's automatic groups (parity/screens/groups-pages
 # has custom ones). Added dates are drawn in the browser's zone there.
 /groups as=user1

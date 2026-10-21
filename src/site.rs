@@ -1216,10 +1216,12 @@ impl Site<'_> {
         if topic_id <= 0 {
             return Ok(None);
         }
-        let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1)")
-            .bind(i32::try_from(topic_id).unwrap_or(0))
-            .fetch_one(&mut *self.conn)
-            .await?;
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+        )
+        .bind(i32::try_from(topic_id).unwrap_or(0))
+        .fetch_one(&mut *self.conn)
+        .await?;
         Ok(exists.then(|| format!("{}{path}", self.base_path())))
     }
 
