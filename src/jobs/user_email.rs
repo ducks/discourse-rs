@@ -87,7 +87,9 @@ async fn send_user_email(
     // Chat's UserNotifications#chat_summary.
     let chat_summary = email_type == "chat_summary";
     let digest = email_type == "digest";
-    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary && !digest {
+    let penalty = crate::email::account::penalty_template(email_type).is_some();
+    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary && !digest && !penalty
+    {
         return Err(Unsupported("this email type").into());
     }
     let given_address = args
@@ -95,10 +97,11 @@ async fn send_user_email(
         .and_then(Value::as_str)
         .filter(|a| !a.trim().is_empty())
         .map(str::to_string);
-    if given_address.is_some() && !chat_summary && !account {
+    if given_address.is_some() && !chat_summary && !account && !penalty {
         return Err(Unsupported("user_email with an address").into());
     }
-    if !account && args.get("email_token").is_some() {
+    // The penalty mailers ignore a token.
+    if !account && !penalty && args.get("email_token").is_some() {
         return Err(Unsupported("notification emails with a token").into());
     }
     let post_id = args
@@ -205,7 +208,8 @@ async fn send_user_email(
         )
         .await;
     }
-    if user.suspended {
+    // account_suspended still reaches a suspended user.
+    if user.suspended && email_type != "account_suspended" {
         return skip(
             conn,
             email_type,
@@ -239,6 +243,9 @@ async fn send_user_email(
     }
     if account {
         return account_email(conn, ctx, args, email_type, user_id, &to_address, &user).await;
+    }
+    if penalty {
+        return penalty_email(conn, ctx, args, email_type, user_id, &to_address, &user).await;
     }
     if chat_summary {
         return chat_summary_email(conn, ctx, email_type, user_id, &to_address, &user).await;
@@ -518,6 +525,76 @@ async fn account_email(
             crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?
         }
         (None, None) => return Err(Unsupported("account emails without a token").into()),
+    };
+    // message.to = to_address
+    for (name, value) in built.message.headers.iter_mut() {
+        if name == "To" {
+            *value = to_address.to_string();
+        }
+    }
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
+    let erode = s.get("bounce_score_erode_on_send")?.to_f();
+    if bounce_score > erode {
+        sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
+            .bind(user_id)
+            .bind(erode)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// The rest of message_for_email for account_silenced and
+/// account_suspended: the daily and bounce limits (neither type is
+/// critical), then the mailer, which builds nothing without the user
+/// history and so sends and logs nothing.
+async fn penalty_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    args: &Value,
+    email_type: &str,
+    user_id: i32,
+    to_address: &str,
+    user: &Recipient,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let max = s.get("max_emails_per_day_per_user")?.to_i();
+    if max > 0 {
+        let sent: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM email_logs WHERE created_at > now() - interval '1 day' AND user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if sent >= max {
+            return skip(
+                conn,
+                email_type,
+                to_address,
+                Some(user_id),
+                None,
+                r::EXCEEDED_EMAILS_LIMIT,
+            )
+            .await;
+        }
+    }
+    let bounce_score = user.bounce_score.unwrap_or(0.0);
+    if bounce_score >= s.get("bounce_score_threshold")?.to_f() {
+        return skip(
+            conn,
+            email_type,
+            to_address,
+            Some(user_id),
+            None,
+            r::EXCEEDED_BOUNCES_LIMIT,
+        )
+        .await;
+    }
+    let history_id = args.get("user_history_id").and_then(Value::as_i64);
+    let Some(mut built) =
+        crate::email::account::penalty(&mut *conn, ctx, email_type, user_id, history_id).await?
+    else {
+        return Ok(());
     };
     // message.to = to_address
     for (name, value) in built.message.headers.iter_mut() {

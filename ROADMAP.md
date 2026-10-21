@@ -76,7 +76,7 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-46 passing). Each step below fails today and is ignored with the item
+47 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
@@ -99,9 +99,8 @@ Admin:
 
 - [x] The review queue's page /review (admin_review_queue_page); its
   claims, notes and client actions are refused: 194
-- [ ] Silencing a member: the account_silenced email is refused, so the
-  step fails though the system message notifies them
-  (a_silenced_member_is_told): 146
+- [x] Silencing a member: the system message notifies them and the
+  account_silenced email is sent (a_silenced_member_is_told): 146
 
 ## Now: the parity queue (2026-10-13)
 
@@ -1793,7 +1792,8 @@ have handlers now.
     styles (email/styles.rs:126,221), replies to several posts or deeper
     than one level, uploads, attachments and provider headers
     (email/sender.rs:251,344,361,431,449,498), the other email types
-    (jobs/user_email.rs:91,99,102,500), sendmail delivery
+    (jobs/user_email.rs:93,101,105,507; account_silenced and
+    account_suspended done), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
 147. `feat/flags-rest` M: flags that send a message (notify user,
