@@ -11,13 +11,15 @@
 //! dart-sass compile writes with the compile's temporary directory in its
 //! source map, a digest no two compiles share; a rebake of an unchanged
 //! scss field (a theme setting changed) writes a digest of its own and
-//! keeps the field's error. Upload fields (theme_upload_var and
+//! keeps the field's error. A scss field compiles on bake through
+//! stylesheet::manager, its error the compile's message as
+//! `ensure_scss_compiles!` reports it. Upload fields (theme_upload_var and
 //! screenshots) keep their upload referenced, a `.js` upload in the field's
 //! javascript cache and the `icons-sprite` upload in theme_svg_sprites.
-//! Refused: new or changed scss values (their compile errors), extra_js
-//! (ThemeJavascriptCompiler), inline scripts in html fields
-//! (AssetProcessor), migrations, svg sprites that are not plain well-formed
-//! XML (libxml2's error text).
+//! Refused: extra_js (ThemeJavascriptCompiler), inline scripts in html
+//! fields (AssetProcessor), migrations, translations in other locales, a
+//! field over 1 MiB, svg sprites that are not plain well-formed XML
+//! (libxml2's error text).
 
 use serde_json::{Map, Value, json};
 use serde_yaml_ng::Value as Yaml;
