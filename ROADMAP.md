@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a. Phases
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 262a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3019,7 +3019,7 @@ route table has been made, so this list may be short.
     another theme's fields (the member's theme_ids, preview, safe mode)
     are 258a's
 
-261. ~~`fix/pm-topic-view`~~ (done) M: a message's topic page drew as a
+262. ~~`fix/pm-topic-view`~~ (done) M: a message's topic page drew as a
     regular topic. topic.gjs's body classes (AddCategoryTagClasses'
     category and tags, AddTopicStatusClasses', `archetype-<archetype>`)
     and DiscourseTopic's archetype class now come with every topic, and a
@@ -3047,8 +3047,8 @@ route table has been made, so this list may be short.
     container does, and starts its scroller at the entered post
     (calculatePosition), so a short one-post message keeps its scroll
     area as Ember's does. Found by the screenshot run (/t/90 as admin and
-    as user1, parity/screens/pages). Left, split into 261a.
-    261a. `feat/pm-topic-view-rest` S: the add participant button draws
+    as user1, parity/screens/pages). Left, split into 262a.
+    262a. `feat/pm-topic-view-rest` S: the add participant button draws
     but its AddPmParticipants modal (InvitePanel with the email, group
     and user chooser, POST /t/:id/invite) is not ported
     (post_view.rs:1820); the browse more line is drawn once with the
