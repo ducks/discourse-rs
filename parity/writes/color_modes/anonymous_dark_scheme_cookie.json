@@ -1,0 +1,40 @@
+{
+  "name": "anonymous_dark_scheme_cookie",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-21T03:15:55.422606",
+  "transaction_started_at": "2026-10-21T03:15:52.859658",
+  "responses": [
+    {
+      "status": 200,
+      "body": "theme-color| media=\"(prefers-color-scheme: light)\"|#fff\ntheme-color| media=\"(prefers-color-scheme: dark)\"|#000000\ncolor-scheme||light dark\n(prefers-color-scheme: light)|light-scheme|\n(prefers-color-scheme: dark)|dark-scheme| data-scheme-id=\"15\""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE color_schemes SET user_selectable = true WHERE id = 15"
+  ],
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ],
+  "cookies": {
+    "dark_scheme_id": "15"
+  },
+  "recorded_from": {
+    "case": "7f04265808eaf54b35f5d84b69e4315932a14ec98e96ad2e3fb0251f1f233cda",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

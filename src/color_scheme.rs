@@ -66,9 +66,30 @@ pub async fn hex_for_name(
     settings: &SiteSettings,
     name: &str,
 ) -> Result<Option<String>, HexError> {
+    hex_for_name_in(conn, settings, name, None).await
+}
+
+/// `ColorScheme.hex_for_name(name, scheme_id)`: the scheme's own color
+/// when the scheme exists (not a remote copy), else as [`hex_for_name`].
+pub async fn hex_for_name_in(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    name: &str,
+    scheme_id: Option<i32>,
+) -> Result<Option<String>, HexError> {
+    let found: Option<i32> = match scheme_id {
+        Some(id) => {
+            sqlx::query_scalar("SELECT id FROM color_schemes WHERE id = $1 AND NOT remote_copy")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
     let default_theme_id = settings.get("default_theme_id")?.to_i();
-    let scheme_id: Option<i32> = match i32::try_from(default_theme_id) {
-        Ok(theme_id) => {
+    let scheme_id: Option<i32> = match (found, i32::try_from(default_theme_id)) {
+        (Some(id), _) => Some(id),
+        (None, Ok(theme_id)) => {
             sqlx::query_scalar(
                 "SELECT cs.id FROM themes t \
              JOIN color_schemes cs ON cs.id = t.color_scheme_id AND NOT cs.remote_copy \
@@ -78,7 +99,7 @@ pub async fn hex_for_name(
             .fetch_optional(&mut *conn)
             .await?
         }
-        Err(_) => None,
+        (None, Err(_)) => None,
     };
 
     match scheme_id {

@@ -137,6 +137,9 @@ pub struct Context<'a> {
     pub member: Option<&'a Member>,
     /// The bundled plugins' sections (chat's), after the core ones.
     pub plugin_sections: &'a str,
+    /// The interface color selector's footer button (crate::color_mode),
+    /// empty when not shown there.
+    pub color_selector: &'a str,
 }
 
 impl Context<'_> {
@@ -216,14 +219,15 @@ fn sections(site: &Value, cx: &Context) -> Result<String, SettingError> {
     }
     out.push_str(cx.plugin_sections);
     out.push_str("</div>");
-    out.push_str(&footer(cx.i18n, cx.member.is_some()));
+    out.push_str(&footer(cx.i18n, cx.member.is_some(), cx.color_selector));
     Ok(out)
 }
 
-/// SidebarFooter: on the main panel a member's add section button, and in
-/// the desktop view the keyboard shortcuts button. The modals both open
+/// SidebarFooter: the interface color selector when the site shows it
+/// there, on the main panel a member's add section button, and in the
+/// desktop view the keyboard shortcuts button. The modals both open
 /// are not ported; sidebar.js says so when they are clicked.
-pub(crate) fn footer(i18n: &I18n, add_section: bool) -> String {
+pub(crate) fn footer(i18n: &I18n, add_section: bool, color_selector: &str) -> String {
     let button = |class: &str, icon_name: &str, key: &str| {
         let label = escape(i18n.t(&format!("js.{key}")).unwrap_or(key));
         format!(
@@ -231,7 +235,12 @@ pub(crate) fn footer(i18n: &I18n, add_section: bool) -> String {
             icon(icon_name, None)
         )
     };
-    let mut actions = String::new();
+    // Ember's whitespace after the selector keeps the buttons apart.
+    let mut actions = if color_selector.is_empty() {
+        String::new()
+    } else {
+        format!("{color_selector}\n")
+    };
     if add_section {
         actions.push_str(&button(
             "add-section",
@@ -1352,7 +1361,7 @@ mod tests {
     #[test]
     fn the_footer_has_its_buttons() {
         let i18n = I18n::vendored().unwrap();
-        let member = footer(&i18n, true);
+        let member = footer(&i18n, true, "");
         assert!(
             member.contains(
                 "sidebar-footer-actions-button add-section\" title=\"Add custom section\""
@@ -1363,7 +1372,7 @@ mod tests {
                 "sidebar-footer-actions-keyboard-shortcuts\" title=\"Keyboard Shortcuts\""
             )
         );
-        assert!(!footer(&i18n, false).contains("add-section"));
+        assert!(!footer(&i18n, false, "").contains("add-section"));
     }
 
     #[test]

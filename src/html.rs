@@ -311,6 +311,8 @@ pub struct Chrome {
     pub i18n: Option<std::sync::Arc<I18n>>,
     /// Rails' admin stylesheet, which staff are served on every page.
     pub admin_stylesheet: bool,
+    /// The color scheme meta tags and stylesheets (crate::color_mode).
+    pub color_head: crate::color_mode::Head,
 }
 
 impl Chrome {
@@ -849,7 +851,8 @@ impl Site {
             Some(user) => {
                 sqlx::query_as(
                     "SELECT timezone, text_size_key, text_size_seq, default_calendar, \
-                       composition_mode, hide_presence \
+                       composition_mode, hide_presence, color_scheme_id, dark_scheme_id, \
+                       interface_color_mode \
                      FROM user_options WHERE user_id = $1",
                 )
                 .bind(user.id)
@@ -858,6 +861,20 @@ impl Site {
             }
             None => None,
         };
+        let color_options = options.as_ref().map(|o| crate::color_mode::Options {
+            color_scheme_id: o.color_scheme_id,
+            dark_scheme_id: o.dark_scheme_id,
+            interface_color_mode: o.interface_color_mode,
+        });
+        self.chrome.color_head = crate::color_mode::head(
+            &mut *conn,
+            settings,
+            &state.i18n,
+            &self.base_path,
+            &crate::color_mode::cookies(),
+            color_options.as_ref(),
+        )
+        .await?;
         if let Some(o) = &options {
             self.chrome.save_timezone = o.timezone.as_deref().is_none_or(str::is_empty);
             // UserOption.text_sizes
@@ -918,6 +935,7 @@ impl Site {
                 &user_timezone,
             )?;
         }
+        let color_selector = self.chrome.color_head.footer_button.clone();
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,
@@ -926,6 +944,7 @@ impl Site {
                 active: &active,
                 member: member.as_ref(),
                 plugin_sections,
+                color_selector: &color_selector,
             })
         };
         // Chat's header icon and sidebar sections (chat-setup.js adds the
@@ -1134,6 +1153,9 @@ struct ChromeOptions {
     default_calendar: i32,
     composition_mode: i32,
     hide_presence: bool,
+    color_scheme_id: Option<i32>,
+    dark_scheme_id: Option<i32>,
+    interface_color_mode: i32,
 }
 
 pub struct CategoryBadge {

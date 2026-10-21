@@ -1003,19 +1003,28 @@ async fn offers_light_and_dark_palettes() {
 }
 
 #[tokio::test]
-#[ignore = "pages link only the light color definitions, never the dark ones, ROADMAP 258"]
 async fn switches_to_dark_mode() {
     let (_db, state) = app().await;
     let mut user1 = member(&state, "user1").await;
-    // Light, dark or auto: interface_color_mode 2 is dark.
+    // Auto, light or dark: interface_color_mode 3 (UserOption::DARK_MODE)
+    // forces dark.
     let saved = user1
-        .put("/u/user1.json", &[("interface_color_mode", "2")])
+        .put("/u/user1.json", &[("interface_color_mode", "3")])
         .await;
     ok("PUT /u/user1.json interface_color_mode", &saved);
     // The default theme (Foundation) has a dark palette (Dark, 13): the
-    // page now draws with its definitions.
+    // page now draws with its definitions whatever the browser prefers.
     let home = user1.page("/latest").await;
-    drawn("/latest in dark mode", &home, "color_definitions_dark");
+    drawn(
+        "/latest in dark mode",
+        &home,
+        r#"/assets/color_definitions_dark.css" media="all" rel="stylesheet" class="dark-scheme" data-scheme-id="13"/>"#,
+    );
+    drawn(
+        "/latest in dark mode",
+        &home,
+        r#"/assets/color_definitions_light.css" media="none" rel="stylesheet" class="light-scheme"/>"#,
+    );
 }
 
 #[tokio::test]

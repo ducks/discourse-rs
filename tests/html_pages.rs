@@ -281,6 +281,11 @@ async fn color_definitions_are_the_sites_schemes() {
             "/assets/color_definitions_dark.css",
             include_str!("../parity/stylesheets/color_definitions_dark-13.css"),
         ),
+        // The same scheme by id, as a member's own palette is linked.
+        (
+            "/assets/color_definitions_scheme/13.css",
+            include_str!("../parity/stylesheets/color_definitions_dark-13.css"),
+        ),
     ] {
         let (status, content_type, css) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {css}");
@@ -296,6 +301,13 @@ async fn color_definitions_are_the_sites_schemes() {
                 .map(|(_, v)| v.as_str());
             assert_eq!(theirs, Some(value.as_str()), "{path} {name}");
         }
+    }
+    for path in [
+        "/assets/color_definitions_scheme/999.css",
+        "/assets/color_definitions_scheme/dark.css",
+    ] {
+        let (status, _, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
     }
 }
 

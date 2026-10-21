@@ -2423,6 +2423,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(stylesheets::light),
         )
         .route("/assets/color_definitions_dark.css", get(stylesheets::dark))
+        .route(
+            "/assets/color_definitions_scheme/{file}",
+            get(stylesheets::scheme),
+        )
         .route("/fonts/{file}", get(stylesheets::font))
         .route(
             "/letter_avatar_proxy/{version}/letter/{letter}/{color}/{size}",
@@ -2485,6 +2489,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/floating-ui.core.umd.min.js", get(asset))
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))
         .route("/assets/float.js", get(asset))
+        .route("/assets/interface-color.js", get(asset))
         .route("/assets/user-card.js", get(asset))
         .route("/assets/inline-footnotes.js", get(asset))
         .route("/assets/local-dates.js", get(asset))

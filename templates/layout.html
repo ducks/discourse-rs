@@ -31,6 +31,7 @@
     {%- if !chrome.apple_touch_icon_url.is_empty() %}
     <link rel="apple-touch-icon" type="image/png" href="{{ chrome.apple_touch_icon_url }}">
     {%- endif %}
+    {{- chrome.color_head.meta|safe }}
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
     <meta name="description" content="{{ crawler.description }}">
     {% if !crawler.canonical.is_empty() %}<link rel="canonical" href="{{ crawler.canonical }}">{% endif %}
@@ -73,6 +74,9 @@
     <script src="{{ crate::assets::url(base_path, "floating-ui.core.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.dom.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "float.js") }}"></script>
+    {%- if !chrome.color_head.header_item.is_empty() || !chrome.color_head.footer_button.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "interface-color.js") }}" defer data-light="{{ chrome.t("sidebar.footer.interface_color_selector.light") }}" data-dark="{{ chrome.t("sidebar.footer.interface_color_selector.dark") }}" data-auto="{{ chrome.t("sidebar.footer.interface_color_selector.auto") }}" data-aria-label="{{ chrome.t("sidebar.footer.interface_color_selector.aria_label") }}"></script>
+    {%- endif %}
     {#- An external login's outcome (the authentication_data cookie). -#}
     <script src="{{ crate::assets::url(base_path, "auth-complete.js") }}" data-admin-not-allowed="{{ chrome.t("login.admin_not_allowed_from_ip_address") }}" data-awaiting-activation="{{ chrome.t("login.awaiting_activation") }}" data-awaiting-approval="{{ chrome.t("login.awaiting_approval") }}" data-not-allowed="{{ chrome.t("login.not_allowed_from_ip_address") }}" data-requires-invite="{{ chrome.t("login.requires_invite") }}" data-disallow-totp="{{ chrome.t("login.omniauth_disallow_totp") }}"></script>
     {#- The mobile view's nav menu; loaded in both views, so a redraw in the
@@ -119,7 +123,13 @@
     <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "htmx-ext-sse.js") }}" defer></script>
     {% block head %}{% endblock %}
-    <link rel="stylesheet" href="{{ base_path }}/assets/color_definitions_light.css">
+    {#- discourse_color_scheme_stylesheets (crate::color_mode); the light
+        palette alone on a page drawn without the chrome. -#}
+    {%- if chrome.color_head.links.is_empty() %}
+    <link href="{{ base_path }}/assets/color_definitions_light.css" media="all" rel="stylesheet" class="light-scheme"/>
+    {%- else %}
+    {{ chrome.color_head.links|safe }}
+    {%- endif %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse.css") }}">
     {#- Styles of the pages not ported to Discourse's look yet. -#}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">
@@ -182,6 +192,8 @@
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
+                    {#- Header::Icons' interface-color-selector, ahead of search. -#}
+                    {{- chrome.color_head.header_item|safe }}
                     {%- call search_button() %}
                     {{- chrome.chat_header_icon|safe }}
                     {%- if mobile && !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
@@ -210,6 +222,8 @@
                     {%- endif %}
                   </span>
                   <ul class="icons d-header-icons">
+                    {#- Header::Icons' interface-color-selector, ahead of search. -#}
+                    {{- chrome.color_head.header_item|safe }}
                     {%- call search_button() %}
                     {%- if mobile && !chrome.hamburger.is_empty() %}{% call hamburger_button() %}{% endif %}
                   </ul>

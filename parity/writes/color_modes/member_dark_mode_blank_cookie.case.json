@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET interface_color_mode = 3 WHERE user_id = 3"
+  ],
+  "cookies": {
+    "forced_color_mode": ""
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "extract": [
+    "<meta name=\"(theme-color|color-scheme)\"((?: media=\"[^\"]*\")?) content=\"([^\"]*)\">",
+    "<link href=\"[^\"]*\" media=\"([^\"]*)\" rel=\"stylesheet\" class=\"((?:light|dark)-scheme)\"((?: data-scheme-id=\"[^\"]*\")?)/>"
+  ]
+}

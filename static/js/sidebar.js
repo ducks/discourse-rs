@@ -135,7 +135,8 @@
   // SidebarFooter's buttons open modals not ported yet.
   document.addEventListener("click", function (event) {
     var button = event.target.closest && event.target.closest(".sidebar-footer-actions-button");
-    if (!button) {
+    // The interface color selector is a menu of its own (interface-color.js).
+    if (!button || button.classList.contains("interface-color-selector")) {
       return;
     }
     var what = button.classList.contains("add-section")
