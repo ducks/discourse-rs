@@ -1552,7 +1552,7 @@ pub async fn index_page(
     if (doc["groups"].as_array().map_or(0, Vec::len) as i64)
         < doc["total_rows_groups"].as_i64().unwrap_or(0)
     {
-        frame.site.chrome.powered_by = false;
+        frame.site.chrome.show_footer = false;
     }
     frame.site.chrome.body_classes.push_str(" groups-page");
     drop(cx);

@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 126 items, 43 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c, 258a. Phases
+smoke test; phase 11: 39; phase 12: 7, new in this sweep). Open inside them: 90g7, 188i3-188i5, 228a-228c, 258a, 260a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -2063,7 +2063,8 @@ have handlers now.
     stylesheets are 258a's
 170. `feat/theme-javascript` L: extra_js (theme_writes.rs:326,532),
     so imported bundles with javascripts/ (90f1), inline scripts in
-    theme html (:872, AssetProcessor), theme settings migrations (:329;
+    theme html (:877, theme_html.rs:104, AssetProcessor; with them
+    theme_translations_lookup), theme settings migrations (:329;
     an import's `skip_migrations` has nothing to skip until then).
     Needs: ThemeJavascriptCompiler's toolchain in
     process (Rails runs rollup, Babel and the Ember template compiler
@@ -2071,9 +2072,9 @@ have handlers now.
 171. `feat/theme-writes-rest` M: settings that request a refresh
     (routes/themes.rs:1144,1355,1410, Discourse.request_refresh!; 100
     was dropped, so the refresh goes over /bus),
-    destroying a theme's own color schemes (theme_writes.rs:1860), a
-    field over 1 MiB (:337), html that does not parse (:870), settings
-    YAML that does not parse (:1239, Psych's message), svg sprites
+    destroying a theme's own color schemes (theme_writes.rs:1865), a
+    field over 1 MiB (:337), html that does not parse (:875;
+    theme_html.rs:157), settings YAML that does not parse (:1244, Psych's message), svg sprites
     libxml2 rejects or whose file is gone (:690,699, their error texts),
     pax tar headers in imported bundles (theme_import.rs:426); git themes
     (90f1): cloning a repository for a remote import
@@ -2192,7 +2193,7 @@ have handlers now.
     routes/directory_columns.rs, routes/sidebar_sections.rs,
     routes/themes.rs, routes/color_schemes.rs, routes/admin_api_keys.rs,
     theme settings and about.json values of a shape Rails raises on
-    (theme_writes.rs:1201,1216,1497; schema_objects.rs:391;
+    (theme_writes.rs:1206,1221,1502; schema_objects.rs:391;
     themes.rs:656,671; theme_import.rs),
     user_fields.rs, user_merger.rs, jobs/handlers.rs,
     request_tracking.rs, admin_traffic_explorer.rs, email/incoming.rs,
@@ -2918,6 +2919,37 @@ route table has been made, so this list may be short.
     homepage (and custom_homepage_crawler_route), finish_installation
     while has_login_hint, and `?format=` other than json or html (Rails
     406s rss; markdown not ported)
+260. ~~`feat/theme-html-fields`~~ (done) S: the theme's html fields drawn
+    into the pages (theme_html.rs): Theme.lookup_field over the default
+    theme and its enabled components (transform_ids), each theme's common
+    field then its target's joined with newlines, a field not baked yet
+    baked first (ensure_baked!), the CSP nonce placeholder dropped with
+    its attribute (the port sends no CSP). The target is the user agent's
+    (mobile_device?), not the viewport's, so the anonymous cache keys on
+    it too. Drawn where Rails and Ember draw them: head_tag in the head
+    ahead of the page's own head and the stylesheets, header before
+    `<section id="main">`, after_header in DCustomHtml "top" first in
+    #main-container (not on admin pages), footer in DCustomHtml
+    `.custom-footer-content` after #main-outlet-wrapper where the footer
+    shows (showFooter, now apart from enable_powered_by_discourse), and
+    body_tag last in the body; the no_ember layout draws head_tag after
+    its stylesheets, header before its section, footer and body_tag
+    after it. Measured in parity/writes/theme_html (desktop, phone and
+    iPad user agents and the no_ember 404), the Ember DOM checked in a
+    browser against rs-ref-a. Left, split into 260a.
+    260a. `feat/theme-html-fields-rest` S: inline scripts in the fields
+    (theme_html.rs:104, a restored site's baked html pointing at
+    /theme-javascripts; 170) and theme_translations_lookup's script
+    (170); scripts that would run in after_header or footer
+    (theme_html.rs:120), which Ember inserts as HTML where they never
+    run; a field baked by another compiler version is drawn as baked,
+    not rebaked; scripts in header and body_tag run again on every
+    boosted navigation (page.js swaps the body) where Ember's single
+    page load runs them once; the port has no crawler layout, so a
+    crawler gets the fields where the Ember layout has them (footer in
+    `.custom-footer-content`) rather than crawler.html.erb's places;
+    another theme's fields (the member's theme_ids, preview, safe mode)
+    are 258a's
 
 ### Phase 11: the bundled plugins' gaps (210)
 

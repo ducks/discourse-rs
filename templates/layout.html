@@ -122,6 +122,11 @@
     <script src="{{ crate::assets::url(base_path, "topic-presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "htmx-ext-sse.js") }}" defer></script>
+    {#- theme_lookup("head_tag"), ahead of the page's own head (yield :head)
+        and of the stylesheets, which Rails draws in the body. -#}
+    {%- if !chrome.theme_html.head_tag.is_empty() %}
+    {{ chrome.theme_html.head_tag|safe }}
+    {%- endif %}
     {% block head %}{% endblock %}
     {#- discourse_color_scheme_stylesheets (crate::color_mode); the light
         palette alone on a page drawn without the chrome. -#}
@@ -158,6 +163,10 @@
     {{ crate::routes::ICONS_SVG|safe }}
     {%- else %}
     <script>document.currentScript.insertAdjacentHTML("afterend", window.__svg_sprite || "")</script>
+    {%- endif %}
+    {#- theme_lookup("header"), drawn by the server before Ember's root. -#}
+    {%- if !chrome.theme_html.header.is_empty() %}
+    {{ chrome.theme_html.header|safe }}
     {%- endif %}
     <section id="main">
       <div class="discourse-root">
@@ -270,10 +279,10 @@
           <script src="{{ crate::assets::url(base_path, "sidebar.js") }}"></script>
           {%- endif %}
           <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
-            {#- The application template's main container on every page: its
-                plugin outlet's wrapper (which the admin pages go without)
-                and GlobalNotice. -#}
-            <div class="container" id="main-container">{% if !chrome.html_classes.contains("admin-area") %}<div></div>{% endif %}
+            {#- The application template's main container on every page:
+                DCustomHtml "top" with the theme's after_header (which the
+                admin pages go without) and GlobalNotice. -#}
+            <div class="container" id="main-container">{% if !chrome.html_classes.contains("admin-area") %}<div>{{ chrome.theme_html.after_header|safe }}</div>{% endif %}
             {%- if chrome.global_notice.is_empty() %}<div class="global-notice"></div>{% else %}{{ chrome.global_notice|safe }}{% endif -%}
             </div>
             {% block content %}{% endblock %}
@@ -283,10 +292,14 @@
             <div class="card-cloak"></div>
             {%- endif %}
           </div>
-          {%- if chrome.powered_by %}
+          {%- if chrome.show_footer && chrome.powered_by %}
           <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>{{ chrome.t("powered_by_discourse") }}</span></span></a>
           {%- endif %}
         </div>
+        {#- DCustomHtml "footer": the theme's footer, where the footer shows. -#}
+        {%- if chrome.show_footer %}
+        <div class="custom-footer-content">{{ chrome.theme_html.footer|safe }}</div>
+        {%- endif %}
       </div>
       {#- The search menu (search-menu.js), after the page it watches (the
           welcome banner's field). -#}
@@ -336,5 +349,9 @@
         error.hidden = false;
       });
     </script>
+    {#- theme_lookup("body_tag"), last in the body. -#}
+    {%- if !chrome.theme_html.body_tag.is_empty() %}
+    {{ chrome.theme_html.body_tag|safe }}
+    {%- endif %}
   </body>
 </html>

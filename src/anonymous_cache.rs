@@ -175,6 +175,9 @@ fn key(request: &Request) -> String {
     // decides from the viewport cookie before the user agent (crate::mobile).
     key.push_str(&format!("|m={}", crate::mobile::decide(headers)));
     key.push_str(&format!("|nd={}", crate::mobile::decide_narrow(headers)));
+    // And Rails' own key_is_mobile?, the user agent's, which picks the
+    // theme's mobile or desktop html fields (crate::theme_html).
+    key.push_str(&format!("|md={}", crate::mobile::decide_device(headers)));
     // key_has_brotli?, and gzip, which the port negotiates too: the stored
     // body is the one sent, compressed for that encoding.
     let encodings = h(header::ACCEPT_ENCODING);

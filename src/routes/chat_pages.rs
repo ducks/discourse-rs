@@ -114,7 +114,7 @@ async fn render(
         .html_classes
         .push_str(" has-chat has-full-page-chat");
     // The chat routes leave out the application footer.
-    site.chrome.powered_by = false;
+    site.chrome.show_footer = false;
     // ChatHeader in the mobile view: back to the forum and the Chat
     // heading in the logo's place.
     if crate::mobile::mobile_view() {

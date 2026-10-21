@@ -220,10 +220,15 @@ pub struct Chrome {
     /// What the page's live updates keep counted besides the stream's own
     /// parameters (`&sidebar=<Active key>`, `&nav=<active pill>`), encoded.
     pub live_params: String,
-    /// PoweredByDiscourse below the content: enable_powered_by_discourse,
-    /// less the pages that hide the application footer (a list with more
-    /// to load, a topic not loaded to its end).
+    /// The footer service's showFooter: the pages that hide the application
+    /// footer (a list with more to load, a topic not loaded to its end, the
+    /// admin) go without PoweredByDiscourse and the theme's footer.
+    pub show_footer: bool,
+    /// PoweredByDiscourse below the content, where the footer shows:
+    /// enable_powered_by_discourse.
     pub powered_by: bool,
+    /// The theme's html fields (crate::theme_html).
+    pub theme_html: crate::theme_html::Fields,
     /// Chat's header icon (plugins::chat::view), empty when the viewer
     /// can't chat.
     pub chat_header_icon: String,
@@ -321,7 +326,7 @@ impl Chrome {
     /// An admin page: the admin panel in place of the forum's sidebar (or
     /// in the mobile view's header menu), no live sidebar counts for links
     /// that are not on the page, `admin-area` on `<html>`, `admin-interface`
-    /// on the body, and no Powered by Discourse (hideApplicationFooter).
+    /// on the body, and no footer (hideApplicationFooter).
     pub fn use_admin_panel(&mut self, sidebar: String, hamburger: String) {
         let had_sidebar = !self.sidebar.is_empty();
         self.sidebar = sidebar;
@@ -333,7 +338,7 @@ impl Chrome {
         self.body_classes.push_str(" admin-interface");
         self.body_classes = self.body_classes.trim().to_string();
         self.html_classes.push_str(" admin-area");
-        self.powered_by = false;
+        self.show_footer = false;
     }
 }
 
@@ -739,7 +744,22 @@ impl Site {
                 classes.push(format!("uc-{}", name.replace('_', "-")));
             }
         }
+        self.chrome.show_footer = true;
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
+        // theme_lookup and customHTML: the default theme's html fields for
+        // the user agent's device.
+        self.chrome.theme_html = crate::theme_html::lookup(
+            &mut *conn,
+            &crate::themes::Ctx {
+                settings,
+                i18n: &state.i18n,
+                urls: &urls,
+                defs: &state.site_setting_defs,
+            },
+            Some(settings.get("default_theme_id")?.to_i()),
+            crate::mobile::on_mobile_device(),
+        )
+        .await?;
         self.chrome.admin_stylesheet = guardian.is_staff();
         self.chrome.user_cards =
             guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
@@ -2096,7 +2116,7 @@ pub async fn latest_page(
         .unwrap_or_default();
     // Discovery topics hides the footer while the list can load more.
     if list["topic_list"]["more_topics_url"].is_string() {
-        site.chrome.powered_by = false;
+        site.chrome.show_footer = false;
     }
     Ok(LatestPage {
         title: site.site_title.clone(),
@@ -2445,7 +2465,7 @@ pub async fn topic_page(
     }
     // topic.gjs hides the footer until the post stream is loaded to its end.
     if page < last_page {
-        site.chrome.powered_by = false;
+        site.chrome.show_footer = false;
     }
     Ok(TopicPage {
         site_title: site.site_title,

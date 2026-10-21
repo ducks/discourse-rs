@@ -1,0 +1,54 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Comp", "component": "true", "theme_fields": [
+      {"name": "head_tag", "target": "common", "value": "<meta name=\"th-head\" content=\"c-common\"><script src=\"https://example.com/c.js\"></script>"},
+      {"name": "after_header", "target": "common", "value": "<div id=\"th-top-c-common\">C top</div>"},
+      {"name": "after_header", "target": "mobile", "value": "<div id=\"th-top-c-mobile\">C top</div>"},
+      {"name": "footer", "target": "common", "value": "<div id=\"th-footer-c-common\">C foot</div>"},
+      {"name": "footer", "target": "mobile", "value": "<div id=\"th-footer-c-mobile\">C foot</div>"},
+      {"name": "body_tag", "target": "common", "value": "<i id=\"th-body-c-common\"></i>"},
+      {"name": "body_tag", "target": "mobile", "value": "<i id=\"th-body-c-mobile\"></i>"}
+    ]}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Off", "component": "true", "theme_fields": [
+      {"name": "header", "target": "common", "value": "<div id=\"th-header-off\">Off</div>"},
+      {"name": "footer", "target": "common", "value": "<div id=\"th-footer-off\">Off</div>"}
+    ]}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Html", "theme_fields": [
+      {"name": "head_tag", "target": "common", "value": "<meta name=\"th-head\" content=\"p-common\"><link rel=\"th\" href=\"/th?a=1&b=2\">"},
+      {"name": "head_tag", "target": "desktop", "value": "<meta name=\"th-head\" content=\"p-desktop\">"},
+      {"name": "head_tag", "target": "mobile", "value": "<meta name=\"th-head\" content=\"p-mobile\">"},
+      {"name": "header", "target": "common", "value": "<div id=\"th-header-p-common\">Header <b>common</div>"},
+      {"name": "header", "target": "desktop", "value": "<div id=\"th-header-p-desktop\">Header desktop</div>"},
+      {"name": "header", "target": "mobile", "value": "<div id=\"th-header-p-mobile\">Header mobile</div>"},
+      {"name": "after_header", "target": "common", "value": "<div id=\"th-top-p-common\">Top common</div>"},
+      {"name": "after_header", "target": "desktop", "value": "<div id=\"th-top-p-desktop\">Top desktop</div>"},
+      {"name": "after_header", "target": "mobile", "value": "<div id=\"th-top-p-mobile\">Top mobile</div>"},
+      {"name": "footer", "target": "common", "value": "<p id=\"th-footer-p-common\">Footer common"},
+      {"name": "footer", "target": "desktop", "value": "<p id=\"th-footer-p-desktop\">Footer desktop</p>"},
+      {"name": "body_tag", "target": "common", "value": "<span id=\"th-body-p-common\"></span>"},
+      {"name": "body_tag", "target": "desktop", "value": "<span id=\"th-body-p-desktop\"></span>"},
+      {"name": "body_tag", "target": "mobile", "value": "<span id=\"th-body-p-mobile\"></span>"}
+    ]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.2.body.theme.id}}.json", "params": {"theme": {"default": "true", "child_theme_ids": ["{{responses.0.body.theme.id}}", "{{responses.1.body.theme.id}}"]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.1.body.theme.id}}.json", "params": {"theme": {"enabled": "false"}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"}},
+    {"method": "GET", "path": "/t/nope-nope", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"}}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields"
+  ],
+  "extract": [
+    "(<meta name=\"th-head\" content=\"p-common\">[\\s\\S]*?<meta name=\"th-head\" content=\"c-common\">)<script src=\"([^\"]*)\"(?: nonce=\"[^\"]*\")?></script>",
+    "(<div id=\"th-header-p-common\">[\\s\\S]*?<div id=\"th-header-p-(?:desktop|mobile)\">[^\\n]*)",
+    "id=\\\\*\"(th-(?:top-|footer-|header-off)[a-z-]*)",
+    "</section>\\s*(<p id=\"th-footer-p-common\">[\\s\\S]*?<div id=\"th-footer-c-common\">C foot</div>(?:\\n<div id=\"th-footer-c-mobile\">C foot</div>)?)",
+    "(<span id=\"th-body-p-common\">[\\s\\S]*?<i id=\"th-body-c-common\"></i>(?:\\n<i id=\"th-body-c-mobile\"></i>)?)"
+  ]
+}

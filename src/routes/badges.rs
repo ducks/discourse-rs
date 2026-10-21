@@ -515,7 +515,7 @@ async fn show_page(
     let page_title = name.clone();
     drop(cx);
     if more {
-        frame.site.chrome.powered_by = false;
+        frame.site.chrome.show_footer = false;
     }
     let site_title = settings.get("title")?.to_s().to_string();
     let meta_title = state
