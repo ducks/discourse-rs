@@ -1,0 +1,50 @@
+{
+  "user": "admin",
+  "settings": {
+    "solved_enabled": "false"
+  },
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now()), (2, 'enable_accepted_answers', 'true', now(), now())",
+    "INSERT INTO discourse_solved_solved_topics (id, topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 35, 37, 2, now() - interval '3 days', now() - interval '3 days'), (9902, 38, 42, 1, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 37, 2, now() - interval '3 days', now() - interval '3 days'), (9901, 38, 2, now() - interval '3 days', now() - interval '3 days'), (9902, 42, 1, now() - interval '2 days', now() - interval '2 days')",
+    "UPDATE topics SET created_at = now() - interval '40 days' WHERE id = 41",
+    "UPDATE posts SET post_type = 1, user_id = 5, created_at = now() - interval '40 days' + interval '3 hours' WHERE id = 47",
+    "UPDATE topics SET created_at = now() - interval '6 days', user_id = 3 WHERE id = 37",
+    "UPDATE posts SET post_type = 1, user_id = 1, created_at = now() - interval '6 days' + interval '30 minutes' WHERE id = 41",
+    "UPDATE topics SET created_at = now() - interval '10 days' WHERE id = 39",
+    "UPDATE posts SET post_type = 1, user_id = 5, created_at = now() - interval '10 days' + interval '26 hours' WHERE id = 44"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/plugins/solved/dashboard-support.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/sections/support/settings/categories.json",
+      "params": {
+        "category_ids": [
+          "4"
+        ]
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/sections/*/data/storage/backups/free_bytes",
+    "/responses/*/body/sections/*/data/storage/uploads/free_bytes",
+    "/responses/*/body/sections/*/data/dashboard_updated_at"
+  ]
+}

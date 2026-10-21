@@ -381,3 +381,95 @@ pub async fn group_destroyed(
     }
     Ok(())
 }
+
+/// The admin dashboard's plugin sections (`register_admin_dashboard_section`,
+/// a filtered register: only enabled plugins'), in registration order:
+/// each one whose `enabled` holds. Only discourse-solved's "support"
+/// section among the bundled plugins the port runs.
+pub async fn admin_dashboard_section_ids(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+) -> Result<Vec<&'static str>, crate::AppError> {
+    let mut ids = Vec::new();
+    if solved::dashboard::available(conn, settings).await? {
+        ids.push(solved::dashboard::SECTION_ID);
+    }
+    Ok(ids)
+}
+
+/// A plugin section's loader (`section[:loader].call(start_date:,
+/// end_date:, current_user:)`); None for an id no plugin registers.
+pub async fn admin_dashboard_section(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    id: &str,
+    start: Option<&str>,
+    end: Option<&str>,
+) -> Result<Option<serde_json::Value>, crate::AppError> {
+    if id != solved::dashboard::SECTION_ID || !solved::enabled(settings)? {
+        return Ok(None);
+    }
+    let ids = solved::dashboard::stored_category_ids(conn).await?;
+    solved::dashboard::build(conn, settings, guardian, start, end, &ids)
+        .await
+        .map(Some)
+}
+
+/// A plugin section's setting (`plugin_setting_definition`, then its
+/// class's `validate` over the permitted params): None when the section
+/// is unavailable or has no such setting, else the value to store or the
+/// InvalidParameters key.
+pub async fn admin_dashboard_section_setting(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    section_id: &str,
+    key: &str,
+    params: &serde_json::Map<String, serde_json::Value>,
+) -> Result<Option<Result<serde_json::Value, &'static str>>, crate::AppError> {
+    if section_id != solved::dashboard::SECTION_ID
+        || !admin_dashboard_section_ids(conn, settings)
+            .await?
+            .contains(&section_id)
+        || key != "categories"
+    {
+        return Ok(None);
+    }
+    solved::dashboard::validate_categories(conn, params)
+        .await
+        .map(Some)
+}
+
+/// A plugin section's component (`registerAdminDashboardSection`), drawn
+/// from its data: None when no plugin registers one for the id (the
+/// dashboard then draws nothing for it).
+pub fn admin_dashboard_section_html(
+    dashboard: &crate::admin_dashboard_view::Dashboard<'_>,
+    id: &str,
+    data: &serde_json::Value,
+    error: bool,
+) -> Result<Option<String>, crate::AppError> {
+    // The initializer registers it while solved_enabled; the server sends
+    // the section only then.
+    if id != solved::dashboard::SECTION_ID {
+        return Ok(None);
+    }
+    solved::dashboard_view::section(dashboard, data, error).map(Some)
+}
+
+/// The related items component of a report's plugin renderer
+/// (`registerAdminReportRelatedItemsRenderer`), drawn after the related
+/// users: discourse-solved's solved topics for accepted_solutions.
+pub fn admin_report_related_items_html(
+    cx: &crate::admin_view::AdminCx,
+    list: &crate::topic_list_view::ListContext,
+    report_type: &str,
+    report: &serde_json::Value,
+    start: &str,
+    end: &str,
+) -> String {
+    if report_type == solved::report_view::REPORT {
+        return solved::report_view::related_items(cx, list, report, start, end);
+    }
+    String::new()
+}

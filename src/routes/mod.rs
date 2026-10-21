@@ -1201,6 +1201,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/problem-checks.json", get(admin_dashboard::index))
         .route("/admin/plugins", get(admin_plugins::index))
         .route("/admin/plugins.json", get(admin_plugins::index))
+        .route(
+            "/admin/plugins/solved/dashboard-support",
+            get(solved::dashboard_support),
+        )
+        .route(
+            "/admin/plugins/solved/dashboard-support.json",
+            get(solved::dashboard_support),
+        )
         .route("/admin/plugins/{plugin_id}", get(admin_plugins::show))
         .route(
             "/admin/plugins/{plugin_id}/settings",
@@ -2537,6 +2545,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/invite.js", get(asset))
         .route("/assets/user-invited.js", get(asset))
         .route("/assets/admin.css", get(asset))
+        .route("/assets/discourse-solved-admin.css", get(asset))
         .route("/assets/admin.js", get(asset))
         .route("/assets/admin-dashboard.js", get(asset))
         .route("/assets/admin-users.js", get(asset))

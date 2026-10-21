@@ -532,23 +532,19 @@
       var title = summary || computed.value === undefined || computed.value === null ? "" : ' title="' + escapeHtml(computed.value) + '"';
       var inner = computed.formattedValue;
       if (summary) {
-        if (ctx.relatedRenderer) {
-          inner = computed.formattedValue;
-        } else {
-          var dateLabel = moment.utc(row.x).format(t("dates.long_with_year_no_time"));
-          var trigger = t("admin.reports.related_items.table_summary.trigger", {
-            count: computed.formattedValue,
-            date: dateLabel,
-          });
-          inner =
-            '<button aria-label="' +
-            escapeHtml(trigger) +
-            '" aria-expanded="false" class="fk-d-menu__trigger admin-report-table-summary-trigger admin-report-table-summary" data-identifier="admin-report-table-summary" data-trigger="" data-date="' +
-            escapeHtml(row.x) +
-            '">' +
-            computed.formattedValue +
-            "</button>";
-        }
+        var dateLabel = moment.utc(row.x).format(t("dates.long_with_year_no_time"));
+        var trigger = t("admin.reports.related_items.table_summary.trigger", {
+          count: computed.formattedValue,
+          date: dateLabel,
+        });
+        inner =
+          '<button aria-label="' +
+          escapeHtml(trigger) +
+          '" aria-expanded="false" class="fk-d-menu__trigger admin-report-table-summary-trigger admin-report-table-summary" data-identifier="admin-report-table-summary" data-trigger="" data-date="' +
+          escapeHtml(row.x) +
+          '">' +
+          computed.formattedValue +
+          "</button>";
       }
       return "<td class=\"" + escapeHtml(classes) + "\"" + title + ">" + inner + "</td>";
     }
@@ -670,8 +666,90 @@
     draw();
   }
 
-  // AdminReportTableSummary: the day's related users, loaded when shown.
+  // The page's settings (admin-report-data) a related item draws with.
+  function pageSettings() {
+    var el = document.getElementById("admin-report-data");
+    try {
+      return el ? JSON.parse(el.textContent) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // dAvatar(user, imageSize="small"): titled with the display name.
+  function summaryAvatar(user, extra) {
+    var name = user.name && String(user.name).trim().length ? user.name : null;
+    var title = pageSettings().prioritizeName && name ? name : user.username;
+    return avatarImg(user.avatar_template, 24, extra).replace(
+      "class='avatar " + extra + "'",
+      "class='avatar " + extra + "' title='" + escapeExpression(title) + "'"
+    );
+  }
+
+  // dCategoryBadge of a report's plain category ({id, name, slug, color,
+  // textColor}): unlinked and square, without parent or restriction.
+  function plainCategoryBadge(category) {
+    var settings = pageSettings();
+    if (category.id === settings.uncategorizedCategoryId && settings.suppressUncategorizedBadge) {
+      return "";
+    }
+    var style = "";
+    if (category.color) {
+      style += "--category-badge-color: #" + category.color + ";";
+    }
+    if (category.textColor) {
+      style += "--category-badge-text-color: #" + category.textColor + ";";
+    }
+    return (
+      '<span class="badge-category__wrapper"' +
+      (style ? ' style="' + escapeHtml(style) + '"' : "") +
+      '><span data-category-id="' +
+      escapeHtml(category.id) +
+      '" data-drop-close="true" class="badge-category --style-square"><span class="badge-category__name"' +
+      (settings.mixedTextDirection ? ' dir="auto"' : "") +
+      ">" +
+      escapeExpression(category.name) +
+      "</span></span></span>"
+    );
+  }
+
+  // registerAdminReportRelatedItemsRenderer's table summaries:
+  // discourse-solved's SolvedAdminReportTableSummaryItem.
+  var SUMMARY_RENDERERS = {
+    accepted_solutions: {
+      itemsKey: "solved_topics",
+      listClass: "solved-admin-report-table-summary__list",
+      titleKey: "admin.reports.related_items.table_summary.solved_topics_title",
+      item: function (item) {
+        var topic = item.topic || {};
+        var html =
+          '<a class="solved-admin-report-table-summary__topic-link" href="' +
+          escapeHtml(topic.url || "") +
+          '">' +
+          escapeExpression(topic.title) +
+          '</a><div class="solved-admin-report-table-summary__topic-meta">';
+        (item.solved_by_users || []).forEach(function (user) {
+          html +=
+            '<a class="admin-report-table-summary__user-link" href="' +
+            escapeHtml(getURL("/u/" + String(user.username || "").toLowerCase())) +
+            '">' +
+            summaryAvatar(user, "admin-report-table-summary__avatar") +
+            '<span class="admin-report-table-summary__username">' +
+            escapeHtml(user.username || "") +
+            "</span></a>";
+        });
+        if (item.category) {
+          html += plainCategoryBadge(item.category);
+        }
+        return html + "</div>";
+      },
+    },
+  };
+
+  // AdminReportTableSummary: the day's related items, loaded when shown.
   function openSummary(trigger, report, ctx) {
+    var renderer = SUMMARY_RENDERERS[report.type] || {};
+    var itemsKey = renderer.itemsKey || "users";
     var date = moment.utc(trigger.dataset.date).format("YYYY-MM-DD");
     var dateLabel = moment.utc(trigger.dataset.date).format(t("dates.long_with_year_no_time"));
     var content = document.createElement("div");
@@ -679,7 +757,7 @@
     function body(inner) {
       content.innerHTML =
         '<h3 class="admin-report-table-summary__heading">' +
-        escapeHtml(t("admin.reports.related_items.table_summary.users_title", { date: dateLabel })) +
+        escapeHtml(t(renderer.titleKey || "admin.reports.related_items.table_summary.users_title", { date: dateLabel })) +
         "</h3>" +
         inner;
     }
@@ -721,9 +799,9 @@
         return response.json();
       })
       .then(function (json) {
-        var items = (json.report.related_items || {}).users || [];
+        var items = (json.report.related_items || {})[itemsKey] || [];
         var totals = json.report.related_items_totals || {};
-        var total = totals.users === undefined || totals.users === null ? items.length : totals.users;
+        var total = totals[itemsKey] === undefined || totals[itemsKey] === null ? items.length : totals[itemsKey];
         if (!items.length) {
           body(message("admin.reports.related_items.table_summary.empty"));
           return;
@@ -735,8 +813,12 @@
             escapeHtml(t("admin.reports.related_items.showing", { shown: items.length, total: total })) +
             "</p>";
         }
-        html += '<ul class="admin-report-table-summary__list">';
+        html += '<ul class="admin-report-table-summary__list' + (renderer.listClass ? " " + renderer.listClass : "") + '">';
         items.forEach(function (item) {
+          if (renderer.item) {
+            html += '<li class="admin-report-table-summary__item">' + renderer.item(item) + "</li>";
+            return;
+          }
           var user = item.user || {};
           html +=
             '<li class="admin-report-table-summary__item"><a class="admin-report-table-summary__user-link" href="' +
@@ -1603,15 +1685,11 @@
     setUpGroupings(el, report, kept.options);
     var body = el.querySelector(".chart__body");
     var related = hasRelatedItems(report, data.admin);
-    if (related && report.type === "accepted_solutions") {
-      unsupported("discourse-solved's related solved topics");
-    }
     if (!report.error && present(report.data) && kept.currentMode && body) {
       var options = kept.options || {};
       drawMode(body, report, kept.currentMode, {
         options: options,
         hasRelatedItems: related,
-        relatedRenderer: report.type === "accepted_solutions",
         filters: data.customFilters,
       });
     }

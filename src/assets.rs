@@ -258,6 +258,12 @@ const ASSETS: &[(&str, &str, &str)] = &[
     // scripts, and Chart.js with its moment adapter, which Discourse's
     // chart-js-bundle loads for the dashboard's charts.
     ("admin.css", CSS, include_str!("../static/vendor/admin.css")),
+    // discourse-solved's admin stylesheet (static/vendor/README).
+    (
+        "discourse-solved-admin.css",
+        CSS,
+        include_str!("../static/vendor/discourse-solved-admin.css"),
+    ),
     ("admin.js", JS, include_str!("../static/js/admin.js")),
     (
         "admin-dashboard.js",

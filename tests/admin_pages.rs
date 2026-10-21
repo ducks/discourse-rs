@@ -285,6 +285,87 @@ async fn the_mobile_view_puts_the_panel_in_the_header_menu() {
     ));
 }
 
+/// discourse-solved in use: General takes accepted answers and the
+/// replies-and-posters topic is solved.
+async fn solve_a_topic(db: &TestDb) {
+    for sql in [
+        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+         VALUES (4, 'enable_accepted_answers', 'true', now(), now())",
+        "INSERT INTO discourse_solved_solved_topics (id, topic_id, answer_post_id, accepter_user_id, created_at, updated_at) \
+         VALUES (9901, 35, 37, 2, now() - interval '2 days', now() - interval '2 days')",
+        "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) \
+         VALUES (9901, 37, 2, now() - interval '2 days', now() - interval '2 days')",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn the_dashboard_draws_solved_support_section() {
+    let db = TestDb::new().await;
+    solve_a_topic(&db).await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    for mobile in [false, true] {
+        admin.mobile = mobile;
+        let (status, html) = admin.page("/admin").await;
+        assert_eq!(status, StatusCode::OK, "{html}");
+        assert!(html.contains(
+            "<section class=\"db-section --support\" data-section-id=\"support\"><div class=\"db-section__header-row\"><h2 class=\"db-section__header\">Support</h2></div>"
+        ));
+        // The resolution rate links to accepted_solutions for the period.
+        assert!(html.contains("<a href=\"/admin/reports/accepted_solutions?end_date&#x3D;"));
+        assert!(html.contains("<h3 class=\"db-section__row-block-title\">Topic outcomes</h3>"));
+        assert!(html.contains("class=\"db-support-outcomes__label\" href=\"/filter?q=status%3Asolved%20created-after%3A"));
+        assert!(html.contains("%20%3Dcategory%3Ageneral\">Resolved</a>"));
+        assert!(html.contains("<span class=\"db-support-response__label\">&lt; 1 hour</span>"));
+        assert!(
+            html.contains("<h3 class=\"db-section__row-block-title\">Who&#x27;s answering?</h3>")
+        );
+        // One support category: no filter.
+        assert!(!html.contains("db-support__filter"));
+        // In the configure menu, last.
+        assert!(html.contains(
+            "<li class=\"db-configure__row\" data-section-id=\"support\" draggable=\"true\">"
+        ));
+    }
+    // A second support category brings the filter.
+    sqlx::query(
+        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+         VALUES (2, 'enable_accepted_answers', 'true', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    admin.mobile = false;
+    let (_, html) = admin.page("/admin").await;
+    assert!(html.contains("<div class=\"db-support__filter\"><details class=\"select-kit multi-select multiple-categories-selector\">"));
+    assert!(html.contains("<span class=\"formatted-selection\">All categories</span>"));
+}
+
+#[tokio::test]
+async fn the_accepted_solutions_report_lists_solved_topics() {
+    let db = TestDb::new().await;
+    solve_a_topic(&db).await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/reports/accepted_solutions").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(
+        "<section class=\"admin-report-related-items solved-admin-report-related-items\"><h2>Solved topics</h2>"
+    ), "{html}");
+    assert!(html.contains(
+        "<a class=\"solved-admin-report-related-items__topic-link\" href=\"/t/parity-fixture-replies-and-posters/35\">Parity fixture: replies and posters</a>"
+    ));
+    assert!(html.contains("<span class=\"admin-report-related-items__username\">user2</span>"));
+    // The category as the report gives it: unlinked and square.
+    assert!(html.contains(
+        "<span data-category-id=\"4\" data-drop-close=\"true\" class=\"badge-category --style-square\"><span class=\"badge-category__name\">General</span></span>"
+    ));
+    // What the table's per-day summaries are titled with.
+    assert!(html.contains("\"admin.reports.related_items.table_summary.solved_topics_title\":\"Solved topics on %{date}\""));
+}
+
 #[tokio::test]
 async fn the_legacy_dashboard_is_refused() {
     let db = TestDb::new().await;

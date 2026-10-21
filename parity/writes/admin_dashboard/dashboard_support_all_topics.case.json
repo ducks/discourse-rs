@@ -1,0 +1,33 @@
+{
+  "user": "admin",
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "setup": [
+    "DELETE FROM search_logs"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/plugins/solved/dashboard-support.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21",
+        "category_ids": "3,1"
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/sections/*/data/storage/backups/free_bytes",
+    "/responses/*/body/sections/*/data/storage/uploads/free_bytes",
+    "/responses/*/body/sections/*/data/dashboard_updated_at"
+  ]
+}

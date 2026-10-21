@@ -6,8 +6,9 @@
 //! reports, the site traffic) are drawn in the browser from their data by
 //! static/js/admin-dashboard.js, as Ember draws them with Chart.js.
 //!
-//! Not drawn: plugin sections (lookupAdminDashboardSection) and plugin
-//! outlets, which the bundled plugins the port runs leave empty.
+//! Plugin sections (lookupAdminDashboardSection) are drawn by their
+//! plugins (crate::plugins::admin_dashboard_section_html). Not drawn:
+//! plugin outlets, which the bundled plugins the port runs leave empty.
 
 use chrono::{Datelike, NaiveDate};
 use serde_json::Value;
@@ -191,7 +192,7 @@ fn round_delta_percent(value: f64) -> f64 {
 }
 
 /// `Math.round`: halves toward positive infinity.
-fn js_round(value: f64) -> f64 {
+pub(crate) fn js_round(value: f64) -> f64 {
     (value + 0.5).floor()
 }
 
@@ -207,7 +208,7 @@ fn format_delta_percent(value: f64) -> String {
 }
 
 /// DTooltip's trigger with an icon.
-fn tooltip(class: &str, identifier: Option<&str>, content: &str) -> String {
+pub(crate) fn tooltip(class: &str, identifier: Option<&str>, content: &str) -> String {
     let identifier = identifier
         .map(|i| format!(" data-identifier=\"{}\"", escape(i)))
         .unwrap_or_default();
@@ -228,7 +229,7 @@ fn button(class: &str, icon_name: &str, label: &str, attrs: &str) -> String {
 }
 
 /// DashboardSection
-fn section(
+pub(crate) fn section(
     id: &str,
     title: &str,
     layout: &str,
@@ -265,7 +266,7 @@ pub struct Dashboard<'a> {
 }
 
 impl Dashboard<'_> {
-    fn t(&self, key: &str) -> String {
+    pub(crate) fn t(&self, key: &str) -> String {
         t(self.admin.i18n, key)
     }
 
@@ -314,9 +315,10 @@ impl Dashboard<'_> {
                 "engagement" => self.engagement(data, error),
                 "search" => self.search(data, error),
                 "system" => self.system(data, error),
-                // A plugin's section (lookupAdminDashboardSection): none of
-                // the plugins the port runs registers one.
-                _ => return Err(Unsupported("admin dashboard sections from plugins").into()),
+                // A plugin's section (lookupAdminDashboardSection): nothing
+                // when no component is registered for it.
+                _ => crate::plugins::admin_dashboard_section_html(self, id, data, error)?
+                    .unwrap_or_default(),
             });
         }
         if sections.is_empty() {
@@ -613,7 +615,7 @@ impl Dashboard<'_> {
         )
     }
 
-    fn error(&self, key: &str) -> String {
+    pub(crate) fn error(&self, key: &str) -> String {
         format!(
             "<div class=\"db-section__error\" role=\"alert\">{}</div>",
             escape(&self.t(key))
@@ -1281,7 +1283,7 @@ impl Dashboard<'_> {
     }
 
     /// MultipleCategoriesSelector's closed header.
-    fn categories_selector(&self, ids: &[i64], none: Option<&str>) -> String {
+    pub(crate) fn categories_selector(&self, ids: &[i64], none: Option<&str>) -> String {
         let names: Vec<&str> = ids
             .iter()
             .filter_map(|id| self.list.categories.get(id))
@@ -2056,7 +2058,7 @@ impl Dashboard<'_> {
 }
 
 /// `encodeURIComponent`, as Ember's router writes query values.
-fn enc(s: &str) -> String {
+pub(crate) fn enc(s: &str) -> String {
     s.bytes()
         .map(|b| match b {
             b'A'..=b'Z'
@@ -2077,7 +2079,10 @@ fn enc(s: &str) -> String {
 }
 
 /// `Category.slugFor(category, ":")`
-fn category_slug_for(cx: &ListContext, c: &crate::topic_list_view::ListCategory) -> String {
+pub(crate) fn category_slug_for(
+    cx: &ListContext,
+    c: &crate::topic_list_view::ListCategory,
+) -> String {
     let own = if c.slug.trim().is_empty() {
         format!("{}-category", c.id)
     } else {
@@ -2097,7 +2102,7 @@ fn commits_ahead(pretty: Option<&str>) -> Option<i64> {
 }
 
 /// A JSON number as JavaScript prints it in a template.
-fn js_number(v: &Value) -> String {
+pub(crate) fn js_number(v: &Value) -> String {
     match v {
         Value::Number(n) => match (n.as_i64(), n.as_f64()) {
             (Some(i), _) => i.to_string(),

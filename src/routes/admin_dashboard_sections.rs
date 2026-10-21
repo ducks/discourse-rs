@@ -263,7 +263,9 @@ pub async fn update_section_settings(
         }
     }
     let mut tx = state.pool.begin().await?;
-    match dashboard::update_setting(&mut tx, &section_id, &key, &permitted).await? {
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    match dashboard::update_setting(&mut tx, &settings, &section_id, &key, &permitted).await? {
         Ok(()) => {
             tx.commit().await?;
             Ok(StatusCode::NO_CONTENT.into_response())

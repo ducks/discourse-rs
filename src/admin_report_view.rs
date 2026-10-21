@@ -136,7 +136,7 @@ impl ReportPage<'_> {
         format!(
             "<div class=\"admin-container admin-config-page__main-area\">{back}<div class=\"admin-container admin-config-page__main-area\"><div class=\"admin-config-area\">{}{}</div></div></div>",
             self.report_html(cx, list),
-            self.data_script(cx)
+            self.data_script(cx, list)
         )
     }
 
@@ -512,25 +512,14 @@ impl ReportPage<'_> {
         out
     }
 
-    /// AdminReportRelatedItems, for an admin's chart with related users.
-    /// A plugin's own related items (discourse-solved's solved topics)
-    /// are refused by admin-report.js.
+    /// AdminReportRelatedItems, for an admin's chart with related items:
+    /// the related users, then the component of the report's plugin
+    /// renderer (registerAdminReportRelatedItemsRenderer).
     fn related_items(&self, cx: &AdminCx, list: &ListContext, r: &Value) -> String {
         if !self.admin {
             return String::new();
         }
-        let users = r["related_items"]["users"]
-            .as_array()
-            .cloned()
-            .unwrap_or_default();
-        if users.is_empty() {
-            return String::new();
-        }
         let kind = s(&r["type"]);
-        let total = r["related_items_totals"]["users"]
-            .as_i64()
-            .filter(|n| *n != 0)
-            .unwrap_or(users.len() as i64);
         let format = t(cx.i18n, "dates.long_with_year_no_time");
         let long = |date: &str| {
             crate::pretty_text::render::local_dates::format_utc(
@@ -541,16 +530,41 @@ impl ReportPage<'_> {
             )
             .unwrap_or_default()
         };
+        let (start, end) = (long(self.start_date), long(self.end_date));
+        let mut out = Self::related_users(cx, list, r, kind, &start, &end);
+        out.push_str(&crate::plugins::admin_report_related_items_html(
+            cx, list, kind, r, &start, &end,
+        ));
+        out
+    }
+
+    /// AdminReportRelatedItems' related users, between the dates shown.
+    fn related_users(
+        cx: &AdminCx,
+        list: &ListContext,
+        r: &Value,
+        kind: &str,
+        start: &str,
+        end: &str,
+    ) -> String {
+        let users = r["related_items"]["users"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        if users.is_empty() {
+            return String::new();
+        }
+        let total = r["related_items_totals"]["users"]
+            .as_i64()
+            .filter(|n| *n != 0)
+            .unwrap_or(users.len() as i64);
         let mut out = format!(
             "<section class=\"admin-report-related-items\"><h2>{}</h2><p class=\"admin-report-related-items__description\">{}",
             escape(&t(cx.i18n, "admin.reports.related_items.users.title")),
             escape(&t_with(
                 cx.i18n,
                 &format!("admin.reports.related_items.users.{kind}.description"),
-                &[
-                    ("startDate", &long(self.start_date)),
-                    ("endDate", &long(self.end_date))
-                ]
+                &[("startDate", start), ("endDate", end)]
             ))
         );
         if (users.len() as i64) < total {
@@ -611,7 +625,7 @@ impl ReportPage<'_> {
 
     /// What admin-report.js draws the mode with: the report, the options
     /// the route and the component give it, and the strings.
-    fn data_script(&self, cx: &AdminCx) -> String {
+    fn data_script(&self, cx: &AdminCx, list: &ListContext) -> String {
         let categories: Vec<Value> = self
             .categories
             .iter()
@@ -644,6 +658,11 @@ impl ReportPage<'_> {
             "avatarSizes": cx.settings.get("avatar_sizes").map(|v| v.to_s()).unwrap_or_default(),
             "categories": categories,
             "groups": groups,
+            // What a related item's avatar title and category badge read.
+            "prioritizeName": list.settings.prioritize_name,
+            "uncategorizedCategoryId": list.settings.uncategorized_category_id,
+            "suppressUncategorizedBadge": list.settings.suppress_uncategorized_badge,
+            "mixedTextDirection": list.settings.support_mixed_text_direction,
             "strings": strings(cx),
         });
         format!(
@@ -681,6 +700,7 @@ fn strings(cx: &AdminCx) -> Value {
         "admin.dashboard.reports.posters_by_member_type_members.deselect",
         "admin.reports.related_items.table_summary.trigger",
         "admin.reports.related_items.table_summary.users_title",
+        "admin.reports.related_items.table_summary.solved_topics_title",
         "admin.reports.related_items.table_summary.loading",
         "admin.reports.related_items.table_summary.error",
         "admin.reports.related_items.table_summary.empty",
