@@ -69,6 +69,38 @@ pub async fn build_with(
     arg: &str,
     value: &str,
 ) -> Result<Built, AppError> {
+    let (to, username) = recipient(conn, ctx, user_id).await?;
+    let value = if value.is_empty() { to.as_str() } else { value };
+    build_template(
+        ctx,
+        template,
+        &to,
+        &[(arg, value), ("recipient_username", &username)],
+        Some(user_id),
+    )
+    .await
+}
+
+/// `build_email(user.email, template:, locale:, **args, recipient_user:)`
+pub async fn build_with_args(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    template: &str,
+    user_id: i32,
+    args: &[(&str, &str)],
+) -> Result<Built, AppError> {
+    let (to, username) = recipient(conn, ctx, user_id).await?;
+    let mut extra = args.to_vec();
+    extra.push(("recipient_username", &username));
+    build_template(ctx, template, &to, &extra, Some(user_id)).await
+}
+
+/// The user's email and username; a locale of their own is refused.
+async fn recipient(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+) -> Result<(String, String), AppError> {
     let s = ctx.settings;
     let (email, username, locale): (Option<String>, String, Option<String>) = sqlx::query_as(
         "SELECT (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1), \
@@ -86,15 +118,7 @@ pub async fn build_with(
         return Err(Unsupported("account emails in a user's own locale").into());
     }
     let to = email.ok_or(Unsupported("a recipient without an email"))?;
-    let value = if value.is_empty() { to.as_str() } else { value };
-    build_template(
-        ctx,
-        template,
-        &to,
-        &[(arg, value), ("recipient_username", &username)],
-        Some(user_id),
-    )
-    .await
+    Ok((to, username))
 }
 
 /// `build_email(to, template:, **args)` for a template with no HTML
@@ -227,4 +251,89 @@ pub async fn build_template(
         html_part,
         view_rendered: false,
     })
+}
+
+/// The emails telling a user of a penalty: (type, the users column with
+/// its end, the template, the template's argument for that end).
+pub fn penalty_template(email_type: &str) -> Option<(&'static str, &'static str, &'static str)> {
+    Some(match email_type {
+        "account_silenced" => (
+            "silenced_till",
+            "user_notifications.account_silenced",
+            "silenced_till",
+        ),
+        "account_suspended" => (
+            "suspended_till",
+            "user_notifications.account_suspended",
+            "suspended_till",
+        ),
+        _ => return None,
+    })
+}
+
+/// `UserNotifications#account_silenced` and `#account_suspended`: nothing
+/// without the user history; a penalty past 100 years from now uses the
+/// `_forever` template, any other names its end in the user's timezone
+/// (`I18n.l(till, format: :long)`). The reason is the history's details.
+pub async fn penalty(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    email_type: &str,
+    user_id: i32,
+    user_history_id: Option<i64>,
+) -> Result<Option<Built>, AppError> {
+    let (column, template, arg) =
+        penalty_template(email_type).ok_or(Unsupported("this email type"))?;
+    let Some(history_id) = user_history_id else {
+        return Ok(None);
+    };
+    let details: Option<Option<String>> =
+        sqlx::query_scalar("SELECT details FROM user_histories WHERE id = $1")
+            .bind(history_id as i32)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(details) = details else {
+        return Ok(None);
+    };
+    let (till, forever, timezone): (Option<chrono::NaiveDateTime>, Option<bool>, Option<String>) =
+        sqlx::query_as(&format!(
+            "SELECT u.{column}, u.{column} > now() + interval '100 years', o.timezone \
+             FROM users u LEFT JOIN user_options o ON o.user_id = u.id WHERE u.id = $1"
+        ))
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    // silenced_forever? on a user no longer penalized raises.
+    let (Some(till), Some(forever)) = (till, forever) else {
+        return Err(Unsupported("a penalty email for a user no longer penalized").into());
+    };
+    let reason = details.unwrap_or_default();
+    if forever {
+        return build_with_args(
+            conn,
+            ctx,
+            &format!("{template}_forever"),
+            user_id,
+            &[("reason", &reason)],
+        )
+        .await
+        .map(Some);
+    }
+    let zone: chrono_tz::Tz = match timezone.as_deref().filter(|z| !z.trim().is_empty()) {
+        None => chrono_tz::UTC,
+        Some(z) => z
+            .parse()
+            .map_err(|_| Unsupported("a user timezone Rails does not know"))?,
+    };
+    let at = chrono::TimeZone::from_utc_datetime(&zone, &till);
+    let when = at.format("%B %-d, %Y, %l:%M%P").to_string();
+    build_with_args(
+        conn,
+        ctx,
+        template,
+        user_id,
+        &[("reason", &reason), (arg, &when)],
+    )
+    .await
+    .map(Some)
 }

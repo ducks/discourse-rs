@@ -9,7 +9,10 @@ use html5ever::serialize::{SerializeOpts, TraversalScope, serialize};
 use html5ever::tendril::StrTendril;
 use markup5ever_rcdom::{Handle, Node, NodeData, RcDom, SerializableHandle};
 
-use crate::pretty_text::cleanup::{attr, element_name, parse_document, set_attr, text};
+use crate::pretty_text::cleanup::{
+    append, attr, element_name, fragment_root, new_element, new_text, parse, parse_document,
+    replace, replace_with, set_attr, text,
+};
 use crate::pretty_text::select::{parent, select};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
@@ -34,6 +37,105 @@ fn set_xml_lang(node: &Handle, value: &str) {
                 value: value.into(),
             }),
         }
+    }
+}
+
+/// `ONEBOX_IMAGE_BASE_STYLE`
+const ONEBOX_IMAGE_BASE_STYLE: &str =
+    "max-height: 80%; max-width: 20%; height: auto; float: left; margin-right: 10px;";
+
+/// `node.inner_html`
+fn inner_html(node: &Handle) -> String {
+    let mut out = Vec::new();
+    let handle: SerializableHandle = node.clone().into();
+    serialize(
+        &mut out,
+        &handle,
+        SerializeOpts {
+            traversal_scope: TraversalScope::ChildrenOnly(None),
+            ..Default::default()
+        },
+    )
+    .expect("writing to a vector cannot fail");
+    String::from_utf8(out).expect("the serializer writes UTF-8")
+}
+
+/// `node.inner_html = html`: the children replaced by the parsed fragment.
+fn set_inner_html(node: &Handle, html: &str) {
+    for child in node.children.take() {
+        child.parent.set(None);
+    }
+    let dom = parse(html);
+    for child in fragment_root(&dom).children.take() {
+        append(node, child);
+    }
+}
+
+/// `node.name = name`: the element, its attributes and children kept,
+/// under another name.
+fn rename(node: &Handle, name: &str) {
+    use html5ever::{LocalName, QualName, namespace_url, ns};
+    let NodeData::Element { attrs, .. } = &node.data else {
+        return;
+    };
+    let renamed = Node::new(NodeData::Element {
+        name: QualName::new(None, ns!(html), LocalName::from(name)),
+        attrs: RefCell::new(attrs.borrow().clone()),
+        template_contents: RefCell::new(None),
+        mathml_annotation_xml_integration_point: false,
+    });
+    for child in node.children.take() {
+        append(&renamed, child);
+    }
+    replace(node, renamed);
+}
+
+/// The iframe addresses whose reading by Ruby's `URI()` this port is sure
+/// of: `http(s)://host` or `//host` (no user, no port, lowercase scheme),
+/// then a path, query and fragment of URI characters other than `'`
+/// (the replacement puts the address in a single-quoted attribute).
+struct IframeUri<'a> {
+    scheme: Option<&'a str>,
+    host: &'a str,
+    rest: &'a str,
+}
+
+impl<'a> IframeUri<'a> {
+    fn parse(address: &'a str) -> Option<IframeUri<'a>> {
+        let (scheme, after) = if let Some(r) = address.strip_prefix("https://") {
+            (Some("https"), r)
+        } else if let Some(r) = address.strip_prefix("http://") {
+            (Some("http"), r)
+        } else {
+            (None, address.strip_prefix("//")?)
+        };
+        let host_end = after.find(['/', '?', '#']).unwrap_or(after.len());
+        let (host, rest) = after.split_at(host_end);
+        let host_ok = !host.is_empty()
+            && !host.starts_with(['.', '-'])
+            && host
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-');
+        let rest_ok = rest.matches('#').count() <= 1
+            && rest.chars().all(|c| {
+                c.is_ascii_alphanumeric() || "-._~%!$&()*+,;=:@/?#".contains(c)
+            })
+            // every `%` an escape
+            && rest
+                .split('%')
+                .skip(1)
+                .all(|h| h.len() >= 2 && h.as_bytes()[..2].iter().all(u8::is_ascii_hexdigit));
+        (host_ok && rest_ok).then_some(IframeUri { scheme, host, rest })
+    }
+
+    /// `"#{scheme || "https"}://#{host}#{path}#{"?" + query}#{"#" + fragment}"`
+    fn display(&self) -> String {
+        format!(
+            "{}://{}{}",
+            self.scheme.unwrap_or("https"),
+            self.host,
+            self.rest
+        )
     }
 }
 
@@ -116,14 +218,23 @@ impl Styles {
         }
     }
 
-    /// What this port refuses rather than restyles: the onebox and quote
-    /// rewrites (`aside` to `blockquote`, iframes to links, user oneboxes).
+    /// What this port refuses rather than restyles, checked before anything
+    /// changes: user oneboxes' table layout, iframes whose address Ruby's
+    /// URI might read otherwise than this port, secure media.
     fn refuse_unported(&self) -> Result<(), Unsupported> {
-        if !self
-            .select("aside, article, header, iframe, .user-onebox")
-            .is_empty()
-        {
-            return Err(Unsupported("quotes, oneboxes and iframes in emails"));
+        if !self.select(".user-onebox .aspect-image img").is_empty() {
+            return Err(Unsupported("user oneboxes in emails"));
+        }
+        for iframe in self.select("iframe") {
+            let Some(src) = attr(&iframe, "src").filter(|s| !is_blank(s)) else {
+                continue;
+            };
+            let address = attr(&iframe, "data-original-href")
+                .filter(|h| !is_blank(h))
+                .unwrap_or(src);
+            if IframeUri::parse(&address).is_none() {
+                return Err(Unsupported("iframes in emails with an unusual address"));
+            }
         }
         if !self
             .select("[data-stripped-secure-media], [data-stripped-secure-upload]")
@@ -217,9 +328,14 @@ impl Styles {
         let accent_bg = settings.get("email_accent_bg_color")?.to_s();
         let accent_fg = settings.get("email_accent_fg_color")?.to_s();
         let locale = settings.get("default_locale")?.to_s();
-        if matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur") {
-            return Err(Unsupported("right-to-left email styles").into());
-        }
+        // Rtl.new(nil).enabled?: the site's locale, whether or not users
+        // may pick their own.
+        let rtl = matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur");
+        let (align, dir) = if rtl {
+            ("right", "rtl")
+        } else {
+            ("left", "ltr")
+        };
 
         // correct_first_body_margin
         for p in self.select("div.body p") {
@@ -267,9 +383,11 @@ impl Styles {
             None,
             &[("lang", &html_lang), ("xml:lang", &html_lang)],
         );
-        self.style("body", Some("line-height: 1.4; text-align:left;"), &[]);
-        self.style("body", None, &[("dir", "ltr")]);
-        self.style(".with-dir", Some("text-align:left;"), &[("dir", "ltr")]);
+        let body = format!("line-height: 1.4; text-align:{align};");
+        self.style("body", Some(&body), &[]);
+        self.style("body", None, &[("dir", dir)]);
+        let with_dir = format!("text-align:{align};");
+        self.style(".with-dir", Some(&with_dir), &[("dir", dir)]);
         self.style("blockquote > :first-child", Some("margin-top: 0;"), &[]);
         self.style("blockquote > :last-child", Some("margin-bottom: 0;"), &[]);
         self.style("blockquote > p", Some("padding: 0;"), &[]);
@@ -437,9 +555,63 @@ impl Styles {
         Ok(())
     }
 
-    /// The style-only part of `onebox_styles` (the rewrites are refused).
+    /// `onebox_styles`: quotes and oneboxes styled, each quote made a
+    /// blockquote of its title and quoted text, every `aside`, `article`
+    /// and `header` a `div`, and iframes links to their address. A user
+    /// onebox's table layout is refused (refuse_unported).
     fn onebox_styles(&self) {
+        self.style(
+            "aside.quote",
+            Some("padding: 12px 25px 2px 12px; margin-bottom: 10px;"),
+            &[],
+        );
+        self.style(
+            "aside.quote div.info-line",
+            Some("color: #666; margin: 10px 0"),
+            &[],
+        );
+        self.style(
+            "aside.quote .avatar",
+            Some("margin-right: 5px; width:20px; height:20px; vertical-align:middle;"),
+            &[],
+        );
+        self.style(
+            "aside.quote",
+            Some("border-left: 5px solid #e9e9e9; background-color: #f8f8f8; margin: 0;"),
+            &[],
+        );
         self.style("blockquote", Some("border-left: 5px solid #e9e9e9; background-color: #f8f8f8; margin-left: 0; padding: 12px;"), &[]);
+        self.style(
+            "aside.onebox",
+            Some("border: 5px solid #e9e9e9; padding: 12px 25px 12px 12px; margin-bottom: 10px;"),
+            &[],
+        );
+        self.style(
+            "aside.onebox header img.site-icon",
+            Some("width: 16px; height: 16px; margin-right: 3px;"),
+            &[],
+        );
+        self.style(
+            "aside.onebox header a[href]",
+            Some("color: #222222; text-decoration: none;"),
+            &[],
+        );
+        self.style("aside.onebox .onebox-body", Some("clear: both"), &[]);
+        self.style(
+            "aside.onebox .onebox-body img:not(.onebox-avatar-inline)",
+            Some(ONEBOX_IMAGE_BASE_STYLE),
+            &[],
+        );
+        self.style(
+            "aside.onebox .onebox-body img.thumbnail",
+            Some("width: 60px;"),
+            &[],
+        );
+        self.style(
+            "aside.onebox .onebox-body h3, aside.onebox .onebox-body h4",
+            Some("font-size: 1.17em; margin: 10px 0;"),
+            &[],
+        );
         self.style(".onebox-metadata", Some("color: #919191"), &[]);
         self.style(".github-info", Some("margin-top: 10px;"), &[]);
         self.style(".github-info .added", Some("color: #090;"), &[]);
@@ -456,10 +628,67 @@ impl Styles {
             &[],
         );
         self.style(
+            ".github-body-container",
+            Some("font-family: Consolas, Menlo, Monaco, \"Lucida Console\", \"Liberation Mono\", \"DejaVu Sans Mono\", \"Bitstream Vera Sans Mono\", \"Courier New\", monospace; margin-top: 1em !important;"),
+            &[],
+        );
+        self.style(
             ".onebox-avatar-inline",
             Some("width: 20px; height: 20px; float: none; vertical-align: middle;"),
             &[],
         );
+        for excerpt in self.select(".github-body-container .excerpt") {
+            remove(&excerpt);
+        }
+        for p in self.select("aside.quote blockquote > p") {
+            set_attr(&p, "style", "padding: 0;");
+        }
+        // Each quote, in document order: its title's and blockquotes'
+        // inner HTML (every one within, a nested quote's too, as a
+        // NodeSet's inner_html joins them) less the quote controls. A
+        // nested quote is replaced along with its parent's content, so
+        // what is done to it after shows nowhere (and Rails' copy of the
+        // quote, the controls removed, reads the same as the quote).
+        for quote in self.select("aside.quote") {
+            let copy = quote.clone();
+            for controls in select(&copy, "div.quote-controls") {
+                remove(&controls);
+            }
+            let quoted: String = select(&copy, "blockquote").iter().map(inner_html).collect();
+            // String#strip: ASCII whitespace and NUL.
+            let stripped = quoted.trim_start_matches([' ', '\t', '\n', '\x0B', '\x0C', '\r', '\0']);
+            let blockquote = if stripped.starts_with("<p") {
+                quoted
+            } else {
+                format!("<p style='padding: 0;'>{quoted}</p>")
+            };
+            let title: String = select(&copy, "div.title").iter().map(inner_html).collect();
+            set_inner_html(&quote, &format!("{title}{blockquote}"));
+            rename(&quote, "blockquote");
+        }
+        for node in self.select("aside, article, header") {
+            rename(&node, "div");
+        }
+        for iframe in self.select("iframe") {
+            let Some(src) = attr(&iframe, "src").filter(|s| !is_blank(s)) else {
+                remove(&iframe);
+                continue;
+            };
+            let address = attr(&iframe, "data-original-href")
+                .filter(|h| !is_blank(h))
+                .unwrap_or(src);
+            // refuse_unported let through only addresses this reads.
+            let Some(uri) = IframeUri::parse(&address) else {
+                remove(&iframe);
+                continue;
+            };
+            let a = new_element("a", &[("href", &address)]);
+            append(&a, new_text(&uri.display()));
+            let p = new_element("p", &[]);
+            append(&p, a);
+            // The fragment's unclosed second `<p>`.
+            replace_with(&iframe, vec![p, new_element("p", &[])]);
+        }
     }
 
     fn select_within(&self, root: &Handle, selector: &str) -> Vec<Handle> {

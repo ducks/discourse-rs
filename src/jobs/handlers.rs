@@ -72,7 +72,10 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
             delete_inaccessible_notifications(state, &job.args).await
         }
         "user_email" => user_email(state, &job.args, false).await,
-        "critical_user_email" => user_email(state, &job.args, true).await,
+        // UserSuspender enqueues it by class.
+        "critical_user_email" | "Jobs::CriticalUserEmail" => {
+            user_email(state, &job.args, true).await
+        }
         "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
         crate::bulk_invite::BULK_INVITE => crate::bulk_invite::bulk_invite(state, &job.args).await,

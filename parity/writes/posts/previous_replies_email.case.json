@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET email_previous_replies = 0 WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "reply_to_post_number": 3,
+        "raw": "A reply to user2, whose email shows the replies before it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

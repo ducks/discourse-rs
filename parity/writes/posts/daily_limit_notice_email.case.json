@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "settings": {
+    "max_emails_per_day_per_user": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "@user0 one email today, and the notice that it is the last."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

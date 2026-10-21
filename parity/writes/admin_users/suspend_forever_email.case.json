@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/suspend.json",
+      "params": {
+        "reason": "Spamming",
+        "message": "Please stop",
+        "suspend_until": "3025-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::CriticalUserEmail"
+  ]
+}

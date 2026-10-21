@@ -1280,7 +1280,6 @@ async fn admin_silences() {
 /// Silencing sends the member a system message, which notifies them, and
 /// the account_silenced email.
 #[tokio::test]
-#[ignore = "the account_silenced email is refused, ROADMAP 146"]
 async fn a_silenced_member_is_told() {
     let (db, state) = app().await;
     let id = user_id(&db, "user1").await;
@@ -1307,6 +1306,14 @@ async fn a_silenced_member_is_told() {
         "{}",
         excerpt(&recent.body)
     );
+    let emailed: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM email_logs WHERE email_type = 'account_silenced' AND user_id = $1)",
+    )
+    .bind(id)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(emailed, "no account_silenced email was sent");
 }
 
 #[tokio::test]

@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "[quote=\"user2, post:3, topic:35\"]\n[quote=\"user0, post:2, topic:35\"]\n- a quoted list item\n- and another\n[/quote]\n\nthe outer quote's own text\n[/quote]\n\nA reply with a quote in a quote."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

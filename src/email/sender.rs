@@ -164,6 +164,11 @@ pub fn renderer_html(ctx: &Ctx<'_>, html_part: &str) -> Result<String, AppError>
     };
     let base_url = urls.base_url()?;
     let base_url_no_prefix = urls.base_url_no_prefix()?;
+    // Only English server strings are vendored: another site locale's
+    // emails (the right-to-left ones among them) would read in English.
+    if ctx.settings.get("default_locale")?.to_s() != "en" {
+        return Err(Unsupported("emails in locales other than English").into());
+    }
     let style = Styles::new(html_part);
     style.format_basic(&base_url)?;
     style.format_html(ctx.settings)?;
@@ -243,13 +248,26 @@ pub async fn send(
     let base_url = urls.base_url()?;
 
     let rendered = renderer_html(ctx, &built.html_part)?;
-    let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
-    if message
-        .text
-        .contains(&format!("{}/", store.relative_base_url()))
-    {
-        return Err(Unsupported("uploads in email text").into());
-    }
+    // Upload links and images written as HTML in the markdown, made
+    // absolute markdown for the text part (the default store's path, as
+    // Rails matches it whatever the store).
+    static ATTACHMENT: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"<a class="attachment" href="(/uploads/default/[^"]+)">([^<]*)</a>"#)
+            .expect("a valid regex")
+    });
+    static IMAGE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"<img src="(/uploads/default/[^"]+)"([^>]*)>"#).expect("a valid regex")
+    });
+    let text = ATTACHMENT
+        .replace_all(&message.text, |c: &regex::Captures| {
+            format!("[{}|attachment]({base_url}{})", &c[2], &c[1])
+        })
+        .into_owned();
+    message.text = IMAGE
+        .replace_all(&text, |c: &regex::Captures| {
+            format!("![]({base_url}{})", &c[1])
+        })
+        .into_owned();
 
     let host = base_url
         .split_once("://")
@@ -340,11 +358,11 @@ pub async fn send(
                 message.set_header("In-Reply-To", op.first().cloned());
                 message.set_header("References", op.first().cloned());
             } else {
-                if referenced.len() > 1 {
-                    return Err(Unsupported("emails for posts replying to several posts").into());
-                }
+                // Every post replied to or quoted is in In-Reply-To; the
+                // References thread runs from the first post through the
+                // reply tree above the newest one replied to (one parent
+                // per post, the latest) to the most recent by creation.
                 let in_reply_to = message_ids(&mut *conn, &referenced, &host).await?;
-                // The reply tree above the replied-to post.
                 let parents: Vec<i32> = sqlx::query_scalar(
                     "WITH RECURSIVE cte AS ( \
                        SELECT reply_post_id, post_id FROM post_replies WHERE reply_post_id = $1 \
@@ -357,17 +375,15 @@ pub async fn send(
                 .bind(referenced[0])
                 .fetch_all(&mut *conn)
                 .await?;
-                if !parents.is_empty() {
-                    return Err(Unsupported("emails for replies deeper than one level").into());
-                }
+                let parent_ids = message_ids(&mut *conn, &parents, &host).await?;
                 let mut references: Vec<String> = Vec::new();
-                for id in op.iter().chain(in_reply_to.last()) {
+                for id in op.iter().chain(&parent_ids).chain(in_reply_to.last()) {
                     if !references.contains(id) {
                         references.push(id.clone());
                     }
                 }
-                message.set_header("In-Reply-To", Some(in_reply_to.join(" ")));
                 // Mail's message id fields fold one id per line.
+                message.set_header("In-Reply-To", Some(in_reply_to.join("\r\n ")));
                 message.set_header("References", Some(references.join("\r\n ")));
             }
         }

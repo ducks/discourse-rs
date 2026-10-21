@@ -90,16 +90,10 @@ struct PostRow {
     id: i32,
     topic_id: i32,
     post_number: i32,
-    post_type: i32,
     raw: String,
     cooked: String,
-    created_at: chrono::NaiveDateTime,
     user_id: i32,
     username: String,
-    username_lower: String,
-    name: Option<String>,
-    title: Option<String>,
-    uploaded_avatar_id: Option<i32>,
     slug: Option<String>,
     archetype: String,
     category_id: Option<i32>,
@@ -115,6 +109,7 @@ struct Recipient {
     mailing_list_mode: bool,
     email_in_reply_to: bool,
     email_previous_replies: i32,
+    locale: Option<String>,
 }
 
 /// `user_notifications.user_<type>` (`UserNotifications.<email_type>`).
@@ -142,8 +137,8 @@ pub async fn build(
         }
     };
     let post: PostRow = sqlx::query_as(
-        "SELECT p.id, p.topic_id, p.post_number, p.post_type, p.raw, p.cooked, p.created_at, p.user_id, \
-                u.username, u.username_lower, u.name, u.title, u.uploaded_avatar_id, t.slug, t.archetype, \
+        "SELECT p.id, p.topic_id, p.post_number, p.raw, p.cooked, p.user_id, \
+                u.username, t.slug, t.archetype, \
                 t.category_id, p.reply_to_post_number \
          FROM posts p JOIN topics t ON t.id = p.topic_id JOIN users u ON u.id = p.user_id WHERE p.id = $1",
     )
@@ -169,7 +164,7 @@ pub async fn build(
     let user: Recipient = sqlx::query_as(
         "SELECT u.username, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
                 u.staged, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
-                o.mailing_list_mode, o.email_in_reply_to, o.email_previous_replies \
+                o.mailing_list_mode, o.email_in_reply_to, o.email_previous_replies, u.locale \
          FROM users u JOIN user_options o ON o.user_id = u.id WHERE u.id = $1",
     )
     .bind(req.user_id)
@@ -188,6 +183,16 @@ pub async fn build(
         if incoming {
             return Err(Unsupported("emails to staged users of a topic started by email").into());
         }
+    }
+    // user_locale(user): User#effective_locale, the user's own when users
+    // may pick one; only English strings are vendored.
+    if s.get("allow_user_locale")?.truthy()
+        && user
+            .locale
+            .as_deref()
+            .is_some_and(|l| !l.trim().is_empty() && l != "en")
+    {
+        return Err(Unsupported("notification emails in a user's own locale").into());
     }
     if s.get("private_email")?.truthy() {
         return Err(Unsupported("private_email").into());
@@ -316,31 +321,61 @@ pub async fn build(
     .await?;
     let show_tags_in_subject = (!tags.is_empty() && !pm_email).then(|| tags.join(" "));
 
-    // get_context_posts: never (2) gives none; otherwise refused.
-    if user.email_previous_replies != 2 {
-        let earlier: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM posts WHERE topic_id = $1 AND post_number < $2 \
-               AND NOT user_deleted AND NOT hidden AND post_type = 1 AND deleted_at IS NULL)",
+    // get_context_posts (TopicUser read before this email moves its
+    // last_emailed_post_number): never (2) gives none; whispers only for
+    // staff with a topic user; unless_emailed (1) only those after the
+    // last one emailed.
+    let context_posts: Vec<ContextPost> = if user.email_previous_replies == 2 {
+        Vec::new()
+    } else {
+        let topic_user: Option<(Option<i32>, bool)> = sqlx::query_as(
+            "SELECT tu.last_emailed_post_number, (u.admin OR u.moderator) FROM topic_users tu \
+             JOIN users u ON u.id = tu.user_id WHERE tu.topic_id = $1 AND tu.user_id = $2",
+        )
+        .bind(post.topic_id)
+        .bind(req.user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let mut types = vec![crate::posting::post_types::REGULAR];
+        if topic_user.is_some_and(|(_, staff)| staff) {
+            types.push(crate::posting::post_types::WHISPER);
+        }
+        let after = match topic_user {
+            Some((Some(n), _)) if user.email_previous_replies == 1 => n,
+            _ => i32::MIN,
+        };
+        sqlx::query_as(
+            "SELECT p.id, p.raw, p.created_at, u.username FROM posts p LEFT JOIN users u ON u.id = p.user_id \
+             WHERE p.topic_id = $1 AND p.post_number < $2 AND NOT p.user_deleted AND NOT p.hidden \
+               AND p.post_type = ANY($3) AND p.deleted_at IS NULL AND p.post_number > $4 \
+             ORDER BY p.created_at DESC LIMIT $5",
         )
         .bind(post.topic_id)
         .bind(post.post_number)
-        .fetch_one(&mut *conn)
-        .await?;
-        let context_limit = s.get("email_posts_context")?.to_i();
-        if earlier && context_limit > 0 {
-            let last_emailed: Option<i32> = sqlx::query_scalar(
-                "SELECT last_emailed_post_number FROM topic_users WHERE topic_id = $1 AND user_id = $2",
-            )
-            .bind(post.topic_id)
-            .bind(req.user_id)
-            .fetch_optional(&mut *conn)
-            .await?
-            .flatten();
-            let unless_emailed_excludes = user.email_previous_replies == 1
-                && last_emailed.is_some_and(|n| n >= post.post_number - 1);
-            if !unless_emailed_excludes {
-                return Err(Unsupported("previous replies in notification emails").into());
-            }
+        .bind(&types)
+        .bind(after)
+        .bind(s.get("email_posts_context")?.to_i().max(0))
+        .fetch_all(&mut *conn)
+        .await?
+    };
+    let mut context = String::new();
+    if !context_posts.is_empty() {
+        context.push_str(&format!(
+            "-- \n*{}*\n",
+            t(ctx, "user_notifications.previous_discussion", &[])?
+        ));
+        for cp in &context_posts {
+            // email_post_markdown(cp, true)
+            let date = cp.created_at.format("%m/%d/%Y").to_string();
+            let posted_by = t(
+                ctx,
+                "user_notifications.posted_by",
+                &[
+                    ("username", cp.username.as_deref().unwrap_or_default()),
+                    ("post_date", &date),
+                ],
+            )?;
+            context.push_str(&format!("{}\n\n{posted_by}\n\n", cp.raw));
         }
     }
     // An overridden body is sent without the notification view (the
@@ -354,21 +389,39 @@ pub async fn build(
         .i18n
         .override_of(&format!("{template}.subject_template"))
         .is_some();
+    // The view's notice on the last email the daily limit allows.
     let max_per_day = s.get("max_emails_per_day_per_user")?.to_i();
-    if max_per_day > 0 {
+    let reached_limit = if invite || max_per_day <= 0 {
+        false
+    } else {
         let sent: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM email_logs WHERE user_id = $1 AND created_at > now() - interval '1 day'",
         )
         .bind(req.user_id)
         .fetch_one(&mut *conn)
         .await?;
-        if sent >= max_per_day - 1 {
-            return Err(Unsupported("the daily email limit notice").into());
-        }
-    }
-    if user.email_in_reply_to && post.reply_to_post_number.is_some() {
-        return Err(Unsupported("in-reply-to excerpts in notification emails").into());
-    }
+        sent >= max_per_day - 1
+    };
+    let reached_limit_text = if reached_limit {
+        Some(
+            ctx.i18n
+                .t_count("user_notifications.reached_limit", max_per_day, &[])
+                .ok_or(Unsupported("a missing email translation"))?,
+        )
+    } else {
+        None
+    };
+    // post.reply_to_post when the user wants it.
+    let in_reply_to_post: Option<i32> = match post.reply_to_post_number {
+        Some(number) if user.email_in_reply_to && !invite => sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2 AND deleted_at IS NULL",
+        )
+        .bind(post.topic_id)
+        .bind(number)
+        .fetch_optional(&mut *conn)
+        .await?,
+        _ => None,
+    };
     let message = if invite {
         // use_invite_template: the first post's excerpt and the topic.
         let excerpt = if post.post_number == 1 {
@@ -405,7 +458,11 @@ pub async fn build(
             ],
         )?
     } else {
-        format!("{}\n\n", post.raw)
+        // email_post_markdown(post), then the daily limit notice.
+        match &reached_limit_text {
+            Some(notice) => format!("{}\n\n\n\n{notice}", post.raw),
+            None => format!("{}\n\n", post.raw),
+        }
     };
     let slug = post.slug.clone().unwrap_or_default();
     // Post#url: the post number even for the first post (only share_url
@@ -418,51 +475,74 @@ pub async fn build(
     );
 
     // The views.
+    // Rtl.new(user).css_class: the user's locale (else the site's) when
+    // users may pick one, the site's otherwise.
+    let default_locale = s.get("default_locale")?.to_s();
+    let reading_locale = if s.get("allow_user_locale")?.truthy() {
+        user.locale.as_deref().unwrap_or(&default_locale)
+    } else {
+        default_locale.as_str()
+    };
+    let classes = if matches!(reading_locale, "ar" | "fa_IR" | "he" | "ug" | "ur") {
+        "rtl"
+    } else {
+        ""
+    };
     let first_footer_classes = if user.suspended || user.staged {
         ""
     } else {
         "highlight"
     };
     let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
-    let avatar = crate::avatar::avatar_template(
-        &urls,
-        post.user_id,
-        &post.username,
-        post.uploaded_avatar_id,
-        logo_small.as_deref(),
-    )?
-    .replace("{size}", "45");
-    let avatar = urls.absolute(&avatar)?;
-    let small_avatar_url = avatar
-        .split_once(':')
-        .map(|(_, rest)| rest.to_string())
-        .unwrap_or(avatar);
-    let post_html = render_post(
+    let post_html = post_partial(
+        &mut *conn,
         ctx,
-        &PostPartial {
-            whisper: post.post_type == crate::posting::post_types::WHISPER,
-            small_avatar_url: &small_avatar_url,
-            username: &post.username,
-            username_lower: &post.username_lower,
-            name: post.name.as_deref(),
-            title: post.title.as_deref(),
-            created_at: post.created_at,
-            body: &format_for_email(
-                &post.cooked,
-                &urls,
-                ctx.i18n,
-                Some(&format!(
-                    "/t/{}/{}/{}",
-                    post.slug.as_deref().unwrap_or_default(),
-                    post.topic_id,
-                    post.post_number
-                )),
-            )?,
-            base_url: &base_url,
-        },
-    )?;
+        &urls,
+        logo_small.as_deref(),
+        post.id,
+        s.get("post_excerpts_in_emails")?.truthy(),
+    )
+    .await?;
+    // The view between the post and the footers, each of its statement
+    // lines trimmed (Erubi) and each blank line kept.
+    let mut extra = String::new();
+    if !invite {
+        if in_reply_to_post.is_some() || !context_posts.is_empty() {
+            extra.push_str("      <div class='footer'>%{respond_instructions}</div>\n      <hr>\n");
+        }
+        extra.push('\n');
+        if let Some(id) = in_reply_to_post {
+            let partial =
+                post_partial(&mut *conn, ctx, &urls, logo_small.as_deref(), id, true).await?;
+            extra.push_str(&format!(
+                "      <h4 class='previous-discussion'>{}</h4>\n      {partial}\n",
+                html_escape(&t(ctx, "user_notifications.in_reply_to", &[])?)
+            ));
+        }
+        extra.push('\n');
+        if !context_posts.is_empty() {
+            extra.push_str(&format!(
+                "      <h4 class='previous-discussion'>{}</h4>\n",
+                html_escape(&t(ctx, "user_notifications.previous_discussion", &[])?)
+            ));
+            for cp in &context_posts {
+                let partial =
+                    post_partial(&mut *conn, ctx, &urls, logo_small.as_deref(), cp.id, false)
+                        .await?;
+                extra.push_str(&format!("        {partial}\n"));
+            }
+        }
+        extra.push('\n');
+        if let Some(notice) = &reached_limit_text {
+            extra.push_str(&format!(
+                "      <hr>\n      <div class='footer'>{}</div>\n",
+                html_escape(notice)
+            ));
+        }
+        extra.push('\n');
+    }
     let notification_html = format!(
-        "<div id='main' class=>\n\n  <div class='email-preview'>%{{email_preview}}</div>\n\n  <div class='header-instructions'>%{{header_instructions}}</div>\n\n    {post_html}\n\n\n\n\n\n  <div class='footer undecorated-link-footer {first_footer_classes}'>%{{respond_instructions}}</div>\n  <div class='footer'>%{{unsubscribe_instructions}}</div>\n\n</div>\n\n<div itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"{}{}\" />\n    <meta itemprop=\"name\" content=\"{}\"/>\n  </div>\n</div>\n",
+        "<div id='main' class={classes}>\n\n  <div class='email-preview'>%{{email_preview}}</div>\n\n  <div class='header-instructions'>%{{header_instructions}}</div>\n\n    {post_html}\n\n{extra}  <div class='footer undecorated-link-footer {first_footer_classes}'>%{{respond_instructions}}</div>\n  <div class='footer'>%{{unsubscribe_instructions}}</div>\n\n</div>\n\n<div itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"{}{}\" />\n    <meta itemprop=\"name\" content=\"{}\"/>\n  </div>\n</div>\n",
         html_escape(&base_url),
         html_escape(&url),
         html_escape(&t(ctx, "read_full_topic", &[])?),
@@ -618,7 +698,7 @@ pub async fn build(
         ("url", &url),
         ("post_id", &post_id),
         ("topic_id", &topic_id),
-        ("context", ""),
+        ("context", &context),
         ("username", &original_username),
         ("group_name", group_name.as_deref().unwrap_or_default()),
         ("unsubscribe_url", &unsubscribe_url),
@@ -854,16 +934,25 @@ pub(crate) fn format_for_email(
     if crate::plugins::local_dates::enabled(urls.settings)? {
         crate::plugins::local_dates::reduce_cooked(&dom);
     }
+    // strip_secure_uploads (post.should_secure_uploads?) comes before.
+    let lightboxes = crate::pretty_text::select::select(&dom.document, ".lightbox-wrapper");
+    if !lightboxes.is_empty() && urls.settings.get("secure_uploads")?.truthy() {
+        return Err(Unsupported("lightboxes in emails with secure uploads").into());
+    }
+    // strip_image_wrapping
+    for meta in crate::pretty_text::select::select(&dom.document, ".lightbox-wrapper .meta") {
+        replace_with(&meta, Vec::new());
+    }
     let base_no_prefix = urls.base_url_no_prefix()?;
     let base_path = urls.config.globals.relative_url_root();
     let mut stack = vec![dom.document.clone()];
     let mut links = Vec::new();
     while let Some(node) = stack.pop() {
-        if crate::pretty_text::cleanup::has_class(&node, "lightbox-wrapper") {
-            return Err(Unsupported("lightboxes in emails").into());
-        }
-        if crate::pretty_text::cleanup::element_name(&node) == Some("iframe") {
-            return Err(Unsupported("iframes in emails").into());
+        // convert_vimeo_iframes; Email::Styles makes the others links.
+        if crate::pretty_text::cleanup::element_name(&node) == Some("iframe")
+            && attr(&node, "src").is_some_and(|s| s.contains("player.vimeo.com"))
+        {
+            return Err(Unsupported("Vimeo iframes in emails").into());
         }
         if crate::pretty_text::cleanup::element_name(&node) == Some("a")
             && attr(&node, "href").is_some()
@@ -894,8 +983,105 @@ pub(crate) fn format_for_email(
     Ok(to_html(&dom))
 }
 
+/// A post get_context_posts gives: what the text part's context needs.
+#[derive(sqlx::FromRow)]
+struct ContextPost {
+    id: i32,
+    raw: String,
+    created_at: chrono::NaiveDateTime,
+    username: Option<String>,
+}
+
+/// `render partial: 'email/post', locals: { post:, use_excerpt: }` for a
+/// post by id: its author's small avatar, and its cooked HTML (or
+/// Post#excerpt) through format_for_email.
+async fn post_partial(
+    conn: &mut PgConnection,
+    ctx: &super::sender::Ctx<'_>,
+    urls: &Urls<'_>,
+    logo_small: Option<&str>,
+    post_id: i32,
+    use_excerpt: bool,
+) -> Result<String, AppError> {
+    #[derive(sqlx::FromRow)]
+    struct Row {
+        topic_id: i32,
+        post_number: i32,
+        post_type: i32,
+        cooked: String,
+        created_at: chrono::NaiveDateTime,
+        user_id: Option<i32>,
+        username: Option<String>,
+        username_lower: Option<String>,
+        name: Option<String>,
+        title: Option<String>,
+        uploaded_avatar_id: Option<i32>,
+        slug: Option<String>,
+    }
+    let p: Row = sqlx::query_as(
+        "SELECT p.topic_id, p.post_number, p.post_type, p.cooked, p.created_at, u.id AS user_id, \
+                u.username, u.username_lower, u.name, u.title, u.uploaded_avatar_id, t.slug \
+         FROM posts p LEFT JOIN users u ON u.id = p.user_id LEFT JOIN topics t ON t.id = p.topic_id \
+         WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    // post.user.small_avatar_url raises for a deleted user.
+    let (Some(user_id), Some(username), Some(username_lower)) =
+        (p.user_id, p.username, p.username_lower)
+    else {
+        return Err(Unsupported("posts of deleted users in notification emails").into());
+    };
+    let avatar =
+        crate::avatar::avatar_template(urls, user_id, &username, p.uploaded_avatar_id, logo_small)?
+            .replace("{size}", "45");
+    let avatar = urls.absolute(&avatar)?;
+    let small_avatar_url = avatar
+        .split_once(':')
+        .map(|(_, rest)| rest.to_string())
+        .unwrap_or(avatar);
+    // Post#url, which format_for_email's reduce_cooked links to.
+    let post_url = format!(
+        "/t/{}/{}/{}",
+        p.slug.as_deref().unwrap_or_default(),
+        p.topic_id,
+        p.post_number
+    );
+    let html = if use_excerpt {
+        // Post#excerpt: post_excerpt_maxlength, the post as an option.
+        crate::excerpt::excerpt(
+            &p.cooked,
+            ctx.settings.get("post_excerpt_maxlength")?.to_i().max(0) as usize,
+            &crate::excerpt::Options {
+                post_url: Some(post_url.clone()),
+                ..Default::default()
+            },
+        )
+    } else {
+        p.cooked
+    };
+    let body = format_for_email(&html, urls, ctx.i18n, Some(&post_url))?;
+    render_post(
+        ctx,
+        &PostPartial {
+            whisper: p.post_type == crate::posting::post_types::WHISPER,
+            use_excerpt,
+            small_avatar_url: &small_avatar_url,
+            username: &username,
+            username_lower: &username_lower,
+            name: p.name.as_deref(),
+            title: p.title.as_deref(),
+            created_at: p.created_at,
+            body: &body,
+            base_url: &urls.base_url()?,
+        },
+    )
+}
+
 struct PostPartial<'a> {
     whisper: bool,
+    use_excerpt: bool,
     small_avatar_url: &'a str,
     username: &'a str,
     username_lower: &'a str,
@@ -914,13 +1100,14 @@ fn normalize_name(name: &str) -> String {
         .collect()
 }
 
-/// email/_post.html.erb (use_excerpt false).
+/// email/_post.html.erb
 fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<String, AppError> {
     let s = ctx.settings;
     let names = s.get("enable_names")?.truthy() && s.get("display_name_on_posts")?.truthy();
     let mut out = format!(
-        "<div class='post-wrapper {} '>\n  <table>\n    <tr>\n      <td class='user-avatar'>\n        <img src=\"{}\" title=\"{}\">\n      </td>\n      <td>\n",
+        "<div class='post-wrapper {} {}'>\n  <table>\n    <tr>\n      <td class='user-avatar'>\n        <img src=\"{}\" title=\"{}\">\n      </td>\n      <td>\n",
         if p.whisper { "whisper" } else { "" },
+        if p.use_excerpt { "excerpt" } else { "" },
         html_escape(p.small_avatar_url),
         html_escape(p.username),
     );
@@ -940,7 +1127,20 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
             ));
         }
     } else {
-        return Err(Unsupported("prioritize_username_in_ux off in emails").into());
+        // The name links (blank without one), then the username unless
+        // show_username_on_post finds it says nothing more.
+        out.push_str(&format!(
+            "          <a rel='nofollow' class=\"username username-link\" href=\"{}/u/{}\" target=\"_blank\">{}</a>\n",
+            html_escape(p.base_url),
+            html_escape(p.username_lower),
+            html_escape(p.name.unwrap_or_default())
+        ));
+        if !names || name.is_none() || distinct_name {
+            out.push_str(&format!(
+                "            <span class='username username-title'>{}</span>\n",
+                html_escape(p.username)
+            ));
+        }
     }
     if let Some(title) = p.title.filter(|t| !t.trim().is_empty()) {
         out.push_str(&format!(

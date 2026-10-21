@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_options SET timezone = 'America/New_York' WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/silence.json",
+      "params": {
+        "reason": "Breaking the rules, again",
+        "silenced_till": "2027-01-01T15:05:00Z"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

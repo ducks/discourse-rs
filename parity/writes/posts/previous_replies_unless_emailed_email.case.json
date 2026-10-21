@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET email_previous_replies = 1 WHERE user_id = 4",
+    "UPDATE topic_users SET last_emailed_post_number = 2 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "settings": {
+    "email_posts_context": "2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "reply_to_post_number": 3,
+        "raw": "A reply to user2, whose email shows only what came after the last one emailed."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}
