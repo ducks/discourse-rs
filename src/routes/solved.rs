@@ -327,3 +327,48 @@ pub async fn shared_issue(
         Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
     }
 }
+
+/// GET /admin/plugins/solved/dashboard-support(.json)
+/// (AdminDashboardSupportController#index, under StaffConstraint): the
+/// dashboard's support section for the period and categories asked for,
+/// as the section refetches it when its category filter changes.
+pub async fn dashboard_support(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // requires_plugin
+    if !crate::plugins::solved::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let mut dates = [None, None];
+    for (slot, key) in dates.iter_mut().zip(["start_date", "end_date"]) {
+        *slot = match p.get(key) {
+            None | Some(Value::Null) => None,
+            Some(v @ (Value::String(_) | Value::Number(_) | Value::Bool(_))) => params::scalar(v),
+            Some(_) => {
+                return Err(crate::Unsupported("support section dates that aren't strings").into());
+            }
+        };
+    }
+    let ids = p.get("category_ids").cloned().unwrap_or(Value::Null);
+    let data = crate::plugins::solved::dashboard::build(
+        &mut conn,
+        &settings,
+        &guardian,
+        dates[0].as_deref(),
+        dates[1].as_deref(),
+        &ids,
+    )
+    .await?;
+    Ok(Json(data).into_response())
+}

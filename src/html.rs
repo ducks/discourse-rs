@@ -316,6 +316,9 @@ pub struct Chrome {
     pub i18n: Option<std::sync::Arc<I18n>>,
     /// Rails' admin stylesheet, which staff are served on every page.
     pub admin_stylesheet: bool,
+    /// discourse-solved's admin stylesheet (its `:admin` assets), which
+    /// staff are served while the plugin is enabled.
+    pub solved_admin_stylesheet: bool,
     /// The color scheme meta tags and stylesheets (crate::color_mode).
     pub color_head: crate::color_mode::Head,
     /// The theme stylesheets' link tags (crate::stylesheet::manager).
@@ -761,6 +764,8 @@ impl Site {
         )
         .await?;
         self.chrome.admin_stylesheet = guardian.is_staff();
+        self.chrome.solved_admin_stylesheet =
+            guardian.is_staff() && crate::plugins::solved::enabled(settings)?;
         self.chrome.user_cards =
             guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
         self.chrome.enable_badges = settings.get("enable_badges")?.truthy();

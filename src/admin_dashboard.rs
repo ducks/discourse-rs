@@ -38,31 +38,15 @@ fn builtin_section_ids(cx: &Cx<'_>) -> Result<Vec<String>, AppError> {
         .collect())
 }
 
-/// discourse-solved's support section is there when solved support
-/// categories exist (DiscourseSolved::AdminDashboardSupport.available?).
-async fn solved_support_available(conn: &mut PgConnection, cx: &Cx<'_>) -> Result<bool, AppError> {
-    if !cx.settings.get("solved_enabled")?.truthy() {
-        return Ok(false);
-    }
-    if cx.settings.get("allow_solved_on_all_topics")?.truthy() {
-        return Ok(true);
-    }
-    Ok(sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM category_custom_fields \
-         WHERE name = 'enable_accepted_answers' AND value = 'true')",
-    )
-    .fetch_one(conn)
-    .await?)
-}
-
-/// `all_known_section_ids`: the built-in sections and the plugins'.
+/// `all_known_section_ids`: the built-in sections and the plugins'
+/// (`available_plugin_section_ids`).
 async fn all_known_section_ids(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
 ) -> Result<Vec<String>, AppError> {
     let mut ids = builtin_section_ids(cx)?;
-    if solved_support_available(conn, cx).await? {
-        ids.push("support".into());
+    for id in crate::plugins::admin_dashboard_section_ids(conn, cx.settings).await? {
+        ids.push(id.to_string());
     }
     Ok(ids)
 }
@@ -245,6 +229,7 @@ async fn valid_group_token(conn: &mut PgConnection, token: &str) -> Result<bool,
 /// validated and deep-merged into the section's settings.
 pub async fn update_setting(
     conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
     section_id: &str,
     key: &str,
     params: &Map<String, Value>,
@@ -286,10 +271,16 @@ pub async fn update_setting(
             }
             Value::Object(out)
         }
-        ("support", "categories") => {
-            return Err(Unsupported("discourse-solved's support section settings").into());
-        }
-        _ => return Ok(Err(InvalidSetting("setting_key"))),
+        // plugin_setting_definition
+        _ => match crate::plugins::admin_dashboard_section_setting(
+            conn, settings, section_id, key, params,
+        )
+        .await?
+        {
+            Some(Ok(value)) => value,
+            Some(Err(param)) => return Ok(Err(InvalidSetting(param))),
+            None => return Ok(Err(InvalidSetting("setting_key"))),
+        },
     };
     // find_or_create_by!(section_id:), positioned last and visible.
     let existing: Option<i64> =
@@ -1347,8 +1338,19 @@ pub async fn build_sections(
             "reports" => reports_section(conn, cx, viewer, None).await,
             "search" => search(conn, cx, start, end).await,
             "system" => system(conn, cx, viewer).await,
-            "support" => Err(Unsupported("discourse-solved's support section").into()),
-            _ => Ok(Value::Null),
+            _ => match viewer.guardian {
+                Some(guardian) => crate::plugins::admin_dashboard_section(
+                    conn,
+                    cx.settings,
+                    guardian,
+                    id,
+                    start,
+                    end,
+                )
+                .await
+                .map(|d| d.unwrap_or(Value::Null)),
+                None => Err(Unsupported("plugin dashboard sections without a viewer").into()),
+            },
         };
         match data {
             Ok(d) => out.push(json!({"id": id, "data": d})),

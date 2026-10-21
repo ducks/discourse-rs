@@ -425,7 +425,9 @@
       return;
     }
     var tip = event.target.closest(".fk-d-tooltip__trigger[data-tooltip-content]");
-    if (tip) {
+    // A link inside the trigger (the support section's outcomes) still
+    // goes where it points; the tooltip shows on hover.
+    if (tip && !event.target.closest(".fk-d-tooltip__trigger a[href]")) {
       // The tooltip lives inside links (a KPI's): it opens, not the link.
       event.preventDefault();
       event.stopPropagation();

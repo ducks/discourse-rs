@@ -212,6 +212,9 @@ def clear_redis_state
   # the backups' download tokens and running state (a case's `redis`).
   # _CACHE:reports:*, *-dashboard-data-*: cached reports and dashboard
   # stats (Report.cache, StatsCacheable), kept up to an hour.
+  # _CACHE:solved_admin_dashboard_support_*: discourse-solved's support
+  # section, its availability (5 minutes) and its data (30), which would
+  # outlive the rows a case's setup inserts.
   # ban_user_from_external_uploads_*: ExternalUploadManager's five
   # minute ban after a size mismatch, which would refuse later cases.
   # user-profile-view:*: UserProfileView.add's once-a-day marks, which
@@ -222,7 +225,7 @@ def clear_redis_state
   # new_features*, latest_new_feature_created_at, refresh_latest_new_feature_lock,
   # last_viewed_feature_dates_for_users_hash: DiscourseUpdates' feed and
   # what each admin has seen of it (a case's `redis`, its requests).
-  %w[ban_user_from_external_uploads_* user-profile-view:* user:*:????-??-?? readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
+  %w[ban_user_from_external_uploads_* user-profile-view:* user:*:????-??-?? readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled _CACHE:solved_admin_dashboard_support_* new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

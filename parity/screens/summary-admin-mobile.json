@@ -1,5 +1,5 @@
 [
-{"page": "/admin as=admin", "diff_pct": 88.22, "status": [200, 500], "size": [[399, 6991], [980, 2121]]},
+{"page": "/admin as=admin", "diff_pct": 0.02, "status": [200, 200], "size": [[399, 6523], [399, 6523]]},
 {"page": "/admin/users/list/active as=admin", "diff_pct": 0.12, "status": [200, 200], "size": [[390, 2655], [390, 2654]]},
 {"page": "/admin/users/list/staff as=admin", "diff_pct": 0.13, "status": [200, 200], "size": [[390, 844], [390, 844]]},
 {"page": "/admin/users/list/new as=admin", "diff_pct": 0.12, "status": [200, 200], "size": [[390, 2655], [390, 2654]]},

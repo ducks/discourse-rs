@@ -1,0 +1,901 @@
+{
+  "name": "dashboard_support_disabled",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/plugins/solved/dashboard-support.json",
+      "params": {
+        "start_date": "2026-09-22",
+        "end_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/sections/support/settings/categories.json",
+      "params": {
+        "category_ids": [
+          "4"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-21T18:50:32.296152",
+  "transaction_started_at": "2026-10-21T18:50:30.877391",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "sections": [
+          {
+            "id": "highlights",
+            "data": {
+              "kpis": [
+                {
+                  "type": "new_signups",
+                  "value": null,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "signups",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                },
+                {
+                  "type": "dau_mau",
+                  "value": 100.0,
+                  "previous_value": null,
+                  "percent_change": null,
+                  "report_type": "dau_by_mau",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                },
+                {
+                  "type": "new_contributors",
+                  "value": 4,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "new_contributors",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "reports",
+            "data": {
+              "items": [
+                {
+                  "source": "core_report",
+                  "identifier": "daily_engaged_users",
+                  "title": "Daily Engaged Users",
+                  "description": "Number of users that have liked or posted in the last day.",
+                  "label": null,
+                  "url": "/admin/reports/daily_engaged_users",
+                  "key": "core_report:daily_engaged_users",
+                  "rows": 1,
+                  "cols": 1
+                },
+                {
+                  "source": "core_report",
+                  "identifier": "time_to_first_response",
+                  "title": "Time to first response",
+                  "description": "Average time (in hours) of the first response to new topics.",
+                  "label": null,
+                  "url": "/admin/reports/time_to_first_response",
+                  "key": "core_report:time_to_first_response",
+                  "rows": 1,
+                  "cols": 1
+                }
+              ]
+            }
+          },
+          {
+            "id": "traffic",
+            "data": {
+              "kpis": {
+                "browser_pageviews": {
+                  "value": 0
+                },
+                "logged_in_share": {
+                  "value": 0
+                },
+                "bounce_rate": {
+                  "value": null
+                },
+                "average_session_duration_seconds": {
+                  "value": null
+                }
+              },
+              "pageview_series": [
+                {
+                  "req": "page_view_logged_in_browser",
+                  "label": "Logged in",
+                  "color": "#4B3CE0",
+                  "data": [
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-15",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-21",
+                      "y": 0
+                    }
+                  ]
+                },
+                {
+                  "req": "page_view_anon_browser",
+                  "label": "Anonymous",
+                  "color": "#9C8DEC",
+                  "data": [
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-15",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-21",
+                      "y": 0
+                    }
+                  ]
+                },
+                {
+                  "req": "page_view_crawler",
+                  "label": "Crawlers",
+                  "color": "#D5CDF7",
+                  "data": [
+                    {
+                      "x": "2026-09-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-23",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-24",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-25",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-26",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-27",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-28",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-29",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-06",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-07",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-08",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-09",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-10",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-11",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-12",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-13",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-14",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-15",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-10-21",
+                      "y": 0
+                    }
+                  ]
+                }
+              ],
+              "top_countries": {
+                "rows": [],
+                "error": null
+              },
+              "top_referrers": {
+                "rows": [],
+                "error": null
+              },
+              "top_entry_urls": {
+                "rows": [],
+                "error": null
+              }
+            }
+          },
+          {
+            "id": "engagement",
+            "data": {
+              "kpis": [
+                {
+                  "type": "dau_mau",
+                  "value": 100.0,
+                  "previous_value": null,
+                  "percent_change": null,
+                  "report_type": "dau_by_mau",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                },
+                {
+                  "type": "daily_engaged_users",
+                  "value": 4.5,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "daily_engaged_users",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                },
+                {
+                  "type": "new_signups",
+                  "value": null,
+                  "previous_value": 0,
+                  "percent_change": null,
+                  "report_type": "signups",
+                  "report_query": {
+                    "start_date": "2026-09-22",
+                    "end_date": "2026-10-21"
+                  }
+                }
+              ],
+              "trust_level_pipeline": {
+                "rows": [
+                  {
+                    "trust_level": 4,
+                    "name": "Leader",
+                    "count": 2,
+                    "share": 40.0,
+                    "share_formatted": "40.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 3,
+                    "name": "Regular",
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 2,
+                    "name": "Member",
+                    "count": 2,
+                    "share": 40.0,
+                    "share_formatted": "40.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 1,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 1,
+                    "name": "Basic",
+                    "count": 1,
+                    "share": 20.0,
+                    "share_formatted": "20.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  },
+                  {
+                    "trust_level": 0,
+                    "name": "New",
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%",
+                    "promoted_in": 0,
+                    "demoted_in": 0,
+                    "signups": 0
+                  }
+                ],
+                "trend": {
+                  "direction": "dropping",
+                  "net": 1
+                },
+                "total_members": 5
+              },
+              "posters": {
+                "rows": [
+                  {
+                    "type": "new_members",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "New members",
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%"
+                  },
+                  {
+                    "type": "returning",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "Returning",
+                    "count": 7,
+                    "share": 58.33,
+                    "share_formatted": "58.33%"
+                  },
+                  {
+                    "type": "staff",
+                    "kind": "synthetic",
+                    "group_id": null,
+                    "name": "Staff",
+                    "count": 5,
+                    "share": 41.67,
+                    "share_formatted": "41.67%"
+                  }
+                ],
+                "total": 12,
+                "category_ids": null,
+                "groups": [
+                  "new_members",
+                  "returning",
+                  "staff"
+                ]
+              },
+              "activity_by_category": {
+                "rows": [
+                  {
+                    "category_id": 4,
+                    "name": "General",
+                    "color": "25AAE2",
+                    "slug": "general",
+                    "topics": 3,
+                    "posts": 7,
+                    "page_views": 0,
+                    "share": 62.5,
+                    "share_change": 62.5,
+                    "share_formatted": "62.5%",
+                    "share_change_formatted": "+62.5%"
+                  },
+                  {
+                    "category_id": 34,
+                    "name": "Sub General",
+                    "color": "AB9364",
+                    "slug": "sub-general",
+                    "topics": 2,
+                    "posts": 2,
+                    "page_views": 0,
+                    "share": 25.0,
+                    "share_change": 25.0,
+                    "share_formatted": "25.0%",
+                    "share_change_formatted": "+25.0%"
+                  },
+                  {
+                    "category_id": 2,
+                    "name": "Site Feedback",
+                    "color": "808281",
+                    "slug": "site-feedback",
+                    "topics": 1,
+                    "posts": 1,
+                    "page_views": 0,
+                    "share": 12.5,
+                    "share_change": 12.5,
+                    "share_formatted": "12.5%",
+                    "share_change_formatted": "+12.5%"
+                  }
+                ],
+                "total": 16,
+                "category_ids": null
+              }
+            }
+          },
+          {
+            "id": "search",
+            "data": {
+              "logging_enabled": true,
+              "kpis": {
+                "total_searches": {
+                  "value": 0,
+                  "previous_value": 0
+                },
+                "no_result_rate": {
+                  "value": null,
+                  "previous_value": null,
+                  "exceeds_threshold": false
+                }
+              },
+              "trending": [],
+              "trending_period": "monthly",
+              "content_gaps": [],
+              "search_type": "non_staff_only"
+            }
+          },
+          {
+            "id": "system",
+            "data": {
+              "version": {
+                "installed_version": "2026.10.0-latest",
+                "installed_sha": "bf55a44c2872738f7ae2664d6fec3d6d8779190f",
+                "installed_describe": "v2026.10.0-latest +114",
+                "git_branch": "unknown",
+                "updated_at": null,
+                "version_check_pending": true,
+                "stale_data": true
+              },
+              "storage": {
+                "backups": {
+                  "used_bytes": 0,
+                  "free_bytes": 64244334592,
+                  "count": 0,
+                  "last_backup_taken_at": null,
+                  "remote": false
+                },
+                "uploads": {
+                  "used_bytes": 1368569,
+                  "free_bytes": 64244334592,
+                  "remote": false
+                }
+              },
+              "discourse_updated_at": "2026-09-25T20:35:25.000+00:00",
+              "dashboard_updated_at": "2026-10-21T18:50:32.421Z"
+            }
+          }
+        ],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          },
+          {
+            "id": 34,
+            "priority": "low",
+            "message": "There are 6 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
+            "identifier": "failing_emails"
+          }
+        ],
+        "configuration": {
+          "sections": [
+            {
+              "id": "highlights",
+              "visible": true
+            },
+            {
+              "id": "reports",
+              "visible": true
+            },
+            {
+              "id": "traffic",
+              "visible": true
+            },
+            {
+              "id": "engagement",
+              "visible": true
+            },
+            {
+              "id": "search",
+              "visible": true
+            },
+            {
+              "id": "system",
+              "visible": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: setting_key"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 413,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SVKm64djQZxbT8lnOsFxtegDtGQ=",
+            "created_at": "2026-10-21T18:50:31.570026",
+            "rotated_at": "2026-10-21T18:50:31.56861",
+            "updated_at": "2026-10-21T18:50:31.570026",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SVKm64djQZxbT8lnOsFxtegDtGQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 413,
+            "seen_at": "2026-10-21T18:50:32.303577",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SVKm64djQZxbT8lnOsFxtegDtGQ=",
+            "created_at": "2026-10-21T18:50:31.570026",
+            "rotated_at": "2026-10-21T18:50:31.56861",
+            "updated_at": "2026-10-21T18:50:31.570026",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SVKm64djQZxbT8lnOsFxtegDtGQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "call_discourse_hub",
+      {
+        "all_sites": true
+      }
+    ]
+  ],
+  "next_ids": {},
+  "settings": {
+    "solved_enabled": "false"
+  },
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now()), (2, 'enable_accepted_answers', 'true', now(), now())",
+    "INSERT INTO discourse_solved_solved_topics (id, topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 35, 37, 2, now() - interval '3 days', now() - interval '3 days'), (9902, 38, 42, 1, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 37, 2, now() - interval '3 days', now() - interval '3 days'), (9901, 38, 2, now() - interval '3 days', now() - interval '3 days'), (9902, 42, 1, now() - interval '2 days', now() - interval '2 days')",
+    "UPDATE topics SET created_at = now() - interval '40 days' WHERE id = 41",
+    "UPDATE posts SET post_type = 1, user_id = 5, created_at = now() - interval '40 days' + interval '3 hours' WHERE id = 47",
+    "UPDATE topics SET created_at = now() - interval '6 days', user_id = 3 WHERE id = 37",
+    "UPDATE posts SET post_type = 1, user_id = 1, created_at = now() - interval '6 days' + interval '30 minutes' WHERE id = 41",
+    "UPDATE topics SET created_at = now() - interval '10 days' WHERE id = 39",
+    "UPDATE posts SET post_type = 1, user_id = 5, created_at = now() - interval '10 days' + interval '26 hours' WHERE id = 44"
+  ],
+  "recorded_from": {
+    "case": "c62a47752841b5d58b88ea5c254cce1979beebb1952c5214f07709d678c26433",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

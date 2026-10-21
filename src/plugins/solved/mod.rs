@@ -6,6 +6,9 @@
 
 pub mod answers;
 pub mod by_user;
+pub mod dashboard;
+pub mod dashboard_view;
+pub mod report_view;
 pub mod shared_issue;
 pub mod view;
 

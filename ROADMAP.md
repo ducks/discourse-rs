@@ -560,9 +560,9 @@ then by what running a forum needs (milestone 6). Briefs:
     settings, the mounted reports' listing, layout and bulk fetch, the
     highlights, reports, traffic, engagement, search and system sections,
     the vendored version (call_discourse_hub enqueued, never run),
-    warm_dashboard_reports. Refused: discourse-solved's support section,
-    data explorer's report source, the traffic explorer until 89d; what's
-    new and toggle-feature done in 90g9),
+    warm_dashboard_reports. Refused: data explorer's report source, the
+    traffic explorer until 89d; what's new and toggle-feature done in
+    90g9; solved's support section done in 163),
     89d. ~~`feat/pageview-tracking`~~ (done) L (the rollup and pageview
     housekeeping jobs; RequestTracker's logging where Rails loads it
     (outside development, or TRACK_REQUESTS): application_requests and
@@ -2022,8 +2022,14 @@ have handlers now.
 163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
     lists by solved status (its auto close timers, web hooks and search
     filters are done, 143d, 143e; the rest of solved's gaps: 233-235),
-    the dashboard's support section (admin_dashboard.rs:290,1350),
-    accepted solutions' related items
+    ~~the dashboard's support section~~ (done, fix/admin-dashboard-solved:
+    the section's data and drawing, its categories setting, the
+    /admin/plugins/solved/dashboard-support refetch, its admin stylesheet,
+    the accepted_solutions report's solved topics and table summaries;
+    left: its category picker, refused as engagement's is,
+    static/js/admin-dashboard.js:549; Discourse.cache of its data, not
+    kept; odd params, plugins/solved/dashboard.rs:74,121,131 and
+    routes/solved.rs:359), accepted solutions' related items
     without a viewer (reports/counts.rs:1145)
 164. `feat/site-settings-types` L: setting types beyond string, number,
     bool and enum through PUT /admin/site_settings/:id: lists, uploads,

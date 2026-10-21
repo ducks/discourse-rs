@@ -141,6 +141,9 @@
     {%- if chrome.admin_stylesheet %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "admin.css") }}">
     {%- endif %}
+    {%- if chrome.solved_admin_stylesheet %}
+    <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse-solved-admin.css") }}">
+    {%- endif %}
     {#- discourse_stylesheet_link_tag for the theme targets. -#}
     {%- if !chrome.theme_stylesheets.is_empty() %}
     {{ chrome.theme_stylesheets|safe }}

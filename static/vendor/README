@@ -93,6 +93,12 @@ script that reads window.moment and window.Chart, so both load before it.
               admin_<digest>.css a reference page links and strip the same
               two things.
 
+  discourse-solved-admin.css  discourse-solved's admin stylesheet as Rails
+              compiles it (its `:admin` assets, dashboard-support.scss and
+              report-related-items.scss, served as
+              /stylesheets/discourse-solved_admin_<digest>.css to staff),
+              less its source map comment; fetched the same way.
+
   ace/*.js      ace-builds@1.44.0, src-min-noconflict/: ace.js,
                 mode-{scss,html,yaml,sql,javascript,text}.js,
                 theme-{chaos,chrome}.js, ext-searchbox.js (served
