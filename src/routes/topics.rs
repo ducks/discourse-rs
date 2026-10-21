@@ -28,6 +28,7 @@ pub struct ShowParams {
 }
 
 /// `/t/:id` and `/t/:slug` (the id route also catches a bare slug).
+#[allow(clippy::too_many_arguments)]
 pub async fn show_by_id(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -36,6 +37,7 @@ pub async fn show_by_id(
     headers: HeaderMap,
     uri: axum::http::Uri,
     requested: Option<axum::Extension<super::RequestedUri>>,
+    super::search::Peer(peer): super::search::Peer,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
     show(
@@ -44,6 +46,7 @@ pub async fn show_by_id(
             uri: &uri,
             requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
+            peer,
         },
         &state,
         None,
@@ -56,6 +59,7 @@ pub async fn show_by_id(
 }
 
 /// `/t/:slug/:topic_id`
+#[allow(clippy::too_many_arguments)]
 pub async fn show_with_slug(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -64,6 +68,7 @@ pub async fn show_with_slug(
     headers: HeaderMap,
     uri: axum::http::Uri,
     requested: Option<axum::Extension<super::RequestedUri>>,
+    super::search::Peer(peer): super::search::Peer,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
     show(
@@ -72,6 +77,7 @@ pub async fn show_with_slug(
             uri: &uri,
             requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
+            peer,
         },
         &state,
         Some(&slug),
@@ -84,6 +90,7 @@ pub async fn show_with_slug(
 }
 
 /// `/t/:slug/:topic_id/:post_number`
+#[allow(clippy::too_many_arguments)]
 pub async fn show_post(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -92,6 +99,7 @@ pub async fn show_post(
     headers: HeaderMap,
     uri: axum::http::Uri,
     requested: Option<axum::Extension<super::RequestedUri>>,
+    super::search::Peer(peer): super::search::Peer,
 ) -> Result<Response, AppError> {
     let (post_number, json) = split_format(&post_number);
     show(
@@ -100,6 +108,7 @@ pub async fn show_post(
             uri: &uri,
             requested: requested.as_ref().map(|r| &r.0),
             guardian: &guardian,
+            peer,
         },
         &state,
         Some(&slug),
@@ -109,6 +118,53 @@ pub async fn show_post(
         json,
     )
     .await
+}
+
+/// A query param as Rack 2's parse_nested_query leaves it.
+enum QueryParam {
+    Missing,
+    /// `key` without `=`: nil.
+    Nil,
+    Str(String),
+    /// `key[]` or `key[child]`: an array or a hash.
+    Nested,
+}
+
+/// `params[key]` from the query string: the last plain `key` wins.
+fn query_param(query: Option<&str>, key: &str) -> QueryParam {
+    let mut found = QueryParam::Missing;
+    for pair in query.unwrap_or("").split('&').filter(|p| !p.is_empty()) {
+        let (k, v) = match pair.split_once('=') {
+            Some((k, v)) => (k, Some(v)),
+            None => (pair, None),
+        };
+        let k = decode(k);
+        if k == key {
+            found = match v {
+                Some(v) => QueryParam::Str(decode(v)),
+                None => QueryParam::Nil,
+            };
+        } else if k
+            .strip_prefix(key)
+            .is_some_and(|rest| rest.starts_with('['))
+        {
+            found = QueryParam::Nested;
+        }
+    }
+    found
+}
+
+/// A query component, `+` as a space.
+fn decode(s: &str) -> String {
+    form_urlencoded::parse(format!("x={s}").as_bytes())
+        .next()
+        .map(|(_, v)| v.into_owned())
+        .unwrap_or_default()
+}
+
+/// Ruby truthiness of the param: anything but nil.
+fn truthy(param: &QueryParam) -> bool {
+    matches!(param, QueryParam::Str(_) | QueryParam::Nested)
 }
 
 /// Rails' `(.:format)`: a trailing `.json` on the last segment.
@@ -397,6 +453,8 @@ struct Incoming<'a> {
     /// The URI before request_format's `.json` rewrite, when it made one.
     requested: Option<&'a super::RequestedUri>,
     guardian: &'a Guardian,
+    /// The peer address, for `request.remote_ip`.
+    peer: Option<std::net::SocketAddr>,
 }
 
 async fn show(
@@ -489,7 +547,7 @@ async fn show(
         post_types: Vec::new(),
         logo_small_url: None,
     };
-    let rendered = match view.render(topic_id).await {
+    let mut rendered = match view.render(topic_id).await {
         Ok(r) => r,
         Err(TopicViewError::NotFound) => {
             drop(view);
@@ -550,6 +608,50 @@ async fn show(
                 format,
             ),
         ));
+    }
+
+    // track_visit_to_topic: the incoming link of a page request and the
+    // member's visit, both deferred past the response; then the member's
+    // draft.
+    let current_user_id = guardian.user_id();
+    let track_visit =
+        current_user_id.is_some() && (!json || truthy(&query_param(uri.query(), "track_visit")));
+    if !json {
+        // TopicView#current_post_number
+        let current_post_number = rendered.json["highest_post_number"]
+            .as_i64()
+            .map(|highest| post_number.unwrap_or(0).max(1).min(highest));
+        let visit = crate::incoming_link::Visit {
+            referer: headers
+                .get(header::REFERER)
+                .and_then(|v| v.to_str().ok())
+                .map(str::to_string),
+            host: crate::incoming_link::request_host(headers, uri)?,
+            current_user_id,
+            topic_id,
+            post_number: current_post_number,
+            username: match query_param(uri.query(), "u") {
+                QueryParam::Str(u) => Some(u),
+                _ => None,
+            },
+            ip_address: crate::remote_ip::remote_ip(headers, incoming.peer)?,
+        };
+        let pool = state.pool.clone();
+        crate::request_tracking::later("Track Link", async move {
+            let mut conn = pool.acquire().await?;
+            crate::incoming_link::add(&mut conn, visit).await
+        });
+    }
+    if let Some(user_id) = current_user_id.filter(|_| track_visit) {
+        let task_state = state.clone();
+        crate::request_tracking::later("Track Visit", async move {
+            let mut conn = task_state.pool.acquire().await?;
+            crate::read_tracking::track_visit(&task_state.bus, &mut conn, topic_id, user_id).await
+        });
+        // Draft.get at the view's draft sequence (the current one).
+        let (draft, _) =
+            crate::drafts::show(&mut conn, user_id, &format!("topic_{topic_id}")).await?;
+        rendered.json["draft"] = json!(draft);
     }
 
     if json {

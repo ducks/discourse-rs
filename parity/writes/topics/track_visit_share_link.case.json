@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/3?u=User1",
+      "headers": { "Accept": "text/html" }
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35?u=nobody-here",
+      "headers": { "Accept": "text/html" }
+    }
+  ],
+  "ignore": ["/responses/0/body", "/responses/1/body"]
+}

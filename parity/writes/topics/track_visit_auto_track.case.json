@@ -1,0 +1,15 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE user_options SET auto_track_topics_after_msecs = 0 WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/37.json?track_visit=true"
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/suggested_topics"
+  ]
+}

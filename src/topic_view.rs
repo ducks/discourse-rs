@@ -573,8 +573,8 @@ impl TopicView<'_> {
         if let Some(reason) = topic.visibility_reason_id {
             out.insert("visibility_reason_id".into(), json!(reason));
         }
-        // `draft` is only loaded when the visit is tracked (HTML), which
-        // the JSON document never does.
+        // `draft` stays nil here: topics#show loads it when it tracks the
+        // visit.
         out.insert("draft".into(), Value::Null);
         out.insert("draft_key".into(), json!(format!("topic_{}", topic.id)));
         out.insert("draft_sequence".into(), json!(viewer.draft_sequence));

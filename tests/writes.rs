@@ -259,6 +259,9 @@ impl Client {
             .get(header::CONTENT_TYPE)
             .is_some_and(|v| v.as_bytes().starts_with(b"application/zip"));
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        // The work deferred past the response (Scheduler::Defer) is done
+        // before the next request, as the recorder does it.
+        discourse_rs::request_tracking::drain().await;
         if zipped {
             return (status, zip_entries(&bytes));
         }

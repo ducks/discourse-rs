@@ -75,16 +75,12 @@ What a visitor or a new member meets first, by how soon:
 ### Demo readiness
 
 tests/demo_smoke.rs walks the demo over HTTP, one test per step (50,
-42 passing). Each step below fails today and is ignored with the item
+44 passing). Each step below fails today and is ignored with the item
 that fixes it; that item's branch removes the ignore. Run them all with
 `cargo nextest run --test demo_smoke --run-ignored all`.
 
 Core forum:
 
-- [ ] Opening a topic records no visit, so auto-tracking runs a minute
-  late (opening_a_topic_records_the_visit): 257
-- [ ] A reply quoting a post is refused, so quote notifications never
-  happen (a_quote_notifies): 135
 - [ ] A reply linking another topic makes post_alert refuse, so its
   mentions notify nobody (a_reply_linking_a_topic_notifies): 145
 - [ ] pull_hotlinked_images and crawl_topic_link are refused after every
@@ -1442,7 +1438,7 @@ have handlers now.
     quote-controls.js; detailed_404's 410 for a deleted topic, its 403
     and its NotLoggedIn for a message; left:) detailed_404 for a topic
     or category a group grants access to (not_in_group with the
-    serialized group: routes/topics.rs:266; routes/categories.rs:139),
+    serialized group: routes/topics.rs:322; routes/categories.rs:139),
     deleted posts for staff outside the topic view
     (posting/revisions.rs:100), queued_posts_count for moderators
     (topic_view.rs:675, Reviewable.viewable_by), title_is_group
@@ -2086,7 +2082,9 @@ have handlers now.
     links (crates/markdown's linkify: punycode and percent-encoding),
     permalink urls (permalinks.rs:356), pageview hostnames
     (browser_pageviews.rs:104,109; reports/pageviews.rs:411), nested
-    query parameters (pretty_text/cooked_post_processor.rs:174)
+    query parameters (pretty_text/cooked_post_processor.rs:174),
+    referers other than plain http(s) URLs (incoming_link.rs:89:
+    URI::Generic hosts, user info, IP literals)
 176. `feat/charsets` S: pages and email in charsets other than UTF-8
     (onebox/fetch.rs:164; retrieve_title.rs:141;
     email/incoming.rs:237,515,518,605,629). Needs: encoding_rs with
@@ -2163,6 +2161,8 @@ have handlers now.
     themes.rs:656,671; theme_import.rs),
     user_fields.rs, user_merger.rs, jobs/handlers.rs,
     request_tracking.rs, admin_traffic_explorer.rs, email/incoming.rs,
+    incoming_link.rs (request.host of a host-less request or an
+    X-Forwarded-Host of commas only),
     onebox/generic.rs, onebox/api_engines.rs, onebox/github.rs,
     onebox/embed_engines.rs and others). Answer as Rails does where its
     answer is fixed (the 500 page, a 400, a 404); the rest stay refused
@@ -2820,12 +2820,11 @@ route table has been made, so this list may be short.
     (244), LTI (214), OAuth2 basic (245-247), OpenID Connect (245, 246,
     248, 249), Apple (247). The audit names the earlier items that cover
     the rest
-257. `fix/topic-track-visit` S: a member's topic page load (or the JSON
-    with track_visit) records no visit: TopicsController's
-    track_visit_to_topic defers TopicUser.track_visit!, which the port
-    leaves out (routes/topics.rs:402). The topic user is made by the
-    first timings batch instead, which counts no time, so auto-tracking
-    comes a minute late and last_visited_at stays empty until then.
+257. ~~`fix/topic-track-visit`~~ (done) S: a member's topic page load (or
+    the JSON with track_visit) records the visit after the response
+    (TopicUser.track_visit!) and loads the member's draft; a page load
+    records its IncomingLink (another site's referer, a `?u=` share
+    link). Left: referers other than plain http(s) URLs (175).
     Found by tests/demo_smoke.rs (opening_a_topic_records_the_visit)
 258. `feat/color-modes` M: pages link only the light color definitions
     (templates/layout.html:122; templates/no_ember.html:41). The default
@@ -3131,7 +3130,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (server:topic-show-crawler-post-end); with 163's solved schema
     markup, it needs the crawler view's per-post markup
     (topics/show.html.erb), which the port's crawler topic page
-    (routes/topics.rs:603) doesn't draw
+    (routes/topics.rs:705) doesn't draw
 242. `feat/checklist-toggle` M: checking a box: PUT /checklist/toggle
     (ToggleCheckbox's contract, policies, rate limit, its
     200/400/403/404/409/422 answers), CheckboxLocator and SourceMap

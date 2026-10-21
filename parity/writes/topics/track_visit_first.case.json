@@ -1,0 +1,20 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/37.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/37.json?track_visit=true"
+    },
+    {
+      "method": "GET",
+      "path": "/t/37.json?track_visit=true"
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/suggested_topics"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json?track_visit=1" }
+  ]
+}

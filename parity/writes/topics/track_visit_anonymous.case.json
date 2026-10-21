@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "requests": [
+    { "method": "GET", "path": "/t/35.json?track_visit=true" },
+    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35", "headers": { "Accept": "text/html" } }
+  ],
+  "ignore": ["/responses/1/body"]
+}

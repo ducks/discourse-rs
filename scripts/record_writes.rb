@@ -63,6 +63,11 @@ ActionController::Base.allow_forgery_protection = false
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
 RateLimiter.disable
+# Scheduler::Defer runs its blocks on a thread of its own after the
+# response, racing the case's snapshot: held here, and run after each
+# request (and after the login and the jobs), so what they write lands in
+# the case's transaction in order, as tests/writes.rs drains the port's.
+Scheduler::Defer.pause
 
 def db = ActiveRecord::Base.connection
 
@@ -499,6 +504,7 @@ cases.each do |c|
     if c["user"]
       session.post "/session.json", params: { login: c["user"], password: "password" }, headers: headers
       raise "login as #{c["user"]} failed: #{session.response.status}" if session.response.status != 200
+      Scheduler::Defer.do_all_work
     end
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
@@ -575,6 +581,7 @@ cases.each do |c|
         # Unicorn sets REQUEST_PATH; log_on_user logs it as the token's path.
         options[:env] = { "REQUEST_PATH" => path.split("?").first }
         session.public_send(r["method"].downcase, path, **options)
+        Scheduler::Defer.do_all_work
         body = session.response.body
         body =
           if session.response.media_type == "application/zip"
@@ -619,6 +626,7 @@ cases.each do |c|
       klass.constantize.new.execute(args.with_indifferent_access)
       pending.concat(ENQUEUED[seen..])
     end
+    Scheduler::Defer.do_all_work
     emails = ActionMailer::Base.deliveries.map { |m| email_record(m) }
     record = {
       name: c["name"],

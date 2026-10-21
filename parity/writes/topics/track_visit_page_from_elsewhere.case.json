@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-pinned-and-closed/37",
+      "headers": { "Accept": "text/html", "Referer": "https://Search.Example:8443/results?q=fixture" }
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/2",
+      "headers": { "Accept": "text/html", "Referer": "http://localhost/latest" }
+    }
+  ],
+  "ignore": ["/responses/0/body", "/responses/1/body"]
+}
