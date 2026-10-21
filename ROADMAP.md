@@ -1378,7 +1378,7 @@ The enqueued jobs without a handler go with the item that owns them:
 notify_mailing_list_subscribers (146),
 crawl_topic_link (127), index_category_for_search (144),
 change_display_name (153),
-pull_hotlinked_images and pull_user_profile_hotlinked_images (140),
+update_hotlinked_raw and pull_user_profile_hotlinked_images (140),
 user_suspension_expired (151),
 generate_theme_screenshot_thumbnails (171), remap_hashtag (226).
 notify_post_revision (188i2) and refresh_latest_new_feature (90g9)
@@ -1645,8 +1645,11 @@ have handlers now.
     images of other sites or without a size (onebox/mod.rs:1521,1573),
     blocked and pulled hotlinked media
     (pretty_text/cooked_post_processor.rs:708,735;
-    pretty_text/cleanup.rs:574), the pull_hotlinked_images and
-    pull_user_profile_hotlinked_images jobs. Needs: network fetches,
+    pretty_text/cleanup.rs:574), downloading hotlinked media in
+    pull_hotlinked_images (jobs/hotlinked_images.rs:101; the job runs,
+    downloads refused) and the update_hotlinked_raw job it schedules
+    for a post with hotlinked media records, the
+    pull_user_profile_hotlinked_images job. Needs: network fetches,
     through 52's FinalDestination
 141. `feat/optimized-videos` S: videos in the post processor
     (pretty_text/cooked_post_processor.rs:828), video thumbnails

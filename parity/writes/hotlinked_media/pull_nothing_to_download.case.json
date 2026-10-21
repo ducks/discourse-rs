@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE posts SET cooked = '<p>Local <img src=\"/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png\" width=\"10\" height=\"10\">, remote <img src=\"http://fixtures.localhost:8099/cat.png\"> and <img class=\"avatar\" src=\"http://fixtures.localhost:8099/a.png\"></p>' WHERE id = 36"
+  ],
+  "requests": [],
+  "enqueue": [
+    ["pull_hotlinked_images", {"post_id": 36}]
+  ],
+  "run_jobs": ["pull_hotlinked_images"]
+}

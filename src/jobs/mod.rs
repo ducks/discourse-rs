@@ -17,6 +17,7 @@ pub mod dashboard;
 pub mod group_messages;
 pub(crate) mod handlers;
 pub mod heat;
+pub mod hotlinked_images;
 pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;

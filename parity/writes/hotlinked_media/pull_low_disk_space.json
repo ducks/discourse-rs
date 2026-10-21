@@ -1,0 +1,353 @@
+{
+  "name": "pull_low_disk_space",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-21T03:29:30.694342",
+  "transaction_started_at": "2026-10-21T03:29:28.209015",
+  "responses": [],
+  "changes": {
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.",
+          "search_data": "'disabl':4A,13 'disk':16 'download':1A,6,20 'imag':3A,8,22 'limit':18 'local':10 'reach':25 'remot':2A,7,21 'set':11 'space':17 'threshold':23",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-21T03:29:33.908487",
+          "updated_at": "2026-10-21T03:29:33.908487",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-21T03:29:33.814926",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-21T03:29:33.815028",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-21T03:29:33.815028",
+          "word_count": 14,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-21T03:29:33.905354",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 34,
+            "name": "download_remote_images_to_local",
+            "value": "t",
+            "data_type": 5,
+            "created_at": "2026-09-30T07:28:29.131277",
+            "updated_at": "2026-10-21T03:29:29.315748"
+          },
+          "after": {
+            "id": 34,
+            "name": "download_remote_images_to_local",
+            "value": "f",
+            "data_type": 5,
+            "created_at": "2026-09-30T07:28:29.131277",
+            "updated_at": "2026-10-21T03:29:30.70195"
+          }
+        }
+      ]
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-21T03:29:33.748495",
+          "updated_at": "2026-10-21T03:29:33.748495"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Downloading remote images disabled The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.",
+          "topic_id": 45,
+          "search_data": "'disabl':4A,13B 'disk':16B 'download':1A,6B,20B 'imag':3A,8B,22B 'limit':18B 'local':10B 'reach':25B 'remot':2A,7B,21B 'set':11B 'space':17B 'threshold':23B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-21T03:29:33.919164",
+          "last_visited_at": "2026-10-21T03:29:33.777133",
+          "first_visited_at": "2026-10-21T03:29:33.777133",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-21T03:29:33.774001"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "downloading-remote-images-disabled",
+          "score": null,
+          "title": "Downloading remote images disabled",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-21T03:29:33.815028",
+          "pinned_at": null,
+          "created_at": "2026-10-21T03:29:33.743236",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-21T03:29:33.925791",
+          "word_count": 14,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Downloading remote images disabled",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-21T03:29:33.815028",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-21T03:29:33.743236",
+          "updated_at": "2026-10-21T03:29:33.806397",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": "Remote images download was disabled because there wasn't enough disk space available.",
+          "post_id": null,
+          "subject": "download_remote_images_to_local",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-10-21T03:29:30.747279",
+          "ip_address": null,
+          "updated_at": "2026-10-21T03:29:30.747279",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "true",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65,
+    "user_histories": 74
+  },
+  "settings": {
+    "download_remote_images_to_local": true,
+    "download_remote_images_threshold": 101
+  },
+  "setup": [
+    "UPDATE posts SET cooked = '<p>Remote <img src=\"http://fixtures.localhost:8099/cat.png\"></p>' WHERE id = 36"
+  ],
+  "enqueue": [
+    [
+      "pull_hotlinked_images",
+      {
+        "post_id": 36
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "9c88cba0ff30206a89cf8de35adc0cc7da8499f9243f159c40048878623e1b7a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

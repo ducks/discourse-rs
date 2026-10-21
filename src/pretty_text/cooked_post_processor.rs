@@ -227,7 +227,7 @@ fn parent_of(node: &Handle) -> Option<Handle> {
     parent
 }
 
-fn ancestors(node: &Handle) -> Vec<Handle> {
+pub(crate) fn ancestors(node: &Handle) -> Vec<Handle> {
     let mut out = Vec::new();
     let mut current = parent_of(node);
     while let Some(p) = current {
